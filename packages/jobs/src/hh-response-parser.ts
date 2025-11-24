@@ -203,6 +203,31 @@ async function parseVacancyDetails(page: any, url: string): Promise<string> {
   }
 }
 
+async function parseResumeExperience(
+  page: any,
+  url: string,
+): Promise<{ experience: string }> {
+  console.log(`📄 Переход на страницу резюме: ${url}`);
+  await page.goto(url, { waitUntil: "networkidle2" });
+
+  try {
+    await page.waitForSelector('div[data-qa="resume-experience-block"]', {
+      timeout: 10000,
+    });
+
+    const htmlContent = await page.$eval(
+      'div[data-qa="resume-experience-block"]',
+      (el: HTMLElement) => el.innerHTML,
+    );
+
+    const { result } = stripHtml(htmlContent);
+    return { experience: result.trim() };
+  } catch (e) {
+    console.log("⚠️ Не удалось получить опыт работы из резюме.");
+    return { experience: "" };
+  }
+}
+
 async function parseResponses(page: any, url: string) {
   console.log(`📄 Переход на страницу откликов: ${url}`);
   await page.goto(url, { waitUntil: "networkidle2" });
@@ -232,6 +257,14 @@ async function parseResponses(page: any, url: string) {
 
   console.log(`✅ Найдено откликов: ${responses.length}`);
   console.log(JSON.stringify(responses, null, 2));
+
+  // Parse experience data from the first response
+  if (responses.length > 0 && responses[0].url) {
+    const experienceData = await parseResumeExperience(page, responses[0].url);
+    console.log("\n📊 Опыт работы первого кандидата:");
+    console.log(JSON.stringify(experienceData, null, 2));
+  }
+
   return responses;
 }
 
