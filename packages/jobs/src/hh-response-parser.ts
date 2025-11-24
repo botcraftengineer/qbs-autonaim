@@ -1,7 +1,11 @@
 import { PuppeteerCrawler } from "crawlee";
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
 
 import { env } from "./env";
 import { saveCookies } from "./utils/cookies";
+
+puppeteer.use(StealthPlugin());
 
 /**
  * Скрипт для парсинга откликов на hh.ru
@@ -19,9 +23,16 @@ async function runParser() {
   const crawler = new PuppeteerCrawler({
     headless: false, // Показываем браузер для отладки
     launchContext: {
+      launcher: puppeteer,
       launchOptions: {
         headless: false,
-        slowMo: 100, // Замедляем действия для наглядности
+        args: [
+          "--no-sandbox",
+          "--disable-setuid-sandbox",
+          "--disable-blink-features=AutomationControlled",
+        ],
+        ignoreDefaultArgs: ["--enable-automation"],
+        slowMo: 50,
       },
     },
     async requestHandler({ page, request, log }) {
@@ -42,7 +53,10 @@ async function runParser() {
           clickCount: 3,
         });
         await page.keyboard.press("Backspace");
-        await page.type('input[type="text"][name="username"]', email);
+        await new Promise((r) => setTimeout(r, Math.random() * 500 + 200));
+        await page.type('input[type="text"][name="username"]', email, {
+          delay: 100,
+        });
 
         log.info("🔑 Нажатие на кнопку 'Войти с паролем'...");
         await page.waitForSelector(
@@ -52,16 +66,20 @@ async function runParser() {
             timeout: 10000,
           },
         );
+        await new Promise((r) => setTimeout(r, Math.random() * 1000 + 500));
         await page.click('button[data-qa="expand-login-by_password"]');
 
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         await page.waitForSelector('input[type="password"][name="password"]', {
           visible: false,
         });
         log.info("🔒 Заполнение пароля...");
-        await page.type('input[type="password"][name="password"]', password);
+        await page.type('input[type="password"][name="password"]', password, {
+          delay: 100,
+        });
 
+        await new Promise((r) => setTimeout(r, Math.random() * 1000 + 500));
         log.info("📤 Отправка формы...");
 
         await Promise.all([
