@@ -1,7 +1,9 @@
 import type { Page } from "puppeteer";
 import {
   checkResponseExists,
-  saveResponseToDb,
+  hasDetailedInfo,
+  saveBasicResponse,
+  updateResponseDetails,
 } from "../../services/response-service";
 import type { ResponseData } from "../types";
 import { HH_CONFIG } from "./config";
@@ -35,25 +37,30 @@ export async function parseResponses(
 
   console.log(`✅ Собрано откликов: ${allResponses.length}`);
 
-  // ЭТАП 2: Фильтруем новые отклики
-  console.log("\n🔍 ЭТАП 2: Фильтрация новых откликов...");
-  const newResponses = await filterNewResponses(allResponses);
+  // ЭТАП 2: Сохраняем базовую информацию всех новых откликов
+  console.log("\n💾 ЭТАП 2: Сохранение базовой информации...");
+  await saveBasicResponses(allResponses, vacancyId);
+
+  // ЭТАП 3: Определяем отклики без детальной информации
+  console.log("\n🔍 ЭТАП 3: Поиск откликов без детальной информации...");
+  const responsesNeedingDetails =
+    await filterResponsesNeedingDetails(allResponses);
 
   console.log(
-    `✅ Новых откликов: ${newResponses.length}, Пропущено (уже в базе): ${allResponses.length - newResponses.length}`
+    `✅ Откликов требующих парсинга деталей: ${responsesNeedingDetails.length}`
   );
 
-  if (newResponses.length === 0) {
-    console.log("ℹ️ Нет новых откликов для обработки");
-    return [];
+  if (responsesNeedingDetails.length === 0) {
+    console.log("ℹ️ Все отклики уже имеют детальную информацию");
+    return allResponses;
   }
 
-  // ЭТАП 3: Парсим детальную информацию по каждому новому отклику
-  console.log("\n📊 ЭТАП 3: Парсинг детальной информации...");
-  await parseResponseDetails(page, newResponses, vacancyId);
+  // ЭТАП 4: Парсим детальную информацию резюме
+  console.log("\n📊 ЭТАП 4: Парсинг детальной информации резюме...");
+  await parseResponseDetails(page, responsesNeedingDetails, vacancyId);
 
   console.log(
-    `\n🎉 Парсинг завершен! Обработано новых откликов: ${newResponses.length}`
+    `\n🎉 Парсинг завершен! Обработано откликов: ${responsesNeedingDetails.length}`
   );
 
   return allResponses;
@@ -68,9 +75,8 @@ async function collectAllResponses(
 ): Promise<ResponseWithId[]> {
   const allResponses: ResponseWithId[] = [];
   let currentPage = 0;
-  const hasMorePages = true;
 
-  while (hasMorePages) {
+  while (true) {
     const pageUrl =
       currentPage === 0
         ? `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}`
@@ -158,12 +164,14 @@ async function collectAllResponses(
 }
 
 /**
- * ЭТАП 2: Фильтрует новые отклики (которых еще нет в базе)
+ * ЭТАП 2: Сохраняет базовую информацию всех новых откликов
  */
-async function filterNewResponses(
-  responses: ResponseWithId[]
-): Promise<ResponseWithId[]> {
-  const newResponses: ResponseWithId[] = [];
+async function saveBasicResponses(
+  responses: ResponseWithId[],
+  vacancyId: string
+): Promise<void> {
+  let savedCount = 0;
+  let skippedCount = 0;
 
   for (let i = 0; i < responses.length; i++) {
     const response = responses[i];
@@ -172,22 +180,57 @@ async function filterNewResponses(
     const exists = await checkResponseExists(response.resumeId);
 
     if (!exists) {
-      newResponses.push(response);
-      console.log(
-        `✅ Новый отклик ${i + 1}/${responses.length}: ${response.name}`
+      await saveBasicResponse(
+        vacancyId,
+        response.resumeId,
+        response.url,
+        response.name
       );
+      savedCount++;
     } else {
+      skippedCount++;
       console.log(
         `⏭️ Пропуск ${i + 1}/${responses.length}: ${response.name} (уже в базе)`
       );
     }
   }
 
-  return newResponses;
+  console.log(
+    `✅ Сохранено новых: ${savedCount}, Пропущено (уже в базе): ${skippedCount}`
+  );
 }
 
 /**
- * ЭТАП 3: Парсит детальную информацию по каждому новому отклику
+ * ЭТАП 3: Фильтрует отклики, которым нужна детальная информация
+ */
+async function filterResponsesNeedingDetails(
+  responses: ResponseWithId[]
+): Promise<ResponseWithId[]> {
+  const responsesNeedingDetails: ResponseWithId[] = [];
+
+  for (let i = 0; i < responses.length; i++) {
+    const response = responses[i];
+    if (!response) continue;
+
+    const hasDetails = await hasDetailedInfo(response.resumeId);
+
+    if (!hasDetails) {
+      responsesNeedingDetails.push(response);
+      console.log(
+        `📝 Требуется парсинг ${i + 1}/${responses.length}: ${response.name}`
+      );
+    } else {
+      console.log(
+        `✅ Детали есть ${i + 1}/${responses.length}: ${response.name}`
+      );
+    }
+  }
+
+  return responsesNeedingDetails;
+}
+
+/**
+ * ЭТАП 4: Парсит детальную информацию резюме и обновляет записи
  */
 async function parseResponseDetails(
   page: Page,
@@ -200,7 +243,7 @@ async function parseResponseDetails(
 
     try {
       console.log(
-        `\n📊 Обработка ${i + 1}/${responses.length}: ${response.name}`
+        `\n📊 Парсинг резюме ${i + 1}/${responses.length}: ${response.name}`
       );
 
       // Случайная задержка между просмотром резюме (имитация человека)
@@ -215,8 +258,8 @@ async function parseResponseDetails(
       // Парсим детальную информацию резюме
       const experienceData = await parseResumeExperience(page, response.url);
 
-      // Сохраняем в базу
-      await saveResponseToDb({
+      // Обновляем детальную информацию в базе
+      await updateResponseDetails({
         vacancyId,
         resumeId: response.resumeId,
         resumeUrl: response.url,
@@ -232,7 +275,7 @@ async function parseResponseDetails(
       const errorMessage =
         error instanceof Error ? error.message : String(error);
       console.error(
-        `❌ Ошибка обработки отклика ${response.name}:`,
+        `❌ Ошибка парсинга резюме ${response.name}:`,
         errorMessage
       );
 

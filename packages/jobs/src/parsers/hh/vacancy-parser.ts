@@ -1,11 +1,45 @@
 import type { Page } from "puppeteer";
 import { stripHtml } from "string-strip-html";
-import { saveVacancyToDb } from "../../services/vacancy-service";
+import {
+  hasVacancyDescription,
+  saveBasicVacancy,
+  updateVacancyDescription,
+} from "../../services/vacancy-service";
 import type { VacancyData } from "../types";
 import { HH_CONFIG } from "./config";
 import { humanBrowse, humanDelay, randomDelay } from "./human-behavior";
 
 export async function parseVacancies(page: Page): Promise<VacancyData[]> {
+  console.log(`🚀 Начинаем парсинг вакансий`);
+
+  // ЭТАП 1: Собираем список всех активных вакансий
+  console.log("\n📋 ЭТАП 1: Сбор списка активных вакансий...");
+  const vacancies = await collectVacancies(page);
+
+  if (vacancies.length === 0) {
+    console.log("⚠️ Не найдено активных вакансий");
+    return [];
+  }
+
+  console.log(`✅ Найдено активных вакансий: ${vacancies.length}`);
+
+  // ЭТАП 2: Сохраняем базовую информацию всех вакансий
+  console.log("\n💾 ЭТАП 2: Сохранение базовой информации...");
+  await saveBasicVacancies(vacancies);
+
+  // ЭТАП 3: Парсим описания для вакансий без описания
+  console.log("\n📊 ЭТАП 3: Парсинг описаний вакансий...");
+  await parseVacancyDescriptions(page, vacancies);
+
+  console.log(`\n🎉 Парсинг вакансий завершен!`);
+
+  return vacancies;
+}
+
+/**
+ * ЭТАП 1: Собирает список всех активных вакансий
+ */
+async function collectVacancies(page: Page): Promise<VacancyData[]> {
   console.log(`📄 Переход на страницу вакансий: ${HH_CONFIG.urls.vacancies}`);
 
   await page.goto(HH_CONFIG.urls.vacancies, { waitUntil: "networkidle2" });
@@ -22,11 +56,11 @@ export async function parseVacancies(page: Page): Promise<VacancyData[]> {
 
   const vacancies = await page.$$eval(
     'div[data-qa="vacancies-dashboard-vacancy"]',
-    (elements: Array<Element>) => {
+    (elements: Element[]) => {
       return elements.map((el) => {
         const getText = (selector: string) => {
           const node = el.querySelector(selector);
-          return node ? node.textContent.trim() : "";
+          return node ? node.textContent?.trim() || "" : "";
         };
 
         const getAttr = (selector: string, attr: string) => {
@@ -70,25 +104,69 @@ export async function parseVacancies(page: Page): Promise<VacancyData[]> {
     }
   );
 
-  console.log(`✅ Найдено активных вакансий: ${vacancies.length}`);
+  // Нормализуем URL вакансий
+  for (const vacancy of vacancies) {
+    if (vacancy.url) {
+      vacancy.url = vacancy.url.startsWith("http")
+        ? vacancy.url
+        : new URL(vacancy.url, HH_CONFIG.urls.baseUrl).href;
+    } else if (vacancy.id) {
+      vacancy.url = `${HH_CONFIG.urls.baseUrl}/vacancy/${vacancy.id}`;
+    }
+  }
 
+  return vacancies;
+}
+
+/**
+ * ЭТАП 2: Сохраняет базовую информацию всех вакансий
+ */
+async function saveBasicVacancies(vacancies: VacancyData[]): Promise<void> {
   for (let i = 0; i < vacancies.length; i++) {
     const vacancy = vacancies[i];
     if (!vacancy) continue;
 
-    let vacancyUrl = vacancy.url;
+    await saveBasicVacancy(vacancy);
+  }
 
-    if (!vacancyUrl && vacancy.id) {
-      vacancyUrl = `${HH_CONFIG.urls.baseUrl}/vacancy/${vacancy.id}`;
-    }
+  console.log(
+    `✅ Базовая информация сохранена для ${vacancies.length} вакансий`
+  );
+}
 
-    if (vacancyUrl) {
-      const fullUrl = vacancyUrl.startsWith("http")
-        ? vacancyUrl
-        : new URL(vacancyUrl, HH_CONFIG.urls.baseUrl).href;
+/**
+ * ЭТАП 3: Парсит описания для вакансий без описания
+ */
+async function parseVacancyDescriptions(
+  page: Page,
+  vacancies: VacancyData[]
+): Promise<void> {
+  let parsedCount = 0;
+  let skippedCount = 0;
+
+  for (let i = 0; i < vacancies.length; i++) {
+    const vacancy = vacancies[i];
+    if (!vacancy || !vacancy.url) continue;
+
+    try {
+      // Проверяем, есть ли уже описание
+      const hasDescription = await hasVacancyDescription(vacancy.id);
+
+      if (hasDescription) {
+        skippedCount++;
+        console.log(
+          `⏭️ Пропуск ${i + 1}/${vacancies.length}: ${vacancy.title} (описание есть)`
+        );
+        continue;
+      }
+
+      parsedCount++;
+      console.log(
+        `\n📊 Парсинг описания ${i + 1}/${vacancies.length}: ${vacancy.title}`
+      );
 
       // Задержка между просмотром вакансий
-      if (i > 0) {
+      if (parsedCount > 1) {
         const delay = randomDelay(2000, 5000);
         console.log(
           `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`
@@ -96,20 +174,35 @@ export async function parseVacancies(page: Page): Promise<VacancyData[]> {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
 
-      const description = await parseVacancyDetails(page, fullUrl);
-      vacancy.description = description;
-      vacancy.url = fullUrl;
-    }
+      const description = await parseVacancyDetails(page, vacancy.url);
 
-    await saveVacancyToDb(vacancy);
+      if (description) {
+        await updateVacancyDescription(vacancy.id, description);
+        vacancy.description = description;
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error(
+        `❌ Ошибка парсинга описания ${vacancy.title}:`,
+        errorMessage
+      );
+
+      // Пауза после ошибки
+      await humanDelay(2000, 4000);
+    }
   }
 
-  console.log(JSON.stringify(vacancies, null, 2));
-  return vacancies;
+  console.log(
+    `✅ Спарсено описаний: ${parsedCount}, Пропущено (описание есть): ${skippedCount}`
+  );
 }
 
+/**
+ * Парсит детальную страницу вакансии и извлекает описание
+ */
 async function parseVacancyDetails(page: Page, url: string): Promise<string> {
-  console.log(`📄 Переход на детальную страницу вакансии: ${url}`);
+  console.log(`📄 Переход на детальную страницу: ${url}`);
   await page.goto(url, { waitUntil: "networkidle2" });
 
   // Пауза после загрузки
@@ -125,10 +218,10 @@ async function parseVacancyDetails(page: Page, url: string): Promise<string> {
 
     const htmlContent = await page.$eval(
       ".vacancy-section",
-      (el) => el.innerHTML
+      (el) => (el as HTMLElement).innerHTML
     );
 
-    const { result } = stripHtml(htmlContent);
+    const { result } = stripHtml(htmlContent as string);
     return result.trim();
   } catch (_e) {
     console.log("⚠️ Не удалось получить описание вакансии.");
