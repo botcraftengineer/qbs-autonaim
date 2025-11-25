@@ -1,6 +1,11 @@
 "use client";
 
 import {
+  HR_SELECTION_STATUS_LABELS,
+  RESPONSE_STATUS_LABELS,
+} from "@selectio/db/schema";
+import {
+  Badge,
   Button,
   Card,
   CardContent,
@@ -51,6 +56,16 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="outline">
+                {RESPONSE_STATUS_LABELS[response.status]}
+              </Badge>
+              {response.hrSelectionStatus && (
+                <Badge variant="secondary">
+                  {HR_SELECTION_STATUS_LABELS[response.hrSelectionStatus]}
+                </Badge>
+              )}
+            </div>
             {response.experience && (
               <div>
                 <h4 className="text-sm font-medium mb-1">Опыт работы</h4>

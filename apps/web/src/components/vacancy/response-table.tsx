@@ -1,10 +1,12 @@
 "use client";
 
 import {
+  HR_SELECTION_STATUS_LABELS,
+  RESPONSE_STATUS_LABELS,
+} from "@selectio/db/schema";
+import {
+  Badge,
   Button,
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
   Table,
   TableBody,
   TableCell,
@@ -27,7 +29,8 @@ export function ResponseTable({ responses }: ResponseTableProps) {
         <TableHeader>
           <TableRow>
             <TableHead>Кандидат</TableHead>
-            <TableHead>Опыт работы</TableHead>
+            <TableHead>Статус</TableHead>
+            <TableHead>Отбор HR</TableHead>
             <TableHead>Контакты</TableHead>
             <TableHead>Дата отклика</TableHead>
             <TableHead className="text-right">Действия</TableHead>
@@ -49,34 +52,18 @@ export function ResponseTable({ responses }: ResponseTableProps) {
                 </div>
               </TableCell>
               <TableCell>
-                <div className="max-w-md">
-                  {response.experience ? (
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <button
-                          type="button"
-                          className="text-left text-sm text-muted-foreground hover:underline cursor-pointer"
-                        >
-                          {response.experience.length > 80
-                            ? `${response.experience.slice(0, 80)}...`
-                            : response.experience}
-                        </button>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-80">
-                        <div className="space-y-2">
-                          <h4 className="text-sm font-semibold">Опыт работы</h4>
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            {response.experience}
-                          </p>
-                        </div>
-                      </HoverCardContent>
-                    </HoverCard>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      Не указан
-                    </span>
-                  )}
-                </div>
+                <Badge variant="outline" className="whitespace-nowrap">
+                  {RESPONSE_STATUS_LABELS[response.status]}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                {response.hrSelectionStatus ? (
+                  <Badge variant="secondary" className="whitespace-nowrap">
+                    {HR_SELECTION_STATUS_LABELS[response.hrSelectionStatus]}
+                  </Badge>
+                ) : (
+                  <span className="text-muted-foreground text-sm">—</span>
+                )}
               </TableCell>
               <TableCell>
                 <ContactInfo contacts={response.contacts} size="sm" />
