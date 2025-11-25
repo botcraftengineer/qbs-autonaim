@@ -55,9 +55,11 @@ export function ResponseTable({ responses }: ResponseTableProps) {
                       <HoverCardTrigger asChild>
                         <button
                           type="button"
-                          className="text-left text-sm text-muted-foreground hover:underline cursor-pointer line-clamp-2"
+                          className="text-left text-sm text-muted-foreground hover:underline cursor-pointer"
                         >
-                          {response.experience}
+                          {response.experience.length > 80
+                            ? `${response.experience.slice(0, 80)}...`
+                            : response.experience}
                         </button>
                       </HoverCardTrigger>
                       <HoverCardContent className="w-80">

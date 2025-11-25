@@ -58,9 +58,11 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                   <HoverCardTrigger asChild>
                     <button
                       type="button"
-                      className="text-left text-sm text-muted-foreground hover:underline cursor-pointer line-clamp-3"
+                      className="text-left text-sm text-muted-foreground hover:underline cursor-pointer"
                     >
-                      {response.experience}
+                      {response.experience.length > 120
+                        ? `${response.experience.slice(0, 120)}...`
+                        : response.experience}
                     </button>
                   </HoverCardTrigger>
                   <HoverCardContent className="w-80">
