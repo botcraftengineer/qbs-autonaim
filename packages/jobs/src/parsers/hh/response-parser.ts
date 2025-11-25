@@ -8,7 +8,6 @@ import type { ResponseData } from "../types";
 import { HH_CONFIG } from "./config";
 import { humanDelay, humanScroll, randomDelay } from "./human-behavior";
 import { parseResumeExperience } from "./resume-parser";
-import { extractResumeId } from "./utils";
 
 interface ResponseWithId extends ResponseData {
   resumeId: string;
@@ -125,10 +124,12 @@ async function collectAndSaveResponses(
             'span[data-qa="resume-serp__resume-fullname"]'
           );
           const name = nameEl ? nameEl.textContent?.trim() : "";
+          const resumeId = el.getAttribute("data-resume-id") || "";
 
           return {
             name,
             url: url ? new URL(url, "https://hh.ru").href : "",
+            resumeId,
           };
         });
       }
@@ -148,32 +149,29 @@ async function collectAndSaveResponses(
     let pageSkipped = 0;
 
     for (const response of pageResponses) {
-      if (response.url) {
-        const resumeId = extractResumeId(response.url);
-        if (resumeId) {
-          const responseWithId: ResponseWithId = {
-            ...response,
-            resumeId,
-          };
+      if (response.url && response.resumeId) {
+        const responseWithId: ResponseWithId = {
+          ...response,
+          resumeId: response.resumeId,
+        };
 
-          allResponses.push(responseWithId);
+        allResponses.push(responseWithId);
 
-          // Сразу сохраняем в базу
-          const saved = await saveBasicResponse(
-            vacancyIdForSave,
-            resumeId,
-            response.url,
-            response.name
-          );
+        // Сразу сохраняем в базу
+        const saved = await saveBasicResponse(
+          vacancyIdForSave,
+          response.resumeId,
+          response.url,
+          response.name
+        );
 
-          if (saved) {
-            pageSaved++;
-          } else {
-            pageSkipped++;
-          }
+        if (saved) {
+          pageSaved++;
         } else {
-          console.log(`⚠️ Не удалось извлечь ID из URL: ${response.url}`);
+          pageSkipped++;
         }
+      } else {
+        console.log(`⚠️ Не удалось получить resumeId для: ${response.name}`);
       }
     }
 
