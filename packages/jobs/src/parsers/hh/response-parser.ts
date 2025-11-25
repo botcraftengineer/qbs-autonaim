@@ -124,7 +124,14 @@ async function collectAndSaveResponses(
             'span[data-qa="resume-serp__resume-fullname"]'
           );
           const name = nameEl ? nameEl.textContent?.trim() : "";
-          const resumeId = el.getAttribute("data-resume-id") || "";
+
+          // Извлекаем resumeId из URL
+          let resumeId = "";
+          if (url) {
+            const fullUrl = new URL(url, "https://hh.ru").href;
+            const match = fullUrl.match(/\/resume\/([a-f0-9]+)/);
+            resumeId = match?.[1] ?? "";
+          }
 
           return {
             name,
