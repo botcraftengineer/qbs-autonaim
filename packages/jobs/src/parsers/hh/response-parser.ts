@@ -1,6 +1,5 @@
 import type { Page } from "puppeteer";
 import {
-  checkResponseExists,
   hasDetailedInfo,
   saveBasicResponse,
   updateResponseDetails,
@@ -26,23 +25,23 @@ export async function parseResponses(
 
   console.log(`🚀 Начинаем парсинг откликов для вакансии ${urlVacancyId}`);
 
-  // ЭТАП 1: Собираем все отклики со всех страниц
-  console.log("\n📋 ЭТАП 1: Сбор всех откликов...");
-  const allResponses = await collectAllResponses(page, urlVacancyId);
+  // ЭТАП 1: Собираем отклики со всех страниц и сразу сохраняем в базу
+  console.log("\n📋 ЭТАП 1: Сбор откликов и сохранение в базу...");
+  const allResponses = await collectAndSaveResponses(
+    page,
+    urlVacancyId,
+    vacancyId
+  );
 
   if (allResponses.length === 0) {
     console.log("⚠️ Не найдено откликов для обработки");
     return [];
   }
 
-  console.log(`✅ Собрано откликов: ${allResponses.length}`);
+  console.log(`✅ Всего обработано откликов: ${allResponses.length}`);
 
-  // ЭТАП 2: Сохраняем базовую информацию всех новых откликов
-  console.log("\n💾 ЭТАП 2: Сохранение базовой информации...");
-  await saveBasicResponses(allResponses, vacancyId);
-
-  // ЭТАП 3: Определяем отклики без детальной информации
-  console.log("\n🔍 ЭТАП 3: Поиск откликов без детальной информации...");
+  // ЭТАП 2: Определяем отклики без детальной информации
+  console.log("\n🔍 ЭТАП 2: Поиск откликов без детальной информации...");
   const responsesNeedingDetails =
     await filterResponsesNeedingDetails(allResponses);
 
@@ -55,8 +54,8 @@ export async function parseResponses(
     return allResponses;
   }
 
-  // ЭТАП 4: Парсим детальную информацию резюме
-  console.log("\n📊 ЭТАП 4: Парсинг детальной информации резюме...");
+  // ЭТАП 3: Парсим детальную информацию резюме
+  console.log("\n📊 ЭТАП 3: Парсинг детальной информации резюме...");
   await parseResponseDetails(page, responsesNeedingDetails, vacancyId);
 
   console.log(
@@ -67,14 +66,17 @@ export async function parseResponses(
 }
 
 /**
- * ЭТАП 1: Собирает все отклики со всех страниц
+ * ЭТАП 1: Собирает отклики со всех страниц и сразу сохраняет в базу
  */
-async function collectAllResponses(
+async function collectAndSaveResponses(
   page: Page,
-  vacancyId: string
+  vacancyId: string,
+  vacancyIdForSave: string
 ): Promise<ResponseWithId[]> {
   const allResponses: ResponseWithId[] = [];
   let currentPage = 0;
+  let totalSaved = 0;
+  let totalSkipped = 0;
 
   while (true) {
     const pageUrl =
@@ -137,71 +139,64 @@ async function collectAllResponses(
       break;
     }
 
-    // Извлекаем resumeId для каждого отклика
+    console.log(
+      `✅ Страница ${currentPage}: найдено ${pageResponses.length} откликов`
+    );
+
+    // Обрабатываем и сохраняем отклики с текущей страницы
+    let pageSaved = 0;
+    let pageSkipped = 0;
+
     for (const response of pageResponses) {
       if (response.url) {
         const resumeId = extractResumeId(response.url);
         if (resumeId) {
-          allResponses.push({
+          const responseWithId: ResponseWithId = {
             ...response,
             resumeId,
-          });
+          };
+
+          allResponses.push(responseWithId);
+
+          // Сразу сохраняем в базу
+          const saved = await saveBasicResponse(
+            vacancyIdForSave,
+            resumeId,
+            response.url,
+            response.name
+          );
+
+          if (saved) {
+            pageSaved++;
+          } else {
+            pageSkipped++;
+          }
         } else {
           console.log(`⚠️ Не удалось извлечь ID из URL: ${response.url}`);
         }
       }
     }
 
+    totalSaved += pageSaved;
+    totalSkipped += pageSkipped;
+
     console.log(
-      `✅ Страница ${currentPage}: найдено ${pageResponses.length} откликов`
+      `💾 Страница ${currentPage}: сохранено ${pageSaved}, пропущено ${pageSkipped}`
     );
 
     currentPage++;
     await humanDelay(1500, 3000);
   }
 
+  console.log(
+    `\n✅ Итого: собрано ${allResponses.length}, сохранено новых ${totalSaved}, пропущено (уже в базе) ${totalSkipped}`
+  );
+
   return allResponses;
 }
 
 /**
- * ЭТАП 2: Сохраняет базовую информацию всех новых откликов
- */
-async function saveBasicResponses(
-  responses: ResponseWithId[],
-  vacancyId: string
-): Promise<void> {
-  let savedCount = 0;
-  let skippedCount = 0;
-
-  for (let i = 0; i < responses.length; i++) {
-    const response = responses[i];
-    if (!response) continue;
-
-    const exists = await checkResponseExists(response.resumeId);
-
-    if (!exists) {
-      await saveBasicResponse(
-        vacancyId,
-        response.resumeId,
-        response.url,
-        response.name
-      );
-      savedCount++;
-    } else {
-      skippedCount++;
-      console.log(
-        `⏭️ Пропуск ${i + 1}/${responses.length}: ${response.name} (уже в базе)`
-      );
-    }
-  }
-
-  console.log(
-    `✅ Сохранено новых: ${savedCount}, Пропущено (уже в базе): ${skippedCount}`
-  );
-}
-
-/**
- * ЭТАП 3: Фильтрует отклики, которым нужна детальная информация
+ * ЭТАП 2: Фильтрует отклики, которым нужна детальная информация
  */
 async function filterResponsesNeedingDetails(
   responses: ResponseWithId[]
@@ -230,7 +225,7 @@ async function filterResponsesNeedingDetails(
 }
 
 /**
- * ЭТАП 4: Парсит детальную информацию резюме и обновляет записи
+ * ЭТАП 3: Парсит детальную информацию резюме и обновляет записи
  */
 async function parseResponseDetails(
   page: Page,

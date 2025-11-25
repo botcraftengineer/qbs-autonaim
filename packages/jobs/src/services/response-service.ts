@@ -17,13 +17,14 @@ export async function checkResponseExists(resumeId: string): Promise<boolean> {
 
 /**
  * Сохраняет базовую информацию об отклике (без детальной информации резюме)
+ * @returns true если отклик был сохранен, false если уже существовал
  */
 export async function saveBasicResponse(
   vacancyId: string,
   resumeId: string,
   resumeUrl: string,
   candidateName: string
-) {
+): Promise<boolean> {
   try {
     const existingResponse = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.resumeId, resumeId),
@@ -44,11 +45,14 @@ export async function saveBasicResponse(
         courses: "",
       });
       console.log(`✅ Базовая информация сохранена: ${candidateName}`);
-    } else {
-      console.log(`ℹ️ Отклик уже существует: ${candidateName}`);
+      return true;
     }
+
+    console.log(`⏭️ Пропуск: ${candidateName} (уже в базе)`);
+    return false;
   } catch (error) {
     console.error(`❌ Ошибка сохранения базовой информации:`, error);
+    return false;
   }
 }
 
