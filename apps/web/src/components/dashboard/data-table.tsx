@@ -129,7 +129,7 @@ function DragHandle({ id }: { id: number }) {
       className="text-muted-foreground size-7 hover:bg-transparent"
     >
       <IconGripVertical className="text-muted-foreground size-3" />
-      <span className="sr-only">Перетащите для изменения порядка</span>
+      <span className="sr-only">Drag to reorder</span>
     </Button>
   );
 }
@@ -145,9 +145,9 @@ function TargetCell({ row }: { row: Row<z.infer<typeof schema>> }) {
 
   const onSubmit = async (_data: TargetFormData) => {
     toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-      loading: `Сохранение ${row.original.header}`,
-      success: "Готово",
-      error: "Ошибка",
+      loading: `Saving ${row.original.header}`,
+      success: "Done",
+      error: "Error",
     });
   };
 
@@ -163,7 +163,7 @@ function TargetCell({ row }: { row: Row<z.infer<typeof schema>> }) {
                 htmlFor={`${row.original.id}-target`}
                 className="sr-only"
               >
-                Цель
+                Target
               </FormLabel>
               <FormControl>
                 <Input
@@ -209,7 +209,7 @@ function LimitCell({ row }: { row: Row<z.infer<typeof schema>> }) {
                 htmlFor={`${row.original.id}-limit`}
                 className="sr-only"
               >
-                Лимит
+                Limit
               </FormLabel>
               <FormControl>
                 <Input
@@ -298,14 +298,14 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
   },
   {
     accessorKey: "limit",
-    header: () => <div className="w-full text-right">Лимит</div>,
+    header: () => <div className="w-full text-right">Limit</div>,
     cell: ({ row }) => <LimitCell row={row} />,
   },
   {
     accessorKey: "reviewer",
-    header: "Проверяющий",
+    header: "Reviewer",
     cell: ({ row }) => {
-      const isAssigned = row.original.reviewer !== "Назначить проверяющего";
+      const isAssigned = row.original.reviewer !== "Assign reviewer";
 
       if (isAssigned) {
         return row.original.reviewer;
@@ -322,7 +322,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
               size="sm"
               id={`${row.original.id}-reviewer`}
             >
-              <SelectValue placeholder="Назначить проверяющего" />
+              <SelectValue placeholder="Assign reviewer" />
             </SelectTrigger>
             <SelectContent align="end">
               <SelectItem value="Eddie Lake">Eddie Lake</SelectItem>
@@ -346,7 +346,7 @@ const columns: ColumnDef<z.infer<typeof schema>>[] = [
             size="icon"
           >
             <IconDotsVertical />
-            <span className="sr-only">Открыть меню</span>
+            <span className="sr-only">Open menu</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-32">
@@ -469,21 +469,21 @@ export function DataTable({
             <SelectValue placeholder="Select a view" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="outline">Структура</SelectItem>
-            <SelectItem value="past-performance">Прошлые результаты</SelectItem>
-            <SelectItem value="key-personnel">Ключевой персонал</SelectItem>
-            <SelectItem value="focus-documents">Основные документы</SelectItem>
+            <SelectItem value="outline">Outline</SelectItem>
+            <SelectItem value="past-performance">Past Performance</SelectItem>
+            <SelectItem value="key-personnel">Key Personnel</SelectItem>
+            <SelectItem value="focus-documents">Focus Documents</SelectItem>
           </SelectContent>
         </Select>
         <TabsList className="**:data-[slot=badge]:bg-muted-foreground/30 hidden **:data-[slot=badge]:size-5 **:data-[slot=badge]:rounded-full **:data-[slot=badge]:px-1 @4xl/main:flex">
-          <TabsTrigger value="outline">Структура</TabsTrigger>
+          <TabsTrigger value="outline">Outline</TabsTrigger>
           <TabsTrigger value="past-performance">
-            Прошлые результаты <Badge variant="secondary">3</Badge>
+            Past Performance <Badge variant="secondary">3</Badge>
           </TabsTrigger>
           <TabsTrigger value="key-personnel">
-            Ключевой персонал <Badge variant="secondary">2</Badge>
+            Key Personnel <Badge variant="secondary">2</Badge>
           </TabsTrigger>
-          <TabsTrigger value="focus-documents">Основные документы</TabsTrigger>
+          <TabsTrigger value="focus-documents">Focus Documents</TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
           <DropdownMenu>
@@ -572,7 +572,7 @@ export function DataTable({
                       colSpan={columns.length}
                       className="h-24 text-center"
                     >
-                      Нет результатов.
+                      No results.
                     </TableCell>
                   </TableRow>
                 )}
@@ -582,13 +582,13 @@ export function DataTable({
         </div>
         <div className="flex items-center justify-between px-4">
           <div className="text-muted-foreground hidden flex-1 text-sm lg:flex">
-            {table.getFilteredSelectedRowModel().rows.length} из{" "}
-            {table.getFilteredRowModel().rows.length} строк выбрано.
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
           </div>
           <div className="flex w-full items-center gap-8 lg:w-fit">
             <div className="hidden items-center gap-2 lg:flex">
               <Label htmlFor="rows-per-page" className="text-sm font-medium">
-                Строк на странице
+                Rows per page
               </Label>
               <Select
                 value={`${table.getState().pagination.pageSize}`}
@@ -611,7 +611,7 @@ export function DataTable({
               </Select>
             </div>
             <div className="flex w-fit items-center justify-center text-sm font-medium">
-              Страница {table.getState().pagination.pageIndex + 1} из{" "}
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
               {table.getPageCount()}
             </div>
             <div className="ml-auto flex items-center gap-2 lg:ml-0">
@@ -621,7 +621,7 @@ export function DataTable({
                 onClick={() => table.setPageIndex(0)}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Перейти на первую страницу</span>
+                <span className="sr-only">Go to first page</span>
                 <IconChevronsLeft />
               </Button>
               <Button
@@ -631,7 +631,7 @@ export function DataTable({
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
               >
-                <span className="sr-only">Перейти на предыдущую страницу</span>
+                <span className="sr-only">Go to previous page</span>
                 <IconChevronLeft />
               </Button>
               <Button
@@ -641,7 +641,7 @@ export function DataTable({
                 onClick={() => table.nextPage()}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Перейти на следующую страницу</span>
+                <span className="sr-only">Go to next page</span>
                 <IconChevronRight />
               </Button>
               <Button
@@ -651,7 +651,7 @@ export function DataTable({
                 onClick={() => table.setPageIndex(table.getPageCount() - 1)}
                 disabled={!table.getCanNextPage()}
               >
-                <span className="sr-only">Перейти на последнюю страницу</span>
+                <span className="sr-only">Go to last page</span>
                 <IconChevronsRight />
               </Button>
             </div>

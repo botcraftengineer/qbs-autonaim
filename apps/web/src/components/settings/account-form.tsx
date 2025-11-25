@@ -55,11 +55,11 @@ export function AccountForm({
   const updateAccount = useMutation(
     trpc.user.updateAccount.mutationOptions({
       onSuccess: async () => {
-        toast.success("Account updated successfully");
+        toast.success("Аккаунт успешно обновлен");
         await queryClient.invalidateQueries(trpc.user.pathFilter());
       },
       onError: (err) => {
-        toast.error(err.message || "Failed to update account");
+        toast.error(err.message || "Не удалось обновить аккаунт");
       },
     })
   );
