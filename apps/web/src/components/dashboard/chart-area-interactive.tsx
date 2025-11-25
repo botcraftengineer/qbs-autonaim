@@ -121,14 +121,14 @@ const chartData = [
 
 const chartConfig = {
   visitors: {
-    label: "Visitors",
+    label: "Посетители",
   },
   desktop: {
-    label: "Desktop",
+    label: "Десктоп",
     color: "var(--primary)",
   },
   mobile: {
-    label: "Mobile",
+    label: "Мобильные",
     color: "var(--primary)",
   },
 } satisfies ChartConfig;
@@ -160,12 +160,12 @@ export function ChartAreaInteractive() {
   return (
     <Card className="@container/card">
       <CardHeader>
-        <CardTitle>Total Visitors</CardTitle>
+        <CardTitle>Всего посетителей</CardTitle>
         <CardDescription>
           <span className="hidden @[540px]/card:block">
-            Total for the last 3 months
+            Всего за последние 3 месяца
           </span>
-          <span className="@[540px]/card:hidden">Last 3 months</span>
+          <span className="@[540px]/card:hidden">Последние 3 месяца</span>
         </CardDescription>
         <CardAction>
           <ToggleGroup
@@ -175,27 +175,27 @@ export function ChartAreaInteractive() {
             variant="outline"
             className="hidden *:data-[slot=toggle-group-item]:!px-4 @[767px]/card:flex"
           >
-            <ToggleGroupItem value="90d">Last 3 months</ToggleGroupItem>
-            <ToggleGroupItem value="30d">Last 30 days</ToggleGroupItem>
-            <ToggleGroupItem value="7d">Last 7 days</ToggleGroupItem>
+            <ToggleGroupItem value="90d">Последние 3 месяца</ToggleGroupItem>
+            <ToggleGroupItem value="30d">Последние 30 дней</ToggleGroupItem>
+            <ToggleGroupItem value="7d">Последние 7 дней</ToggleGroupItem>
           </ToggleGroup>
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger
               className="flex w-40 **:data-[slot=select-value]:block **:data-[slot=select-value]:truncate @[767px]/card:hidden"
               size="sm"
-              aria-label="Select a value"
+              aria-label="Выберите значение"
             >
-              <SelectValue placeholder="Last 3 months" />
+              <SelectValue placeholder="Последние 3 месяца" />
             </SelectTrigger>
             <SelectContent className="rounded-xl">
               <SelectItem value="90d" className="rounded-lg">
-                Last 3 months
+                Последние 3 месяца
               </SelectItem>
               <SelectItem value="30d" className="rounded-lg">
-                Last 30 days
+                Последние 30 дней
               </SelectItem>
               <SelectItem value="7d" className="rounded-lg">
-                Last 7 days
+                Последние 7 дней
               </SelectItem>
             </SelectContent>
           </Select>

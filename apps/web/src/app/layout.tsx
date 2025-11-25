@@ -11,13 +11,15 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
       ? "https://turbo.t3.gg"
-      : "http://localhost:3000",
+      : "http://localhost:3000"
   ),
   title: "Bun Turbo Starter",
-  description: "Simple monorepo with shared backend for web & mobile apps",
+  description:
+    "Простой монорепозиторий с общим бэкендом для веб и мобильных приложений",
   openGraph: {
     title: "Bun Turbo Starter",
-    description: "Simple monorepo with shared backend for web & mobile apps",
+    description:
+      "Простой монорепозиторий с общим бэкендом для веб и мобильных приложений",
     url: "https://bun-turbo-starter.vercel.app",
     siteName: "Bun Turbo Starter",
   },
@@ -41,12 +43,12 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <body
         className={cn(
           "bg-background text-foreground min-h-screen font-sans antialiased",
           geistSans.variable,
-          geistMono.variable,
+          geistMono.variable
         )}
       >
         <ThemeProvider>

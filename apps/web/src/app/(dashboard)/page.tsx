@@ -1,11 +1,5 @@
-import {
-  ChartAreaInteractive,
-  DataTable,
-  SectionCards,
-} from "~/components/dashboard";
+import { ChartAreaInteractive, SectionCards } from "~/components/dashboard";
 import { SiteHeader } from "~/components/layout";
-
-import data from "./data.json";
 
 export default async function Page() {
   return (
@@ -18,7 +12,6 @@ export default async function Page() {
             <div className="px-4 lg:px-6">
               <ChartAreaInteractive />
             </div>
-            <DataTable data={data} />
           </div>
         </div>
       </div>
