@@ -10,104 +10,37 @@ import {
   SidebarMenuItem,
 } from "@selectio/ui";
 import {
-  IconCamera,
-  IconChartBar,
   IconDashboard,
-  IconDatabase,
-  IconFileAi,
   IconFileDescription,
-  IconFileWord,
-  IconFolder,
-  IconHelp,
   IconInnerShadowTop,
   IconListDetails,
-  IconReport,
-  IconSearch,
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react";
 import type * as React from "react";
-import {
-  NavDocuments,
-  NavMain,
-  NavSecondary,
-  NavUser,
-} from "~/components/sidebar";
+import { NavMain, NavSecondary, NavUser } from "~/components/sidebar";
 
 const data = {
   navMain: [
     {
       title: "Панель управления",
-      url: "#",
+      url: "/",
       icon: IconDashboard,
     },
     {
-      title: "Жизненный цикл",
-      url: "#",
+      title: "Вакансии",
+      url: "/vacancies",
+      icon: IconFileDescription,
+    },
+    {
+      title: "Отклики",
+      url: "/responses",
       icon: IconListDetails,
     },
     {
-      title: "Аналитика",
-      url: "#",
-      icon: IconChartBar,
-    },
-    {
-      title: "Проекты",
-      url: "#",
-      icon: IconFolder,
-    },
-    {
-      title: "Команда",
-      url: "#",
+      title: "Кандидаты",
+      url: "/candidates",
       icon: IconUsers,
-    },
-  ],
-  navClouds: [
-    {
-      title: "Захват",
-      icon: IconCamera,
-      isActive: true,
-      url: "#",
-      items: [
-        {
-          title: "Активные предложения",
-          url: "#",
-        },
-        {
-          title: "Архив",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Предложение",
-      icon: IconFileDescription,
-      url: "#",
-      items: [
-        {
-          title: "Активные предложения",
-          url: "#",
-        },
-        {
-          title: "Архив",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Подсказки",
-      icon: IconFileAi,
-      url: "#",
-      items: [
-        {
-          title: "Активные предложения",
-          url: "#",
-        },
-        {
-          title: "Архив",
-          url: "#",
-        },
-      ],
     },
   ],
   navSecondary: [
@@ -115,33 +48,6 @@ const data = {
       title: "Настройки",
       url: "/settings",
       icon: IconSettings,
-    },
-    {
-      title: "Помощь",
-      url: "#",
-      icon: IconHelp,
-    },
-    {
-      title: "Поиск",
-      url: "#",
-      icon: IconSearch,
-    },
-  ],
-  documents: [
-    {
-      name: "Библиотека данных",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Отчеты",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Помощник Word",
-      url: "#",
-      icon: IconFileWord,
     },
   ],
 };
@@ -175,7 +81,6 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
