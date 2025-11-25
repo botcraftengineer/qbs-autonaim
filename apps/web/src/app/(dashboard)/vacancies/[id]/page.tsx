@@ -25,12 +25,15 @@ import { api } from "~/trpc/server";
 
 interface VacancyDetailPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }
 
 export default async function VacancyDetailPage({
   params,
+  searchParams,
 }: VacancyDetailPageProps) {
   const { id } = await params;
+  const { tab } = await searchParams;
   const caller = await api();
   const [vacancy, responses] = await Promise.all([
     caller.vacancy.getById({ id }),
@@ -57,7 +60,7 @@ export default async function VacancyDetailPage({
                 </Link>
               </div>
 
-              <Tabs defaultValue="overview" className="space-y-6">
+              <Tabs defaultValue={tab || "overview"} className="space-y-6">
                 <TabsList>
                   <TabsTrigger value="overview">Обзор</TabsTrigger>
                   <TabsTrigger value="responses">

@@ -63,7 +63,12 @@ export default async function VacanciesPage() {
                             {vacancy.views}
                           </TableCell>
                           <TableCell className="text-right">
-                            {vacancy.responses}
+                            <Link
+                              href={`/vacancies/${vacancy.id}?tab=responses`}
+                              className="font-medium hover:underline text-primary"
+                            >
+                              {vacancy.responses}
+                            </Link>
                           </TableCell>
                           <TableCell className="text-right">
                             {vacancy.newResponses ? (
