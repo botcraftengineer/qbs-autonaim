@@ -34,6 +34,7 @@ export const vacancyResponse = pgTable("vacancy_responses", {
   vacancyId: varchar("vacancy_id", { length: 50 })
     .notNull()
     .references(() => vacancy.id, { onDelete: "cascade" }),
+  resumeId: varchar("resume_id", { length: 100 }).notNull(),
   resumeUrl: text("resume_url").notNull(),
   candidateName: varchar("candidate_name", { length: 500 }),
   status: responseStatusEnum("status").default("NEW").notNull(),
@@ -52,6 +53,7 @@ export const vacancyResponse = pgTable("vacancy_responses", {
 
 export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   vacancyId: z.string().max(50),
+  resumeId: z.string().max(100),
   resumeUrl: z.string(),
   candidateName: z.string().max(500).optional(),
   status: z

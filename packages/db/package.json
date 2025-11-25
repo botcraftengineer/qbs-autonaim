@@ -4,15 +4,12 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
     },
     "./client": {
-      "types": "./dist/client.d.ts",
       "default": "./src/client.ts"
     },
     "./schema": {
-      "types": "./dist/schema/index.d.ts",
       "default": "./src/schema/index.ts"
     }
   },

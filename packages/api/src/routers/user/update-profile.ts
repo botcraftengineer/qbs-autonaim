@@ -1,7 +1,8 @@
-import { eq, user } from "@selectio/db";
+import { eq } from "@selectio/db";
 import { profileFormSchema } from "@selectio/validators";
 
 import { protectedProcedure } from "../../trpc";
+import { user } from "@selectio/db/schema";
 
 export const updateProfile = protectedProcedure
   .input(profileFormSchema)

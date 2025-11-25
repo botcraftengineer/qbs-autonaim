@@ -28,6 +28,7 @@ export interface ResumeExperience {
 
 export interface SaveResponseData {
   vacancyId: string;
+  resumeId: string;
   resumeUrl: string;
   candidateName: string;
   experience: string;

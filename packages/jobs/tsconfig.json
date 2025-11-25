@@ -1,11 +1,7 @@
 {
   "extends": "@selectio/tsconfig/base.json",
   "compilerOptions": {
-    "outDir": "dist",
-    "rootDir": "src"
+    "outDir": "dist"
   },
-  "include": [
-    "src",
-    "trigger.config.ts"
-  ]
+  "include": ["src", "trigger.config.ts"]
 }

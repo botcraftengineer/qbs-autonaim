@@ -7,19 +7,24 @@ import type { ResponseData } from "../types";
 import { HH_CONFIG } from "./config";
 import { humanDelay, humanScroll, randomDelay } from "./human-behavior";
 import { parseResumeExperience } from "./resume-parser";
+import { extractResumeId } from "./utils";
 
 export async function parseResponses(
   page: Page,
   url: string,
   vacancyId: string
 ): Promise<ResponseData[]> {
-  const allResponses: ResponseData[] = [];
   let currentPage = 0;
   let hasMorePages = true;
+  let totalProcessedCount = 0;
+  let totalSkippedCount = 0;
+  let totalFoundCount = 0;
 
   // Извлекаем vacancyId из URL если он там есть
   const urlObj = new URL(url, HH_CONFIG.urls.baseUrl);
   const urlVacancyId = urlObj.searchParams.get("vacancyId") || vacancyId;
+
+  console.log(`🚀 Начинаем парсинг откликов для вакансии ${urlVacancyId}`);
 
   while (hasMorePages) {
     // Формируем URL для текущей страницы
@@ -29,7 +34,7 @@ export async function parseResponses(
         : `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}&page=${currentPage}`;
 
     console.log(
-      `📄 Переход на страницу откликов: ${pageUrl} (страница ${currentPage})`
+      `\n📄 Переход на страницу откликов: ${pageUrl} (страница ${currentPage})`
     );
 
     try {
@@ -70,7 +75,7 @@ export async function parseResponses(
     // Парсим отклики на текущей странице
     const pageResponses = await page.$$eval(
       'div[data-qa="vacancy-real-responses"] [data-resume-id]',
-      (elements: Array<Element>) => {
+      (elements: Element[]) => {
         return elements.map((el) => {
           const link = el.querySelector('a[data-qa*="serp-item__title"]');
           const url = link ? link.getAttribute("href") : "";
@@ -98,108 +103,113 @@ export async function parseResponses(
     console.log(
       `✅ Найдено откликов на странице ${currentPage}: ${pageResponses.length}`
     );
-    allResponses.push(...pageResponses);
+    totalFoundCount += pageResponses.length;
+
+    // Обрабатываем отклики сразу на текущей странице
+    for (let i = 0; i < pageResponses.length; i++) {
+      const response = pageResponses[i];
+      if (response?.url) {
+        try {
+          // Извлекаем ID резюме из URL
+          const resumeId = extractResumeId(response.url);
+          if (!resumeId) {
+            console.log(
+              `⚠️ Не удалось извлечь ID резюме из URL: ${response.url}`
+            );
+            continue;
+          }
+
+          // Проверяем, существует ли уже отклик в базе по resumeId
+          const exists = await checkResponseExists(resumeId);
+          if (exists) {
+            totalSkippedCount++;
+            console.log(
+              `⏭️ Пропуск ${i + 1}/${pageResponses.length}: ${
+                response.name
+              } (уже в базе)`
+            );
+            continue;
+          }
+
+          totalProcessedCount++;
+          console.log(
+            `\n📊 Обработка ${i + 1}/${pageResponses.length}: ${response.name}`
+          );
+
+          // Случайная задержка между просмотром резюме (имитация человека)
+          if (totalProcessedCount > 1) {
+            const delay = randomDelay(3000, 8000);
+            console.log(
+              `⏳ Пауза ${Math.round(delay / 1000)}с перед следующим резюме...`
+            );
+            await new Promise((resolve) => setTimeout(resolve, delay));
+          }
+
+          const experienceData = await parseResumeExperience(
+            page,
+            response.url
+          );
+
+          await saveResponseToDb({
+            vacancyId,
+            resumeId,
+            resumeUrl: response.url,
+            candidateName: response.name,
+            experience: experienceData.experience,
+            contacts: experienceData.contacts,
+            languages: experienceData.languages,
+            about: experienceData.about,
+            education: experienceData.education,
+            courses: experienceData.courses,
+          });
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
+          console.error(
+            `❌ Ошибка обработки отклика ${response.name}:`,
+            errorMessage
+          );
+
+          // Если это ошибка detached frame, пытаемся восстановить страницу
+          if (
+            errorMessage.includes("detached") ||
+            errorMessage.includes("disposed")
+          ) {
+            console.log(
+              "🔄 Попытка восстановления после ошибки detached frame..."
+            );
+            try {
+              // Возвращаемся на страницу откликов
+              await page.goto(pageUrl, {
+                waitUntil: "networkidle2",
+                timeout: 30000,
+              });
+              await humanDelay(2000, 3000);
+            } catch (recoveryError) {
+              console.error(
+                "❌ Не удалось восстановить страницу:",
+                recoveryError
+              );
+            }
+          }
+
+          // Пауза после ошибки
+          await humanDelay(3000, 5000);
+        }
+      }
+    }
 
     // Переходим к следующей странице
     currentPage++;
+    console.log(
+      `\n📈 Промежуточная статистика: Обработано новых: ${totalProcessedCount}, Пропущено: ${totalSkippedCount}, Найдено на странице: ${pageResponses.length}`
+    );
     await humanDelay(2000, 4000);
   }
 
-  console.log(`✅ Всего найдено откликов: ${allResponses.length}`);
-
-  // Сохраняем все отклики
-  let processedCount = 0;
-  let skippedCount = 0;
-
-  for (let i = 0; i < allResponses.length; i++) {
-    const response = allResponses[i];
-    if (response?.url) {
-      try {
-        // Проверяем, существует ли уже отклик в базе
-        const exists = await checkResponseExists(response.url);
-        if (exists) {
-          skippedCount++;
-          console.log(
-            `⏭️ Пропуск кандидата ${i + 1}/${allResponses.length}: ${
-              response.name
-            } (уже в базе)`
-          );
-          continue;
-        }
-
-        processedCount++;
-        console.log(
-          `\n📊 Обработка кандидата ${i + 1}/${allResponses.length}: ${
-            response.name
-          }`
-        );
-
-        // Случайная задержка между просмотром резюме (имитация человека)
-        if (processedCount > 1) {
-          const delay = randomDelay(3000, 8000);
-          console.log(
-            `⏳ Пауза ${Math.round(delay / 1000)}с перед следующим резюме...`
-          );
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-
-        const experienceData = await parseResumeExperience(page, response.url);
-
-        await saveResponseToDb({
-          vacancyId,
-          resumeUrl: response.url,
-          candidateName: response.name,
-          experience: experienceData.experience,
-          contacts: experienceData.contacts,
-          languages: experienceData.languages,
-          about: experienceData.about,
-          education: experienceData.education,
-          courses: experienceData.courses,
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : String(error);
-        console.error(
-          `❌ Ошибка обработки отклика ${response.name}:`,
-          errorMessage
-        );
-
-        // Если это ошибка detached frame, пытаемся восстановить страницу
-        if (
-          errorMessage.includes("detached") ||
-          errorMessage.includes("disposed")
-        ) {
-          console.log(
-            "🔄 Попытка восстановления после ошибки detached frame..."
-          );
-          try {
-            // Возвращаемся на страницу откликов
-            const recoveryUrl =
-              currentPage === 0
-                ? `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}`
-                : `https://hh.ru/employer/vacancyresponses?vacancyId=${urlVacancyId}&page=${currentPage - 1}`;
-            await page.goto(recoveryUrl, {
-              waitUntil: "networkidle2",
-              timeout: 30000,
-            });
-            await humanDelay(2000, 3000);
-          } catch (recoveryError) {
-            console.error(
-              "❌ Не удалось восстановить страницу:",
-              recoveryError
-            );
-          }
-        }
-
-        // Пауза после ошибки
-        await humanDelay(3000, 5000);
-      }
-    }
-  }
-
   console.log(
-    `\n📊 Итоговая статистика: Обработано новых: ${processedCount}, Пропущено (уже в базе): ${skippedCount}, Всего: ${allResponses.length}`
+    `\n🎉 Итоговая статистика: Обработано новых: ${totalProcessedCount}, Пропущено (уже в базе): ${totalSkippedCount}, Всего найдено: ${totalFoundCount}`
   );
 
-  return allResponses;
+  return [];
 }

@@ -1,7 +1,8 @@
-import { desc, eq, vacancyResponse } from "@selectio/db";
+import { desc, eq } from "@selectio/db";
 import { z } from "zod/v4";
 
 import { protectedProcedure } from "../../../trpc";
+import { vacancyResponse } from "@selectio/db/schema";
 
 export const list = protectedProcedure
   .input(z.object({ vacancyId: z.string() }))

@@ -3,10 +3,10 @@ import { db } from "@selectio/db/client";
 import { vacancyResponse } from "@selectio/db/schema";
 import type { SaveResponseData } from "../parsers/types";
 
-export async function checkResponseExists(resumeUrl: string): Promise<boolean> {
+export async function checkResponseExists(resumeId: string): Promise<boolean> {
   try {
     const existingResponse = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeUrl, resumeUrl),
+      where: eq(vacancyResponse.resumeId, resumeId),
     });
     return !!existingResponse;
   } catch (error) {
@@ -18,12 +18,13 @@ export async function checkResponseExists(resumeUrl: string): Promise<boolean> {
 export async function saveResponseToDb(response: SaveResponseData) {
   try {
     const existingResponse = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeUrl, response.resumeUrl),
+      where: eq(vacancyResponse.resumeId, response.resumeId),
     });
 
     if (!existingResponse) {
       await db.insert(vacancyResponse).values({
         vacancyId: response.vacancyId,
+        resumeId: response.resumeId,
         resumeUrl: response.resumeUrl,
         candidateName: response.candidateName,
         status: "NEW",
