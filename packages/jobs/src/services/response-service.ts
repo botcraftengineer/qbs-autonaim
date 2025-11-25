@@ -16,6 +16,10 @@ export async function saveResponseToDb(response: SaveResponseData) {
         candidateName: response.candidateName,
         experience: response.experience,
         contacts: response.contacts,
+        languages: response.languages,
+        about: response.about,
+        education: response.education,
+        courses: response.courses,
       });
       console.log(`✅ Отклик сохранен: ${response.candidateName}`);
     } else {
