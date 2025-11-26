@@ -289,28 +289,10 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
               <TableHead>
                 <button
                   type="button"
-                  onClick={() => handleSort("score")}
-                  className="flex items-center gap-1 hover:text-foreground transition-colors"
-                >
-                  Оценка
-                  {sortField === "score" ? (
-                    sortDirection === "asc" ? (
-                      <ArrowUp className="h-4 w-4" />
-                    ) : (
-                      <ArrowDown className="h-4 w-4" />
-                    )
-                  ) : (
-                    <ArrowUpDown className="h-4 w-4 opacity-50" />
-                  )}
-                </button>
-              </TableHead>
-              <TableHead>
-                <button
-                  type="button"
                   onClick={() => handleSort("detailedScore")}
                   className="flex items-center gap-1 hover:text-foreground transition-colors"
                 >
-                  Детальная
+                  Скрининг
                   {sortField === "detailedScore" ? (
                     sortDirection === "asc" ? (
                       <ArrowUp className="h-4 w-4" />
@@ -331,7 +313,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
           <TableBody>
             {responses.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={9} className="h-[200px]">
+                <TableCell colSpan={8} className="h-[200px]">
                   <div className="flex items-center justify-center">
                     <p className="text-muted-foreground">Нет откликов</p>
                   </div>

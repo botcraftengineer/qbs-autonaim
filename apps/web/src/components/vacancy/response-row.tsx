@@ -9,6 +9,7 @@ import { ExternalLink, User } from "lucide-react";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ContactInfo } from "./contact-info";
 import { ScreenResponseButton } from "./screen-response-button";
+import { ScreeningHoverCard } from "./screening-hover-card";
 
 interface ResponseRowProps {
   response: VacancyResponse;
@@ -56,30 +57,7 @@ export function ResponseRow({
       </TableCell>
       <TableCell>
         {response.screening ? (
-          <div className="flex items-center gap-2">
-            <span
-              className={`text-lg font-bold ${
-                response.screening.score >= 4
-                  ? "text-green-600"
-                  : response.screening.score >= 3
-                    ? "text-yellow-600"
-                    : "text-red-600"
-              }`}
-            >
-              {response.screening.score}/5
-            </span>
-          </div>
-        ) : (
-          <span className="text-muted-foreground text-sm">—</span>
-        )}
-      </TableCell>
-      <TableCell>
-        {response.screening?.detailedScore !== undefined ? (
-          <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-primary">
-              {response.screening.detailedScore}/100
-            </span>
-          </div>
+          <ScreeningHoverCard screening={response.screening} />
         ) : (
           <span className="text-muted-foreground text-sm">—</span>
         )}
