@@ -15,6 +15,7 @@ import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
   GenerateRequirementsButton,
+  VacancyAnalytics,
   VacancyHeader,
   VacancyStats,
 } from "~/components/vacancy";
@@ -39,6 +40,10 @@ export default function VacancyDetailPage({
   const { data: responses, isLoading: responsesLoading } = useQuery(
     trpc.vacancy.responses.list.queryOptions({ vacancyId: id })
   );
+  const { data: analytics } = useQuery({
+    ...trpc.vacancy.getAnalytics.queryOptions({ vacancyId: id }),
+    enabled: !!id,
+  });
 
   const isLoading = vacancyLoading || responsesLoading;
 
@@ -112,6 +117,16 @@ export default function VacancyDetailPage({
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-6">
+                  {analytics && (
+                    <VacancyAnalytics
+                      totalResponses={analytics.totalResponses}
+                      processedResponses={analytics.processedResponses}
+                      highScoreResponses={analytics.highScoreResponses}
+                      topScoreResponses={analytics.topScoreResponses}
+                      avgScore={analytics.avgScore}
+                    />
+                  )}
+
                   <div className="rounded-lg border p-6 space-y-6">
                     <VacancyHeader
                       title={vacancy.title}
