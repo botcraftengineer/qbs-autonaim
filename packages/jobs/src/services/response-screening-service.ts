@@ -7,7 +7,7 @@ import { responseScreeningResultSchema } from "../schemas/response-screening.sch
 import type { VacancyRequirements } from "../types/screening";
 import { extractJsonFromText } from "../utils/json-extractor";
 import { getVacancyRequirements } from "./screening-prompt-service";
-
+import "../instrumentation";
 /**
  * Скринит отклик и генерирует вопросы для кандидата
  */
@@ -36,6 +36,7 @@ export async function screenResponse(responseId: string) {
     model: deepseek("deepseek-chat"),
     prompt,
     temperature: 0.3,
+    experimental_telemetry: { isEnabled: true },
   });
 
   console.log(`📥 Получен ответ от AI`);
@@ -48,6 +49,11 @@ export async function screenResponse(responseId: string) {
     analysis: result.analysis,
     questions: result.questions || [],
   });
+
+  await db
+    .update(vacancyResponse)
+    .set({ status: "EVALUATED" })
+    .where(eq(vacancyResponse.id, responseId));
 
   console.log(
     `✅ Результат скрининга сохранен: оценка ${result.score}/5, вопросов: ${result.questions?.length || 0}`

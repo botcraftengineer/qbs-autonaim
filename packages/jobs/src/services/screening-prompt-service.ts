@@ -32,6 +32,7 @@ export async function extractVacancyRequirements(
     model: deepseek("deepseek-chat"),
     prompt,
     temperature: 0.1,
+    experimental_telemetry: { isEnabled: true },
   });
 
   console.log(`📥 Получен ответ от AI`);
