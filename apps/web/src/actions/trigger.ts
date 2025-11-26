@@ -1,6 +1,6 @@
 "use server";
 
-import { auth, tasks } from "@trigger.dev/sdk/v3";
+import { auth, tasks } from "@trigger.dev/sdk";
 
 export async function createTriggerPublicToken(taskId: string) {
   try {

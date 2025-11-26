@@ -4,7 +4,7 @@ import { Button } from "@selectio/ui";
 import { useRealtimeTaskTrigger } from "@trigger.dev/react-hooks";
 
 import { Loader2, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScreeningResultModal } from "./screening-result-modal";
 
 interface ScreenResponseButtonProps {
@@ -19,19 +19,21 @@ export function ScreenResponseButton({
   candidateName,
 }: ScreenResponseButtonProps) {
   const [showModal, setShowModal] = useState(false);
-  const { submit, run } = useRealtimeTaskTrigger("screen-response", {
+  const { submit, run, isLoading } = useRealtimeTaskTrigger("screen-response", {
     accessToken,
   });
 
-  const handleClick = async () => {
-    await submit({ responseId });
+  useEffect(() => {
+    console.log("Run status changed:", run?.status);
+    if (run?.status === "COMPLETED" && run.output) {
+      console.log("Opening modal with result:", run.output);
+      setShowModal(true);
+    }
+  }, [run?.status, run?.output]);
+
+  const handleClick = () => {
+    submit({ responseId });
   };
-
-  const isRunning = run?.status === "EXECUTING" || run?.status === "QUEUED";
-
-  if (run?.status === "COMPLETED" && run.output && !showModal) {
-    setShowModal(true);
-  }
 
   return (
     <>
@@ -39,14 +41,14 @@ export function ScreenResponseButton({
         variant="outline"
         size="sm"
         onClick={handleClick}
-        disabled={!accessToken || isRunning}
+        disabled={!accessToken || isLoading}
       >
-        {isRunning ? (
+        {isLoading ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
         ) : (
           <Sparkles className="h-4 w-4 mr-1" />
         )}
-        {isRunning ? "Оценка..." : "Оценить"}
+        {isLoading ? "Оценка..." : "Оценить"}
       </Button>
 
       <ScreeningResultModal

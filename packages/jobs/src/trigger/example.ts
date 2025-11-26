@@ -1,4 +1,4 @@
-import { logger, task, wait } from "@trigger.dev/sdk/v3";
+import { logger, task, wait } from "@trigger.dev/sdk";
 
 export const helloWorldTask = task({
   id: "hello-world",
@@ -11,6 +11,6 @@ export const helloWorldTask = task({
 
     return {
       message: "Hello, world!",
-    }
+    };
   },
 });

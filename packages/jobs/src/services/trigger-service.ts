@@ -1,4 +1,4 @@
-import { tasks } from "@trigger.dev/sdk/v3";
+import { tasks } from "@trigger.dev/sdk";
 import type { extractVacancyRequirementsTask } from "../trigger/extract-vacancy-requirements";
 
 /**
