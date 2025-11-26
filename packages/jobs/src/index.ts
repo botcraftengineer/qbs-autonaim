@@ -13,7 +13,7 @@ export {
   getVacancyRequirements,
 } from "./services/screening-prompt-service";
 // Trigger tasks
-export { extractVacancyRequirementsTask } from "./trigger/generate-screening-prompt";
+export { extractVacancyRequirementsTask } from "./trigger/extract-vacancy-requirements";
 export { screenResponseTask } from "./trigger/screen-response";
 // Types
 export type {

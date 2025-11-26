@@ -1,5 +1,5 @@
 import { tasks } from "@trigger.dev/sdk/v3";
-import type { extractVacancyRequirementsTask } from "../trigger/generate-screening-prompt";
+import type { extractVacancyRequirementsTask } from "../trigger/extract-vacancy-requirements";
 
 /**
  * Запускает задание для извлечения требований вакансии через AI
