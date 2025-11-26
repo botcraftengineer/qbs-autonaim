@@ -2,10 +2,12 @@
 
 import { Button } from "@selectio/ui";
 import { useRealtimeTaskTrigger } from "@trigger.dev/react-hooks";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { Loader2, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ScreeningResultModal } from "./screening-result-modal";
+import { useTRPC } from "~/trpc/react";
 
 interface ScreenResponseButtonProps {
   responseId: string;
@@ -19,17 +21,24 @@ export function ScreenResponseButton({
   candidateName,
 }: ScreenResponseButtonProps) {
   const [showModal, setShowModal] = useState(false);
-  const { submit, run, isLoading } = useRealtimeTaskTrigger("screen-response", {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const { submit, run } = useRealtimeTaskTrigger("screen-response", {
     accessToken,
   });
 
+  const isRunning = run?.status === "DEQUEUED" || run?.status === "EXECUTING";
+
   useEffect(() => {
-    console.log("Run status changed:", run?.status);
     if (run?.status === "COMPLETED" && run.output) {
       console.log("Opening modal with result:", run.output);
       setShowModal(true);
+      void queryClient.invalidateQueries(
+        trpc.vacancy.responses.list.pathFilter()
+      );
     }
-  }, [run?.status, run?.output]);
+  }, [run?.status, run?.output, queryClient, trpc.vacancy.responses.list]);
 
   const handleClick = () => {
     submit({ responseId });
@@ -41,14 +50,14 @@ export function ScreenResponseButton({
         variant="outline"
         size="sm"
         onClick={handleClick}
-        disabled={!accessToken || isLoading}
+        disabled={!accessToken || isRunning}
       >
-        {isLoading ? (
+        {isRunning ? (
           <Loader2 className="h-4 w-4 mr-1 animate-spin" />
         ) : (
           <Sparkles className="h-4 w-4 mr-1" />
         )}
-        {isLoading ? "Оценка..." : "Оценить"}
+        {isRunning ? "Оценка..." : "Оценить"}
       </Button>
 
       <ScreeningResultModal

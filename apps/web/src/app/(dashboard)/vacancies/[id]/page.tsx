@@ -2,11 +2,6 @@
 
 import {
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Skeleton,
   Tabs,
   TabsContent,
@@ -19,10 +14,7 @@ import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
-  EmptyResponses,
   GenerateRequirementsButton,
-  ResponseCards,
-  ResponseTable,
   VacancyHeader,
   VacancyStats,
 } from "~/components/vacancy";
@@ -109,9 +101,13 @@ export default function VacancyDetailPage({
 
               <Tabs defaultValue={tab || "overview"} className="space-y-6">
                 <TabsList>
-                  <TabsTrigger value="overview">Обзор</TabsTrigger>
-                  <TabsTrigger value="responses">
-                    Отклики ({responses?.length ?? 0})
+                  <TabsTrigger value="overview" asChild>
+                    <Link href={`/vacancies/${id}`}>Обзор</Link>
+                  </TabsTrigger>
+                  <TabsTrigger value="responses" asChild>
+                    <Link href={`/vacancies/${id}/responses`}>
+                      Отклики ({responses?.length ?? 0})
+                    </Link>
                   </TabsTrigger>
                 </TabsList>
 
@@ -148,28 +144,6 @@ export default function VacancyDetailPage({
                       </div>
                     )}
                   </div>
-                </TabsContent>
-
-                <TabsContent value="responses" className="space-y-6">
-                  {!responses || responses.length === 0 ? (
-                    <EmptyResponses />
-                  ) : (
-                    <div className="space-y-4">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Отклики на вакансию</CardTitle>
-                          <CardDescription>
-                            Всего откликов: {responses.length}
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponseTable responses={responses} />
-                        </CardContent>
-                      </Card>
-
-                      <ResponseCards responses={responses} />
-                    </div>
-                  )}
                 </TabsContent>
               </Tabs>
             </div>

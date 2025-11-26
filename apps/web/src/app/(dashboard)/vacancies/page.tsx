@@ -82,7 +82,7 @@ export default function VacanciesPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <Link
-                              href={`/vacancies/${vacancy.id}?tab=responses`}
+                              href={`/vacancies/${vacancy.id}/responses`}
                               className="font-medium hover:underline text-primary"
                             >
                               {vacancy.responses}
