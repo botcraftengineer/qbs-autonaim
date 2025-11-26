@@ -1,8 +1,7 @@
-import { deepseek } from "@ai-sdk/deepseek";
 import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { responseScreening, vacancyResponse } from "@selectio/db/schema";
-import { generateText } from "ai";
+import { generateText } from "../lib/ai-client";
 import { responseScreeningResultSchema } from "../schemas/response-screening.schema";
 import type { VacancyRequirements } from "../types/screening";
 import { extractJsonFromText } from "../utils/json-extractor";
@@ -31,16 +30,13 @@ export async function screenResponse(responseId: string) {
   console.log(`📤 Отправка запроса в AI для скрининга`);
 
   const { text } = await generateText({
-    model: deepseek("deepseek-chat"),
     prompt,
     temperature: 0.3,
-    experimental_telemetry: {
-      isEnabled: true,
-      functionId: "screen-response",
-      metadata: {
-        responseId,
-        vacancyId: response.vacancyId,
-      },
+    generationName: "screen-response",
+    entityId: responseId,
+    metadata: {
+      responseId,
+      vacancyId: response.vacancyId,
     },
   });
   console.log(`📥 Получен ответ от AI`);

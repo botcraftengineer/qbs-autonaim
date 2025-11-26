@@ -1,8 +1,7 @@
-import { deepseek } from "@ai-sdk/deepseek";
 import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { vacancy } from "@selectio/db/schema";
-import { generateText } from "ai";
+import { generateText } from "../lib/ai-client";
 import { vacancyRequirementsSchema } from "../schemas/vacancy-requirements.schema";
 import type { VacancyRequirements } from "../types/screening";
 import { extractJsonFromText } from "../utils/json-extractor";
@@ -29,10 +28,14 @@ export async function extractVacancyRequirements(
   console.log(`📤 Отправка запроса в AI для извлечения требований`);
 
   const { text } = await generateText({
-    model: deepseek("deepseek-chat"),
     prompt,
     temperature: 0.1,
-    experimental_telemetry: { isEnabled: true },
+    generationName: "extract-vacancy-requirements",
+    entityId: vacancyId,
+    metadata: {
+      vacancyId,
+      title: vacancyData.title,
+    },
   });
 
   console.log(`📥 Получен ответ от AI`);

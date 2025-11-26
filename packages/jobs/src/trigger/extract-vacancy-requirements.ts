@@ -1,6 +1,5 @@
 import { logger, task } from "@trigger.dev/sdk";
 import { extractVacancyRequirements } from "../services/screening-prompt-service";
-import "../instrumentation";
 
 export const extractVacancyRequirementsTask = task({
   id: "extract-vacancy-requirements",
