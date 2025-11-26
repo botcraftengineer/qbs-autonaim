@@ -3,7 +3,9 @@ import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { vacancy } from "@selectio/db/schema";
 import { generateText } from "ai";
+import { vacancyRequirementsSchema } from "../schemas/vacancy-requirements.schema";
 import type { VacancyRequirements } from "../types/screening";
+import { extractJsonFromText } from "../utils/json-extractor";
 
 /**
  * Извлекает и структурирует требования вакансии через AI
@@ -96,38 +98,16 @@ export async function getVacancyRequirements(
  */
 function parseRequirements(response: string): VacancyRequirements {
   try {
-    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    const extracted = extractJsonFromText(response);
 
-    if (!jsonMatch) {
+    if (!extracted) {
       throw new Error("JSON не найден в ответе AI");
     }
 
-    const requirements = JSON.parse(jsonMatch[0]) as VacancyRequirements;
-
-    if (!validateRequirements(requirements)) {
-      throw new Error("Требования не прошли валидацию");
-    }
-
-    return requirements;
+    const validated = vacancyRequirementsSchema.parse(extracted);
+    return validated as VacancyRequirements;
   } catch (error) {
     console.error(`❌ Ошибка парсинга требований:`, error);
     throw error;
   }
-}
-
-/**
- * Валидирует структуру требований
- */
-function validateRequirements(req: VacancyRequirements): boolean {
-  return (
-    typeof req.job_title === "string" &&
-    typeof req.summary === "string" &&
-    Array.isArray(req.mandatory_requirements) &&
-    Array.isArray(req.nice_to_have_skills) &&
-    Array.isArray(req.tech_stack) &&
-    typeof req.experience_years === "object" &&
-    Array.isArray(req.languages) &&
-    typeof req.location_type === "string" &&
-    Array.isArray(req.keywords_for_matching)
-  );
 }
