@@ -20,6 +20,7 @@ export const vacancy = pgTable("vacancies", {
   suitableResumes: integer("suitable_resumes").default(0),
   region: varchar("region", { length: 200 }),
   description: text("description"),
+  screeningPrompt: text("screening_prompt"),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")

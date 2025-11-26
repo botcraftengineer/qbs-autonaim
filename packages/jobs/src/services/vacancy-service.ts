@@ -84,7 +84,7 @@ export async function saveBasicVacancy(vacancyData: VacancyData) {
 }
 
 /**
- * Обновляет описание вакансии
+ * Обновляет описание вакансии и запускает генерацию промпта для скрининга
  */
 export async function updateVacancyDescription(
   vacancyId: string,
@@ -96,6 +96,16 @@ export async function updateVacancyDescription(
       .set({ description })
       .where(eq(vacancy.id, vacancyId));
     console.log(`✅ Описание вакансии обновлено: ${vacancyId}`);
+
+    // Запускаем задание для генерации промпта скрининга
+    if (description && description.trim()) {
+      console.log(`🎯 Запуск генерации промпта для скрининга: ${vacancyId}`);
+      // Импортируем динамически, чтобы избежать циклических зависимостей
+      const { triggerScreeningPromptGeneration } = await import(
+        "./trigger-service"
+      );
+      await triggerScreeningPromptGeneration(vacancyId, description);
+    }
   } catch (error) {
     console.error(
       `❌ Ошибка обновления описания вакансии ${vacancyId}:`,
@@ -149,6 +159,20 @@ export async function saveVacancyToDb(vacancyData: VacancyData) {
     } else {
       await db.insert(vacancy).values(dataToSave);
       console.log(`✅ Вакансия создана: ${vacancyData.title}`);
+    }
+
+    // Запускаем генерацию промпта, если есть описание
+    if (vacancyData.description && vacancyData.description.trim()) {
+      console.log(
+        `🎯 Запуск генерации промпта для скрининга: ${vacancyData.id}`
+      );
+      const { triggerScreeningPromptGeneration } = await import(
+        "./trigger-service"
+      );
+      await triggerScreeningPromptGeneration(
+        vacancyData.id,
+        vacancyData.description
+      );
     }
   } catch (error) {
     console.error(`❌ Ошибка сохранения вакансии ${vacancyData.id}:`, error);
