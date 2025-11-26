@@ -50,8 +50,6 @@ export function ScreeningResultModal({
       <SheetContent
         side="right"
         className="w-full sm:max-w-lg overflow-y-auto p-0"
-        onInteractOutside={(e) => e.preventDefault()}
-        onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <div className="p-6">
           <SheetHeader>

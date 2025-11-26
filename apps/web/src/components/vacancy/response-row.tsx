@@ -36,6 +36,25 @@ export function ResponseRow({ response, accessToken }: ResponseRowProps) {
         </Badge>
       </TableCell>
       <TableCell>
+        {response.screening ? (
+          <div className="flex items-center gap-2">
+            <span
+              className={`text-lg font-bold ${
+                response.screening.score >= 4
+                  ? "text-green-600"
+                  : response.screening.score >= 3
+                    ? "text-yellow-600"
+                    : "text-red-600"
+              }`}
+            >
+              {response.screening.score}/5
+            </span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-sm">—</span>
+        )}
+      </TableCell>
+      <TableCell>
         {response.hrSelectionStatus ? (
           <Badge variant="secondary" className="whitespace-nowrap">
             {HR_SELECTION_STATUS_LABELS[response.hrSelectionStatus]}

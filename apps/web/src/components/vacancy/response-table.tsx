@@ -40,6 +40,7 @@ export function ResponseTable({ responses }: ResponseTableProps) {
           <TableRow>
             <TableHead>Кандидат</TableHead>
             <TableHead>Статус</TableHead>
+            <TableHead>Оценка</TableHead>
             <TableHead>Отбор HR</TableHead>
             <TableHead>Контакты</TableHead>
             <TableHead>Дата отклика</TableHead>
