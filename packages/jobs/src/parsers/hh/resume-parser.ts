@@ -9,6 +9,17 @@ export async function parseResumeExperience(
 ): Promise<ResumeExperience> {
   console.log(`📄 Переход на страницу резюме: ${url}`);
 
+  // Set up 403 error logging
+  const log403Handler = async (response: any) => {
+    if (response.status() === 403) {
+      console.log(`🚫 403 FORBIDDEN: ${response.url()}`);
+      console.log(`   Method: ${response.request().method()}`);
+      console.log(`   Headers:`, response.request().headers());
+    }
+  };
+
+  page.on("response", log403Handler);
+
   // Переходим на страницу резюме, если мы еще не там
   if (page.url() !== url) {
     await page.goto(url, {
@@ -110,25 +121,51 @@ export async function parseResumeExperience(
   const resumeIdMatch = url.match(/\/resume\/([a-f0-9]+)/);
   if (resumeIdMatch?.[1]) {
     const resumeId = resumeIdMatch[1];
-    const contactsUrl = `${HH_CONFIG.urls.baseUrl}/resume/contacts/${resumeId}?simHash=&goal=Contacts_Phone`;
 
     try {
-      console.log(`📞 Получение контактов: ${contactsUrl}`);
+      console.log(`📞 Проверка наличия контактов для резюме ${resumeId}`);
 
-      // Use page.evaluate to make the request in browser context
-      contacts = await page.evaluate(async (url) => {
-        const response = await fetch(url, {
-          method: "GET",
-          credentials: "include", // Include cookies automatically
-        });
+      // Check if the phone button exists first
+      const phoneLink = await page.$(
+        'a[data-qa="response-resume_show-phone-number"]'
+      );
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
+      if (!phoneLink) {
+        console.log("⚠️ Кнопка показа телефона не найдена, пропускаем.");
+        return { experience, contacts, languages, about, education, courses };
+      }
 
-        return await response.json();
-      }, contactsUrl);
+      // Set up request interception to capture the contacts response
+      const contactsPromise = new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          page.off("response", responseHandler);
+          reject(new Error("Timeout waiting for contacts request"));
+        }, HH_CONFIG.timeouts.selector);
 
+        const responseHandler = async (response: any) => {
+          const url = response.url();
+          if (
+            url.includes(`/resume/contacts/${resumeId}`) &&
+            url.includes("goal=Contacts_Phone")
+          ) {
+            clearTimeout(timeout);
+            page.off("response", responseHandler);
+            try {
+              const data = await response.json();
+              resolve(data);
+            } catch (e) {
+              reject(e);
+            }
+          }
+        };
+
+        page.on("response", responseHandler);
+      });
+
+      // Small delay to mimic human behavior
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      await phoneLink.click();
+      contacts = await contactsPromise;
       console.log("✅ Контакты получены");
     } catch (e) {
       console.log("⚠️ Не удалось получить контакты.");
@@ -137,6 +174,9 @@ export async function parseResumeExperience(
   } else {
     console.log("⚠️ Не удалось извлечь ID резюме из URL.");
   }
+
+  // Clean up the 403 logging handler
+  page.off("response", log403Handler);
 
   return { experience, contacts, languages, about, education, courses };
 }

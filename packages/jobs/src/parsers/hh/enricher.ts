@@ -131,6 +131,11 @@ export async function runEnricher() {
         return;
       }
 
+      // Добавляем случайную задержку между 3-5 секунд для имитации человеческого поведения
+      const delay = Math.floor(Math.random() * 2000) + 3000;
+      log.info(`⏳ Ожидание ${delay}ms перед обработкой...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+
       // Обработка резюме
       const { resumeId, vacancyId, candidateName } = request.userData;
       log.info(`📊 Парсинг резюме: ${candidateName} (${request.url})`);
