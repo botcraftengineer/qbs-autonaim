@@ -1,5 +1,6 @@
 import { companyRouter } from "./routers/company";
 import { integrationRouter } from "./routers/integration";
+import { telegramRouter } from "./routers/telegram";
 import { userRouter } from "./routers/user";
 import { vacancyRouter } from "./routers/vacancy";
 import { createTRPCRouter } from "./trpc";
@@ -9,6 +10,7 @@ export const appRouter = createTRPCRouter({
   vacancy: vacancyRouter,
   integration: integrationRouter,
   company: companyRouter,
+  telegram: telegramRouter,
 });
 
 // export type definition of API

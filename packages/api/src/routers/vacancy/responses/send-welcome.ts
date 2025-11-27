@@ -52,7 +52,7 @@ export const sendWelcome = protectedProcedure
       name: "candidate/welcome",
       data: {
         responseId,
-        chatId,
+        username: chatId,
       },
     });
 
