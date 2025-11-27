@@ -6,7 +6,6 @@ import {
 } from "@selectio/db/schema";
 import {
   Badge,
-  Button,
   Card,
   CardContent,
   CardDescription,
@@ -16,7 +15,8 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@selectio/ui";
-import { ExternalLink, User } from "lucide-react";
+import { User } from "lucide-react";
+import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ContactInfo } from "./contact-info";
 
@@ -44,15 +44,6 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                   </CardDescription>
                 </div>
               </div>
-              <a
-                href={response.resumeUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <Button variant="ghost" size="sm">
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-              </a>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -97,6 +88,14 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                 <ContactInfo contacts={response.contacts} size="md" />
               </div>
             ) : null}
+            <div className="pt-2 border-t">
+              <ResponseActions
+                responseId={response.id}
+                resumeUrl={response.resumeUrl}
+                candidateName={response.candidateName}
+                hasGreeting={!!response.screening?.greeting}
+              />
+            </div>
           </CardContent>
         </Card>
       ))}

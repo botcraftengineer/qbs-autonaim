@@ -4,8 +4,9 @@ import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
 } from "@selectio/db/schema";
-import { Badge, Button, Checkbox, TableCell, TableRow } from "@selectio/ui";
-import { ExternalLink, User } from "lucide-react";
+import { Badge, Checkbox, TableCell, TableRow } from "@selectio/ui";
+import { User } from "lucide-react";
+import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ContactInfo } from "./contact-info";
 import { ScreenResponseButton } from "./screen-response-button";
@@ -94,15 +95,12 @@ export function ResponseRow({
               candidateName={response.candidateName || undefined}
             />
           )}
-          <a
-            href={response.resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="ghost" size="sm">
-              <ExternalLink className="h-4 w-4" />
-            </Button>
-          </a>
+          <ResponseActions
+            responseId={response.id}
+            resumeUrl={response.resumeUrl}
+            candidateName={response.candidateName}
+            hasGreeting={!!response.screening?.greeting}
+          />
         </div>
       </TableCell>
     </TableRow>

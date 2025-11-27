@@ -21,6 +21,7 @@ import { IconBriefcase, IconClock, IconUser } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { SiteHeader } from "~/components/layout";
+import { ResponseActions } from "~/components/response";
 import { useTRPC } from "~/trpc/react";
 
 export default function ResponsesPage() {
@@ -105,7 +106,7 @@ export default function ResponsesPage() {
                       <TableHead>Статус</TableHead>
                       <TableHead>Отбор HR</TableHead>
                       <TableHead>Дата отклика</TableHead>
-                      <TableHead>Резюме</TableHead>
+                      <TableHead>Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -212,14 +213,12 @@ export default function ResponsesPage() {
                               )}
                             </TableCell>
                             <TableCell>
-                              <a
-                                href={response.resumeUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline"
-                              >
-                                Открыть
-                              </a>
+                              <ResponseActions
+                                responseId={response.id}
+                                resumeUrl={response.resumeUrl}
+                                candidateName={response.candidateName}
+                                hasGreeting={!!response.screening?.greeting}
+                              />
                             </TableCell>
                           </TableRow>
                         );

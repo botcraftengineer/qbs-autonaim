@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
+import { ResponseActions } from "~/components/response";
 import { useTRPC } from "~/trpc/react";
 
 interface ResponseDetailPageProps {
@@ -91,42 +92,44 @@ export default function ResponseDetailPage({
               </Link>
 
               {/* Заголовок */}
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold">
-                      {response.candidateName || "Без имени"}
-                    </h1>
-                    {isNew && (
-                      <Badge variant="default" className="text-sm">
-                        Новый
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <IconCalendar className="h-4 w-4" />
-                      {new Date(response.createdAt).toLocaleDateString(
-                        "ru-RU",
-                        {
-                          day: "2-digit",
-                          month: "long",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
+              <div className="mb-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h1 className="text-3xl font-bold">
+                        {response.candidateName || "Без имени"}
+                      </h1>
+                      {isNew && (
+                        <Badge variant="default" className="text-sm">
+                          Новый
+                        </Badge>
                       )}
+                    </div>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <IconCalendar className="h-4 w-4" />
+                        {new Date(response.createdAt).toLocaleDateString(
+                          "ru-RU",
+                          {
+                            day: "2-digit",
+                            month: "long",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
-                <a
-                  href={response.resumeUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-                >
-                  Открыть резюме на HH.ru
-                </a>
+
+                {/* Действия */}
+                <ResponseActions
+                  responseId={response.id}
+                  resumeUrl={response.resumeUrl}
+                  candidateName={response.candidateName}
+                  hasGreeting={!!response.screening?.greeting}
+                />
               </div>
 
               {/* Вакансия */}
