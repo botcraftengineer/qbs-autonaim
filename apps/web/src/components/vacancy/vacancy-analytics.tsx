@@ -1,4 +1,13 @@
-import { CheckCircle, Star, TrendingUp, Users } from "lucide-react";
+import {
+  Badge,
+  Card,
+  CardAction,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@selectio/ui";
+import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
 interface VacancyAnalyticsProps {
   totalResponses: number;
@@ -39,66 +48,120 @@ export function VacancyAnalytics({
       ? Math.round((topScoreResponses / processedResponses) * 100)
       : 0;
 
+  const isGrowingProcessed = processedPercentage >= 50;
+  const isGrowingHighScore = highScorePercentage >= 30;
+  const isGrowingTopScore = topScorePercentage >= 15;
+  const isGoodAvgScore = avgScore >= 3.0;
+
   return (
-    <div className="rounded-lg border p-6 space-y-4">
-      <div className="flex items-center gap-2">
-        <TrendingUp className="h-5 w-5 text-primary" />
-        <h2 className="text-xl font-semibold">Аналитика откликов</h2>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="rounded-lg border p-4 bg-linear-to-br from-blue-50 to-blue-100/50 dark:from-blue-950/20 dark:to-blue-900/10">
-          <div className="flex items-center gap-2 mb-2">
-            <Users className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <div className="text-sm text-muted-foreground">Обработано</div>
-          </div>
-          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+    <div className="*:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card dark:*:data-[slot=card]:bg-card grid grid-cols-1 gap-4 *:data-[slot=card]:bg-linear-to-t *:data-[slot=card]:shadow-xs @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Обработано откликов</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {processedResponses}
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              {isGrowingProcessed ? <IconTrendingUp /> : <IconTrendingDown />}
+              {processedPercentage}%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {isGrowingProcessed ? "Хороший прогресс" : "Требует обработки"}
+            {isGrowingProcessed ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            из {totalResponses} ({processedPercentage}%)
+          <div className="text-muted-foreground">
+            из {totalResponses} всего откликов
           </div>
-        </div>
+        </CardFooter>
+      </Card>
 
-        <div className="rounded-lg border p-4 bg-linear-to-br from-green-50 to-green-100/50 dark:from-green-950/20 dark:to-green-900/10">
-          <div className="flex items-center gap-2 mb-2">
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-            <div className="text-sm text-muted-foreground">Скоринг ≥ 3</div>
-          </div>
-          <div className="text-3xl font-bold text-green-600 dark:text-green-400">
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Скоринг ≥ 3</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {highScoreResponses}
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              {isGrowingHighScore ? <IconTrendingUp /> : <IconTrendingDown />}
+              {highScorePercentage}%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {isGrowingHighScore ? "Качественные кандидаты" : "Мало подходящих"}
+            {isGrowingHighScore ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {processedResponses > 0 ? `${highScorePercentage}%` : "—"} от
-            обработанных
-          </div>
-        </div>
+          <div className="text-muted-foreground">от обработанных откликов</div>
+        </CardFooter>
+      </Card>
 
-        <div className="rounded-lg border p-4 bg-linear-to-br from-amber-50 to-amber-100/50 dark:from-amber-950/20 dark:to-amber-900/10">
-          <div className="flex items-center gap-2 mb-2">
-            <Star className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-            <div className="text-sm text-muted-foreground">Скоринг ≥ 4</div>
-          </div>
-          <div className="text-3xl font-bold text-amber-600 dark:text-amber-400">
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Скоринг ≥ 4</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {topScoreResponses}
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              {isGrowingTopScore ? <IconTrendingUp /> : <IconTrendingDown />}
+              {topScorePercentage}%
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {isGrowingTopScore ? "Отличные результаты" : "Нужно больше"}
+            {isGrowingTopScore ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {processedResponses > 0 ? `${topScorePercentage}%` : "—"} от
-            обработанных
+          <div className="text-muted-foreground">
+            топовые кандидаты для интервью
           </div>
-        </div>
+        </CardFooter>
+      </Card>
 
-        <div className="rounded-lg border p-4 bg-linear-to-br from-purple-50 to-purple-100/50 dark:from-purple-950/20 dark:to-purple-900/10">
-          <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-            <div className="text-sm text-muted-foreground">Средний балл</div>
-          </div>
-          <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+      <Card className="@container/card">
+        <CardHeader>
+          <CardDescription>Средний балл</CardDescription>
+          <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
             {processedResponses > 0 ? avgScore.toFixed(1) : "—"}
+          </CardTitle>
+          <CardAction>
+            <Badge variant="outline">
+              {isGoodAvgScore ? <IconTrendingUp /> : <IconTrendingDown />}
+              {processedResponses > 0 ? "из 5.0" : "—"}
+            </Badge>
+          </CardAction>
+        </CardHeader>
+        <CardFooter className="flex-col items-start gap-1.5 text-sm">
+          <div className="line-clamp-1 flex gap-2 font-medium">
+            {isGoodAvgScore ? "Качество выше среднего" : "Требует улучшения"}
+            {isGoodAvgScore ? (
+              <IconTrendingUp className="size-4" />
+            ) : (
+              <IconTrendingDown className="size-4" />
+            )}
           </div>
-          <div className="text-xs text-muted-foreground mt-1">из 5.0</div>
-        </div>
-      </div>
+          <div className="text-muted-foreground">общая оценка кандидатов</div>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
