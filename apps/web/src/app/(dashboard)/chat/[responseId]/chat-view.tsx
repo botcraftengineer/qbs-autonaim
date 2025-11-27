@@ -21,6 +21,21 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     });
   const { data: currentConversation } = useQuery(conversationQueryOptions);
 
+  // Получаем responseId из metadata
+  const metadata = currentConversation?.metadata
+    ? JSON.parse(currentConversation.metadata)
+    : null;
+  const candidateResponseId = metadata?.responseId;
+
+  // Получаем данные отклика
+  const responseQueryOptions = trpc.vacancy.responses.getById.queryOptions({
+    id: candidateResponseId ?? "",
+  });
+  const { data: responseData } = useQuery({
+    ...responseQueryOptions,
+    enabled: !!candidateResponseId,
+  });
+
   // Получаем сообщения
   const {
     data: messages = [],
@@ -101,80 +116,199 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Заголовок */}
-      <div className="border-b px-6 py-4">
-        <h1 className="text-xl font-semibold">
-          {currentConversation.candidateName}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          @{currentConversation.chatId}
-        </p>
+    <div className="flex h-full">
+      <div className="flex flex-col flex-1">
+        {/* Заголовок */}
+        <div className="border-b px-6 py-4">
+          <h1 className="text-xl font-semibold">
+            {currentConversation.candidateName}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            @{currentConversation.chatId}
+          </p>
+        </div>
+
+        {/* Сообщения */}
+        <ScrollArea className="flex-1 px-6 py-4" ref={scrollRef}>
+          <div className="space-y-4">
+            {messages.map((msg) => {
+              const isAdmin = msg.sender === "ADMIN";
+              const isBot = msg.sender === "BOT";
+
+              const senderLabel = isAdmin
+                ? "Вы"
+                : isBot
+                  ? "Бот"
+                  : (currentConversation.candidateName ?? "Кандидат");
+
+              const bgColor = isAdmin
+                ? "bg-teal-500 text-white"
+                : isBot
+                  ? "bg-blue-500 text-white"
+                  : "bg-muted text-foreground";
+
+              const timeColor = isAdmin
+                ? "text-teal-100"
+                : isBot
+                  ? "text-blue-100"
+                  : "text-muted-foreground";
+
+              return (
+                <div
+                  key={msg.id}
+                  className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
+                >
+                  <div
+                    className={`max-w-[70%] rounded-lg px-4 py-2 ${bgColor}`}
+                  >
+                    <p className="text-xs font-semibold mb-1 opacity-80">
+                      {senderLabel}
+                    </p>
+                    <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                    <p className={`text-xs mt-1 ${timeColor}`}>
+                      {format(msg.createdAt, "HH:mm", { locale: ru })}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </ScrollArea>
+
+        {/* Поле ввода */}
+        <div className="border-t px-6 py-4">
+          <div className="flex gap-2">
+            <Input
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyDown={handleKeyPress}
+              placeholder="Введите сообщение..."
+              disabled={isSending}
+              className="flex-1"
+            />
+            <Button
+              onClick={handleSendMessage}
+              disabled={!message.trim() || isSending}
+              size="icon"
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
-      {/* Сообщения */}
-      <ScrollArea className="flex-1 px-6 py-4" ref={scrollRef}>
-        <div className="space-y-4">
-          {messages.map((msg) => {
-            const isAdmin = msg.sender === "ADMIN";
-            const isBot = msg.sender === "BOT";
+      {/* Боковая панель с информацией о кандидате */}
+      <div className="w-80 border-l overflow-y-auto">
+        <div className="p-6 space-y-6">
+          {/* Информация о кандидате */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4">О кандидате</h2>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Имя</p>
+                <p className="text-sm font-medium">
+                  {currentConversation.candidateName ?? "Не указано"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">Telegram</p>
+                <p className="text-sm font-medium">
+                  @{currentConversation.chatId}
+                </p>
+              </div>
+              {responseData?.about && (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">О себе</p>
+                  <p className="text-sm">{responseData.about}</p>
+                </div>
+              )}
+            </div>
+          </div>
 
-            const senderLabel = isAdmin
-              ? "Вы"
-              : isBot
-                ? "Бот"
-                : (currentConversation.candidateName ?? "Кандидат");
+          {/* Скрининг */}
+          {responseData?.screening && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Скрининг</h2>
+              <div className="space-y-3">
+                {responseData.screening.score !== null && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Оценка</p>
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 bg-muted rounded-full h-2">
+                        <div
+                          className="bg-teal-500 h-2 rounded-full"
+                          style={{
+                            width: `${responseData.screening.score}%`,
+                          }}
+                        />
+                      </div>
+                      <span className="text-sm font-semibold">
+                        {responseData.screening.score}%
+                      </span>
+                    </div>
+                  </div>
+                )}
+                {responseData.screening.analysis && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Анализ</p>
+                    <p className="text-sm">{responseData.screening.analysis}</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
-            const bgColor = isAdmin
-              ? "bg-teal-500 text-white"
-              : isBot
-                ? "bg-blue-500 text-white"
-                : "bg-muted text-foreground";
-
-            const timeColor = isAdmin
-              ? "text-teal-100"
-              : isBot
-                ? "text-blue-100"
-                : "text-muted-foreground";
-
-            return (
-              <div
-                key={msg.id}
-                className={`flex ${isAdmin ? "justify-end" : "justify-start"}`}
-              >
-                <div className={`max-w-[70%] rounded-lg px-4 py-2 ${bgColor}`}>
-                  <p className="text-xs font-semibold mb-1 opacity-80">
-                    {senderLabel}
-                  </p>
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${timeColor}`}>
-                    {format(msg.createdAt, "HH:mm", { locale: ru })}
+          {/* Вакансия */}
+          {responseData?.vacancy && (
+            <div>
+              <h2 className="text-lg font-semibold mb-4">Вакансия</h2>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">Название</p>
+                  <p className="text-sm font-medium">
+                    {responseData.vacancy.title}
                   </p>
                 </div>
+                {responseData.vacancy.description && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Описание
+                    </p>
+                    <p className="text-sm line-clamp-3">
+                      {responseData.vacancy.description}
+                    </p>
+                  </div>
+                )}
               </div>
-            );
-          })}
-        </div>
-      </ScrollArea>
+            </div>
+          )}
 
-      {/* Поле ввода */}
-      <div className="border-t px-6 py-4">
-        <div className="flex gap-2">
-          <Input
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyDown={handleKeyPress}
-            placeholder="Введите сообщение..."
-            disabled={isSending}
-            className="flex-1"
-          />
-          <Button
-            onClick={handleSendMessage}
-            disabled={!message.trim() || isSending}
-            size="icon"
-          >
-            <Send className="h-4 w-4" />
-          </Button>
+          {/* Статус */}
+          <div>
+            <h2 className="text-lg font-semibold mb-4">Статус</h2>
+            <div className="space-y-3">
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  Статус отклика
+                </p>
+                <p className="text-sm font-medium">
+                  {responseData?.status ?? "Не указан"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">
+                  Дата отклика
+                </p>
+                <p className="text-sm">
+                  {responseData?.createdAt
+                    ? format(responseData.createdAt, "dd MMMM yyyy, HH:mm", {
+                        locale: ru,
+                      })
+                    : "Не указана"}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

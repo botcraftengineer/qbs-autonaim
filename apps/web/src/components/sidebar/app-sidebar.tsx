@@ -39,11 +39,6 @@ const data = {
       icon: IconListDetails,
     },
     {
-      title: "Кандидаты",
-      url: "/candidates",
-      icon: IconUsers,
-    },
-    {
       title: "Чаты",
       url: "/chat",
       icon: IconMessage,
