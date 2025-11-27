@@ -1,3 +1,4 @@
+import { realtimeMiddleware } from "@inngest/realtime/middleware";
 import { EventSchemas, Inngest } from "inngest";
 import {
   responseScreenDataSchema,
@@ -10,6 +11,7 @@ import {
 export const inngest = new Inngest({
   id: "selectio",
   name: "Selectio Jobs",
+  middleware: [realtimeMiddleware()],
   schemas: new EventSchemas().fromSchema({
     "vacancy/requirements.extract": vacancyRequirementsExtractDataSchema,
     "response/screen": responseScreenDataSchema,

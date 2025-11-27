@@ -18,6 +18,7 @@
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/modifiers": "^9.0.0",
         "@dnd-kit/sortable": "^10.0.0",
+        "@inngest/realtime": "^0.4.5",
         "@selectio/api": "workspace:*",
         "@selectio/auth": "workspace:*",
         "@selectio/db": "workspace:*",
@@ -148,6 +149,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@ai-sdk/deepseek": "^1.0.29",
+        "@inngest/realtime": "^0.4.5",
         "@selectio/db": "workspace:*",
         "@t3-oss/env-core": "0.13.8",
         "@trigger.dev/sdk": "4.1.2",
@@ -695,6 +697,8 @@
     "@img/sharp-win32-x64": ["@img/sharp-win32-x64@0.34.5", "", { "os": "win32", "cpu": "x64" }, "sha512-+29YMsqY2/9eFEiW93eqWnuLcWcufowXewwSNIT6UwZdUUCrM3oFjMWH/Z6/TMmb4hlFenmfAVbpWeup2jryCw=="],
 
     "@inngest/ai": ["@inngest/ai@0.1.7", "", { "dependencies": { "@types/node": "^22.10.5", "typescript": "^5.7.3" } }, "sha512-5xWatW441jacGf9czKEZdgAmkvoy7GS2tp7X8GSbdGeRXzjisHR6vM+q8DQbv6rqRsmQoCQ5iShh34MguELvUQ=="],
+
+    "@inngest/realtime": ["@inngest/realtime@0.4.5", "", { "dependencies": { "@standard-schema/spec": "^1.0.0", "debug": "^4.3.4", "inngest": "^3.42.3", "zod": "^3.25.0 || ^4.0.0" }, "peerDependencies": { "react": ">=18.0.0" } }, "sha512-idT9MPazztBoTkxHIJMJ5oQUhY5P8/RLYtFZighmsTNRLJ/xTP7uAzh899nuorQeCVc+57yecjQ/52UZoIdrPQ=="],
 
     "@inquirer/external-editor": ["@inquirer/external-editor@1.0.3", "", { "dependencies": { "chardet": "^2.1.1", "iconv-lite": "^0.7.0" }, "peerDependencies": { "@types/node": ">=18" }, "optionalPeers": ["@types/node"] }, "sha512-RWbSrDiYmO4LbejWY7ttpxczuwQyZLBUyygsA9Nsv95hpzUWwnNTVQmAq3xuh7vNwCp07UTmE5i11XAEExx4RA=="],
 
