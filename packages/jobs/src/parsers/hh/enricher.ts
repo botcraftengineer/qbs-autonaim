@@ -1,8 +1,8 @@
+import { env } from "@selectio/config";
 import { Log } from "crawlee";
 import type { Browser, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { env } from "../../env";
 import {
   getResponsesWithoutDetails,
   updateResponseDetails,
@@ -105,6 +105,10 @@ async function checkAndPerformLogin(
 export async function runEnricher(userId: string) {
   const email = env.HH_EMAIL;
   const password = env.HH_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error("HH_EMAIL и HH_PASSWORD должны быть установлены");
+  }
 
   console.log("🚀 Запуск обогащения данных резюме...");
 

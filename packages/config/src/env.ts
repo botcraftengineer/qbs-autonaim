@@ -32,6 +32,20 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: z.string().optional(),
     AWS_REGION: z.string().default("us-east-1"),
     AWS_S3_BUCKET: z.string().default("acme-bucket"),
+
+    // HH.ru Integration
+    HH_EMAIL: z.string().email().optional(),
+    HH_PASSWORD: z.string().min(1).optional(),
+
+    // AI Services
+    DEEPSEEK_API_KEY: z.string().min(1).optional(),
+    LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
+    LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
+    LANGFUSE_BASE_URL: z.string().url().optional(),
+
+    // Jobs
+    PORT: z.string().optional().default("8000").transform(Number),
+    USER_ID: z.string().optional(),
   },
   client: {},
   clientPrefix: "NEXT_PUBLIC_",
@@ -54,6 +68,14 @@ export const env = createEnv({
     AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_S3_BUCKET: process.env.AWS_S3_BUCKET,
+    HH_EMAIL: process.env.HH_EMAIL,
+    HH_PASSWORD: process.env.HH_PASSWORD,
+    DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY,
+    LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
+    LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
+    LANGFUSE_BASE_URL: process.env.LANGFUSE_BASE_URL,
+    PORT: process.env.PORT,
+    USER_ID: process.env.USER_ID,
   },
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",

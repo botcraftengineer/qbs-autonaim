@@ -1,7 +1,7 @@
+import { env } from "@selectio/config";
 import { PuppeteerCrawler } from "crawlee";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { env } from "../../env";
 import { loadCookies, performLogin } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
@@ -17,6 +17,10 @@ export async function runHHParser(
 ) {
   const email = env.HH_EMAIL;
   const password = env.HH_PASSWORD;
+
+  if (!email || !password) {
+    throw new Error("HH_EMAIL и HH_PASSWORD должны быть установлены");
+  }
 
   console.log("🚀 Запуск парсера hh.ru...");
   console.log(`📧 Email: ${email}`);

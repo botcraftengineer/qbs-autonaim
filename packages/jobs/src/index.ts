@@ -1,4 +1,3 @@
-export { env } from "./env";
 // Inngest
 export {
   extractVacancyRequirementsFunction,

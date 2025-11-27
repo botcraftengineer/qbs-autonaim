@@ -13,8 +13,8 @@ puppeteer.use(StealthPlugin());
  * Не парсит саму вакансию, только обновляет список откликов
  */
 export async function refreshVacancyResponses(vacancyId: string) {
-  // TODO: получить userId из контекста или базы данных
-  const userId = "system"; // временное решение
+  const { env } = await import("@selectio/config");
+  const userId = env.USER_ID || "system";
   console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
 
   const credentials = await getIntegrationCredentials(userId, "hh");

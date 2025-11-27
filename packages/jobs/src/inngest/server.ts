@@ -1,5 +1,5 @@
+import { env } from "@selectio/config";
 import { serve } from "inngest/bun";
-import { env } from "../env";
 import { inngest, inngestFunctions } from "./index";
 
 /**
