@@ -1,11 +1,7 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { user } from "../auth/user";
 
-export const company = pgTable("companies", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => user.id, { onDelete: "cascade" }),
+export const companySettings = pgTable("company_settings", {
+  id: text("id").primaryKey().default("default"),
   name: text("name").notNull(),
   website: text("website"),
   description: text("description"),
