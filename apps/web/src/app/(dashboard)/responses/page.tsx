@@ -20,8 +20,13 @@ import {
 import { IconBriefcase, IconClock, IconUser } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
+import { useMemo, useState } from "react";
 import { SiteHeader } from "~/components/layout";
-import { ResponseActions } from "~/components/response";
+import {
+  ResponseActions,
+  ResponseFilters,
+  type ScreeningFilter,
+} from "~/components/response";
 import { useTRPC } from "~/trpc/react";
 
 export default function ResponsesPage() {
@@ -29,6 +34,28 @@ export default function ResponsesPage() {
   const { data: responses, isLoading } = useQuery(
     trpc.vacancy.responses.listAll.queryOptions()
   );
+  const [screeningFilter, setScreeningFilter] =
+    useState<ScreeningFilter>("all");
+
+  const filteredResponses = useMemo(() => {
+    if (!responses) return [];
+
+    return responses.filter((response) => {
+      switch (screeningFilter) {
+        case "evaluated":
+          return response.screening !== null;
+        case "not-evaluated":
+          return response.screening === null;
+        case "high-score":
+          return response.screening !== null && response.screening.score >= 4;
+        case "low-score":
+          return response.screening !== null && response.screening.score < 4;
+        case "all":
+        default:
+          return true;
+      }
+    });
+  }, [responses, screeningFilter]);
 
   const totalResponses = responses?.length ?? 0;
   const newResponses =
@@ -96,6 +123,17 @@ export default function ResponsesPage() {
                 </Card>
               </div>
 
+              {/* Фильтры */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="text-sm text-muted-foreground">
+                  Показано: {filteredResponses.length} из {totalResponses}
+                </div>
+                <ResponseFilters
+                  selectedFilter={screeningFilter}
+                  onFilterChange={setScreeningFilter}
+                />
+              </div>
+
               {/* Таблица откликов */}
               <div className="rounded-lg border">
                 <Table>
@@ -119,23 +157,27 @@ export default function ResponsesPage() {
                           <p className="text-muted-foreground">Загрузка...</p>
                         </TableCell>
                       </TableRow>
-                    ) : !responses || responses.length === 0 ? (
+                    ) : !filteredResponses || filteredResponses.length === 0 ? (
                       <TableRow>
                         <TableCell colSpan={6} className="h-[400px]">
                           <div className="flex items-center justify-center">
                             <div className="text-center">
                               <h2 className="text-2xl font-semibold mb-2">
-                                Нет откликов
+                                {responses && responses.length > 0
+                                  ? "Нет откликов по выбранному фильтру"
+                                  : "Нет откликов"}
                               </h2>
                               <p className="text-muted-foreground">
-                                Отклики появятся после запуска парсера
+                                {responses && responses.length > 0
+                                  ? "Попробуйте изменить фильтр"
+                                  : "Отклики появятся после запуска парсера"}
                               </p>
                             </div>
                           </div>
                         </TableCell>
                       </TableRow>
                     ) : (
-                      responses.map((response) => {
+                      filteredResponses.map((response) => {
                         const isNew =
                           new Date(response.createdAt) >
                           new Date(Date.now() - 24 * 60 * 60 * 1000);

@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { createTriggerPublicToken } from "~/actions/trigger";
+import { ResponseFilters, type ScreeningFilter } from "~/components/response";
 import { useTRPC } from "~/trpc/react";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ResponseRow } from "./response-row";
@@ -64,6 +65,8 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessingAll, setIsProcessingAll] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [screeningFilter, setScreeningFilter] =
+    useState<ScreeningFilter>("all");
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -92,10 +95,32 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
     setCurrentPage(1);
   };
 
-  const sortedResponses = useMemo(() => {
-    if (!sortField) return responses;
+  const filteredResponses = useMemo(() => {
+    return responses.filter((response) => {
+      switch (screeningFilter) {
+        case "evaluated":
+          return (
+            response.screening !== null && response.screening !== undefined
+          );
+        case "not-evaluated":
+          return (
+            response.screening === null || response.screening === undefined
+          );
+        case "high-score":
+          return response.screening && response.screening.score >= 4;
+        case "low-score":
+          return response.screening && response.screening.score < 4;
+        case "all":
+        default:
+          return true;
+      }
+    });
+  }, [responses, screeningFilter]);
 
-    return [...responses].sort((a, b) => {
+  const sortedResponses = useMemo(() => {
+    if (!sortField) return filteredResponses;
+
+    return [...filteredResponses].sort((a, b) => {
       let comparison = 0;
 
       if (sortField === "score") {
@@ -114,7 +139,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
 
       return sortDirection === "asc" ? comparison : -comparison;
     });
-  }, [responses, sortField, sortDirection]);
+  }, [filteredResponses, sortField, sortDirection]);
 
   const totalPages = Math.ceil(sortedResponses.length / ITEMS_PER_PAGE);
 
@@ -264,8 +289,14 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
     <div className="space-y-4">
       {responses.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Всего откликов: {responses.length}
+          <div className="flex items-center gap-4">
+            <div className="text-sm text-muted-foreground">
+              Показано: {filteredResponses.length} из {responses.length}
+            </div>
+            <ResponseFilters
+              selectedFilter={screeningFilter}
+              onFilterChange={setScreeningFilter}
+            />
           </div>
           <div className="flex gap-2">
             <Button
@@ -400,11 +431,22 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {responses.length === 0 ? (
+            {filteredResponses.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-[200px]">
                   <div className="flex items-center justify-center">
-                    <p className="text-muted-foreground">Нет откликов</p>
+                    <div className="text-center">
+                      <p className="text-muted-foreground">
+                        {responses.length > 0
+                          ? "Нет откликов по выбранному фильтру"
+                          : "Нет откликов"}
+                      </p>
+                      {responses.length > 0 && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Попробуйте изменить фильтр
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
               </TableRow>
