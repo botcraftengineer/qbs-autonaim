@@ -33,6 +33,13 @@ export const candidateWelcomeDataSchema = z.object({
   chatId: z.string().min(1, "Chat ID is required"),
 });
 
+// Schema for sending message by username event data
+export const sendMessageByUsernameDataSchema = z.object({
+  responseId: z.string().min(1, "Response ID is required"),
+  username: z.string().min(1, "Username is required"),
+  message: z.string().optional(),
+});
+
 /**
  * Inngest event schemas using Zod
  * Each event must have a 'data' field containing the payload
@@ -53,6 +60,9 @@ export const inngestEventSchemas = {
   "candidate/welcome": {
     data: candidateWelcomeDataSchema,
   },
+  "telegram/send-by-username": {
+    data: sendMessageByUsernameDataSchema,
+  },
 };
 
 /**
@@ -70,4 +80,7 @@ export type VacancyResponsesRefreshPayload = z.infer<
 >;
 export type CandidateWelcomePayload = z.infer<
   typeof candidateWelcomeDataSchema
+>;
+export type SendMessageByUsernamePayload = z.infer<
+  typeof sendMessageByUsernameDataSchema
 >;

@@ -3,6 +3,7 @@ export interface VacancyResponse {
   vacancyId: string;
   resumeUrl: string;
   candidateName: string | null;
+  telegramUsername: string | null;
   status:
     | "NEW"
     | "EVALUATED"

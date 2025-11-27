@@ -6,11 +6,13 @@ export {
   refreshVacancyResponsesFunction,
   screenResponseFunction,
   sendCandidateWelcomeFunction,
+  sendMessageByUsernameFunction,
 } from "./inngest";
 export { generateWelcomeMessage } from "./services/candidate-welcome-service";
 export {
   triggerCandidateWelcome,
   triggerResponseScreening,
+  triggerSendMessageByUsername,
   triggerVacanciesUpdate,
   triggerVacancyRequirementsExtraction as triggerVacancyRequirementsExtractionInngest,
   triggerVacancyResponsesRefresh,

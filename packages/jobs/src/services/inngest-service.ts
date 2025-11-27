@@ -120,3 +120,33 @@ export async function triggerCandidateWelcome(
     throw error;
   }
 }
+
+/**
+ * Triggers sending message by username via Inngest
+ */
+export async function triggerSendMessageByUsername(
+  responseId: string,
+  username: string,
+  message?: string
+): Promise<void> {
+  try {
+    await inngest.send({
+      name: "telegram/send-by-username",
+      data: {
+        responseId,
+        username,
+        message,
+      },
+    });
+
+    console.log(
+      `✅ Inngest event sent for sending message to @${username} (response: ${responseId})`
+    );
+  } catch (error) {
+    console.error(
+      `❌ Ошибка отправки Inngest события для отправки сообщения @${username}:`,
+      error
+    );
+    throw error;
+  }
+}

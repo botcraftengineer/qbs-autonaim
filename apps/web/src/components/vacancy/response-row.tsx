@@ -99,6 +99,7 @@ export function ResponseRow({
             responseId={response.id}
             resumeUrl={response.resumeUrl}
             candidateName={response.candidateName}
+            telegramUsername={response.telegramUsername}
             hasGreeting={!!response.screening?.greeting}
           />
         </div>

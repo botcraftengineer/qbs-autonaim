@@ -23,6 +23,7 @@ interface ResponseActionsProps {
   responseId: string;
   resumeUrl: string;
   candidateName?: string | null;
+  telegramUsername?: string | null;
   hasGreeting?: boolean;
 }
 
@@ -30,17 +31,18 @@ export function ResponseActions({
   responseId,
   resumeUrl,
   candidateName,
+  telegramUsername,
   hasGreeting = false,
 }: ResponseActionsProps) {
   const trpc = useTRPC();
 
-  const sendWelcomeMutation = useMutation(
-    trpc.vacancy.responses.sendWelcome.mutationOptions({
+  const sendByUsernameMutation = useMutation(
+    trpc.vacancy.responses.sendByUsername.mutationOptions({
       onSuccess: () => {
-        toast.success("Приветственное сообщение отправлено в Telegram!");
+        toast.success("Сообщение отправлено в Telegram!");
       },
-      onError: (error: Error) => {
-        console.error("Ошибка отправки приветствия:", error);
+      onError: (error: unknown) => {
+        console.error("Ошибка отправки сообщения:", error);
         toast.error("Ошибка отправки сообщения");
       },
     })
@@ -51,9 +53,14 @@ export function ResponseActions({
   };
 
   const handleSendGreeting = () => {
-    // Тестовый chatId для @BotCraftEngineer
-    const testChatId = "5652886641";
-    sendWelcomeMutation.mutate({ responseId, chatId: testChatId });
+    if (!telegramUsername) {
+      toast.error("У кандидата не указан Telegram username");
+      return;
+    }
+    sendByUsernameMutation.mutate({
+      responseId,
+      username: "@BotCraftEngineer",
+    });
   };
 
   const handleOpenResume = () => {
@@ -78,15 +85,15 @@ export function ResponseActions({
           Оценить кандидата
         </DropdownMenuItem>
 
-        {hasGreeting && (
+        {hasGreeting && telegramUsername && (
           <DropdownMenuItem
             onClick={handleSendGreeting}
-            disabled={sendWelcomeMutation.isPending}
+            disabled={sendByUsernameMutation.isPending}
           >
             <IconSend className="h-4 w-4" />
-            {sendWelcomeMutation.isPending
+            {sendByUsernameMutation.isPending
               ? "Отправка..."
-              : "Отправить приветствие"}
+              : "Отправить в Telegram"}
           </DropdownMenuItem>
         )}
 

@@ -34,15 +34,15 @@ export function IntegrationCard({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const deleteMutation = useMutation({
-    mutationFn: () =>
-      trpc.integration.delete.mutate({ type: availableIntegration.type }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.integration.list.queryKey(),
-      });
-    },
-  });
+  const deleteMutation = useMutation(
+    trpc.integration.delete.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.integration.list.queryKey(),
+        });
+      },
+    })
+  );
 
   const isActive = integration?.isActive === "true";
   const isConnected = !!integration;
@@ -111,7 +111,9 @@ export function IntegrationCard({
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => deleteMutation.mutate()}
+                onClick={() =>
+                  deleteMutation.mutate({ type: availableIntegration.type })
+                }
                 disabled={deleteMutation.isPending}
               >
                 <Trash2 className="h-4 w-4" />
