@@ -2,6 +2,7 @@ version: "3"
 volumes:
   minio:
 services:
+
   inbucket:
     restart: always
     image: inbucket/inbucket:latest
@@ -41,3 +42,19 @@ services:
       /usr/bin/mc anonymous set public minio/files.acme.com;
       exit 0;
       "
+  jobs:
+    restart: always
+    build:
+      context: .
+      dockerfile: packages/jobs/Dockerfile
+    container_name: jobs
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    depends_on:
+      - minio
+      - inbucket
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
