@@ -167,29 +167,7 @@ bot.on("message:voice", async (ctx) => {
   }
 });
 
-export async function sendMessage(
-  chatId: string,
-  text: string,
-  sender: "BOT" | "ADMIN" = "BOT",
-) {
-  const [conversation] = await db
-    .select()
-    .from(telegramConversation)
-    .where(eq(telegramConversation.chatId, chatId))
-    .limit(1);
-
-  if (!conversation) {
-    throw new Error("Conversation not found");
-  }
-
+export async function sendMessage(chatId: string, text: string) {
   const sentMessage = await bot.api.sendMessage(chatId, text);
-
-  await db.insert(telegramMessage).values({
-    conversationId: conversation.id,
-    sender,
-    content: text,
-    telegramMessageId: sentMessage.message_id.toString(),
-  });
-
   return sentMessage;
 }
