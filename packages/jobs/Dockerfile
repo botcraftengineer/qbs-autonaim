@@ -21,6 +21,8 @@ WORKDIR /app
 FROM base AS deps
 COPY package.json bun.lock turbo.json ./
 COPY packages/jobs/package.json ./packages/jobs/
+COPY packages/lib/package.json ./packages/lib/
+COPY packages/telegram-bot/package.json ./packages/telegram-bot/
 COPY packages/db/package.json ./packages/db/
 COPY packages/config/package.json ./packages/config/
 COPY tooling/typescript/package.json ./tooling/typescript/
@@ -50,6 +52,8 @@ RUN addgroup --system --gid 1001 bunjs && \
 COPY --from=builder --chown=bunuser:bunjs /app/node_modules ./node_modules
 COPY --from=builder --chown=bunuser:bunjs /app/packages/jobs ./packages/jobs
 COPY --from=builder --chown=bunuser:bunjs /app/packages/db ./packages/db
+COPY --from=builder --chown=bunuser:bunjs /app/packages/lib ./packages/lib
+COPY --from=builder --chown=bunuser:bunjs /app/packages/telegram-bot ./packages/telegram-bot
 COPY --from=builder --chown=bunuser:bunjs /app/packages/config ./packages/config
 COPY --from=builder --chown=bunuser:bunjs /app/package.json ./package.json
 
