@@ -21,9 +21,10 @@
   "dependencies": {
     "@selectio/auth": "workspace:*",
     "@selectio/db": "workspace:*",
+    "@selectio/jobs": "workspace:*",
     "@selectio/validators": "workspace:*",
     "@trpc/server": "^11.7.2",
-    "superjson": "2.2.5",
+    "superjson": "2.2.6",
     "zod": "4.1.13"
   },
   "devDependencies": {
