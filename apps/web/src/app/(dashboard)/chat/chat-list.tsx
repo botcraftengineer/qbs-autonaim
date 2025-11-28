@@ -1,18 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import { MessageCircle } from "lucide-react";
-import { useTRPC } from "~/trpc/react";
+import {
+  Avatar,
+  AvatarFallback,
+  Badge,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Skeleton,
+} from "@selectio/ui";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
+import { MessageCircle } from "lucide-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useTRPC } from "~/trpc/react";
 
 export function ChatList() {
   const trpc = useTRPC();
   const pathname = usePathname();
-  const [selectedVacancyId, setSelectedVacancyId] = useState<string>("");
+  const [selectedVacancyId, setSelectedVacancyId] = useState<string>("all");
 
   // Получаем список вакансий для фильтра
   const vacanciesQueryOptions = trpc.vacancy.list.queryOptions();
@@ -21,7 +32,7 @@ export function ChatList() {
   // Получаем чаты с учетом фильтра
   const conversationsQueryOptions =
     trpc.telegram.conversation.getAll.queryOptions({
-      vacancyId: selectedVacancyId || undefined,
+      vacancyId: selectedVacancyId === "all" ? undefined : selectedVacancyId,
     });
   const {
     data: conversations = [],
@@ -31,10 +42,25 @@ export function ChatList() {
 
   if (isPending) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-500 mx-auto mb-4" />
-          <p className="text-muted-foreground">Загрузка чатов...</p>
+      <div className="flex flex-col h-full">
+        <div className="border-b px-4 py-3 space-y-3">
+          <Skeleton className="h-7 w-24" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+        <div className="flex-1 space-y-0">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div
+              key={`skeleton-${i}`}
+              className="flex items-start gap-3 px-4 py-3 border-b"
+            >
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-3 w-full" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -71,21 +97,19 @@ export function ChatList() {
         <h1 className="text-xl font-semibold">Чаты</h1>
 
         {/* Фильтр по вакансиям */}
-        <div className="flex items-center gap-2">
-          <select
-            id="vacancy-filter"
-            value={selectedVacancyId}
-            onChange={(e) => setSelectedVacancyId(e.target.value)}
-            className="flex-1 h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-          >
-            <option value="">Все вакансии</option>
+        <Select value={selectedVacancyId} onValueChange={setSelectedVacancyId}>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Все вакансии" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Все вакансии</SelectItem>
             {vacancies.map((vacancy) => (
-              <option key={vacancy.id} value={vacancy.id}>
+              <SelectItem key={vacancy.id} value={vacancy.id}>
                 {vacancy.title}
-              </option>
+              </SelectItem>
             ))}
-          </select>
-        </div>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -123,9 +147,11 @@ export function ChatList() {
                   isActive ? "bg-muted" : ""
                 }`}
               >
-                <div className="h-12 w-12 rounded-full bg-teal-500 flex items-center justify-center text-white font-semibold shrink-0">
-                  {initials}
-                </div>
+                <Avatar className="h-12 w-12">
+                  <AvatarFallback className="bg-teal-500 text-white font-semibold">
+                    {initials}
+                  </AvatarFallback>
+                </Avatar>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2 mb-1">
@@ -140,9 +166,12 @@ export function ChatList() {
                   </div>
 
                   {vacancyTitle && (
-                    <p className="text-xs text-teal-600 mb-1 truncate">
+                    <Badge
+                      variant="outline"
+                      className="mb-1 text-teal-600 border-teal-200"
+                    >
                       {vacancyTitle}
-                    </p>
+                    </Badge>
                   )}
 
                   {lastMessage && (

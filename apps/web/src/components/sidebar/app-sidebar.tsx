@@ -32,11 +32,7 @@ const data = {
       url: "/vacancies",
       icon: IconFileDescription,
     },
-    {
-      title: "Отклики",
-      url: "/responses",
-      icon: IconListDetails,
-    },
+
     {
       title: "Чаты",
       url: "/chat",
