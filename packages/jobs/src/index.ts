@@ -7,6 +7,7 @@ export {
   screenResponseFunction,
   sendCandidateWelcomeFunction,
   sendTelegramMessageFunction,
+  transcribeVoiceFunction,
 } from "./inngest";
 export { generateWelcomeMessage } from "./services/candidate-welcome-service";
 export {
@@ -16,6 +17,7 @@ export {
   triggerVacanciesUpdate,
   triggerVacancyRequirementsExtraction as triggerVacancyRequirementsExtractionInngest,
   triggerVacancyResponsesRefresh,
+  triggerVoiceTranscription,
 } from "./services/inngest-service";
 export { screenResponse } from "./services/response-screening-service";
 export {
@@ -29,6 +31,7 @@ export {
   extractVacancyRequirements,
   getVacancyRequirements,
 } from "./services/screening-prompt-service";
+export { transcribeAudio } from "./services/transcription-service";
 export { triggerVacancyRequirementsExtraction } from "./services/trigger-service";
 // Trigger tasks
 export { extractVacancyRequirementsTask } from "./trigger/extract-vacancy-requirements";

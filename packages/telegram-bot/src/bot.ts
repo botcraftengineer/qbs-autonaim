@@ -96,31 +96,37 @@ bot.on("message:voice", async (ctx) => {
       "audio/ogg",
     );
 
-    // Транскрибируем аудио
-    const { transcribeAudio } = await import("./transcription");
-    const transcription = await transcribeAudio(fileBuffer);
-
     // Парсим metadata для отслеживания прогресса ответов на вопросы
-    let metadata: any = {};
+    let metadata: Record<string, unknown> = {};
     try {
       metadata = conversation.metadata ? JSON.parse(conversation.metadata) : {};
     } catch (e) {
       console.error("Ошибка парсинга metadata:", e);
     }
 
-    const questionAnswers = metadata.questionAnswers || [];
-    const totalQuestions = metadata.totalQuestions || 0;
+    const questionAnswers = (metadata.questionAnswers as unknown[]) || [];
+    const totalQuestions = (metadata.totalQuestions as number) || 0;
 
-    await db.insert(telegramMessage).values({
-      conversationId: conversation.id,
-      sender: "CANDIDATE",
-      contentType: "VOICE",
-      content: transcription || `Ответ на вопрос ${questionAnswers.length + 1}`,
-      fileId,
-      voiceDuration: voice.duration.toString(),
-      voiceTranscription: transcription,
-      telegramMessageId: ctx.message.message_id.toString(),
-    });
+    const [message] = await db
+      .insert(telegramMessage)
+      .values({
+        conversationId: conversation.id,
+        sender: "CANDIDATE",
+        contentType: "VOICE",
+        content: `Ответ на вопрос ${questionAnswers.length + 1}`,
+        fileId,
+        voiceDuration: voice.duration.toString(),
+        telegramMessageId: ctx.message.message_id.toString(),
+      })
+      .returning();
+
+    if (!message) {
+      throw new Error("Не удалось создать запись сообщения");
+    }
+
+    // Запускаем транскрибацию в фоне через Inngest
+    const { triggerVoiceTranscription } = await import("@selectio/jobs");
+    await triggerVoiceTranscription(message.id, fileId);
 
     // Обновляем прогресс ответов
     if (totalQuestions > 0 && questionAnswers.length < totalQuestions) {

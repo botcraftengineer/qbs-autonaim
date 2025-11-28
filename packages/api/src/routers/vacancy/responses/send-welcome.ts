@@ -28,6 +28,7 @@ export const sendWelcome = protectedProcedure
       .insert(telegramConversation)
       .values({
         chatId,
+        responseId,
         candidateName: response.candidateName,
         status: "ACTIVE",
         metadata: JSON.stringify({
@@ -38,6 +39,7 @@ export const sendWelcome = protectedProcedure
       .onConflictDoUpdate({
         target: telegramConversation.chatId,
         set: {
+          responseId,
           candidateName: response.candidateName,
           status: "ACTIVE",
           metadata: JSON.stringify({

@@ -98,7 +98,9 @@ export function ResponseActions({
         toast.error("Не удалось отправить приветствие");
         return;
       }
-      toast.success("Приветствие отправлено");
+      toast.success(
+        `Приветствие отправлено ${candidateName ? candidateName : `@${telegramUsername}`}`,
+      );
     } catch (error) {
       console.error("Ошибка отправки приветствия:", error);
       toast.error("Ошибка отправки приветствия");

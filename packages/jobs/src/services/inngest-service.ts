@@ -152,3 +152,29 @@ export async function triggerTelegramMessageSend(
     throw error;
   }
 }
+
+/**
+ * Triggers voice transcription job via Inngest
+ */
+export async function triggerVoiceTranscription(
+  messageId: string,
+  fileId: string,
+): Promise<void> {
+  try {
+    await inngest.send({
+      name: "telegram/voice.transcribe",
+      data: {
+        messageId,
+        fileId,
+      },
+    });
+
+    console.log(`✅ Inngest event sent for voice transcription: ${messageId}`);
+  } catch (error) {
+    console.error(
+      `❌ Ошибка отправки Inngest события для транскрибации ${messageId}:`,
+      error,
+    );
+    throw error;
+  }
+}

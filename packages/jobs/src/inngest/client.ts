@@ -13,6 +13,7 @@ import {
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
   vacancyUpdateActiveDataSchema,
+  voiceTranscriptionDataSchema,
 } from "./types";
 
 // Create Inngest client with Zod schemas for type-safe events
@@ -33,5 +34,6 @@ export const inngest = new Inngest({
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
     "telegram/message.send": telegramMessageSendDataSchema,
+    "telegram/voice.transcribe": voiceTranscriptionDataSchema,
   }),
 });
