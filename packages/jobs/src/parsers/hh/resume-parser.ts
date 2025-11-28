@@ -33,6 +33,7 @@ export async function parseResumeExperience(
   let education = "";
   let courses = "";
   let contacts = null;
+  let phone: string | null = null;
 
   // Парсинг опыта работы
   try {
@@ -167,6 +168,18 @@ export async function parseResumeExperience(
         try {
           contacts = await contactsPromise;
           console.log("✅ Контакты получены");
+
+          // Парсим телефон из контактов
+          if (contacts && typeof contacts === "object" && "phone" in contacts) {
+            const phoneData = (contacts as any).phone;
+            if (Array.isArray(phoneData) && phoneData.length > 0) {
+              const firstPhone = phoneData[0];
+              phone = firstPhone.formatted || firstPhone.raw || null;
+              if (phone) {
+                console.log(`📞 Телефон извлечен: ${phone}`);
+              }
+            }
+          }
         } catch (_e) {
           console.log("⚠️ Таймаут ожидания контактов, продолжаем без них.");
         }
@@ -186,5 +199,5 @@ export async function parseResumeExperience(
   // Clean up the 403 logging handler
   page.off("response", log403Handler);
 
-  return { experience, contacts, languages, about, education, courses };
+  return { experience, contacts, phone, languages, about, education, courses };
 }

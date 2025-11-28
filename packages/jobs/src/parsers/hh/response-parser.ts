@@ -301,6 +301,7 @@ async function parseResponseDetails(
         candidateName: response.name,
         experience: experienceData.experience,
         contacts: experienceData.contacts,
+        phone: experienceData.phone,
         languages: experienceData.languages,
         about: experienceData.about,
         education: experienceData.education,

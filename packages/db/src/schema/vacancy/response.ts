@@ -42,6 +42,7 @@ export const vacancyResponse = pgTable("vacancy_responses", {
   hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
   experience: text("experience"),
   contacts: jsonb("contacts"),
+  phone: varchar("phone", { length: 50 }),
   languages: text("languages"),
   about: text("about"),
   education: text("education"),

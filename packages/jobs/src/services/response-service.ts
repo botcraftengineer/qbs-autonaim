@@ -40,6 +40,7 @@ export async function saveBasicResponse(
         status: "NEW",
         experience: "",
         contacts: null,
+        phone: null,
         languages: "",
         about: "",
         education: "",
@@ -90,6 +91,7 @@ export async function updateResponseDetails(response: SaveResponseData) {
       .set({
         experience: response.experience,
         contacts: response.contacts,
+        phone: response.phone,
         languages: response.languages,
         about: response.about,
         education: response.education,
@@ -140,6 +142,7 @@ export async function saveResponseToDb(response: SaveResponseData) {
         status: "NEW",
         experience: response.experience,
         contacts: response.contacts,
+        phone: response.phone,
         languages: response.languages,
         about: response.about,
         education: response.education,
