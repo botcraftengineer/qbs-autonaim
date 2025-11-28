@@ -35,6 +35,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 # Build the project (this will build config, db, etc.)
+ENV CI=true
 RUN bun run build --filter=@selectio/jobs...
 
 # Stage: runner - Run the application
