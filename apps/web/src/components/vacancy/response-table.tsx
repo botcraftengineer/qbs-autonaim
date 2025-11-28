@@ -65,6 +65,7 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessingAll, setIsProcessingAll] = useState(false);
+  const [isProcessingNew, setIsProcessingNew] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSendingWelcome, setIsSendingWelcome] = useState(false);
   const [screeningFilter, setScreeningFilter] =
@@ -237,7 +238,6 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
         `Запущена пакетная оценка ${data.count} откликов (batch ID: ${data.batchId})`,
       );
 
-      // Обновляем данные через некоторое время, чтобы дать триггерам время выполниться
       setTimeout(() => {
         void queryClient.invalidateQueries(
           trpc.vacancy.responses.list.pathFilter(),
@@ -245,6 +245,40 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
       }, 2000);
     } finally {
       setIsProcessingAll(false);
+    }
+  };
+
+  const handleScreenNew = async () => {
+    if (!accessToken) return;
+
+    setIsProcessingNew(true);
+
+    try {
+      const res = await fetch("/api/trigger/screen-new-responses", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({ vacancyId }),
+      });
+
+      const data = await res.json();
+
+      if (!data.success) {
+        console.error("Failed to trigger screen new:", data.error);
+        return;
+      }
+
+      console.log("Запущена оценка новых откликов");
+
+      setTimeout(() => {
+        void queryClient.invalidateQueries(
+          trpc.vacancy.responses.list.pathFilter(),
+        );
+      }, 2000);
+    } finally {
+      setIsProcessingNew(false);
     }
   };
 
@@ -348,6 +382,36 @@ export function ResponseTable({ responses, vacancyId }: ResponseTableProps) {
               )}
               {isRefreshing ? "Обновление..." : "Получить новые отклики"}
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  disabled={!accessToken || isProcessingNew}
+                  variant="outline"
+                >
+                  {isProcessingNew ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4 mr-2" />
+                  )}
+                  {isProcessingNew ? "Запуск оценки..." : "Оценить новые"}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Оценка новых откликов</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Будут оценены только отклики без скрининга. Процесс будет
+                    выполняться в фоновом режиме.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Отмена</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleScreenNew}>
+                    Запустить оценку
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button

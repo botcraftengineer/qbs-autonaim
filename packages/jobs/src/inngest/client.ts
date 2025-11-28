@@ -4,6 +4,7 @@ import {
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
   responseScreenDataSchema,
+  screenNewResponsesDataSchema,
   telegramMessageSendDataSchema,
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
@@ -18,6 +19,7 @@ export const inngest = new Inngest({
   schemas: new EventSchemas().fromSchema({
     "vacancy/requirements.extract": vacancyRequirementsExtractDataSchema,
     "response/screen": responseScreenDataSchema,
+    "response/screen.new": screenNewResponsesDataSchema,
     "vacancy/update.active": vacancyUpdateActiveDataSchema,
     "vacancy/responses.refresh": vacancyResponsesRefreshDataSchema,
     "candidate/welcome": candidateWelcomeDataSchema,

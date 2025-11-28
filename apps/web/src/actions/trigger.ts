@@ -79,6 +79,22 @@ export async function triggerScreenAllResponses(vacancyId: string) {
   }
 }
 
+export async function triggerScreenNewResponses(vacancyId: string) {
+  try {
+    const { inngest } = await import("@selectio/jobs/client");
+    await inngest.send({
+      name: "response/screen.new",
+      data: {
+        vacancyId,
+      },
+    });
+    return { success: true as const };
+  } catch (error) {
+    console.error("Failed to trigger screen-new-responses:", error);
+    return { success: false as const, error: "Failed to trigger screening" };
+  }
+}
+
 export async function triggerUpdateVacancies() {
   try {
     const { inngest } = await import("@selectio/jobs/client");
