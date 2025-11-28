@@ -16,7 +16,7 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
 
 WORKDIR /app
 
-# Stage: deps - Install dependencies
+# Stage: deps - Install all dependencies (including dev for build)
 FROM base AS deps
 COPY package.json bun.lock turbo.json ./
 COPY packages/jobs/package.json ./packages/jobs/
@@ -47,7 +47,7 @@ COPY tooling/typescript ./tooling/typescript
 
 # Build the project
 ENV CI=true
-RUN bun run build --filter=@selectio/jobs...
+RUN bun run build
 
 # Stage: production-deps - Install only production dependencies
 FROM base AS production-deps
