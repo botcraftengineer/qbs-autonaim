@@ -6,6 +6,7 @@ import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { VoicePlayer } from "~/components/chat/voice-player";
 import { useTRPC } from "~/trpc/react";
 
 export function ChatView({ conversationId }: { conversationId: string }) {
@@ -157,6 +158,9 @@ export function ChatView({ conversationId }: { conversationId: string }) {
               const fileUrl =
                 (msg as typeof msg & { fileUrl?: string | null }).fileUrl ||
                 null;
+              const voiceTranscription =
+                (msg as typeof msg & { voiceTranscription?: string | null })
+                  .voiceTranscription || null;
 
               return (
                 <div
@@ -170,28 +174,23 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                       {senderLabel}
                     </p>
                     {isVoice && fileUrl ? (
-                      <div className="flex items-center gap-2 min-w-[200px]">
-                        <audio
-                          controls
-                          className="w-full"
-                          preload="metadata"
-                          style={{
-                            height: "32px",
-                            filter: isAdmin
-                              ? "invert(1) brightness(1.2)"
-                              : isBot
-                                ? "invert(1) brightness(1.2)"
-                                : "brightness(0.9)",
-                          }}
-                        >
-                          <source src={fileUrl} type="audio/ogg; codecs=opus" />
-                          <track kind="captions" />
-                          Ваш браузер не поддерживает аудио
-                        </audio>
-                        {msg.voiceDuration && (
-                          <span className="text-xs opacity-70 whitespace-nowrap">
-                            {msg.voiceDuration}
-                          </span>
+                      <div className="space-y-2">
+                        <VoicePlayer src={fileUrl} isOutgoing={isAdmin} />
+                        {voiceTranscription && (
+                          <div
+                            className={`text-xs leading-relaxed pt-2 border-t ${
+                              isAdmin
+                                ? "border-teal-400/30"
+                                : isBot
+                                  ? "border-blue-400/30"
+                                  : "border-border/50"
+                            }`}
+                          >
+                            <p className="opacity-70 mb-1 font-medium">
+                              Транскрипция:
+                            </p>
+                            <p className="opacity-90">{voiceTranscription}</p>
+                          </div>
                         )}
                       </div>
                     ) : (

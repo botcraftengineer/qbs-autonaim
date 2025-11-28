@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage, cn } from "@selectio/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Bot, Check, Shield, User } from "lucide-react";
+import { VoicePlayer } from "./voice-player";
 
 export type MessageSender = "bot" | "candidate" | "admin";
 
@@ -13,7 +14,7 @@ export interface ChatMessageProps {
   content: string;
   contentType?: "TEXT" | "VOICE";
   fileUrl?: string | null;
-  voiceDuration?: string | null;
+  voiceTranscription?: string | null;
   timestamp: Date;
   senderName?: string;
   avatarUrl?: string;
@@ -42,7 +43,7 @@ export function ChatMessage({
   content,
   contentType = "TEXT",
   fileUrl,
-  voiceDuration,
+  voiceTranscription,
   timestamp,
   senderName,
   avatarUrl,
@@ -94,26 +95,20 @@ export function ChatMessage({
           )}
         >
           {isVoice && fileUrl ? (
-            <div className="flex items-center gap-2 min-w-[200px]">
-              <audio
-                controls
-                className="w-full"
-                preload="metadata"
-                style={{
-                  height: "32px",
-                  filter: isOutgoing
-                    ? "invert(1) brightness(1.2)"
-                    : "brightness(0.9)",
-                }}
-              >
-                <source src={fileUrl} type="audio/ogg; codecs=opus" />
-                <track kind="captions" />
-                Ваш браузер не поддерживает аудио
-              </audio>
-              {voiceDuration && (
-                <span className="text-xs opacity-70 whitespace-nowrap">
-                  {voiceDuration}
-                </span>
+            <div className="space-y-2">
+              <VoicePlayer src={fileUrl} isOutgoing={isOutgoing} />
+              {voiceTranscription && (
+                <div
+                  className={cn(
+                    "text-xs leading-relaxed pt-2 border-t",
+                    isOutgoing
+                      ? "border-white/20"
+                      : "border-gray-200 dark:border-gray-700",
+                  )}
+                >
+                  <p className="opacity-70 mb-1 font-medium">Транскрипция:</p>
+                  <p className="opacity-90">{voiceTranscription}</p>
+                </div>
               )}
             </div>
           ) : (
