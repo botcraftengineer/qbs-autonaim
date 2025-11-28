@@ -8,4 +8,24 @@ export type VacancyResponse = DbVacancyResponse & {
     questions: unknown;
     greeting: string | null;
   } | null;
+  conversation?: {
+    id: string;
+    chatId: string;
+    candidateName: string | null;
+    status: "ACTIVE" | "COMPLETED" | "CANCELLED";
+    metadata: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    messages: Array<{
+      id: string;
+      conversationId: string;
+      sender: "CANDIDATE" | "BOT" | "ADMIN";
+      contentType: "TEXT" | "VOICE";
+      content: string;
+      fileId: string | null;
+      voiceDuration: string | null;
+      telegramMessageId: string | null;
+      createdAt: Date;
+    }>;
+  } | null;
 };

@@ -17,6 +17,7 @@ import {
 import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";
+import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
 import { ScreenResponseButton } from "./screen-response-button";
 import { ScreeningHoverCard } from "./screening-hover-card";
@@ -72,6 +73,11 @@ export function ResponseRow({
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
+              )}
+              {response.conversation && (
+                <ChatIndicator
+                  messageCount={response.conversation.messages.length}
+                />
               )}
             </div>
           </div>

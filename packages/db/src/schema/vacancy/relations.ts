@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { telegramConversation } from "../telegram/conversation";
 import { vacancyResponse } from "./response";
 import { responseScreening } from "./screening";
 import { vacancy } from "./vacancy";
@@ -17,6 +18,10 @@ export const vacancyResponseRelations = relations(
     screening: one(responseScreening, {
       fields: [vacancyResponse.id],
       references: [responseScreening.responseId],
+    }),
+    conversation: one(telegramConversation, {
+      fields: [vacancyResponse.telegramUsername],
+      references: [telegramConversation.chatId],
     }),
   }),
 );

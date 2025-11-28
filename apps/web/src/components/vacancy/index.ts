@@ -1,3 +1,4 @@
+export { ChatIndicator } from "./chat-indicator";
 export { ContactInfo } from "./contact-info";
 export { EmptyResponses } from "./empty-responses";
 export { GenerateRequirementsButton } from "./generate-requirements-button";

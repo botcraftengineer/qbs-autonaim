@@ -11,6 +11,11 @@ export const list = protectedProcedure
       orderBy: [desc(vacancyResponse.createdAt)],
       with: {
         screening: true,
+        conversation: {
+          with: {
+            messages: true,
+          },
+        },
       },
     });
 

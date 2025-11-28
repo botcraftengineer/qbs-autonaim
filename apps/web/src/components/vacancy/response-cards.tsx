@@ -22,6 +22,7 @@ import {
 import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";
+import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
 
 interface ResponseCardsProps {
@@ -60,6 +61,11 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                           </TooltipContent>
                         </Tooltip>
                       </TooltipProvider>
+                    )}
+                    {response.conversation && (
+                      <ChatIndicator
+                        messageCount={response.conversation.messages.length}
+                      />
                     )}
                   </CardTitle>
                   <CardDescription className="text-xs">
