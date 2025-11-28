@@ -26,16 +26,6 @@ const sidebarNavItems = [
     href: "/settings/integrations",
     icon: Globe,
   },
-  {
-    title: "Уведомления",
-    href: "/settings/notifications",
-    icon: Bell,
-  },
-  {
-    title: "Отображение",
-    href: "/settings/display",
-    icon: Monitor,
-  },
 ];
 
 export function SettingsSidebar() {

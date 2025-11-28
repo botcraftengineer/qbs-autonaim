@@ -1,7 +1,7 @@
 import { eq } from "@selectio/db";
-import { z } from "zod/v4";
-import { protectedProcedure } from "../../trpc";
 import { vacancy } from "@selectio/db/schema";
+import { z } from "zod";
+import { protectedProcedure } from "../../trpc";
 
 export const getById = protectedProcedure
   .input(z.object({ id: z.string() }))

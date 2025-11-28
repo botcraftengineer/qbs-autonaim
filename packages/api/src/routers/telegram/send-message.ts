@@ -6,7 +6,7 @@ import {
   telegramMessage,
 } from "@selectio/db";
 import { inngest } from "@selectio/jobs/client";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 export const sendMessageRouter = createTRPCRouter({

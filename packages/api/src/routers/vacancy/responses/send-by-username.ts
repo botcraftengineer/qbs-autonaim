@@ -1,7 +1,7 @@
 import { eq } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
 import { inngest } from "@selectio/jobs/client";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const sendByUsername = protectedProcedure

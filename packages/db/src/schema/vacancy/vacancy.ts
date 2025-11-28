@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import { z } from "zod/v4";
+import { z } from "zod";
 
 export const vacancy = pgTable("vacancies", {
   id: varchar("id", { length: 50 }).primaryKey(),

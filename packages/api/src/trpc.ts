@@ -11,7 +11,7 @@ import type { Auth } from "@selectio/auth";
 import { db } from "@selectio/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import { ZodError, z } from "zod/v4";
+import { ZodError, z } from "zod";
 
 /**
  * 1. CONTEXT

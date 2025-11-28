@@ -1,6 +1,6 @@
 import { eq } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const getById = protectedProcedure

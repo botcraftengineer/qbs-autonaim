@@ -1,6 +1,6 @@
 import { db, telegramConversation, telegramMessage } from "@selectio/db";
 import { desc, eq } from "drizzle-orm";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "../../trpc";
 
 export const getConversationRouter = createTRPCRouter({

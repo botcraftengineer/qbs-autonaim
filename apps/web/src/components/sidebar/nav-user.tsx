@@ -17,10 +17,8 @@ import {
   useSidebar,
 } from "@selectio/ui";
 import {
-  IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
@@ -105,14 +103,6 @@ export function NavUser({
               <DropdownMenuItem>
                 <IconUserCircle />
                 Аккаунт
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconCreditCard />
-                Оплата
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <IconNotification />
-                Уведомления
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
