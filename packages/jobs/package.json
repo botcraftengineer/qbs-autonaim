@@ -30,12 +30,14 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "^1.0.29",
+    "@ai-sdk/deepseek": "^1.0.30",
     "@inngest/realtime": "^0.4.5",
     "@selectio/db": "workspace:*",
+    "@selectio/lib": "workspace:*",
+    "@selectio/telegram-bot": "workspace:*",
     "@t3-oss/env-core": "0.13.8",
     "@trigger.dev/sdk": "4.1.2",
-    "ai": "^5.0.103",
+    "ai": "^5.0.104",
     "crawlee": "3.15.3",
     "inngest": "^3.46.0",
     "langfuse": "^3.38.6",
