@@ -96,6 +96,10 @@ bot.on("message:voice", async (ctx) => {
       "audio/ogg",
     );
 
+    // Транскрибируем аудио
+    const { transcribeAudio } = await import("./transcription");
+    const transcription = await transcribeAudio(fileBuffer);
+
     // Парсим metadata для отслеживания прогресса ответов на вопросы
     let metadata: any = {};
     try {
@@ -111,9 +115,10 @@ bot.on("message:voice", async (ctx) => {
       conversationId: conversation.id,
       sender: "CANDIDATE",
       contentType: "VOICE",
-      content: `Ответ на вопрос ${questionAnswers.length + 1}`,
+      content: transcription || `Ответ на вопрос ${questionAnswers.length + 1}`,
       fileId,
       voiceDuration: voice.duration.toString(),
+      voiceTranscription: transcription,
       telegramMessageId: ctx.message.message_id.toString(),
     });
 

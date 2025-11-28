@@ -20,8 +20,8 @@ export const vacancyResponseRelations = relations(
       references: [responseScreening.responseId],
     }),
     conversation: one(telegramConversation, {
-      fields: [vacancyResponse.telegramUsername],
-      references: [telegramConversation.chatId],
+      fields: [vacancyResponse.id],
+      references: [telegramConversation.responseId],
     }),
   }),
 );

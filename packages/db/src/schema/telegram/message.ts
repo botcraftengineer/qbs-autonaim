@@ -32,6 +32,7 @@ export const telegramMessage = pgTable("telegram_messages", {
   content: text("content").notNull(),
   fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
   voiceDuration: varchar("voice_duration", { length: 20 }),
+  voiceTranscription: text("voice_transcription"),
   telegramMessageId: varchar("telegram_message_id", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -43,6 +44,7 @@ export const CreateTelegramMessageSchema = createInsertSchema(telegramMessage, {
   content: z.string(),
   fileId: z.string().uuid().optional(),
   voiceDuration: z.string().max(20).optional(),
+  voiceTranscription: z.string().optional(),
   telegramMessageId: z.string().max(100).optional(),
 }).omit({
   id: true,
