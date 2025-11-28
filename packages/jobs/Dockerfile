@@ -54,4 +54,4 @@ USER bunuser
 EXPOSE 8000
 
 
-CMD ["bun", "run", "/app/packages/jobs/src/index.ts"]
+CMD ["bun", "run", "/app/packages/jobs/src/inngest/server.ts"]
