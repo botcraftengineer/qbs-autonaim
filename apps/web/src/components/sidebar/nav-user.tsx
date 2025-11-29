@@ -44,9 +44,15 @@ export function NavUser({
 }) {
   const { isMobile } = useSidebar();
   const initials = getInitials(user.name);
-
+  const router = useRouter();
   const handleLogout = async () => {
-    await authClient.signOut();
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/login"); // redirect to login page
+        },
+      },
+    });
   };
 
   return (

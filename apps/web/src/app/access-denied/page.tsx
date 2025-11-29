@@ -2,12 +2,19 @@
 
 import { Button } from "@selectio/ui";
 import { ShieldAlert } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { authClient } from "~/auth/client";
 
 export default function AccessDeniedPage() {
-
+  const router = useRouter();
   const handleSignOut = async () => {
-    await authClient.signOut();
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/auth/login"); // redirect to login page
+        },
+      },
+    });
   };
 
   return (
