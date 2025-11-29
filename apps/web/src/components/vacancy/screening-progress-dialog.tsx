@@ -31,7 +31,7 @@ export function ScreeningProgressDialog({
   // Подписываемся на канал Realtime
   const { data, error } = useInngestSubscription({
     refreshToken: () => fetchScreenNewResponsesToken(vacancyId),
-    enabled: isOpen,
+    enabled: true,
   });
 
   // Получаем последнее сообщение

@@ -75,13 +75,12 @@ export function ResponseTableToolbar({
   // Подписка на статус выполнения refresh
   const refreshSubscription = useInngestSubscription({
     refreshToken: () => fetchRefreshVacancyResponsesToken(vacancyId),
-    enabled: refreshDialogOpen && refreshStatus === "loading",
+    enabled: true,
   });
-  console.log(refreshDialogOpen, refreshStatus);
   // Подписка на статус выполнения parse
   const parseSubscription = useInngestSubscription({
     refreshToken: getParseResumesToken,
-    enabled: parseDialogOpen,
+    enabled: true,
   });
 
   // Обновляем статус на основе данных подписки для refresh
