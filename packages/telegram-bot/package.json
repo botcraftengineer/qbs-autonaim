@@ -13,7 +13,7 @@
   "scripts": {
     "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "bun run --env-file ../../.env src/index.ts",
+    "dev": "bun run --env-file ../../.env src/start.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "bun run --env-file ../../.env"
   },

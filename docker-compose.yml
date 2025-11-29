@@ -68,3 +68,13 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - HOSTNAME=0.0.0.0
+  telegram-bot:
+    restart: always
+    build:
+      context: .
+      dockerfile: packages/telegram-bot/Dockerfile
+    container_name: telegram-bot
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
