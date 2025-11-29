@@ -1,44 +1,41 @@
 FROM oven/bun:1.3.3-alpine AS base
-WORKDIR /app
 
-# Install system dependencies
-RUN apk add --no-cache openssl openssl-dev ca-certificates
+# The web Dockerfile is copy-pasted into our main docs at /docs/handbook/deploying-with-docker.
+# Make sure you update this Dockerfile, the Dockerfile in the web workspace and copy that over to Dockerfile in the docs.
 
-# --- Dependencies Stage ---
-FROM base AS deps
-# Copy package.json files
-COPY package.json bun.lock turbo.json ./
-COPY packages/config/package.json ./packages/config/
-COPY packages/jobs/package.json ./packages/jobs/
-COPY packages/db/package.json ./packages/db/
-COPY packages/lib/package.json ./packages/lib/
-COPY packages/telegram-bot/package.json ./packages/telegram-bot/
-COPY tooling/typescript/package.json ./tooling/typescript/
-
-# Install dependencies
-RUN bun install --ignore-scripts
-
-# --- Builder Stage ---
 FROM base AS builder
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk update
+RUN apk add --no-cache libc6-compat
+# Set working directory
+WORKDIR /app
+RUN bun add -g turbo
+COPY . .
+RUN turbo prune @selectio/jobs --docker
+
+# Add lockfile and package.json's of isolated subworkspace
+FROM base AS installer
+RUN apk update
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy node_modules from deps
-COPY --from=deps /app/node_modules ./node_modules
+# First install dependencies (as they change less often)
+COPY --from=builder /app/out/json/ .
+RUN bun install
 
-# Copy source code
-COPY package.json bun.lock turbo.json ./
-COPY packages/config ./packages/config
-COPY packages/jobs ./packages/jobs
-COPY packages/db ./packages/db
-COPY packages/lib ./packages/lib
-COPY packages/telegram-bot ./packages/telegram-bot
-COPY tooling/typescript ./tooling/typescript
+# Build the project and its dependencies
+COPY --from=builder /app/out/full/ .
 
-# Build the project
-RUN bun run build
+# Uncomment and use build args to enable remote caching
+# ARG TURBO_TEAM
+# ENV TURBO_TEAM=$TURBO_TEAM
 
-# --- Runner Stage ---
-FROM oven/bun:1.3.3-alpine AS runner
+# ARG TURBO_TOKEN
+# ENV TURBO_TOKEN=$TURBO_TOKEN
+
+RUN bunx turbo build --filter=@selectio/jobs
+
+FROM base AS runner
 WORKDIR /app
 
 # Install system dependencies including Chromium for Puppeteer
@@ -57,17 +54,11 @@ ENV NODE_ENV=production \
     PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 bunuser
+# Don't run production as root
+RUN addgroup --system --gid 1001 bunjs
+RUN adduser --system --uid 1001 bunjs
+USER bunjs
 
-# Copy artifacts
-COPY --from=builder --chown=bunuser:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=bunuser:nodejs /app/packages ./packages
-COPY --from=builder --chown=bunuser:nodejs /app/tooling ./tooling
-COPY --from=builder --chown=bunuser:nodejs /app/package.json ./package.json
-
-USER bunuser
-
-EXPOSE 8000
+COPY --from=installer /app .
 
 CMD ["bun", "run", "packages/jobs/src/inngest/server.ts"]

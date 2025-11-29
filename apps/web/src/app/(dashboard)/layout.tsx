@@ -1,7 +1,9 @@
 import { SidebarInset, SidebarProvider } from "@selectio/ui";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
 import { AppSidebar } from "~/components/sidebar";
+import { getUserRole } from "~/lib/auth-utils";
 
 export default async function DashboardLayout({
   children,
@@ -12,6 +14,13 @@ export default async function DashboardLayout({
 
   if (!session?.user) {
     return <>{children}</>;
+  }
+
+  // Проверяем роль пользователя
+  const userRole = await getUserRole(session.user.id);
+
+  if (userRole !== "admin") {
+    redirect("/access-denied");
   }
 
   return (

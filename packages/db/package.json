@@ -25,6 +25,7 @@
     "push": "bun with-env drizzle-kit push",
     "studio": "bun with-env drizzle-kit studio",
     "generate-key": "bun src/scripts/generate-encryption-key.ts",
+    "set-admin": "bun with-env bun src/scripts/set-admin-role.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "bun run --env-file ../../.env"
   },

@@ -1,5 +1,8 @@
 import { boolean, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
+export const userRoleEnum = ["admin", "user"] as const;
+export type UserRole = (typeof userRoleEnum)[number];
+
 export const user = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -9,6 +12,7 @@ export const user = pgTable("users", {
   username: text("username"),
   bio: text("bio"),
   language: text("language").default("en"),
+  role: text("role", { enum: userRoleEnum }).default("user").notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at")
     .defaultNow()

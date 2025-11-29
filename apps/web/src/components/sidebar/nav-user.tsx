@@ -23,8 +23,6 @@ import {
 } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 
-import { authClient } from "~/auth/client";
-
 function getInitials(name: string): string {
   return name
     .split(" ")
@@ -48,8 +46,15 @@ export function NavUser({
   const initials = getInitials(user.name);
 
   const handleLogout = async () => {
-    await authClient.signOut();
-    router.push("/auth/login");
+    try {
+      await fetch("/api/auth/sign-out", {
+        method: "POST",
+        credentials: "include",
+      });
+      router.push("/auth/login");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
   };
 
   return (
