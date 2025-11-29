@@ -1,4 +1,3 @@
-version: "3"
 volumes:
   minio:
 services:
@@ -58,3 +57,21 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8000
+  web:
+    restart: always
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    container_name: web
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
+    depends_on:
+      - minio
+      - inbucket
+      - jobs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOSTNAME=0.0.0.0

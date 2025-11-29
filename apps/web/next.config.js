@@ -8,6 +8,8 @@ await jiti.import("./src/env");
 /** @type {import("next").NextConfig} */
 const config = {
   /** Enables hot reloading for local packages without a build step */
+  output: "standalone",
+
   transpilePackages: [
     "@selectio/api",
     "@selectio/auth",
