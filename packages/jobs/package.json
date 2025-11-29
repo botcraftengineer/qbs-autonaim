@@ -41,7 +41,7 @@
     "@selectio/tg-client": "workspace:*",
     "@t3-oss/env-core": "0.13.8",
     "@trigger.dev/sdk": "4.1.2",
-    "ai": "^5.0.104",
+    "ai": "5.0.104",
     "crawlee": "3.15.3",
     "inngest": "^3.46.0",
     "langfuse": "^3.38.6",
