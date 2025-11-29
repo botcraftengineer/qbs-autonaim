@@ -114,19 +114,25 @@ export function useResponseActions(
 
       if (!result.success) {
         console.error("Failed to trigger refresh:", result.error);
-        toast.error("Не удалось запустить обновление откликов");
-        return;
+        setIsRefreshing(false);
+        throw new Error(
+          result.error || "Не удалось запустить обновление откликов",
+        );
       }
-
-      toast.success("Обновление откликов запущено");
 
       setTimeout(() => {
         void queryClient.invalidateQueries(
           trpc.vacancy.responses.list.pathFilter(),
         );
       }, 3000);
-    } finally {
+    } catch (error) {
       setIsRefreshing(false);
+      throw error;
+    } finally {
+      // Сбрасываем состояние через небольшую задержку после успеха
+      setTimeout(() => {
+        setIsRefreshing(false);
+      }, 3000);
     }
   };
 
@@ -165,19 +171,22 @@ export function useResponseActions(
 
       if (!result.success) {
         console.error("Failed to trigger parse resumes:", result.error);
-        toast.error("Не удалось запустить парсинг резюме");
-        return;
+        setIsParsingResumes(false);
+        throw new Error(result.error || "Не удалось запустить парсинг резюме");
       }
-
-      toast.success("Парсинг резюме запущен");
 
       setTimeout(() => {
         void queryClient.invalidateQueries(
           trpc.vacancy.responses.list.pathFilter(),
         );
       }, 3000);
-    } finally {
+    } catch (error) {
       setIsParsingResumes(false);
+      throw error;
+    } finally {
+      setTimeout(() => {
+        setIsParsingResumes(false);
+      }, 3000);
     }
   };
 
