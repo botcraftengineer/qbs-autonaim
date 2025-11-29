@@ -146,7 +146,7 @@
       "name": "@selectio/jobs",
       "version": "0.1.0",
       "dependencies": {
-        "@ai-sdk/deepseek": "^1.0.30",
+        "@ai-sdk/deepseek": "1.0.30",
         "@ai-sdk/openai": "^2.0.74",
         "@inngest/realtime": "^0.4.5",
         "@selectio/config": "workspace:*",
