@@ -34,9 +34,6 @@ COPY packages/lib ./packages/lib
 COPY packages/telegram-bot ./packages/telegram-bot
 COPY tooling/typescript ./tooling/typescript
 
-# Generate Prisma Client
-RUN bunx prisma generate
-
 # Build the project
 RUN bun run build
 
