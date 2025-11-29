@@ -59,6 +59,11 @@ export function ChatView({ conversationId }: { conversationId: string }) {
           ],
         });
       },
+      onError: (error) => {
+        toast.error("Ошибка отправки сообщения", {
+          description: error.message || "Не удалось отправить сообщение",
+        });
+      },
     });
 
   const { mutate: sendMessage, isPending: isSending } = useMutation(

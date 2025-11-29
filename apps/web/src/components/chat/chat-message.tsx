@@ -76,7 +76,7 @@ export function ChatMessage({
           <p className="text-sm whitespace-pre-wrap">{content}</p>
         )}
         <p className={`text-xs mt-1 ${timeColor}`}>
-          {format(createdAt, "HH:mm", { locale: ru })}
+          {format(createdAt, "d MMM, HH:mm", { locale: ru })}
         </p>
       </div>
     </div>
