@@ -12,7 +12,9 @@ puppeteer.use(StealthPlugin());
  * Парсит только новые отклики для конкретной вакансии
  * Не парсит саму вакансию, только обновляет список откликов
  */
-export async function refreshVacancyResponses(vacancyId: string) {
+export async function refreshVacancyResponses(
+  vacancyId: string,
+): Promise<{ newCount: number }> {
   console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
 
   const credentials = await getIntegrationCredentials("hh");
@@ -23,6 +25,8 @@ export async function refreshVacancyResponses(vacancyId: string) {
   const { email, password } = credentials;
   const savedCookies = await loadCookies("hh");
   const startUrl = HH_CONFIG.urls.login;
+
+  let newResponsesCount = 0;
 
   const crawler = new PuppeteerCrawler({
     headless: HH_CONFIG.puppeteer.headless,
@@ -103,7 +107,8 @@ export async function refreshVacancyResponses(vacancyId: string) {
         const responsesUrl = `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&order=DATE`;
 
         log.info(`📋 Парсинг откликов для вакансии ${vacancyId}...`);
-        await parseResponses(page, responsesUrl, vacancyId);
+        const result = await parseResponses(page, responsesUrl, vacancyId);
+        newResponsesCount = result.newCount;
         log.info(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
 
         await new Promise((resolve) =>
@@ -123,10 +128,12 @@ export async function refreshVacancyResponses(vacancyId: string) {
         throw error;
       }
     },
-    maxRequestsPerCrawl: 1,
+    maxRequestsPerCrawl: 10,
     requestHandlerTimeoutSecs: HH_CONFIG.timeouts.requestHandler,
   });
 
   await crawler.run([startUrl]);
   await crawler.teardown();
+
+  return { newCount: newResponsesCount };
 }

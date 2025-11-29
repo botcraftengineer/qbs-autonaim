@@ -181,7 +181,7 @@ export async function runHHParser(options?: { skipResponses?: boolean }) {
         throw error;
       }
     },
-    maxRequestsPerCrawl: 1,
+    maxRequestsPerCrawl: 10,
     requestHandlerTimeoutSecs: HH_CONFIG.timeouts.requestHandler,
   });
 

@@ -18,14 +18,14 @@ export async function parseResponses(
   page: Page,
   url: string,
   vacancyId: string,
-): Promise<ResponseData[]> {
+): Promise<{ responses: ResponseData[]; newCount: number }> {
   const urlObj = new URL(url, HH_CONFIG.urls.baseUrl);
   const urlVacancyId = urlObj.searchParams.get("vacancyId") || vacancyId;
 
   console.log(`🚀 Начинаем парсинг откликов для вакансии ${urlVacancyId}`);
 
   console.log("\n📋 ЭТАП 1: Сбор откликов и сохранение в базу...");
-  const allResponses = await collectAndSaveResponses(
+  const { responses: allResponses, newCount } = await collectAndSaveResponses(
     page,
     urlVacancyId,
     vacancyId,
@@ -33,7 +33,7 @@ export async function parseResponses(
 
   if (allResponses.length === 0) {
     console.log("⚠️ Не найдено откликов для обработки");
-    return [];
+    return { responses: [], newCount: 0 };
   }
 
   console.log(`✅ Всего обработано откликов: ${allResponses.length}`);
@@ -48,7 +48,7 @@ export async function parseResponses(
 
   if (responsesNeedingDetails.length === 0) {
     console.log("ℹ️ Все отклики уже имеют детальную информацию");
-    return allResponses;
+    return { responses: allResponses, newCount };
   }
 
   console.log("\n📊 ЭТАП 3: Парсинг детальной информации резюме...");
@@ -58,7 +58,7 @@ export async function parseResponses(
     `\n🎉 Парсинг завершен! Обработано откликов: ${responsesNeedingDetails.length}`,
   );
 
-  return allResponses;
+  return { responses: allResponses, newCount };
 }
 
 function parseResponseDate(dateStr: string): Date | undefined {
@@ -98,7 +98,7 @@ async function collectAndSaveResponses(
   page: Page,
   vacancyId: string,
   vacancyIdForSave: string,
-): Promise<ResponseWithId[]> {
+): Promise<{ responses: ResponseWithId[]; newCount: number }> {
   const allResponses: ResponseWithId[] = [];
   let currentPage = 0;
   let totalSaved = 0;
@@ -154,16 +154,18 @@ async function collectAndSaveResponses(
           }
 
           let respondedAtStr = "";
-          const dateSpans = el.querySelectorAll("span");
-          for (const span of Array.from(dateSpans)) {
-            const text = span.textContent || "";
-            if (text.includes("Откликнулся")) {
-              const innerSpan = span.querySelector("span");
-              if (innerSpan) {
-                respondedAtStr = innerSpan.textContent?.trim() || "";
+          try {
+            const dateSpans = el.querySelectorAll("span");
+            for (const span of Array.from(dateSpans)) {
+              const text = span.textContent?.trim() || "";
+              if (text.includes("Откликнулся")) {
+                const innerSpan = span.querySelector("span");
+                respondedAtStr = innerSpan?.textContent?.trim() || "";
+                break;
               }
-              break;
             }
+          } catch (error) {
+            console.warn("Failed to parse respondedAt date:", error);
           }
 
           return {
@@ -241,7 +243,7 @@ async function collectAndSaveResponses(
     `\n✅ Итого: собрано ${allResponses.length}, сохранено новых ${totalSaved}, пропущено (уже в базе) ${totalSkipped}`,
   );
 
-  return allResponses;
+  return { responses: allResponses, newCount: totalSaved };
 }
 
 async function filterResponsesNeedingDetails(

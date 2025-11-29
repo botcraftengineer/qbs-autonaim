@@ -25,10 +25,6 @@ export async function fetchScreenNewResponsesToken(vacancyId: string) {
  */
 export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
   const { inngest } = await import("@selectio/jobs/client");
-  console.log(
-    "fetchRefreshVacancyResponsesToken",
-    refreshVacancyResponsesChannel(vacancyId),
-  );
   const token = await getSubscriptionToken(inngest, {
     channel: refreshVacancyResponsesChannel(vacancyId),
     topics: ["status"],

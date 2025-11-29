@@ -55,18 +55,21 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
           }),
         );
 
-        await refreshVacancyResponses(vacancyId);
+        const { newCount } = await refreshVacancyResponses(vacancyId);
 
         await publish(
           refreshVacancyResponsesChannel(vacancyId).status({
             status: "completed",
-            message: "Отклики успешно обновлены",
+            message:
+              newCount > 0
+                ? `Отклики успешно обновлены. Новых откликов: ${newCount}`
+                : "Отклики успешно обновлены. Новых откликов нет",
             vacancyId,
           }),
         );
 
         console.log(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
-        return { success: true, vacancyId };
+        return { success: true, vacancyId, newCount };
       } catch (error) {
         console.error(
           `❌ Ошибка при обновлении откликов вакансии ${vacancyId}:`,
