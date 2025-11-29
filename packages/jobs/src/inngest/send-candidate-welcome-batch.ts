@@ -17,7 +17,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
     id: "send-candidate-welcome-batch",
     name: "Send Candidate Welcome Messages (Batch)",
     batchEvents: {
-      maxSize: 5,
+      maxSize: 4,
       timeout: "10s",
     },
   },

@@ -11,7 +11,7 @@ export const screenAllResponsesFunction = inngest.createFunction(
     id: "screen-all-responses",
     name: "Screen All Responses",
     batchEvents: {
-      maxSize: 5,
+      maxSize: 4,
       timeout: "10s",
     },
   },
