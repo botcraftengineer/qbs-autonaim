@@ -11,7 +11,7 @@ export const parseNewResumesFunction = inngest.createFunction(
     id: "parse-new-resumes",
     name: "Parse New Resumes",
     batchEvents: {
-      maxSize: 50,
+      maxSize: 5,
       timeout: "10s",
     },
   },
