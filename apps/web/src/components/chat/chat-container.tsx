@@ -1,13 +1,13 @@
 "use client";
 
-import { cn } from "@selectio/ui";
+import { cn, ScrollArea } from "@selectio/ui";
 import { format, isToday, isYesterday } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useEffect, useRef, useState } from "react";
+import type { ChatMessageProps } from "../../types/chat";
 import { ChatHeader } from "./chat-header";
 import { ChatInput } from "./chat-input";
-import { ChatMessage, type ChatMessageProps } from "./chat-message";
-import { ScrollArea } from "./scroll-area";
+import { ChatMessage } from "./chat-message";
 
 interface ChatContainerProps {
   candidateName: string;
@@ -57,7 +57,7 @@ export function ChatContainer({
   // Group messages by date
   const groupedMessages = messages.reduce(
     (groups, message) => {
-      const date = format(message.timestamp, "yyyy-MM-dd");
+      const date = format(message.createdAt, "yyyy-MM-dd");
       if (!groups[date]) {
         groups[date] = [];
       }

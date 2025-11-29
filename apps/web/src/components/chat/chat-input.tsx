@@ -4,10 +4,15 @@ import { useState } from "react";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
-  isSending: boolean;
+  disabled?: boolean;
+  placeholder?: string;
 }
 
-export function ChatInput({ onSendMessage, isSending }: ChatInputProps) {
+export function ChatInput({
+  onSendMessage,
+  disabled = false,
+  placeholder = "Введите сообщение...",
+}: ChatInputProps) {
   const [message, setMessage] = useState("");
 
   const handleSend = () => {
@@ -30,13 +35,13 @@ export function ChatInput({ onSendMessage, isSending }: ChatInputProps) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyPress}
-          placeholder="Введите сообщение..."
-          disabled={isSending}
+          placeholder={placeholder}
+          disabled={disabled}
           className="flex-1"
         />
         <Button
           onClick={handleSend}
-          disabled={!message.trim() || isSending}
+          disabled={!message.trim() || disabled}
           size="icon"
         >
           <Send className="h-4 w-4" />
