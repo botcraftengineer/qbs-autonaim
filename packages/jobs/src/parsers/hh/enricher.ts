@@ -1,3 +1,4 @@
+import os from "node:os";
 import { getIntegrationCredentials } from "@selectio/db";
 import { Log } from "crawlee";
 import type { Browser, Page } from "puppeteer";
@@ -13,6 +14,9 @@ import { HH_CONFIG } from "./config";
 import { parseResumeExperience } from "./resume-parser";
 
 puppeteer.use(StealthPlugin());
+
+// Configure Crawlee storage to use temp directory
+process.env.CRAWLEE_STORAGE_DIR = os.tmpdir();
 
 async function setupBrowser(): Promise<Browser> {
   return await puppeteer.launch({

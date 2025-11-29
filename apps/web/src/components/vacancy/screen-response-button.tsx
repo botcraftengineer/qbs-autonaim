@@ -35,13 +35,6 @@ export function ScreenResponseButton({
       }
 
       console.log("Запущена оценка отклика");
-
-      // Ждем немного и обновляем данные
-      setTimeout(() => {
-        void queryClient.invalidateQueries(
-          trpc.vacancy.responses.list.pathFilter(),
-        );
-      }, 2000);
     } finally {
       setIsLoading(false);
     }

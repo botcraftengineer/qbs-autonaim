@@ -101,9 +101,7 @@ export const parseNewResumesFunction = inngest.createFunction(
 
     // Запускаем enricher для парсинга резюме
     await step.run("enrich-resumes", async () => {
-      console.log("🚀 Запуск обогащения данных резюме...");
       await runEnricher();
-      console.log("✅ Обогащение завершено");
 
       await publish(
         parseNewResumesChannel().status({

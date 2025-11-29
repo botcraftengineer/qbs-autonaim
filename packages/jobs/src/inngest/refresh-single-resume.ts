@@ -1,3 +1,4 @@
+import os from "node:os";
 import { db, eq, getIntegrationCredentials } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
 import { Log } from "crawlee";
@@ -12,6 +13,9 @@ import { extractTelegramUsername } from "../services/telegram-username-service";
 import { inngest } from "./client";
 
 puppeteer.use(StealthPlugin());
+
+// Configure Crawlee storage to use temp directory
+process.env.CRAWLEE_STORAGE_DIR = os.tmpdir();
 
 async function setupBrowser(): Promise<Browser> {
   return await puppeteer.launch({
