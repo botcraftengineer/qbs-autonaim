@@ -1,7 +1,7 @@
 "use server";
 
 import { getSubscriptionToken } from "@inngest/realtime";
-import { screenNewResponsesChannel } from "@selectio/jobs";
+import { screenNewResponsesChannel } from "@selectio/jobs/channels";
 import { getSession } from "~/auth/server";
 
 /**

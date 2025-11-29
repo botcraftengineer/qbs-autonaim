@@ -12,8 +12,10 @@ import {
 } from "@selectio/ui";
 import { FileText, Loader2, RefreshCw, Sparkles } from "lucide-react";
 import { ResponseFilters, type ScreeningFilter } from "~/components/response";
+import { ScreeningProgressDialog } from "../screening-progress-dialog";
 
 interface ResponseTableToolbarProps {
+  vacancyId: string;
   totalResponses: number;
   filteredCount: number;
   screeningFilter: ScreeningFilter;
@@ -26,9 +28,11 @@ interface ResponseTableToolbarProps {
   onScreenNew: () => void;
   onScreenAll: () => void;
   onParseResumes: () => void;
+  onScreeningDialogClose: () => void;
 }
 
 export function ResponseTableToolbar({
+  vacancyId,
   totalResponses,
   filteredCount,
   screeningFilter,
@@ -41,6 +45,7 @@ export function ResponseTableToolbar({
   onScreenNew,
   onScreenAll,
   onParseResumes,
+  onScreeningDialogClose,
 }: ResponseTableToolbarProps) {
   return (
     <div className="flex items-center justify-between">
@@ -109,33 +114,24 @@ export function ResponseTableToolbar({
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button disabled={isProcessingNew} variant="outline">
-              {isProcessingNew ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Sparkles className="h-4 w-4 mr-2" />
-              )}
-              {isProcessingNew ? "Запуск оценки..." : "Оценить новые"}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Оценка новых откликов</AlertDialogTitle>
-              <AlertDialogDescription>
-                Будут оценены только отклики без скрининга. Процесс будет
-                выполняться в фоновом режиме.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Отмена</AlertDialogCancel>
-              <AlertDialogAction onClick={onScreenNew}>
-                Запустить оценку
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <Button
+          disabled={isProcessingNew}
+          variant="outline"
+          onClick={onScreenNew}
+        >
+          {isProcessingNew ? (
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4 mr-2" />
+          )}
+          {isProcessingNew ? "Оценка..." : "Оценить новые"}
+        </Button>
+
+        <ScreeningProgressDialog
+          vacancyId={vacancyId}
+          isOpen={isProcessingNew}
+          onClose={onScreeningDialogClose}
+        />
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button disabled={isProcessingAll} variant="default">

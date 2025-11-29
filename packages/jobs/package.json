@@ -10,6 +10,9 @@
     },
     "./client": {
       "default": "./src/inngest/client.ts"
+    },
+    "./channels": {
+      "default": "./src/inngest/channels-client.ts"
     }
   },
   "license": "MIT",

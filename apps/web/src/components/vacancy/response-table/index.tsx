@@ -6,7 +6,6 @@ import { useEffect } from "react";
 import { useTRPC } from "~/trpc/react";
 import type { VacancyResponse } from "~/types/vacancy";
 import { ResponseRow } from "../response-row";
-import { ScreeningProgressDialog } from "../screening-progress-dialog";
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { EmptyState } from "./empty-state";
 import { ResponseTableHeader } from "./response-table-header";
@@ -90,14 +89,9 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
 
   return (
     <div className="space-y-4">
-      <ScreeningProgressDialog
-        vacancyId={vacancyId}
-        isOpen={isProcessingNew}
-        onClose={handleScreeningDialogClose}
-      />
-
       {total > 0 && (
         <ResponseTableToolbar
+          vacancyId={vacancyId}
           totalResponses={total}
           filteredCount={responses.length}
           screeningFilter={screeningFilter}
@@ -110,6 +104,7 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
           onScreenNew={handleScreenNew}
           onScreenAll={handleScreenAll}
           onParseResumes={handleParseNewResumes}
+          onScreeningDialogClose={handleScreeningDialogClose}
         />
       )}
 

@@ -68,9 +68,23 @@ export function ScreeningProgressDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Оценка новых откликов</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {isCompleted ? (
+              <>
+                <CheckCircle2 className="h-5 w-5 text-green-600" />
+                Оценка завершена
+              </>
+            ) : (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Оценка новых откликов
+              </>
+            )}
+          </DialogTitle>
           <DialogDescription>
-            Отслеживание прогресса обработки откликов
+            {isCompleted
+              ? "Все отклики успешно обработаны"
+              : "Отслеживание прогресса обработки откликов в реальном времени"}
           </DialogDescription>
         </DialogHeader>
 
@@ -118,35 +132,46 @@ export function ScreeningProgressDialog({
           )}
 
           {resultData && (
-            <div className="space-y-3 rounded-lg border bg-muted/50 p-4">
-              <div className="flex items-center gap-2 text-green-600">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="font-medium">Оценка завершена!</span>
-              </div>
-
-              <div className="space-y-1 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Всего откликов:</span>
-                  <span className="font-medium">{resultData.total}</span>
+            <div className="space-y-4 rounded-lg border bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground">
+                    {resultData.total}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Всего</div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Обработано:</span>
-                  <span className="font-medium text-green-600">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">
                     {resultData.processed}
-                  </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">Успешно</div>
                 </div>
                 {resultData.failed > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Ошибок:</span>
-                    <span className="font-medium text-destructive">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-destructive">
                       {resultData.failed}
-                    </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Ошибок</div>
                   </div>
                 )}
               </div>
 
-              <p className="text-xs text-muted-foreground">
-                Диалог закроется автоматически через 3 секунды
+              {resultData.total > 0 && (
+                <div className="pt-2 border-t">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-muted-foreground">Успешность:</span>
+                    <span className="font-medium text-green-600">
+                      {Math.round(
+                        (resultData.processed / resultData.total) * 100,
+                      )}
+                      %
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <p className="text-xs text-center text-muted-foreground pt-2">
+                Закроется автоматически через 3 секунды
               </p>
             </div>
           )}
