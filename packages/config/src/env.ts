@@ -54,6 +54,9 @@ export const env = createEnv({
     INNGEST_EVENT_KEY: z.string().min(1).optional(),
     INNGEST_SIGNING_KEY: z.string().min(1).optional(),
     INNGEST_EVENT_API_BASE_URL: z.url().optional().default("https://inn.gs"),
+
+    // App URL
+    APP_URL: z.url().optional(),
   },
   client: {},
   clientPrefix: "NEXT_PUBLIC_",
@@ -90,6 +93,7 @@ export const env = createEnv({
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,
+    APP_URL: process.env.APP_URL,
   },
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",

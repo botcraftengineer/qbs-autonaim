@@ -5,21 +5,21 @@ import { experimental_transcribe as transcribe } from "ai";
 export async function transcribeAudio(
   audioBuffer: Buffer,
 ): Promise<string | null> {
-  // Пропускаем транскрибцию, если AI_GATEWAY_API_KEY не заполнен
-  if (!env.AI_GATEWAY_API_KEY) {
-    console.log("⏭️ Транскрибация пропущена: AI_GATEWAY_API_KEY не заполнен");
+  if (!env.OPENAI_API_KEY) {
+    console.log("⏭️ Транскрибация пропущена: OPENAI_API_KEY не заполнен");
     return null;
   }
 
   try {
-    // Используем Vercel AI Gateway
+    // Используем наш прокси-сервис
+    const proxyBaseUrl = env.APP_URL || "http://localhost:3000";
     const openaiProvider = createOpenAI({
-      apiKey: env.AI_GATEWAY_API_KEY,
-      baseURL: "https://ai-gateway.vercel.sh/v1",
+      apiKey: env.OPENAI_API_KEY,
+      baseURL: `${proxyBaseUrl}/api/ai-proxy`,
     });
 
     const result = await transcribe({
-      model: openaiProvider.transcription("openai/whisper-1"),
+      model: openaiProvider.transcription("whisper-1"),
       audio: audioBuffer,
       providerOptions: { openai: { language: "ru" } },
     });
