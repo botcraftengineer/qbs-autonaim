@@ -7,11 +7,7 @@ interface ChatHeaderProps {
   avatarUrl?: string;
 }
 
-export function ChatHeader({
-  candidateName,
-  candidateEmail,
-  avatarUrl,
-}: ChatHeaderProps) {
+export function ChatHeader({ candidateName, candidateEmail }: ChatHeaderProps) {
   const initials = candidateName
     .split(" ")
     .map((n) => n[0])

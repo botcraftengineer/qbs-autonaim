@@ -259,7 +259,7 @@ export function ResponseTableToolbar({
     (messageStr: string) => {
       const message = JSON.parse(messageStr) as {
         topic: string;
-        data: any;
+        data: unknown;
       };
 
       if (message.topic === "progress") {
@@ -394,7 +394,7 @@ export function ResponseTableToolbar({
     (messageStr: string) => {
       const message = JSON.parse(messageStr) as {
         topic: string;
-        data: any;
+        data: unknown;
       };
 
       if (message.topic === "progress") {

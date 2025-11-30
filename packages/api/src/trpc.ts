@@ -30,6 +30,7 @@ export const createTRPCContext = async (opts: {
   headers: Headers;
   auth: Auth;
 }) => {
+  // biome-ignore lint/suspicious/noExplicitAny: <error>
   const authApi = opts.auth.api as any;
   const session = await authApi.getSession({
     headers: opts.headers,

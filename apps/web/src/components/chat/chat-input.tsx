@@ -1,5 +1,5 @@
 import { Button, Textarea } from "@selectio/ui";
-import { Paperclip, Send, Smile } from "lucide-react";
+import { Paperclip, Send } from "lucide-react";
 import { useState } from "react";
 
 interface ChatInputProps {
