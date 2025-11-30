@@ -17,11 +17,8 @@ export function ActiveVacancies() {
   const trpc = useTRPC();
 
   const { data: vacancies, isLoading } = useQuery(
-    trpc.vacancy.list.queryOptions(),
+    trpc.vacancy.listActive.queryOptions({ limit: 5 }),
   );
-
-  const activeVacancies =
-    vacancies?.filter((v) => v.isActive).slice(0, 5) ?? [];
 
   if (isLoading) {
     return (
@@ -52,7 +49,7 @@ export function ActiveVacancies() {
     );
   }
 
-  if (activeVacancies.length === 0) {
+  if (!vacancies || vacancies.length === 0) {
     return (
       <Card className="@container/card">
         <CardHeader>
@@ -85,7 +82,7 @@ export function ActiveVacancies() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {activeVacancies.map((vacancy) => (
+          {vacancies?.map((vacancy) => (
             <Link
               key={vacancy.id}
               href={`/vacancies/${vacancy.id}`}
@@ -118,14 +115,6 @@ export function ActiveVacancies() {
             </Link>
           ))}
         </div>
-        {vacancies && vacancies.filter((v) => v.isActive).length > 5 && (
-          <Link
-            href="/vacancies"
-            className="mt-4 block text-center text-sm text-primary hover:underline"
-          >
-            Показать все вакансии
-          </Link>
-        )}
       </CardContent>
     </Card>
   );

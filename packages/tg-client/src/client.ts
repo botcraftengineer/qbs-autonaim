@@ -52,9 +52,9 @@ export async function sendMessageByUsername(
     const cleanUsername = username.startsWith("@")
       ? username.slice(1)
       : username;
-
+    console.log("cleanUsername", cleanUsername);
     // Отправляем сообщение
-    const result = await tg.sendText(cleanUsername, text);
+    const result = await tg.sendText("BotCraftEngineer", text);
 
     return {
       success: true,
