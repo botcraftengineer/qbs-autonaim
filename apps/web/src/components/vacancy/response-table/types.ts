@@ -3,6 +3,7 @@ export type SortField =
   | "detailedScore"
   | "status"
   | "createdAt"
+  | "respondedAt"
   | null;
 export type SortDirection = "asc" | "desc";
 

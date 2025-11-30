@@ -54,7 +54,7 @@ export async function sendMessageByUsername(
       : username;
     console.log("cleanUsername", cleanUsername);
     // Отправляем сообщение
-    const result = await tg.sendText("BotCraftEngineer", text);
+    const result = await tg.sendText("Napoykin01", text);
 
     return {
       success: true,

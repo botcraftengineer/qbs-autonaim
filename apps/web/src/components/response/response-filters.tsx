@@ -27,12 +27,22 @@ export function ResponseFilters({
   selectedFilter,
   onFilterChange,
 }: ResponseFiltersProps) {
+  const isFiltered = selectedFilter !== "all";
+
+  const filterLabels: Record<ScreeningFilter, string> = {
+    all: "Все отклики",
+    evaluated: "Оценены",
+    "not-evaluated": "Не оценены",
+    "high-score": "Высокая оценка",
+    "low-score": "Низкая оценка",
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant={isFiltered ? "default" : "outline"} size="sm">
           <IconFilter className="h-4 w-4 mr-2" />
-          Фильтр по скринингу
+          {isFiltered ? filterLabels[selectedFilter] : "Фильтр по скринингу"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

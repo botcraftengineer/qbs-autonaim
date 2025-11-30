@@ -161,7 +161,6 @@ function ScreenAllSubscription({
 interface ResponseTableToolbarProps {
   vacancyId: string;
   totalResponses: number;
-  filteredCount: number;
   screeningFilter: ScreeningFilter;
   onFilterChange: (filter: ScreeningFilter) => void;
   isRefreshing: boolean;
@@ -180,7 +179,6 @@ interface ResponseTableToolbarProps {
 export function ResponseTableToolbar({
   vacancyId,
   totalResponses,
-  filteredCount,
   screeningFilter,
   onFilterChange,
   isRefreshing,
@@ -581,7 +579,7 @@ export function ResponseTableToolbar({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="text-sm text-muted-foreground">
-            Показано: {filteredCount} из {totalResponses}
+            Всего откликов: {totalResponses}
           </div>
           <ResponseFilters
             selectedFilter={screeningFilter}

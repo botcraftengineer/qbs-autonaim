@@ -63,7 +63,16 @@ export function ResponseTableHeader({
         </TableHead>
         <TableHead>Отбор HR</TableHead>
         <TableHead>Контакты</TableHead>
-        <TableHead>Дата отклика</TableHead>
+        <TableHead>
+          <button
+            type="button"
+            onClick={() => onSort("respondedAt")}
+            className="flex items-center gap-1 hover:text-foreground transition-colors"
+          >
+            Дата отклика
+            {renderSortIcon("respondedAt")}
+          </button>
+        </TableHead>
         <TableHead className="text-right">Действия</TableHead>
       </TableRow>
     </TableHeader>

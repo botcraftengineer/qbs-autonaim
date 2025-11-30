@@ -1,6 +1,6 @@
 import type { SQL } from "@selectio/db";
-import { asc, desc, eq } from "@selectio/db";
-import { vacancyResponse } from "@selectio/db/schema";
+import { and, asc, desc, eq, gte, inArray, lt, sql } from "@selectio/db";
+import { responseScreening, vacancyResponse } from "@selectio/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
@@ -11,7 +11,7 @@ export const list = protectedProcedure
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(50),
       sortField: z
-        .enum(["createdAt", "score", "detailedScore", "status"])
+        .enum(["createdAt", "score", "detailedScore", "status", "respondedAt"])
         .nullable()
         .default(null),
       sortDirection: z.enum(["asc", "desc"]).default("desc"),
@@ -31,8 +31,86 @@ export const list = protectedProcedure
     } = input;
     const offset = (page - 1) * limit;
 
-    const whereCondition = eq(vacancyResponse.vacancyId, vacancyId);
+    // Получаем ID откликов с учётом фильтра по скринингу
+    let filteredResponseIds: string[] | null = null;
 
+    if (screeningFilter === "evaluated") {
+      const screenedResponses = await ctx.db
+        .select({ responseId: responseScreening.responseId })
+        .from(responseScreening)
+        .innerJoin(
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
+        )
+        .where(eq(vacancyResponse.vacancyId, vacancyId));
+      filteredResponseIds = screenedResponses.map((r) => r.responseId);
+    } else if (screeningFilter === "not-evaluated") {
+      const allResponses = await ctx.db
+        .select({ id: vacancyResponse.id })
+        .from(vacancyResponse)
+        .where(eq(vacancyResponse.vacancyId, vacancyId));
+      const screenedResponses = await ctx.db
+        .select({ responseId: responseScreening.responseId })
+        .from(responseScreening)
+        .innerJoin(
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
+        )
+        .where(eq(vacancyResponse.vacancyId, vacancyId));
+      const screenedIds = new Set(screenedResponses.map((r) => r.responseId));
+      filteredResponseIds = allResponses
+        .filter((r) => !screenedIds.has(r.id))
+        .map((r) => r.id);
+    } else if (screeningFilter === "high-score") {
+      const screenedResponses = await ctx.db
+        .select({ responseId: responseScreening.responseId })
+        .from(responseScreening)
+        .innerJoin(
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
+        )
+        .where(
+          and(
+            eq(vacancyResponse.vacancyId, vacancyId),
+            gte(responseScreening.score, 4),
+          ),
+        );
+      filteredResponseIds = screenedResponses.map((r) => r.responseId);
+    } else if (screeningFilter === "low-score") {
+      const screenedResponses = await ctx.db
+        .select({ responseId: responseScreening.responseId })
+        .from(responseScreening)
+        .innerJoin(
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
+        )
+        .where(
+          and(
+            eq(vacancyResponse.vacancyId, vacancyId),
+            lt(responseScreening.score, 4),
+          ),
+        );
+      filteredResponseIds = screenedResponses.map((r) => r.responseId);
+    }
+
+    // Базовое условие WHERE
+    const whereConditions: SQL[] = [eq(vacancyResponse.vacancyId, vacancyId)];
+    if (filteredResponseIds !== null) {
+      if (filteredResponseIds.length === 0) {
+        return {
+          responses: [],
+          total: 0,
+          page,
+          limit,
+          totalPages: 0,
+        };
+      }
+      whereConditions.push(inArray(vacancyResponse.id, filteredResponseIds));
+    }
+
+    const whereCondition = and(...whereConditions);
+
+    // Определяем сортировку
     let orderByClause: SQL;
     if (sortField === "createdAt") {
       orderByClause =
@@ -44,13 +122,21 @@ export const list = protectedProcedure
         sortDirection === "asc"
           ? asc(vacancyResponse.status)
           : desc(vacancyResponse.status);
+    } else if (sortField === "respondedAt") {
+      orderByClause =
+        sortDirection === "asc"
+          ? asc(vacancyResponse.respondedAt)
+          : desc(vacancyResponse.respondedAt);
     } else {
       orderByClause = desc(vacancyResponse.createdAt);
     }
 
-    const allResponses = await ctx.db.query.vacancyResponse.findMany({
+    // Получаем отфильтрованные данные с пагинацией
+    let responses = await ctx.db.query.vacancyResponse.findMany({
       where: whereCondition,
       orderBy: [orderByClause],
+      limit,
+      offset,
       with: {
         screening: true,
         conversation: {
@@ -61,26 +147,9 @@ export const list = protectedProcedure
       },
     });
 
-    let filteredResponses = allResponses;
-    if (screeningFilter !== "all") {
-      filteredResponses = allResponses.filter((response) => {
-        switch (screeningFilter) {
-          case "evaluated":
-            return response.screening !== null;
-          case "not-evaluated":
-            return response.screening === null;
-          case "high-score":
-            return response.screening && response.screening.score >= 4;
-          case "low-score":
-            return response.screening && response.screening.score < 4;
-          default:
-            return true;
-        }
-      });
-    }
-
+    // Сортировка по score/detailedScore в памяти (только для текущей страницы)
     if (sortField === "score" || sortField === "detailedScore") {
-      filteredResponses.sort((a, b) => {
+      responses = responses.sort((a, b) => {
         const scoreA =
           sortField === "score"
             ? (a.screening?.score ?? -1)
@@ -93,13 +162,19 @@ export const list = protectedProcedure
       });
     }
 
-    const paginatedResponses = filteredResponses.slice(offset, offset + limit);
+    // Получаем общее количество для пагинации
+    const totalResult = await ctx.db
+      .select({ count: sql<number>`count(*)` })
+      .from(vacancyResponse)
+      .where(whereCondition);
+
+    const total = Number(totalResult[0]?.count ?? 0);
 
     return {
-      responses: paginatedResponses,
-      total: filteredResponses.length,
+      responses,
+      total,
       page,
       limit,
-      totalPages: Math.ceil(filteredResponses.length / limit),
+      totalPages: Math.ceil(total / limit),
     };
   });

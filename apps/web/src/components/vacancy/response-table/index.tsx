@@ -91,26 +91,23 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
 
   return (
     <div className="space-y-4">
-      {total > 0 && (
-        <ResponseTableToolbar
-          vacancyId={vacancyId}
-          totalResponses={total}
-          filteredCount={responses.length}
-          screeningFilter={screeningFilter}
-          onFilterChange={setScreeningFilter}
-          isRefreshing={isRefreshing}
-          isProcessingNew={isProcessingNew}
-          isProcessingAll={isProcessingAll}
-          isParsingResumes={isParsingResumes}
-          onRefresh={handleRefreshResponses}
-          onRefreshComplete={handleRefreshComplete}
-          onScreenNew={handleScreenNew}
-          onScreenAll={handleScreenAll}
-          onParseResumes={handleParseNewResumes}
-          onParseMissingContacts={handleParseMissingContacts}
-          onScreeningDialogClose={handleScreeningDialogClose}
-        />
-      )}
+      <ResponseTableToolbar
+        vacancyId={vacancyId}
+        totalResponses={total}
+        screeningFilter={screeningFilter}
+        onFilterChange={setScreeningFilter}
+        isRefreshing={isRefreshing}
+        isProcessingNew={isProcessingNew}
+        isProcessingAll={isProcessingAll}
+        isParsingResumes={isParsingResumes}
+        onRefresh={handleRefreshResponses}
+        onRefreshComplete={handleRefreshComplete}
+        onScreenNew={handleScreenNew}
+        onScreenAll={handleScreenAll}
+        onParseResumes={handleParseNewResumes}
+        onParseMissingContacts={handleParseMissingContacts}
+        onScreeningDialogClose={handleScreeningDialogClose}
+      />
 
       <div className="rounded-lg border">
         {selectedIds.size > 0 && (
