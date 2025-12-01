@@ -6,7 +6,7 @@ export const integration = pgTable("integrations", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
   // Workspace к которому принадлежит интеграция
-  workspaceId: uuid("workspace_id")
+  workspaceId: text("workspace_id")
     .notNull()
     .references(() => workspace.id, { onDelete: "cascade" }),
 

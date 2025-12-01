@@ -5,7 +5,6 @@ import {
   pgTable,
   text,
   timestamp,
-  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -16,7 +15,7 @@ export const vacancy = pgTable("vacancies", {
   id: varchar("id", { length: 50 }).primaryKey(),
 
   // Workspace к которому принадлежит вакансия
-  workspaceId: uuid("workspace_id")
+  workspaceId: text("workspace_id")
     .notNull()
     .references(() => workspace.id, { onDelete: "cascade" }),
   title: varchar("title", { length: 500 }).notNull(),

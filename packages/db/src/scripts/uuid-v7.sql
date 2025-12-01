@@ -28,3 +28,14 @@ END
 $$
 LANGUAGE plpgsql
 VOLATILE;
+
+-- Create workspace_id_generate function with ws_ prefix
+CREATE OR REPLACE FUNCTION workspace_id_generate()
+RETURNS text
+AS $$
+BEGIN
+  RETURN 'ws_' || replace(uuid_generate_v7()::text, '-', '');
+END
+$$
+LANGUAGE plpgsql
+VOLATILE;

@@ -1,7 +1,8 @@
+import { sql } from "drizzle-orm";
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 export const workspace = pgTable("workspaces", {
-  id: text("id").primaryKey(),
+  id: text("id").primaryKey().default(sql`workspace_id_generate()`),
 
   // Название workspace (компании)
   name: text("name").notNull(),
