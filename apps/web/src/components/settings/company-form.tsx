@@ -23,8 +23,10 @@ import { useTRPC } from "~/trpc/react";
 
 export function CompanyForm({
   initialData,
+  workspaceId,
 }: {
   initialData?: Partial<CompanyFormValues>;
+  workspaceId: string;
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -51,7 +53,10 @@ export function CompanyForm({
   );
 
   function onSubmit(data: CompanyFormValues) {
-    updateCompany.mutate(data);
+    updateCompany.mutate({
+      workspaceId,
+      data,
+    });
   }
 
   return (

@@ -27,6 +27,7 @@
     "generate-key": "bun src/scripts/generate-encryption-key.ts",
     "set-admin": "bun with-env bun src/scripts/set-admin-role.ts",
     "migrate-workspaces": "bun with-env bun src/scripts/migrate-to-workspaces.ts",
+    "migrate-company": "bun with-env bun src/scripts/migrate-company-settings.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "bun run --env-file ../../.env"
   },

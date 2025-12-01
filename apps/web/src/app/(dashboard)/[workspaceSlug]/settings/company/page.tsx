@@ -2,16 +2,31 @@
 
 import { Skeleton } from "@selectio/ui";
 import { useQuery } from "@tanstack/react-query";
+import { useParams } from "next/navigation";
 import { CompanyForm } from "~/components/settings/company-form";
 import { useTRPC } from "~/trpc/react";
 
 export default function SettingsCompanyPage() {
   const trpc = useTRPC();
-  const { data: company, isLoading } = useQuery(
-    trpc.company.get.queryOptions(),
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
+
+  // Получаем workspace по slug
+  const { data: workspaceData } = useQuery(
+    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
   );
 
-  if (isLoading) {
+  const workspaceId = workspaceData?.workspace.id;
+
+  // Получаем настройки компании
+  const { data: company, isLoading } = useQuery({
+    ...trpc.company.get.queryOptions({
+      workspaceId: workspaceId || "",
+    }),
+    enabled: !!workspaceId,
+  });
+
+  if (isLoading || !workspaceId) {
     return (
       <div className="rounded-lg border p-6 space-y-4">
         <Skeleton className="h-10 w-full" />
@@ -24,6 +39,7 @@ export default function SettingsCompanyPage() {
   return (
     <div className="rounded-lg border p-6">
       <CompanyForm
+        workspaceId={workspaceId}
         initialData={{
           name: company?.name || "",
           website: company?.website || "",
