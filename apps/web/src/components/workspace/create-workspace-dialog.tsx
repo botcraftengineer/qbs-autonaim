@@ -18,50 +18,65 @@ import {
   FormMessage,
   Input,
 } from "@selectio/ui";
-import { Building2, Upload } from "lucide-react";
-import Link from "next/link";
+import { useMutation } from "@tanstack/react-query";
+import { Building2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useTRPC } from "~/trpc/react";
 
 const workspaceSchema = z.object({
   name: z
     .string()
     .min(1, "Название обязательно")
-    .max(50, "Название не должно превышать 50 символов"),
+    .max(100, "Название не должно превышать 100 символов"),
   slug: z
     .string()
     .min(1, "Slug обязателен")
-    .max(30, "Slug не должен превышать 30 символов")
+    .max(50, "Slug не должен превышать 50 символов")
     .regex(
       /^[a-z0-9-]+$/,
       "Slug может содержать только строчные буквы, цифры и дефисы",
     ),
-  logo: z.instanceof(File).optional(),
+  description: z.string().max(500).optional(),
 });
 
 type WorkspaceFormValues = z.infer<typeof workspaceSchema>;
 
 interface CreateWorkspaceDialogProps {
   trigger?: React.ReactNode;
-  onSubmit?: (values: WorkspaceFormValues) => Promise<void> | void;
 }
 
-export function CreateWorkspaceDialog({
-  trigger,
-  onSubmit,
-}: CreateWorkspaceDialogProps) {
+export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const router = useRouter();
+  const trpc = useTRPC();
 
   const form = useForm<WorkspaceFormValues>({
     resolver: zodResolver(workspaceSchema),
     defaultValues: {
       name: "",
       slug: "",
+      description: "",
     },
   });
+
+  const createMutation = useMutation(
+    trpc.workspace.create.mutationOptions({
+      onSuccess: (workspace) => {
+        setOpen(false);
+        form.reset();
+        router.push(`/${workspace.slug}`);
+        router.refresh();
+      },
+      onError: (error: any) => {
+        form.setError("slug", {
+          message: error.message || "Ошибка при создании workspace",
+        });
+      },
+    }),
+  );
 
   const handleNameChange = (value: string) => {
     form.setValue("name", value);
@@ -72,34 +87,15 @@ export function CreateWorkspaceDialog({
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-")
-      .slice(0, 30);
+      .slice(0, 50);
 
     if (!form.formState.dirtyFields.slug) {
       form.setValue("slug", slug);
     }
   };
 
-  const handleLogoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      form.setValue("logo", file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setLogoPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
   const handleSubmit = async (values: WorkspaceFormValues) => {
-    try {
-      await onSubmit?.(values);
-      setOpen(false);
-      form.reset();
-      setLogoPreview(null);
-    } catch (error) {
-      console.error("Error creating workspace:", error);
-    }
+    createMutation.mutate(values);
   };
 
   return (
@@ -114,11 +110,8 @@ export function CreateWorkspaceDialog({
           </div>
           <DialogTitle className="text-2xl">Создать workspace</DialogTitle>
           <DialogDescription>
-            Настройте общее пространство для управления ссылками с вашей
-            командой.{" "}
-            <Link href="#" className="text-primary hover:underline">
-              Узнать больше
-            </Link>
+            Настройте общее пространство для управления вакансиями с вашей
+            командой.
           </DialogDescription>
         </DialogHeader>
 
@@ -154,7 +147,7 @@ export function CreateWorkspaceDialog({
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">
-                        app.dub.co/
+                        app.selectio.ru/
                       </span>
                       <Input placeholder="acme" {...field} className="flex-1" />
                     </div>
@@ -169,46 +162,15 @@ export function CreateWorkspaceDialog({
 
             <FormField
               control={form.control}
-              name="logo"
-              render={() => (
+              name="description"
+              render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Логотип workspace</FormLabel>
+                  <FormLabel>Описание (опционально)</FormLabel>
                   <FormControl>
-                    <div className="flex items-center gap-4">
-                      <div className="flex size-16 items-center justify-center rounded-lg border-2 border-dashed bg-muted/50">
-                        {logoPreview ? (
-                          <img
-                            src={logoPreview}
-                            alt="Logo preview"
-                            className="size-full rounded-lg object-cover"
-                          />
-                        ) : (
-                          <Building2 className="size-8 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="gap-2"
-                        >
-                          <Upload className="size-4" />
-                          Загрузить изображение
-                        </Button>
-                        <p className="text-muted-foreground mt-2 text-xs">
-                          Рекомендуемый размер: 160x160px
-                        </p>
-                        <input
-                          ref={fileInputRef}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={handleLogoChange}
-                        />
-                      </div>
-                    </div>
+                    <Input
+                      placeholder="Краткое описание workspace"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -219,11 +181,9 @@ export function CreateWorkspaceDialog({
               type="submit"
               className="w-full"
               size="lg"
-              disabled={form.formState.isSubmitting}
+              disabled={createMutation.isPending}
             >
-              {form.formState.isSubmitting
-                ? "Создание..."
-                : "Создать workspace"}
+              {createMutation.isPending ? "Создание..." : "Создать workspace"}
             </Button>
           </form>
         </Form>

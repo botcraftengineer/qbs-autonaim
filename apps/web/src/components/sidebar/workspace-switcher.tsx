@@ -16,6 +16,7 @@ import {
 import { IconBriefcase, IconPlus } from "@tabler/icons-react";
 import { ChevronsUpDown } from "lucide-react";
 import * as React from "react";
+import { CreateWorkspaceDialog } from "~/components/workspace";
 
 type WorkspaceWithRole = {
   id: string;
@@ -120,14 +121,21 @@ export function WorkspaceSwitcher({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="gap-2 p-2">
-              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                <IconPlus className="size-4" />
-              </div>
-              <div className="text-muted-foreground font-medium">
-                Создать workspace
-              </div>
-            </DropdownMenuItem>
+            <CreateWorkspaceDialog
+              trigger={
+                <DropdownMenuItem
+                  className="gap-2 p-2"
+                  onSelect={(e) => e.preventDefault()}
+                >
+                  <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                    <IconPlus className="size-4" />
+                  </div>
+                  <div className="text-muted-foreground font-medium">
+                    Создать workspace
+                  </div>
+                </DropdownMenuItem>
+              }
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
