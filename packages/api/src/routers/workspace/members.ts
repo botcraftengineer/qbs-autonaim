@@ -38,7 +38,7 @@ export const workspaceMembers = {
   removeUser: protectedProcedure
     .input(
       z.object({
-        workspaceId: z.string().uuid(),
+        workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/),
         userId: z.string(),
       }),
     )

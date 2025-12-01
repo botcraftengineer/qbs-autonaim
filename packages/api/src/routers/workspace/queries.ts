@@ -14,7 +14,7 @@ export const workspaceQueries = {
 
   // Получить workspace по ID
   byId: protectedProcedure
-    .input(z.object({ id: z.uuid() }))
+    .input(z.object({ id: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
     .query(async ({ input, ctx }) => {
       const workspace = await workspaceRepository.findById(input.id);
 

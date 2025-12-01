@@ -83,7 +83,10 @@ export function WorkspaceForm({
   function onSubmit(data: WorkspaceFormValues) {
     updateWorkspace.mutate({
       id: workspaceId,
-      ...data,
+      data: {
+        ...data,
+        logo: data.logo ?? undefined,
+      },
     });
   }
 

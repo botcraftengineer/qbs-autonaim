@@ -11,8 +11,8 @@ export default function SettingsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
 
-  const { data: workspace, isLoading } = useQuery(
-    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
+  const { data, isLoading } = useQuery(
+    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
   );
 
   if (isLoading) {
@@ -25,13 +25,15 @@ export default function SettingsPage() {
     );
   }
 
-  if (!workspace) {
+  if (!data?.workspace) {
     return (
       <div className="rounded-lg border p-6">
         <p className="text-muted-foreground">Workspace не найден</p>
       </div>
     );
   }
+
+  const { workspace } = data;
 
   return (
     <div className="space-y-6">

@@ -45,7 +45,7 @@ export const workspaceMutations = {
   update: protectedProcedure
     .input(
       z.object({
-        id: z.uuid(),
+        id: z.string().regex(/^ws_[0-9a-f]{32}$/),
         data: updateWorkspaceSchema,
       }),
     )
@@ -80,7 +80,7 @@ export const workspaceMutations = {
 
   // Удалить workspace
   delete: protectedProcedure
-    .input(z.object({ id: z.string().uuid() }))
+    .input(z.object({ id: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
     .mutation(async ({ input, ctx }) => {
       // Проверка доступа
       const access = await workspaceRepository.checkAccess(
