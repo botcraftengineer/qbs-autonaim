@@ -125,6 +125,16 @@ export class WorkspaceRepository {
     });
     return member;
   }
+
+  // Получить всех участников workspace
+  async getMembers(workspaceId: string) {
+    return db.query.userWorkspace.findMany({
+      where: eq(userWorkspace.workspaceId, workspaceId),
+      with: {
+        user: true,
+      },
+    });
+  }
 }
 
 export const workspaceRepository = new WorkspaceRepository();

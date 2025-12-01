@@ -5,7 +5,7 @@ import { protectedProcedure } from "../../trpc";
 export const createIntegration = protectedProcedure
   .input(
     z.object({
-      workspaceId: z.uuid(),
+      workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/),
       type: z.string(),
       name: z.string(),
       credentials: z.record(z.string(), z.string()),

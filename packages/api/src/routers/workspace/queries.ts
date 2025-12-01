@@ -69,4 +69,25 @@ export const workspaceQueries = {
 
       return { workspace, role: access.role };
     }),
+
+  // Получить участников workspace
+  members: protectedProcedure
+    .input(z.object({ workspaceId: z.string().regex(/^ws_[0-9a-f]{32}$/) }))
+    .query(async ({ input, ctx }) => {
+      // Проверка доступа
+      const access = await workspaceRepository.checkAccess(
+        input.workspaceId,
+        ctx.session.user.id,
+      );
+
+      if (!access) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Нет доступа к workspace",
+        });
+      }
+
+      const members = await workspaceRepository.getMembers(input.workspaceId);
+      return members;
+    }),
 };

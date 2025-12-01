@@ -5,3 +5,4 @@ export * from "./client";
 export * from "./repositories/integration";
 export * from "./repositories/workspace.repository";
 export * from "./schema";
+export * from "./utils/encryption";
