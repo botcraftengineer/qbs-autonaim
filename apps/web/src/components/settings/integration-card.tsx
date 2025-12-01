@@ -14,6 +14,7 @@ interface Integration {
   lastUsedAt: Date | null;
   hasCookies: boolean;
   hasCredentials: boolean;
+  email?: string | null;
 }
 
 interface IntegrationCardProps {
@@ -78,6 +79,11 @@ export function IntegrationCard({
             <p className="text-sm text-muted-foreground">
               {availableIntegration.description}
             </p>
+            {integration?.email && (
+              <p className="text-xs text-muted-foreground">
+                Email: {integration.email}
+              </p>
+            )}
             {integration?.lastUsedAt && (
               <p className="text-xs text-muted-foreground">
                 Последнее использование:{" "}

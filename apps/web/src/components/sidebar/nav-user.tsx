@@ -35,7 +35,7 @@ function getInitials(name: string): string {
 }
 
 export function NavUser({
-  user,
+  user: initialUser,
 }: {
   user: {
     name: string;
@@ -44,8 +44,22 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
-  const initials = getInitials(user.name);
   const router = useRouter();
+
+  // Используем useSession для автоматического обновления данных
+  const { data: session } = authClient.useSession();
+
+  // Используем данные из сессии, если доступны, иначе начальные данные
+  const user = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        avatar: session.user.image || "",
+      }
+    : initialUser;
+
+  const initials = getInitials(user.name);
+
   const handleLogout = async () => {
     await authClient.signOut({
       fetchOptions: {

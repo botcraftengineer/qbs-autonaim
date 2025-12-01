@@ -21,11 +21,12 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@selectio/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Eye, EyeOff } from "lucide-react";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
@@ -58,7 +59,13 @@ export function IntegrationDialog({
 }: IntegrationDialogProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const params = useParams();
+  const workspaceSlug = params.workspaceSlug as string;
   const [showPassword, setShowPassword] = useState(false);
+
+  const { data: workspaceData } = useQuery(
+    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
+  );
 
   const form = useForm<IntegrationFormValues>({
     resolver: zodResolver(integrationFormSchema),
@@ -102,7 +109,13 @@ export function IntegrationDialog({
   };
 
   const onSubmit = (data: IntegrationFormValues) => {
+    if (!workspaceData?.workspace?.id) {
+      toast.error("Workspace не найден");
+      return;
+    }
+
     createMutation.mutate({
+      workspaceId: workspaceData.workspace.id,
       type: data.type,
       name: data.name || selectedType?.label || "",
       credentials: {

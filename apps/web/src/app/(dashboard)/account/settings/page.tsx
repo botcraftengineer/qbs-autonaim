@@ -18,6 +18,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { authClient } from "~/auth/client";
 import { DeleteAccountDialog } from "~/components/settings/delete-account-dialog";
 import { useTRPC } from "~/trpc/react";
 
@@ -38,17 +39,24 @@ export default function AccountSettingsPage() {
     }
   }, [user]);
 
-  const updateAccount = useMutation(
-    trpc.user.updateAccount.mutationOptions({
-      onSuccess: async () => {
-        toast.success("Изменения сохранены");
-        await queryClient.invalidateQueries(trpc.user.pathFilter());
-      },
-      onError: (err) => {
-        toast.error(err.message || "Не удалось сохранить изменения");
-      },
-    }),
-  );
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleUpdateAccount = async (data: {
+    name?: string;
+    image?: string | null;
+  }) => {
+    setIsUpdating(true);
+    try {
+      await authClient.updateUser(data);
+      toast.success("Изменения сохранены");
+      // Обновляем локальные данные из сессии
+      await queryClient.invalidateQueries(trpc.user.pathFilter());
+    } catch {
+      toast.error("Не удалось сохранить изменения");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const deleteAccount = useMutation(
     trpc.user.deleteAccount.mutationOptions({
@@ -133,12 +141,10 @@ export default function AccountSettingsPage() {
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button
-            onClick={() =>
-              updateAccount.mutate({ name, language: user?.language || "ru" })
-            }
-            disabled={updateAccount.isPending || !name || name === user?.name}
+            onClick={() => handleUpdateAccount({ name })}
+            disabled={isUpdating || !name || name === user?.name}
           >
-            Сохранить изменения
+            {isUpdating ? "Сохранение..." : "Сохранить изменения"}
           </Button>
         </CardFooter>
       </Card>
@@ -208,18 +214,10 @@ export default function AccountSettingsPage() {
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button
-            onClick={() =>
-              updateAccount.mutate({
-                name,
-                language: user?.language || "ru",
-                image: avatar,
-              })
-            }
-            disabled={
-              updateAccount.isPending || !avatar || avatar === user?.image
-            }
+            onClick={() => handleUpdateAccount({ image: avatar })}
+            disabled={isUpdating || !avatar || avatar === user?.image}
           >
-            Сохранить изменения
+            {isUpdating ? "Сохранение..." : "Сохранить изменения"}
           </Button>
         </CardFooter>
       </Card>
