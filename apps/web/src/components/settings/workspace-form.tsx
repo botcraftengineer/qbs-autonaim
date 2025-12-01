@@ -18,6 +18,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTRPC } from "~/trpc/react";
+import { DeleteWorkspaceDialog } from "./delete-workspace-dialog";
 
 const workspaceFormSchema = z.object({
   name: z
@@ -46,6 +47,8 @@ export function WorkspaceForm({
   const [logoPreview, setLogoPreview] = useState<string | null>(
     initialData?.logo || null,
   );
+  const [initialSlug] = useState(initialData?.slug);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const form = useForm<WorkspaceFormValues>({
     resolver: zodResolver(workspaceFormSchema),
@@ -58,9 +61,14 @@ export function WorkspaceForm({
 
   const updateWorkspace = useMutation(
     trpc.workspace.update.mutationOptions({
-      onSuccess: async () => {
+      onSuccess: async (_data, variables) => {
         toast.success("Workspace успешно обновлен");
         await queryClient.invalidateQueries(trpc.workspace.pathFilter());
+
+        // Если slug изменился, редиректим на новый URL
+        if (variables.data.slug && variables.data.slug !== initialSlug) {
+          window.location.href = `/${variables.data.slug}/settings`;
+        }
       },
       onError: (err) => {
         toast.error(err.message || "Не удалось обновить workspace");
@@ -109,13 +117,7 @@ export function WorkspaceForm({
   };
 
   const handleDeleteWorkspace = () => {
-    if (
-      window.confirm(
-        "Вы уверены, что хотите удалить этот workspace? Это действие необратимо.",
-      )
-    ) {
-      deleteWorkspace.mutate({ id: workspaceId });
-    }
+    deleteWorkspace.mutate({ id: workspaceId });
   };
 
   return (
@@ -170,6 +172,7 @@ export function WorkspaceForm({
                 <div className="flex items-start gap-4">
                   {logoPreview && (
                     <div className="relative h-20 w-20 rounded-lg overflow-hidden border">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={logoPreview}
                         alt="Workspace logo"
@@ -229,12 +232,20 @@ export function WorkspaceForm({
         </p>
         <Button
           variant="destructive"
-          onClick={handleDeleteWorkspace}
+          onClick={() => setDeleteDialogOpen(true)}
           disabled={deleteWorkspace.isPending}
         >
-          {deleteWorkspace.isPending ? "Удаление..." : "Удалить Workspace"}
+          Удалить Workspace
         </Button>
       </div>
+
+      <DeleteWorkspaceDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        workspaceSlug={initialData?.slug || ""}
+        onConfirm={handleDeleteWorkspace}
+        isDeleting={deleteWorkspace.isPending}
+      />
     </div>
   );
 }
