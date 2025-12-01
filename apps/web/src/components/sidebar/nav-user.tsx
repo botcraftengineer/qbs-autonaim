@@ -105,7 +105,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/settings">
+                <Link href="/account/settings">
                   <IconUserCircle />
                   Аккаунт
                 </Link>

@@ -63,11 +63,11 @@ export function WorkspaceForm({
     trpc.workspace.update.mutationOptions({
       onSuccess: async (_data, variables) => {
         toast.success("Workspace успешно обновлен");
-        await queryClient.invalidateQueries(trpc.workspace.pathFilter());
-
         // Если slug изменился, редиректим на новый URL
         if (variables.data.slug && variables.data.slug !== initialSlug) {
           window.location.href = `/${variables.data.slug}/settings`;
+        } else {
+          await queryClient.invalidateQueries(trpc.workspace.pathFilter());
         }
       },
       onError: (err) => {
