@@ -8,7 +8,8 @@ import {
 import { inngest } from "./client";
 
 /**
- * Inngest функция для анализа интервью и генерации следующего вопроса
+ * Основная функция для анализа интервью
+ * Координирует весь процесс анализа и принимает решение о продолжении
  */
 export const analyzeInterviewFunction = inngest.createFunction(
   {
@@ -53,184 +54,27 @@ export const analyzeInterviewFunction = inngest.createFunction(
     });
 
     if (result.shouldContinue && result.nextQuestion) {
-      await step.run("send-next-question", async () => {
-        // Сохраняем вопрос и ответ
-        const lastQA = context.previousQA[context.previousQA.length - 1];
-        const lastQuestion =
-          context.previousQA.length > 0 && lastQA
-            ? lastQA.question
-            : "Первый вопрос";
-
-        await saveQuestionAnswer(
-          context.conversationId,
-          lastQuestion,
-          transcription,
-        );
-
-        // Получаем conversation для chatId
-        const { telegramConversation } = await import("@selectio/db");
-        const [conv] = await db
-          .select()
-          .from(telegramConversation)
-          .where(eq(telegramConversation.id, context.conversationId))
-          .limit(1);
-
-        if (!conv) {
-          throw new Error("Conversation не найден");
-        }
-
-        if (!result.nextQuestion) {
-          throw new Error("Следующий вопрос не сгенерирован");
-        }
-
-        // Умная пауза перед отправкой (имитация естественного времени набора)
-        const questionLength = result.nextQuestion.length;
-        // Базовая пауза 1-2 секунды + ~30-50мс на символ
-        const baseDelay = 1000 + Math.random() * 1000;
-        const typingDelay = questionLength * (30 + Math.random() * 20);
-        const totalDelay = Math.min(baseDelay + typingDelay, 5000); // Максимум 5 секунд
-
-        console.log("⏳ Пауза перед отправкой вопроса", {
-          delay: Math.round(totalDelay),
-          questionLength,
-        });
-
-        await new Promise((resolve) => setTimeout(resolve, totalDelay));
-
-        // Создаем запись сообщения в БД
-        const [newMessage] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: context.conversationId,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: result.nextQuestion,
-          })
-          .returning();
-
-        if (!newMessage) {
-          throw new Error("Не удалось создать запись сообщения");
-        }
-
-        // Отправляем следующий вопрос через Inngest
-        await inngest.send({
-          name: "telegram/message.send",
-          data: {
-            messageId: newMessage.id,
-            chatId: conv.chatId,
-            content: result.nextQuestion,
-          },
-        });
-
-        console.log("✅ Следующий вопрос отправлен", {
+      // Отправляем событие для обработки следующего вопроса
+      await step.sendEvent("send-next-question-event", {
+        name: "telegram/interview.send-question",
+        data: {
           conversationId: context.conversationId,
-          questionNumber: context.questionNumber + 1,
-        });
+          question: result.nextQuestion,
+          transcription,
+          questionNumber: context.questionNumber,
+        },
       });
     } else {
-      await step.run("complete-interview", async () => {
-        console.log("🏁 Интервью завершено", {
+      // Отправляем событие для завершения интервью
+      await step.sendEvent("complete-interview-event", {
+        name: "telegram/interview.complete",
+        data: {
           conversationId: context.conversationId,
-          totalQuestions: context.questionNumber,
-          reason: result.reason,
-        });
-
-        // Сохраняем последний вопрос и ответ
-        const lastQA = context.previousQA[context.previousQA.length - 1];
-        const lastQuestion =
-          context.previousQA.length > 0 && lastQA
-            ? lastQA.question
-            : "Первый вопрос";
-
-        await saveQuestionAnswer(
-          context.conversationId,
-          lastQuestion,
           transcription,
-        );
-
-        // Создаем скоринг на основе интервью
-        if (context.responseId) {
-          console.log("📊 Создание скоринга интервью", {
-            responseId: context.responseId,
-          });
-
-          // Обновляем контекст с последним ответом
-          const updatedContext = await getInterviewContext(
-            context.conversationId,
-            transcription,
-          );
-
-          if (updatedContext) {
-            const scoring = await createInterviewScoring(updatedContext);
-
-            console.log("✅ Скоринг создан", {
-              score: scoring.score,
-              detailedScore: scoring.detailedScore,
-            });
-
-            // Сохраняем скоринг интервью в отдельную таблицу
-            const { telegramInterviewScoring } = await import("@selectio/db");
-            await db
-              .insert(telegramInterviewScoring)
-              .values({
-                conversationId: context.conversationId,
-                responseId: context.responseId,
-                score: scoring.score,
-                detailedScore: scoring.detailedScore,
-                analysis: scoring.analysis,
-              })
-              .onConflictDoUpdate({
-                target: telegramInterviewScoring.conversationId,
-                set: {
-                  score: scoring.score,
-                  detailedScore: scoring.detailedScore,
-                  analysis: scoring.analysis,
-                },
-              });
-
-            console.log("✅ Скоринг интервью сохранен в БД");
-          }
-        }
-
-        // Получаем conversation для chatId
-        const { telegramConversation } = await import("@selectio/db");
-        const [conv] = await db
-          .select()
-          .from(telegramConversation)
-          .where(eq(telegramConversation.id, context.conversationId))
-          .limit(1);
-
-        if (!conv) {
-          throw new Error("Conversation не найден");
-        }
-
-        const finalMessage =
-          "Спасибо за ответы! 🙏 Я изучу их и свяжусь с тобой в ближайшее время.";
-
-        // Создаем запись сообщения в БД
-        const [newMessage] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: context.conversationId,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: finalMessage,
-          })
-          .returning();
-
-        if (!newMessage) {
-          throw new Error("Не удалось создать запись сообщения");
-        }
-
-        // Отправляем финальное сообщение
-        await inngest.send({
-          name: "telegram/message.send",
-          data: {
-            messageId: newMessage.id,
-            chatId: conv.chatId,
-            content: finalMessage,
-          },
-        });
+          reason: result.reason ?? undefined,
+          questionNumber: context.questionNumber,
+          responseId: context.responseId ?? undefined,
+        },
       });
     }
 
@@ -239,6 +83,252 @@ export const analyzeInterviewFunction = inngest.createFunction(
       conversationId,
       shouldContinue: result.shouldContinue,
       questionNumber: context.questionNumber,
+    };
+  },
+);
+
+/**
+ * Функция для отправки следующего вопроса
+ * Может быть запущена независимо
+ */
+export const sendNextQuestionFunction = inngest.createFunction(
+  {
+    id: "send-next-question",
+    name: "Send Next Interview Question",
+    retries: 3,
+  },
+  { event: "telegram/interview.send-question" },
+  async ({ event, step }) => {
+    const { conversationId, question, transcription, questionNumber } =
+      event.data;
+
+    await step.run("save-qa", async () => {
+      console.log("💾 Сохранение вопроса и ответа", {
+        conversationId,
+        questionNumber,
+      });
+
+      const context = await getInterviewContext(conversationId, transcription);
+      if (!context) {
+        throw new Error("Контекст интервью не найден");
+      }
+
+      const lastQA = context.previousQA[context.previousQA.length - 1];
+      const lastQuestion =
+        context.previousQA.length > 0 && lastQA
+          ? lastQA.question
+          : "Первый вопрос";
+
+      await saveQuestionAnswer(conversationId, lastQuestion, transcription);
+    });
+
+    const chatId = await step.run("get-chat-id", async () => {
+      const { telegramConversation } = await import("@selectio/db");
+      const [conv] = await db
+        .select()
+        .from(telegramConversation)
+        .where(eq(telegramConversation.id, conversationId))
+        .limit(1);
+
+      if (!conv) {
+        throw new Error("Conversation не найден");
+      }
+
+      return conv.chatId;
+    });
+
+    const delay = await step.run("calculate-delay", () => {
+      // Умная пауза перед отправкой (имитация естественного времени набора)
+      const questionLength = question.length;
+      const baseDelay = 1000 + Math.random() * 1000;
+      const typingDelay = questionLength * (30 + Math.random() * 20);
+      const totalDelay = Math.min(baseDelay + typingDelay, 5000);
+
+      console.log("⏳ Пауза перед отправкой вопроса", {
+        delay: Math.round(totalDelay),
+        questionLength,
+      });
+
+      return `${Math.round(totalDelay)}ms`;
+    });
+
+    await step.sleep("natural-delay", delay);
+
+    await step.run("send-message", async () => {
+      const [newMessage] = await db
+        .insert(telegramMessage)
+        .values({
+          conversationId,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: question,
+        })
+        .returning();
+
+      if (!newMessage) {
+        throw new Error("Не удалось создать запись сообщения");
+      }
+
+      await inngest.send({
+        name: "telegram/message.send",
+        data: {
+          messageId: newMessage.id,
+          chatId,
+          content: question,
+        },
+      });
+
+      console.log("✅ Следующий вопрос отправлен", {
+        conversationId,
+        questionNumber: questionNumber + 1,
+      });
+    });
+
+    return {
+      success: true,
+      conversationId,
+      questionNumber: questionNumber + 1,
+    };
+  },
+);
+
+/**
+ * Функция для завершения интервью и создания скоринга
+ * Может быть запущена независимо
+ */
+export const completeInterviewFunction = inngest.createFunction(
+  {
+    id: "complete-interview",
+    name: "Complete Interview and Create Scoring",
+    retries: 3,
+  },
+  { event: "telegram/interview.complete" },
+  async ({ event, step }) => {
+    const {
+      conversationId,
+      transcription,
+      reason,
+      questionNumber,
+      responseId,
+    } = event.data;
+
+    console.log("🏁 Интервью завершено", {
+      conversationId,
+      totalQuestions: questionNumber,
+      reason,
+    });
+
+    await step.run("save-last-qa", async () => {
+      console.log("💾 Сохранение последнего вопроса и ответа");
+
+      const context = await getInterviewContext(conversationId, transcription);
+      if (!context) {
+        throw new Error("Контекст интервью не найден");
+      }
+
+      const lastQA = context.previousQA[context.previousQA.length - 1];
+      const lastQuestion =
+        context.previousQA.length > 0 && lastQA
+          ? lastQA.question
+          : "Первый вопрос";
+
+      await saveQuestionAnswer(conversationId, lastQuestion, transcription);
+    });
+
+    if (responseId) {
+      await step.run("create-scoring", async () => {
+        console.log("📊 Создание скоринга интервью", {
+          responseId,
+        });
+
+        const updatedContext = await getInterviewContext(
+          conversationId,
+          transcription,
+        );
+
+        if (!updatedContext) {
+          throw new Error("Не удалось получить обновленный контекст");
+        }
+
+        const scoring = await createInterviewScoring(updatedContext);
+
+        console.log("✅ Скоринг создан", {
+          score: scoring.score,
+          detailedScore: scoring.detailedScore,
+        });
+
+        const { telegramInterviewScoring } = await import("@selectio/db");
+        await db
+          .insert(telegramInterviewScoring)
+          .values({
+            conversationId,
+            responseId,
+            score: scoring.score,
+            detailedScore: scoring.detailedScore,
+            analysis: scoring.analysis,
+          })
+          .onConflictDoUpdate({
+            target: telegramInterviewScoring.conversationId,
+            set: {
+              score: scoring.score,
+              detailedScore: scoring.detailedScore,
+              analysis: scoring.analysis,
+            },
+          });
+
+        console.log("✅ Скоринг интервью сохранен в БД");
+      });
+    }
+
+    const chatId = await step.run("get-chat-id", async () => {
+      const { telegramConversation } = await import("@selectio/db");
+      const [conv] = await db
+        .select()
+        .from(telegramConversation)
+        .where(eq(telegramConversation.id, conversationId))
+        .limit(1);
+
+      if (!conv) {
+        throw new Error("Conversation не найден");
+      }
+
+      return conv.chatId;
+    });
+
+    await step.run("send-final-message", async () => {
+      const finalMessage =
+        "Спасибо за ответы! 🙏 Я изучу их и свяжусь с тобой в ближайшее время.";
+
+      const [newMessage] = await db
+        .insert(telegramMessage)
+        .values({
+          conversationId,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: finalMessage,
+        })
+        .returning();
+
+      if (!newMessage) {
+        throw new Error("Не удалось создать запись сообщения");
+      }
+
+      await inngest.send({
+        name: "telegram/message.send",
+        data: {
+          messageId: newMessage.id,
+          chatId,
+          content: finalMessage,
+        },
+      });
+
+      console.log("✅ Финальное сообщение отправлено");
+    });
+
+    return {
+      success: true,
+      conversationId,
+      totalQuestions: questionNumber,
     };
   },
 );

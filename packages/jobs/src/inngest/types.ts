@@ -99,6 +99,23 @@ export const interviewAnalysisDataSchema = z.object({
   transcription: z.string().min(1, "Transcription is required"),
 });
 
+// Schema for sending next interview question event data
+export const interviewSendQuestionDataSchema = z.object({
+  conversationId: z.string().min(1, "Conversation ID is required"),
+  question: z.string().min(1, "Question is required"),
+  transcription: z.string().min(1, "Transcription is required"),
+  questionNumber: z.number().int().min(0),
+});
+
+// Schema for completing interview event data
+export const interviewCompleteDataSchema = z.object({
+  conversationId: z.string().min(1, "Conversation ID is required"),
+  transcription: z.string().min(1, "Transcription is required"),
+  reason: z.string().optional(),
+  questionNumber: z.number().int().min(0),
+  responseId: z.string().optional(),
+});
+
 /**
  * Inngest event schemas using Zod
  * Each event must have a 'data' field containing the payload
@@ -152,6 +169,12 @@ export const inngestEventSchemas = {
   "telegram/interview.analyze": {
     data: interviewAnalysisDataSchema,
   },
+  "telegram/interview.send-question": {
+    data: interviewSendQuestionDataSchema,
+  },
+  "telegram/interview.complete": {
+    data: interviewCompleteDataSchema,
+  },
 };
 
 /**
@@ -200,4 +223,10 @@ export type VoiceTranscriptionPayload = z.infer<
 >;
 export type InterviewAnalysisPayload = z.infer<
   typeof interviewAnalysisDataSchema
+>;
+export type InterviewSendQuestionPayload = z.infer<
+  typeof interviewSendQuestionDataSchema
+>;
+export type InterviewCompletePayload = z.infer<
+  typeof interviewCompleteDataSchema
 >;

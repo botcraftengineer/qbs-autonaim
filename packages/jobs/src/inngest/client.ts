@@ -4,6 +4,8 @@ import {
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
   interviewAnalysisDataSchema,
+  interviewCompleteDataSchema,
+  interviewSendQuestionDataSchema,
   parseMissingContactsDataSchema,
   parseNewResumesDataSchema,
   refreshSingleResumeDataSchema,
@@ -41,5 +43,7 @@ export const inngest = new Inngest({
     "telegram/message.send": telegramMessageSendDataSchema,
     "telegram/voice.transcribe": voiceTranscriptionDataSchema,
     "telegram/interview.analyze": interviewAnalysisDataSchema,
+    "telegram/interview.send-question": interviewSendQuestionDataSchema,
+    "telegram/interview.complete": interviewCompleteDataSchema,
   }),
 });
