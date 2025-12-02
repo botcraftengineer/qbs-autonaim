@@ -166,7 +166,6 @@ export class WorkspaceRepository {
 
   // Получить активный invite link для workspace
   async getActiveInviteLink(workspaceId: string) {
-    const { workspaceInvite } = await import("../schema");
     const { gt } = await import("drizzle-orm");
 
     return db.query.workspaceInvite.findFirst({

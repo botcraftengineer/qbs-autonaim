@@ -11,7 +11,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {

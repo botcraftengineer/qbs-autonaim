@@ -9,7 +9,7 @@ import { inngest } from "@selectio/jobs/client";
 import { uuidv7Schema } from "@selectio/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../../trpc";
+import { protectedProcedure } from "../../trpc";
 
 export const sendMessageRouter = {
   send: protectedProcedure

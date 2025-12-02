@@ -90,7 +90,7 @@ function MembersLoadingSkeleton() {
           </TableHeader>
           <TableBody>
             {[...Array(5)].map((_, i) => (
-              <TableRow key={`skeleton-${i}`}>
+              <TableRow key={i}>
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-8 w-8 rounded-full" />

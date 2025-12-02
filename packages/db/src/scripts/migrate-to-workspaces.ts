@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import { db } from "../client";
 import { workspaceRepository } from "../repositories/workspace.repository";
 import { integration, user, vacancy, workspace } from "../schema";
