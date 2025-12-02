@@ -28,10 +28,19 @@ export default function VacanciesPage() {
   );
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const { data: workspace } = useQuery(
+    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
+  );
+
   const handleUpdate = async () => {
+    if (!workspace?.workspace?.id) {
+      toast.error("Workspace не найден");
+      return;
+    }
+
     setIsUpdating(true);
     try {
-      const result = await triggerUpdateVacancies();
+      const result = await triggerUpdateVacancies(workspace.workspace.id);
       if (result.success) {
         toast.success("Обновление вакансий запущено");
       } else {

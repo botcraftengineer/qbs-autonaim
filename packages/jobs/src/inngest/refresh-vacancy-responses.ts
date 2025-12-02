@@ -55,7 +55,10 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
           }),
         );
 
-        const { newCount } = await refreshVacancyResponses(vacancyId);
+        const { newCount } = await refreshVacancyResponses(
+          vacancyId,
+          vacancyData.workspaceId,
+        );
 
         await publish(
           refreshVacancyResponsesChannel(vacancyId).status({

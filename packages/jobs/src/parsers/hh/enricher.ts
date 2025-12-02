@@ -79,6 +79,7 @@ async function checkAndPerformLogin(
   page: Page,
   email: string,
   password: string,
+  workspaceId?: string,
 ) {
   console.log("🔐 Проверка авторизации...");
 
@@ -96,18 +97,18 @@ async function checkAndPerformLogin(
     // Create a simple logger wrapper that implements the Log interface
     const log = new Log();
 
-    await performLogin(page, log, email, password);
+    await performLogin(page, log, email, password, workspaceId);
   } else {
     console.log("✅ Успешно авторизованы");
   }
 
   // Сохраняем куки после успешной проверки/логина
   const cookies = await page.cookies();
-  await saveCookies("hh", cookies);
+  await saveCookies("hh", cookies, workspaceId);
 }
 
-export async function runEnricher() {
-  const credentials = await getIntegrationCredentials("hh");
+export async function runEnricher(workspaceId?: string) {
+  const credentials = await getIntegrationCredentials("hh", workspaceId);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("HH credentials не найдены в интеграциях");
   }
@@ -127,14 +128,14 @@ export async function runEnricher() {
     return;
   }
 
-  const savedCookies = await loadCookies("hh");
+  const savedCookies = await loadCookies("hh", workspaceId);
   const browser = await setupBrowser();
 
   try {
     const page = await setupPage(browser, savedCookies);
 
     // Проверяем авторизацию
-    await checkAndPerformLogin(page, email, password);
+    await checkAndPerformLogin(page, email, password, workspaceId);
 
     console.log(`🚀 Начинаем обработку ${responsesToEnrich.length} резюме...`);
 

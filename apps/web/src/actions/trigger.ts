@@ -97,12 +97,12 @@ export async function triggerScreenNewResponses(vacancyId: string) {
   }
 }
 
-export async function triggerUpdateVacancies() {
+export async function triggerUpdateVacancies(workspaceId?: string) {
   try {
     const { inngest } = await import("@selectio/jobs/client");
     await inngest.send({
       name: "vacancy/update.active",
-      data: {},
+      data: { workspaceId },
     });
     return { success: true as const };
   } catch (error) {

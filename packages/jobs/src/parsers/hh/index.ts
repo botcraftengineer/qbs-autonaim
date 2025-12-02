@@ -1,4 +1,4 @@
-import { getIntegrationCredentials } from "@selectio/db";
+import { getIntegrationWithCredentials } from "@selectio/db";
 import { PuppeteerCrawler } from "crawlee";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
@@ -11,18 +11,25 @@ puppeteer.use(StealthPlugin());
 
 export { refreshVacancyResponses } from "./refresh-responses";
 
-export async function runHHParser(options?: { skipResponses?: boolean }) {
-  const credentials = await getIntegrationCredentials("hh");
-  if (!credentials?.email || !credentials?.password) {
+export async function runHHParser(options?: {
+  skipResponses?: boolean;
+  workspaceId?: string;
+}) {
+  const integration = await getIntegrationWithCredentials(
+    "hh",
+    options?.workspaceId,
+  );
+  if (!integration?.credentials?.email || !integration?.credentials?.password) {
     throw new Error("HH credentials не найдены в интеграциях");
   }
 
-  const { email, password } = credentials;
+  const { email, password } = integration.credentials;
+  const { workspaceId } = integration;
 
   console.log("🚀 Запуск парсера hh.ru...");
   console.log(`📧 Email: ${email}`);
 
-  const savedCookies = await loadCookies("hh");
+  const savedCookies = await loadCookies("hh", workspaceId);
 
   // Всегда начинаем с страницы логина, чтобы проверить актуальность сессии
   const startUrl = HH_CONFIG.urls.login;
@@ -105,12 +112,12 @@ export async function runHHParser(options?: { skipResponses?: boolean }) {
         const loginInput = await page.$('input[type="text"][name="username"]');
 
         if (loginInput) {
-          await performLogin(page, log, email, password);
+          await performLogin(page, log, email, password, workspaceId);
         } else {
           log.info("✅ Форма входа не найдена. Похоже, мы уже авторизованы.");
         }
 
-        const vacancies = await parseVacancies(page);
+        const vacancies = await parseVacancies(page, workspaceId);
 
         // Если запрошено только обновление вакансий, пропускаем обработку откликов
         if (options?.skipResponses) {

@@ -43,10 +43,8 @@ export async function hasVacancyDescription(
  */
 export async function saveBasicVacancy(
   vacancyData: VacancyData,
-  workspaceId?: string,
+  workspaceId: string,
 ) {
-  // TODO: получать workspaceId из контекста интеграции
-  const wsId = workspaceId || "00000000-0000-0000-0000-000000000000";
   try {
     const existingVacancy = await db.query.vacancy.findFirst({
       where: eq(vacancy.id, vacancyData.id),
@@ -54,7 +52,7 @@ export async function saveBasicVacancy(
 
     const dataToSave = {
       id: vacancyData.id,
-      workspaceId: wsId,
+      workspaceId,
       title: vacancyData.title,
       url: vacancyData.url || undefined,
       views: Number.parseInt(vacancyData.views, 10) || 0,
@@ -135,10 +133,8 @@ export async function getVacanciesWithoutDescription() {
 
 export async function saveVacancyToDb(
   vacancyData: VacancyData,
-  workspaceId?: string,
+  workspaceId: string,
 ) {
-  // TODO: получать workspaceId из контекста интеграции
-  const wsId = workspaceId || "00000000-0000-0000-0000-000000000000";
   try {
     const existingVacancy = await db.query.vacancy.findFirst({
       where: eq(vacancy.id, vacancyData.id),
@@ -146,7 +142,7 @@ export async function saveVacancyToDb(
 
     const dataToSave = {
       id: vacancyData.id,
-      workspaceId: wsId,
+      workspaceId,
       title: vacancyData.title,
       url: vacancyData.url || undefined,
       views: Number.parseInt(vacancyData.views, 10) || 0,

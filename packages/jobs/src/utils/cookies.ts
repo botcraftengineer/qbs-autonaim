@@ -10,9 +10,10 @@ import type { Cookie } from "crawlee";
 export async function saveCookies(
   integrationType: string,
   cookies: Cookie[],
+  workspaceId?: string,
 ): Promise<void> {
   try {
-    await saveCookiesForIntegration(integrationType, cookies);
+    await saveCookiesForIntegration(integrationType, cookies, workspaceId);
     console.log(`✓ Cookies сохранены для интеграции ${integrationType}`);
   } catch (error) {
     console.error("Ошибка при сохранении cookies:", error);
@@ -25,9 +26,13 @@ export async function saveCookies(
  */
 export async function loadCookies(
   integrationType: string,
+  workspaceId?: string,
 ): Promise<Cookie[] | null> {
   try {
-    const cookies = await loadCookiesForIntegration(integrationType);
+    const cookies = await loadCookiesForIntegration(
+      integrationType,
+      workspaceId,
+    );
     if (cookies) {
       console.log(
         `✓ Загружено ${cookies.length} cookies для ${integrationType}`,

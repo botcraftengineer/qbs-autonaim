@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../client";
 import { integration, type NewIntegration } from "../schema";
 import { decryptCredentials, encryptCredentials } from "../utils/encryption";
@@ -15,9 +15,25 @@ export interface Cookie {
 }
 
 /**
- * Получить интеграцию по типу
+ * Получить интеграцию по типу и workspace_id
  */
-export async function getIntegration(type: string) {
+export async function getIntegration(type: string, workspaceId?: string) {
+  if (workspaceId) {
+    const result = await db
+      .select()
+      .from(integration)
+      .where(
+        and(
+          eq(integration.type, type),
+          eq(integration.workspaceId, workspaceId),
+        ),
+      )
+      .limit(1);
+
+    return result[0] ?? null;
+  }
+
+  // Fallback: если workspaceId не передан, ищем первую интеграцию по типу
   const result = await db
     .select()
     .from(integration)
@@ -67,8 +83,9 @@ export async function upsertIntegration(data: NewIntegration) {
 export async function saveCookiesForIntegration(
   type: string,
   cookies: Cookie[],
+  workspaceId?: string,
 ) {
-  const existing = await getIntegration(type);
+  const existing = await getIntegration(type, workspaceId);
 
   if (!existing) {
     throw new Error(`Integration ${type} not found`);
@@ -89,8 +106,9 @@ export async function saveCookiesForIntegration(
  */
 export async function loadCookiesForIntegration(
   type: string,
+  workspaceId?: string,
 ): Promise<Cookie[] | null> {
-  const result = await getIntegration(type);
+  const result = await getIntegration(type, workspaceId);
 
   if (!result?.cookies) {
     return null;
@@ -104,8 +122,9 @@ export async function loadCookiesForIntegration(
  */
 export async function getIntegrationCredentials(
   type: string,
+  workspaceId?: string,
 ): Promise<Record<string, string> | null> {
-  const result = await getIntegration(type);
+  const result = await getIntegration(type, workspaceId);
   if (!result?.credentials) {
     return null;
   }
@@ -115,10 +134,33 @@ export async function getIntegrationCredentials(
 }
 
 /**
+ * Получить credentials и workspaceId для интеграции
+ */
+export async function getIntegrationWithCredentials(
+  type: string,
+  workspaceId?: string,
+): Promise<{
+  credentials: Record<string, string>;
+  workspaceId: string;
+} | null> {
+  const result = await getIntegration(type, workspaceId);
+  if (!result?.credentials) {
+    return null;
+  }
+
+  return {
+    credentials: decryptCredentials(
+      result.credentials as Record<string, string>,
+    ),
+    workspaceId: result.workspaceId,
+  };
+}
+
+/**
  * Обновить время последнего использования
  */
-export async function updateLastUsed(type: string) {
-  const existing = await getIntegration(type);
+export async function updateLastUsed(type: string, workspaceId?: string) {
+  const existing = await getIntegration(type, workspaceId);
 
   if (existing) {
     await db
@@ -140,8 +182,8 @@ export async function getAllIntegrations() {
 /**
  * Удалить интеграцию
  */
-export async function deleteIntegration(type: string) {
-  const existing = await getIntegration(type);
+export async function deleteIntegration(type: string, workspaceId?: string) {
+  const existing = await getIntegration(type, workspaceId);
 
   if (existing) {
     await db.delete(integration).where(eq(integration.id, existing.id));

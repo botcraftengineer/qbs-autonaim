@@ -14,16 +14,17 @@ puppeteer.use(StealthPlugin());
  */
 export async function refreshVacancyResponses(
   vacancyId: string,
+  workspaceId?: string,
 ): Promise<{ newCount: number }> {
   console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
 
-  const credentials = await getIntegrationCredentials("hh");
+  const credentials = await getIntegrationCredentials("hh", workspaceId);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("HH credentials не найдены в интеграциях");
   }
 
   const { email, password } = credentials;
-  const savedCookies = await loadCookies("hh");
+  const savedCookies = await loadCookies("hh", workspaceId);
   const startUrl = HH_CONFIG.urls.login;
 
   let newResponsesCount = 0;
@@ -98,7 +99,7 @@ export async function refreshVacancyResponses(
         const loginInput = await page.$('input[type="text"][name="username"]');
 
         if (loginInput) {
-          await performLogin(page, log, email, password);
+          await performLogin(page, log, email, password, workspaceId);
         } else {
           log.info("✅ Форма входа не найдена. Похоже, мы уже авторизованы.");
         }

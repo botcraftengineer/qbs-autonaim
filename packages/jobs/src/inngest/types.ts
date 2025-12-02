@@ -20,7 +20,9 @@ export const responseScreenDataSchema = z.object({
  * Each event must have a 'data' field containing the payload
  */
 // Schema for vacancy update active event data
-export const vacancyUpdateActiveDataSchema = z.object({});
+export const vacancyUpdateActiveDataSchema = z.object({
+  workspaceId: z.string().optional(),
+});
 
 // Schema for vacancy responses refresh event data
 export const vacancyResponsesRefreshDataSchema = z.object({

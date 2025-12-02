@@ -13,12 +13,15 @@ export const updateVacanciesFunction = inngest.createFunction(
     concurrency: 1, // Ensure only one parser runs at a time to avoid conflicts
   },
   { event: "vacancy/update.active" },
-  async ({ step }) => {
+  async ({ event, step }) => {
     return await step.run("parse-vacancies", async () => {
       console.log("🚀 Запуск обновления вакансий через Inngest");
 
       try {
-        await runHHParser({ skipResponses: true });
+        await runHHParser({
+          skipResponses: true,
+          workspaceId: event.data.workspaceId,
+        });
         console.log("✅ Обновление вакансий завершено успешно");
         return { success: true };
       } catch (error) {

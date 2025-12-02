@@ -7,6 +7,7 @@ export async function performLogin(
   log: Log,
   email: string,
   password: string,
+  workspaceId?: string,
 ) {
   log.info("🔍 Поиск поля email...");
   await page.waitForSelector('input[type="text"][name="username"]', {
@@ -65,7 +66,7 @@ export async function performLogin(
   const cookies = await page.cookies();
   log.info(`🍪 Получено ${cookies.length} cookies`);
 
-  await saveCookies("hh", cookies);
+  await saveCookies("hh", cookies, workspaceId);
 }
 
 export { loadCookies, saveCookies };

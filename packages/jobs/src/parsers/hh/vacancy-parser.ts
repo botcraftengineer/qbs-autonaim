@@ -8,7 +8,10 @@ import type { VacancyData } from "../types";
 import { HH_CONFIG } from "./config";
 import { humanBrowse, humanDelay, randomDelay } from "./human-behavior";
 
-export async function parseVacancies(page: Page): Promise<VacancyData[]> {
+export async function parseVacancies(
+  page: Page,
+  workspaceId: string,
+): Promise<VacancyData[]> {
   console.log(`🚀 Начинаем парсинг вакансий`);
 
   // ЭТАП 1: Собираем список всех активных вакансий
@@ -24,7 +27,7 @@ export async function parseVacancies(page: Page): Promise<VacancyData[]> {
 
   // ЭТАП 2: Сохраняем базовую информацию всех вакансий
   console.log("\n💾 ЭТАП 2: Сохранение базовой информации...");
-  await saveBasicVacancies(vacancies);
+  await saveBasicVacancies(vacancies, workspaceId);
 
   // ЭТАП 3: Парсим описания для вакансий без описания
   console.log("\n📊 ЭТАП 3: Парсинг описаний вакансий...");
@@ -120,7 +123,10 @@ async function collectVacancies(page: Page): Promise<VacancyData[]> {
 /**
  * ЭТАП 2: Сохраняет базовую информацию всех вакансий
  */
-async function saveBasicVacancies(vacancies: VacancyData[]): Promise<void> {
+async function saveBasicVacancies(
+  vacancies: VacancyData[],
+  workspaceId: string,
+): Promise<void> {
   let savedCount = 0;
   let errorCount = 0;
 
@@ -129,7 +135,7 @@ async function saveBasicVacancies(vacancies: VacancyData[]): Promise<void> {
     if (!vacancy) continue;
 
     try {
-      await saveBasicVacancy(vacancy);
+      await saveBasicVacancy(vacancy, workspaceId);
       savedCount++;
     } catch (error) {
       errorCount++;
