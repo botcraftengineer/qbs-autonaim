@@ -7,8 +7,6 @@ export const responseScreeningResultSchema = z.object({
   score: z.number().int().min(1).max(5),
   detailedScore: z.number().int().min(0).max(100),
   analysis: z.string(),
-  greeting: z.string().optional(),
-  questions: z.array(z.string()).optional(),
 });
 
 export type ResponseScreeningResult = z.infer<

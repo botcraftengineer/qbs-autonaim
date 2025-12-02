@@ -12,8 +12,6 @@ interface ScreeningData {
   score: number;
   detailedScore: number;
   analysis: string | null;
-  questions: unknown;
-  greeting: string | null;
 }
 
 interface ScreeningHoverCardProps {
@@ -33,10 +31,6 @@ export function ScreeningHoverCard({ screening }: ScreeningHoverCardProps) {
     if (score === 2) return "Слабое соответствие";
     return "Не подходит";
   };
-
-  const questions = Array.isArray(screening.questions)
-    ? (screening.questions as string[])
-    : [];
 
   const getScoreBadgeVariant = (score: number) => {
     if (score >= 4) return "default";
@@ -112,36 +106,6 @@ export function ScreeningHoverCard({ screening }: ScreeningHoverCardProps) {
               <p className="text-sm text-muted-foreground leading-relaxed">
                 {screening.analysis}
               </p>
-            </div>
-          )}
-
-          {screening.greeting && (
-            <div>
-              <h4 className="font-semibold mb-2">Приветствие</h4>
-              <div className="p-3 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
-                <p className="text-sm leading-relaxed">{screening.greeting}</p>
-              </div>
-            </div>
-          )}
-
-          {questions.length > 0 && (
-            <div>
-              <h4 className="font-semibold mb-2">
-                Вопросы ({questions.length})
-              </h4>
-              <ul className="space-y-2">
-                {questions.map((question, idx) => (
-                  <li
-                    key={`question-${question.slice(0, 20)}-${idx}`}
-                    className="flex gap-2 p-2 rounded-lg border bg-card text-sm"
-                  >
-                    <span className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-medium">
-                      {idx + 1}
-                    </span>
-                    <span className="leading-relaxed">{question}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           )}
         </div>

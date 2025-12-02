@@ -6,49 +6,37 @@ import { HH_CONFIG } from "./config";
 /**
  * Скачивает PDF резюме с HH.ru
  */
-async function downloadResumePdf(page: Page): Promise<Buffer | null> {
+async function downloadResumePdf(
+  page: Page,
+  resumeUrl: string,
+): Promise<Buffer | null> {
   try {
     console.log("📥 Попытка скачать PDF резюме...");
 
-    // Ищем кнопку скачивания
-    const downloadButton = await page.$(
-      'button[data-qa="resume-download-button"]',
-    );
+    // Извлекаем hash и resumeId из URL резюме
+    const urlMatch = resumeUrl.match(/\/resume\/([a-f0-9]+)/);
+    const vacancyIdMatch = resumeUrl.match(/vacancyId=(\d+)/);
 
-    if (!downloadButton) {
-      console.log("⚠️ Кнопка скачивания резюме не найдена");
+    if (!urlMatch?.[1]) {
+      console.log("⚠️ Не удалось извлечь hash резюме из URL");
       return null;
     }
 
-    // Кликаем по кнопке и сразу получаем URL из появившейся ссылки
-    await downloadButton.click();
+    const resumeHash = urlMatch[1];
+    const vacancyId = vacancyIdMatch?.[1] || "";
 
-    // Ждем появления ссылки на PDF с небольшим таймаутом
-    const pdfLink = await page
-      .waitForSelector('a[data-qa="resume-export-pdf"]', {
-        timeout: 3000,
+    // Получаем имя кандидата из заголовка страницы для имени файла
+    const candidateName = await page
+      .evaluate(() => {
+        const nameEl = document.querySelector(
+          'span[data-qa="resume-personal-name"]',
+        );
+        return nameEl?.textContent?.trim() || "resume";
       })
-      .catch(() => null);
+      .catch(() => "resume");
 
-    if (!pdfLink) {
-      console.log("⚠️ Ссылка на PDF не появилась");
-      return null;
-    }
-
-    // Получаем URL PDF до любых действий со страницей
-    const pdfUrl = await pdfLink
-      .evaluate((el) => el.getAttribute("href"))
-      .catch(() => null);
-
-    if (!pdfUrl) {
-      console.log("⚠️ URL PDF не найден");
-      return null;
-    }
-
-    // Формируем полный URL
-    const fullPdfUrl = pdfUrl.startsWith("http")
-      ? pdfUrl
-      : new URL(pdfUrl, "https://hh.ru").href;
+    // Формируем URL для скачивания PDF напрямую
+    const fullPdfUrl = `https://hh.ru/resume_converter/${encodeURIComponent(candidateName)}.pdf?hash=${resumeHash}${vacancyId ? `&vacancyId=${vacancyId}` : ""}&type=pdf&hhtmSource=resume&hhtmFrom=employer_vacancy_responses`;
 
     console.log(`📄 Скачивание PDF: ${fullPdfUrl}`);
 
@@ -226,62 +214,91 @@ export async function parseResumeExperience(
       if (!phoneLink) {
         console.log("⚠️ Кнопка показа телефона не найдена, пропускаем.");
       } else {
+        let responseHandler:
+          | ((response: {
+              url: () => string;
+              json: () => Promise<unknown>;
+            }) => Promise<void>)
+          | null = null;
+
         // Set up request interception to capture the contacts response
-        const contactsPromise = new Promise((resolve, reject) => {
+        const contactsPromise = new Promise((resolve) => {
           const timeout = setTimeout(() => {
-            page.off("response", responseHandler);
+            if (responseHandler) {
+              page.off("response", responseHandler);
+            }
             console.log("⚠️ Таймаут ожидания контактов, продолжаем без них");
             resolve(null);
           }, HH_CONFIG.timeouts.contacts);
 
-          const responseHandler = async (response: {
+          responseHandler = async (response: {
             url: () => string;
             json: () => Promise<unknown>;
           }) => {
-            const url = response.url();
-            if (
-              url.includes(`/resume/contacts/${resumeId}`) &&
-              url.includes("goal=Contacts_Phone")
-            ) {
-              clearTimeout(timeout);
-              page.off("response", responseHandler);
-              try {
-                const data = await response.json();
-                resolve(data);
-              } catch (e) {
-                reject(e);
+            try {
+              const url = response.url();
+              if (
+                url.includes(`/resume/contacts/${resumeId}`) &&
+                url.includes("goal=Contacts_Phone")
+              ) {
+                clearTimeout(timeout);
+                if (responseHandler) {
+                  page.off("response", responseHandler);
+                }
+                try {
+                  const data = await response.json();
+                  resolve(data);
+                } catch {
+                  resolve(null);
+                }
               }
+            } catch {
+              // Игнорируем ошибки обработки response
             }
           };
 
           page.on("response", responseHandler);
         });
 
-        // Small delay to mimic human behavior
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        await phoneLink.click();
-
         try {
-          contacts = await contactsPromise;
-          console.log("✅ Контакты получены");
+          // Small delay to mimic human behavior
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          await phoneLink.click();
 
-          // Парсим телефон из контактов
-          if (contacts && typeof contacts === "object" && "phone" in contacts) {
-            const phoneData = (
-              contacts as {
-                phone?: Array<{ formatted?: string; raw?: string }>;
-              }
-            ).phone;
-            if (Array.isArray(phoneData) && phoneData.length > 0) {
-              const firstPhone = phoneData[0];
-              phone = firstPhone?.formatted || firstPhone?.raw || null;
-              if (phone) {
-                console.log(`📞 Телефон извлечен: ${phone}`);
+          contacts = await contactsPromise;
+
+          // Убеждаемся, что обработчик удален
+          if (responseHandler) {
+            page.off("response", responseHandler);
+          }
+
+          if (contacts) {
+            console.log("✅ Контакты получены");
+
+            // Парсим телефон из контактов
+            if (typeof contacts === "object" && "phone" in contacts) {
+              const phoneData = (
+                contacts as {
+                  phone?: Array<{ formatted?: string; raw?: string }>;
+                }
+              ).phone;
+              if (Array.isArray(phoneData) && phoneData.length > 0) {
+                const firstPhone = phoneData[0];
+                phone = firstPhone?.formatted || firstPhone?.raw || null;
+                if (phone) {
+                  console.log(`📞 Телефон извлечен: ${phone}`);
+                }
               }
             }
+          } else {
+            console.log("⚠️ Контакты не получены");
           }
-        } catch (_e) {
-          console.log("⚠️ Таймаут ожидания контактов, продолжаем без них.");
+        } catch {
+          console.log("⚠️ Ошибка при получении контактов");
+          // Убеждаемся, что обработчик удален даже при ошибке
+          if (responseHandler) {
+            page.off("response", responseHandler);
+          }
         }
       }
     } catch (e) {
@@ -296,10 +313,10 @@ export async function parseResumeExperience(
     console.log("⚠️ Не удалось извлечь ID резюме из URL.");
   }
 
-  // Скачиваем PDF резюме
+  // Скачиваем PDF резюме (последний шаг, не взаимодействуем с DOM)
   let pdfBuffer: Buffer | null = null;
   try {
-    pdfBuffer = await downloadResumePdf(page);
+    pdfBuffer = await downloadResumePdf(page, url);
   } catch (error) {
     console.log("⚠️ Не удалось скачать PDF резюме");
     if (error instanceof Error) {

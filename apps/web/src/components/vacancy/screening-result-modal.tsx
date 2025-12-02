@@ -15,8 +15,6 @@ interface ScreeningResult {
   score: number;
   detailedScore: number;
   analysis: string;
-  questions?: string[];
-  greeting?: string;
 }
 
 interface ScreeningResultModalProps {
@@ -104,17 +102,6 @@ export function ScreeningResultModal({
                 </div>
               </div>
 
-              {result.greeting && (
-                <div>
-                  <h3 className="font-semibold mb-3">
-                    Приветственное предложение
-                  </h3>
-                  <div className="p-4 rounded-lg border bg-blue-50 dark:bg-blue-950/20">
-                    <p className="text-sm leading-relaxed">{result.greeting}</p>
-                  </div>
-                </div>
-              )}
-
               <div>
                 <h3 className="font-semibold mb-3 flex items-center gap-2">
                   {result.score >= 3 ? (
@@ -128,29 +115,6 @@ export function ScreeningResultModal({
                   {result.analysis}
                 </p>
               </div>
-
-              {result.questions && result.questions.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-3">
-                    Вопросы для собеседования ({result.questions.length})
-                  </h3>
-                  <ul className="space-y-3">
-                    {result.questions.map((question, idx) => (
-                      <li
-                        key={`question-${question.slice(0, 20)}-${idx}`}
-                        className="flex gap-3 p-3 rounded-lg border bg-card"
-                      >
-                        <span className="shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium">
-                          {idx + 1}
-                        </span>
-                        <span className="text-sm leading-relaxed">
-                          {question}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
 
               <div className="pt-4">
                 <Button onClick={() => onOpenChange(false)} className="w-full">

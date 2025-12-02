@@ -123,7 +123,6 @@ export function ResponseCards({ responses }: ResponseCardsProps) {
                 responseId={response.id}
                 resumeUrl={response.resumeUrl}
                 candidateName={response.candidateName}
-                hasGreeting={!!response.screening?.greeting}
               />
             </div>
           </CardContent>

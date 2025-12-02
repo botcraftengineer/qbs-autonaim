@@ -29,7 +29,6 @@ interface ResponseActionsProps {
   resumeUrl: string;
   candidateName?: string | null;
   telegramUsername?: string | null;
-  hasGreeting?: boolean;
 }
 
 export function ResponseActions({

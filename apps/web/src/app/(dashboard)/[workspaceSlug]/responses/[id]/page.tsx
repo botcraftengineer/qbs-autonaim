@@ -202,30 +202,6 @@ export default function ResponseDetailPage({
                   </Card>
                 )}
 
-                {response.screening?.questions &&
-                Array.isArray(response.screening.questions) &&
-                response.screening.questions.length > 0 ? (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Вопросы для кандидата</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        {(response.screening.questions as string[]).map(
-                          (question, idx) => (
-                            <li
-                              key={question}
-                              className="text-sm text-muted-foreground"
-                            >
-                              {idx + 1}. {question}
-                            </li>
-                          ),
-                        )}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                ) : null}
-
                 {response.about && (
                   <Card>
                     <CardHeader>

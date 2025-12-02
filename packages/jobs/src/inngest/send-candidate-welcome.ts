@@ -101,13 +101,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
     if (result.chatId) {
       const chatId = result.chatId;
       await step.run("save-conversation", async () => {
-        // Получаем скрининг для определения количества вопросов
-        const screening = await db.query.responseScreening.findFirst({
-          where: eq(vacancyResponse.id, responseId),
-        });
-
-        const questions = (screening?.questions as string[]) || [];
-
         const [conversation] = await db
           .insert(telegramConversation)
           .values({
@@ -119,8 +112,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               responseId,
               vacancyId: response.vacancyId,
               username,
-              totalQuestions: questions.length,
-              questionAnswers: [],
             }),
           })
           .onConflictDoUpdate({
@@ -133,8 +124,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 responseId,
                 vacancyId: response.vacancyId,
                 username,
-                totalQuestions: questions.length,
-                questionAnswers: [],
               }),
             },
           })

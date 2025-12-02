@@ -148,7 +148,6 @@ export function ResponseRow({
             resumeUrl={response.resumeUrl}
             candidateName={response.candidateName}
             telegramUsername={response.telegramUsername}
-            hasGreeting={!!response.screening?.greeting}
           />
         </div>
       </TableCell>

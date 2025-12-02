@@ -1,5 +1,5 @@
-import { inngest } from "./client";
 import { screenResponse } from "../services/response-screening-service";
+import { inngest } from "./client";
 
 /**
  * Inngest function for screening responses using AI
@@ -26,7 +26,6 @@ export const screenResponseFunction = inngest.createFunction(
           responseId,
           score: result.score,
           detailedScore: result.detailedScore,
-          questionsCount: result.questions?.length || 0,
         });
 
         return {

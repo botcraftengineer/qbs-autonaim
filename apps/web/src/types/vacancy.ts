@@ -5,8 +5,6 @@ export type VacancyResponse = DbVacancyResponse & {
     score: number;
     detailedScore: number;
     analysis: string | null;
-    questions: unknown;
-    greeting: string | null;
   } | null;
   conversation?: {
     id: string;
