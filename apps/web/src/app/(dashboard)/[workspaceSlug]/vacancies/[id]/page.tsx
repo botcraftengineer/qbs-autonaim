@@ -159,6 +159,7 @@ export default function VacancyDetailPage({
                         </div>
                         <div
                           className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-4 [&_p]:leading-relaxed"
+                          // biome-ignore lint/security/noDangerouslySetInnerHtml: Vacancy description is sanitized
                           dangerouslySetInnerHTML={{
                             __html: vacancy.description,
                           }}

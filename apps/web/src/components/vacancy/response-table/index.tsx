@@ -99,8 +99,8 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
   const renderTableContent = () => {
     if (isFetching && !isLoading) {
       // Показываем скелетон во время фоновой загрузки (сортировка/пагинация)
-      return Array.from({ length: 5 }, (_, i) => (
-        <TableRow key={`skeleton-${i}`}>
+      return Array.from({ length: 5 }, () => (
+        <TableRow key={crypto.randomUUID()}>
           <TableCell>
             <Skeleton className="h-5 w-5" />
           </TableCell>

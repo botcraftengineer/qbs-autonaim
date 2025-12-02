@@ -238,9 +238,9 @@ export function VacancyRequirements({
               Обязательные требования
             </h3>
             <ul className="space-y-2 pl-5">
-              {data.mandatory_requirements.map((req, index) => (
+              {data.mandatory_requirements.map((req) => (
                 <li
-                  key={index}
+                  key={req}
                   className="text-sm text-muted-foreground list-disc leading-relaxed"
                 >
                   {req}
@@ -256,8 +256,8 @@ export function VacancyRequirements({
             Технологический стек
           </h3>
           <div className="flex flex-wrap gap-2">
-            {data.tech_stack.map((tech, index) => (
-              <Badge key={index} variant="secondary">
+            {data.tech_stack.map((tech) => (
+              <Badge key={tech} variant="secondary">
                 {tech}
               </Badge>
             ))}
@@ -269,9 +269,9 @@ export function VacancyRequirements({
         <div className="rounded-lg border bg-card/50 p-4 space-y-3">
           <h3 className="text-lg font-semibold text-primary">Будет плюсом</h3>
           <ul className="space-y-2 pl-5">
-            {data.nice_to_have_skills.map((skill, index) => (
+            {data.nice_to_have_skills.map((skill) => (
               <li
-                key={index}
+                key={skill}
                 className="text-sm text-muted-foreground list-disc leading-relaxed"
               >
                 {skill}
@@ -285,8 +285,8 @@ export function VacancyRequirements({
         <div className="rounded-lg border bg-card/50 p-4 space-y-3">
           <h3 className="text-lg font-semibold text-primary">Языки</h3>
           <div className="flex flex-wrap gap-2">
-            {data.languages.map((lang, index) => (
-              <Badge key={index} variant="outline">
+            {data.languages.map((lang) => (
+              <Badge key={lang} variant="outline">
                 {lang}
               </Badge>
             ))}
@@ -300,8 +300,8 @@ export function VacancyRequirements({
             Ключевые слова для поиска
           </h3>
           <div className="flex flex-wrap gap-2">
-            {data.keywords_for_matching.map((keyword, index) => (
-              <Badge key={index} variant="outline">
+            {data.keywords_for_matching.map((keyword) => (
+              <Badge key={keyword} variant="outline">
                 {keyword}
               </Badge>
             ))}

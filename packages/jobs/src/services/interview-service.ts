@@ -269,10 +269,13 @@ export async function createInterviewScoring(
   const analysisLine = lines.find((l) => l.startsWith("АНАЛИЗ:"));
 
   const score = scoreLine
-    ? Number.parseInt(scoreLine.replace("ОЦЕНКА:", "").trim())
+    ? Number.parseInt(scoreLine.replace("ОЦЕНКА:", "").trim(), 10)
     : 3;
   const detailedScore = detailedScoreLine
-    ? Number.parseInt(detailedScoreLine.replace("ДЕТАЛЬНАЯ_ОЦЕНКА:", "").trim())
+    ? Number.parseInt(
+        detailedScoreLine.replace("ДЕТАЛЬНАЯ_ОЦЕНКА:", "").trim(),
+        10,
+      )
     : 50;
   const analysis =
     analysisLine?.replace("АНАЛИЗ:", "").trim() || "Анализ не доступен";

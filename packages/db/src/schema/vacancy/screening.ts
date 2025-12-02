@@ -1,13 +1,6 @@
 import { uuidv7Schema } from "@selectio/validators";
 import { sql } from "drizzle-orm";
-import {
-  integer,
-  jsonb,
-  pgTable,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { vacancyResponse } from "./response";
