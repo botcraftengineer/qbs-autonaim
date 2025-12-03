@@ -207,7 +207,7 @@ export function TelegramAuthDialog({
               onSubmit={form1.handleSubmit(onStep1Submit)}
               className="flex flex-col h-full gap-6 mt-6"
             >
-              <div className="space-y-5 flex-1 overflow-y-auto pr-1">
+              <div className="space-y-5 flex-1 overflow-y-auto px-6">
                 <div className="text-sm text-muted-foreground space-y-2 mb-4">
                   <p>
                     Для подключения Telegram нужно создать приложение на{" "}
@@ -289,7 +289,7 @@ export function TelegramAuthDialog({
               onSubmit={form2.handleSubmit(onStep2Submit)}
               className="flex flex-col h-full gap-6 mt-6"
             >
-              <div className="space-y-5 flex-1">
+              <div className="space-y-5 flex-1 px-6">
                 <FormField
                   control={form2.control}
                   name="phoneCode"
@@ -330,7 +330,7 @@ export function TelegramAuthDialog({
               onSubmit={form3.handleSubmit(onStep3Submit)}
               className="flex flex-col h-full gap-6 mt-6"
             >
-              <div className="space-y-5 flex-1">
+              <div className="space-y-5 flex-1 px-6">
                 <FormField
                   control={form3.control}
                   name="password"

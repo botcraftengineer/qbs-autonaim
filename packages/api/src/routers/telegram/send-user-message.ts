@@ -1,5 +1,5 @@
 import { db, eq, telegramSession } from "@selectio/db";
-import { createUserClient } from "@selectio/tg-client/client";
+import { tgClientSDK } from "@selectio/tg-client/sdk";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -35,15 +35,14 @@ export const sendUserMessageRouter = protectedProcedure
         });
       }
 
-      // Создаем клиент с сохраненной сессией
-      const { client } = await createUserClient(
-        Number.parseInt(session.apiId, 10),
-        session.apiHash,
-        session.sessionData as Record<string, string>,
-      );
-
-      // Отправляем сообщение
-      const result = await client.sendText(input.chatId, input.text);
+      // Отправляем сообщение через SDK
+      const result = await tgClientSDK.sendMessage({
+        apiId: Number.parseInt(session.apiId, 10),
+        apiHash: session.apiHash,
+        sessionData: session.sessionData as Record<string, string>,
+        chatId: input.chatId,
+        text: input.text,
+      });
 
       // Обновляем lastUsedAt
       await db
@@ -51,11 +50,7 @@ export const sendUserMessageRouter = protectedProcedure
         .set({ lastUsedAt: new Date() })
         .where(eq(telegramSession.id, session.id));
 
-      return {
-        success: true,
-        messageId: result.id.toString(),
-        chatId: result.chat.id.toString(),
-      };
+      return result;
     } catch (error) {
       console.error("❌ Ошибка отправки сообщения:", error);
       throw new TRPCError({
@@ -100,53 +95,15 @@ export const sendUserMessageByPhoneRouter = protectedProcedure
         });
       }
 
-      // Создаем клиент
-      const { client } = await createUserClient(
-        Number.parseInt(session.apiId, 10),
-        session.apiHash,
-        session.sessionData as Record<string, string>,
-      );
-
-      // Импортируем контакт и отправляем сообщение
-      const cleanPhone = input.phone.replace(/[^\d+]/g, "");
-      if (!cleanPhone.startsWith("+")) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Номер телефона должен быть в международном формате",
-        });
-      }
-
-      const { Long } = await import("@mtcute/core");
-      const importResult = await client.call({
-        _: "contacts.importContacts",
-        contacts: [
-          {
-            _: "inputPhoneContact",
-            clientId: Long.fromNumber(Date.now()),
-            phone: cleanPhone,
-            firstName: input.firstName || "Кандидат",
-            lastName: "",
-          },
-        ],
+      // Отправляем сообщение через SDK
+      const result = await tgClientSDK.sendMessageByPhone({
+        apiId: Number.parseInt(session.apiId, 10),
+        apiHash: session.apiHash,
+        sessionData: session.sessionData as Record<string, string>,
+        phone: input.phone,
+        text: input.text,
+        firstName: input.firstName,
       });
-
-      if (!importResult.users || importResult.users.length === 0) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Пользователь с таким номером не найден в Telegram",
-        });
-      }
-
-      const user = importResult.users[0];
-      if (!user || user._ !== "user") {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Не удалось получить данные пользователя",
-        });
-      }
-
-      // Отправляем сообщение
-      const result = await client.sendText(user.id, input.text);
 
       // Обновляем lastUsedAt
       await db
@@ -154,12 +111,7 @@ export const sendUserMessageByPhoneRouter = protectedProcedure
         .set({ lastUsedAt: new Date() })
         .where(eq(telegramSession.id, session.id));
 
-      return {
-        success: true,
-        messageId: result.id.toString(),
-        chatId: result.chat.id.toString(),
-        userId: user.id.toString(),
-      };
+      return result;
     } catch (error) {
       console.error("❌ Ошибка отправки сообщения по телефону:", error);
       if (error instanceof TRPCError) throw error;

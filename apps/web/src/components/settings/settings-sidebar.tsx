@@ -1,7 +1,14 @@
 "use client";
 
 import { cn } from "@selectio/ui";
-import { Building2, Globe, Settings, User, Users } from "lucide-react";
+import {
+  Building2,
+  Globe,
+  MessageCircle,
+  Settings,
+  User,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -30,6 +37,11 @@ const sidebarNavItems = [
     title: "Интеграции",
     href: "/settings/integrations",
     icon: Globe,
+  },
+  {
+    title: "Telegram",
+    href: "/settings/telegram",
+    icon: MessageCircle,
   },
 ];
 
