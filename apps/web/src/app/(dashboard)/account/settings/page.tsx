@@ -31,6 +31,9 @@ export default function AccountSettingsPage() {
   const [avatar, setAvatar] = useState<string | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  const [isUpdatingName, setIsUpdatingName] = useState(false);
+  const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+
   useEffect(() => {
     if (user) {
       setName(user.name || "");
@@ -38,21 +41,29 @@ export default function AccountSettingsPage() {
     }
   }, [user]);
 
-  const [isUpdating, setIsUpdating] = useState(false);
-
-  const handleUpdateAccount = async (data: {
-    name?: string;
-    image?: string | null;
-  }) => {
-    setIsUpdating(true);
+  const handleUpdateName = async () => {
+    setIsUpdatingName(true);
     try {
-      await authClient.updateUser(data);
+      await authClient.updateUser({ name });
       toast.success("Изменения сохранены");
       await queryClient.invalidateQueries(trpc.user.pathFilter());
     } catch {
       toast.error("Не удалось сохранить изменения");
     } finally {
-      setIsUpdating(false);
+      setIsUpdatingName(false);
+    }
+  };
+
+  const handleUpdateAvatar = async () => {
+    setIsUpdatingAvatar(true);
+    try {
+      await authClient.updateUser({ image: avatar });
+      toast.success("Изменения сохранены");
+      await queryClient.invalidateQueries(trpc.user.pathFilter());
+    } catch {
+      toast.error("Не удалось сохранить изменения");
+    } finally {
+      setIsUpdatingAvatar(false);
     }
   };
 
@@ -139,10 +150,10 @@ export default function AccountSettingsPage() {
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button
-            onClick={() => handleUpdateAccount({ name })}
-            disabled={isUpdating || !name || name === user?.name}
+            onClick={handleUpdateName}
+            disabled={isUpdatingName || !name || name === user?.name}
           >
-            {isUpdating ? "Сохранение..." : "Сохранить изменения"}
+            {isUpdatingName ? "Сохранение..." : "Сохранить изменения"}
           </Button>
         </CardFooter>
       </Card>
@@ -212,10 +223,10 @@ export default function AccountSettingsPage() {
         </CardContent>
         <CardFooter className="border-t px-6 py-4">
           <Button
-            onClick={() => handleUpdateAccount({ image: avatar })}
-            disabled={isUpdating || !avatar || avatar === user?.image}
+            onClick={handleUpdateAvatar}
+            disabled={isUpdatingAvatar || !avatar || avatar === user?.image}
           >
-            {isUpdating ? "Сохранение..." : "Сохранить изменения"}
+            {isUpdatingAvatar ? "Сохранение..." : "Сохранить изменения"}
           </Button>
         </CardFooter>
       </Card>
