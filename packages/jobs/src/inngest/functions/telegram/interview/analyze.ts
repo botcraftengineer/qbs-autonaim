@@ -171,6 +171,11 @@ export const sendNextQuestionFunction = inngest.createFunction(
         throw new Error("Conversation не найден");
       }
 
+      console.log("📱 Получен chatId для отправки вопроса", {
+        conversationId,
+        chatId: conv.chatId,
+      });
+
       return conv.chatId;
     });
 
@@ -348,6 +353,11 @@ export const completeInterviewFunction = inngest.createFunction(
       if (!conv) {
         throw new Error("Conversation не найден");
       }
+
+      console.log("📱 Получен chatId для финального сообщения", {
+        conversationId,
+        chatId: conv.chatId,
+      });
 
       return conv.chatId;
     });
