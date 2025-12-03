@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { db, eq } from "@selectio/db";
 import { integration } from "@selectio/db/schema";
 import axios from "axios";
+import { HH_CONFIG } from "../parsers/hh/config";
 
 /**
  * Отправляет сообщение в чат hh.ru
@@ -62,32 +63,48 @@ export async function sendHHChatMessage(params: {
       .map((cookie) => `${cookie.name}=${cookie.value}`)
       .join("; ");
 
+    // Извлекаем XSRF token из cookies
+    const xsrfCookie = hhIntegration.cookies.find(
+      (cookie) =>
+        cookie.name === "XSRF-TOKEN" ||
+        cookie.name === "_xsrf" ||
+        cookie.name === "xsrf_token",
+    );
+
+    const xsrfToken = xsrfCookie?.value;
+
+    if (!xsrfToken) {
+      console.warn("⚠️ XSRF token не найден в cookies");
+    }
+
     const idempotencyKey = randomUUID();
-    console.log({
-      chatId: Number(response.chatId),
-      idempotencyKey,
-      text,
+
+    console.log(`📤 Отправка сообщения в HH чат`, {
+      chatId: response.chatId,
+      chatIdNumber: Number(response.chatId),
+      responseId,
+      textLength: text.length,
+      hasXsrfToken: !!xsrfToken,
     });
+
     // Отправляем запрос в hh.ru API с полными браузерными заголовками
     const apiResponse = await axios.post(
-      "https://chatik.hh.ru/chatik/api/send",
+      "https://chatik.hh.ru/chatik/api/send?hhtmSourceLabel=spoiler&hhtmSource=chat",
       {
         chatId: Number(response.chatId),
         idempotencyKey,
         text,
       },
       {
-        params: {
-          hhtmSourceLabel: "spoiler",
-          hhtmSource: "chat",
-        },
         headers: {
+          "User-Agent": HH_CONFIG.userAgent,
           Accept: "application/json, text/plain, */*",
           "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
           "Content-Type": "application/json",
-          Cookie: cookieHeader,
           Origin: "https://hh.ru",
           Referer: "https://hh.ru/",
+          Cookie: cookieHeader,
+          ...(xsrfToken && { "x-xsrftoken": xsrfToken }),
           "Sec-Ch-Ua":
             '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
           "Sec-Ch-Ua-Mobile": "?0",
@@ -95,19 +112,18 @@ export async function sendHHChatMessage(params: {
           "Sec-Fetch-Dest": "empty",
           "Sec-Fetch-Mode": "cors",
           "Sec-Fetch-Site": "same-site",
-          "User-Agent":
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         },
         validateStatus: (status: number) => status < 500,
       },
     );
 
     if (apiResponse.status !== 200) {
-      console.error(
-        "Ошибка отправки в hh.ru:",
-        apiResponse.status,
-        apiResponse.data,
-      );
+      console.error("❌ Ошибка отправки в hh.ru:", {
+        status: apiResponse.status,
+        data: apiResponse.data,
+        chatId: response.chatId,
+        responseId,
+      });
       return {
         success: false,
         error: `HTTP ${apiResponse.status}: ${JSON.stringify(apiResponse.data)}`,
