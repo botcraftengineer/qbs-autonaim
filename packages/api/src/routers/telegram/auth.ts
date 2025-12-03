@@ -26,7 +26,11 @@ export const sendCodeRouter = protectedProcedure
         phone,
       });
 
-      return result;
+      return {
+        phoneCodeHash: result.phoneCodeHash,
+        timeout: result.timeout,
+        sessionData: result.sessionData,
+      };
     } catch (error) {
       console.error("Ошибка отправки кода:", error);
       throw new TRPCError({
@@ -49,6 +53,7 @@ export const signInRouter = protectedProcedure
       phone: z.string().trim(),
       phoneCode: z.string().trim(),
       phoneCodeHash: z.string(),
+      sessionData: z.string().optional(),
     }),
   )
   .mutation(async ({ input }) => {
@@ -60,9 +65,11 @@ export const signInRouter = protectedProcedure
         phone,
         phoneCode: input.phoneCode.trim(),
         phoneCodeHash: input.phoneCodeHash,
+        sessionData: input.sessionData,
       });
 
       // Сохраняем в БД
+      const sessionDataObj = JSON.parse(result.sessionData);
       const [session] = await db
         .insert(telegramSession)
         .values({
@@ -70,7 +77,7 @@ export const signInRouter = protectedProcedure
           apiId: input.apiId.toString(),
           apiHash: input.apiHash,
           phone,
-          sessionData: result.sessionData as Record<string, unknown>,
+          sessionData: sessionDataObj as Record<string, unknown>,
           userInfo: {
             id: result.user.id,
             firstName: result.user.firstName,

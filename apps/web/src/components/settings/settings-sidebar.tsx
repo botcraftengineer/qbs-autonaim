@@ -38,11 +38,6 @@ const sidebarNavItems = [
     href: "/settings/integrations",
     icon: Globe,
   },
-  {
-    title: "Telegram",
-    href: "/settings/telegram",
-    icon: MessageCircle,
-  },
 ];
 
 export function SettingsSidebar({ workspaceSlug }: { workspaceSlug: string }) {

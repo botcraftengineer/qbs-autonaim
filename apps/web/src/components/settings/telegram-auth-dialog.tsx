@@ -64,7 +64,7 @@ export function TelegramAuthDialog({
     apiHash: string;
     phone: string;
   } | null>(null);
-  const [sessionData, setSessionData] = useState<Record<string, string>>({});
+  const [sessionData, setSessionData] = useState<string>("");
 
   const form1 = useForm<Step1Values>({
     resolver: zodResolver(step1Schema),
@@ -93,6 +93,7 @@ export function TelegramAuthDialog({
     trpc.telegram.sendCode.mutationOptions({
       onSuccess: (data) => {
         setPhoneCodeHash(data.phoneCodeHash);
+        setSessionData(data.sessionData);
         setStep(2);
         toast.success("Код отправлен на ваш телефон");
       },
@@ -127,6 +128,7 @@ export function TelegramAuthDialog({
               : "Неверный код";
           toast.error(errorText);
           form2.reset();
+          setSessionData("");
         } else {
           toast.error(err.message || "Ошибка авторизации");
         }
@@ -156,7 +158,7 @@ export function TelegramAuthDialog({
     setStep(1);
     setPhoneCodeHash("");
     setApiData(null);
-    setSessionData({});
+    setSessionData("");
     onClose();
   };
 
@@ -188,6 +190,7 @@ export function TelegramAuthDialog({
       ...apiData,
       phoneCode: data.phoneCode,
       phoneCodeHash,
+      sessionData,
     });
   };
 

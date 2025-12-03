@@ -18,6 +18,7 @@ export const signInSchema = z.object({
     .transform((val) => val.replace(/\s+/g, "")),
   phoneCode: z.string().min(1),
   phoneCodeHash: z.string().min(1),
+  sessionData: z.string().optional(),
 });
 
 export const checkPasswordSchema = z.object({

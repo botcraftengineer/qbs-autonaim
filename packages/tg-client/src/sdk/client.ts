@@ -40,6 +40,7 @@ export class TgClientSDK {
     success: boolean;
     phoneCodeHash: string;
     timeout: number;
+    sessionData: string;
   }> {
     return this.request("/auth/send-code", params);
   }
@@ -53,9 +54,10 @@ export class TgClientSDK {
     phone: string;
     phoneCode: string;
     phoneCodeHash: string;
+    sessionData?: string;
   }): Promise<{
     success: boolean;
-    sessionData: Record<string, string>;
+    sessionData: string;
     user: {
       id: string;
       firstName: string;

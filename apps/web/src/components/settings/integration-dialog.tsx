@@ -3,7 +3,15 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Form,
+  FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -14,15 +22,9 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
 } from "@selectio/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Eye, EyeOff } from "lucide-react";
+import { Briefcase, Eye, EyeOff, Mail } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -126,89 +128,126 @@ export function IntegrationDialog({
   };
 
   return (
-    <Sheet open={open} onOpenChange={(open: boolean) => !open && handleClose()}>
-      <SheetContent className="sm:max-w-md">
+    <Dialog
+      open={open}
+      onOpenChange={(open: boolean) => !open && handleClose()}
+    >
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
+            <Briefcase className="h-6 w-6 text-primary" />
+            {editingType ? "Редактировать" : "Подключить"} интеграцию
+          </DialogTitle>
+          <DialogDescription className="text-base">
+            Подключите внешний сервис для автоматизации работы с вакансиями и
+            откликами
+          </DialogDescription>
+        </DialogHeader>
+
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex flex-col h-full gap-6"
+            className="space-y-6 pt-2"
           >
-            <SheetHeader className="space-y-3">
-              <SheetTitle>
-                {editingType ? "Редактировать" : "Добавить"} интеграцию
-              </SheetTitle>
-              <SheetDescription>
-                Подключите внешний сервис для автоматизации работы
-              </SheetDescription>
-            </SheetHeader>
+            <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+              <p>
+                Для подключения HeadHunter используйте учетные данные вашего
+                аккаунта работодателя
+              </p>
+            </div>
 
-            <div className="space-y-5 flex-1 overflow-y-auto pr-1 mx-5">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Тип интеграции</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={!!editingType}
-                    >
-                      <SelectTrigger>
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium">
+                    Тип интеграции
+                  </FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={!!editingType}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-11">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
-                        {INTEGRATION_TYPES.map((t) => (
-                          <SelectItem key={t.value} value={t.value}>
-                            {t.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    </FormControl>
+                    <SelectContent>
+                      {INTEGRATION_TYPES.map((t) => (
+                        <SelectItem key={t.value} value={t.value}>
+                          {t.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Название (опционально)</FormLabel>
-                    <Input placeholder={selectedType?.label} {...field} />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-muted-foreground" />
+                    Название (опционально)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder={selectedType?.label}
+                      className="h-11"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    Используется для идентификации интеграции
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-muted-foreground" />
+                    Email
+                  </FormLabel>
+                  <FormControl>
                     <Input
                       type="email"
                       placeholder="your@email.com"
+                      className="h-11"
                       {...field}
                     />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Пароль</FormLabel>
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    Пароль
+                  </FormLabel>
+                  <FormControl>
                     <div className="relative">
                       <Input
                         type={showPassword ? "text" : "password"}
                         placeholder="••••••••"
-                        className="pr-10"
+                        className="h-11 pr-10"
                         {...field}
                       />
                       <Button
@@ -225,32 +264,35 @@ export function IntegrationDialog({
                         )}
                       </Button>
                     </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                  </FormControl>
+                  <FormDescription className="text-xs">
+                    Пароль хранится в зашифрованном виде
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-            <SheetFooter className="gap-3 sm:gap-2">
+            <DialogFooter className="gap-2">
               <Button
                 type="button"
                 variant="outline"
                 onClick={handleClose}
-                className="flex-1 sm:flex-none"
+                className="h-11"
               >
                 Отмена
               </Button>
               <Button
                 type="submit"
                 disabled={createMutation.isPending}
-                className="flex-1 sm:flex-none"
+                className="h-11"
               >
-                {createMutation.isPending ? "Сохранение..." : "Сохранить"}
+                {createMutation.isPending ? "Подключение..." : "Подключить"}
               </Button>
-            </SheetFooter>
+            </DialogFooter>
           </form>
         </Form>
-      </SheetContent>
-    </Sheet>
+      </DialogContent>
+    </Dialog>
   );
 }

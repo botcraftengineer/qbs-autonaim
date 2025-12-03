@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { createUserClient } from "../../user-client";
 import { checkPasswordSchema, sendCodeSchema, signInSchema } from "../schemas";
-import { handleError, isAuthError, normalizePhone } from "../utils";
+import { handleError, isAuthError } from "../utils";
 
 const auth = new Hono();
 
@@ -17,16 +17,21 @@ auth.post("/send-code", async (c) => {
       );
     }
 
-    const { apiId, apiHash, phone: rawPhone } = result.data;
-    const phone = normalizePhone(rawPhone);
-    const { client } = await createUserClient(apiId, apiHash);
+    const { apiId, apiHash, phone } = result.data;
+    const { client, storage } = await createUserClient(apiId, apiHash);
+
+    await client.connect();
     const authResult = await client.sendCode({ phone });
 
     if ("phoneCodeHash" in authResult) {
+      const sessionData = await storage.export();
+      console.log("Session data after sendCode:", sessionData);
+
       return c.json({
         success: true,
         phoneCodeHash: authResult.phoneCodeHash,
         timeout: authResult.timeout,
+        sessionData: JSON.stringify(sessionData),
       });
     }
 
@@ -51,20 +56,29 @@ auth.post("/sign-in", async (c) => {
     const {
       apiId,
       apiHash,
-      phone: rawPhone,
-      phoneCode: rawPhoneCode,
+      phone,
+      phoneCode,
       phoneCodeHash,
+      sessionData: rawSessionData,
     } = result.data;
 
-    const phone = normalizePhone(rawPhone);
-    const phoneCode = rawPhoneCode.trim();
-    const { client, storage } = await createUserClient(apiId, apiHash);
+    console.log("Received sessionData:", rawSessionData);
+    const sessionData = rawSessionData ? JSON.parse(rawSessionData) : undefined;
+    console.log("Parsed sessionData:", sessionData);
+
+    const { client, storage } = await createUserClient(
+      apiId,
+      apiHash,
+      sessionData,
+    );
+
+    await client.connect();
     const user = await client.signIn({ phone, phoneCode, phoneCodeHash });
-    const sessionData = await storage.export();
+    const newSessionData = await storage.export();
 
     return c.json({
       success: true,
-      sessionData,
+      sessionData: JSON.stringify(newSessionData),
       user: {
         id: user.id.toString(),
         firstName: user.firstName || "",
@@ -100,15 +114,8 @@ auth.post("/check-password", async (c) => {
       );
     }
 
-    const {
-      apiId,
-      apiHash,
-      phone: rawPhone,
-      password,
-      sessionData,
-    } = result.data;
+    const { apiId, apiHash, phone, password, sessionData } = result.data;
 
-    const phone = normalizePhone(rawPhone);
     const { client, storage } = await createUserClient(
       apiId,
       apiHash,

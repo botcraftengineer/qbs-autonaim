@@ -5,7 +5,7 @@ import {
   sendMessageByUsernameSchema,
   sendMessageSchema,
 } from "../schemas";
-import { cleanPhoneNumber, cleanUsername, handleError } from "../utils";
+import { cleanUsername, handleError } from "../utils";
 
 const messages = new Hono();
 
@@ -82,23 +82,15 @@ messages.post("/send-by-phone", async (c) => {
       );
     }
 
-    const {
-      apiId,
-      apiHash,
-      sessionData,
-      phone: rawPhone,
-      text,
-      firstName,
-    } = result.data;
+    const { apiId, apiHash, sessionData, phone, text, firstName } = result.data;
 
     const { client } = await createUserClient(
       apiId,
       apiHash,
       JSON.parse(sessionData),
     );
-    const cleanPhone = cleanPhoneNumber(rawPhone);
 
-    if (!cleanPhone.startsWith("+")) {
+    if (!phone.startsWith("+")) {
       return c.json({ error: "Phone must be in international format" }, 400);
     }
 
@@ -109,7 +101,7 @@ messages.post("/send-by-phone", async (c) => {
         {
           _: "inputPhoneContact",
           clientId: Long.fromNumber(Date.now()),
-          phone: cleanPhone,
+          phone: phone,
           firstName: firstName || "Кандидат",
           lastName: "",
         },
