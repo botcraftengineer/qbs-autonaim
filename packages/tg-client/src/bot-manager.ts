@@ -1,17 +1,18 @@
 import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
-import { and, eq, getIntegrationCredentials } from "@selectio/db";
+import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
-import { integration } from "@selectio/db/schema";
+import { telegramSession } from "@selectio/db/schema";
 import { createBotHandler } from "./bot-handler";
 import { ExportableStorage } from "./storage";
 
 interface BotInstance {
   client: TelegramClient;
   workspaceId: string;
-  integrationId: string;
+  sessionId: string;
   userId: string;
   username?: string;
+  phone: string;
 }
 
 /**
@@ -32,29 +33,21 @@ class BotManager {
 
     console.log("🚀 Запуск всех Telegram ботов...");
 
-    // Получаем все активные Telegram интеграции
-    const integrations = await db
+    // Получаем все активные Telegram сессии
+    const sessions = await db
       .select()
-      .from(integration)
-      .where(
-        and(eq(integration.type, "telegram"), eq(integration.isActive, "true")),
-      );
+      .from(telegramSession)
+      .where(eq(telegramSession.isActive, "true"));
 
-    if (integrations.length === 0) {
-      console.log("⚠️ Нет активных Telegram интеграций");
+    if (sessions.length === 0) {
+      console.log("⚠️ Нет активных Telegram сессий");
       return;
     }
 
-    console.log(`📋 Найдено ${integrations.length} интеграций`);
+    console.log(`📋 Найдено ${sessions.length} сессий`);
 
-    // Запускаем бота для каждой интеграции
-    const startPromises = integrations.map((int) =>
-      this.startBot(
-        int.id,
-        int.workspaceId,
-        int.credentials as Record<string, string>,
-      ),
-    );
+    // Запускаем бота для каждой сессии
+    const startPromises = sessions.map((session) => this.startBot(session));
 
     const results = await Promise.allSettled(startPromises);
 
@@ -74,22 +67,18 @@ class BotManager {
    * Запустить одного бота
    */
   private async startBot(
-    integrationId: string,
-    workspaceId: string,
-    _encryptedCredentials: Record<string, string>,
+    session: typeof telegramSession.$inferSelect,
   ): Promise<void> {
+    const {
+      id: sessionId,
+      workspaceId,
+      apiId,
+      apiHash,
+      sessionData,
+      phone,
+    } = session;
+
     try {
-      // Получаем расшифрованные credentials
-      const credentials = await getIntegrationCredentials(
-        "telegram",
-        workspaceId,
-      );
-      if (!credentials) {
-        throw new Error(`Credentials не найдены для workspace ${workspaceId}`);
-      }
-
-      const { apiId, apiHash, sessionData } = credentials;
-
       if (!apiId || !apiHash) {
         throw new Error(
           `Отсутствуют apiId или apiHash для workspace ${workspaceId}`,
@@ -99,7 +88,7 @@ class BotManager {
       // Создаем storage и импортируем сессию
       const storage = new ExportableStorage();
       if (sessionData) {
-        await storage.import(JSON.parse(sessionData));
+        await storage.import(sessionData as Record<string, string>);
       }
 
       // Создаем клиент
@@ -134,15 +123,16 @@ class BotManager {
       const botInstance: BotInstance = {
         client,
         workspaceId,
-        integrationId,
+        sessionId,
         userId: user.id.toString(),
         username: user.username || undefined,
+        phone,
       };
 
       this.bots.set(workspaceId, botInstance);
 
       console.log(
-        `✅ Бот запущен для workspace ${workspaceId}: ${user.firstName} ${user.lastName || ""} (@${user.username || "no username"})`,
+        `✅ Бот запущен для workspace ${workspaceId}: ${user.firstName} ${user.lastName || ""} (@${user.username || "no username"}) [${phone}]`,
       );
     } catch (error) {
       console.error(
@@ -188,30 +178,21 @@ class BotManager {
       this.bots.delete(workspaceId);
     }
 
-    // Получаем интеграцию из БД
-    const [int] = await db
+    // Получаем сессию из БД
+    const [session] = await db
       .select()
-      .from(integration)
-      .where(
-        and(
-          eq(integration.workspaceId, workspaceId),
-          eq(integration.type, "telegram"),
-        ),
-      )
+      .from(telegramSession)
+      .where(eq(telegramSession.workspaceId, workspaceId))
       .limit(1);
 
-    if (!int) {
+    if (!session) {
       throw new Error(
-        `Telegram интеграция не найдена для workspace ${workspaceId}`,
+        `Telegram сессия не найдена для workspace ${workspaceId}`,
       );
     }
 
     // Запускаем нового бота
-    await this.startBot(
-      int.id,
-      int.workspaceId,
-      int.credentials as Record<string, string>,
-    );
+    await this.startBot(session);
   }
 
   /**
@@ -219,15 +200,17 @@ class BotManager {
    */
   getBotsInfo(): Array<{
     workspaceId: string;
-    integrationId: string;
+    sessionId: string;
     userId: string;
     username?: string;
+    phone: string;
   }> {
     return Array.from(this.bots.values()).map((bot) => ({
       workspaceId: bot.workspaceId,
-      integrationId: bot.integrationId,
+      sessionId: bot.sessionId,
       userId: bot.userId,
       username: bot.username,
+      phone: bot.phone,
     }));
   }
 

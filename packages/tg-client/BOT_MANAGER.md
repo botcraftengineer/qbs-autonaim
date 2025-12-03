@@ -11,7 +11,7 @@
 Сессии хранятся в таблице `integrations`:
 
 ```sql
-SELECT * FROM integrations WHERE type = 'telegram';
+SELECT * FROM telegram_sessions WHERE is_active = 'true';
 ```
 
 Структура:
