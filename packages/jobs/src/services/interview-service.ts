@@ -10,6 +10,7 @@ interface InterviewContext {
   vacancyTitle: string | null;
   vacancyDescription: string | null;
   currentAnswer: string;
+  currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
   responseId: string | null;
@@ -29,6 +30,7 @@ export async function analyzeAndGenerateNextQuestion(
   const {
     questionNumber,
     currentAnswer,
+    currentQuestion,
     previousQA,
     candidateName,
     vacancyTitle,
@@ -46,6 +48,7 @@ export async function analyzeAndGenerateNextQuestion(
     candidateName,
     vacancyTitle,
     currentAnswer,
+    currentQuestion,
     previousQA,
     questionNumber,
   });
@@ -85,6 +88,7 @@ function buildInterviewPrompt(params: {
   candidateName: string | null;
   vacancyTitle: string | null;
   currentAnswer: string;
+  currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
 }): string {
@@ -92,11 +96,29 @@ function buildInterviewPrompt(params: {
     candidateName,
     vacancyTitle,
     currentAnswer,
+    currentQuestion,
     previousQA,
     questionNumber,
   } = params;
 
-  const name = candidateName?.split(" ")[0] || "кандидат";
+  // Extract first name only, handle cases where only surname might be provided
+  let name = "кандидат";
+  if (candidateName) {
+    const nameParts = candidateName.trim().split(/\s+/);
+    // If there's only one word and it looks like a surname (starts with uppercase), use generic
+    // Otherwise use the first part as the first name
+    if (nameParts.length === 1) {
+      // Check if it might be a surname (you can adjust this logic)
+      const singleName = nameParts[0];
+      // Use it only if it seems like a first name (not ending with common surname patterns)
+      if (singleName && !singleName.match(/(ов|ев|ин|ын|ский|цкий|ской)$/i)) {
+        name = singleName;
+      }
+    } else {
+      // Multiple words - use first one as first name
+      name = nameParts[0] || "кандидат";
+    }
+  }
 
   return `Ты — опытный рекрутер, который проводит предварительное интервью с кандидатом через голосовые сообщения в Telegram.
 
@@ -108,9 +130,12 @@ function buildInterviewPrompt(params: {
 - Текущий вопрос: ${questionNumber}
 - Максимум вопросов: 4
 
+ТЕКУЩИЙ ЗАДАННЫЙ ВОПРОС:
+${currentQuestion}
+
 ${previousQA.length > 0 ? `ПРЕДЫДУЩИЕ ВОПРОСЫ И ОТВЕТЫ:\n${previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   Ответ: ${qa.answer}`).join("\n\n")}` : ""}
 
-ПОСЛЕДНИЙ ОТВЕТ КАНДИДАТА:
+ПОСЛЕДНИЙ ОТВЕТ КАНДИДАТА НА ТЕКУЩИЙ ВОПРОС:
 ${currentAnswer}
 
 ТВОЯ ЗАДАЧА:
@@ -145,6 +170,7 @@ ${currentAnswer}
 export async function getInterviewContext(
   conversationId: string,
   currentTranscription: string,
+  currentQuestion: string,
 ): Promise<InterviewContext | null> {
   const conversation = await db.query.telegramConversation.findFirst({
     where: eq(telegramConversation.id, conversationId),
@@ -186,6 +212,7 @@ export async function getInterviewContext(
       ? stripHtml(conversation.response.vacancy.description).result
       : null,
     currentAnswer: currentTranscription,
+    currentQuestion,
     previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conversation.responseId || null,
@@ -299,7 +326,19 @@ function buildScoringPrompt(params: {
   const { candidateName, vacancyTitle, vacancyDescription, previousQA } =
     params;
 
-  const name = candidateName?.split(" ")[0] || "Кандидат";
+  // Extract first name only, handle cases where only surname might be provided
+  let name = "Кандидат";
+  if (candidateName) {
+    const nameParts = candidateName.trim().split(/\s+/);
+    if (nameParts.length === 1) {
+      const singleName = nameParts[0];
+      if (singleName && !singleName.match(/(ов|ев|ин|ын|ский|цкий|skoj)$/i)) {
+        name = singleName;
+      }
+    } else {
+      name = nameParts[0] || "Кандидат";
+    }
+  }
 
   return `Ты — опытный рекрутер. Проанализируй интервью с кандидатом и дай оценку.
 

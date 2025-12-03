@@ -1,4 +1,4 @@
-import { db, eq, telegramMessage } from "@selectio/db";
+import { and, db, desc, eq, telegramMessage } from "@selectio/db";
 import {
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
@@ -26,7 +26,40 @@ export const analyzeInterviewFunction = inngest.createFunction(
         conversationId,
       });
 
-      const ctx = await getInterviewContext(conversationId, transcription);
+      // Получаем последний вопрос из истории сообщений
+      const { telegramConversation } = await import("@selectio/db");
+      const [conv] = await db
+        .select()
+        .from(telegramConversation)
+        .where(eq(telegramConversation.id, conversationId))
+        .limit(1);
+
+      if (!conv) {
+        throw new Error("Conversation не найден");
+      }
+
+      // Получаем последнее сообщение от бота (это текущий вопрос)
+      const lastBotMessages = await db
+        .select()
+        .from(telegramMessage)
+        .where(
+          and(
+            eq(telegramMessage.conversationId, conversationId),
+            eq(telegramMessage.sender, "BOT"),
+          ),
+        )
+        .orderBy(desc(telegramMessage.createdAt))
+        .limit(1);
+
+      const lastBotMessage = lastBotMessages[0];
+
+      const currentQuestion = lastBotMessage?.content || "Расскажи о себе";
+
+      const ctx = await getInterviewContext(
+        conversationId,
+        transcription,
+        currentQuestion,
+      );
 
       if (!ctx) {
         throw new Error("Контекст интервью не найден");
@@ -108,16 +141,20 @@ export const sendNextQuestionFunction = inngest.createFunction(
         questionNumber,
       });
 
-      const context = await getInterviewContext(conversationId, transcription);
-      if (!context) {
-        throw new Error("Контекст интервью не найден");
-      }
+      // Получаем последний вопрос от бота
+      const lastBotMessages = await db
+        .select()
+        .from(telegramMessage)
+        .where(
+          and(
+            eq(telegramMessage.conversationId, conversationId),
+            eq(telegramMessage.sender, "BOT"),
+          ),
+        )
+        .orderBy(desc(telegramMessage.createdAt))
+        .limit(1);
 
-      const lastQA = context.previousQA[context.previousQA.length - 1];
-      const lastQuestion =
-        context.previousQA.length > 0 && lastQA
-          ? lastQA.question
-          : "Первый вопрос";
+      const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
 
       await saveQuestionAnswer(conversationId, lastQuestion, transcription);
     });
@@ -221,16 +258,20 @@ export const completeInterviewFunction = inngest.createFunction(
     await step.run("save-last-qa", async () => {
       console.log("💾 Сохранение последнего вопроса и ответа");
 
-      const context = await getInterviewContext(conversationId, transcription);
-      if (!context) {
-        throw new Error("Контекст интервью не найден");
-      }
+      // Получаем последний вопрос от бота
+      const lastBotMessages = await db
+        .select()
+        .from(telegramMessage)
+        .where(
+          and(
+            eq(telegramMessage.conversationId, conversationId),
+            eq(telegramMessage.sender, "BOT"),
+          ),
+        )
+        .orderBy(desc(telegramMessage.createdAt))
+        .limit(1);
 
-      const lastQA = context.previousQA[context.previousQA.length - 1];
-      const lastQuestion =
-        context.previousQA.length > 0 && lastQA
-          ? lastQA.question
-          : "Первый вопрос";
+      const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
 
       await saveQuestionAnswer(conversationId, lastQuestion, transcription);
     });
@@ -241,9 +282,25 @@ export const completeInterviewFunction = inngest.createFunction(
           responseId,
         });
 
+        // Получаем последний вопрос от бота
+        const lastBotMessages = await db
+          .select()
+          .from(telegramMessage)
+          .where(
+            and(
+              eq(telegramMessage.conversationId, conversationId),
+              eq(telegramMessage.sender, "BOT"),
+            ),
+          )
+          .orderBy(desc(telegramMessage.createdAt))
+          .limit(1);
+
+        const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
+
         const updatedContext = await getInterviewContext(
           conversationId,
           transcription,
+          lastQuestion,
         );
 
         if (!updatedContext) {
