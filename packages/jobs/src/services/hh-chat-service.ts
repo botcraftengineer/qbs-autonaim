@@ -63,11 +63,6 @@ export async function sendHHChatMessage(params: {
     const idempotencyKey = randomUUID();
 
     // Отправляем запрос в hh.ru API с полными браузерными заголовками
-    console.log({
-      chatId,
-      idempotencyKey,
-      text,
-    });
     const response = await axios.post(
       "https://chatik.hh.ru/chatik/api/send",
       {
