@@ -3,6 +3,14 @@ import { db } from "@selectio/db/client";
 import { telegramConversation } from "@selectio/db/schema";
 import { stripHtml } from "string-strip-html";
 import { generateText } from "../lib/ai-client";
+import {
+  type InterviewAnalysis,
+  type InterviewScoring,
+  interviewAnalysisSchema,
+  interviewScoringSchema,
+} from "../schemas/interview";
+import { extractJsonFromText } from "../utils/json-extractor";
+import { extractFirstName } from "../utils/name-extractor";
 
 interface InterviewContext {
   conversationId: string;
@@ -21,12 +29,7 @@ interface InterviewContext {
  */
 export async function analyzeAndGenerateNextQuestion(
   context: InterviewContext,
-): Promise<{
-  shouldContinue: boolean;
-  nextQuestion?: string;
-  analysis?: string;
-  reason?: string;
-}> {
+): Promise<InterviewAnalysis> {
   const {
     questionNumber,
     currentAnswer,
@@ -39,6 +42,7 @@ export async function analyzeAndGenerateNextQuestion(
   // Максимум 4 вопроса
   if (questionNumber >= 4) {
     return {
+      analysis: "Достигнут максимум вопросов",
       shouldContinue: false,
       reason: "Достигнут лимит вопросов",
     };
@@ -64,24 +68,31 @@ export async function analyzeAndGenerateNextQuestion(
     },
   });
 
-  // Парсим ответ AI
-  const lines = text.trim().split("\n");
-  const analysisLine = lines.find((l) => l.startsWith("АНАЛИЗ:"));
-  const questionLine = lines.find((l) => l.startsWith("ВОПРОС:"));
-  const continueLine = lines.find((l) => l.startsWith("ПРОДОЛЖИТЬ:"));
-  const reasonLine = lines.find((l) => l.startsWith("ПРИЧИНА:"));
+  // Парсим JSON ответ
+  try {
+    const extracted = extractJsonFromText(text);
 
-  const analysis = analysisLine?.replace("АНАЛИЗ:", "").trim();
-  const nextQuestion = questionLine?.replace("ВОПРОС:", "").trim();
-  const shouldContinue = continueLine?.includes("ДА") ?? true;
-  const reason = reasonLine?.replace("ПРИЧИНА:", "").trim();
+    if (!extracted) {
+      throw new Error("JSON не найден в ответе");
+    }
 
-  return {
-    shouldContinue: shouldContinue && questionNumber < 4,
-    nextQuestion,
-    analysis,
-    reason,
-  };
+    const result = interviewAnalysisSchema.parse(extracted);
+
+    return {
+      ...result,
+      shouldContinue: result.shouldContinue && questionNumber < 4,
+    };
+  } catch (error) {
+    console.error("Ошибка парсинга ответа AI:", error);
+    console.error("Ответ AI:", text);
+
+    // Fallback: пытаемся продолжить с дефолтным вопросом
+    return {
+      analysis: "Не удалось проанализировать ответ",
+      shouldContinue: questionNumber < 4,
+      nextQuestion: "Расскажи подробнее о своем опыте",
+    };
+  }
 }
 
 function buildInterviewPrompt(params: {
@@ -101,24 +112,7 @@ function buildInterviewPrompt(params: {
     questionNumber,
   } = params;
 
-  // Extract first name only, handle cases where only surname might be provided
-  let name = "кандидат";
-  if (candidateName) {
-    const nameParts = candidateName.trim().split(/\s+/);
-    // If there's only one word and it looks like a surname (starts with uppercase), use generic
-    // Otherwise use the first part as the first name
-    if (nameParts.length === 1) {
-      // Check if it might be a surname (you can adjust this logic)
-      const singleName = nameParts[0];
-      // Use it only if it seems like a first name (not ending with common surname patterns)
-      if (singleName && !singleName.match(/(ов|ев|ин|ын|ский|цкий|ской)$/i)) {
-        name = singleName;
-      }
-    } else {
-      // Multiple words - use first one as first name
-      name = nameParts[0] || "кандидат";
-    }
-  }
+  const name = extractFirstName(candidateName);
 
   return `Ты — опытный рекрутер, который проводит предварительное интервью с кандидатом через голосовые сообщения в Telegram.
 
@@ -154,14 +148,18 @@ ${currentAnswer}
 - Можешь использовать 1-2 эмодзи для естественности
 - Между вопросом можешь добавить короткий комментарий к предыдущему ответу (1 предложение)
 
-ФОРМАТ ОТВЕТА:
-АНАЛИЗ: [краткая оценка ответа кандидата в 1-2 предложения]
-ПРОДОЛЖИТЬ: [ДА или НЕТ - стоит ли задавать следующий вопрос]
-ПРИЧИНА: [если ПРОДОЛЖИТЬ=НЕТ, укажи причину: "Кандидат подробно ответил на все важные вопросы" или "Получена достаточная информация"]
-ВОПРОС: [если ПРОДОЛЖИТЬ=ДА, то здесь полный текст следующего сообщения кандидату, включая комментарий к его ответу (если нужен) и новый вопрос]
+ФОРМАТ ОТВЕТА - ВЕРНИ ТОЛЬКО ВАЛИДНЫЙ JSON:
+{
+  "analysis": "краткая оценка ответа кандидата в 1-2 предложения",
+  "shouldContinue": true или false,
+  "reason": "причина завершения, если shouldContinue=false",
+  "nextQuestion": "полный текст следующего сообщения кандидату, если shouldContinue=true"
+}
 
 Пример хорошего вопроса:
-"Понятно, опыт интересный 👍 А что тебя больше всего мотивирует в работе?"`;
+"Понятно, опыт интересный 👍 А что тебя больше всего мотивирует в работе?"
+
+ВАЖНО: Верни ТОЛЬКО JSON, без дополнительного текста до или после.`;
 }
 
 /**
@@ -264,11 +262,7 @@ export async function saveQuestionAnswer(
  */
 export async function createInterviewScoring(
   context: InterviewContext,
-): Promise<{
-  score: number;
-  detailedScore: number;
-  analysis: string;
-}> {
+): Promise<InterviewScoring> {
   const { candidateName, vacancyTitle, vacancyDescription, previousQA } =
     context;
 
@@ -290,31 +284,28 @@ export async function createInterviewScoring(
     },
   });
 
-  // Парсим ответ AI
-  const lines = text.trim().split("\n");
-  const scoreLine = lines.find((l) => l.startsWith("ОЦЕНКА:"));
-  const detailedScoreLine = lines.find((l) =>
-    l.startsWith("ДЕТАЛЬНАЯ_ОЦЕНКА:"),
-  );
-  const analysisLine = lines.find((l) => l.startsWith("АНАЛИЗ:"));
+  // Парсим JSON ответ
+  try {
+    const extracted = extractJsonFromText(text);
 
-  const score = scoreLine
-    ? Number.parseInt(scoreLine.replace("ОЦЕНКА:", "").trim(), 10)
-    : 3;
-  const detailedScore = detailedScoreLine
-    ? Number.parseInt(
-        detailedScoreLine.replace("ДЕТАЛЬНАЯ_ОЦЕНКА:", "").trim(),
-        10,
-      )
-    : 50;
-  const analysis =
-    analysisLine?.replace("АНАЛИЗ:", "").trim() || "Анализ не доступен";
+    if (!extracted) {
+      throw new Error("JSON не найден в ответе");
+    }
 
-  return {
-    score: Math.max(1, Math.min(5, score)),
-    detailedScore: Math.max(0, Math.min(100, detailedScore)),
-    analysis,
-  };
+    const result = interviewScoringSchema.parse(extracted);
+
+    return result;
+  } catch (error) {
+    console.error("Ошибка парсинга скоринга:", error);
+    console.error("Ответ AI:", text);
+
+    // Fallback: возвращаем средние значения
+    return {
+      score: 3,
+      detailedScore: 50,
+      analysis: "Не удалось проанализировать интервью автоматически",
+    };
+  }
 }
 
 function buildScoringPrompt(params: {
@@ -326,19 +317,7 @@ function buildScoringPrompt(params: {
   const { candidateName, vacancyTitle, vacancyDescription, previousQA } =
     params;
 
-  // Extract first name only, handle cases where only surname might be provided
-  let name = "Кандидат";
-  if (candidateName) {
-    const nameParts = candidateName.trim().split(/\s+/);
-    if (nameParts.length === 1) {
-      const singleName = nameParts[0];
-      if (singleName && !singleName.match(/(ов|ев|ин|ын|ский|цкий|skoj)$/i)) {
-        name = singleName;
-      }
-    } else {
-      name = nameParts[0] || "Кандидат";
-    }
-  }
+  const name = extractFirstName(candidateName) || "Кандидат";
 
   return `Ты — опытный рекрутер. Проанализируй интервью с кандидатом и дай оценку.
 
@@ -359,10 +338,14 @@ ${previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   Отве
 - Соответствие ожиданиям вакансии
 - Общее впечатление
 
-ФОРМАТ ОТВЕТА:
-ОЦЕНКА: [число от 1 до 5, где 1 - не подходит, 5 - отлично подходит]
-ДЕТАЛЬНАЯ_ОЦЕНКА: [число от 0 до 100]
-АНАЛИЗ: [подробный анализ кандидата на основе интервью, 3-5 предложений]
+ФОРМАТ ОТВЕТА - ВЕРНИ ТОЛЬКО ВАЛИДНЫЙ JSON:
+{
+  "score": число от 1 до 5 (где 1 - не подходит, 5 - отлично подходит),
+  "detailedScore": число от 0 до 100,
+  "analysis": "подробный анализ кандидата на основе интервью, 3-5 предложений"
+}
 
-Будь объективным и конструктивным в оценке.`;
+Будь объективным и конструктивным в оценке.
+
+ВАЖНО: Верни ТОЛЬКО JSON, без дополнительного текста до или после.`;
 }
