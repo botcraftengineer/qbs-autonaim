@@ -23,13 +23,22 @@ messages.post("/send", async (c) => {
 
     const { apiId, apiHash, sessionData, chatId, text } = result.data;
     const { client } = await createUserClient(apiId, apiHash, sessionData);
-    const messageResult = await client.sendText(chatId, text);
 
-    return c.json({
-      success: true,
-      messageId: messageResult.id.toString(),
-      chatId: messageResult.chat.id.toString(),
-    });
+    // Resolve the peer to ensure it's in the cache before sending
+    try {
+      const peer = await client.resolvePeer(chatId);
+      const messageResult = await client.sendText(peer, text);
+      return c.json({
+        success: true,
+        messageId: messageResult.id.toString(),
+        chatId: messageResult.chat.id.toString(),
+      });
+    } catch (error) {
+      return c.json(
+        { error: handleError(error, "Failed to send message") },
+        500,
+      );
+    }
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);
   }
@@ -102,6 +111,21 @@ messages.post("/send-by-phone", async (c) => {
     const user = importResult.users[0];
     if (!user || user._ !== "user") {
       return c.json({ error: "Failed to get user data" }, 500);
+    }
+
+    // Resolve the peer to ensure it's in the cache before sending
+    try {
+      await client.resolvePeer(user.id);
+    } catch (_e) {
+      // If peer resolution fails, try to get full user info to populate cache
+      await client.call({
+        _: "users.getFullUser",
+        id: {
+          _: "inputUser",
+          userId: user.id,
+          accessHash: user.accessHash || Long.ZERO,
+        },
+      });
     }
 
     const messageResult = await client.sendText(user.id, text);
