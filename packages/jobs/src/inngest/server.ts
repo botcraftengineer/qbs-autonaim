@@ -1,6 +1,7 @@
 import { env } from "@selectio/config";
 import { serve } from "inngest/bun";
-import { inngest, inngestFunctions } from "./index";
+import { inngest } from "./client";
+import { inngestFunctions } from "./functions";
 
 /**
  * Example Inngest server for development

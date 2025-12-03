@@ -1,0 +1,56 @@
+import { z } from "zod";
+
+/**
+ * Response-related event schemas
+ */
+
+export const responseScreenDataSchema = z.object({
+  responseId: z.string().min(1, "Response ID is required"),
+});
+
+export const screenNewResponsesDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
+export const screenAllResponsesDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
+export const screenResponsesBatchDataSchema = z.object({
+  responseIds: z
+    .array(z.string())
+    .min(1, "At least one response ID is required"),
+});
+
+export const parseNewResumesDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
+export const refreshSingleResumeDataSchema = z.object({
+  responseId: z.string().min(1, "Response ID is required"),
+});
+
+export const parseMissingContactsDataSchema = z.object({
+  vacancyId: z.string().min(1, "Vacancy ID is required"),
+});
+
+/**
+ * Type inference
+ */
+export type ResponseScreenPayload = z.infer<typeof responseScreenDataSchema>;
+export type ScreenNewResponsesPayload = z.infer<
+  typeof screenNewResponsesDataSchema
+>;
+export type ScreenAllResponsesPayload = z.infer<
+  typeof screenAllResponsesDataSchema
+>;
+export type ScreenResponsesBatchPayload = z.infer<
+  typeof screenResponsesBatchDataSchema
+>;
+export type ParseNewResumesPayload = z.infer<typeof parseNewResumesDataSchema>;
+export type RefreshSingleResumePayload = z.infer<
+  typeof refreshSingleResumeDataSchema
+>;
+export type ParseMissingContactsPayload = z.infer<
+  typeof parseMissingContactsDataSchema
+>;
