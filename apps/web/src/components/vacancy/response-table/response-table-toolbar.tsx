@@ -6,8 +6,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Input,
 } from "@selectio/ui";
-import { Loader2, RefreshCw, Sparkles } from "lucide-react";
+import { Loader2, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchRefreshVacancyResponsesToken,
@@ -102,6 +103,8 @@ interface ResponseTableToolbarProps {
   totalResponses: number;
   screeningFilter: ScreeningFilter;
   onFilterChange: (filter: ScreeningFilter) => void;
+  search: string;
+  onSearchChange: (value: string) => void;
   isRefreshing: boolean;
   isProcessingNew: boolean;
   isProcessingAll: boolean;
@@ -117,6 +120,8 @@ export function ResponseTableToolbar({
   totalResponses,
   screeningFilter,
   onFilterChange,
+  search,
+  onSearchChange,
   isRefreshing,
   isProcessingNew,
   isProcessingAll,
@@ -406,6 +411,15 @@ export function ResponseTableToolbar({
             selectedFilter={screeningFilter}
             onFilterChange={onFilterChange}
           />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Поиск по ФИО..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-9 w-64"
+            />
+          </div>
         </div>
         <div className="flex gap-2">
           <Dialog open={refreshDialogOpen} onOpenChange={setRefreshDialogOpen}>

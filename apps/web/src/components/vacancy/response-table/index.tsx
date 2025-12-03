@@ -39,6 +39,9 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
     setSelectedIds,
     screeningFilter,
     setScreeningFilter,
+    searchInput,
+    debouncedSearch,
+    handleSearchChange,
     handleSelectOne,
   } = useResponseTable();
 
@@ -50,6 +53,7 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
       sortField,
       sortDirection,
       screeningFilter,
+      search: debouncedSearch,
     }),
     placeholderData: (previousData) => previousData,
   });
@@ -72,7 +76,7 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: reset selection when filters change
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [currentPage, sortField, sortDirection, screeningFilter]);
+  }, [currentPage, sortField, sortDirection, screeningFilter, debouncedSearch]);
 
   const responses = data?.responses ?? [];
   const total = data?.total ?? 0;
@@ -154,6 +158,8 @@ export function ResponseTable({ vacancyId, accessToken }: ResponseTableProps) {
         totalResponses={total}
         screeningFilter={screeningFilter}
         onFilterChange={setScreeningFilter}
+        search={searchInput}
+        onSearchChange={handleSearchChange}
         isRefreshing={isRefreshing}
         isProcessingNew={isProcessingNew}
         isProcessingAll={isProcessingAll}

@@ -42,7 +42,8 @@ auth.post("/send-code", async (c) => {
 });
 
 auth.post("/sign-in", async (c) => {
-  let storage: any;
+  let storage: Awaited<ReturnType<typeof createUserClient>>["storage"] | null =
+    null;
   try {
     const body = await c.req.json();
     const result = signInSchema.safeParse(body);
@@ -54,20 +55,19 @@ auth.post("/sign-in", async (c) => {
       );
     }
 
-    const {
+    const { apiId, apiHash, phone, phoneCode, phoneCodeHash, sessionData } =
+      result.data;
+
+    console.log("Received sessionData:", sessionData);
+    const parsedSessionData = sessionData
+      ? (JSON.parse(sessionData) as Record<string, string>)
+      : undefined;
+
+    const clientData = await createUserClient(
       apiId,
       apiHash,
-      phone,
-      phoneCode,
-      phoneCodeHash,
-      sessionData: rawSessionData,
-    } = result.data;
-
-    console.log("Received sessionData:", rawSessionData);
-    const sessionData = rawSessionData ? JSON.parse(rawSessionData) : undefined;
-    console.log("Parsed sessionData:", sessionData);
-
-    const clientData = await createUserClient(apiId, apiHash, sessionData);
+      parsedSessionData,
+    );
     storage = clientData.storage;
 
     await clientData.client.connect();
@@ -118,7 +118,6 @@ auth.post("/check-password", async (c) => {
   try {
     const body = await c.req.json();
     const result = checkPasswordSchema.safeParse(body);
-    console.log(result.error);
     if (!result.success) {
       return c.json(
         { error: "Invalid request data", details: result.error.issues },
@@ -131,10 +130,9 @@ auth.post("/check-password", async (c) => {
     const { client, storage } = await createUserClient(
       apiId,
       apiHash,
-      JSON.parse(sessionData),
+      JSON.parse(sessionData) as Record<string, string>,
     );
     const user = await client.checkPassword(password);
-    console.log(user);
     const newSessionData = await storage.export();
 
     return c.json({

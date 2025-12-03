@@ -1,5 +1,5 @@
 import type { SQL } from "@selectio/db";
-import { and, asc, desc, eq, gte, inArray, lt, sql } from "@selectio/db";
+import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@selectio/db";
 import { responseScreening, vacancyResponse } from "@selectio/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
@@ -18,6 +18,7 @@ export const list = protectedProcedure
       screeningFilter: z
         .enum(["all", "evaluated", "not-evaluated", "high-score", "low-score"])
         .default("all"),
+      search: z.string().optional(),
     }),
   )
   .query(async ({ ctx, input }) => {
@@ -28,6 +29,7 @@ export const list = protectedProcedure
       sortField,
       sortDirection,
       screeningFilter,
+      search,
     } = input;
     const offset = (page - 1) * limit;
 
@@ -106,6 +108,13 @@ export const list = protectedProcedure
         };
       }
       whereConditions.push(inArray(vacancyResponse.id, filteredResponseIds));
+    }
+
+    // Добавляем поиск по ФИО кандидата
+    if (search && search.trim()) {
+      whereConditions.push(
+        ilike(vacancyResponse.candidateName, `%${search.trim()}%`),
+      );
     }
 
     const whereCondition = and(...whereConditions);

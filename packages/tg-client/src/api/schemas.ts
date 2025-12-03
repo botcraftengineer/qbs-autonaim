@@ -35,7 +35,7 @@ export const checkPasswordSchema = z.object({
 export const sendMessageSchema = z.object({
   apiId: z.number().positive(),
   apiHash: z.string().min(1),
-  sessionData: z.string().min(1),
+  sessionData: z.record(z.string(), z.string()),
   chatId: z.union([z.string(), z.number()]),
   text: z.string().min(1),
 });
@@ -43,7 +43,7 @@ export const sendMessageSchema = z.object({
 export const sendMessageByUsernameSchema = z.object({
   apiId: z.number().positive(),
   apiHash: z.string().min(1),
-  sessionData: z.string().min(1),
+  sessionData: z.record(z.string(), z.string()),
   username: z.string().min(1),
   text: z.string().min(1),
 });
@@ -51,7 +51,7 @@ export const sendMessageByUsernameSchema = z.object({
 export const sendMessageByPhoneSchema = z.object({
   apiId: z.number().positive(),
   apiHash: z.string().min(1),
-  sessionData: z.string().min(1),
+  sessionData: z.record(z.string(), z.string()),
   phone: z
     .string()
     .min(1)

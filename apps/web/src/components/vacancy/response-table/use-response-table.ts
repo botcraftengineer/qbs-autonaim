@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { ScreeningFilter } from "~/components/response";
+import { useDebounce } from "~/hooks/use-debounce";
 import type { SortDirection, SortField } from "./types";
 
 export function useResponseTable() {
@@ -9,6 +10,8 @@ export function useResponseTable() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [screeningFilter, setScreeningFilter] =
     useState<ScreeningFilter>("all");
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 500);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -30,6 +33,11 @@ export function useResponseTable() {
     setSelectedIds(newSelected);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value);
+    setCurrentPage(1);
+  };
+
   return {
     currentPage,
     setCurrentPage,
@@ -40,6 +48,9 @@ export function useResponseTable() {
     setSelectedIds,
     screeningFilter,
     setScreeningFilter,
+    searchInput,
+    debouncedSearch,
+    handleSearchChange,
     handleSelectOne,
   };
 }

@@ -22,11 +22,7 @@ messages.post("/send", async (c) => {
     }
 
     const { apiId, apiHash, sessionData, chatId, text } = result.data;
-    const { client } = await createUserClient(
-      apiId,
-      apiHash,
-      JSON.parse(sessionData),
-    );
+    const { client } = await createUserClient(apiId, apiHash, sessionData);
     const messageResult = await client.sendText(chatId, text);
 
     return c.json({
@@ -43,7 +39,7 @@ messages.post("/send-by-username", async (c) => {
   try {
     const body = await c.req.json();
     const result = sendMessageByUsernameSchema.safeParse(body);
-
+    console.log(result.error);
     if (!result.success) {
       return c.json(
         { error: "Invalid request data", details: result.error.issues },
@@ -52,11 +48,7 @@ messages.post("/send-by-username", async (c) => {
     }
 
     const { apiId, apiHash, sessionData, username, text } = result.data;
-    const { client } = await createUserClient(
-      apiId,
-      apiHash,
-      JSON.parse(sessionData),
-    );
+    const { client } = await createUserClient(apiId, apiHash, sessionData);
     const cleanedUsername = cleanUsername(username);
     const messageResult = await client.sendText(cleanedUsername, text);
 
@@ -84,11 +76,7 @@ messages.post("/send-by-phone", async (c) => {
 
     const { apiId, apiHash, sessionData, phone, text, firstName } = result.data;
 
-    const { client } = await createUserClient(
-      apiId,
-      apiHash,
-      JSON.parse(sessionData),
-    );
+    const { client } = await createUserClient(apiId, apiHash, sessionData);
 
     if (!phone.startsWith("+")) {
       return c.json({ error: "Phone must be in international format" }, 400);
