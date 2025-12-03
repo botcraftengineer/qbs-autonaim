@@ -6,7 +6,7 @@ export class TgClientSDK {
 
   constructor(baseUrl?: string) {
     this.baseUrl =
-      baseUrl || process.env.TG_CLIENT_URL || "http://localhost:3001";
+      baseUrl || process.env.TG_CLIENT_URL || "http://localhost:8001";
   }
 
   private async request<T>(

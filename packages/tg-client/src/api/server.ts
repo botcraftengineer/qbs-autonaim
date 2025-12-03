@@ -75,11 +75,16 @@ app.post("/auth/sign-in", async (c) => {
   } catch (error) {
     console.error("Error signing in:", error);
 
-    if (
-      error instanceof Error &&
-      error.message.includes("SESSION_PASSWORD_NEEDED")
-    ) {
-      return c.json({ error: "SESSION_PASSWORD_NEEDED" }, 400);
+    if (error instanceof Error) {
+      if (error.message.includes("SESSION_PASSWORD_NEEDED")) {
+        return c.json({ error: "SESSION_PASSWORD_NEEDED" }, 400);
+      }
+      if (error.message.includes("PHONE_CODE_EXPIRED")) {
+        return c.json({ error: "PHONE_CODE_EXPIRED" }, 400);
+      }
+      if (error.message.includes("PHONE_CODE_INVALID")) {
+        return c.json({ error: "PHONE_CODE_INVALID" }, 400);
+      }
     }
 
     return c.json(

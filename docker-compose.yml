@@ -78,3 +78,13 @@ services:
       - .env
     environment:
       - NODE_ENV=production
+  telegram-client:
+    restart: always
+    build:
+      context: .
+      dockerfile: packages/tg-client/Dockerfile
+    container_name: telegram-bot
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
