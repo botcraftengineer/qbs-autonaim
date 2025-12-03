@@ -15,7 +15,7 @@ import { FileText, Star } from "lucide-react";
 import Link from "next/link";
 import { useTRPC } from "~/trpc/react";
 
-export function RecentResponses() {
+export function RecentResponses({ workspaceSlug }: { workspaceSlug: string }) {
   const trpc = useTRPC();
 
   const { data: recentResponses, isLoading } = useQuery(
@@ -80,7 +80,7 @@ export function RecentResponses() {
           {recentResponses?.map((response) => (
             <Link
               key={response.id}
-              href={`/responses/${response.id}`}
+              href={`/${workspaceSlug}/responses/${response.id}`}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">

@@ -13,7 +13,7 @@ import { Briefcase, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useTRPC } from "~/trpc/react";
 
-export function ActiveVacancies() {
+export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
   const trpc = useTRPC();
 
   const { data: vacancies, isLoading } = useQuery(
@@ -63,7 +63,7 @@ export function ActiveVacancies() {
               Нет активных вакансий
             </p>
             <Link
-              href="/vacancies"
+              href={`/${workspaceSlug}/vacancies`}
               className="text-sm text-primary hover:underline"
             >
               Перейти к вакансиям
@@ -85,7 +85,7 @@ export function ActiveVacancies() {
           {vacancies?.map((vacancy) => (
             <Link
               key={vacancy.id}
-              href={`/vacancies/${vacancy.id}`}
+              href={`/${workspaceSlug}/vacancies/${vacancy.id}`}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
