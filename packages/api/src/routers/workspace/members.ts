@@ -165,6 +165,15 @@ export const workspaceMembers = {
       return invite;
     }),
 
+  // Получить активные приглашения текущего пользователя
+  getPendingInvites: protectedProcedure.query(async ({ ctx }) => {
+    const invites = await workspaceRepository.getPendingInvitesByUser(
+      ctx.session.user.id,
+      ctx.session.user.email,
+    );
+    return invites;
+  }),
+
   // Принять приглашение
   acceptInvite: protectedProcedure
     .input(z.object({ token: z.string() }))

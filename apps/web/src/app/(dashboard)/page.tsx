@@ -9,8 +9,15 @@ export default async function Page() {
     redirect("/auth/signin");
   }
 
-  // Получаем workspaces пользователя
   const caller = await api();
+
+  // Проверяем наличие pending invitations
+  const pendingInvites = await caller.workspace.getPendingInvites();
+  if (pendingInvites.length > 0) {
+    redirect("/invitations");
+  }
+
+  // Получаем workspaces пользователя
   const userWorkspaces = await caller.workspace.list();
 
   // Редирект на первый workspace

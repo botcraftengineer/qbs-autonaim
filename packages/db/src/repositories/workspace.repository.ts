@@ -299,6 +299,26 @@ export class WorkspaceRepository {
     });
   }
 
+  // Получить все активные приглашения для пользователя
+  async getPendingInvitesByUser(userId: string, email: string) {
+    const { workspaceInvite } = await import("../schema");
+    const { and, eq: eqOp, gt, or } = await import("drizzle-orm");
+
+    return db.query.workspaceInvite.findMany({
+      where: and(
+        or(
+          eqOp(workspaceInvite.invitedUserId, userId),
+          eqOp(workspaceInvite.invitedEmail, email),
+        ),
+        gt(workspaceInvite.expiresAt, new Date()),
+      ),
+      with: {
+        workspace: true,
+      },
+      orderBy: (invite, { desc }) => [desc(invite.createdAt)],
+    });
+  }
+
   // Удалить invite
   async deleteInvite(inviteId: string) {
     const { workspaceInvite } = await import("../schema");

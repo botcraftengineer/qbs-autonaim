@@ -27,12 +27,21 @@ import { toast } from "sonner";
 import { authClient } from "~/auth/client";
 import { isValidInternalPath } from "~/lib/auth-utils";
 
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "~/trpc/react";
+
 export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [loading, setLoading] = useState(false);
   const [resending, setResending] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const router = useRouter();
   const [email, setEmail] = useState("");
+
+  const trpc = useTRPC();
+  const { refetch: checkInvites } = useQuery({
+    ...trpc.workspace.members.getPendingInvites.queryOptions(),
+    enabled: false,
+  });
 
   const form = useForm<OTPFormData>({
     resolver: zodResolver(otpFormSchema),
@@ -70,6 +79,15 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       // Проверяем наличие redirect URL и всегда удаляем его
       const redirectUrl = localStorage.getItem("auth_redirect");
       localStorage.removeItem("auth_redirect");
+
+      // Проверяем приглашения
+      const { data: invites } = await checkInvites();
+
+      if (invites && invites.length > 0) {
+        // Если есть приглашения, редиректим на первое
+        router.push(`/invite/${invites[0].token}`);
+        return;
+      }
 
       // Валидируем redirect URL перед использованием
       if (redirectUrl && isValidInternalPath(redirectUrl)) {

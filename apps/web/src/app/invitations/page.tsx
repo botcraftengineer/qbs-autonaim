@@ -1,0 +1,22 @@
+import { redirect } from "next/navigation";
+import { getSession } from "~/auth/server";
+import { api } from "~/trpc/server";
+import { InvitationsClient } from "./invitations-client";
+
+export default async function InvitationsPage() {
+  const session = await getSession();
+
+  if (!session?.user) {
+    redirect("/auth/signin");
+  }
+
+  const caller = await api();
+  const invites = await caller.workspace.getPendingInvites();
+
+  // Если нет приглашений, редиректим на главную
+  if (invites.length === 0) {
+    redirect("/");
+  }
+
+  return <InvitationsClient invites={invites} />;
+}
