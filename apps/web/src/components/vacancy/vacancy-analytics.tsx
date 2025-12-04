@@ -92,14 +92,7 @@ export function VacancyAnalytics({
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div
-            className={cn(
-              "line-clamp-1 flex gap-2 font-medium",
-              isGrowingProcessed
-                ? "text-green-700 dark:text-green-400"
-                : "text-red-700 dark:text-red-400",
-            )}
-          >
+          <div className="line-clamp-1 flex gap-2 font-medium">
             {isGrowingProcessed ? "Хороший прогресс" : "Требует обработки"}
             {isGrowingProcessed ? (
               <IconTrendingUp className="size-4" />
@@ -138,14 +131,7 @@ export function VacancyAnalytics({
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div
-            className={cn(
-              "line-clamp-1 flex gap-2 font-medium",
-              isGrowingHighScore
-                ? "text-green-700 dark:text-green-400"
-                : "text-red-700 dark:text-red-400",
-            )}
-          >
+          <div className="line-clamp-1 flex gap-2 font-medium">
             {isGrowingHighScore ? "Качественные кандидаты" : "Мало подходящих"}
             {isGrowingHighScore ? (
               <IconTrendingUp className="size-4" />
@@ -182,14 +168,7 @@ export function VacancyAnalytics({
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div
-            className={cn(
-              "line-clamp-1 flex gap-2 font-medium",
-              isGrowingTopScore
-                ? "text-green-700 dark:text-green-400"
-                : "text-red-700 dark:text-red-400",
-            )}
-          >
+          <div className="line-clamp-1 flex gap-2 font-medium">
             {isGrowingTopScore ? "Отличные результаты" : "Нужно больше"}
             {isGrowingTopScore ? (
               <IconTrendingUp className="size-4" />
@@ -228,14 +207,7 @@ export function VacancyAnalytics({
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div
-            className={cn(
-              "line-clamp-1 flex gap-2 font-medium",
-              isGoodAvgScore
-                ? "text-green-700 dark:text-green-400"
-                : "text-red-700 dark:text-red-400",
-            )}
-          >
+          <div className="line-clamp-1 flex gap-2 font-medium">
             {isGoodAvgScore ? "Качество выше среднего" : "Требует улучшения"}
             {isGoodAvgScore ? (
               <IconTrendingUp className="size-4" />

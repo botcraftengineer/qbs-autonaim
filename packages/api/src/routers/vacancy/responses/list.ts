@@ -1,6 +1,10 @@
 import type { SQL } from "@selectio/db";
 import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@selectio/db";
-import { responseScreening, vacancyResponse } from "@selectio/db/schema";
+import {
+  responseScreening,
+  telegramConversation,
+  vacancyResponse,
+} from "@selectio/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
@@ -199,11 +203,12 @@ export const list = protectedProcedure
     if (conversationIds.length > 0) {
       const messageCounts = await ctx.db
         .select({
-          conversationId: sql`conversation_id`.as<string>(),
+          conversationId: telegramConversation.id,
           count: sql<number>`count(*)::int`,
         })
-        .from(sql`telegram_conversation_message`)
-        .where(sql`conversation_id = ANY(${conversationIds})`);
+        .from(telegramConversation)
+        .where(inArray(telegramConversation.id, conversationIds))
+        .groupBy(telegramConversation.id);
 
       messageCountsMap = new Map(
         messageCounts.map((mc) => [mc.conversationId, mc.count]),
