@@ -137,7 +137,7 @@ function MemberActionsDropdown({
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-56">
         {isInvited && canManage && (
           <>
             <DropdownMenuItem
