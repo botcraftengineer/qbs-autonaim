@@ -3,6 +3,7 @@ import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@selectio/db";
 import {
   responseScreening,
   telegramConversation,
+  telegramMessage,
   vacancyResponse,
 } from "@selectio/db/schema";
 import { z } from "zod";
@@ -203,12 +204,12 @@ export const list = protectedProcedure
     if (conversationIds.length > 0) {
       const messageCounts = await ctx.db
         .select({
-          conversationId: telegramConversation.id,
+          conversationId: telegramMessage.conversationId,
           count: sql<number>`count(*)::int`,
         })
-        .from(telegramConversation)
-        .where(inArray(telegramConversation.id, conversationIds))
-        .groupBy(telegramConversation.id);
+        .from(telegramMessage)
+        .where(inArray(telegramMessage.conversationId, conversationIds))
+        .groupBy(telegramMessage.conversationId);
 
       messageCountsMap = new Map(
         messageCounts.map((mc) => [mc.conversationId, mc.count]),
