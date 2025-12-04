@@ -36,7 +36,10 @@ export function ScreeningInfo({
         {analysis && (
           <div>
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
-            <p className="text-sm">{analysis}</p>
+            <div
+              className="text-sm prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: analysis }}
+            />
           </div>
         )}
       </div>

@@ -47,22 +47,21 @@ export const list = protectedProcedure
         .where(eq(vacancyResponse.vacancyId, vacancyId));
       filteredResponseIds = screenedResponses.map((r) => r.responseId);
     } else if (screeningFilter === "not-evaluated") {
-      const allResponses = await ctx.db
+      // Оптимизация: используем LEFT JOIN вместо двух запросов
+      const notEvaluated = await ctx.db
         .select({ id: vacancyResponse.id })
         .from(vacancyResponse)
-        .where(eq(vacancyResponse.vacancyId, vacancyId));
-      const screenedResponses = await ctx.db
-        .select({ responseId: responseScreening.responseId })
-        .from(responseScreening)
-        .innerJoin(
-          vacancyResponse,
-          eq(responseScreening.responseId, vacancyResponse.id),
+        .leftJoin(
+          responseScreening,
+          eq(vacancyResponse.id, responseScreening.responseId),
         )
-        .where(eq(vacancyResponse.vacancyId, vacancyId));
-      const screenedIds = new Set(screenedResponses.map((r) => r.responseId));
-      filteredResponseIds = allResponses
-        .filter((r) => !screenedIds.has(r.id))
-        .map((r) => r.id);
+        .where(
+          and(
+            eq(vacancyResponse.vacancyId, vacancyId),
+            sql`${responseScreening.responseId} IS NULL`,
+          ),
+        );
+      filteredResponseIds = notEvaluated.map((r) => r.id);
     } else if (screeningFilter === "high-score") {
       const screenedResponses = await ctx.db
         .select({ responseId: responseScreening.responseId })
@@ -141,21 +140,88 @@ export const list = protectedProcedure
     }
 
     // Получаем отфильтрованные данные с пагинацией
-    let responses = await ctx.db.query.vacancyResponse.findMany({
+    // Оптимизация: загружаем только нужные поля
+    const responsesRaw = await ctx.db.query.vacancyResponse.findMany({
       where: whereCondition,
       orderBy: [orderByClause],
       limit,
       offset,
+      columns: {
+        id: true,
+        vacancyId: true,
+        candidateName: true,
+        status: true,
+        hrSelectionStatus: true,
+        contacts: true,
+        resumeUrl: true,
+        telegramUsername: true,
+        phone: true,
+        respondedAt: true,
+        welcomeSentAt: true,
+        createdAt: true,
+      },
       with: {
-        screening: true,
-        conversation: {
-          with: {
-            messages: true,
+        screening: {
+          columns: {
+            score: true,
+            detailedScore: true,
+            analysis: true,
           },
         },
-        telegramInterviewScoring: true,
+        telegramInterviewScoring: {
+          columns: {
+            score: true,
+            detailedScore: true,
+            analysis: true,
+          },
+        },
+        conversation: {
+          columns: {
+            id: true,
+            chatId: true,
+            candidateName: true,
+            status: true,
+            metadata: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
       },
     });
+
+    // Получаем количество сообщений для каждой беседы одним запросом
+    const conversationIds = responsesRaw
+      .filter((r) => r.conversation)
+      .map((r) => r.conversation?.id)
+      .filter((id): id is string => id !== undefined);
+
+    let messageCountsMap = new Map<string, number>();
+    if (conversationIds.length > 0) {
+      const messageCounts = await ctx.db
+        .select({
+          conversationId: sql`conversation_id`.as<string>(),
+          count: sql<number>`count(*)::int`,
+        })
+        .from(sql`telegram_conversation_message`)
+        .where(sql`conversation_id = ANY(${conversationIds})`);
+
+      messageCountsMap = new Map(
+        messageCounts.map((mc) => [mc.conversationId, mc.count]),
+      );
+    }
+
+    // Формируем ответ с количеством сообщений
+    let responses = responsesRaw.map((r) => ({
+      ...r,
+      conversation: r.conversation
+        ? {
+            ...r.conversation,
+            messages: Array(messageCountsMap.get(r.conversation.id) || 0).fill(
+              {},
+            ),
+          }
+        : null,
+    }));
 
     // Сортировка по score/detailedScore в памяти (только для текущей страницы)
     if (sortField === "score" || sortField === "detailedScore") {
