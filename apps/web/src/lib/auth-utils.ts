@@ -1,21 +1,14 @@
-import "server-only";
-
-import { db } from "@selectio/db/client";
-import type { UserRole } from "@selectio/db/schema";
-import { user } from "@selectio/db/schema";
-import { eq } from "drizzle-orm";
-
-export async function getUserRole(userId: string): Promise<UserRole> {
-  const result = await db
-    .select({ role: user.role })
-    .from(user)
-    .where(eq(user.id, userId))
-    .limit(1);
-
-  return (result[0]?.role as UserRole) ?? "user";
-}
-
-export async function isAdmin(userId: string): Promise<boolean> {
-  const role = await getUserRole(userId);
-  return role === "admin";
-}
+/**
+ * Проверяет, является ли путь валидным внутренним путем приложения
+ * @param path - Путь для проверки
+ * @returns true если путь валиден, false в противном случае
+ */
+export const isValidInternalPath = (path: string): boolean => {
+  // Проверяем, что путь начинается с '/' и не содержит протокол или '//'
+  return (
+    path.startsWith("/") &&
+    !path.includes("//") &&
+    !path.toLowerCase().includes("http:") &&
+    !path.toLowerCase().includes("https:")
+  );
+};

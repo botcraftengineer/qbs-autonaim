@@ -26,9 +26,32 @@ export const workspaceMembers = {
         });
       }
 
+      // Находим пользователя по email
+      const user = await workspaceRepository.findUserByEmail(input.email);
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Пользователь с таким email не найден",
+        });
+      }
+      const userId = user.id;
+
+      // Проверка, не является ли пользователь уже участником
+      const existingMember = await workspaceRepository.checkAccess(
+        input.workspaceId,
+        userId,
+      );
+
+      if (existingMember) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Пользователь уже является участником workspace",
+        });
+      }
+
       const member = await workspaceRepository.addUser(
         input.workspaceId,
-        input.userId,
+        userId,
         input.role,
       );
 

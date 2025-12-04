@@ -19,6 +19,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
+import { z } from "zod";
 import { useTRPC } from "~/trpc/react";
 
 export function useInviteMemberModal(workspaceId: string) {
@@ -67,21 +68,20 @@ function InviteMemberModalContent({
 
   const handleInvite = () => {
     const emailTrimmed = email.trim();
-    if (!emailTrimmed) {
-      toast.error("Введите email");
-      return;
-    }
 
-    // Простая валидация email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(emailTrimmed)) {
-      toast.error("Введите корректный email");
+    const emailSchema = z.email("Введите корректный email");
+    const result = emailSchema.safeParse(emailTrimmed);
+
+    if (!result.success) {
+      toast.error(
+        result.error.issues[0]?.message || "Введите корректный email",
+      );
       return;
     }
 
     addUser.mutate({
       workspaceId,
-      userId: emailTrimmed, // Временно используем email как userId, нужно будет изменить API
+      email: result.data,
       role,
     });
   };

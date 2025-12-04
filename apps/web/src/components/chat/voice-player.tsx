@@ -2,7 +2,7 @@
 
 import { cn } from "@selectio/ui";
 import { FileText, Pause, Play } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 interface VoicePlayerProps {
   src: string;
@@ -24,13 +24,24 @@ export function VoicePlayer({
   isTranscribing = false,
 }: VoicePlayerProps) {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const lastSrcRef = useRef<string>("");
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [totalDuration, setTotalDuration] = useState(0);
 
+  // Мемоизируем URL чтобы избежать повторных запросов
+  const audioSrc = useMemo(() => src, [src]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
+
+    // Устанавливаем src только если он изменился
+    if (lastSrcRef.current !== audioSrc) {
+      audio.src = audioSrc;
+      audio.load();
+      lastSrcRef.current = audioSrc;
+    }
 
     const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
     const handleLoadedMetadata = () => setTotalDuration(audio.duration);
@@ -51,7 +62,7 @@ export function VoicePlayer({
       audio.removeEventListener("play", handlePlay);
       audio.removeEventListener("pause", handlePause);
     };
-  }, []);
+  }, [audioSrc]);
 
   const togglePlay = async () => {
     const audio = audioRef.current;
@@ -84,7 +95,8 @@ export function VoicePlayer({
 
   return (
     <div className="flex items-center gap-2 min-w-[200px]">
-      <audio ref={audioRef} src={src} preload="metadata">
+      {/* Убираем src из JSX - устанавливаем программно в useEffect */}
+      <audio ref={audioRef} preload="metadata">
         <track kind="captions" />
       </audio>
 

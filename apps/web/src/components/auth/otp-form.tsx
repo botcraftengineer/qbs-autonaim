@@ -25,6 +25,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
+import { isValidInternalPath } from "~/lib/auth-utils";
 
 export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [loading, setLoading] = useState(false);
@@ -66,10 +67,12 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       });
       toast.success("Успешно подтверждено!");
 
-      // Проверяем наличие redirect URL
+      // Проверяем наличие redirect URL и всегда удаляем его
       const redirectUrl = localStorage.getItem("auth_redirect");
-      if (redirectUrl) {
-        localStorage.removeItem("auth_redirect");
+      localStorage.removeItem("auth_redirect");
+
+      // Валидируем redirect URL перед использованием
+      if (redirectUrl && isValidInternalPath(redirectUrl)) {
         router.push(redirectUrl);
       } else {
         router.push("/");

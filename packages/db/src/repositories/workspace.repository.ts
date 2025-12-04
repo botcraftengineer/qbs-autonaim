@@ -136,6 +136,20 @@ export class WorkspaceRepository {
     });
   }
 
+  // Найти пользователя по email
+  async findUserByEmail(email: string) {
+    const { z } = await import("zod");
+
+    // Валидация email перед запросом в БД
+    const emailSchema = z.string().email("Некорректный формат email");
+    const validatedEmail = emailSchema.parse(email);
+
+    const { user } = await import("../schema");
+    return db.query.user.findFirst({
+      where: eq(user.email, validatedEmail),
+    });
+  }
+
   // Создать invite link
   async createInviteLink(
     workspaceId: string,

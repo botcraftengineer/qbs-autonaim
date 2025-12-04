@@ -23,6 +23,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
+import { isValidInternalPath } from "~/lib/auth-utils";
 
 export function LoginForm({
   className,
@@ -49,7 +50,8 @@ export function LoginForm({
       });
       // Сохраняем email и redirect URL в localStorage
       localStorage.setItem("otp_email", data.email);
-      if (redirectUrl) {
+      // Валидируем redirect URL перед сохранением
+      if (redirectUrl && isValidInternalPath(redirectUrl)) {
         localStorage.setItem("auth_redirect", redirectUrl);
       }
       toast.success("Код отправлен! Проверьте вашу почту.");
