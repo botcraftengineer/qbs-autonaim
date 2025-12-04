@@ -6,6 +6,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  cn,
 } from "@selectio/ui";
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
@@ -73,14 +74,32 @@ export function VacancyAnalytics({
             {processedResponses}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGrowingProcessed ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGrowingProcessed
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGrowingProcessed ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {processedPercentage}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGrowingProcessed
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGrowingProcessed ? "Хороший прогресс" : "Требует обработки"}
             {isGrowingProcessed ? (
               <IconTrendingUp className="size-4" />
@@ -101,14 +120,32 @@ export function VacancyAnalytics({
             {highScoreResponses}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGrowingHighScore ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGrowingHighScore
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGrowingHighScore ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {highScorePercentage}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGrowingHighScore
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGrowingHighScore ? "Качественные кандидаты" : "Мало подходящих"}
             {isGrowingHighScore ? (
               <IconTrendingUp className="size-4" />
@@ -127,14 +164,32 @@ export function VacancyAnalytics({
             {topScoreResponses}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGrowingTopScore ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGrowingTopScore
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGrowingTopScore ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {topScorePercentage}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGrowingTopScore
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGrowingTopScore ? "Отличные результаты" : "Нужно больше"}
             {isGrowingTopScore ? (
               <IconTrendingUp className="size-4" />
@@ -155,14 +210,32 @@ export function VacancyAnalytics({
             {processedResponses > 0 ? avgScore.toFixed(1) : "—"}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGoodAvgScore ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGoodAvgScore
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGoodAvgScore ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {processedResponses > 0 ? "из 5.0" : "—"}
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGoodAvgScore
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGoodAvgScore ? "Качество выше среднего" : "Требует улучшения"}
             {isGoodAvgScore ? (
               <IconTrendingUp className="size-4" />
