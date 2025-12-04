@@ -226,9 +226,8 @@ export function WorkspaceForm({
           Удалить Workspace
         </h3>
         <p className="text-sm text-muted-foreground mb-4">
-          Безвозвратно удалить ваш workspace, пользовательский домен и все
-          связанные ссылки + их статистику. Это действие нельзя отменить -
-          пожалуйста, действуйте осторожно.
+          Внимание: Это безвозвратно удалит ваш workspace, все интеграции HH.ru,
+          вакансии, отклики кандидатов и их статистику.
         </p>
         <Button
           variant="destructive"
