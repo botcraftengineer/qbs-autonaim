@@ -68,7 +68,7 @@ export function ResponseCards({
                     )}
                     {response.conversation && (
                       <ChatIndicator
-                        messageCount={response.conversation.messages.length}
+                        messageCount={response.conversation.messageCount}
                         conversationId={response.conversation.id}
                         workspaceSlug={workspaceSlug}
                       />

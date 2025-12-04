@@ -186,7 +186,6 @@ export const list = protectedProcedure
             chatId: true,
             candidateName: true,
             status: true,
-            metadata: true,
             createdAt: true,
             updatedAt: true,
           },
@@ -222,9 +221,7 @@ export const list = protectedProcedure
       conversation: r.conversation
         ? {
             ...r.conversation,
-            messages: Array(messageCountsMap.get(r.conversation.id) || 0).fill(
-              {},
-            ),
+            messageCount: messageCountsMap.get(r.conversation.id) || 0,
           }
         : null,
     }));
