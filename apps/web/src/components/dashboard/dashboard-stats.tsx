@@ -8,6 +8,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  cn,
 } from "@selectio/ui";
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
@@ -66,18 +67,32 @@ export function DashboardStats() {
             {stats.totalResponses}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
+            <Badge
+              variant="outline"
+              className={cn(
+                stats.newResponses > 0
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
               {stats.newResponses > 0 ? (
-                <IconTrendingUp />
+                <IconTrendingUp className="size-4" />
               ) : (
-                <IconTrendingDown />
+                <IconTrendingDown className="size-4" />
               )}
               {stats.newResponses} новых
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              stats.newResponses > 0
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {stats.newResponses > 0
               ? "Есть новые отклики"
               : "Нет новых откликов"}
@@ -100,14 +115,32 @@ export function DashboardStats() {
             {stats.processedResponses}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGoodProcessed ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGoodProcessed
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGoodProcessed ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {processedPercentage}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGoodProcessed
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGoodProcessed ? "Хороший прогресс" : "Требует обработки"}
             {isGoodProcessed ? (
               <IconTrendingUp className="size-4" />
@@ -126,14 +159,32 @@ export function DashboardStats() {
             {stats.highScoreResponses}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGoodHighScore ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGoodHighScore
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGoodHighScore ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {highScorePercentage}%
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGoodHighScore
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGoodHighScore ? "Отличные результаты" : "Нужно больше"}
             {isGoodHighScore ? (
               <IconTrendingUp className="size-4" />
@@ -154,14 +205,32 @@ export function DashboardStats() {
             {stats.processedResponses > 0 ? stats.avgScore.toFixed(1) : "—"}
           </CardTitle>
           <CardAction>
-            <Badge variant="outline">
-              {isGoodAvgScore ? <IconTrendingUp /> : <IconTrendingDown />}
+            <Badge
+              variant="outline"
+              className={cn(
+                isGoodAvgScore
+                  ? "border-green-500/50 bg-green-500/10 text-green-700 dark:text-green-400"
+                  : "border-red-500/50 bg-red-500/10 text-red-700 dark:text-red-400",
+              )}
+            >
+              {isGoodAvgScore ? (
+                <IconTrendingUp className="size-4" />
+              ) : (
+                <IconTrendingDown className="size-4" />
+              )}
               {stats.processedResponses > 0 ? "из 5.0" : "—"}
             </Badge>
           </CardAction>
         </CardHeader>
         <CardFooter className="flex-col items-start gap-1.5 text-sm">
-          <div className="line-clamp-1 flex gap-2 font-medium">
+          <div
+            className={cn(
+              "line-clamp-1 flex gap-2 font-medium",
+              isGoodAvgScore
+                ? "text-green-700 dark:text-green-400"
+                : "text-red-700 dark:text-red-400",
+            )}
+          >
             {isGoodAvgScore ? "Качество выше среднего" : "Требует улучшения"}
             {isGoodAvgScore ? (
               <IconTrendingUp className="size-4" />
