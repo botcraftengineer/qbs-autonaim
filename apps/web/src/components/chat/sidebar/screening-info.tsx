@@ -1,3 +1,7 @@
+"use client";
+
+import { sanitizeHtml } from "~/lib/sanitize-html";
+
 interface ScreeningInfoProps {
   score: number | null;
   detailedScore?: number | null;
@@ -38,7 +42,8 @@ export function ScreeningInfo({
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
             <div
               className="text-sm prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: analysis }}
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
             />
           </div>
         )}

@@ -7,6 +7,7 @@ import {
   HoverCardTrigger,
 } from "@selectio/ui";
 import { CheckCircle2, Info, XCircle } from "lucide-react";
+import { sanitizeHtml } from "~/lib/sanitize-html";
 
 interface ScreeningData {
   score: number;
@@ -105,7 +106,10 @@ export function ScreeningHoverCard({ screening }: ScreeningHoverCardProps) {
               </h4>
               <div
                 className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{ __html: screening.analysis }}
+                // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeHtml(screening.analysis),
+                }}
               />
             </div>
           )}

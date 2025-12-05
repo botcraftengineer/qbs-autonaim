@@ -1,5 +1,8 @@
+"use client";
+
 import { Progress } from "@selectio/ui";
 import { Star } from "lucide-react";
+import { sanitizeHtml } from "~/lib/sanitize-html";
 
 interface TelegramInterviewScoringProps {
   score: number | null;
@@ -71,7 +74,8 @@ export function TelegramInterviewScoring({
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
             <div
               className="text-sm prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: analysis }}
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
             />
           </div>
         )}

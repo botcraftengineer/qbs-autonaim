@@ -79,7 +79,7 @@ async function sendAuthErrorEvent(
   workspaceId: string,
   errorType: string,
   errorMessage: string,
-  phone: string
+  phone: string,
 ): Promise<void> {
   try {
     const eventKey = env.INNGEST_EVENT_KEY;
@@ -109,7 +109,7 @@ async function sendAuthErrorEvent(
 
     if (!response.ok) {
       console.error(
-        `❌ Failed to send auth error event: ${response.status} ${response.statusText}`
+        `❌ Failed to send auth error event: ${response.status} ${response.statusText}`,
       );
     } else {
       console.log(`📧 Auth error event sent for workspace ${workspaceId}`);
@@ -125,7 +125,7 @@ async function sendAuthErrorEvent(
 async function markSessionAsInvalid(
   sessionId: string,
   errorType: string,
-  errorMessage: string
+  _errorMessage: string,
 ): Promise<void> {
   await db
     .update(telegramSession)
@@ -195,10 +195,10 @@ class BotManager {
     workspaceId: string,
     phone: string,
     errorType: string,
-    errorMessage: string
+    errorMessage: string,
   ): Promise<void> {
     console.log(
-      `🔐 Auth error detected for workspace ${workspaceId}: ${errorType}`
+      `🔐 Auth error detected for workspace ${workspaceId}: ${errorType}`,
     );
 
     // Remove bot from active bots
@@ -213,7 +213,7 @@ class BotManager {
       workspaceId,
       errorType,
       errorMessage,
-      phone
+      phone,
     );
   }
 
@@ -221,7 +221,7 @@ class BotManager {
    * Запустить одного бота
    */
   private async startBot(
-    session: typeof telegramSession.$inferSelect
+    session: typeof telegramSession.$inferSelect,
   ): Promise<void> {
     const {
       id: sessionId,
@@ -235,7 +235,7 @@ class BotManager {
     try {
       if (!apiId || !apiHash) {
         throw new Error(
-          `Отсутствуют apiId или apiHash для workspace ${workspaceId}`
+          `Отсутствуют apiId или apiHash для workspace ${workspaceId}`,
         );
       }
 
@@ -272,10 +272,10 @@ class BotManager {
             workspaceId,
             phone,
             authCheck.errorType || "AUTH_ERROR",
-            authCheck.errorMessage || "Unknown auth error"
+            authCheck.errorMessage || "Unknown auth error",
           );
           throw new Error(
-            `Сессия не авторизована для workspace ${workspaceId}: ${authCheck.errorType}. Требуется повторная авторизация.`
+            `Сессия не авторизована для workspace ${workspaceId}: ${authCheck.errorType}. Требуется повторная авторизация.`,
           );
         }
         // Другая ошибка - пробрасываем дальше
@@ -284,13 +284,13 @@ class BotManager {
 
       if (!user) {
         throw new Error(
-          `Не удалось получить информацию о пользователе для workspace ${workspaceId}`
+          `Не удалось получить информацию о пользователе для workspace ${workspaceId}`,
         );
       }
 
       // Завершаем все другие сессии, чтобы получать обновления
       console.log(
-        `🔄 Завершение других сессий для workspace ${workspaceId}...`
+        `🔄 Завершение других сессий для workspace ${workspaceId}...`,
       );
       try {
         await client.call({
@@ -300,7 +300,7 @@ class BotManager {
       } catch (error) {
         console.warn(
           `⚠️ Не удалось завершить другие сессии для workspace ${workspaceId}:`,
-          error
+          error,
         );
         // Продолжаем работу, даже если не удалось завершить сессии
       }
@@ -324,7 +324,7 @@ class BotManager {
               workspaceId,
               phone,
               authCheck.errorType || "AUTH_ERROR",
-              authCheck.errorMessage || "Unknown auth error"
+              authCheck.errorMessage || "Unknown auth error",
             );
             return;
           }
@@ -342,7 +342,7 @@ class BotManager {
             workspaceId,
             phone,
             authCheck.errorType || "AUTH_ERROR",
-            authCheck.errorMessage || "Unknown auth error"
+            authCheck.errorMessage || "Unknown auth error",
           );
           return true; // Stop processing
         }
@@ -370,12 +370,12 @@ class BotManager {
       await client.start();
 
       console.log(
-        `✅ Бот запущен для workspace ${workspaceId}: ${user.firstName || ""} ${user.lastName || ""} (@${user.username || "no username"}) [${phone}]`
+        `✅ Бот запущен для workspace ${workspaceId}: ${user.firstName || ""} ${user.lastName || ""} (@${user.username || "no username"}) [${phone}]`,
       );
     } catch (error) {
       console.error(
         `❌ Ошибка запуска бота для workspace ${workspaceId}:`,
-        error
+        error,
       );
       throw error;
     }
@@ -419,7 +419,7 @@ class BotManager {
 
     if (!session) {
       throw new Error(
-        `Telegram сессия не найдена для workspace ${workspaceId}`
+        `Telegram сессия не найдена для workspace ${workspaceId}`,
       );
     }
 

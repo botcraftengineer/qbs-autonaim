@@ -2,7 +2,6 @@ import type { SQL } from "@selectio/db";
 import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@selectio/db";
 import {
   responseScreening,
-  telegramConversation,
   telegramMessage,
   vacancyResponse,
 } from "@selectio/db/schema";

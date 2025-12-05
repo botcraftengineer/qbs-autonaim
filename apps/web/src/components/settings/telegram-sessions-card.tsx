@@ -33,7 +33,7 @@ export function TelegramSessionsCard({ workspaceId }: { workspaceId: string }) {
 
   const handleDelete = (sessionId: string) => {
     if (confirm("Вы уверены, что хотите удалить эту сессию?")) {
-      deleteMutation.mutate({ sessionId });
+      deleteMutation.mutate({ sessionId, workspaceId });
     }
   };
 

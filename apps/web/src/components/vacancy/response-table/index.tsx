@@ -11,7 +11,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useTRPC } from "~/trpc/react";
-import type { VacancyResponse } from "~/types/vacancy";
 import { ResponseRow } from "../response-row";
 import { BulkActionsBar } from "./bulk-actions-bar";
 import { EmptyState } from "./empty-state";
@@ -98,8 +97,7 @@ export function ResponseTable({
   const totalPages = data?.totalPages ?? 0;
 
   const allSelected =
-    responses.length > 0 &&
-    responses.every((r: VacancyResponse) => selectedIds.has(r.id));
+    responses.length > 0 && responses.every((r) => selectedIds.has(r.id));
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -158,7 +156,7 @@ export function ResponseTable({
       return <EmptyState hasResponses={total > 0} colSpan={9} />;
     }
 
-    return responses.map((response: VacancyResponse) => (
+    return responses.map((response) => (
       <ResponseRow
         key={response.id}
         response={response}

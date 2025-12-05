@@ -28,7 +28,6 @@ export default function TelegramAuthErrorEmail({
   workspaceName = "Workspace",
   phone = "+7 XXX XXX-XX-XX",
   errorType = "AUTH_KEY_UNREGISTERED",
-  errorMessage = "Сессия была завершена или стала недействительной",
   reauthorizeLink = `${env.APP_URL}/settings/telegram`,
 }: TelegramAuthErrorEmailProps) {
   const errorDescriptions: Record<string, string> = {
@@ -44,8 +43,7 @@ export default function TelegramAuthErrorEmail({
       "Сессия истекла. Telegram периодически требует повторной авторизации для безопасности.",
     USER_DEACTIVATED:
       "Аккаунт пользователя был деактивирован или удалён в Telegram.",
-    USER_DEACTIVATED_BAN:
-      "Аккаунт пользователя был заблокирован в Telegram.",
+    USER_DEACTIVATED_BAN: "Аккаунт пользователя был заблокирован в Telegram.",
   };
 
   const description =
@@ -55,9 +53,7 @@ export default function TelegramAuthErrorEmail({
   return (
     <Html>
       <Head />
-      <Preview>
-        ⚠️ Telegram авторизация слетела для {workspaceName}
-      </Preview>
+      <Preview>⚠️ Telegram авторизация слетела для {workspaceName}</Preview>
       <Tailwind config={emailTailwindConfig}>
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-[40px] w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
@@ -95,8 +91,7 @@ export default function TelegramAuthErrorEmail({
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
               • Бот не может получать и отправлять сообщения
-              <br />
-              • Интервью с кандидатами приостановлены
+              <br />• Интервью с кандидатами приостановлены
               <br />• Для восстановления работы требуется повторная авторизация
             </Text>
 
