@@ -37,6 +37,15 @@ export const telegramSession = pgTable("telegram_sessions", {
   // Активна ли сессия
   isActive: text("is_active").default("true").notNull(),
 
+  // Ошибка авторизации (если сессия стала невалидной)
+  authError: text("auth_error"),
+
+  // Когда произошла ошибка авторизации
+  authErrorAt: timestamp("auth_error_at"),
+
+  // Когда было отправлено уведомление об ошибке
+  authErrorNotifiedAt: timestamp("auth_error_notified_at"),
+
   // Дата последнего использования
   lastUsedAt: timestamp("last_used_at"),
 

@@ -29,6 +29,7 @@ import {
 import {
   analyzeInterviewFunction,
   completeInterviewFunction,
+  notifyTelegramAuthErrorFunction,
   sendNextQuestionFunction,
   sendTelegramMessageFunction,
   transcribeVoiceFunction,
@@ -63,6 +64,7 @@ export const inngestFunctions = [
   // Telegram
   analyzeInterviewFunction,
   completeInterviewFunction,
+  notifyTelegramAuthErrorFunction,
   sendNextQuestionFunction,
   sendTelegramMessageFunction,
   transcribeVoiceFunction,

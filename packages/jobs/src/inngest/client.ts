@@ -14,6 +14,7 @@ import {
   screenAllResponsesDataSchema,
   screenNewResponsesDataSchema,
   screenResponsesBatchDataSchema,
+  telegramAuthErrorDataSchema,
   telegramMessageSendDataSchema,
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
@@ -47,5 +48,7 @@ export const inngest = new Inngest({
     "telegram/interview.analyze": interviewAnalysisDataSchema,
     "telegram/interview.send-question": interviewSendQuestionDataSchema,
     "telegram/interview.complete": interviewCompleteDataSchema,
+    "telegram/auth.error": telegramAuthErrorDataSchema,
   }),
 });
+

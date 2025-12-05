@@ -1,7 +1,10 @@
 import {
   checkPasswordRouter,
+  clearAuthErrorRouter,
   deleteSessionRouter,
   getSessionsRouter,
+  getSessionStatusRouter,
+  reauthorizeSessionRouter,
   sendCodeRouter,
   signInRouter,
 } from "./auth";
@@ -27,6 +30,9 @@ export const telegramRouter = {
   checkPassword: checkPasswordRouter,
   getSessions: getSessionsRouter,
   deleteSession: deleteSessionRouter,
+  getSessionStatus: getSessionStatusRouter,
+  clearAuthError: clearAuthErrorRouter,
+  reauthorizeSession: reauthorizeSessionRouter,
   // User messages
   sendUserMessage: sendUserMessageRouter,
   sendUserMessageByPhone: sendUserMessageByPhoneRouter,

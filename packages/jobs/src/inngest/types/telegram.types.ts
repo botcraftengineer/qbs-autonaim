@@ -35,6 +35,14 @@ export const interviewCompleteDataSchema = z.object({
   responseId: z.string().optional(),
 });
 
+export const telegramAuthErrorDataSchema = z.object({
+  sessionId: z.string().min(1, "Session ID is required"),
+  workspaceId: z.string().min(1, "Workspace ID is required"),
+  errorType: z.string().min(1, "Error type is required"),
+  errorMessage: z.string().min(1, "Error message is required"),
+  phone: z.string().min(1, "Phone is required"),
+});
+
 /**
  * Type inference
  */
@@ -52,4 +60,7 @@ export type InterviewSendQuestionPayload = z.infer<
 >;
 export type InterviewCompletePayload = z.infer<
   typeof interviewCompleteDataSchema
+>;
+export type TelegramAuthErrorPayload = z.infer<
+  typeof telegramAuthErrorDataSchema
 >;
