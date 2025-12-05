@@ -157,7 +157,7 @@ async function handleTextMessage(
     await humanDelay(600, 1200);
     await client.sendText(
       message.chat.id,
-      "Привет! Давай начнем сначала, напиши /start",
+      "Привет! А мы знакомы? Напомни, пожалуйста, откуда ты 😊",
     );
     return;
   }
@@ -276,7 +276,7 @@ async function handleVoiceMessage(
     await markRead(client, message.chat.id);
     await client.sendText(
       message.chat.id,
-      "Пожалуйста, начните с команды /start",
+      "Привет! Не могу вспомнить, откуда мы знакомы. Напомнишь?",
     );
     return;
   }
@@ -375,6 +375,127 @@ async function handleVoiceMessage(
 }
 
 /**
+ * Обработчик аудиофайлов (mp3, m4a, wav и т.д.)
+ */
+async function handleAudioFile(
+  client: TelegramClient,
+  message: Message,
+): Promise<void> {
+  const chatId = message.chat.id.toString();
+
+  if (!message.media || message.media.type !== "audio") {
+    return;
+  }
+
+  const [conversation] = await db
+    .select()
+    .from(telegramConversation)
+    .where(eq(telegramConversation.chatId, chatId))
+    .limit(1);
+
+  if (!conversation) {
+    await markRead(client, message.chat.id);
+    await client.sendText(
+      message.chat.id,
+      "Привет! А мы раньше общались? Не могу вспомнить 🤔",
+    );
+    return;
+  }
+
+  // Отмечаем сообщение как прочитанное
+  await markRead(client, message.chat.id);
+
+  try {
+    // Показываем, что "слушаем" аудио
+    await client.call({
+      _: "messages.setTyping",
+      peer: await client.resolvePeer(message.chat.id),
+      action: { _: "sendMessageRecordAudioAction" },
+    });
+
+    // Скачиваем файл
+    const fileBuffer = await client.downloadAsBuffer(message.media);
+
+    // Определяем расширение из mimeType или используем mp3 по умолчанию
+    const mimeType = message.media.mimeType || "audio/mpeg";
+    const extension = mimeType.split("/")[1] || "mp3";
+    const fileName = `audio_${message.id}.${extension}`;
+
+    // Загружаем в S3
+    const fileId = await uploadFile(
+      Buffer.from(fileBuffer),
+      fileName,
+      mimeType,
+    );
+
+    // Получаем длительность
+    const duration =
+      "duration" in message.media ? (message.media.duration as number) : 0;
+
+    const [audioMessage] = await db
+      .insert(telegramMessage)
+      .values({
+        conversationId: conversation.id,
+        sender: "CANDIDATE",
+        contentType: "VOICE", // Используем тот же тип для совместимости с транскрибацией
+        content: "Аудиофайл",
+        fileId,
+        voiceDuration: duration.toString(),
+        telegramMessageId: message.id.toString(),
+      })
+      .returning();
+
+    if (!audioMessage) {
+      throw new Error("Не удалось создать запись сообщения");
+    }
+
+    // Запускаем транскрибацию в фоне через Inngest HTTP API
+    if (env.INNGEST_EVENT_KEY) {
+      await fetch(
+        `${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "telegram/voice.transcribe",
+            data: {
+              messageId: audioMessage.id,
+              fileId,
+            },
+          }),
+        },
+      );
+    } else {
+      console.warn("⚠️ INNGEST_EVENT_KEY не установлен, событие не отправлено");
+    }
+
+    // Имитируем прослушивание (длительность аудио + время на обдумывание)
+    const listeningTime = Math.min(duration * 1000, 10000);
+    await humanDelay(listeningTime, listeningTime + 2000);
+
+    // НЕ отправляем автоматический ответ сразу
+    // Бот ответит после анализа через Inngest
+  } catch (error) {
+    console.error("Ошибка при обработке аудиофайла:", error);
+
+    await humanDelay(800, 1500);
+
+    // Естественная реакция на ошибку
+    const errorResponses = [
+      "Не удалось открыть файл, можешь записать голосовое?",
+      "Что-то не так с файлом, попробуй голосовым?",
+      "Не смог прослушать файл, запиши голосовое?",
+      "Хм, не получилось открыть. Попробуй голосовым?",
+    ];
+
+    const errorResponse = randomChoice(errorResponses);
+    await client.sendText(message.chat.id, errorResponse);
+  }
+}
+
+/**
  * Создать обработчик обновлений для MTProto клиента
  */
 export function createBotHandler(client: TelegramClient) {
@@ -394,6 +515,12 @@ export function createBotHandler(client: TelegramClient) {
       // Проверяем голосовое сообщение
       if (message.media?.type === "voice") {
         await handleVoiceMessage(client, message);
+        return;
+      }
+
+      // Проверяем аудиофайл
+      if (message.media?.type === "audio") {
+        await handleAudioFile(client, message);
         return;
       }
 
