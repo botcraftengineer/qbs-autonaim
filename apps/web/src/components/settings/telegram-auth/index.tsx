@@ -102,6 +102,11 @@ export function TelegramAuthDialog({
           toast.error(errorText);
           form2.reset();
           setSessionData("");
+        } else if (err.message.includes("уже подключен")) {
+          toast.error(
+            "В этом workspace уже подключен Telegram аккаунт. Удалите существующий аккаунт перед добавлением нового.",
+          );
+          handleClose();
         } else {
           toast.error(err.message || "Ошибка авторизации");
         }
@@ -119,7 +124,14 @@ export function TelegramAuthDialog({
         handleClose();
       },
       onError: (err) => {
-        toast.error(err.message || "Неверный пароль");
+        if (err.message.includes("уже подключен")) {
+          toast.error(
+            "В этом workspace уже подключен Telegram аккаунт. Удалите существующий аккаунт перед добавлением нового.",
+          );
+          handleClose();
+        } else {
+          toast.error(err.message || "Неверный пароль");
+        }
       },
     }),
   );

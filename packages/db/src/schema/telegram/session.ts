@@ -1,13 +1,22 @@
 import { sql } from "drizzle-orm";
-import { jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { workspace } from "../workspace/workspace";
 
 export const telegramSession = pgTable("telegram_sessions", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
   // Workspace к которому принадлежит сессия
+  // Один workspace - один Telegram аккаунт
   workspaceId: text("workspace_id")
     .notNull()
+    .unique()
     .references(() => workspace.id, { onDelete: "cascade" }),
 
   // API ID и Hash приложения
@@ -35,7 +44,7 @@ export const telegramSession = pgTable("telegram_sessions", {
   }>(),
 
   // Активна ли сессия
-  isActive: text("is_active").default("true").notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
 
   // Ошибка авторизации (если сессия стала невалидной)
   authError: text("auth_error"),

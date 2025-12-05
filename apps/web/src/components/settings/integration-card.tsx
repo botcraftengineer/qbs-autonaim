@@ -2,36 +2,33 @@
 
 import { Badge, Button, Card } from "@selectio/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Edit, Globe, Plus, Trash2, XCircle } from "lucide-react";
+import { CheckCircle2, Edit, Plus, Trash2, XCircle } from "lucide-react";
 import type { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
-
-interface Integration {
-  id: string;
-  type: string;
-  name: string;
-  isActive: string;
-  lastUsedAt: Date | null;
-  hasCookies: boolean;
-  hasCredentials: boolean;
-  email?: string | null;
-}
+import { IntegrationIcon } from "../ui/integration-icon";
 
 interface IntegrationCardProps {
   availableIntegration: (typeof AVAILABLE_INTEGRATIONS)[number];
-  integration?: Integration;
+  integration?: {
+    id: string;
+    type: string;
+    name: string;
+    isActive: boolean;
+    lastUsedAt: Date | null;
+    hasCookies: boolean;
+    hasCredentials: boolean;
+    email?: string | null;
+  };
+  onCreate: () => void;
   onEdit: () => void;
   workspaceId: string;
   userRole?: string;
 }
 
-const INTEGRATION_ICONS: Record<string, React.ReactNode> = {
-  hh: <Globe className="h-5 w-5" />,
-};
-
 export function IntegrationCard({
   availableIntegration,
   integration,
+  onCreate,
   onEdit,
   workspaceId,
   userRole,
@@ -53,7 +50,7 @@ export function IntegrationCard({
     }),
   );
 
-  const isActive = integration?.isActive === "true";
+  const isActive = integration?.isActive === true;
   const isConnected = !!integration;
 
   return (
@@ -61,9 +58,10 @@ export function IntegrationCard({
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
           <div className="rounded-lg bg-muted p-2 sm:p-3 shrink-0">
-            {INTEGRATION_ICONS[availableIntegration.type] || (
-              <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
-            )}
+            <IntegrationIcon
+              type={availableIntegration.type as "hh" | "telegram"}
+              className="h-4 w-4 sm:h-5 sm:w-5"
+            />
           </div>
           <div className="space-y-1 flex-1 min-w-0">
             <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
@@ -144,7 +142,7 @@ export function IntegrationCard({
                 </Button>
               </>
             ) : (
-              <Button size="sm" onClick={onEdit} className="w-full sm:w-auto">
+              <Button size="sm" onClick={onCreate} className="w-full sm:w-auto">
                 <Plus className="h-4 w-4 mr-2" />
                 Подключить
               </Button>

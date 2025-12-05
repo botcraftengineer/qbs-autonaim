@@ -55,6 +55,8 @@ export async function upsertIntegration(data: NewIntegration) {
     return updated;
   }
 
+  // При создании новой интеграции проверяем уникальность через БД
+  // Constraint workspaceTypeUnique автоматически выбросит ошибку если уже существует
   const [created] = await db
     .insert(integration)
     .values(encryptedData)

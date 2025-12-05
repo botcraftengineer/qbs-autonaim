@@ -36,7 +36,8 @@ import { useTRPC } from "~/trpc/react";
 interface IntegrationDialogProps {
   open: boolean;
   onClose: () => void;
-  editingType: string | null;
+  selectedType: string | null;
+  isEditing: boolean;
 }
 
 const integrationFormSchema = z.object({
@@ -57,7 +58,8 @@ const INTEGRATION_TYPES = AVAILABLE_INTEGRATIONS.map((int) => ({
 export function IntegrationDialog({
   open,
   onClose,
-  editingType,
+  selectedType,
+  isEditing,
 }: IntegrationDialogProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -69,25 +71,46 @@ export function IntegrationDialog({
     trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
   );
 
+  const { data: integrations } = useQuery({
+    ...trpc.integration.list.queryOptions({
+      workspaceId: workspaceData?.workspace?.id || "",
+    }),
+    enabled: !!workspaceData?.workspace?.id && isEditing,
+  });
+
+  const existingIntegration = integrations?.find(
+    (i) => i.type === selectedType,
+  );
+
   const form = useForm<IntegrationFormValues>({
     resolver: zodResolver(integrationFormSchema),
     defaultValues: {
-      type: editingType || "hh",
+      type: selectedType || "hh",
       name: "",
       email: "",
       password: "",
     },
   });
 
-  const selectedType = INTEGRATION_TYPES.find(
+  const integrationType = INTEGRATION_TYPES.find(
     (t) => t.value === form.watch("type"),
   );
 
   useEffect(() => {
-    if (editingType) {
-      form.setValue("type", editingType);
+    if (selectedType) {
+      form.setValue("type", selectedType);
+      if (isEditing && existingIntegration) {
+        form.setValue("name", existingIntegration.name || "");
+        // Backend расшифровывает credentials и возвращает email как отдельное поле
+        const email = (existingIntegration as { email?: string | null }).email;
+        form.setValue("email", email || "");
+      } else if (!isEditing) {
+        form.setValue("name", "");
+        form.setValue("email", "");
+        form.setValue("password", "");
+      }
     }
-  }, [editingType, form]);
+  }, [selectedType, isEditing, existingIntegration, form]);
 
   const createMutation = useMutation(
     trpc.integration.create.mutationOptions({
@@ -103,7 +126,33 @@ export function IntegrationDialog({
         handleClose();
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось создать интеграцию");
+        const message = err.message || "Не удалось создать интеграцию";
+        if (message.includes("unique") || message.includes("уже существует")) {
+          toast.error(
+            "Интеграция этого типа уже подключена к workspace. Удалите существующую интеграцию перед добавлением новой.",
+          );
+        } else {
+          toast.error(message);
+        }
+      },
+    }),
+  );
+
+  const updateMutation = useMutation(
+    trpc.integration.update.mutationOptions({
+      onSuccess: () => {
+        toast.success("Интеграция успешно обновлена");
+        if (workspaceData?.workspace?.id) {
+          queryClient.invalidateQueries({
+            queryKey: trpc.integration.list.queryKey({
+              workspaceId: workspaceData.workspace.id,
+            }),
+          });
+        }
+        handleClose();
+      },
+      onError: (err) => {
+        toast.error(err.message || "Не удалось обновить интеграцию");
       },
     }),
   );
@@ -120,15 +169,21 @@ export function IntegrationDialog({
       return;
     }
 
-    createMutation.mutate({
+    const payload = {
       workspaceId: workspaceData.workspace.id,
       type: data.type,
-      name: data.name || selectedType?.label || "",
+      name: data.name || integrationType?.label || "",
       credentials: {
         email: data.email,
         password: data.password,
       },
-    });
+    };
+
+    if (isEditing) {
+      updateMutation.mutate(payload);
+    } else {
+      createMutation.mutate(payload);
+    }
   };
 
   return (
@@ -140,11 +195,12 @@ export function IntegrationDialog({
         <DialogHeader className="space-y-3">
           <DialogTitle className="text-2xl font-semibold flex items-center gap-2">
             <Briefcase className="h-6 w-6 text-primary" />
-            {editingType ? "Редактировать" : "Подключить"} интеграцию
+            {isEditing ? "Редактировать" : "Подключить"} интеграцию
           </DialogTitle>
           <DialogDescription className="text-base">
-            Подключите внешний сервис для автоматизации работы с вакансиями и
-            откликами
+            {isEditing
+              ? "Обновите данные интеграции для продолжения работы"
+              : "Подключите внешний сервис для автоматизации работы с вакансиями и откликами"}
           </DialogDescription>
         </DialogHeader>
 
@@ -171,7 +227,7 @@ export function IntegrationDialog({
                   <Select
                     onValueChange={field.onChange}
                     defaultValue={field.value}
-                    disabled={!!editingType}
+                    disabled={isEditing}
                   >
                     <FormControl>
                       <SelectTrigger className="h-11">
@@ -202,7 +258,7 @@ export function IntegrationDialog({
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder={selectedType?.label}
+                      placeholder={integrationType?.label}
                       className="h-11"
                       {...field}
                     />
@@ -288,10 +344,16 @@ export function IntegrationDialog({
               </Button>
               <Button
                 type="submit"
-                disabled={createMutation.isPending}
+                disabled={createMutation.isPending || updateMutation.isPending}
                 className="h-11"
               >
-                {createMutation.isPending ? "Подключение..." : "Подключить"}
+                {isEditing
+                  ? updateMutation.isPending
+                    ? "Обновление..."
+                    : "Обновить"
+                  : createMutation.isPending
+                    ? "Подключение..."
+                    : "Подключить"}
               </Button>
             </DialogFooter>
           </form>

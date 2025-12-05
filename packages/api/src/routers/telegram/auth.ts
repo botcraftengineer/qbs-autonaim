@@ -107,6 +107,19 @@ export const signInRouter = protectedProcedure
   )
   .mutation(async ({ input }) => {
     try {
+      // Проверяем, есть ли уже сессия для этого workspace
+      const existingSession = await db.query.telegramSession.findFirst({
+        where: eq(telegramSession.workspaceId, input.workspaceId),
+      });
+
+      if (existingSession) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "В этом workspace уже подключен Telegram аккаунт. Удалите существующий аккаунт перед добавлением нового.",
+        });
+      }
+
       const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.signIn({
         apiId: input.apiId,
@@ -177,6 +190,19 @@ export const checkPasswordRouter = protectedProcedure
   )
   .mutation(async ({ input }) => {
     try {
+      // Проверяем, есть ли уже сессия для этого workspace
+      const existingSession = await db.query.telegramSession.findFirst({
+        where: eq(telegramSession.workspaceId, input.workspaceId),
+      });
+
+      if (existingSession) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            "В этом workspace уже подключен Telegram аккаунт. Удалите существующий аккаунт перед добавлением нового.",
+        });
+      }
+
       const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.checkPassword({
         apiId: input.apiId,
@@ -236,7 +262,7 @@ export const getSessionsRouter = protectedProcedure
       id: s.id,
       phone: s.phone,
       userInfo: s.userInfo,
-      isActive: s.isActive === "true",
+      isActive: s.isActive,
       authError: s.authError,
       authErrorAt: s.authErrorAt,
       lastUsedAt: s.lastUsedAt,
@@ -297,7 +323,7 @@ export const getSessionStatusRouter = protectedProcedure
     return {
       id: session.id,
       phone: session.phone,
-      isActive: session.isActive === "true",
+      isActive: session.isActive,
       authError: session.authError,
       authErrorAt: session.authErrorAt,
       authErrorNotifiedAt: session.authErrorNotifiedAt,
@@ -318,7 +344,7 @@ export const clearAuthErrorRouter = protectedProcedure
         authError: null,
         authErrorAt: null,
         authErrorNotifiedAt: null,
-        isActive: "true",
+        isActive: true,
       })
       .where(
         and(
@@ -379,7 +405,7 @@ export const reauthorizeSessionRouter = protectedProcedure
             username: result.user.username,
             phone: result.user.phone,
           },
-          isActive: "true",
+          isActive: true,
           authError: null,
           authErrorAt: null,
           authErrorNotifiedAt: null,

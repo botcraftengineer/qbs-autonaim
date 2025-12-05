@@ -15,7 +15,8 @@ export default function IntegrationsPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingType, setEditingType] = useState<string | null>(null);
+  const [selectedType, setSelectedType] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const workspaceQueryOptions = api.workspace.bySlug.queryOptions({
     slug: workspaceSlug,
@@ -33,14 +34,22 @@ export default function IntegrationsPage() {
     enabled: !!workspaceId,
   });
 
+  const handleCreate = (type: string) => {
+    setSelectedType(type);
+    setIsEditing(false);
+    setDialogOpen(true);
+  };
+
   const handleEdit = (type: string) => {
-    setEditingType(type);
+    setSelectedType(type);
+    setIsEditing(true);
     setDialogOpen(true);
   };
 
   const handleClose = () => {
     setDialogOpen(false);
-    setEditingType(null);
+    setSelectedType(null);
+    setIsEditing(false);
   };
 
   if (isLoading) {
@@ -67,6 +76,7 @@ export default function IntegrationsPage() {
               key={availableIntegration.type}
               availableIntegration={availableIntegration}
               integration={existingIntegration}
+              onCreate={() => handleCreate(availableIntegration.type)}
               onEdit={() => handleEdit(availableIntegration.type)}
               workspaceId={workspaceId}
               userRole={userRole}
@@ -78,7 +88,8 @@ export default function IntegrationsPage() {
       <IntegrationDialog
         open={dialogOpen}
         onClose={handleClose}
-        editingType={editingType}
+        selectedType={selectedType}
+        isEditing={isEditing}
       />
     </div>
   );
