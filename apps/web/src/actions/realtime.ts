@@ -47,3 +47,18 @@ export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
 
   return token;
 }
+
+/**
+ * Server action для получения токена подписки на Realtime канал проверки интеграций
+ */
+export async function fetchVerifyIntegrationToken(workspaceId: string) {
+  const { inngest } = await import("@selectio/jobs/client");
+  const { verifyIntegrationChannel } = await import("@selectio/jobs/channels");
+
+  const token = await getSubscriptionToken(inngest, {
+    channel: verifyIntegrationChannel(workspaceId),
+    topics: ["integration-verify"],
+  });
+
+  return token;
+}
