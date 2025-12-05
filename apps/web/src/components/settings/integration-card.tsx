@@ -1,8 +1,22 @@
 "use client";
 
-import { Badge, Button, Card } from "@selectio/ui";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  Badge,
+  Button,
+  Card,
+} from "@selectio/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Edit, Plus, Trash2, XCircle } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
 import type { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
 import { IntegrationIcon } from "../ui/integration-icon";
@@ -35,20 +49,31 @@ export function IntegrationCard({
 }: IntegrationCardProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const canEdit = userRole === "owner" || userRole === "admin";
 
   const deleteMutation = useMutation(
     trpc.integration.delete.mutationOptions({
       onSuccess: () => {
-        // Инвалидируем все запросы integration.list
+        toast.success("Интеграция успешно удалена");
         queryClient.invalidateQueries({
-          predicate: (query) =>
-            query.queryKey[0] === "integration" && query.queryKey[1] === "list",
+          queryKey: trpc.integration.list.queryKey({ workspaceId }),
         });
+        setDeleteDialogOpen(false);
+      },
+      onError: (error) => {
+        toast.error(`Ошибка удаления: ${error.message}`);
       },
     }),
   );
+
+  const handleDelete = () => {
+    deleteMutation.mutate({
+      type: availableIntegration.type,
+      workspaceId,
+    });
+  };
 
   const isActive = integration?.isActive === true;
   const isConnected = !!integration;
@@ -129,13 +154,7 @@ export function IntegrationCard({
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    deleteMutation.mutate({
-                      type: availableIntegration.type,
-                      workspaceId,
-                    })
-                  }
-                  disabled={deleteMutation.isPending}
+                  onClick={() => setDeleteDialogOpen(true)}
                 >
                   <Trash2 className="h-4 w-4" />
                   <span className="ml-2 hidden sm:inline">Удалить</span>
@@ -154,6 +173,31 @@ export function IntegrationCard({
           )}
         </div>
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить интеграцию?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите удалить интеграцию{" "}
+              <span className="font-medium">{availableIntegration.name}</span>?
+              Все связанные данные будут удалены. Это действие нельзя отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Отмена
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Удаление…" : "Удалить"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
