@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
 import { api } from "~/trpc/server";
@@ -28,7 +28,7 @@ export default async function WorkspaceLayout({
   );
 
   if (!currentWorkspace) {
-    redirect("/access-denied");
+    notFound();
   }
 
   return <>{children}</>;
