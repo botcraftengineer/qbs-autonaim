@@ -39,8 +39,13 @@ export async function triggerVerifyHHCredentials(
       },
     });
   } catch (error) {
+    const email = validationResult.data.email;
+    const maskedEmail = email
+      ? `${email[0]}***@${email.split("@")[1]}`
+      : "unknown";
+
     console.error("Failed to send verification event:", {
-      email: validationResult.data.email,
+      emailMasked: maskedEmail,
       workspaceId: validationResult.data.workspaceId,
       error: error instanceof Error ? error.message : "Unknown error",
     });
