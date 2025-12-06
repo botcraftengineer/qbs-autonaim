@@ -1,6 +1,6 @@
 import { buildTelegramUsernameExtractionPrompt } from "@selectio/prompts";
 import { generateText } from "../../lib/ai-client";
-import { AI, TELEGRAM, createLogger } from "../base";
+import { AI, createLogger, TELEGRAM } from "../base";
 
 const logger = createLogger("TelegramUsername");
 
@@ -43,11 +43,11 @@ export async function extractTelegramUsername(
 
     // Validate the username format
     if (!TELEGRAM.USERNAME_PATTERN.test(cleanedText)) {
-      logger.warn(`Invalid Telegram username format: ${cleanedText}, ignoring`);
+      logger.warn("Invalid Telegram username format detected, ignoring");
       return null;
     }
 
-    logger.info(`Extracted Telegram username: ${cleanedText}`);
+    logger.info("Telegram username extracted successfully");
     return cleanedText;
   } catch (error) {
     logger.error("Error extracting Telegram username", { error });

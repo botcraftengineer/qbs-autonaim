@@ -1,7 +1,7 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@selectio/config";
 import { experimental_transcribe as transcribe } from "ai";
-import { type Result, createLogger, err, ok, tryCatch } from "../base";
+import { createLogger, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("Transcription");
 

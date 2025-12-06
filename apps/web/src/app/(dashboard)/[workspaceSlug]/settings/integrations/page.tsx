@@ -104,6 +104,9 @@ export default function IntegrationsPage() {
           open={!!verifyDialogType}
           onClose={() => setVerifyDialogType(null)}
           workspaceId={workspaceId}
+          integrationId={
+            integrations?.find((i) => i.type === verifyDialogType)?.id || ""
+          }
           integrationType={verifyDialogType}
           integrationName={
             AVAILABLE_INTEGRATIONS.find((i) => i.type === verifyDialogType)

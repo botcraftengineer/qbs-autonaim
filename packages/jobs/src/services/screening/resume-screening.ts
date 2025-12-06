@@ -5,9 +5,8 @@ import {
 import type {
   ResumeScreeningData,
   ScreeningResult,
-  VacancyRequirements,
 } from "../../types/screening";
-import { type Result, createLogger, err, ok } from "../base";
+import { createLogger, err, ok, type Result } from "../base";
 import { getVacancyRequirements } from "../vacancy";
 
 const logger = createLogger("ResumeScreening");
@@ -32,7 +31,10 @@ export async function prepareScreeningPrompt(
   }
 
   // Build full prompt
-  const prompt = buildFullResumeScreeningPrompt(vacancyRequirements, resumeData);
+  const prompt = buildFullResumeScreeningPrompt(
+    vacancyRequirements,
+    resumeData,
+  );
   return ok(prompt);
 }
 
@@ -40,20 +42,24 @@ export async function prepareScreeningPrompt(
  * Parses AI response into structured result
  *
  * @param aiResponse - AI response (JSON string or object)
- * @returns Structured screening result
+ * @returns Result containing structured screening result or error
  */
 export function parseScreeningResult(
   aiResponse: string | ScreeningResult,
-): ScreeningResult {
+): Result<ScreeningResult> {
   if (typeof aiResponse === "string") {
     try {
-      return JSON.parse(aiResponse) as ScreeningResult;
+      const parsed = JSON.parse(aiResponse) as ScreeningResult;
+      return ok(parsed);
     } catch (error) {
-      throw new Error(`Failed to parse AI response: ${error}`);
+      logger.error("Failed to parse AI response", { error });
+      return err(
+        `Failed to parse AI response: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
-  return aiResponse;
+  return ok(aiResponse);
 }
 
 /**
@@ -86,9 +92,9 @@ export function validateScreeningResult(result: ScreeningResult): boolean {
  *     model: "gpt-4",
  *     messages: [{ role: "user", content: result.data }]
  *   });
- *   const screening = parseScreeningResult(aiResponse.choices[0].message.content);
- *   if (validateScreeningResult(screening)) {
- *     console.log("Result:", screening);
+ *   const parseResult = parseScreeningResult(aiResponse.choices[0].message.content);
+ *   if (parseResult.success && validateScreeningResult(parseResult.data)) {
+ *     console.log("Result:", parseResult.data);
  *   }
  * }
  * ```

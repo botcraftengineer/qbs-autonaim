@@ -1,52 +1,52 @@
 /**
- * Shared constants for services
- * 
- * Note: For RESPONSE_STATUS, use the constants from @selectio/db/schema
- * as they define the actual database values.
+ * Общие константы для сервисов
+ *
+ * Примечание: Для RESPONSE_STATUS используйте константы из @selectio/db/schema,
+ * так как они определяют фактические значения базы данных.
  */
 
 export const INTERVIEW = {
-  /** Maximum number of interview questions */
+  /** Максимальное количество вопросов в интервью */
   MAX_QUESTIONS: 4,
-  /** Default fallback score (1-5 scale) */
+  /** Резервная оценка по умолчанию (шкала 1-5) */
   DEFAULT_FALLBACK_SCORE: 3,
-  /** Default fallback detailed score (0-100 scale) */
+  /** Резервная детальная оценка по умолчанию (шкала 0-100) */
   DEFAULT_FALLBACK_DETAILED_SCORE: 50,
-  /** Default fallback question when AI parsing fails */
+  /** Резервный вопрос по умолчанию при сбое парсинга AI */
   DEFAULT_FALLBACK_QUESTION: "Расскажи подробнее о своем опыте",
 } as const;
 
 export const SCREENING = {
-  /** Minimum score (0-100 scale) */
+  /** Минимальная оценка (шкала 0-100) */
   MIN_SCORE: 0,
-  /** Maximum score (0-100 scale) */
+  /** Максимальная оценка (шкала 0-100) */
   MAX_SCORE: 100,
-  /** Minimum simple score (1-5 scale) */
+  /** Минимальная простая оценка (шкала 1-5) */
   MIN_SIMPLE_SCORE: 1,
-  /** Maximum simple score (1-5 scale) */
+  /** Максимальная простая оценка (шкала 1-5) */
   MAX_SIMPLE_SCORE: 5,
 } as const;
 
 export const AI = {
-  /** Temperature for deterministic responses */
+  /** Температура для детерминированных ответов */
   TEMPERATURE_DETERMINISTIC: 0,
-  /** Temperature for low creativity */
+  /** Температура для низкой креативности */
   TEMPERATURE_LOW: 0.1,
-  /** Temperature for moderate creativity */
+  /** Температура для умеренной креативности */
   TEMPERATURE_MODERATE: 0.3,
-  /** Temperature for higher creativity (welcome messages, questions) */
+  /** Температура для повышенной креативности (приветственные сообщения, вопросы) */
   TEMPERATURE_CREATIVE: 0.7,
-  /** Temperature for very creative responses */
+  /** Температура для очень креативных ответов */
   TEMPERATURE_HIGH: 0.8,
 } as const;
 
 export const TELEGRAM = {
-  /** Minimum username length */
+  /** Минимальная длина имени пользователя */
   MIN_USERNAME_LENGTH: 5,
-  /** Username regex pattern */
+  /** Шаблон регулярного выражения для имени пользователя */
   USERNAME_PATTERN: /^[a-zA-Z0-9_]{5,}$/,
 } as const;
 
+export type { ResponseStatus } from "@selectio/db/schema";
 // Re-export RESPONSE_STATUS from database schema for consistency
 export { RESPONSE_STATUS } from "@selectio/db/schema";
-export type { ResponseStatus } from "@selectio/db/schema";

@@ -8,7 +8,7 @@ import {
 import { buildCandidateWelcomePrompt } from "@selectio/prompts";
 import { stripHtml } from "string-strip-html";
 import { generateText } from "../../lib/ai-client";
-import { type Result, AI, createLogger, err, tryCatch } from "../base";
+import { AI, createLogger, err, type Result, tryCatch } from "../base";
 
 const logger = createLogger("CandidateWelcome");
 
@@ -32,11 +32,23 @@ export async function generateWelcomeMessage(
       throw new Error(`Response ${responseId} not found`);
     }
 
+    if (!response.vacancy) {
+      throw new Error(`Vacancy not found for response ${responseId}`);
+    }
+
     const screening = await db.query.responseScreening.findFirst({
       where: eq(responseScreening.responseId, responseId),
     });
 
-    const [company] = await db.select().from(companySettings).limit(1);
+    const company = await db.query.companySettings.findFirst({
+      where: eq(companySettings.workspaceId, response.vacancy.workspaceId),
+    });
+
+    if (!company) {
+      throw new Error(
+        `Company settings not found for workspace ${response.vacancy.workspaceId}`,
+      );
+    }
 
     return { response, screening, company };
   }, "Failed to fetch data for welcome message");

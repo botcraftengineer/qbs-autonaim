@@ -1,8 +1,8 @@
 import { db, eq } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
-import { type Result, createLogger, err, ok, tryCatch } from "../base";
-import type { HHContacts } from "../types";
+import { createLogger, err, ok, type Result, tryCatch } from "../base";
 import { extractTelegramUsername } from "../messaging/telegram-username";
+import type { HHContacts } from "../types";
 
 const logger = createLogger("ContactsExtractor");
 
@@ -70,7 +70,7 @@ export async function extractContactsFromResponse(
     logger.info("Extracting Telegram username from contacts...");
     telegramUsername = await extractTelegramUsername(contacts);
     if (telegramUsername) {
-      logger.info(`Found Telegram username: @${telegramUsername}`);
+      logger.info("Telegram username found and extracted");
     } else {
       logger.info("Telegram username not found in contacts");
     }
@@ -81,7 +81,7 @@ export async function extractContactsFromResponse(
     logger.info("Extracting phone from contacts...");
     phone = extractPhone(contacts);
     if (phone) {
-      logger.info(`Found phone: ${phone}`);
+      logger.info("Phone number found and extracted");
     } else {
       logger.info("Phone not found in contacts");
     }
@@ -106,9 +106,13 @@ export async function extractContactsFromResponse(
       return err(updateResult.error);
     }
 
-    logger.info(`Contacts updated for response ${response.candidateName || responseId}`);
+    logger.info(
+      `Contacts updated for response ${response.candidateName || responseId}`,
+    );
   } else {
-    logger.info(`No new contacts found for ${response.candidateName || responseId}`);
+    logger.info(
+      `No new contacts found for ${response.candidateName || responseId}`,
+    );
   }
 
   return ok({ telegramUsername, phone });
@@ -128,7 +132,9 @@ interface ExtractContactsBatchResult {
 export async function extractContactsFromResponses(
   responseIds: string[],
 ): Promise<Result<ExtractContactsBatchResult>> {
-  logger.info(`Starting contacts extraction for ${responseIds.length} responses`);
+  logger.info(
+    `Starting contacts extraction for ${responseIds.length} responses`,
+  );
 
   const results: ExtractContactsBatchResult = {
     total: responseIds.length,

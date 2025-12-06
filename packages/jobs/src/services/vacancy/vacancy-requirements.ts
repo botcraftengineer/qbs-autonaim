@@ -6,7 +6,7 @@ import { generateText } from "../../lib/ai-client";
 import { vacancyRequirementsSchema } from "../../schemas/vacancy-requirements.schema";
 import type { VacancyRequirements } from "../../types/screening";
 import { extractJsonFromText } from "../../utils/json-extractor";
-import { type Result, AI, createLogger, err, ok, tryCatch } from "../base";
+import { AI, createLogger, err, type Result, tryCatch } from "../base";
 
 const logger = createLogger("VacancyRequirements");
 
@@ -17,7 +17,7 @@ function parseRequirements(response: string): VacancyRequirements {
   const extracted = extractJsonFromText(response);
 
   if (!extracted) {
-    throw new Error("JSON not found in AI response");
+    throw new Error("JSON не найден в ответе ИИ");
   }
 
   const validated = vacancyRequirementsSchema.parse(extracted);
@@ -45,7 +45,7 @@ export async function extractVacancyRequirements(
 
   const vacancyData = vacancyResult.data;
   if (!vacancyData) {
-    return err(`Vacancy ${vacancyId} not found`);
+    return err(`Вакансия ${vacancyId} не найдена`);
   }
 
   const prompt = buildVacancyRequirementsExtractionPrompt(

@@ -2,7 +2,7 @@ import { eq, isNull, or } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { vacancy } from "@selectio/db/schema";
 import type { VacancyData } from "../../parsers/types";
-import { type Result, createLogger, err, ok, tryCatch } from "../base";
+import { createLogger, type Result, tryCatch } from "../base";
 import { triggerVacancyRequirementsExtraction } from "../triggers";
 
 const logger = createLogger("VacancyRepository");
@@ -110,22 +110,14 @@ export async function saveBasicVacancy(
   workspaceId: string,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
-    const existingVacancy = await db.query.vacancy.findFirst({
-      where: eq(vacancy.id, vacancyData.id),
-    });
-
     const dataToSave = mapVacancyData(vacancyData, workspaceId, "");
 
-    if (existingVacancy) {
-      await db
-        .update(vacancy)
-        .set(dataToSave)
-        .where(eq(vacancy.id, vacancyData.id));
-      logger.info(`Basic info updated: ${vacancyData.title}`);
-    } else {
-      await db.insert(vacancy).values(dataToSave);
-      logger.info(`Basic info saved: ${vacancyData.title}`);
-    }
+    await db.insert(vacancy).values(dataToSave).onConflictDoUpdate({
+      target: vacancy.id,
+      set: dataToSave,
+    });
+
+    logger.info(`Basic info saved/updated: ${vacancyData.title}`);
   }, `Failed to save basic vacancy ${vacancyData.title}`);
 }
 
@@ -147,10 +139,13 @@ export async function updateVacancyDescription(
     // Trigger requirements extraction if description is not empty
     if (description?.trim()) {
       logger.info(`Triggering requirements extraction: ${vacancyId}`);
-      await triggerVacancyRequirementsExtraction({
-        vacancyId,
-        description,
-      });
+      await triggerVacancyRequirementsExtraction(
+        {
+          vacancyId,
+          description,
+        },
+        { swallow: true },
+      );
     }
   }, `Failed to update vacancy description ${vacancyId}`);
 }
@@ -163,30 +158,25 @@ export async function saveVacancyToDb(
   workspaceId: string,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
-    const existingVacancy = await db.query.vacancy.findFirst({
-      where: eq(vacancy.id, vacancyData.id),
-    });
-
     const dataToSave = mapVacancyData(vacancyData, workspaceId);
 
-    if (existingVacancy) {
-      await db
-        .update(vacancy)
-        .set(dataToSave)
-        .where(eq(vacancy.id, vacancyData.id));
-      logger.info(`Vacancy updated: ${vacancyData.title}`);
-    } else {
-      await db.insert(vacancy).values(dataToSave);
-      logger.info(`Vacancy created: ${vacancyData.title}`);
-    }
+    await db.insert(vacancy).values(dataToSave).onConflictDoUpdate({
+      target: vacancy.id,
+      set: dataToSave,
+    });
+
+    logger.info(`Vacancy saved/updated: ${vacancyData.title}`);
 
     // Trigger requirements extraction if description is not empty
     if (vacancyData.description?.trim()) {
       logger.info(`Triggering requirements extraction: ${vacancyData.id}`);
-      await triggerVacancyRequirementsExtraction({
-        vacancyId: vacancyData.id,
-        description: vacancyData.description,
-      });
+      await triggerVacancyRequirementsExtraction(
+        {
+          vacancyId: vacancyData.id,
+          description: vacancyData.description,
+        },
+        { swallow: true },
+      );
     }
   }, `Failed to save vacancy ${vacancyData.id}`);
 }

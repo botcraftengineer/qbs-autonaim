@@ -220,6 +220,7 @@ export function IntegrationCard({
         open={verifyDialogOpen}
         onClose={() => setVerifyDialogOpen(false)}
         workspaceId={workspaceId}
+        integrationId={integration?.id || ""}
         integrationType={availableIntegration.type}
         integrationName={availableIntegration.name}
       />

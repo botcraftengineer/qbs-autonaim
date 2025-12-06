@@ -3,7 +3,13 @@ import { db } from "@selectio/db/client";
 import { file, vacancyResponse } from "@selectio/db/schema";
 import { uploadFile } from "@selectio/lib";
 import type { SaveResponseData } from "../../parsers/types";
-import { type Result, type ResponseStatus, RESPONSE_STATUS, createLogger, tryCatch } from "../base";
+import {
+  createLogger,
+  RESPONSE_STATUS,
+  type ResponseStatus,
+  type Result,
+  tryCatch,
+} from "../base";
 
 const logger = createLogger("ResponseRepository");
 
@@ -87,33 +93,34 @@ export async function saveBasicResponse(
   respondedAt?: Date,
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
-    const existingResponse = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeId, resumeId),
-    });
+    const result = await db
+      .insert(vacancyResponse)
+      .values({
+        vacancyId,
+        resumeId,
+        resumeUrl,
+        candidateName,
+        status: RESPONSE_STATUS.NEW,
+        experience: "",
+        contacts: null,
+        phone: null,
+        languages: "",
+        about: "",
+        education: "",
+        courses: "",
+        respondedAt,
+      })
+      .onConflictDoNothing({ target: vacancyResponse.resumeId });
 
-    if (existingResponse) {
+    const isNew = (result.rowCount ?? 0) > 0;
+
+    if (isNew) {
+      logger.info(`Basic info saved: ${candidateName}`);
+    } else {
       logger.info(`Skip: ${candidateName} (already in database)`);
-      return false;
     }
 
-    await db.insert(vacancyResponse).values({
-      vacancyId,
-      resumeId,
-      resumeUrl,
-      candidateName,
-      status: RESPONSE_STATUS.NEW,
-      experience: "",
-      contacts: null,
-      phone: null,
-      languages: "",
-      about: "",
-      education: "",
-      courses: "",
-      respondedAt,
-    });
-
-    logger.info(`Basic info saved: ${candidateName}`);
-    return true;
+    return isNew;
   }, `Failed to save basic response for ${candidateName}`);
 }
 
@@ -199,30 +206,28 @@ export async function saveResponseToDb(
   response: SaveResponseData,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
-    const existingResponse = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeId, response.resumeId),
-    });
+    const result = await db
+      .insert(vacancyResponse)
+      .values({
+        vacancyId: response.vacancyId,
+        resumeId: response.resumeId,
+        resumeUrl: response.resumeUrl,
+        candidateName: response.candidateName,
+        status: RESPONSE_STATUS.NEW,
+        experience: response.experience,
+        contacts: response.contacts,
+        phone: response.phone,
+        languages: response.languages,
+        about: response.about,
+        education: response.education,
+        courses: response.courses,
+      })
+      .onConflictDoNothing({ target: vacancyResponse.resumeId });
 
-    if (existingResponse) {
-      logger.info(`Response already exists: ${response.candidateName}`);
-      return;
+    if ((result.rowCount ?? 0) === 0) {
+      logger.info("Response already exists, skipped insert");
+    } else {
+      logger.info("Response saved successfully");
     }
-
-    await db.insert(vacancyResponse).values({
-      vacancyId: response.vacancyId,
-      resumeId: response.resumeId,
-      resumeUrl: response.resumeUrl,
-      candidateName: response.candidateName,
-      status: RESPONSE_STATUS.NEW,
-      experience: response.experience,
-      contacts: response.contacts,
-      phone: response.phone,
-      languages: response.languages,
-      about: response.about,
-      education: response.education,
-      courses: response.courses,
-    });
-
-    logger.info(`Response saved: ${response.candidateName}`);
   }, "Failed to save response");
 }

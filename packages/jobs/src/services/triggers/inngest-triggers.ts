@@ -4,20 +4,23 @@ import { createLogger } from "../base";
 const logger = createLogger("InngestTriggers");
 
 /**
- * Options for trigger creation
+ * Options for trigger functions
  */
 interface TriggerOptions {
-  /** Whether to rethrow errors */
-  rethrow?: boolean;
+  /** Whether to swallow errors instead of rethrowing them (default: false) */
+  swallow?: boolean;
 }
 
 /**
  * Triggers vacancy requirements extraction job via Inngest
  */
-export async function triggerVacancyRequirementsExtraction(data: {
-  vacancyId: string;
-  description: string;
-}): Promise<void> {
+export async function triggerVacancyRequirementsExtraction(
+  data: {
+    vacancyId: string;
+    description: string;
+  },
+  options: TriggerOptions = {},
+): Promise<void> {
   try {
     await inngest.send({
       name: "vacancy/requirements.extract",
@@ -26,15 +29,21 @@ export async function triggerVacancyRequirementsExtraction(data: {
     logger.info(`Event sent for vacancy: ${data.vacancyId}`);
   } catch (error) {
     logger.error("Error sending vacancy/requirements.extract", { error });
+    if (!options.swallow) {
+      throw error;
+    }
   }
 }
 
 /**
  * Triggers response screening job via Inngest
  */
-export async function triggerResponseScreening(data: {
-  responseId: string;
-}): Promise<void> {
+export async function triggerResponseScreening(
+  data: {
+    responseId: string;
+  },
+  options: TriggerOptions = {},
+): Promise<void> {
   try {
     await inngest.send({
       name: "response/screen",
@@ -43,15 +52,21 @@ export async function triggerResponseScreening(data: {
     logger.info(`Event sent for response: ${data.responseId}`);
   } catch (error) {
     logger.error("Error sending response/screen", { error });
+    if (!options.swallow) {
+      throw error;
+    }
   }
 }
 
 /**
  * Triggers active vacancies update job via Inngest
  */
-export async function triggerVacanciesUpdate(data: {
-  workspaceId: string;
-}): Promise<void> {
+export async function triggerVacanciesUpdate(
+  data: {
+    workspaceId: string;
+  },
+  options: TriggerOptions = {},
+): Promise<void> {
   try {
     await inngest.send({
       name: "vacancy/update.active",
@@ -60,6 +75,9 @@ export async function triggerVacanciesUpdate(data: {
     logger.info("Event sent for vacancies update");
   } catch (error) {
     logger.error("Error sending vacancy/update.active", { error });
+    if (!options.swallow) {
+      throw error;
+    }
   }
 }
 
