@@ -11,8 +11,8 @@ export const accountFormSchema = z.object({
       (val) => !val || val.startsWith("data:image/"),
       "Изображение должно быть в формате data URL",
     )
-    .nullable()
-    .optional(),
+    .optional()
+    .nullable(),
 });
 
 export type AccountFormValues = z.infer<typeof accountFormSchema>;

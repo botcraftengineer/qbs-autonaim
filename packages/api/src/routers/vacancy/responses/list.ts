@@ -16,6 +16,7 @@ export const list = protectedProcedure
       limit: z.number().min(1).max(100).default(50),
       sortField: z
         .enum(["createdAt", "score", "detailedScore", "status", "respondedAt"])
+        .optional()
         .nullable()
         .default(null),
       sortDirection: z.enum(["asc", "desc"]).default("desc"),

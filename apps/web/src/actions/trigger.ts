@@ -265,10 +265,10 @@ export async function triggerGenerateRequirements(
     });
     return { success: true as const };
   } catch (error) {
-    console.error("Failed to trigger generate-requirements:", error);
+    console.error("Не удалось запустить генерацию требований:", error);
     return {
       success: false as const,
-      error: "Failed to trigger requirements generation",
+      error: "Не удалось запустить генерацию требований",
     };
   }
 }
@@ -284,10 +284,10 @@ export async function triggerUpdateSingleVacancy(vacancyId: string) {
     });
     return { success: true as const };
   } catch (error) {
-    console.error("Failed to trigger update-single-vacancy:", error);
+    console.error("Не удалось запустить обновление вакансии:", error);
     return {
       success: false as const,
-      error: "Failed to trigger vacancy update",
+      error: "Не удалось запустить обновление вакансии",
     };
   }
 }

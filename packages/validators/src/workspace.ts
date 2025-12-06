@@ -14,15 +14,18 @@ export const createWorkspaceSchema = z.object({
     .max(50)
     .regex(/^[a-z0-9-]+$/, "Slug может содержать только буквы, цифры и дефис"),
   description: z.string().max(500).optional(),
-  website: z.string().url("Некорректный URL").optional().or(z.literal("")),
+  website: z.url({ error: "Некорректный URL" }).optional().or(z.literal("")),
   logo: z
-    .string()
-    .refine(
-      (val) => !val || val.startsWith("data:image/"),
-      "Логотип должен быть в формате data URL",
-    )
-    .optional()
-    .or(z.literal("")),
+    .union([
+      z
+        .string()
+        .refine(
+          (val) => !val || val.startsWith("data:image/"),
+          "Логотип должен быть в формате data URL",
+        ),
+      z.literal(""),
+    ])
+    .optional(),
 });
 
 export const updateWorkspaceSchema = z.object({
@@ -34,20 +37,23 @@ export const updateWorkspaceSchema = z.object({
     .regex(/^[a-z0-9-]+$/)
     .optional(),
   description: z.string().max(500).optional(),
-  website: z.string().url().optional().or(z.literal("")),
+  website: z.url().optional().or(z.literal("")),
   logo: z
-    .string()
-    .refine(
-      (val) => !val || val.startsWith("data:image/"),
-      "Логотип должен быть в формате data URL",
-    )
-    .optional()
-    .or(z.literal("")),
+    .union([
+      z
+        .string()
+        .refine(
+          (val) => !val || val.startsWith("data:image/"),
+          "Логотип должен быть в формате data URL",
+        ),
+      z.literal(""),
+    ])
+    .optional(),
 });
 
 export const addUserToWorkspaceSchema = z.object({
   workspaceId: workspaceIdSchema,
-  email: z.string().email("Некорректный email"),
+  email: z.email({ error: "Некорректный email" }),
   role: z.enum(["owner", "admin", "member"]).default("member"),
 });
 

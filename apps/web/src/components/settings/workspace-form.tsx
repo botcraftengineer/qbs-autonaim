@@ -30,7 +30,7 @@ const workspaceFormSchema = z.object({
     .min(1, "Slug обязателен")
     .max(48, "Максимум 48 символов")
     .regex(/^[a-z0-9-]+$/, "Только строчные буквы, цифры и дефисы"),
-  logo: z.string().nullable().optional(),
+  logo: z.string().optional().nullable(),
 });
 
 type WorkspaceFormValues = z.infer<typeof workspaceFormSchema>;

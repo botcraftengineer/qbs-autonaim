@@ -38,7 +38,7 @@ export const env = createEnv({
     DEEPSEEK_API_KEY: z.string().min(1).optional(),
     LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
     LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
-    LANGFUSE_BASE_URL: z.string().url().optional(),
+    LANGFUSE_BASE_URL: z.url().optional(),
 
     // Jobs
     PORT: z.string().optional().default("8000").transform(Number),

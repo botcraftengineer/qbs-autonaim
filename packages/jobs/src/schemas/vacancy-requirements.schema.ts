@@ -4,7 +4,7 @@ import { z } from "zod";
  * Zod схема для требований к опыту
  */
 const experienceYearsSchema = z.object({
-  min: z.number().nullable(),
+  min: z.number().optional().nullable(),
   description: z.string(),
 });
 

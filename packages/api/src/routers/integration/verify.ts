@@ -18,23 +18,23 @@ export const verifyIntegrationCredentials = protectedProcedure
     const result = await checkHHCredentials(email, password);
 
     if (!result.success) {
-        throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: result.error,
-        });
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: result.error,
+      });
     }
 
     const value = result.data;
-    
+
     if (!value.isValid) {
-        throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: value.error || "Неверные данные для входа",
-        });
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: value.error || "Неверные данные для входа",
+      });
     }
 
     return {
-        success: true,
-        isValid: true,
+      success: true,
+      isValid: true,
     };
   });

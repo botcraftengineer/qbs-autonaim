@@ -69,7 +69,7 @@ function InviteMemberModalContent({
   const handleInvite = () => {
     const emailTrimmed = email.trim();
 
-    const emailSchema = z.email("Введите корректный email");
+    const emailSchema = z.email({ error: "Введите корректный email" });
     const result = emailSchema.safeParse(emailTrimmed);
 
     if (!result.success) {

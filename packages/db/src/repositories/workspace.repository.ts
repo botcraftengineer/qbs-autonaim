@@ -194,7 +194,9 @@ export class WorkspaceRepository {
     const { z } = await import("zod");
 
     // Валидация email перед запросом в БД
-    const emailSchema = z.string().email("Некорректный формат email");
+    const emailSchema = z
+      .string()
+      .email({ message: "Некорректный формат email" });
     const validatedEmail = emailSchema.parse(email);
 
     const { user } = await import("../schema");

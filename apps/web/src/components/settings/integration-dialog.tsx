@@ -44,7 +44,7 @@ interface IntegrationDialogProps {
 const integrationFormSchema = z.object({
   type: z.string(),
   name: z.string().optional(),
-  email: z.string().email("Некорректный email"),
+  email: z.email({ error: "Некорректный email" }),
   password: z.string().min(1, "Пароль обязателен"),
 });
 
