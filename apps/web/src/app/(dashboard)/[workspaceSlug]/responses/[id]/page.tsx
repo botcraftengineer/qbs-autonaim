@@ -232,9 +232,10 @@ export default function ResponseDetailPage({
                       <CardTitle>О себе</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {response.about}
-                      </p>
+                      <div
+                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert"
+                        dangerouslySetInnerHTML={{ __html: response.about }}
+                      />
                     </CardContent>
                   </Card>
                 )}
@@ -245,9 +246,12 @@ export default function ResponseDetailPage({
                       <CardTitle>Опыт работы</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {response.experience}
-                      </p>
+                      <div
+                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert"
+                        dangerouslySetInnerHTML={{
+                          __html: response.experience,
+                        }}
+                      />
                     </CardContent>
                   </Card>
                 )}
@@ -258,9 +262,10 @@ export default function ResponseDetailPage({
                       <CardTitle>Образование</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                        {response.education}
-                      </p>
+                      <div
+                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert"
+                        dangerouslySetInnerHTML={{ __html: response.education }}
+                      />
                     </CardContent>
                   </Card>
                 )}
