@@ -1,11 +1,15 @@
 import axios from "axios";
-import { type Result, err, ok } from "../base";
+import { err, ok, type Result } from "../base";
 
 interface CheckHHCredentialsResult {
   isValid: boolean;
   cookies?: Array<{ name: string; value: string }>;
   error?: string;
 }
+
+const axiosInstance = axios.create({
+  timeout: 10000, // 10 seconds
+});
 
 /**
  * Checks HH credentials validity
@@ -22,7 +26,7 @@ export async function checkHHCredentials(
       .join("; ");
 
     // First do GET request to get XSRF token and initial cookies
-    const getResponse = await axios.get(
+    const getResponse = await axiosInstance.get(
       "https://hh.ru/account/login?backurl=%2F&role=employer",
       {
         headers: {
@@ -43,7 +47,7 @@ export async function checkHHCredentials(
     let xsrfToken = "";
 
     const allCookiesMap = new Map<string, string>();
-    
+
     // Fill with existing
     for (const c of existingCookies) {
       allCookiesMap.set(c.name, c.value);
@@ -51,17 +55,17 @@ export async function checkHHCredentials(
 
     // Update with new ones
     for (const cookieStr of setCookieHeaders) {
-      const parts = cookieStr.split(';');
+      const parts = cookieStr.split(";");
       if (parts.length > 0) {
         const nameValue = parts[0];
         if (nameValue) {
-            const [name, value] = nameValue.split('=');
-            if (name && value) {
-                allCookiesMap.set(name.trim(), value.trim());
-            }
+          const [name, value] = nameValue.split("=");
+          if (name && value) {
+            allCookiesMap.set(name.trim(), value.trim());
+          }
         }
       }
-      
+
       const match = cookieStr.match(/x-xsrftoken=([^;]+)/i);
       if (match?.[1]) {
         xsrfToken = match[1];
@@ -76,9 +80,9 @@ export async function checkHHCredentials(
         xsrfToken = existingXsrfCookie.value;
       }
     }
-    
-    if (!xsrfToken && getResponse.headers['x-xsrftoken']) {
-        xsrfToken = getResponse.headers['x-xsrftoken'] as string;
+
+    if (!xsrfToken && getResponse.headers["x-xsrftoken"]) {
+      xsrfToken = getResponse.headers["x-xsrftoken"] as string;
     }
 
     if (!xsrfToken) {
@@ -86,11 +90,11 @@ export async function checkHHCredentials(
     }
 
     const newCookieHeader = Array.from(allCookiesMap.entries())
-        .map(([name, value]) => `${name}=${value}`)
-        .join("; ");
+      .map(([name, value]) => `${name}=${value}`)
+      .join("; ");
 
     if (!password) {
-        return err("Password is required for verification");
+      return err("Password is required for verification");
     }
 
     const formData = new URLSearchParams();
@@ -101,7 +105,7 @@ export async function checkHHCredentials(
     formData.append("username", username);
     formData.append("password", password);
 
-    const postResponse = await axios.post(
+    const postResponse = await axiosInstance.post(
       "https://hh.ru/account/login?backurl=%2F&role=employer",
       formData.toString(),
       {
@@ -122,44 +126,47 @@ export async function checkHHCredentials(
 
     const isLoginPage =
       postResponse.request?.path?.includes("/login") ||
-      (typeof postResponse.data === 'string' && postResponse.data.includes("account.login")) ||
-      (postResponse.status === 302 && postResponse.headers.location?.includes("/login"));
+      (typeof postResponse.data === "string" &&
+        postResponse.data.includes("account.login")) ||
+      (postResponse.status === 302 &&
+        postResponse.headers.location?.includes("/login"));
 
     if (isLoginPage) {
       return ok({
-          isValid: false,
-          error: "Invalid login or password",
+        isValid: false,
+        error: "Invalid login or password",
       });
     }
 
     const finalExCookies = postResponse.headers["set-cookie"] || [];
     for (const cookieStr of finalExCookies) {
-        const parts = cookieStr.split(';');
-        if (parts.length > 0) {
-            const nameValue = parts[0];
-            if (nameValue) {
-                const [name, value] = nameValue.split('=');
-                if (name && value) {
-                    allCookiesMap.set(name.trim(), value.trim());
-                }
-            }
+      const parts = cookieStr.split(";");
+      if (parts.length > 0) {
+        const nameValue = parts[0];
+        if (nameValue) {
+          const [name, value] = nameValue.split("=");
+          if (name && value) {
+            allCookiesMap.set(name.trim(), value.trim());
+          }
         }
+      }
     }
 
-    const finalCookies = Array.from(allCookiesMap.entries()).map(([name, value]) => ({ name, value }));
+    const finalCookies = Array.from(allCookiesMap.entries()).map(
+      ([name, value]) => ({ name, value }),
+    );
 
     return ok({
       isValid: true,
       cookies: finalCookies,
       error: undefined,
     });
-
   } catch (error) {
-    const msg = error instanceof Error ? error.message : "Unknown error during verification";
+    const msg =
+      error instanceof Error
+        ? error.message
+        : "Unknown error during verification";
     console.error("checkHHCredentials error:", error);
     return err(msg);
   }
 }
-
-
-
