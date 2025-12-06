@@ -1,6 +1,10 @@
 "use client";
 
 import {
+  HR_SELECTION_STATUS_LABELS,
+  RESPONSE_STATUS_LABELS,
+} from "@selectio/db/schema";
+import {
   Badge,
   Button,
   Card,
@@ -12,7 +16,7 @@ import {
   Skeleton,
 } from "@selectio/ui";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ExternalLink, User } from "lucide-react";
+import { ArrowLeft, Download, ExternalLink, User } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
@@ -81,7 +85,7 @@ export default function ResponseDetailPage({
                   </Button>
                 </Link>
                 {response.conversation && (
-                  <Link href={`/${workspaceSlug}/responses/${id}/chat`}>
+                  <Link href={`/${workspaceSlug}/chat/${id}`}>
                     <Button variant="default" size="sm">
                       💬 Открыть чат
                     </Button>
@@ -119,7 +123,7 @@ export default function ResponseDetailPage({
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {response.resumeUrl && (
-                      <div>
+                      <div className="flex gap-2">
                         <Link
                           href={response.resumeUrl}
                           target="_blank"
@@ -130,6 +134,19 @@ export default function ResponseDetailPage({
                             Открыть резюме
                           </Button>
                         </Link>
+                        {response.resumePdfUrl && (
+                          <Link
+                            href={response.resumePdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download
+                          >
+                            <Button variant="outline" size="sm">
+                              <Download className="mr-2 h-4 w-4" />
+                              Скачать PDF
+                            </Button>
+                          </Link>
+                        )}
                       </div>
                     )}
 
@@ -138,7 +155,9 @@ export default function ResponseDetailPage({
                     <div className="grid gap-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Статус:</span>
-                        <Badge variant="outline">{response.status}</Badge>
+                        <Badge variant="outline">
+                          {RESPONSE_STATUS_LABELS[response.status]}
+                        </Badge>
                       </div>
                       {response.hrSelectionStatus && (
                         <div className="flex justify-between">
@@ -146,7 +165,11 @@ export default function ResponseDetailPage({
                             Решение HR:
                           </span>
                           <Badge variant="outline">
-                            {response.hrSelectionStatus}
+                            {
+                              HR_SELECTION_STATUS_LABELS[
+                                response.hrSelectionStatus
+                              ]
+                            }
                           </Badge>
                         </div>
                       )}
@@ -193,11 +216,12 @@ export default function ResponseDetailPage({
                       )}
                     </CardHeader>
                     <CardContent>
-                      <div className="prose prose-sm max-w-none dark:prose-invert">
-                        <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-wrap">
-                          {response.screening.analysis}
-                        </p>
-                      </div>
+                      <div
+                        className="prose prose-sm max-w-none dark:prose-invert"
+                        dangerouslySetInnerHTML={{
+                          __html: response.screening.analysis,
+                        }}
+                      />
                     </CardContent>
                   </Card>
                 )}

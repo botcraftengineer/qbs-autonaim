@@ -1,7 +1,22 @@
 import type { Page } from "puppeteer";
-import { stripHtml } from "string-strip-html";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
+
+/**
+ * Очищает HTML от стилей и классов, оставляя только теги
+ */
+function cleanHtml(html: string): string {
+  return html
+    .replace(/\s+class="[^"]*"/g, "")
+    .replace(/\s+style="[^"]*"/g, "")
+    .replace(/\s+data-[a-z-]+="[^"]*"/g, "")
+    .replace(/\s+id="[^"]*"/g, "")
+    .replace(/\s+aria-[a-z-]+="[^"]*"/g, "")
+    .replace(/\s+role="[^"]*"/g, "")
+    .replace(/\s+tabindex="[^"]*"/g, "")
+    .replace(/\s+>/g, ">")
+    .trim();
+}
 
 /**
  * Скачивает PDF резюме с HH.ru
@@ -130,8 +145,7 @@ export async function parseResumeExperience(
         (el: HTMLElement) => el.innerHTML,
       );
 
-      const { result } = stripHtml(htmlContent);
-      experience = result.trim();
+      experience = cleanHtml(htmlContent);
     }
   } catch (_e) {
     console.log("⚠️ Не удалось получить опыт работы из резюме.");
@@ -146,8 +160,7 @@ export async function parseResumeExperience(
       const htmlContent = await languagesElement.evaluate(
         (el: HTMLElement) => el.innerHTML,
       );
-      const { result } = stripHtml(htmlContent);
-      languages = result.trim();
+      languages = cleanHtml(htmlContent);
     }
   } catch (_e) {
     console.log("⚠️ Не удалось получить языки из резюме.");
@@ -160,8 +173,7 @@ export async function parseResumeExperience(
       const htmlContent = await aboutElement.evaluate(
         (el: HTMLElement) => el.innerHTML,
       );
-      const { result } = stripHtml(htmlContent);
-      about = result.trim();
+      about = cleanHtml(htmlContent);
     }
   } catch (_e) {
     console.log("⚠️ Не удалось получить информацию о себе из резюме.");
@@ -176,8 +188,7 @@ export async function parseResumeExperience(
       const htmlContent = await educationElement.evaluate(
         (el: HTMLElement) => el.innerHTML,
       );
-      const { result } = stripHtml(htmlContent);
-      education = result.trim();
+      education = cleanHtml(htmlContent);
     }
   } catch (_e) {
     console.log("⚠️ Не удалось получить образование из резюме.");
@@ -192,8 +203,7 @@ export async function parseResumeExperience(
       const htmlContent = await coursesElement.evaluate(
         (el: HTMLElement) => el.innerHTML,
       );
-      const { result } = stripHtml(htmlContent);
-      courses = result.trim();
+      courses = cleanHtml(htmlContent);
     }
   } catch (_e) {
     console.log("⚠️ Не удалось получить курсы из резюме.");
