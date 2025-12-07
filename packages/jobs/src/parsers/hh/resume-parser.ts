@@ -21,6 +21,10 @@ function isPdfBuffer(buffer: Buffer): boolean {
  */
 function cleanHtml(html: string): string {
   return html
+    .replace(/<img[^>]*>/g, "")
+    .replace(/<svg[^>]*>[\s\S]*?<\/svg>/g, "")
+    .replace(/<div[^>]*>/g, "")
+    .replace(/<\/div>/g, "")
     .replace(/\s+class="[^"]*"/g, "")
     .replace(/\s+style="[^"]*"/g, "")
     .replace(/\s+data-[a-z-]+="[^"]*"/g, "")
