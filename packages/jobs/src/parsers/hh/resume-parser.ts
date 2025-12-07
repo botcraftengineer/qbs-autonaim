@@ -1,6 +1,7 @@
 import type { Page } from "puppeteer";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
+import { formatResumeData } from "./resume-formatter";
 
 /**
  * Проверяет, является ли буфер PDF файлом по magic bytes
@@ -361,7 +362,7 @@ export async function parseResumeExperience(
     }
   }
 
-  return {
+  const rawData = {
     experience,
     contacts,
     phone,
@@ -371,4 +372,29 @@ export async function parseResumeExperience(
     courses,
     pdfBuffer,
   };
+
+  // Форматируем данные через DeepSeek, если включено
+  if (HH_CONFIG.features.formatWithAI) {
+    try {
+      const formatted = await formatResumeData(rawData);
+
+      return {
+        ...rawData,
+        experience: formatted.experience || experience,
+        languages: formatted.languages || languages,
+        about: formatted.about || about,
+        education: formatted.education || education,
+        courses: formatted.courses || courses,
+      };
+    } catch (error) {
+      console.log(
+        "⚠️ Ошибка форматирования через DeepSeek, используем сырые данные",
+      );
+      if (error instanceof Error) {
+        console.log(`   ${error.message}`);
+      }
+    }
+  }
+
+  return rawData;
 }
