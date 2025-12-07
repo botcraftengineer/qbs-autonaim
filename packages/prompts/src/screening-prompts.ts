@@ -23,10 +23,6 @@ export interface VacancyRequirements {
 export interface ResponseData {
   candidateName: string | null;
   experience: string | null;
-  education: string | null;
-  about: string | null;
-  languages: string | null;
-  courses: string | null;
 }
 
 /**
@@ -60,18 +56,6 @@ ${requirements.nice_to_have_skills.map((s) => `- ${s}`).join("\n")}
 Опыт работы:
 ${response.experience || "Не указан"}
 
-Образование:
-${response.education || "Не указано"}
-
-О себе:
-${response.about || "Не указано"}
-
-Языки:
-${response.languages || "Не указаны"}
-
-Курсы:
-${response.courses || "Не указаны"}
-
 ЗАДАЧА:
 1. Оцени соответствие резюме требованиям по двум шкалам:
    
@@ -101,11 +85,7 @@ ${response.courses || "Не указаны"}
 
 export interface ResumeScreeningData {
   experience: string;
-  education?: string;
   skills?: string;
-  about?: string;
-  languages?: string;
-  courses?: string;
 }
 
 /**
@@ -118,24 +98,8 @@ export function formatResumeForScreening(
 
   sections.push(`ОПЫТ РАБОТЫ:\n${resumeData.experience}`);
 
-  if (resumeData.education) {
-    sections.push(`\nОБРАЗОВАНИЕ:\n${resumeData.education}`);
-  }
-
   if (resumeData.skills) {
     sections.push(`\nНАВЫКИ:\n${resumeData.skills}`);
-  }
-
-  if (resumeData.about) {
-    sections.push(`\nО СЕБЕ:\n${resumeData.about}`);
-  }
-
-  if (resumeData.languages) {
-    sections.push(`\nЯЗЫКИ:\n${resumeData.languages}`);
-  }
-
-  if (resumeData.courses) {
-    sections.push(`\nКУРСЫ И СЕРТИФИКАТЫ:\n${resumeData.courses}`);
   }
 
   return sections.join("\n");

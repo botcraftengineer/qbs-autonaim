@@ -45,10 +45,6 @@ export const vacancyResponse = pgTable("vacancy_responses", {
   experience: text("experience"),
   contacts: jsonb("contacts"),
   phone: varchar("phone", { length: 50 }),
-  about: text("about"),
-  education: text("education"),
-  languages: text("languages"),
-  courses: text("courses"),
   resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
     onDelete: "set null",
   }),
@@ -80,10 +76,6 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   hrSelectionStatus: z
     .enum(["INVITE", "RECOMMENDED", "NOT_RECOMMENDED", "REJECTED"])
     .optional(),
-  about: z.string().optional(),
-  education: z.string().optional(),
-  languages: z.string().optional(),
-  courses: z.string().optional(),
   respondedAt: z.date().optional(),
   welcomeSentAt: z.date().optional(),
 }).omit({

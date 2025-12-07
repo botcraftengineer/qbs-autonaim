@@ -9,7 +9,6 @@ export interface WelcomeMessageContext {
   vacancyTitle: string | null;
   vacancyDescription?: string;
   candidateName: string | null;
-  candidateAbout?: string;
   screeningScore?: number;
   screeningAnalysis?: string;
 }
@@ -27,7 +26,6 @@ export function buildCandidateWelcomePrompt(
     vacancyTitle,
     vacancyDescription,
     candidateName,
-    candidateAbout,
     screeningScore,
     screeningAnalysis,
   } = context;
@@ -45,7 +43,6 @@ ${vacancyDescription ? `Описание: ${vacancyDescription.substring(0, 200)
 
 ИНФОРМАЦИЯ О КАНДИДАТЕ:
 ФИО: ${candidateName || "Кандидат"}
-${candidateAbout ? `О себе: ${candidateAbout.substring(0, 150)}...` : ""}
 
 РЕЗУЛЬТАТЫ СКРИНИНГА:
 ${

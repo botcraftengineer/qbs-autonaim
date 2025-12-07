@@ -68,7 +68,6 @@ export async function generateWelcomeMessage(
       ? stripHtml(response.vacancy.description).result.substring(0, 200)
       : undefined,
     candidateName: response.candidateName,
-    candidateAbout: response.about?.substring(0, 150) || undefined,
     screeningScore: screening?.score,
     screeningAnalysis: screening?.analysis || undefined,
   });

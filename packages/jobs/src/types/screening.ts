@@ -53,15 +53,6 @@ export interface ResumeScreeningData {
 
   /** Навыки */
   skills?: string;
-
-  /** О себе */
-  about?: string;
-
-  /** Языки */
-  languages?: string;
-
-  /** Курсы и сертификаты */
-  courses?: string;
 }
 
 /**

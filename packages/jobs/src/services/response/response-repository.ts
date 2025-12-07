@@ -104,10 +104,6 @@ export async function saveBasicResponse(
         experience: "",
         contacts: null,
         phone: null,
-        languages: "",
-        about: "",
-        education: "",
-        courses: "",
         respondedAt,
       })
       .onConflictDoNothing({ target: vacancyResponse.resumeId });

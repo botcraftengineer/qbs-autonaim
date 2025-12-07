@@ -72,12 +72,6 @@ export async function screenResponse(
       experience: response.experience
         ? stripHtml(response.experience).result
         : response.experience,
-      education: response.education
-        ? stripHtml(response.education).result
-        : response.education,
-      about: response.about ? stripHtml(response.about).result : response.about,
-      languages: response.languages,
-      courses: response.courses,
     },
     requirements,
   );
