@@ -1,3 +1,4 @@
+import axios from "axios";
 import type { Page } from "puppeteer";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
@@ -69,7 +70,6 @@ async function downloadResumeFile(
       .map((cookie) => `${cookie.name}=${cookie.value}`)
       .join("; ");
 
-    const axios = (await import("axios")).default;
     const response = await axios.get(fileUrl, {
       headers: {
         Accept:
