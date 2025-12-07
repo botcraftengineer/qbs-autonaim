@@ -25,6 +25,8 @@ function cleanHtml(html: string): string {
     .replace(/<svg[^>]*>[\s\S]*?<\/svg>/g, "")
     .replace(/<div[^>]*>/g, "")
     .replace(/<\/div>/g, "")
+    .replace(/<a[^>]*>/g, "")
+    .replace(/<\/a>/g, "")
     .replace(/\s+class="[^"]*"/g, "")
     .replace(/\s+style="[^"]*"/g, "")
     .replace(/\s+data-[a-z-]+="[^"]*"/g, "")

@@ -22,7 +22,7 @@
     "@selectio/config": "workspace:*",
     "@selectio/db": "workspace:*",
     "@selectio/lib": "workspace:*",
-    "ai": "^5.0.106",
+    "ai": "^5.0.108",
     "grammy": "^1.38.4"
   },
   "devDependencies": {
