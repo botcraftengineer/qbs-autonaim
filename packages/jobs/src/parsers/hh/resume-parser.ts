@@ -148,84 +148,59 @@ export async function parseResumeExperience(
     try {
       console.log(`📞 Получение контактов для резюме ${resumeId}`);
 
-      const phoneLink = await page.$(
-        'a[data-qa="response-resume_show-phone-number"]',
-      );
+      try {
+        const topicIdMatch = url.match(/[?&]t=([^&]+)/);
+        const topicId = topicIdMatch?.[1] || Date.now().toString();
 
-      if (phoneLink) {
-        let responseHandler:
-          | ((response: {
-              url: () => string;
-              json: () => Promise<unknown>;
-            }) => Promise<void>)
-          | null = null;
+        const cookies = await page.browserContext().cookies();
+        const cookieString = cookies
+          .map((cookie) => `${cookie.name}=${cookie.value}`)
+          .join("; ");
 
-        const contactsPromise = new Promise((resolve) => {
-          const timeout = setTimeout(() => {
-            if (responseHandler) {
-              page.off("response", responseHandler);
-            }
-            console.log("⚠️ Таймаут ожидания контактов");
-            resolve(null);
-          }, HH_CONFIG.timeouts.contacts);
+        const contactsUrl = `https://hh.ru/resume/contacts/${resumeId}?simHash=&goal=Contacts_Phone&topicId=${topicId}`;
+        console.log(`📞 Запрос контактов: ${contactsUrl}`);
 
-          responseHandler = async (response: {
-            url: () => string;
-            json: () => Promise<unknown>;
-          }) => {
-            try {
-              const url = response.url();
-              if (
-                url.includes(`/resume/contacts/${resumeId}`) &&
-                url.includes("goal=Contacts_Phone")
-              ) {
-                clearTimeout(timeout);
-                if (responseHandler) {
-                  page.off("response", responseHandler);
-                }
-                try {
-                  const data = await response.json();
-                  resolve(data);
-                } catch {
-                  resolve(null);
-                }
-              }
-            } catch {
-              // Игнорируем ошибки
-            }
-          };
-
-          page.on("response", responseHandler);
+        const response = await axios.get(contactsUrl, {
+          headers: {
+            Accept: "application/json, text/plain, */*",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "ru-RU,ru;q=0.9,en-US;q=0.8,en;q=0.7",
+            Cookie: cookieString,
+            Referer: url,
+            "Sec-Ch-Ua":
+              '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+            "Sec-Fetch-Dest": "empty",
+            "Sec-Fetch-Mode": "cors",
+            "Sec-Fetch-Site": "same-origin",
+            "User-Agent": HH_CONFIG.userAgent,
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          timeout: HH_CONFIG.timeouts.contacts,
         });
 
-        try {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          await phoneLink.click();
-          contacts = await contactsPromise;
+        contacts = response.data;
+        console.log("✅ Контакты получены:", contacts);
 
-          if (responseHandler) {
-            page.off("response", responseHandler);
-          }
-
-          if (contacts && typeof contacts === "object" && "phone" in contacts) {
-            const phoneData = (
-              contacts as {
-                phone?: Array<{ formatted?: string; raw?: string }>;
-              }
-            ).phone;
-            if (Array.isArray(phoneData) && phoneData.length > 0) {
-              const firstPhone = phoneData[0];
-              phone = firstPhone?.formatted || firstPhone?.raw || null;
-              if (phone) {
-                console.log(`✅ Телефон: ${phone}`);
-              }
+        if (contacts && typeof contacts === "object" && "phone" in contacts) {
+          const phoneData = (
+            contacts as {
+              phone?: Array<{ formatted?: string; raw?: string }>;
+            }
+          ).phone;
+          if (Array.isArray(phoneData) && phoneData.length > 0) {
+            const firstPhone = phoneData[0];
+            phone = firstPhone?.formatted || firstPhone?.raw || null;
+            if (phone) {
+              console.log(`✅ Телефон: ${phone}`);
             }
           }
-        } catch {
-          console.log("⚠️ Ошибка получения контактов");
-          if (responseHandler) {
-            page.off("response", responseHandler);
-          }
+        }
+      } catch (error) {
+        console.log("⚠️ Ошибка получения контактов");
+        if (error instanceof Error) {
+          console.log(`   ${error.message}`);
         }
       }
     } catch {
