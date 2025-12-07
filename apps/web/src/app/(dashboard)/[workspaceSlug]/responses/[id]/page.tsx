@@ -212,11 +212,12 @@ export default function ResponseDetailPage({
                   <Card className="shadow-sm">
                     <CardHeader className="pb-4">
                       <CardTitle className="text-xl sm:text-2xl">
-                        Анализ резюме
+                        Скрининг резюме
                       </CardTitle>
                       {response.screening.score && (
                         <CardDescription className="text-base">
-                          Базовая оценка: {response.screening.score}/5
+                          Оценка: {response.screening.score}/5 • Детальная
+                          оценка: {response.screening.detailedScore}/100
                         </CardDescription>
                       )}
                     </CardHeader>
@@ -227,6 +228,83 @@ export default function ResponseDetailPage({
                           __html: response.screening.analysis,
                         }}
                       />
+                    </CardContent>
+                  </Card>
+                )}
+
+                {response.conversation?.interviewScoring && (
+                  <Card className="shadow-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-xl sm:text-2xl">
+                        Интервью в Telegram
+                      </CardTitle>
+                      <CardDescription className="text-base">
+                        Оценка: {response.conversation.interviewScoring.score}/5
+                        • Детальная оценка:{" "}
+                        {response.conversation.interviewScoring.detailedScore}
+                        /100
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-0">
+                      {response.conversation.interviewScoring.analysis && (
+                        <div
+                          className="prose prose-sm sm:prose-base max-w-none dark:prose-invert mb-6"
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              response.conversation.interviewScoring.analysis,
+                          }}
+                        />
+                      )}
+
+                      {response.conversation.messages &&
+                        response.conversation.messages.length > 0 && (
+                          <>
+                            <Separator className="my-6" />
+                            <div className="space-y-4">
+                              <h3 className="text-base font-semibold sm:text-lg">
+                                История диалога
+                              </h3>
+                              <div className="space-y-3">
+                                {response.conversation.messages.map(
+                                  (message) => (
+                                    <div
+                                      key={message.id}
+                                      className={`rounded-lg p-3 sm:p-4 ${
+                                        message.sender === "CANDIDATE"
+                                          ? "bg-muted/50 ml-0 mr-4 sm:mr-8"
+                                          : "bg-primary/5 ml-4 mr-0 sm:ml-8"
+                                      }`}
+                                    >
+                                      <div className="mb-1 flex items-center justify-between gap-2">
+                                        <span className="text-xs font-medium text-muted-foreground sm:text-sm">
+                                          {message.sender === "CANDIDATE"
+                                            ? "Кандидат"
+                                            : "Бот"}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground/70">
+                                          {new Date(
+                                            message.createdAt,
+                                          ).toLocaleString("ru-RU", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                      </div>
+                                      <p className="text-sm leading-relaxed sm:text-base">
+                                        {message.contentType === "VOICE" &&
+                                        message.voiceTranscription
+                                          ? `🎤 ${message.voiceTranscription}`
+                                          : message.content}
+                                      </p>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            </div>
+                          </>
+                        )}
                     </CardContent>
                   </Card>
                 )}

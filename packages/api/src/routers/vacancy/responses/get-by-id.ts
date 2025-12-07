@@ -12,7 +12,14 @@ export const getById = protectedProcedure
       with: {
         vacancy: true,
         screening: true,
-        conversation: true,
+        conversation: {
+          with: {
+            interviewScoring: true,
+            messages: {
+              orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+            },
+          },
+        },
         resumePdfFile: true,
         telegramInterviewScoring: true,
       },

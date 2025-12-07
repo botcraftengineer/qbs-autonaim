@@ -16,6 +16,7 @@ import {
   TooltipTrigger,
 } from "@selectio/ui";
 import { Send, User } from "lucide-react";
+import Link from "next/link";
 import { ResponseActions } from "~/components/response";
 import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
@@ -56,7 +57,12 @@ export function ResponseRow({
           </div>
           <div>
             <div className="font-medium flex items-center gap-2">
-              {response.candidateName || "Без имени"}
+              <Link
+                href={`/${workspaceSlug}/responses/${response.id}`}
+                className="hover:text-primary transition-colors no-underline"
+              >
+                {response.candidateName || "Без имени"}
+              </Link>
               {response.welcomeSentAt && (
                 <TooltipProvider>
                   <Tooltip>
