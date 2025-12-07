@@ -74,10 +74,10 @@ export default function ResponseDetailPage({
         title={`Отклик от ${response.candidateName || "Кандидата"}`}
       />
       <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="@container/main flex flex-1 flex-col">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <div className="px-4 lg:px-6">
-              <div className="mb-4 flex items-center justify-between">
+            <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
+              <div className="mb-6 flex items-center justify-between gap-4">
                 <Link href={`/${workspaceSlug}`}>
                   <Button variant="ghost" size="sm">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -93,21 +93,22 @@ export default function ResponseDetailPage({
                 )}
               </div>
 
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <CardTitle className="flex items-center gap-2">
-                          <User className="h-5 w-5" />
+              <div className="space-y-6 md:space-y-8">
+                <Card className="shadow-sm">
+                  <CardHeader className="pb-4">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="space-y-1.5">
+                        <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+                          <User className="h-5 w-5 shrink-0" />
                           {response.candidateName || "Имя не указано"}
                         </CardTitle>
-                        <CardDescription>
+                        <CardDescription className="text-base">
                           {response.vacancy?.title || "Вакансия"}
                         </CardDescription>
                       </div>
                       {response.screening?.detailedScore !== undefined && (
                         <Badge
+                          className="self-start text-sm"
                           variant={
                             response.screening.detailedScore >= 80
                               ? "default"
@@ -121,9 +122,9 @@ export default function ResponseDetailPage({
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 pt-0">
                     {response.resumeUrl && (
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <Link
                           href={response.resumeUrl}
                           target="_blank"
@@ -152,15 +153,15 @@ export default function ResponseDetailPage({
 
                     <Separator />
 
-                    <div className="grid gap-2 text-sm">
-                      <div className="flex justify-between">
+                    <div className="grid gap-3 text-sm sm:text-base">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="text-muted-foreground">Статус:</span>
                         <Badge variant="outline">
                           {RESPONSE_STATUS_LABELS[response.status]}
                         </Badge>
                       </div>
                       {response.hrSelectionStatus && (
-                        <div className="flex justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-muted-foreground">
                             Решение HR:
                           </span>
@@ -174,7 +175,7 @@ export default function ResponseDetailPage({
                         </div>
                       )}
                       {response.createdAt && (
-                        <div className="flex justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-muted-foreground">
                             Дата отклика:
                           </span>
@@ -186,19 +187,21 @@ export default function ResponseDetailPage({
                         </div>
                       )}
                       {response.phone && (
-                        <div className="flex justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-muted-foreground">
                             Телефон:
                           </span>
-                          <span>{response.phone}</span>
+                          <span className="break-all">{response.phone}</span>
                         </div>
                       )}
                       {response.telegramUsername && (
-                        <div className="flex justify-between">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
                           <span className="text-muted-foreground">
                             Telegram:
                           </span>
-                          <span>@{response.telegramUsername}</span>
+                          <span className="break-all">
+                            @{response.telegramUsername}
+                          </span>
                         </div>
                       )}
                     </div>
@@ -206,18 +209,20 @@ export default function ResponseDetailPage({
                 </Card>
 
                 {response.screening?.analysis && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Анализ резюме</CardTitle>
+                  <Card className="shadow-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-xl sm:text-2xl">
+                        Анализ резюме
+                      </CardTitle>
                       {response.screening.score && (
-                        <CardDescription>
+                        <CardDescription className="text-base">
                           Базовая оценка: {response.screening.score}/5
                         </CardDescription>
                       )}
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <div
-                        className="prose prose-sm max-w-none dark:prose-invert [&_span]:inline-block [&_span]:my-1"
+                        className="prose prose-sm sm:prose-base max-w-none dark:prose-invert [&_span]:inline-block [&_span]:my-1"
                         dangerouslySetInnerHTML={{
                           __html: response.screening.analysis,
                         }}
@@ -227,13 +232,15 @@ export default function ResponseDetailPage({
                 )}
 
                 {response.experience && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Резюме</CardTitle>
+                  <Card className="shadow-sm">
+                    <CardHeader className="pb-4">
+                      <CardTitle className="text-xl sm:text-2xl">
+                        Резюме
+                      </CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-0">
                       <div
-                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert [&_span]:inline-block [&_span]:my-1"
+                        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert"
                         dangerouslySetInnerHTML={{
                           __html: response.experience,
                         }}

@@ -26,4 +26,131 @@
   body {
     letter-spacing: var(--tracking-normal);
   }
+
+  /* Resume styles - responsive and accessible */
+  .resume {
+    @apply space-y-4 leading-relaxed;
+    @apply sm:space-y-6;
+  }
+
+  .resume .info-footer {
+    @apply text-xs text-muted-foreground/70 mb-4 italic;
+    @apply sm:mb-6;
+  }
+
+  .resume__body {
+    @apply space-y-3;
+    @apply sm:space-y-4;
+  }
+
+  .resume__title {
+    @apply text-xl font-bold mb-2 tracking-tight break-words;
+    @apply sm:text-2xl sm:mb-3;
+    @apply lg:text-3xl;
+  }
+
+  .resume__block {
+    @apply text-base font-semibold mt-6 mb-3 pb-1.5 border-b-2 border-border/50;
+    @apply sm:text-lg sm:mt-8 sm:mb-4 sm:pb-2;
+    @apply lg:text-xl;
+  }
+
+  .resume__position {
+    @apply text-lg font-semibold mb-2 tracking-tight break-words;
+    @apply sm:text-xl sm:mb-3;
+    @apply lg:text-2xl;
+  }
+
+  .resume .info {
+    @apply text-muted-foreground/80 text-xs;
+    @apply sm:text-sm;
+  }
+
+  .resume-profession-roles {
+    @apply list-disc list-inside space-y-1.5 ml-1 my-2;
+    @apply sm:space-y-2 sm:my-3;
+  }
+
+  .resume-profession-role {
+    @apply text-sm leading-relaxed;
+    @apply sm:text-base;
+  }
+
+  .resume-experience {
+    @apply mb-4 space-y-1.5 pb-4 border-b border-border/30 last:border-0;
+    @apply sm:mb-6 sm:space-y-2 sm:pb-6;
+  }
+
+  .resume-experience__company {
+    @apply font-semibold text-base break-words;
+    @apply sm:text-lg;
+    @apply lg:text-xl;
+  }
+
+  .resume-experience__position {
+    @apply font-medium text-sm mt-1.5 mb-1 break-words;
+    @apply sm:text-base sm:mt-2;
+  }
+
+  .resume .bloko-form-hint {
+    @apply text-xs text-muted-foreground/70 font-normal;
+    @apply sm:text-sm;
+  }
+
+  .resume-education {
+    @apply mb-3 pb-3 border-b border-border/30 last:border-0;
+    @apply sm:mb-4 sm:pb-4;
+  }
+
+  .resume-education__name {
+    @apply font-semibold text-sm break-words;
+    @apply sm:text-base;
+  }
+
+  .resume-skils {
+    @apply mb-4;
+    @apply sm:mb-6;
+  }
+
+  .resume-skils__item {
+    @apply mt-2 leading-relaxed text-sm break-words;
+    @apply sm:mt-3 sm:text-base;
+  }
+
+  .resume-skils__item span {
+    @apply inline;
+  }
+
+  .resume-subindustry {
+    @apply text-xs text-muted-foreground/70 ml-4 list-disc list-inside leading-relaxed;
+    @apply sm:text-sm sm:ml-6;
+  }
+
+  .resume ul {
+    @apply space-y-2;
+    @apply sm:space-y-3;
+  }
+
+  .resume description {
+    @apply block mt-2 text-sm leading-relaxed whitespace-pre-line break-words;
+    @apply sm:mt-3 sm:text-base;
+    @apply lg:text-base lg:leading-loose;
+  }
+
+  .resume text {
+    @apply inline;
+  }
+
+  .resume string {
+    @apply block leading-relaxed break-words;
+  }
+
+  .resume p {
+    @apply leading-relaxed break-words;
+  }
+
+  .resume br {
+    @apply block h-2;
+    @apply sm:h-3;
+  }
 }
