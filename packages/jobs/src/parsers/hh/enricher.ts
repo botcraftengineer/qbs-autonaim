@@ -4,12 +4,12 @@ import { Log } from "crawlee";
 import type { Browser, BrowserContext, CookieData, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
+import { extractTelegramUsername } from "../../services/messaging";
 import {
   getResponsesWithoutDetails,
   updateResponseDetails,
   uploadResumePdf,
 } from "../../services/response";
-import { extractTelegramUsername } from "../../services/messaging";
 import { loadCookies, performLogin, saveCookies } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResumeExperience } from "./resume-parser";
