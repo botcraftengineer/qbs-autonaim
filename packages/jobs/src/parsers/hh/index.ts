@@ -12,7 +12,6 @@ export {
 } from "./human-behavior";
 export { refreshVacancyResponses } from "./refresh-responses";
 export { parseResponses } from "./response-parser";
-export { formatResumeData } from "./resume-formatter";
 export { parseResumeExperience } from "./resume-parser";
 export { runHHParser } from "./runner";
 export { extractResumeId } from "./utils";
