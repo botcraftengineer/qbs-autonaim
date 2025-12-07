@@ -23,7 +23,6 @@ export const HH_CONFIG = {
   },
   features: {
     parseContacts: true,
-    formatWithAI: true,
   },
   puppeteer: {
     headless: true,
