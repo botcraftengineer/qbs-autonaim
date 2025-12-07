@@ -157,8 +157,8 @@ export async function createUserClient(
     storage,
   });
 
-  // Подключаемся к Telegram
-  await client.start();
+  // Подключаемся к Telegram без интерактивной авторизации
+  await client.connect();
 
   return { client, storage };
 }
