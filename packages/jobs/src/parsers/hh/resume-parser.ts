@@ -245,7 +245,12 @@ export async function parseResumeExperience(
     ]);
 
     if (txtBuffer) {
-      resumeHtml = txtBuffer.toString("utf-8");
+      const fullHtml = txtBuffer.toString("utf-8");
+
+      // Извлекаем только содержимое body
+      const bodyMatch = fullHtml.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+      resumeHtml = bodyMatch?.[1]?.trim() ?? fullHtml;
+
       console.log(
         `✅ Резюме в текстовом формате получено (${resumeHtml.length} символов)`,
       );
