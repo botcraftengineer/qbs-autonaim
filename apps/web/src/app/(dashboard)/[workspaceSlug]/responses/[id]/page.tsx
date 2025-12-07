@@ -217,7 +217,7 @@ export default function ResponseDetailPage({
                     </CardHeader>
                     <CardContent>
                       <div
-                        className="prose prose-sm max-w-none dark:prose-invert"
+                        className="prose prose-sm max-w-none dark:prose-invert [&_span]:inline-block [&_span]:my-1"
                         dangerouslySetInnerHTML={{
                           __html: response.screening.analysis,
                         }}
@@ -233,7 +233,7 @@ export default function ResponseDetailPage({
                     </CardHeader>
                     <CardContent>
                       <div
-                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert"
+                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert [&_span]:inline-block [&_span]:my-1"
                         dangerouslySetInnerHTML={{ __html: response.about }}
                       />
                     </CardContent>
@@ -247,7 +247,7 @@ export default function ResponseDetailPage({
                     </CardHeader>
                     <CardContent>
                       <div
-                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert"
+                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert [&_span]:inline-block [&_span]:my-1"
                         dangerouslySetInnerHTML={{
                           __html: response.experience,
                         }}
@@ -263,7 +263,7 @@ export default function ResponseDetailPage({
                     </CardHeader>
                     <CardContent>
                       <div
-                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert"
+                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert [&_span]:inline-block [&_span]:my-1"
                         dangerouslySetInnerHTML={{ __html: response.education }}
                       />
                     </CardContent>
