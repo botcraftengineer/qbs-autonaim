@@ -21,10 +21,6 @@ export interface ResumeExperience {
   experience: string;
   contacts: unknown;
   phone: string | null;
-  languages: string;
-  about: string;
-  education: string;
-  courses: string;
   pdfBuffer: Buffer | null;
 }
 
@@ -36,10 +32,6 @@ export interface SaveResponseData {
   experience: string;
   contacts: unknown;
   phone: string | null;
-  languages: string;
-  about: string;
-  education: string;
-  courses: string;
   telegramUsername?: string | null;
   resumePdfFileId?: string | null;
 }

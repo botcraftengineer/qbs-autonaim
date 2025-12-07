@@ -12,8 +12,11 @@ import {
 } from "../../../parsers/hh/auth";
 import { HH_CONFIG } from "../../../parsers/hh/config";
 import { parseResumeExperience } from "../../../parsers/hh/resume-parser";
-import { updateResponseDetails, uploadResumePdf } from "../../../services/response";
 import { extractTelegramUsername } from "../../../services/messaging";
+import {
+  updateResponseDetails,
+  uploadResumePdf,
+} from "../../../services/response";
 import { inngest } from "../../client";
 
 puppeteer.use(StealthPlugin());
@@ -207,10 +210,6 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           experience: experienceData.experience || "",
           contacts: experienceData.contacts,
           phone: experienceData.phone,
-          languages: experienceData.languages,
-          about: experienceData.about,
-          education: experienceData.education,
-          courses: experienceData.courses,
           telegramUsername,
           resumePdfFileId,
         });

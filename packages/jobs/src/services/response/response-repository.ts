@@ -137,10 +137,6 @@ export async function updateResponseDetails(
         experience: response.experience,
         contacts: response.contacts,
         phone: response.phone,
-        languages: response.languages,
-        about: response.about,
-        education: response.education,
-        courses: response.courses,
         telegramUsername: response.telegramUsername,
         resumePdfFileId: response.resumePdfFileId,
       })
@@ -217,10 +213,6 @@ export async function saveResponseToDb(
         experience: response.experience,
         contacts: response.contacts,
         phone: response.phone,
-        languages: response.languages,
-        about: response.about,
-        education: response.education,
-        courses: response.courses,
       })
       .onConflictDoNothing({ target: vacancyResponse.resumeId });
 

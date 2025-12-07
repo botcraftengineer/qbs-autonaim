@@ -332,10 +332,6 @@ async function parseResponseDetails(
         experience: experienceData.experience,
         contacts: experienceData.contacts,
         phone: experienceData.phone,
-        languages: experienceData.languages,
-        about: experienceData.about,
-        education: experienceData.education,
-        courses: experienceData.courses,
         resumePdfFileId,
       });
 

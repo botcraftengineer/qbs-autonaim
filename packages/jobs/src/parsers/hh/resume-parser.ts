@@ -261,10 +261,6 @@ export async function parseResumeExperience(
     experience: resumeHtml,
     contacts,
     phone,
-    languages: "",
-    about: "",
-    education: "",
-    courses: "",
     pdfBuffer,
   };
 }

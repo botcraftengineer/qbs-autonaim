@@ -195,10 +195,6 @@ export async function runEnricher(workspaceId: string) {
           experience: experienceData.experience,
           contacts: experienceData.contacts,
           phone: experienceData.phone,
-          languages: experienceData.languages,
-          about: experienceData.about,
-          education: experienceData.education,
-          courses: experienceData.courses,
           telegramUsername,
           resumePdfFileId,
         });
