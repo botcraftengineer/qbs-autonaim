@@ -2,6 +2,7 @@ import { eq } from "@selectio/db";
 import { db } from "@selectio/db/client";
 import { responseScreening, vacancyResponse } from "@selectio/db/schema";
 import { buildResponseScreeningPrompt } from "@selectio/prompts";
+import { stripHtml } from "string-strip-html";
 import { generateText } from "../../lib/ai-client";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";
 import { extractJsonFromText } from "../../utils/json-extractor";
@@ -68,9 +69,13 @@ export async function screenResponse(
   const prompt = buildResponseScreeningPrompt(
     {
       candidateName: response.candidateName,
-      experience: response.experience,
-      education: response.education,
-      about: response.about,
+      experience: response.experience
+        ? stripHtml(response.experience).result
+        : response.experience,
+      education: response.education
+        ? stripHtml(response.education).result
+        : response.education,
+      about: response.about ? stripHtml(response.about).result : response.about,
       languages: response.languages,
       courses: response.courses,
     },
