@@ -45,10 +45,6 @@ export const vacancyResponse = pgTable("vacancy_responses", {
   experience: text("experience"),
   contacts: jsonb("contacts"),
   phone: varchar("phone", { length: 50 }),
-  languages: text("languages"),
-  about: text("about"),
-  education: text("education"),
-  courses: text("courses"),
   resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
     onDelete: "set null",
   }),

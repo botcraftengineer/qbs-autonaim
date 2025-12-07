@@ -226,24 +226,10 @@ export default function ResponseDetailPage({
                   </Card>
                 )}
 
-                {response.about && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>О себе</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div
-                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert [&_span]:inline-block [&_span]:my-1"
-                        dangerouslySetInnerHTML={{ __html: response.about }}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-
                 {response.experience && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Опыт работы</CardTitle>
+                      <CardTitle>Резюме</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div
@@ -251,20 +237,6 @@ export default function ResponseDetailPage({
                         dangerouslySetInnerHTML={{
                           __html: response.experience,
                         }}
-                      />
-                    </CardContent>
-                  </Card>
-                )}
-
-                {response.education && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Образование</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div
-                        className="prose prose-sm max-w-none text-sm text-muted-foreground dark:prose-invert [&_span]:inline-block [&_span]:my-1"
-                        dangerouslySetInnerHTML={{ __html: response.education }}
                       />
                     </CardContent>
                   </Card>
