@@ -203,7 +203,9 @@
       "name": "@selectio/prompts",
       "version": "0.1.0",
       "dependencies": {
+        "@selectio/jobs": "workspace:*",
         "string-strip-html": "^13.4.8",
+        "zod": "4.1.13",
       },
       "devDependencies": {
         "@selectio/tsconfig": "workspace:*",

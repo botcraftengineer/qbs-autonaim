@@ -16,7 +16,9 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "string-strip-html": "^13.4.8"
+    "@selectio/jobs": "workspace:*",
+    "string-strip-html": "^13.4.8",
+    "zod": "4.1.13"
   },
   "devDependencies": {
     "@selectio/tsconfig": "workspace:*",

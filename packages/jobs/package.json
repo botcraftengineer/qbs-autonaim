@@ -16,6 +16,9 @@
     },
     "./auth": {
       "default": "./src/services/auth/index.ts"
+    },
+    "./lib/ai-client": {
+      "default": "./src/lib/ai-client.ts"
     }
   },
   "license": "MIT",
