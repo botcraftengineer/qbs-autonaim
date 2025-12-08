@@ -33,7 +33,7 @@ COPY --from=builder /app/out/full/ .
 ARG POSTGRES_URL
 ENV POSTGRES_URL=$POSTGRES_URL
 ENV CI=true
-RUN bun turbo run build --filter=@selectio/web
+RUN bun turbo run build --filter=@qbs-autonaim/web
 
 FROM base AS runner
 WORKDIR /app

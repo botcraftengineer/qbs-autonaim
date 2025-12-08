@@ -1,6 +1,8 @@
-import { eq } from "@qbs-autonaim/db";
+import { eq, workspaceRepository } from "@qbs-autonaim/db";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 

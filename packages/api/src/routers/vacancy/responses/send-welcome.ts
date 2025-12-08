@@ -1,6 +1,8 @@
-import { eq } from "@qbs-autonaim/db";
+import { eq, workspaceRepository } from "@qbs-autonaim/db";
 import { telegramConversation, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
@@ -15,7 +17,7 @@ export const sendWelcome = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const { responseId, chatId, workspaceId } = input;
 
-    // Проверка доступа к workspace
+    // Проверка доступа к рабочему пространству
     const access = await workspaceRepository.checkAccess(
       workspaceId,
       ctx.session.user.id,
@@ -24,7 +26,7 @@ export const sendWelcome = protectedProcedure
     if (!access) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Нет доступа к этому workspace",
+        message: "Нет доступа к этому рабочему пространству",
       });
     }
 
@@ -50,7 +52,7 @@ export const sendWelcome = protectedProcedure
       });
     }
 
-    // Проверка принадлежности вакансии к workspace
+    // Проверка принадлежности вакансии к рабочему пространству
     if (response.vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",

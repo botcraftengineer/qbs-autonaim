@@ -94,7 +94,7 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">У вас есть приглашения</h1>
           <p className="text-muted-foreground">
-            Вас пригласили присоединиться к workspace
+            Вас пригласили присоединиться к рабочему пространству
           </p>
         </div>
 

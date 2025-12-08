@@ -42,7 +42,7 @@ export default async function InvitePage({
             <h1 className="text-2xl font-bold">Приглашение истекло</h1>
             <p className="text-muted-foreground">
               Срок действия этой ссылки истек. Попросите новую ссылку у
-              администратора workspace.
+              администратора рабочего пространства.
             </p>
           </div>
         </div>
@@ -56,7 +56,7 @@ export default async function InvitePage({
     );
 
     if (isAlreadyMember) {
-      // Если уже участник, редиректим в workspace
+      // Если уже участник, редиректим в рабочее пространство
       redirect(`/${invite.workspace.slug}`);
     }
 

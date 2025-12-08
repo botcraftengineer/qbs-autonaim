@@ -61,18 +61,18 @@ export function DeleteWorkspaceDialog({
             </div>
           </div>
           <AlertDialogTitle className="text-center text-xl">
-            Удалить Workspace
+            Удалить рабочее пространство
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center text-muted-foreground">
-            Внимание: Это безвозвратно удалит ваш workspace, все интеграции
-            HH.ru, вакансии, отклики кандидатов и их статистику.
+            Внимание: Это безвозвратно удалит ваше рабочее пространство, все
+            интеграции HH.ru, вакансии, отклики кандидатов и их статистику.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="slug-input" className="text-sm font-medium">
-              Введите workspace slug{" "}
+              Введите адрес пространства{" "}
               <span className="font-semibold">{workspaceSlug}</span> для
               продолжения:
             </Label>
@@ -98,7 +98,7 @@ export function DeleteWorkspaceDialog({
             disabled={!canDelete}
             className="w-full"
           >
-            {isDeleting ? "Удаление..." : "Подтвердить удаление workspace"}
+            {isDeleting ? "Удаление..." : "Подтвердить удаление"}
           </Button>
           <AlertDialogCancel
             disabled={isDeleting}

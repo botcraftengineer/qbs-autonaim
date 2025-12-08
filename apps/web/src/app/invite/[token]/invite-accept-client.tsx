@@ -30,7 +30,7 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
     trpc.workspace.acceptInvite.mutationOptions({
       onSuccess: () => {
         toast.success(`Вы присоединились к ${invite.workspace.name}`);
-        // Редиректим в workspace и обновляем страницу для загрузки новых данных
+        // Редиректим в рабочее пространство и обновляем страницу для загрузки новых данных
         router.push(`/${invite.workspace.slug}`);
         router.refresh();
       },
@@ -71,7 +71,9 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
               />
             </div>
           )}
-          <h1 className="text-2xl font-bold">Приглашение в workspace</h1>
+          <h1 className="text-2xl font-bold">
+            Приглашение в рабочее пространство
+          </h1>
           <p className="text-muted-foreground">
             Вы приглашены присоединиться к
           </p>

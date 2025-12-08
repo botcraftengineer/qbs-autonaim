@@ -1,5 +1,20 @@
-import { desc } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import {
+  and,
+  desc,
+  eq,
+  inArray,
+  lt,
+  workspaceRepository,
+} from "@qbs-autonaim/db";
+import {
+  responseScreening,
+  telegramInterviewScoring,
+  vacancy,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
+import z from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const listAll = protectedProcedure

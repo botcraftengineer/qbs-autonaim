@@ -6,7 +6,7 @@ import { ExportableStorage } from "./storage";
 const clientCache = new Map<string, TelegramClient>();
 
 /**
- * Получить или создать Telegram клиент для workspace
+ * Получить или создать Telegram клиент для рабочего пространства
  */
 export async function getClient(
   workspaceId: string,
@@ -21,7 +21,7 @@ export async function getClient(
   const credentials = await getIntegrationCredentials("telegram", workspaceId);
   if (!credentials) {
     console.error(
-      `❌ Telegram интеграция не найдена для workspace ${workspaceId}`,
+      `❌ Telegram интеграция не найдена для рабочего пространства ${workspaceId}`,
     );
     return null;
   }
@@ -49,11 +49,13 @@ export async function getClient(
     // Сохраняем в кэш
     clientCache.set(workspaceId, client);
 
-    console.log(`✅ Telegram клиент создан для workspace ${workspaceId}`);
+    console.log(
+      `✅ Telegram клиент создан для рабочего пространства ${workspaceId}`,
+    );
     return client;
   } catch (error) {
     console.error(
-      `❌ Ошибка создания клиента для workspace ${workspaceId}:`,
+      `❌ Ошибка создания клиента для рабочего пространства ${workspaceId}:`,
       error,
     );
     return null;
@@ -71,12 +73,14 @@ export async function removeClient(workspaceId: string): Promise<void> {
     //   await client.close();
     // } catch (error) {
     //   console.error(
-    //     `Ошибка остановки клиента для workspace ${workspaceId}:`,
+    //     `Ошибка остановки клиента для рабочего пространства ${workspaceId}:`,
     //     error,
     //   );
     // }
     clientCache.delete(workspaceId);
-    console.log(`🗑️ Клиент удален из кэша для workspace ${workspaceId}`);
+    console.log(
+      `🗑️ Клиент удален из кэша для рабочего пространства ${workspaceId}`,
+    );
   }
 }
 
@@ -88,7 +92,7 @@ export async function clearClientCache(): Promise<void> {
   // const promises: Promise<void>[] = [];
 
   for (const [workspaceId] of clientCache.entries()) {
-    console.log(`🗑️ Удаление клиента для workspace ${workspaceId}`);
+    console.log(`🗑️ Удаление клиента для рабочего пространства ${workspaceId}`);
     clientCache.delete(workspaceId);
   }
 

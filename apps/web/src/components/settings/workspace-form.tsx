@@ -67,7 +67,7 @@ export function WorkspaceForm({
   const updateWorkspace = useMutation(
     trpc.workspace.update.mutationOptions({
       onSuccess: async (_data, variables) => {
-        toast.success("Workspace успешно обновлен");
+        toast.success("Рабочее пространство успешно обновлено");
         // Если slug изменился, редиректим на новый URL
         if (variables.data.slug && variables.data.slug !== initialSlug) {
           window.location.href = `/${variables.data.slug}/settings`;
@@ -76,7 +76,7 @@ export function WorkspaceForm({
         }
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось обновить workspace");
+        toast.error(err.message || "Не удалось обновить рабочее пространство");
       },
     }),
   );
@@ -84,11 +84,11 @@ export function WorkspaceForm({
   const deleteWorkspace = useMutation(
     trpc.workspace.delete.mutationOptions({
       onSuccess: async () => {
-        toast.success("Workspace успешно удален");
+        toast.success("Рабочее пространство успешно удалено");
         window.location.href = "/";
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось удалить workspace");
+        toast.error(err.message || "Не удалось удалить рабочее пространство");
       },
     }),
   );
@@ -129,8 +129,8 @@ export function WorkspaceForm({
     return (
       <div className="rounded-lg border border-muted p-6">
         <p className="text-muted-foreground">
-          У вас нет прав для изменения настроек workspace. Обратитесь к
-          администратору.
+          У вас нет прав для изменения настроек рабочего пространства.
+          Обратитесь к администратору.
         </p>
       </div>
     );
@@ -147,11 +147,11 @@ export function WorkspaceForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-foreground font-medium">
-                  Название Workspace
+                  Название рабочего пространства
                 </FormLabel>
                 <Input placeholder="spillwood" {...field} />
                 <p className="text-sm text-muted-foreground">
-                  Это название вашего workspace на Dub.
+                  Это название вашего рабочего пространства.
                 </p>
                 <FormMessage />
               </FormItem>
@@ -165,7 +165,7 @@ export function WorkspaceForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="text-foreground font-medium">
-                  Workspace Slug
+                  Адрес пространства
                 </FormLabel>
                 <Input placeholder="spillwood" {...field} />
                 <p className="text-sm text-muted-foreground">
@@ -183,7 +183,7 @@ export function WorkspaceForm({
             render={() => (
               <FormItem>
                 <FormLabel className="text-foreground font-medium">
-                  Логотип Workspace
+                  Логотип рабочего пространства
                 </FormLabel>
                 <div className="flex items-start gap-4">
                   {logoPreview && (
@@ -240,18 +240,18 @@ export function WorkspaceForm({
       {canDelete && (
         <div className="rounded-lg border border-destructive/50 p-6">
           <h3 className="text-lg font-semibold text-destructive mb-2">
-            Удалить Workspace
+            Удалить рабочее пространство
           </h3>
           <p className="text-sm text-muted-foreground mb-4">
-            Внимание: Это безвозвратно удалит ваш workspace, все интеграции
-            HH.ru, вакансии, отклики кандидатов и их статистику.
+            Внимание: Это безвозвратно удалит ваше рабочее пространство, все
+            интеграции HH.ru, вакансии, отклики кандидатов и их статистику.
           </p>
           <Button
             variant="destructive"
             onClick={() => setDeleteDialogOpen(true)}
             disabled={deleteWorkspace.isPending}
           >
-            Удалить Workspace
+            Удалить рабочее пространство
           </Button>
         </div>
       )}

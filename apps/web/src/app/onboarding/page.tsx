@@ -21,7 +21,7 @@ export default function OnboardingPage() {
         router.refresh();
       },
       onError: (err) => {
-        setError(err.message || "Ошибка при создании workspace");
+        setError(err.message || "Ошибка при создании рабочего пространства");
       },
     }),
   );
@@ -110,7 +110,7 @@ export default function OnboardingPage() {
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold">Создайте workspace</h1>
+          <h1 className="text-3xl font-bold">Создайте рабочее пространство</h1>
           <p className="text-muted-foreground mt-2">
             Настройте общее пространство для управления вакансиями
           </p>
@@ -121,7 +121,7 @@ export default function OnboardingPage() {
           className="space-y-6 rounded-xl border bg-card p-8 shadow-lg backdrop-blur-sm"
         >
           <div className="space-y-2">
-            <Label htmlFor="name">Название workspace</Label>
+            <Label htmlFor="name">Название рабочего пространства</Label>
             <Input
               id="name"
               placeholder="Моя компания"
@@ -133,7 +133,7 @@ export default function OnboardingPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slug">Slug workspace</Label>
+            <Label htmlFor="slug">Адрес пространства</Label>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground text-sm">
                 app.selectio.ru/
@@ -159,7 +159,9 @@ export default function OnboardingPage() {
             className="w-full"
             disabled={createWorkspace.isPending || !name || !slug}
           >
-            {createWorkspace.isPending ? "Создание..." : "Создать workspace"}
+            {createWorkspace.isPending
+              ? "Создание..."
+              : "Создать рабочее пространство"}
           </Button>
 
           {error && (

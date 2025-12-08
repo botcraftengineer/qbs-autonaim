@@ -45,7 +45,7 @@ botManager
     const botsInfo = botManager.getBotsInfo();
     for (const bot of botsInfo) {
       console.log(
-        `  📱 Workspace: ${bot.workspaceId}, User: @${bot.username || bot.userId}`,
+        `  📱 Рабочее пространство: ${bot.workspaceId}, User: @${bot.username || bot.userId}`,
       );
     }
 

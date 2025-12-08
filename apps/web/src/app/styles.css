@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "@selectio/tailwind-config/theme";
+@import "@qbs-autonaim/tailwind-config/theme";
 
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
 

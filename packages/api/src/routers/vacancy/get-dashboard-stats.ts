@@ -1,5 +1,16 @@
-import { and, count, eq, gte, isNull, sql } from "@qbs-autonaim/db";
+import {
+  and,
+  count,
+  eq,
+  gte,
+  isNull,
+  sql,
+  workspaceRepository,
+} from "@qbs-autonaim/db";
 import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
+import z from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const getDashboardStats = protectedProcedure

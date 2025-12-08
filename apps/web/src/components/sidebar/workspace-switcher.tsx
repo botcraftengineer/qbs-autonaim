@@ -189,7 +189,7 @@ export function WorkspaceSwitcher({
                     <IconPlus className="size-4" />
                   </div>
                   <div className="text-muted-foreground font-medium">
-                    Создать workspace
+                    Создать рабочее пространство
                   </div>
                 </DropdownMenuItem>
               }

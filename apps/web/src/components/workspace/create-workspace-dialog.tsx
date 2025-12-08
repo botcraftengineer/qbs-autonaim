@@ -72,7 +72,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
       },
       onError: (error) => {
         form.setError("slug", {
-          message: error.message || "Ошибка при создании workspace",
+          message: error.message || "Ошибка при создании рабочего пространства",
         });
       },
     }),
@@ -101,14 +101,16 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        {trigger || <Button>Создать workspace</Button>}
+        {trigger || <Button>Создать рабочее пространство</Button>}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
             <Building2 className="size-6 text-primary" />
           </div>
-          <DialogTitle className="text-2xl">Создать workspace</DialogTitle>
+          <DialogTitle className="text-2xl">
+            Создать рабочее пространство
+          </DialogTitle>
           <DialogDescription>
             Настройте общее пространство для управления вакансиями с вашей
             командой.
@@ -125,7 +127,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Название workspace</FormLabel>
+                  <FormLabel>Название рабочего пространства</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Acme, Inc."
@@ -143,7 +145,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Workspace slug</FormLabel>
+                  <FormLabel>Адрес пространства</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">
@@ -153,7 +155,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Вы можете изменить это позже в настройках workspace
+                    Вы можете изменить это позже в настройках
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -167,10 +169,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                 <FormItem>
                   <FormLabel>Описание (опционально)</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Краткое описание workspace"
-                      {...field}
-                    />
+                    <Input placeholder="Краткое описание" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -183,7 +182,9 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
               size="lg"
               disabled={createMutation.isPending}
             >
-              {createMutation.isPending ? "Создание..." : "Создать workspace"}
+              {createMutation.isPending
+                ? "Создание..."
+                : "Создать рабочее пространство"}
             </Button>
           </form>
         </Form>
