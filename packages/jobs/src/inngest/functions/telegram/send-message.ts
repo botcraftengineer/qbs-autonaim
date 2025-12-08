@@ -84,7 +84,6 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           senderId: string;
         };
 
-        // Приоритет: senderId > username > chatId
         if (username) {
           console.log(`📨 Отправка по username: @${username}`);
           result = await tgClientSDK.sendMessageByUsername({
