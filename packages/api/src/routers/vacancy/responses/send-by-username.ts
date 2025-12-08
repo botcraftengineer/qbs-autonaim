@@ -9,18 +9,46 @@ export const sendByUsername = protectedProcedure
     z.object({
       responseId: z.string(),
       username: z.string().min(1, "Username обязателен"),
+      workspaceId: workspaceIdSchema,
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const { responseId, username } = input;
+    const { responseId, username, workspaceId } = input;
+
+    // Проверка доступа к workspace
+    const access = await workspaceRepository.checkAccess(
+      workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
 
     // Проверяем, что отклик существует
     const response = await ctx.db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
+      with: {
+        vacancy: true,
+      },
     });
 
     if (!response) {
-      throw new Error("Отклик не найден");
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Отклик не найден",
+      });
+    }
+
+    // Проверка принадлежности вакансии к workspace
+    if (response.vacancy.workspaceId !== workspaceId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому отклику",
+      });
     }
 
     // Отправляем событие в Inngest для асинхронной обработки

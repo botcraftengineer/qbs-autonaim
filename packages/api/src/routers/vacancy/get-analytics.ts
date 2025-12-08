@@ -4,8 +4,35 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const getAnalytics = protectedProcedure
-  .input(z.object({ vacancyId: z.string() }))
+  .input(z.object({ vacancyId: z.string(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
+    // Проверка доступа к workspace
+    const access = await workspaceRepository.checkAccess(
+      input.workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
+
+    // Проверка принадлежности вакансии к workspace
+    const vacancyCheck = await ctx.db.query.vacancy.findFirst({
+      where: and(
+        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.workspaceId, input.workspaceId),
+      ),
+    });
+
+    if (!vacancyCheck) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
     // Получаем общее количество откликов
     const totalResponsesResult = await ctx.db
       .select({ count: count() })

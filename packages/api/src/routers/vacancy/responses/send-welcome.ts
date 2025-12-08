@@ -9,18 +9,53 @@ export const sendWelcome = protectedProcedure
     z.object({
       responseId: z.string(),
       chatId: z.string(),
+      workspaceId: workspaceIdSchema,
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const { responseId, chatId } = input;
+    const { responseId, chatId, workspaceId } = input;
+
+    // Проверка доступа к workspace
+    const access = await workspaceRepository.checkAccess(
+      workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
 
     // Получаем данные отклика
     const response = await ctx.db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
+      with: {
+        vacancy: true,
+      },
     });
 
     if (!response) {
-      throw new Error("Отклик не найден");
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Отклик не найден",
+      });
+    }
+
+    if (!response.vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
+    // Проверка принадлежности вакансии к workspace
+    if (response.vacancy.workspaceId !== workspaceId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому отклику",
+      });
     }
 
     // Создаем или обновляем запись в telegram_conversations

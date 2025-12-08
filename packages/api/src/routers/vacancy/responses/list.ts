@@ -1,8 +1,19 @@
 import type { SQL } from "@qbs-autonaim/db";
-import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@qbs-autonaim/db";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  gte,
+  ilike,
+  inArray,
+  lt,
+  sql,
+} from "@qbs-autonaim/db";
 import {
   responseScreening,
   telegramMessage,
+  vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
@@ -11,6 +22,7 @@ import { protectedProcedure } from "../../../trpc";
 export const list = protectedProcedure
   .input(
     z.object({
+      workspaceId: workspaceIdSchema,
       vacancyId: z.string(),
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(50),
@@ -40,6 +52,7 @@ export const list = protectedProcedure
   )
   .query(async ({ ctx, input }) => {
     const {
+      workspaceId,
       vacancyId,
       page,
       limit,
@@ -50,6 +63,34 @@ export const list = protectedProcedure
       search,
     } = input;
     const offset = (page - 1) * limit;
+
+    // Проверка доступа к workspace
+    const access = await workspaceRepository.checkAccess(
+      workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
+
+    // Проверка принадлежности вакансии к workspace
+    const vacancyCheck = await ctx.db.query.vacancy.findFirst({
+      where: and(
+        eq(vacancy.id, vacancyId),
+        eq(vacancy.workspaceId, workspaceId),
+      ),
+    });
+
+    if (!vacancyCheck) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
 
     // Получаем ID откликов с учётом фильтра по скринингу
     let filteredResponseIds: string[] | null = null;
