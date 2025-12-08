@@ -1,14 +1,64 @@
-import { db, telegramMessage } from "@selectio/db";
-import { uuidv7Schema } from "@selectio/validators";
+import {
+  db,
+  telegramConversation,
+  telegramMessage,
+  workspaceRepository,
+} from "@selectio/db";
+import { uuidv7Schema, workspaceIdSchema } from "@selectio/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
+import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const getMessagesRouter = {
   getByConversationId: protectedProcedure
-    .input(z.object({ conversationId: uuidv7Schema }))
-    .query(async ({ input }) => {
+    .input(
+      z.object({
+        conversationId: uuidv7Schema,
+        workspaceId: workspaceIdSchema,
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      // Проверка доступа к workspace
+      const access = await workspaceRepository.checkAccess(
+        input.workspaceId,
+        ctx.session.user.id,
+      );
+
+      if (!access) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Нет доступа к этому workspace",
+        });
+      }
+
+      // Проверяем принадлежность беседы к workspace
+      const conversation = await db.query.telegramConversation.findFirst({
+        where: eq(telegramConversation.id, input.conversationId),
+        with: {
+          response: {
+            with: {
+              vacancy: true,
+            },
+          },
+        },
+      });
+
+      if (!conversation) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Беседа не найдена",
+        });
+      }
+
+      if (conversation.response?.vacancy?.workspaceId !== input.workspaceId) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Нет доступа к этой беседе",
+        });
+      }
+
       const messages = await db.query.telegramMessage.findMany({
         where: eq(telegramMessage.conversationId, input.conversationId),
         orderBy: [telegramMessage.createdAt],
@@ -44,18 +94,45 @@ export const getMessagesRouter = {
   getRecent: protectedProcedure
     .input(
       z.object({
+        workspaceId: workspaceIdSchema,
         limit: z.number().min(1).max(100).default(10),
       }),
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      // Проверка доступа к workspace
+      const access = await workspaceRepository.checkAccess(
+        input.workspaceId,
+        ctx.session.user.id,
+      );
+
+      if (!access) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Нет доступа к этому workspace",
+        });
+      }
+
       const messages = await db.query.telegramMessage.findMany({
         orderBy: [desc(telegramMessage.createdAt)],
         limit: input.limit,
         with: {
-          conversation: true,
+          conversation: {
+            with: {
+              response: {
+                with: {
+                  vacancy: true,
+                },
+              },
+            },
+          },
         },
       });
 
-      return messages;
+      // Фильтруем только сообщения из workspace
+      return messages.filter((msg) => {
+        return (
+          msg.conversation?.response?.vacancy?.workspaceId === input.workspaceId
+        );
+      });
     }),
 } satisfies TRPCRouterRecord;

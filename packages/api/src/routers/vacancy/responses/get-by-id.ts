@@ -1,12 +1,27 @@
-import { eq } from "@selectio/db";
+import { eq, workspaceRepository } from "@selectio/db";
 import { vacancyResponse } from "@selectio/db/schema";
 import { getDownloadUrl } from "@selectio/lib";
+import { workspaceIdSchema } from "@selectio/validators";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const getById = protectedProcedure
-  .input(z.object({ id: z.string() }))
+  .input(z.object({ id: z.string(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
+    // Проверка доступа к workspace
+    const access = await workspaceRepository.checkAccess(
+      input.workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
+
     const response = await ctx.db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, input.id),
       with: {
@@ -27,6 +42,14 @@ export const getById = protectedProcedure
 
     if (!response) {
       return null;
+    }
+
+    // Проверка принадлежности вакансии к workspace
+    if (response.vacancy.workspaceId !== input.workspaceId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому отклику",
+      });
     }
 
     let resumePdfUrl: string | null = null;

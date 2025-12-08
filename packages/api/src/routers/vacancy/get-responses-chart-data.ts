@@ -1,8 +1,27 @@
+import { workspaceRepository } from "@selectio/db";
+import { workspaceIdSchema } from "@selectio/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-export const getResponsesChartData = protectedProcedure.query(
-  async ({ ctx }) => {
+export const getResponsesChartData = protectedProcedure
+  .input(z.object({ workspaceId: workspaceIdSchema }))
+  .query(async ({ ctx, input }) => {
+    // Проверка доступа к workspace
+    const access = await workspaceRepository.checkAccess(
+      input.workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
+
     const userVacancies = await ctx.db.query.vacancy.findMany({
+      where: (vacancy, { eq }) => eq(vacancy.workspaceId, input.workspaceId),
       orderBy: (vacancy, { desc }) => [desc(vacancy.createdAt)],
     });
 
@@ -77,5 +96,4 @@ export const getResponsesChartData = protectedProcedure.query(
     }
 
     return result;
-  },
-);
+  });
