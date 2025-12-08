@@ -1,4 +1,4 @@
-import { desc, eq, workspaceRepository } from "@selectio/db";
+import { and, desc, eq, inArray, lt, workspaceRepository } from "@selectio/db";
 import {
   responseScreening,
   telegramInterviewScoring,
@@ -11,7 +11,13 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const listAll = protectedProcedure
-  .input(z.object({ workspaceId: workspaceIdSchema }))
+  .input(
+    z.object({
+      workspaceId: workspaceIdSchema,
+      limit: z.number().min(1).max(100).default(20),
+      cursor: z.date().optional(),
+    }),
+  )
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace
     const access = await workspaceRepository.checkAccess(
@@ -26,6 +32,7 @@ export const listAll = protectedProcedure
       });
     }
 
+    // Запрашиваем limit + 1 для определения hasMore
     const responses = await ctx.db
       .select({
         response: vacancyResponse,
@@ -33,29 +40,62 @@ export const listAll = protectedProcedure
       })
       .from(vacancyResponse)
       .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
-      .where(eq(vacancy.workspaceId, input.workspaceId))
-      .orderBy(desc(vacancyResponse.createdAt));
+      .where(
+        and(
+          eq(vacancy.workspaceId, input.workspaceId),
+          input.cursor
+            ? lt(vacancyResponse.createdAt, input.cursor)
+            : undefined,
+        ),
+      )
+      .orderBy(desc(vacancyResponse.createdAt))
+      .limit(input.limit + 1);
 
-    // Получаем screening и telegramInterviewScoring для каждого отклика
-    const responsesWithRelations = await Promise.all(
-      responses.map(async (r) => {
-        const screening = await ctx.db.query.responseScreening.findFirst({
-          where: eq(responseScreening.responseId, r.response.id),
-        });
+    const hasMore = responses.length > input.limit;
+    const items = hasMore ? responses.slice(0, input.limit) : responses;
 
-        const interviewScoring =
-          await ctx.db.query.telegramInterviewScoring.findFirst({
-            where: eq(telegramInterviewScoring.responseId, r.response.id),
-          });
+    if (items.length === 0) {
+      return {
+        items: [],
+        nextCursor: undefined,
+        hasMore: false,
+      };
+    }
 
-        return {
-          ...r.response,
-          vacancy: r.vacancy,
-          screening,
-          telegramInterviewScoring: interviewScoring,
-        };
-      }),
+    // Собираем все ID откликов для батчевых запросов
+    const responseIds = items.map((r) => r.response.id);
+
+    // Батчевый запрос screening
+    const screenings = await ctx.db
+      .select()
+      .from(responseScreening)
+      .where(inArray(responseScreening.responseId, responseIds));
+
+    // Батчевый запрос telegramInterviewScoring
+    const interviewScorings = await ctx.db
+      .select()
+      .from(telegramInterviewScoring)
+      .where(inArray(telegramInterviewScoring.responseId, responseIds));
+
+    // Создаем lookup maps
+    const screeningMap = new Map(screenings.map((s) => [s.responseId, s]));
+    const interviewScoringMap = new Map(
+      interviewScorings.map((i) => [i.responseId, i]),
     );
 
-    return responsesWithRelations;
+    // Объединяем результаты
+    const responsesWithRelations = items.map((r) => ({
+      ...r.response,
+      vacancy: r.vacancy,
+      screening: screeningMap.get(r.response.id) ?? null,
+      telegramInterviewScoring: interviewScoringMap.get(r.response.id) ?? null,
+    }));
+
+    const lastItem = items[items.length - 1];
+
+    return {
+      items: responsesWithRelations,
+      nextCursor: hasMore && lastItem ? lastItem.response.createdAt : undefined,
+      hasMore,
+    };
   });
