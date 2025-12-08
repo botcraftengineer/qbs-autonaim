@@ -108,6 +108,7 @@ export async function generateTelegramInvite(
 
 /**
  * Поиск отклика по токену приглашения
+ * @deprecated Используйте findResponseByInviteToken из @qbs-autonaim/lib
  */
 export async function findResponseByInviteToken(
   token: string,
@@ -116,22 +117,14 @@ export async function findResponseByInviteToken(
     token: maskToken(token),
   });
 
-  const result = await tryCatch(async () => {
-    return await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramInviteToken, token),
-    });
-  }, "Не удалось найти отклик по токену");
+  const { findResponseByInviteToken: findResponse } = await import(
+    "@qbs-autonaim/lib"
+  );
+  const result = await findResponse(token);
 
   if (!result.success) {
     return err(result.error);
   }
 
-  if (!result.data) {
-    return err("Неверный или устаревший токен приглашения");
-  }
-
-  return ok({
-    id: result.data.id,
-    candidateName: result.data.candidateName,
-  });
+  return ok(result.data);
 }

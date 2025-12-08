@@ -108,7 +108,7 @@ async function handleStartCommand(
   // If we have invite token, link conversation to response
   if (startPayload) {
     try {
-      const { findResponseByInviteToken } = await import("@qbs-autonaim/jobs");
+      const { findResponseByInviteToken } = await import("@qbs-autonaim/lib");
       const responseResult = await findResponseByInviteToken(startPayload);
 
       if (responseResult.success) {

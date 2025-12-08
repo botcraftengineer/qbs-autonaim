@@ -29,7 +29,6 @@
     "@mtcute/dispatcher": "0.27.2",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
-    "@qbs-autonaim/jobs": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "hono": "^4.10.7",
     "zod": "^4.1.13"
