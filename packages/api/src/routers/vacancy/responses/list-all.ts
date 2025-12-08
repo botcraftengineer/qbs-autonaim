@@ -15,7 +15,7 @@ export const listAll = protectedProcedure
     z.object({
       workspaceId: workspaceIdSchema,
       limit: z.number().min(1).max(100).default(20),
-      cursor: z.date().optional(),
+      cursor: z.coerce.date().optional(),
     }),
   )
   .query(async ({ ctx, input }) => {
