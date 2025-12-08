@@ -49,9 +49,14 @@ async function collectVacancies(page: Page): Promise<VacancyData[]> {
   // Пауза после загрузки страницы
   await humanDelay(1500, 3000);
 
-  await page.waitForSelector('div[data-qa="vacancies-dashboard-vacancy"]', {
-    timeout: HH_CONFIG.timeouts.selector,
-  });
+  try {
+    await page.waitForSelector('div[data-qa="vacancies-dashboard-vacancy"]', {
+      timeout: HH_CONFIG.timeouts.selector,
+    });
+  } catch (_e) {
+    console.log("⚠️ Не найдено активных вакансий на странице");
+    return [];
+  }
 
   // Имитируем просмотр списка вакансий
   await humanBrowse(page);
