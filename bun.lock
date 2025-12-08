@@ -5,9 +5,9 @@
     "": {
       "name": "@qbs-autonaim/root",
       "devDependencies": {
-        "@biomejs/biome": "^2.3.8",
-        "@turbo/gen": "^2.6.3",
-        "turbo": "^2.6.3",
+        "@biomejs/biome": "2.3.8",
+        "@turbo/gen": "2.6.3",
+        "turbo": "2.6.3",
         "typescript": "5.9.3",
       },
     },
@@ -239,7 +239,6 @@
         "@mtcute/dispatcher": "0.27.2",
         "@qbs-autonaim/config": "workspace:*",
         "@qbs-autonaim/db": "workspace:*",
-        "@qbs-autonaim/jobs": "workspace:*",
         "@qbs-autonaim/lib": "workspace:*",
         "hono": "^4.10.7",
         "zod": "^4.1.13",
