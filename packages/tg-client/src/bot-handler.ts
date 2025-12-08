@@ -261,7 +261,7 @@ async function handleVoiceMessage(
   message: Message,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
-
+  console.log('handleVoiceMessage', chatId);
   if (!message.media || message.media.type !== "voice") {
     return;
   }
@@ -427,7 +427,7 @@ async function handleAudioFile(
   message: Message,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
-
+  console.log('handleAudioFile', chatId);
   if (!message.media || message.media.type !== "audio") {
     return;
   }
