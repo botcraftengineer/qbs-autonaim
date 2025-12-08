@@ -21,6 +21,7 @@ export interface ResumeExperience {
   experience: string;
   contacts: unknown;
   phone: string | null;
+  telegramUsername: string | null;
   pdfBuffer: Buffer | null;
 }
 

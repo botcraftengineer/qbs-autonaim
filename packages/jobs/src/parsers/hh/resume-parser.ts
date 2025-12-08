@@ -1,3 +1,4 @@
+import { extractTelegramUsername } from "@selectio/prompts";
 import axios from "axios";
 import type { Page } from "puppeteer";
 import type { ResumeExperience } from "../types";
@@ -208,6 +209,25 @@ export async function parseResumeExperience(
     }
   }
 
+  // Извлекаем Telegram username из контактов
+  let telegramUsername: string | null = null;
+  if (contacts) {
+    try {
+      console.log("🔍 Извлечение Telegram username из контактов...");
+      telegramUsername = await extractTelegramUsername(contacts);
+      if (telegramUsername) {
+        console.log(`✅ Telegram username: @${telegramUsername}`);
+      } else {
+        console.log("⚠️ Telegram username не найден в контактах");
+      }
+    } catch (error) {
+      console.log("⚠️ Ошибка извлечения Telegram username");
+      if (error instanceof Error) {
+        console.log(`   ${error.message}`);
+      }
+    }
+  }
+
   // Скачиваем PDF и TXT
   let pdfBuffer: Buffer | null = null;
   let txtBuffer: Buffer | null = null;
@@ -241,6 +261,7 @@ export async function parseResumeExperience(
     experience: resumeHtml,
     contacts,
     phone,
+    telegramUsername,
     pdfBuffer,
   };
 }
