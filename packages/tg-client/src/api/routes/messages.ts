@@ -24,7 +24,8 @@ messages.post("/send", async (c) => {
     const { apiId, apiHash, sessionData, chatId, text } = result.data;
     const { client } = await createUserClient(apiId, apiHash, sessionData);
 
-    const messageResult = await client.sendText(chatId, text);
+    const peer = await client.resolvePeer(chatId);
+    const messageResult = await client.sendText(peer, text);
 
     return c.json({
       success: true,
