@@ -36,7 +36,7 @@
   },
   "dependencies": {
     "@ai-sdk/deepseek": "1.0.31",
-    "@ai-sdk/openai": "2.0.79",
+    "@ai-sdk/openai": "2.0.80",
     "@inngest/realtime": "0.4.5",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/emails": "workspace:*",
