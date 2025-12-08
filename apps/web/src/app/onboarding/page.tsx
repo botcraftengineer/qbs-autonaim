@@ -1,5 +1,6 @@
 "use client";
 
+import { env as baseEnv } from "@qbs-autonaim/config";
 import { Button, Input, Label } from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -136,7 +137,7 @@ export default function OnboardingPage() {
             <Label htmlFor="slug">Адрес пространства</Label>
             <div className="flex items-center gap-2">
               <span className="text-muted-foreground text-sm">
-                app.selectio.ru/
+                {new URL(baseEnv.APP_URL).host}/
               </span>
               <Input
                 id="slug"
