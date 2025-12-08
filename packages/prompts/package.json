@@ -16,7 +16,6 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@selectio/jobs": "workspace:*",
     "string-strip-html": "^13.5.0",
     "zod": "4.1.13"
   },

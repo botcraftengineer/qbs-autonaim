@@ -203,7 +203,6 @@
       "name": "@selectio/prompts",
       "version": "0.1.0",
       "dependencies": {
-        "@selectio/jobs": "workspace:*",
         "string-strip-html": "^13.5.0",
         "zod": "4.1.13",
       },
