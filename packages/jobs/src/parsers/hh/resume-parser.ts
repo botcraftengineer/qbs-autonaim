@@ -1,6 +1,6 @@
-import { extractTelegramUsername } from "@selectio/prompts";
 import axios from "axios";
 import type { Page } from "puppeteer";
+import { extractTelegramUsername } from "../../services/messaging";
 import type { ResumeExperience } from "../types";
 import { HH_CONFIG } from "./config";
 
