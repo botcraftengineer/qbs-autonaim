@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import {
   IconDots,
   IconExternalLink,

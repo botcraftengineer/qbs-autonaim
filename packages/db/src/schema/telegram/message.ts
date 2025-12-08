@@ -1,4 +1,4 @@
-import { uuidv7Schema } from "@selectio/validators";
+import { uuidv7Schema } from "@qbs-autonaim/validators";
 import { sql } from "drizzle-orm";
 import {
   pgEnum,

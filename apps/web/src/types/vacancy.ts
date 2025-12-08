@@ -1,4 +1,4 @@
-import type { VacancyResponse as DbVacancyResponse } from "@selectio/db/schema";
+import type { VacancyResponse as DbVacancyResponse } from "@qbs-autonaim/db/schema";
 
 export type VacancyResponse = DbVacancyResponse & {
   screening?: {

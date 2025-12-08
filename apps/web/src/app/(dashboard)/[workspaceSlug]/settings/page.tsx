@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@selectio/ui";
+import { Skeleton } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { WorkspaceForm } from "~/components/settings/workspace-form";

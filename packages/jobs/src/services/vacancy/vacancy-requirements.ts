@@ -1,7 +1,7 @@
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { vacancy } from "@selectio/db/schema";
-import { buildVacancyRequirementsExtractionPrompt } from "@selectio/prompts";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { vacancy } from "@qbs-autonaim/db/schema";
+import { buildVacancyRequirementsExtractionPrompt } from "@qbs-autonaim/prompts";
 import { generateText } from "../../lib/ai-client";
 import { vacancyRequirementsSchema } from "../../schemas/vacancy-requirements.schema";
 import type { VacancyRequirements } from "../../types/screening";

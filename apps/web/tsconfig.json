@@ -1,5 +1,5 @@
 {
-  "extends": "@selectio/tsconfig/base.json",
+  "extends": "@qbs-autonaim/tsconfig/base.json",
   "compilerOptions": {
     "lib": ["ES2022", "dom", "dom.iterable"],
     "jsx": "preserve",

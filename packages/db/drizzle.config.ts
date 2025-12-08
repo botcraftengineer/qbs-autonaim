@@ -1,4 +1,4 @@
-import { env } from "@selectio/config";
+import { env } from "@qbs-autonaim/config";
 import type { Config } from "drizzle-kit";
 
 if (!env.POSTGRES_URL) {

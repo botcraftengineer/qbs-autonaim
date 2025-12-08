@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/tsconfig",
+  "name": "@qbs-autonaim/tsconfig",
   "private": true,
   "files": [
     "*.json"

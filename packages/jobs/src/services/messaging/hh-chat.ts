@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { integration } from "@selectio/db/schema";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { integration } from "@qbs-autonaim/db/schema";
 import axios from "axios";
 import { HH_CONFIG } from "../../parsers/hh/config";
-import { type Result, createLogger, err, ok, tryCatch } from "../base";
+import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("HHChat");
 

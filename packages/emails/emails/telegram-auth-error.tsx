@@ -12,7 +12,7 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { env } from "@selectio/config";
+import { env } from "@qbs-autonaim/config";
 
 import { emailTailwindConfig } from "../tailwind";
 

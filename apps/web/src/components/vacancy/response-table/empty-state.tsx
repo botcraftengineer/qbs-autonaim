@@ -1,4 +1,4 @@
-import { TableCell, TableRow } from "@selectio/ui";
+import { TableCell, TableRow } from "@qbs-autonaim/ui";
 
 interface EmptyStateProps {
   hasResponses: boolean;

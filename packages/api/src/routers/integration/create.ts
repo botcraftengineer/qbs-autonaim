@@ -1,5 +1,5 @@
-import { upsertIntegration, workspaceRepository } from "@selectio/db";
-import { workspaceIdSchema } from "@selectio/validators";
+import { upsertIntegration, workspaceRepository } from "@qbs-autonaim/db";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

@@ -1,5 +1,5 @@
-import { db, eq, telegramSession } from "@selectio/db";
-import { tgClientSDK } from "@selectio/tg-client/sdk";
+import { db, eq, telegramSession } from "@qbs-autonaim/db";
+import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

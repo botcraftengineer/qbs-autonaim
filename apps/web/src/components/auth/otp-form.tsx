@@ -18,8 +18,8 @@ import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@selectio/ui";
-import { type OTPFormData, otpFormSchema } from "@selectio/validators";
+} from "@qbs-autonaim/ui";
+import { type OTPFormData, otpFormSchema } from "@qbs-autonaim/validators";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Card } from "@selectio/ui";
+import { Badge, Button, Card } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Plus, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";

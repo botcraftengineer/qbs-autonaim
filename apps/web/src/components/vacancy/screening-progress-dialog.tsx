@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   Progress,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchScreenNewResponsesToken } from "~/actions/realtime";

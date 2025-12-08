@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";

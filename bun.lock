@@ -12,18 +12,18 @@
       },
     },
     "apps/web": {
-      "name": "@selectio/web",
+      "name": "@qbs-autonaim/web",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/modifiers": "^9.0.0",
         "@dnd-kit/sortable": "^10.0.0",
         "@inngest/realtime": "0.4.5",
-        "@selectio/api": "workspace:*",
-        "@selectio/auth": "workspace:*",
-        "@selectio/db": "workspace:*",
-        "@selectio/emails": "workspace:*",
-        "@selectio/ui": "workspace:*",
-        "@selectio/validators": "workspace:*",
+        "@qbs-autonaim/api": "workspace:*",
+        "@qbs-autonaim/auth": "workspace:*",
+        "@qbs-autonaim/db": "workspace:*",
+        "@qbs-autonaim/emails": "workspace:*",
+        "@qbs-autonaim/ui": "workspace:*",
+        "@qbs-autonaim/validators": "workspace:*",
         "@t3-oss/env-nextjs": "0.13.8",
         "@tabler/icons-react": "^3.35.0",
         "@tanstack/react-form": "^1.27.1",
@@ -46,8 +46,8 @@
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tailwind-config": "workspace:*",
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tailwind-config": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/dompurify": "^3.2.0",
         "@types/node": "24.10.1",
         "@types/react": "19.2.7",
@@ -59,53 +59,53 @@
       },
     },
     "packages/api": {
-      "name": "@selectio/api",
+      "name": "@qbs-autonaim/api",
       "dependencies": {
-        "@selectio/auth": "workspace:*",
-        "@selectio/db": "workspace:*",
-        "@selectio/jobs": "workspace:*",
-        "@selectio/validators": "workspace:*",
+        "@qbs-autonaim/auth": "workspace:*",
+        "@qbs-autonaim/db": "workspace:*",
+        "@qbs-autonaim/jobs": "workspace:*",
+        "@qbs-autonaim/validators": "workspace:*",
         "@trpc/server": "^11.7.2",
         "superjson": "2.2.6",
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "typescript": "5.9.3",
       },
     },
     "packages/auth": {
-      "name": "@selectio/auth",
+      "name": "@qbs-autonaim/auth",
       "dependencies": {
-        "@selectio/config": "workspace:*",
-        "@selectio/db": "workspace:*",
+        "@qbs-autonaim/config": "workspace:*",
+        "@qbs-autonaim/db": "workspace:*",
         "better-auth": "1.4.5",
         "zod": "4.1.13",
       },
       "devDependencies": {
         "@better-auth/cli": "1.4.5",
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "typescript": "5.9.3",
       },
     },
     "packages/config": {
-      "name": "@selectio/config",
+      "name": "@qbs-autonaim/config",
       "version": "0.0.0",
       "dependencies": {
         "@t3-oss/env-core": "0.13.8",
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "tsup": "8.5.1",
         "typescript": "5.9.3",
       },
     },
     "packages/db": {
-      "name": "@selectio/db",
+      "name": "@qbs-autonaim/db",
       "dependencies": {
-        "@selectio/config": "workspace:*",
-        "@selectio/validators": "workspace:*",
+        "@qbs-autonaim/config": "workspace:*",
+        "@qbs-autonaim/validators": "workspace:*",
         "@vercel/postgres": "0.10.0",
         "drizzle-orm": "0.45.0",
         "drizzle-zod": "0.8.3",
@@ -113,19 +113,19 @@
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "drizzle-kit": "^0.31.8",
         "typescript": "5.9.3",
       },
     },
     "packages/emails": {
-      "name": "@selectio/emails",
+      "name": "@qbs-autonaim/emails",
       "version": "1.0.0",
       "dependencies": {
+        "@qbs-autonaim/config": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@radix-ui/colors": "3.0.0",
         "@react-email/components": "1.0.1",
-        "@selectio/config": "workspace:*",
-        "@selectio/tsconfig": "workspace:*",
         "@tailwindcss/typography": "0.5.19",
         "nodemailer": "^7.0.11",
         "react": "19.2.1",
@@ -148,19 +148,19 @@
       },
     },
     "packages/jobs": {
-      "name": "@selectio/jobs",
+      "name": "@qbs-autonaim/jobs",
       "version": "0.1.0",
       "dependencies": {
         "@ai-sdk/deepseek": "1.0.31",
         "@ai-sdk/openai": "2.0.79",
         "@inngest/realtime": "0.4.5",
-        "@selectio/config": "workspace:*",
-        "@selectio/db": "workspace:*",
-        "@selectio/emails": "workspace:*",
-        "@selectio/lib": "workspace:*",
-        "@selectio/prompts": "workspace:*",
-        "@selectio/telegram-bot": "workspace:*",
-        "@selectio/tg-client": "workspace:*",
+        "@qbs-autonaim/config": "workspace:*",
+        "@qbs-autonaim/db": "workspace:*",
+        "@qbs-autonaim/emails": "workspace:*",
+        "@qbs-autonaim/lib": "workspace:*",
+        "@qbs-autonaim/prompts": "workspace:*",
+        "@qbs-autonaim/telegram-bot": "workspace:*",
+        "@qbs-autonaim/tg-client": "workspace:*",
         "@t3-oss/env-core": "0.13.8",
         "ai": "5.0.108",
         "axios": "^1.13.2",
@@ -174,7 +174,7 @@
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/bun": "1.3.4",
         "@types/node": "24.10.1",
         "cross-env": "10.1.0",
@@ -184,74 +184,74 @@
       },
     },
     "packages/lib": {
-      "name": "@selectio/lib",
+      "name": "@qbs-autonaim/lib",
       "version": "0.1.0",
       "dependencies": {
         "@aws-sdk/client-s3": "3.946.0",
         "@aws-sdk/s3-request-presigner": "3.946.0",
-        "@selectio/config": "workspace:*",
+        "@qbs-autonaim/config": "workspace:*",
         "sharp": "^0.34.5",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/node": "24.10.1",
         "tsup": "8.5.1",
         "typescript": "5.9.3",
       },
     },
     "packages/prompts": {
-      "name": "@selectio/prompts",
+      "name": "@qbs-autonaim/prompts",
       "version": "0.1.0",
       "dependencies": {
         "string-strip-html": "^13.5.0",
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/node": "24.10.1",
         "tsup": "8.5.1",
         "typescript": "5.9.3",
       },
     },
     "packages/telegram-bot": {
-      "name": "@selectio/telegram-bot",
+      "name": "@qbs-autonaim/telegram-bot",
       "version": "0.1.0",
       "dependencies": {
         "@ai-sdk/openai": "2.0.79",
-        "@selectio/config": "workspace:*",
-        "@selectio/db": "workspace:*",
-        "@selectio/lib": "workspace:*",
+        "@qbs-autonaim/config": "workspace:*",
+        "@qbs-autonaim/db": "workspace:*",
+        "@qbs-autonaim/lib": "workspace:*",
         "ai": "^5.0.108",
         "grammy": "^1.38.4",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/bun": "1.3.4",
         "@types/node": "24.10.1",
         "typescript": "5.9.3",
       },
     },
     "packages/tg-client": {
-      "name": "@selectio/tg-client",
+      "name": "@qbs-autonaim/tg-client",
       "version": "0.1.0",
       "dependencies": {
         "@mtcute/bun": "0.27.2",
         "@mtcute/dispatcher": "0.27.2",
-        "@selectio/config": "workspace:*",
-        "@selectio/db": "workspace:*",
-        "@selectio/lib": "workspace:*",
+        "@qbs-autonaim/config": "workspace:*",
+        "@qbs-autonaim/db": "workspace:*",
+        "@qbs-autonaim/lib": "workspace:*",
         "hono": "^4.10.7",
         "zod": "^4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/bun": "1.3.4",
         "@types/node": "24.10.1",
         "typescript": "5.9.3",
       },
     },
     "packages/ui": {
-      "name": "@selectio/ui",
+      "name": "@qbs-autonaim/ui",
       "dependencies": {
         "@hookform/resolvers": "^5.2.2",
         "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -284,7 +284,7 @@
         "vaul": "^1.1.2",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "@types/react": "19.2.7",
         "react": "19.2.1",
         "typescript": "5.9.3",
@@ -292,33 +292,33 @@
       },
     },
     "packages/validators": {
-      "name": "@selectio/validators",
+      "name": "@qbs-autonaim/validators",
       "dependencies": {
         "zod": "4.1.13",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "workspace:*",
+        "@qbs-autonaim/tsconfig": "workspace:*",
         "typescript": "5.9.3",
       },
     },
     "tooling/github": {
-      "name": "@selectio/github",
+      "name": "@qbs-autonaim/github",
     },
     "tooling/tailwind": {
-      "name": "@selectio/tailwind-config",
+      "name": "@qbs-autonaim/tailwind-config",
       "dependencies": {
         "@tailwindcss/postcss": "4.1.17",
         "postcss": "^8.5.6",
         "tailwindcss": "4.1.17",
       },
       "devDependencies": {
-        "@selectio/tsconfig": "*",
+        "@qbs-autonaim/tsconfig": "*",
         "@types/node": "24.10.1",
         "typescript": "5.9.3",
       },
     },
     "tooling/typescript": {
-      "name": "@selectio/tsconfig",
+      "name": "@qbs-autonaim/tsconfig",
     },
   },
   "packages": {
@@ -1016,6 +1016,38 @@
 
     "@puppeteer/browsers": ["@puppeteer/browsers@2.11.0", "", { "dependencies": { "debug": "^4.4.3", "extract-zip": "^2.0.1", "progress": "^2.0.3", "proxy-agent": "^6.5.0", "semver": "^7.7.3", "tar-fs": "^3.1.1", "yargs": "^17.7.2" }, "bin": { "browsers": "lib/cjs/main-cli.js" } }, "sha512-n6oQX6mYkG8TRPuPXmbPidkUbsSRalhmaaVAQxvH1IkQy63cwsH+kOjB3e4cpCDHg0aSvsiX9bQ4s2VB6mGWUQ=="],
 
+    "@qbs-autonaim/api": ["@qbs-autonaim/api@workspace:packages/api"],
+
+    "@qbs-autonaim/auth": ["@qbs-autonaim/auth@workspace:packages/auth"],
+
+    "@qbs-autonaim/config": ["@qbs-autonaim/config@workspace:packages/config"],
+
+    "@qbs-autonaim/db": ["@qbs-autonaim/db@workspace:packages/db"],
+
+    "@qbs-autonaim/emails": ["@qbs-autonaim/emails@workspace:packages/emails"],
+
+    "@qbs-autonaim/github": ["@qbs-autonaim/github@workspace:tooling/github"],
+
+    "@qbs-autonaim/jobs": ["@qbs-autonaim/jobs@workspace:packages/jobs"],
+
+    "@qbs-autonaim/lib": ["@qbs-autonaim/lib@workspace:packages/lib"],
+
+    "@qbs-autonaim/prompts": ["@qbs-autonaim/prompts@workspace:packages/prompts"],
+
+    "@qbs-autonaim/tailwind-config": ["@qbs-autonaim/tailwind-config@workspace:tooling/tailwind"],
+
+    "@qbs-autonaim/telegram-bot": ["@qbs-autonaim/telegram-bot@workspace:packages/telegram-bot"],
+
+    "@qbs-autonaim/tg-client": ["@qbs-autonaim/tg-client@workspace:packages/tg-client"],
+
+    "@qbs-autonaim/tsconfig": ["@qbs-autonaim/tsconfig@workspace:tooling/typescript"],
+
+    "@qbs-autonaim/ui": ["@qbs-autonaim/ui@workspace:packages/ui"],
+
+    "@qbs-autonaim/validators": ["@qbs-autonaim/validators@workspace:packages/validators"],
+
+    "@qbs-autonaim/web": ["@qbs-autonaim/web@workspace:apps/web"],
+
     "@radix-ui/colors": ["@radix-ui/colors@3.0.0", "", {}, "sha512-FUOsGBkHrYJwCSEtWRCIfQbZG7q1e6DgxCIOe1SUQzDe/7rXXeA47s8yCn6fuTNQAj1Zq4oTFi9Yjp3wzElcxg=="],
 
     "@radix-ui/number": ["@radix-ui/number@1.1.1", "", {}, "sha512-MkKCwxlXTgz6CFoJx3pCwn07GKp36+aZyu/u2Ln2VrA5DcdyCZkASEDBTd8x5whTQQL5CiYf4prXKLcgQdv29g=="],
@@ -1235,38 +1267,6 @@
     "@sec-ant/readable-stream": ["@sec-ant/readable-stream@0.4.1", "", {}, "sha512-831qok9r2t8AlxLko40y2ebgSDhenenCatLVeW/uBtnHPyhHOvG0C7TvfgecV+wHzIm5KUICgzmVpWS+IMEAeg=="],
 
     "@selderee/plugin-htmlparser2": ["@selderee/plugin-htmlparser2@0.11.0", "", { "dependencies": { "domhandler": "^5.0.3", "selderee": "^0.11.0" } }, "sha512-P33hHGdldxGabLFjPPpaTxVolMrzrcegejx+0GxjrIb9Zv48D8yAIA/QTDR2dFl7Uz7urX8aX6+5bCZslr+gWQ=="],
-
-    "@selectio/api": ["@selectio/api@workspace:packages/api"],
-
-    "@selectio/auth": ["@selectio/auth@workspace:packages/auth"],
-
-    "@selectio/config": ["@selectio/config@workspace:packages/config"],
-
-    "@selectio/db": ["@selectio/db@workspace:packages/db"],
-
-    "@selectio/emails": ["@selectio/emails@workspace:packages/emails"],
-
-    "@selectio/github": ["@selectio/github@workspace:tooling/github"],
-
-    "@selectio/jobs": ["@selectio/jobs@workspace:packages/jobs"],
-
-    "@selectio/lib": ["@selectio/lib@workspace:packages/lib"],
-
-    "@selectio/prompts": ["@selectio/prompts@workspace:packages/prompts"],
-
-    "@selectio/tailwind-config": ["@selectio/tailwind-config@workspace:tooling/tailwind"],
-
-    "@selectio/telegram-bot": ["@selectio/telegram-bot@workspace:packages/telegram-bot"],
-
-    "@selectio/tg-client": ["@selectio/tg-client@workspace:packages/tg-client"],
-
-    "@selectio/tsconfig": ["@selectio/tsconfig@workspace:tooling/typescript"],
-
-    "@selectio/ui": ["@selectio/ui@workspace:packages/ui"],
-
-    "@selectio/validators": ["@selectio/validators@workspace:packages/validators"],
-
-    "@selectio/web": ["@selectio/web@workspace:apps/web"],
 
     "@sindresorhus/is": ["@sindresorhus/is@4.6.0", "", {}, "sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw=="],
 

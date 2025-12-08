@@ -1,7 +1,7 @@
 "use client";
 
-import type { ResponseStatus } from "@selectio/db/schema";
-import { RESPONSE_STATUS, RESPONSE_STATUS_LABELS } from "@selectio/db/schema";
+import type { ResponseStatus } from "@qbs-autonaim/db/schema";
+import { RESPONSE_STATUS, RESPONSE_STATUS_LABELS } from "@qbs-autonaim/db/schema";
 import {
   Button,
   DropdownMenu,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { ListFilter } from "lucide-react";
 
 interface ResponseStatusFilterProps {

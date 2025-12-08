@@ -1,4 +1,4 @@
-import { SidebarInset, SidebarProvider } from "@selectio/ui";
+import { SidebarInset, SidebarProvider } from "@qbs-autonaim/ui";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";

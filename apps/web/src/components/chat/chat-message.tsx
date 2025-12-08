@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from "@selectio/ui";
+import { Avatar, AvatarFallback } from "@qbs-autonaim/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Bot, User } from "lucide-react";

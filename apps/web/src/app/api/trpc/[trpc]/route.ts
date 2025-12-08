@@ -1,4 +1,4 @@
-import { appRouter, createTRPCContext } from "@selectio/api";
+import { appRouter, createTRPCContext } from "@qbs-autonaim/api";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { NextRequest } from "next/server";
 

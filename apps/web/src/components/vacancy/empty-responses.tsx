@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@selectio/ui";
+import { Card, CardContent } from "@qbs-autonaim/ui";
 import { User } from "lucide-react";
 
 export function EmptyResponses() {

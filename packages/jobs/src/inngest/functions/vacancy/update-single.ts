@@ -1,6 +1,6 @@
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { vacancy } from "@selectio/db/schema";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { vacancy } from "@qbs-autonaim/db/schema";
 import puppeteer from "puppeteer";
 import { HH_CONFIG } from "../../../parsers/hh/config";
 import { humanBrowse, humanDelay } from "../../../parsers/hh/human-behavior";

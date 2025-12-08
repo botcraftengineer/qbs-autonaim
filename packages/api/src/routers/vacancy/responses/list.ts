@@ -1,10 +1,10 @@
-import type { SQL } from "@selectio/db";
-import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@selectio/db";
+import type { SQL } from "@qbs-autonaim/db";
+import { and, asc, desc, eq, gte, ilike, inArray, lt, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
   telegramMessage,
   vacancyResponse,
-} from "@selectio/db/schema";
+} from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 

@@ -1,7 +1,7 @@
-import { env } from "@selectio/config";
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { telegramConversation, telegramMessage } from "@selectio/db/schema";
+import { env } from "@qbs-autonaim/config";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
 import { Bot } from "grammy";
 
 const TELEGRAM_BOT_TOKEN = env.TELEGRAM_BOT_TOKEN;
@@ -32,7 +32,7 @@ bot.command("start", async (ctx) => {
   // If we have invite token, link conversation to response
   if (startPayload && typeof startPayload === "string") {
     try {
-      const { findResponseByInviteToken } = await import("@selectio/jobs");
+      const { findResponseByInviteToken } = await import("@qbs-autonaim/jobs");
       const responseResult = await findResponseByInviteToken(startPayload);
 
       if (responseResult.success) {

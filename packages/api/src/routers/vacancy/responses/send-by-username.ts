@@ -1,6 +1,6 @@
-import { eq } from "@selectio/db";
-import { vacancyResponse } from "@selectio/db/schema";
-import { inngest } from "@selectio/jobs/client";
+import { eq } from "@qbs-autonaim/db";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 

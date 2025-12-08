@@ -1,5 +1,5 @@
-import { and, count, eq, gte, isNull, sql } from "@selectio/db";
-import { responseScreening, vacancyResponse } from "@selectio/db/schema";
+import { and, count, eq, gte, isNull, sql } from "@qbs-autonaim/db";
+import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { protectedProcedure } from "../../trpc";
 
 export const getDashboardStats = protectedProcedure.query(async ({ ctx }) => {

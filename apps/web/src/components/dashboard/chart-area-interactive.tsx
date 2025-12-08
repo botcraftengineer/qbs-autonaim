@@ -18,8 +18,8 @@ import {
   SelectValue,
   ToggleGroup,
   ToggleGroupItem,
-} from "@selectio/ui";
-import { useIsMobile } from "@selectio/ui/hooks";
+} from "@qbs-autonaim/ui";
+import { useIsMobile } from "@qbs-autonaim/ui/hooks";
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 

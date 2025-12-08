@@ -1,5 +1,5 @@
-import { desc } from "@selectio/db";
-import { vacancy } from "@selectio/db/schema";
+import { desc } from "@qbs-autonaim/db";
+import { vacancy } from "@qbs-autonaim/db/schema";
 import { protectedProcedure } from "../../trpc";
 
 export const list = protectedProcedure.query(({ ctx }) => {

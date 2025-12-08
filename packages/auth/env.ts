@@ -1,1 +1,1 @@
-export { env } from "@selectio/config";
+export { env } from "@qbs-autonaim/config";

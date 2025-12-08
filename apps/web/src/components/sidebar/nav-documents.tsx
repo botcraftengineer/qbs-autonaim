@@ -13,7 +13,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import {
   type Icon,
   IconDots,

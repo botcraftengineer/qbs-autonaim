@@ -26,8 +26,8 @@ import {
 
 // Create Inngest client with Zod schemas for type-safe events
 export const inngest = new Inngest({
-  id: "selectio",
-  name: "Selectio Jobs",
+  id: "qbs-autonaim",
+  name: "QBS Автонайм Jobs",
   middleware: [realtimeMiddleware()],
   schemas: new EventSchemas().fromSchema({
     "vacancy/requirements.extract": vacancyRequirementsExtractDataSchema,

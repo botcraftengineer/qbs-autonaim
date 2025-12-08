@@ -1,6 +1,6 @@
-import { db } from "@selectio/db/client";
-import { file } from "@selectio/db/schema";
-import { uploadFile as uploadToS3 } from "@selectio/lib";
+import { db } from "@qbs-autonaim/db/client";
+import { file } from "@qbs-autonaim/db/schema";
+import { uploadFile as uploadToS3 } from "@qbs-autonaim/lib";
 
 export async function uploadFile(
   fileBuffer: Buffer,

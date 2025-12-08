@@ -11,7 +11,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { Hash, Key, Phone, Send } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 import type { Step1Values } from "./types";

@@ -7,8 +7,8 @@
  * The pieces you will need to use are documented accordingly near the end
  */
 
-import type { Auth } from "@selectio/auth";
-import { db } from "@selectio/db/client";
+import type { Auth } from "@qbs-autonaim/auth";
+import { db } from "@qbs-autonaim/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError, z } from "zod";

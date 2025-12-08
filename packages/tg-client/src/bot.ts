@@ -1,6 +1,6 @@
 import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
-import { env } from "@selectio/config";
+import { env } from "@qbs-autonaim/config";
 import { createBotHandler } from "./bot-handler";
 import { ExportableStorage } from "./storage";
 

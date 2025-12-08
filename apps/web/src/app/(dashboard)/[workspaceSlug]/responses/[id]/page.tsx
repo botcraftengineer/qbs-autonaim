@@ -3,7 +3,7 @@
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
-} from "@selectio/db/schema";
+} from "@qbs-autonaim/db/schema";
 import {
   Badge,
   Button,
@@ -14,7 +14,7 @@ import {
   CardTitle,
   Separator,
   Skeleton,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download, ExternalLink, User } from "lucide-react";
 import Link from "next/link";

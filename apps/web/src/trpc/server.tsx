@@ -1,5 +1,5 @@
-import type { AppRouter } from "@selectio/api";
-import { appRouter, createTRPCContext } from "@selectio/api";
+import type { AppRouter } from "@qbs-autonaim/api";
+import { appRouter, createTRPCContext } from "@qbs-autonaim/api";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 import type { TRPCQueryOptions } from "@trpc/tanstack-react-query";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";

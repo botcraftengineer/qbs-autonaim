@@ -1,4 +1,4 @@
-import { Button, Textarea } from "@selectio/ui";
+import { Button, Textarea } from "@qbs-autonaim/ui";
 import { Paperclip, Send } from "lucide-react";
 import { useState } from "react";
 

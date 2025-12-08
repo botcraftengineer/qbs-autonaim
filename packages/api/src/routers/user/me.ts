@@ -1,6 +1,6 @@
-import { eq } from "@selectio/db";
+import { eq } from "@qbs-autonaim/db";
 import { protectedProcedure } from "../../trpc";
-import { user } from "@selectio/db/schema";
+import { user } from "@qbs-autonaim/db/schema";
 
 export const me = protectedProcedure.query(({ ctx }) => {
   return ctx.db.query.user.findFirst({

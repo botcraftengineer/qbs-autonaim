@@ -1,14 +1,14 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
-import { env } from "@selectio/config";
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
+import { env } from "@qbs-autonaim/config";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import {
   file,
   telegramConversation,
   telegramMessage,
-} from "@selectio/db/schema";
-import { uploadFile as uploadToS3 } from "@selectio/lib";
+} from "@qbs-autonaim/db/schema";
+import { uploadFile as uploadToS3 } from "@qbs-autonaim/lib";
 
 /**
  * Загрузить файл в S3 и создать запись в БД
@@ -108,7 +108,7 @@ async function handleStartCommand(
   // If we have invite token, link conversation to response
   if (startPayload) {
     try {
-      const { findResponseByInviteToken } = await import("@selectio/jobs");
+      const { findResponseByInviteToken } = await import("@qbs-autonaim/jobs");
       const responseResult = await findResponseByInviteToken(startPayload);
 
       if (responseResult.success) {
@@ -237,7 +237,7 @@ async function handleTextMessage(
 
   // Проверяем статус vacancy response для определения этапа
   if (conversation.responseId) {
-    const { vacancyResponse } = await import("@selectio/db/schema");
+    const { vacancyResponse } = await import("@qbs-autonaim/db/schema");
     const [response] = await db
       .select()
       .from(vacancyResponse)

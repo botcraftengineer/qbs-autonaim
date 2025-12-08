@@ -1,7 +1,7 @@
 /**
  * Общие константы для сервисов
  *
- * Примечание: Для RESPONSE_STATUS используйте константы из @selectio/db/schema,
+ * Примечание: Для RESPONSE_STATUS используйте константы из @qbs-autonaim/db/schema,
  * так как они определяют фактические значения базы данных.
  */
 
@@ -47,6 +47,6 @@ export const TELEGRAM = {
   USERNAME_PATTERN: /^[a-zA-Z0-9_]{5,}$/,
 } as const;
 
-export type { ResponseStatus } from "@selectio/db/schema";
+export type { ResponseStatus } from "@qbs-autonaim/db/schema";
 // Re-export RESPONSE_STATUS from database schema for consistency
-export { RESPONSE_STATUS } from "@selectio/db/schema";
+export { RESPONSE_STATUS } from "@qbs-autonaim/db/schema";

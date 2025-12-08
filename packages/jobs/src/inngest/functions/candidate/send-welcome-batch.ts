@@ -1,12 +1,12 @@
-import { env } from "@selectio/config";
-import { db, eq } from "@selectio/db";
+import { env } from "@qbs-autonaim/config";
+import { db, eq } from "@qbs-autonaim/db";
 import {
   telegramConversation,
   telegramMessage,
   telegramSession,
   vacancyResponse,
-} from "@selectio/db/schema";
-import { tgClientSDK } from "@selectio/tg-client/sdk";
+} from "@qbs-autonaim/db/schema";
+import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import {
   generateWelcomeMessage,
   sendHHChatMessage,

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, ScrollArea } from "@selectio/ui";
+import { cn, ScrollArea } from "@qbs-autonaim/ui";
 import { format, isToday, isYesterday } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useEffect, useRef, useState } from "react";

@@ -1,4 +1,4 @@
-# @selectio/tg-client
+# @qbs-autonaim/tg-client
 
 Telegram клиент на MTProto для работы с Telegram API напрямую, без Bot API.
 
@@ -54,7 +54,7 @@ bun run api
 ### Программное использование
 
 ```typescript
-import { botManager, sendMessage } from "@selectio/tg-client";
+import { botManager, sendMessage } from "@qbs-autonaim/tg-client";
 
 // Запустить всех ботов из БД
 await botManager.startAll();

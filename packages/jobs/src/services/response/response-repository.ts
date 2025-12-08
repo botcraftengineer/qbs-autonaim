@@ -1,7 +1,7 @@
-import { eq, isNull, or } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { file, vacancyResponse } from "@selectio/db/schema";
-import { uploadFile } from "@selectio/lib";
+import { eq, isNull, or } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { file, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { uploadFile } from "@qbs-autonaim/lib";
 import type { SaveResponseData } from "../../parsers/types";
 import {
   createLogger,

@@ -1,5 +1,5 @@
-import { db, telegramConversation, telegramMessage } from "@selectio/db";
-import { uuidv7Schema } from "@selectio/validators";
+import { db, telegramConversation, telegramMessage } from "@qbs-autonaim/db";
+import { uuidv7Schema } from "@qbs-autonaim/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
 import { z } from "zod";

@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { vacancyResponse } from "@selectio/db/schema";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("TelegramInvite");

@@ -7,7 +7,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useTRPC } from "~/trpc/react";

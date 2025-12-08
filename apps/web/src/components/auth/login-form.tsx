@@ -16,8 +16,8 @@ import {
   FormLabel,
   FormMessage,
   Input,
-} from "@selectio/ui";
-import { type LoginFormData, loginFormSchema } from "@selectio/validators";
+} from "@qbs-autonaim/ui";
+import { type LoginFormData, loginFormSchema } from "@qbs-autonaim/validators";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";

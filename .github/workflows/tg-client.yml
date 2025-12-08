@@ -24,7 +24,7 @@ jobs:
       - name: Build, tag, and push image
         env:
           CR_REGISTRY: crpb8701utioog2loisu
-          CR_REPOSITORY: selectio-tg-client
+          CR_REPOSITORY: qbs-autonaim-tg-client
           IMAGE_TAG: ${{ github.sha }}
         run: |
           docker build -f packages/tg-client/Dockerfile.api -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest .
@@ -35,7 +35,7 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
           CR_REGISTRY: crpb8701utioog2loisu
-          CR_REPOSITORY: selectio-tg-client
+          CR_REPOSITORY: qbs-autonaim-tg-client
           IMAGE_TAG: ${{ github.sha }}
         with:
           args: set image deployment/$CR_REPOSITORY $CR_REPOSITORY=cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
@@ -44,4 +44,4 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: rollout status deployment/selectio-tg-client
+          args: rollout status deployment/qbs-autonaim-tg-client

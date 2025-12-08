@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/tg-client",
+  "name": "@qbs-autonaim/tg-client",
   "version": "0.1.0",
   "private": true,
   "type": "module",
@@ -27,14 +27,14 @@
   "dependencies": {
     "@mtcute/bun": "0.27.2",
     "@mtcute/dispatcher": "0.27.2",
-    "@selectio/config": "workspace:*",
-    "@selectio/db": "workspace:*",
-    "@selectio/lib": "workspace:*",
+    "@qbs-autonaim/config": "workspace:*",
+    "@qbs-autonaim/db": "workspace:*",
+    "@qbs-autonaim/lib": "workspace:*",
     "hono": "^4.10.7",
     "zod": "^4.1.13"
   },
   "devDependencies": {
-    "@selectio/tsconfig": "workspace:*",
+    "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/bun": "1.3.4",
     "@types/node": "24.10.1",
     "typescript": "5.9.3"

@@ -2,7 +2,7 @@ import {
   getIntegration,
   upsertIntegration,
   workspaceRepository,
-} from "@selectio/db";
+} from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

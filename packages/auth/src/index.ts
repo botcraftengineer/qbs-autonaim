@@ -1,5 +1,5 @@
-import { db } from "@selectio/db/client";
-import { user } from "@selectio/db/schema";
+import { db } from "@qbs-autonaim/db/client";
+import { user } from "@qbs-autonaim/db/schema";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";

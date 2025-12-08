@@ -11,7 +11,7 @@ import {
   Button,
   Input,
   Label,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 

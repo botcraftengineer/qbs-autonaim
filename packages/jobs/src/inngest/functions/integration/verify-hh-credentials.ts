@@ -1,4 +1,4 @@
-import { upsertIntegration } from "@selectio/db";
+import { upsertIntegration } from "@qbs-autonaim/db";
 import { Log } from "crawlee";
 import type { Browser } from "puppeteer";
 import puppeteer from "puppeteer";

@@ -5,13 +5,13 @@ import {
   refreshVacancyResponsesChannel,
   screenAllResponsesChannel,
   screenNewResponsesChannel,
-} from "@selectio/jobs/channels";
+} from "@qbs-autonaim/jobs/channels";
 
 /**
  * Server action для получения токена подписки на Realtime канал скрининга новых откликов
  */
 export async function fetchScreenNewResponsesToken(vacancyId: string) {
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
 
   const token = await getSubscriptionToken(inngest, {
     channel: screenNewResponsesChannel(vacancyId),
@@ -25,7 +25,7 @@ export async function fetchScreenNewResponsesToken(vacancyId: string) {
  * Server action для получения токена подписки на Realtime канал скрининга всех откликов
  */
 export async function fetchScreenAllResponsesToken(vacancyId: string) {
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
 
   const token = await getSubscriptionToken(inngest, {
     channel: screenAllResponsesChannel(vacancyId),
@@ -39,7 +39,7 @@ export async function fetchScreenAllResponsesToken(vacancyId: string) {
  * Server action для получения токена подписки на Realtime канал обновления откликов
  */
 export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: refreshVacancyResponsesChannel(vacancyId),
     topics: ["status"],

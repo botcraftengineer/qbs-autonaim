@@ -27,7 +27,7 @@ export async function triggerVerifyHHCredentials(
     throw new Error(`Validation failed: ${errors}`);
   }
 
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
 
   try {
     await inngest.send({
@@ -56,7 +56,7 @@ export async function triggerVerifyHHCredentials(
 }
 
 export async function fetchVerifyHHCredentialsToken(workspaceId: string) {
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: `verify-hh-credentials-${workspaceId}`,
     topics: ["result"],

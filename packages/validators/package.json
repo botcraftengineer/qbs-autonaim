@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/validators",
+  "name": "@qbs-autonaim/validators",
   "private": true,
   "type": "module",
   "exports": {
@@ -22,7 +22,7 @@
     "zod": "4.1.13"
   },
   "devDependencies": {
-    "@selectio/tsconfig": "workspace:*",
+    "@qbs-autonaim/tsconfig": "workspace:*",
     "typescript": "5.9.3"
   }
 }

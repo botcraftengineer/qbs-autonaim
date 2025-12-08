@@ -1,10 +1,10 @@
-import { workspaceRepository } from "@selectio/db";
-import { sendEmail } from "@selectio/emails";
+import { workspaceRepository } from "@qbs-autonaim/db";
+import { sendEmail } from "@qbs-autonaim/emails";
 import {
   addUserToWorkspaceSchema,
   updateUserRoleSchema,
   workspaceIdSchema,
-} from "@selectio/validators";
+} from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -72,11 +72,11 @@ export const workspaceMembers = {
       const workspace = await workspaceRepository.findById(input.workspaceId);
 
       if (workspace) {
-        const { env } = await import("@selectio/config");
+        const { env } = await import("@qbs-autonaim/config");
         const inviteLink = `${env.APP_URL}/invite/${invite.token}`;
 
         // Отправляем email с приглашением
-        const { WorkspaceInviteEmail } = await import("@selectio/emails");
+        const { WorkspaceInviteEmail } = await import("@qbs-autonaim/emails");
 
         await sendEmail({
           to: [input.email],
@@ -372,11 +372,11 @@ export const workspaceMembers = {
         });
       }
 
-      const { env } = await import("@selectio/config");
+      const { env } = await import("@qbs-autonaim/config");
       const inviteLink = `${env.APP_URL}/invite/${existingInvite.token}`;
 
       // Отправляем email с приглашением
-      const { WorkspaceInviteEmail } = await import("@selectio/emails");
+      const { WorkspaceInviteEmail } = await import("@qbs-autonaim/emails");
 
       await sendEmail({
         to: [input.email],

@@ -1,5 +1,5 @@
-import { db, inArray } from "@selectio/db";
-import { vacancyResponse } from "@selectio/db/schema";
+import { db, inArray } from "@qbs-autonaim/db";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { extractContactsFromResponses } from "../../../services/response";
 import { parseMissingContactsChannel } from "../../channels/client";
 import { inngest } from "../../client";

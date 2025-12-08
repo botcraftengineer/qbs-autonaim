@@ -1,5 +1,5 @@
 import { useInngestSubscription } from "@inngest/realtime/hooks";
-import type { ResponseStatus } from "@selectio/db/schema";
+import type { ResponseStatus } from "@qbs-autonaim/db/schema";
 import {
   Button,
   Dialog,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
   Input,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { Loader2, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {

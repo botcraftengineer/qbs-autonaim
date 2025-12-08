@@ -1,4 +1,4 @@
-import type { ResponseStatus } from "@selectio/db/schema";
+import type { ResponseStatus } from "@qbs-autonaim/db/schema";
 import { useState } from "react";
 import type { ScreeningFilter } from "~/components/response";
 import { useDebounce } from "~/hooks/use-debounce";

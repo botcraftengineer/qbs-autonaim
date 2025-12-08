@@ -17,7 +17,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";

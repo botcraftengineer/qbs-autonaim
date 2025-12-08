@@ -28,7 +28,7 @@ jobs:
           PAYLOAD_SECRET: 123
           DATABASE_URI: ${{ secrets.DATABASE_URI }}
           CI: "true"
-        run: bun run turbo run build --filter=@selectio/jobs...
+        run: bun run turbo run build --filter=@qbs-autonaim/jobs...
 
       - name: 🚀 Deploy Trigger.dev
         env:

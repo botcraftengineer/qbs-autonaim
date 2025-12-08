@@ -1,4 +1,4 @@
-import { env } from "@selectio/config";
+import { env } from "@qbs-autonaim/config";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const runtime = "edge";

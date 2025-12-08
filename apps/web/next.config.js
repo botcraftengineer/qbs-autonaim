@@ -11,11 +11,11 @@ const config = {
   output: "standalone",
 
   transpilePackages: [
-    "@selectio/api",
-    "@selectio/auth",
-    "@selectio/db",
-    "@selectio/ui",
-    "@selectio/validators",
+    "@qbs-autonaim/api",
+    "@qbs-autonaim/auth",
+    "@qbs-autonaim/db",
+    "@qbs-autonaim/ui",
+    "@qbs-autonaim/validators",
   ],
 
   /** We already do linting and typechecking as separate tasks in CI */

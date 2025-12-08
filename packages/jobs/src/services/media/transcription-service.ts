@@ -1,5 +1,5 @@
 import { createOpenAI } from "@ai-sdk/openai";
-import { env } from "@selectio/config";
+import { env } from "@qbs-autonaim/config";
 import { experimental_transcribe as transcribe } from "ai";
 import { createLogger, ok, type Result, tryCatch } from "../base";
 

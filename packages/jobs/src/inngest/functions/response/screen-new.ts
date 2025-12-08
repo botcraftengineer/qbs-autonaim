@@ -1,4 +1,4 @@
-import { db } from "@selectio/db";
+import { db } from "@qbs-autonaim/db";
 import { screenResponse, unwrap } from "../../../services/response";
 import { screenNewResponsesChannel } from "../../channels/client";
 import { inngest } from "../../client";

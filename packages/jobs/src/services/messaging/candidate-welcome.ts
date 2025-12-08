@@ -1,11 +1,11 @@
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import {
   companySettings,
   responseScreening,
   vacancyResponse,
-} from "@selectio/db/schema";
-import { buildCandidateWelcomePrompt } from "@selectio/prompts";
+} from "@qbs-autonaim/db/schema";
+import { buildCandidateWelcomePrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { generateText } from "../../lib/ai-client";
 import { AI, createLogger, err, type Result, tryCatch } from "../base";
@@ -152,7 +152,7 @@ export async function generateTelegramInviteMessage(
 
   const { response, screening, company } = dataResult.data;
 
-  const { buildTelegramInvitePrompt } = await import("@selectio/prompts");
+  const { buildTelegramInvitePrompt } = await import("@qbs-autonaim/prompts");
 
   const prompt = buildTelegramInvitePrompt({
     companyName: company?.name || "наша компания",

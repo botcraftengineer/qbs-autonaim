@@ -7,7 +7,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN bun add -g turbo
 COPY . .
-RUN turbo prune @selectio/telegram-bot --docker
+RUN turbo prune @qbs-autonaim/telegram-bot --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -22,7 +22,7 @@ RUN bun install
 # Build the project and its dependencies
 COPY --from=builder /app/out/full/ .
 
-RUN bunx turbo build --filter=@selectio/telegram-bot
+RUN bunx turbo build --filter=@qbs-autonaim/telegram-bot
 
 FROM base AS runner
 WORKDIR /app

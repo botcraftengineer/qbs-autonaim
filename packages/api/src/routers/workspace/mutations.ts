@@ -1,9 +1,9 @@
-import { workspaceRepository } from "@selectio/db";
+import { workspaceRepository } from "@qbs-autonaim/db";
 import {
   createWorkspaceSchema,
   updateWorkspaceSchema,
   workspaceIdSchema,
-} from "@selectio/validators";
+} from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -25,7 +25,7 @@ export const workspaceMutations = {
       // Оптимизируем логотип, если он передан
       const dataToCreate = { ...input };
       if (dataToCreate.logo?.startsWith("data:image/")) {
-        const { optimizeLogo } = await import("@selectio/lib");
+        const { optimizeLogo } = await import("@qbs-autonaim/lib");
         dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
       }
 
@@ -85,7 +85,7 @@ export const workspaceMutations = {
       // Оптимизируем логотип, если он передан
       const dataToUpdate = { ...input.data };
       if (dataToUpdate.logo?.startsWith("data:image/")) {
-        const { optimizeLogo } = await import("@selectio/lib");
+        const { optimizeLogo } = await import("@qbs-autonaim/lib");
         dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
       }
 
