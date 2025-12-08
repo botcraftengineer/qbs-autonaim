@@ -9,6 +9,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import {
   getCompletedResponse,
+  getErrorResponse,
   getGeneralResponse,
   getInterviewResponse,
   getOtherStatusResponse,
@@ -23,60 +24,71 @@ export async function handleTextMessage(
   const chatId = message.chat.id.toString();
   const messageText = message.text || "";
 
-  const [conversation] = await db
-    .select()
-    .from(telegramConversation)
-    .where(eq(telegramConversation.chatId, chatId))
-    .limit(1);
-
-  if (!conversation) {
-    await markRead(client, message.chat.id);
-    await humanDelay(600, 1200);
-    await client.sendText(
-      message.chat.id,
-      "Привет! А мы знакомы? Напомни, пожалуйста, откуда ты 😊",
-    );
-    return;
-  }
-
-  await markRead(client, message.chat.id);
-
-  await db.insert(telegramMessage).values({
-    conversationId: conversation.id,
-    sender: "CANDIDATE",
-    contentType: "TEXT",
-    content: messageText,
-    telegramMessageId: message.id.toString(),
-  });
-
-  await showTyping(client, message.chat.id);
-
-  const readingTime = Math.min(messageText.length * 30, 2000);
-  await humanDelay(readingTime, readingTime + 1000);
-
-  let responseText: string;
-
-  if (conversation.responseId) {
-    const [response] = await db
+  try {
+    const [conversation] = await db
       .select()
-      .from(vacancyResponse)
-      .where(eq(vacancyResponse.id, conversation.responseId))
+      .from(telegramConversation)
+      .where(eq(telegramConversation.chatId, chatId))
       .limit(1);
 
-    if (response) {
-      if (response.status === "COMPLETED") {
-        responseText = getCompletedResponse();
-      } else if (response.status === "INTERVIEW_HH") {
-        responseText = getInterviewResponse();
+    if (!conversation) {
+      await markRead(client, message.chat.id);
+      await humanDelay(600, 1200);
+      await client.sendText(
+        message.chat.id,
+        "Привет! А мы знакомы? Напомни, пожалуйста, откуда ты 😊",
+      );
+      return;
+    }
+
+    await markRead(client, message.chat.id);
+
+    await db.insert(telegramMessage).values({
+      conversationId: conversation.id,
+      sender: "CANDIDATE",
+      contentType: "TEXT",
+      content: messageText,
+      telegramMessageId: message.id.toString(),
+    });
+
+    await showTyping(client, message.chat.id);
+
+    const readingTime = Math.min(messageText.length * 30, 2000);
+    await humanDelay(readingTime, readingTime + 1000);
+
+    let responseText: string;
+
+    if (conversation.responseId) {
+      const [response] = await db
+        .select()
+        .from(vacancyResponse)
+        .where(eq(vacancyResponse.id, conversation.responseId))
+        .limit(1);
+
+      if (response) {
+        if (response.status === "COMPLETED") {
+          responseText = getCompletedResponse();
+        } else if (response.status === "INTERVIEW_HH") {
+          responseText = getInterviewResponse();
+        } else {
+          responseText = getOtherStatusResponse();
+        }
       } else {
-        responseText = getOtherStatusResponse();
+        responseText = getGeneralResponse();
       }
     } else {
       responseText = getGeneralResponse();
     }
-  } else {
-    responseText = getGeneralResponse();
-  }
 
-  await client.sendText(message.chat.id, responseText);
+    await client.sendText(message.chat.id, responseText);
+  } catch (error) {
+    console.error("Ошибка при обработке текстового сообщения:", error);
+
+    try {
+      await humanDelay(800, 1500);
+      await client.sendText(message.chat.id, getErrorResponse());
+    } catch (sendError) {
+      console.error("Не удалось отправить сообщение об ошибке:", sendError);
+    }
+  }
 }
