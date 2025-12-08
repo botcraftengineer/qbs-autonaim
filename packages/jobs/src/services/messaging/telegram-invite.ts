@@ -12,16 +12,27 @@ interface GenerateInviteParams {
 }
 
 /**
- * Validate Telegram username format
- * Username must contain only latin letters, digits, underscores, dots, and hyphens
- * Must be at least 5 characters long
+ * Маскирование токена для безопасного логирования
+ * Показывает первые 4 и последние 4 символа с многоточием посередине
+ */
+function maskToken(token: string): string {
+  if (!token || token.length <= 8) {
+    return "***";
+  }
+  return `${token.slice(0, 4)}...${token.slice(-4)}`;
+}
+
+/**
+ * Валидация формата username Telegram
+ * Username должен содержать только латинские буквы, цифры и подчеркивания
+ * Минимальная длина 5 символов
  */
 function isValidTelegramUsername(username: string): boolean {
   if (!username || username.length < 5) {
     return false;
   }
-  // Telegram username: only a-z, A-Z, 0-9, underscore, dot, hyphen
-  const validPattern = /^[a-zA-Z0-9._-]+$/;
+  // Username Telegram: только a-z, A-Z, 0-9, подчеркивание (без точек и дефисов)
+  const validPattern = /^[A-Za-z0-9_]{5,}$/;
   return validPattern.test(username);
 }
 
@@ -40,7 +51,7 @@ export async function generateTelegramInvite(
 
   if (!isValidTelegramUsername(botUsername)) {
     return err(
-      "Неверный формат username Telegram (допустимы только латинские буквы, цифры, _, ., -)",
+      "Неверный формат username Telegram (допустимы только латинские буквы, цифры и _, минимум 5 символов)",
     );
   }
 
@@ -101,7 +112,9 @@ export async function generateTelegramInvite(
 export async function findResponseByInviteToken(
   token: string,
 ): Promise<Result<{ id: string; candidateName: string | null }>> {
-  logger.info("Поиск отклика по токену приглашения", { token });
+  logger.info("Поиск отклика по токену приглашения", {
+    token: maskToken(token),
+  });
 
   const result = await tryCatch(async () => {
     return await db.query.vacancyResponse.findFirst({
