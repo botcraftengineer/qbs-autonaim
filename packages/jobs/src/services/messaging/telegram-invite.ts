@@ -12,78 +12,109 @@ interface GenerateInviteParams {
 }
 
 /**
- * Generate unique invite token for candidate and create Telegram bot link
+ * Validate Telegram username format
+ * Username must contain only latin letters, digits, underscores, dots, and hyphens
+ * Must be at least 5 characters long
+ */
+function isValidTelegramUsername(username: string): boolean {
+  if (!username || username.length < 5) {
+    return false;
+  }
+  // Telegram username: only a-z, A-Z, 0-9, underscore, dot, hyphen
+  const validPattern = /^[a-zA-Z0-9._-]+$/;
+  return validPattern.test(username);
+}
+
+/**
+ * Генерация уникального токена приглашения и создание ссылки на Telegram бота
  */
 export async function generateTelegramInvite(
   params: GenerateInviteParams,
 ): Promise<Result<string>> {
   const { responseId, botUsername } = params;
 
-  logger.info("Generating Telegram invite", { responseId });
+  // Валидация botUsername
+  if (!botUsername || botUsername.trim().length === 0) {
+    return err("Не указан username Telegram бота");
+  }
 
-  // Check if token already exists
+  if (!isValidTelegramUsername(botUsername)) {
+    return err(
+      "Неверный формат username Telegram (допустимы только латинские буквы, цифры, _, ., -)",
+    );
+  }
+
+  logger.info("Генерация приглашения Telegram", { responseId });
+
+  // Проверка существования токена
   const existingResponse = await tryCatch(async () => {
     return await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
     });
-  }, "Failed to fetch response");
+  }, "Не удалось получить данные отклика");
 
   if (!existingResponse.success) {
     return err(existingResponse.error);
   }
 
   if (!existingResponse.data) {
-    return err("Response not found");
+    return err("Отклик не найден");
   }
 
-  // If token exists, reuse it
+  // Если токен уже существует, переиспользуем его
   if (existingResponse.data.telegramInviteToken) {
     const inviteLink = `https://t.me/${botUsername}?start=${existingResponse.data.telegramInviteToken}`;
-    logger.info("Reusing existing invite token", { responseId, inviteLink });
+    logger.info("Переиспользование существующего токена", {
+      responseId,
+      inviteLink,
+    });
     return ok(inviteLink);
   }
 
-  // Generate new unique token
+  // Генерация нового уникального токена
   const token = randomBytes(16).toString("hex");
 
-  // Save token to database
+  // Сохранение токена в базу данных
   const updateResult = await tryCatch(async () => {
     await db
       .update(vacancyResponse)
       .set({ telegramInviteToken: token })
       .where(eq(vacancyResponse.id, responseId));
-  }, "Failed to save invite token");
+  }, "Не удалось сохранить токен приглашения");
 
   if (!updateResult.success) {
     return err(updateResult.error);
   }
 
   const inviteLink = `https://t.me/${botUsername}?start=${token}`;
-  logger.info("Generated new invite token", { responseId, inviteLink });
+  logger.info("Сгенерирован новый токен приглашения", {
+    responseId,
+    inviteLink,
+  });
 
   return ok(inviteLink);
 }
 
 /**
- * Find response by invite token
+ * Поиск отклика по токену приглашения
  */
 export async function findResponseByInviteToken(
   token: string,
 ): Promise<Result<{ id: string; candidateName: string | null }>> {
-  logger.info("Looking up response by invite token", { token });
+  logger.info("Поиск отклика по токену приглашения", { token });
 
   const result = await tryCatch(async () => {
     return await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.telegramInviteToken, token),
     });
-  }, "Failed to find response by token");
+  }, "Не удалось найти отклик по токену");
 
   if (!result.success) {
     return err(result.error);
   }
 
   if (!result.data) {
-    return err("Invalid or expired invite token");
+    return err("Неверный или устаревший токен приглашения");
   }
 
   return ok({

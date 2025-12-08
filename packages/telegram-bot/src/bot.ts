@@ -27,6 +27,7 @@ bot.command("start", async (ctx) => {
 
   let responseId: string | null = null;
   let candidateName = ctx.from?.first_name;
+  let hasValidToken = false;
 
   // If we have invite token, link conversation to response
   if (startPayload && typeof startPayload === "string") {
@@ -37,22 +38,15 @@ bot.command("start", async (ctx) => {
       if (responseResult.success) {
         responseId = responseResult.data.id;
         candidateName = responseResult.data.candidateName || candidateName;
+        hasValidToken = true;
 
         console.log("✅ Linked conversation to response", {
           chatId,
           responseId,
           candidateName,
         });
-
-        await ctx.reply(
-          `Привет${candidateName ? `, ${candidateName}` : ""}! 👋\n\nОтлично, что перешёл в Telegram! Здесь нам будет удобнее общаться.\n\nМожешь записать голосовое сообщение и рассказать о себе 🎤`,
-        );
       } else {
         console.warn("⚠️ Invalid invite token", { token: startPayload });
-        await ctx.reply(
-          "Привет! Похоже, ссылка устарела или неверна. Попробуй получить новую ссылку от рекрутера.",
-        );
-        return;
       }
     } catch (error) {
       console.error("❌ Error processing invite token", {
@@ -62,6 +56,7 @@ bot.command("start", async (ctx) => {
     }
   }
 
+  // Always insert/update conversation, even with invalid token
   await db
     .insert(telegramConversation)
     .values({
@@ -80,8 +75,19 @@ bot.command("start", async (ctx) => {
     })
     .returning();
 
-  // If no invite token, show generic welcome
-  if (!startPayload) {
+  // Send appropriate reply based on token validity
+  if (startPayload && typeof startPayload === "string") {
+    if (hasValidToken) {
+      await ctx.reply(
+        `Привет${candidateName ? `, ${candidateName}` : ""}! 👋\n\nОтлично, что перешёл в Telegram! Здесь нам будет удобнее общаться.\n\nМожешь записать голосовое сообщение и рассказать о себе 🎤`,
+      );
+    } else {
+      await ctx.reply(
+        "Привет! Похоже, ссылка устарела или неверна. Попробуй получить новую ссылку от рекрутера.",
+      );
+    }
+  } else {
+    // If no invite token, show generic welcome
     await ctx.reply(
       `Привет! Я бот для общения с кандидатами.\n\nВаш Chat ID: ${chatId}\nUsername: ${username ? `@${username}` : "не указан"}`,
     );
