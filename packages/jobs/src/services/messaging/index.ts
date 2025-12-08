@@ -1,3 +1,10 @@
-export { extractTelegramUsername } from "./telegram-username";
-export { generateWelcomeMessage } from "./candidate-welcome";
+export {
+  generateTelegramInviteMessage,
+  generateWelcomeMessage,
+} from "./candidate-welcome";
 export { sendHHChatMessage } from "./hh-chat";
+export {
+  findResponseByInviteToken,
+  generateTelegramInvite,
+} from "./telegram-invite";
+export { extractTelegramUsername } from "./telegram-username";

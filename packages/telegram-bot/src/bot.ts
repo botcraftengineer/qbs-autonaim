@@ -15,30 +15,83 @@ export const bot = new Bot(TELEGRAM_BOT_TOKEN);
 bot.command("start", async (ctx) => {
   const chatId = ctx.chat.id.toString();
   const username = ctx.from?.username;
+  const startPayload = ctx.match; // Token from deep link
 
   console.log("🆔 Telegram Chat Info:", {
     chatId,
     username: username ? `@${username}` : "no username",
     firstName: ctx.from?.first_name,
     lastName: ctx.from?.last_name,
+    startPayload,
   });
 
+  let responseId: string | null = null;
+  let candidateName = ctx.from?.first_name;
+  let hasValidToken = false;
+
+  // If we have invite token, link conversation to response
+  if (startPayload && typeof startPayload === "string") {
+    try {
+      const { findResponseByInviteToken } = await import("@selectio/jobs");
+      const responseResult = await findResponseByInviteToken(startPayload);
+
+      if (responseResult.success) {
+        responseId = responseResult.data.id;
+        candidateName = responseResult.data.candidateName || candidateName;
+        hasValidToken = true;
+
+        console.log("✅ Linked conversation to response", {
+          chatId,
+          responseId,
+          candidateName,
+        });
+      } else {
+        console.warn("⚠️ Invalid invite token", { token: startPayload });
+      }
+    } catch (error) {
+      console.error("❌ Error processing invite token", {
+        error,
+        startPayload,
+      });
+    }
+  }
+
+  // Always insert/update conversation, even with invalid token
   await db
     .insert(telegramConversation)
     .values({
       chatId,
-      candidateName: ctx.from?.first_name,
+      responseId: responseId || undefined,
+      candidateName,
       status: "ACTIVE",
     })
     .onConflictDoUpdate({
       target: telegramConversation.chatId,
-      set: { status: "ACTIVE" },
+      set: {
+        status: "ACTIVE",
+        ...(responseId && { responseId }),
+        ...(candidateName && { candidateName }),
+      },
     })
     .returning();
 
-  await ctx.reply(
-    `Привет! Я бот для общения с кандидатами.\n\nВаш Chat ID: ${chatId}\nUsername: ${username ? `@${username}` : "не указан"}`,
-  );
+  // Send appropriate reply based on token validity
+  if (startPayload && typeof startPayload === "string") {
+    if (hasValidToken) {
+      await ctx.reply(
+        `Привет${candidateName ? `, ${candidateName}` : ""}! 👋\n\nОтлично, что перешёл в Telegram! Здесь нам будет удобнее общаться.\n\nМожешь записать голосовое сообщение и рассказать о себе 🎤`,
+      );
+    } else {
+      await ctx.reply(
+        "Привет! Похоже, ссылка устарела или неверна. Попробуй получить новую ссылку от рекрутера.",
+      );
+    }
+  } else {
+    // If no invite token, show generic welcome
+    await ctx.reply(
+      `Привет! Я бот для общения с кандидатами.\n\nВаш Chat ID: ${chatId}\nUsername: ${username ? `@${username}` : "не указан"}`,
+    );
+  }
 });
 
 bot.on("message:text", async (ctx) => {
