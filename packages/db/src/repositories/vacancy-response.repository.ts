@@ -1,6 +1,6 @@
-import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { eq } from "drizzle-orm";
+import { db } from "../client";
+import { vacancyResponse } from "../schema";
 
 export interface ResponseByToken {
   id: string;

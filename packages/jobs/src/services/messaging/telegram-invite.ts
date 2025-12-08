@@ -108,7 +108,7 @@ export async function generateTelegramInvite(
 
 /**
  * Поиск отклика по токену приглашения
- * @deprecated Используйте findResponseByInviteToken из @qbs-autonaim/lib
+ * @deprecated Используйте findResponseByInviteToken из @qbs-autonaim/db
  */
 export async function findResponseByInviteToken(
   token: string,
@@ -118,7 +118,7 @@ export async function findResponseByInviteToken(
   });
 
   const { findResponseByInviteToken: findResponse } = await import(
-    "@qbs-autonaim/lib"
+    "@qbs-autonaim/db"
   );
   const result = await findResponse(token);
 
