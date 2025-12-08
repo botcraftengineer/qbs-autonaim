@@ -71,6 +71,11 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           }
         }
 
+        // Если username нет в metadata, берем из vacancy_response
+        if (!username && conversation.response?.telegramUsername) {
+          username = conversation.response.telegramUsername;
+        }
+
         // Отправляем сообщение через SDK
         let result: {
           success: boolean;
