@@ -17,6 +17,7 @@ import {
   vacancy,
   vacancyResponse,
 } from "@selectio/db/schema";
+import { workspaceIdSchema } from "@selectio/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
@@ -24,7 +25,7 @@ import { protectedProcedure } from "../../../trpc";
 export const list = protectedProcedure
   .input(
     z.object({
-      workspaceId: z.string(),
+      workspaceId: workspaceIdSchema,
       vacancyId: z.string(),
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(50),

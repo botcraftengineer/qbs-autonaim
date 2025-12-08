@@ -45,6 +45,13 @@ export const sendWelcome = protectedProcedure
       });
     }
 
+    if (!response.vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
     // Проверка принадлежности вакансии к workspace
     if (response.vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({

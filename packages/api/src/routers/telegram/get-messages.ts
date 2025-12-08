@@ -2,6 +2,8 @@ import {
   db,
   telegramConversation,
   telegramMessage,
+  vacancy,
+  vacancyResponse,
   workspaceRepository,
 } from "@selectio/db";
 import { uuidv7Schema, workspaceIdSchema } from "@selectio/validators";
@@ -112,27 +114,36 @@ export const getMessagesRouter = {
         });
       }
 
-      const messages = await db.query.telegramMessage.findMany({
-        orderBy: [desc(telegramMessage.createdAt)],
-        limit: input.limit,
-        with: {
-          conversation: {
-            with: {
-              response: {
-                with: {
-                  vacancy: true,
-                },
-              },
-            },
+      const messages = await db
+        .select({
+          message: telegramMessage,
+          conversation: telegramConversation,
+          response: vacancyResponse,
+          vacancy: vacancy,
+        })
+        .from(telegramMessage)
+        .innerJoin(
+          telegramConversation,
+          eq(telegramMessage.conversationId, telegramConversation.id),
+        )
+        .innerJoin(
+          vacancyResponse,
+          eq(telegramConversation.responseId, vacancyResponse.id),
+        )
+        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+        .where(eq(vacancy.workspaceId, input.workspaceId))
+        .orderBy(desc(telegramMessage.createdAt))
+        .limit(input.limit);
+
+      return messages.map((row) => ({
+        ...row.message,
+        conversation: {
+          ...row.conversation,
+          response: {
+            ...row.response,
+            vacancy: row.vacancy,
           },
         },
-      });
-
-      // Фильтруем только сообщения из workspace
-      return messages.filter((msg) => {
-        return (
-          msg.conversation?.response?.vacancy?.workspaceId === input.workspaceId
-        );
-      });
+      }));
     }),
 } satisfies TRPCRouterRecord;

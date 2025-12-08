@@ -9,7 +9,7 @@ import {
 import { uuidv7Schema, workspaceIdSchema } from "@selectio/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -35,34 +35,48 @@ export const getConversationRouter = {
         });
       }
 
-      const conversations = await db.query.telegramConversation.findMany({
-        orderBy: [desc(telegramConversation.updatedAt)],
-        with: {
-          messages: {
+      const conversations = await db
+        .select()
+        .from(telegramConversation)
+        .innerJoin(
+          vacancyResponse,
+          eq(telegramConversation.responseId, vacancyResponse.id),
+        )
+        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+        .where(
+          input.vacancyId
+            ? and(
+                eq(vacancy.workspaceId, input.workspaceId),
+                eq(vacancyResponse.vacancyId, input.vacancyId),
+              )
+            : eq(vacancy.workspaceId, input.workspaceId),
+        )
+        .orderBy(desc(telegramConversation.updatedAt));
+
+      // Получаем сообщения для каждой беседы
+      const conversationsWithMessages = await Promise.all(
+        conversations.map(async (conv) => {
+          const messages = await db.query.telegramMessage.findMany({
+            where: eq(
+              telegramMessage.conversationId,
+              conv.telegram_conversations.id,
+            ),
             orderBy: [desc(telegramMessage.createdAt)],
             limit: 1,
-          },
-          response: {
-            with: {
-              vacancy: true,
+          });
+
+          return {
+            ...conv.telegram_conversations,
+            messages,
+            response: {
+              ...conv.vacancy_responses,
+              vacancy: conv.vacancies,
             },
-          },
-        },
-      });
+          };
+        }),
+      );
 
-      // Фильтруем только те беседы, которые принадлежат workspace
-      const filteredConversations = conversations.filter((conv) => {
-        return conv.response?.vacancy?.workspaceId === input.workspaceId;
-      });
-
-      // Если указан vacancyId, дополнительно фильтруем по нему
-      if (input.vacancyId) {
-        return filteredConversations.filter((conv) => {
-          return conv.response?.vacancyId === input.vacancyId;
-        });
-      }
-
-      return filteredConversations;
+      return conversationsWithMessages;
     }),
 
   getById: protectedProcedure
