@@ -233,7 +233,7 @@
     },
     "packages/tg-client": {
       "name": "@qbs-autonaim/tg-client",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@mtcute/bun": "0.27.2",
         "@mtcute/dispatcher": "0.27.2",
