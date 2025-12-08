@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@selectio/ui";
+import { cn } from "@qbs-autonaim/ui";
 import { Building2, Globe, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

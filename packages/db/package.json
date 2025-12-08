@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/db",
+  "name": "@qbs-autonaim/db",
   "private": true,
   "type": "module",
   "exports": {
@@ -32,8 +32,8 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@selectio/config": "workspace:*",
-    "@selectio/validators": "workspace:*",
+    "@qbs-autonaim/config": "workspace:*",
+    "@qbs-autonaim/validators": "workspace:*",
     "@vercel/postgres": "0.10.0",
     "drizzle-orm": "0.45.0",
     "drizzle-zod": "0.8.3",
@@ -41,7 +41,7 @@
     "zod": "4.1.13"
   },
   "devDependencies": {
-    "@selectio/tsconfig": "workspace:*",
+    "@qbs-autonaim/tsconfig": "workspace:*",
     "drizzle-kit": "^0.31.8",
     "typescript": "5.9.3"
   }

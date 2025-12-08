@@ -12,7 +12,7 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";

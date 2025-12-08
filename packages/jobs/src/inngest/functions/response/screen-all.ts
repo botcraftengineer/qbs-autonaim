@@ -1,5 +1,5 @@
-import { db, eq } from "@selectio/db";
-import { vacancyResponse } from "@selectio/db/schema";
+import { db, eq } from "@qbs-autonaim/db";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { screenResponse, unwrap } from "../../../services/response";
 import { screenAllResponsesChannel } from "../../channels/client";
 import { inngest } from "../../client";

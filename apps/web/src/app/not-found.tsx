@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@selectio/ui";
+import { Button } from "@qbs-autonaim/ui";
 import { ArrowLeft, FileQuestion, Home } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";

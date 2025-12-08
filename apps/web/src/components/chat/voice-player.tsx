@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@selectio/ui";
+import { cn } from "@qbs-autonaim/ui";
 import { FileText, Pause, Play } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 

@@ -4,8 +4,8 @@ import {
   telegramConversation,
   telegramMessage,
   telegramSession,
-} from "@selectio/db";
-import { tgClientSDK } from "@selectio/tg-client/sdk";
+} from "@qbs-autonaim/db";
+import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
 
 /**

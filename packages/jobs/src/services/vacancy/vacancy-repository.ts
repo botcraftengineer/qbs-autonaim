@@ -1,6 +1,6 @@
-import { eq, isNull, or } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { vacancy } from "@selectio/db/schema";
+import { eq, isNull, or } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { vacancy } from "@qbs-autonaim/db/schema";
 import type { VacancyData } from "../../parsers/types";
 import { createLogger, type Result, tryCatch } from "../base";
 import { triggerVacancyRequirementsExtraction } from "../triggers";

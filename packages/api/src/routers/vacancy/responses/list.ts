@@ -1,4 +1,4 @@
-import type { SQL } from "@selectio/db";
+import type { SQL } from "@qbs-autonaim/db";
 import {
   and,
   asc,
@@ -9,16 +9,13 @@ import {
   inArray,
   lt,
   sql,
-  workspaceRepository,
-} from "@selectio/db";
+} from "@qbs-autonaim/db";
 import {
   responseScreening,
   telegramMessage,
   vacancy,
   vacancyResponse,
-} from "@selectio/db/schema";
-import { workspaceIdSchema } from "@selectio/validators";
-import { TRPCError } from "@trpc/server";
+} from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 

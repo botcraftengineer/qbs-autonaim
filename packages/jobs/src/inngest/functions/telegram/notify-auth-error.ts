@@ -1,12 +1,12 @@
-import { env } from "@selectio/config";
-import { db, eq } from "@selectio/db";
+import { env } from "@qbs-autonaim/config";
+import { db, eq } from "@qbs-autonaim/db";
 import {
   telegramSession,
   user,
   userWorkspace,
   workspace,
-} from "@selectio/db/schema";
-import { sendEmail, TelegramAuthErrorEmail } from "@selectio/emails";
+} from "@qbs-autonaim/db/schema";
+import { sendEmail, TelegramAuthErrorEmail } from "@qbs-autonaim/emails";
 import { inngest } from "../../client";
 
 /**

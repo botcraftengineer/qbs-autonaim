@@ -13,7 +13,7 @@ import {
   CardTitle,
   Input,
   Skeleton,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";

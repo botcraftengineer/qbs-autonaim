@@ -8,7 +8,7 @@ WORKDIR /app
 RUN bun add -g turbo
 
 COPY . .
-RUN turbo prune @selectio/tg-client --docker
+RUN turbo prune @qbs-autonaim/tg-client --docker
 
 FROM base AS installer
 RUN apk update
@@ -20,7 +20,7 @@ COPY --from=builder /app/out/json/ .
 RUN bun install
 
 COPY --from=builder /app/out/full/ .
-RUN bunx turbo build --filter=@selectio/tg-client
+RUN bunx turbo build --filter=@qbs-autonaim/tg-client
 
 FROM base AS runner
 WORKDIR /app

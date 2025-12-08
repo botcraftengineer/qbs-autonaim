@@ -1,10 +1,10 @@
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { telegramConversation } from "@selectio/db/schema";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { telegramConversation } from "@qbs-autonaim/db/schema";
 import {
   buildInterviewQuestionPrompt,
   buildInterviewScoringPrompt,
-} from "@selectio/prompts";
+} from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import type { z } from "zod";
 import { generateText } from "../../lib/ai-client";

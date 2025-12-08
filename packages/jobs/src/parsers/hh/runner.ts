@@ -1,4 +1,4 @@
-import { getIntegrationCredentials } from "@selectio/db";
+import { getIntegrationCredentials } from "@qbs-autonaim/db";
 import { Log } from "crawlee";
 import puppeteer from "puppeteer";
 import { performLogin } from "./auth";

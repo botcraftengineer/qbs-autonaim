@@ -3,7 +3,7 @@
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
-} from "@selectio/db/schema";
+} from "@qbs-autonaim/db/schema";
 import {
   Badge,
   Card,
@@ -18,7 +18,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
 import type { VacancyResponse } from "~/types/vacancy";

@@ -18,7 +18,7 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().optional(),
     EMAIL_SANDBOX_ENABLED: z.coerce.boolean().optional().default(false),
     EMAIL_SANDBOX_HOST: z.string().default("localhost"),
-    EMAIL_FROM: z.string().default("Selectio <onboarding@resend.dev>"),
+    EMAIL_FROM: z.string().default("QBS Автонайм <onboarding@resend.dev>"),
 
     // Auth
     AUTH_SECRET: z.string().optional(),
@@ -48,6 +48,7 @@ export const env = createEnv({
     TELEGRAM_API_ID: z.string().min(1).optional(),
     TELEGRAM_API_HASH: z.string().min(1).optional(),
     TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
+    TELEGRAM_BOT_USERNAME: z.string().min(1).optional(),
 
     // Inngest
     INNGEST_EVENT_KEY: z.string().min(1).optional(),
@@ -55,8 +56,8 @@ export const env = createEnv({
     INNGEST_EVENT_API_BASE_URL: z.url().optional().default("https://inn.gs"),
 
     // App URL
-    APP_URL: z.url().optional().default("https://selectio-web.vercel.app"),
-    APP_NAME: z.string().optional().default("Selectio"),
+    APP_URL: z.url().optional().default("https://qbs-autonaim-web.vercel.app"),
+    APP_NAME: z.string().optional().default("QBS Автонайм"),
   },
   client: {},
   clientPrefix: "NEXT_PUBLIC_",
@@ -89,6 +90,7 @@ export const env = createEnv({
     TELEGRAM_API_ID: process.env.TELEGRAM_API_ID,
     TELEGRAM_API_HASH: process.env.TELEGRAM_API_HASH,
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
+    TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,

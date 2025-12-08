@@ -1,5 +1,5 @@
-import { db, eq } from "@selectio/db";
-import { vacancyResponse } from "@selectio/db/schema";
+import { db, eq } from "@qbs-autonaim/db";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 import { extractTelegramUsername } from "../messaging/telegram-username";
 import type { HHContacts } from "../types";

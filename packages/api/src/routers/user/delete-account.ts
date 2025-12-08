@@ -1,5 +1,5 @@
-import { eq } from "@selectio/db";
-import { user } from "@selectio/db/schema";
+import { eq } from "@qbs-autonaim/db";
+import { user } from "@qbs-autonaim/db/schema";
 import { protectedProcedure } from "../../trpc";
 
 export const deleteAccount = protectedProcedure.mutation(async ({ ctx }) => {

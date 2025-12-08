@@ -1,5 +1,5 @@
-import { companySettings, eq, workspaceRepository } from "@selectio/db";
-import { companyFormSchema, workspaceIdSchema } from "@selectio/validators";
+import { companySettings, eq, workspaceRepository } from "@qbs-autonaim/db";
+import { companyFormSchema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

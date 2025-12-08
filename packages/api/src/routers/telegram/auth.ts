@@ -1,6 +1,6 @@
-import { db } from "@selectio/db/client";
-import { telegramSession } from "@selectio/db/schema";
-import { tgClientSDK } from "@selectio/tg-client/sdk";
+import { db } from "@qbs-autonaim/db/client";
+import { telegramSession } from "@qbs-autonaim/db/schema";
+import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";

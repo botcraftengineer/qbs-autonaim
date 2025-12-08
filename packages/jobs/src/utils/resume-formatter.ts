@@ -1,7 +1,7 @@
 import {
   buildFullResumeScreeningPrompt,
   formatResumeForScreening,
-} from "@selectio/prompts";
+} from "@qbs-autonaim/prompts";
 import type {
   ResumeScreeningData,
   VacancyRequirements,
@@ -9,13 +9,13 @@ import type {
 
 /**
  * Форматирует данные резюме для отправки в промпт скрининга
- * @deprecated Используйте formatResumeForScreening из @selectio/prompts
+ * @deprecated Используйте formatResumeForScreening из @qbs-autonaim/prompts
  */
 export { formatResumeForScreening };
 
 /**
  * Создает полный промпт для скрининга, объединяя требования вакансии и данные резюме
- * @deprecated Используйте buildFullResumeScreeningPrompt из @selectio/prompts
+ * @deprecated Используйте buildFullResumeScreeningPrompt из @qbs-autonaim/prompts
  */
 export function buildFullScreeningPrompt(
   requirements: VacancyRequirements,

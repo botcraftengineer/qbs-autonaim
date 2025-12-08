@@ -1,4 +1,4 @@
-import { ScrollArea } from "@selectio/ui";
+import { ScrollArea } from "@qbs-autonaim/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useEffect, useRef } from "react";

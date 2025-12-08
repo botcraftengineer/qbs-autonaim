@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink } from "lucide-react";
 import Link from "next/link";

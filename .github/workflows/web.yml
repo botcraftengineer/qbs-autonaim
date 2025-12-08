@@ -39,4 +39,4 @@ jobs:
       - name: Deploy To Cluster
         uses: kodermax/kubectl-aws-eks@main
         with:
-          args: set image deployment/selectio-web selectio-web=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          args: set image deployment/qbs-autonaim-web qbs-autonaim-web=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}

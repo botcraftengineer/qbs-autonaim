@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Sheet, SheetContent, SheetTrigger, toast } from "@selectio/ui";
+import { Button, Sheet, SheetContent, SheetTrigger, toast } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Info } from "lucide-react";
 import Link from "next/link";

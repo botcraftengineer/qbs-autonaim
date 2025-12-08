@@ -1,6 +1,6 @@
-import { eq } from "@selectio/db";
-import { companySettings } from "@selectio/db/schema";
-import { workspaceIdSchema } from "@selectio/validators";
+import { eq } from "@qbs-autonaim/db";
+import { companySettings } from "@qbs-autonaim/db/schema";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 

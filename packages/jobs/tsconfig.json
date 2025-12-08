@@ -1,5 +1,5 @@
 {
-  "extends": "@selectio/tsconfig/base.json",
+  "extends": "@qbs-autonaim/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "jsx": "react-jsx"

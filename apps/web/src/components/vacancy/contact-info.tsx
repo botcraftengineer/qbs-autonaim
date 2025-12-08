@@ -1,4 +1,4 @@
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@selectio/ui";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@qbs-autonaim/ui";
 import { Mail, Phone } from "lucide-react";
 
 interface Contact {

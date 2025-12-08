@@ -25,7 +25,7 @@ export default function OtpSignInEmail({
   return (
     <Html>
       <Head />
-      <Preview>{`Ваш код подтверждения для ${action === "Вход" ? "входа" : "регистрации"} - Selectio`}</Preview>
+      <Preview>{`Ваш код подтверждения для ${action === "Вход" ? "входа" : "регистрации"} - QBS Автонайм`}</Preview>
       <Tailwind config={emailTailwindConfig}>
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-[40px] w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
@@ -35,7 +35,7 @@ export default function OtpSignInEmail({
                 href="https://bun-turbo-starter.vercel.app"
                 className="text-black"
               >
-                <strong>Selectio</strong>
+                <strong>QBS Автонайм</strong>
               </Link>
             </Heading>
             <Text className="text-[14px] leading-[24px] text-black">
@@ -58,8 +58,8 @@ export default function OtpSignInEmail({
             </Text>
             <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
             <Text className="text-[12px] leading-[24px] text-[#666666]">
-              Это автоматическое сообщение от Selectio. Пожалуйста, не отвечайте
-              на это письмо.
+              Это автоматическое сообщение от QBS Автонайм. Пожалуйста, не
+              отвечайте на это письмо.
             </Text>
           </Container>
         </Body>

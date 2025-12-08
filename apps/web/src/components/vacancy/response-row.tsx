@@ -1,10 +1,10 @@
 "use client";
 
-import type { RouterOutputs } from "@selectio/api";
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
-} from "@selectio/db/schema";
+} from "@qbs-autonaim/db/schema";
 import {
   Badge,
   Checkbox,
@@ -14,7 +14,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { Send, User } from "lucide-react";
 import Link from "next/link";
 import { ResponseActions } from "~/components/response";

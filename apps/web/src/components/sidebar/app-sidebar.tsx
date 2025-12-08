@@ -8,7 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import {
   IconDashboard,
   IconFileDescription,

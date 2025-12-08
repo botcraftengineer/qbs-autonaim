@@ -1,8 +1,5 @@
-import { desc, eq, workspaceRepository } from "@selectio/db";
-import { vacancy } from "@selectio/db/schema";
-import { workspaceIdSchema } from "@selectio/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import { desc } from "@qbs-autonaim/db";
+import { vacancy } from "@qbs-autonaim/db/schema";
 import { protectedProcedure } from "../../trpc";
 
 export const list = protectedProcedure

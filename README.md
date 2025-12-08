@@ -1,4 +1,4 @@
-# Selectio
+# QBS Автонайм
 
 Платформа для автоматизации работы с вакансиями на HH.ru. Позволяет автоматически входить в систему, парсить вакансии и отклики кандидатов.
 
@@ -27,7 +27,7 @@
 ```bash
 # Клонировать репозиторий
 git clone <repo-url>
-cd selectio
+cd qbs-autonaim
 
 # Установить зависимости
 bun install
@@ -107,7 +107,7 @@ bun db:migrate-workspaces # Мигрировать данные на workspaces
 ## Структура проекта
 
 ```
-selectio/
+qbs-autonaim/
 ├── apps/nextjs/          # Next.js приложение
 ├── packages/
 │   ├── jobs/             # Автоматизация HH.ru (Crawlee)

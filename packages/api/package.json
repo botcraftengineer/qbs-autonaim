@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/api",
+  "name": "@qbs-autonaim/api",
   "private": true,
   "type": "module",
   "exports": {
@@ -19,16 +19,16 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@selectio/auth": "workspace:*",
-    "@selectio/db": "workspace:*",
-    "@selectio/jobs": "workspace:*",
-    "@selectio/validators": "workspace:*",
+    "@qbs-autonaim/auth": "workspace:*",
+    "@qbs-autonaim/db": "workspace:*",
+    "@qbs-autonaim/jobs": "workspace:*",
+    "@qbs-autonaim/validators": "workspace:*",
     "@trpc/server": "^11.7.2",
     "superjson": "2.2.6",
     "zod": "4.1.13"
   },
   "devDependencies": {
-    "@selectio/tsconfig": "workspace:*",
+    "@qbs-autonaim/tsconfig": "workspace:*",
     "typescript": "5.9.3"
   }
 }

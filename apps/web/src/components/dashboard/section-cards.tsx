@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
 export function SectionCards() {

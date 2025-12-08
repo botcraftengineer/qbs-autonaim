@@ -1,12 +1,16 @@
-import { db, eq } from "@selectio/db";
+import { env } from "@qbs-autonaim/config";
+import { db, eq } from "@qbs-autonaim/db";
 import {
   telegramConversation,
   telegramMessage,
   telegramSession,
   vacancyResponse,
-} from "@selectio/db/schema";
-import { tgClientSDK } from "@selectio/tg-client/sdk";
-import { generateWelcomeMessage, sendHHChatMessage } from "../../../services/messaging";
+} from "@qbs-autonaim/db/schema";
+import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
+import {
+  generateWelcomeMessage,
+  sendHHChatMessage,
+} from "../../../services/messaging";
 import { inngest } from "../../client";
 
 /**
@@ -140,10 +144,38 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             if (!sendResult) {
               console.log(`📧 Попытка отправки через hh.ru`);
 
+              // Generate Telegram invite message (different from welcome message)
+              const { generateTelegramInviteMessage, generateTelegramInvite } =
+                await import("../../../services/messaging");
+
+              const inviteMessageResult = await generateTelegramInviteMessage(
+                response.id,
+              );
+
+              let messageWithInvite = inviteMessageResult.success
+                ? inviteMessageResult.data
+                : welcomeMessage;
+
+              // Get telegram username from session userInfo
+              const userInfo = session.userInfo as { username?: string } | null;
+              const telegramUsername =
+                userInfo?.username || env.TELEGRAM_BOT_USERNAME;
+
+              if (telegramUsername) {
+                const inviteLinkResult = await generateTelegramInvite({
+                  responseId: response.id,
+                  botUsername: telegramUsername,
+                });
+
+                if (inviteLinkResult.success) {
+                  messageWithInvite = `${messageWithInvite}\n\n📱 Давай продолжим общение в Telegram — там удобнее! Просто напиши мне:\n${inviteLinkResult.data}`;
+                }
+              }
+
               const hhResult = await sendHHChatMessage({
                 workspaceId,
                 responseId: response.id,
-                text: welcomeMessage,
+                text: messageWithInvite,
               });
 
               if (hhResult.success) {

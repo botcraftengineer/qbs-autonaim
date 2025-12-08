@@ -5,7 +5,7 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { CheckCircle2, Info, XCircle } from "lucide-react";
 import { sanitizeHtml } from "~/lib/sanitize-html";
 

@@ -1,5 +1,5 @@
-import { db, eq } from "@selectio/db";
-import { integration, vacancy, vacancyResponse } from "@selectio/db/schema";
+import { db, eq } from "@qbs-autonaim/db";
+import { integration, vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import axios from "axios";
 import { inngest } from "../../client";
 

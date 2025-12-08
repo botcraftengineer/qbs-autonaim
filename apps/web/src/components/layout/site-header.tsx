@@ -1,6 +1,6 @@
 "use client";
 
-import { Separator, SidebarTrigger } from "@selectio/ui";
+import { Separator, SidebarTrigger } from "@qbs-autonaim/ui";
 
 interface SiteHeaderProps {
   title?: string;

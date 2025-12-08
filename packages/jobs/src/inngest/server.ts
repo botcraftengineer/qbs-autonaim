@@ -1,4 +1,4 @@
-import { env } from "@selectio/config";
+import { env } from "@qbs-autonaim/config";
 import { serve } from "inngest/bun";
 import { inngest } from "./client";
 import { inngestFunctions } from "./functions";

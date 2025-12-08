@@ -1,7 +1,7 @@
-import { eq } from "@selectio/db";
-import { user } from "@selectio/db/schema";
-import { optimizeAvatar } from "@selectio/lib";
-import { accountFormSchema } from "@selectio/validators";
+import { eq } from "@qbs-autonaim/db";
+import { user } from "@qbs-autonaim/db/schema";
+import { optimizeAvatar } from "@qbs-autonaim/lib";
+import { accountFormSchema } from "@qbs-autonaim/validators";
 import { protectedProcedure } from "../../trpc";
 
 export const updateAccount = protectedProcedure

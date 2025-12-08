@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@selectio/ui";
+import { Button } from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";

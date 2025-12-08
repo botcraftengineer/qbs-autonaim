@@ -1,12 +1,5 @@
-import {
-  db,
-  telegramConversation,
-  telegramMessage,
-  vacancy,
-  vacancyResponse,
-  workspaceRepository,
-} from "@selectio/db";
-import { uuidv7Schema, workspaceIdSchema } from "@selectio/validators";
+import { db, telegramMessage } from "@qbs-autonaim/db";
+import { uuidv7Schema } from "@qbs-autonaim/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { desc, eq } from "drizzle-orm";
@@ -70,7 +63,7 @@ export const getMessagesRouter = {
       });
 
       // Генерируем presigned URLs для файлов
-      const { getDownloadUrl } = await import("@selectio/lib");
+      const { getDownloadUrl } = await import("@qbs-autonaim/lib");
 
       const messagesWithUrls = await Promise.all(
         messages.map(async (msg) => {

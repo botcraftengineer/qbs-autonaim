@@ -10,13 +10,13 @@ interface PackageJson {
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
   plop.setGenerator("init", {
-    description: "Generate a new package for the Selectio Monorepo",
+    description: "Generate a new package for the QBS Автонайм Monorepo",
     prompts: [
       {
         type: "input",
         name: "name",
         message:
-          "What is the name of the package? (You can skip the `@selectio/` prefix)",
+          "What is the name of the package? (You can skip the `@qbs-autonaim/` prefix)",
       },
       {
         type: "input",
@@ -28,8 +28,8 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
     actions: [
       (answers) => {
         if ("name" in answers && typeof answers.name === "string") {
-          if (answers.name.startsWith("@selectio/")) {
-            answers.name = answers.name.replace("@selectio/", "");
+          if (answers.name.startsWith("@qbs-autonaim/")) {
+            answers.name = answers.name.replace("@qbs-autonaim/", "");
           }
         }
         return "Config sanitized";

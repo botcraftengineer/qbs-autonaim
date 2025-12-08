@@ -8,7 +8,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { IconFilter } from "@tabler/icons-react";
 
 export type ScreeningFilter =

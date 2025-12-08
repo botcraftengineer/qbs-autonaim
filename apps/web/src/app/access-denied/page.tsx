@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@selectio/ui";
+import { Button } from "@qbs-autonaim/ui";
 import { ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { authClient } from "~/auth/client";

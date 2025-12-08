@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/auth",
+  "name": "@qbs-autonaim/auth",
   "private": true,
   "type": "module",
   "exports": {
@@ -18,14 +18,14 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@selectio/config": "workspace:*",
-    "@selectio/db": "workspace:*",
+    "@qbs-autonaim/config": "workspace:*",
+    "@qbs-autonaim/db": "workspace:*",
     "better-auth": "1.4.5",
     "zod": "4.1.13"
   },
   "devDependencies": {
     "@better-auth/cli": "1.4.5",
-    "@selectio/tsconfig": "workspace:*",
+    "@qbs-autonaim/tsconfig": "workspace:*",
     "typescript": "5.9.3"
   }
 }

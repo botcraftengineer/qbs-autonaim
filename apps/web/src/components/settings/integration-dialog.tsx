@@ -23,7 +23,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Eye, EyeOff, Mail } from "lucide-react";
 import { useParams } from "next/navigation";

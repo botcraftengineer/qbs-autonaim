@@ -10,11 +10,11 @@ import {
   FormMessage,
   Input,
   Textarea,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import {
   type CompanyFormValues,
   companyFormSchema,
-} from "@selectio/validators";
+} from "@qbs-autonaim/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";

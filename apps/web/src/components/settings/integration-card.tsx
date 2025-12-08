@@ -12,7 +12,7 @@ import {
   Badge,
   Button,
   Card,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Edit, Plus, Trash2, XCircle } from "lucide-react";
 import { useState } from "react";

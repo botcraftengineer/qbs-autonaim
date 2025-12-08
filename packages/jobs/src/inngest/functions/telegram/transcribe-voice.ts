@@ -1,4 +1,4 @@
-import { db, eq, file, telegramMessage } from "@selectio/db";
+import { db, eq, file, telegramMessage } from "@qbs-autonaim/db";
 import { transcribeAudio } from "../../../services/media";
 import { inngest } from "../../client";
 
@@ -34,7 +34,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
         }
 
         // Получаем URL для скачивания файла
-        const { getDownloadUrl } = await import("@selectio/lib");
+        const { getDownloadUrl } = await import("@qbs-autonaim/lib");
         const fileUrl = await getDownloadUrl(fileRecord.key);
 
         // Скачиваем файл

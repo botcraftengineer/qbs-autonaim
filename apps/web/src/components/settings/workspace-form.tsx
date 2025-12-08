@@ -10,7 +10,7 @@ import {
   FormMessage,
   Input,
   Separator,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
 import { useState } from "react";

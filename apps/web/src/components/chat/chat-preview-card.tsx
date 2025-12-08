@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Card, cn } from "@selectio/ui";
+import { Badge, Button, Card, cn } from "@qbs-autonaim/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { Clock, MessageCircle } from "lucide-react";

@@ -1,9 +1,9 @@
 import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
-import { env } from "@selectio/config";
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { telegramSession } from "@selectio/db/schema";
+import { env } from "@qbs-autonaim/config";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { telegramSession } from "@qbs-autonaim/db/schema";
 import { createBotHandler } from "./bot-handler";
 import { ExportableStorage } from "./storage";
 

@@ -1,7 +1,7 @@
 import {
   buildFullResumeScreeningPrompt,
   formatResumeForScreening,
-} from "@selectio/prompts";
+} from "@qbs-autonaim/prompts";
 import type {
   ResumeScreeningData,
   ScreeningResult,

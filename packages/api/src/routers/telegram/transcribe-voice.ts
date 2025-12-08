@@ -1,5 +1,5 @@
-import { inngest } from "@selectio/jobs/client";
-import { uuidv7Schema } from "@selectio/validators";
+import { inngest } from "@qbs-autonaim/jobs/client";
+import { uuidv7Schema } from "@qbs-autonaim/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

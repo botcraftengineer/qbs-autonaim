@@ -1,7 +1,7 @@
 import {
   loadCookiesForIntegration,
   saveCookiesForIntegration,
-} from "@selectio/db";
+} from "@qbs-autonaim/db";
 import type { Cookie } from "crawlee";
 
 /**

@@ -1,12 +1,5 @@
-import {
-  db,
-  telegramConversation,
-  telegramMessage,
-  vacancy,
-  vacancyResponse,
-  workspaceRepository,
-} from "@selectio/db";
-import { uuidv7Schema, workspaceIdSchema } from "@selectio/validators";
+import { db, telegramConversation, telegramMessage } from "@qbs-autonaim/db";
+import { uuidv7Schema } from "@qbs-autonaim/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";

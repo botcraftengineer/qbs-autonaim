@@ -8,7 +8,7 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { CheckCircle2, XCircle } from "lucide-react";
 
 interface ScreeningResult {

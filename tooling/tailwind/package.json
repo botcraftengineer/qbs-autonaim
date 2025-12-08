@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/tailwind-config",
+  "name": "@qbs-autonaim/tailwind-config",
   "private": true,
   "type": "module",
   "exports": {
@@ -19,7 +19,7 @@
     "tailwindcss": "4.1.17"
   },
   "devDependencies": {
-    "@selectio/tsconfig": "*",
+    "@qbs-autonaim/tsconfig": "*",
     "@types/node": "24.10.1",
     "typescript": "5.9.3"
   }

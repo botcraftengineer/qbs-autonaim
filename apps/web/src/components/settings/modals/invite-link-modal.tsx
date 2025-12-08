@@ -9,7 +9,7 @@ import {
   DialogTitle,
   Input,
   Skeleton,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { IconCheck, IconCopy, IconRefresh } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";

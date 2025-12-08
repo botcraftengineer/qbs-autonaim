@@ -12,8 +12,8 @@ RUN npm install -g turbo@2.6.1
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Using @selectio/web as the target workspace
-RUN turbo prune @selectio/web --docker
+# Using @qbs-autonaim/web as the target workspace
+RUN turbo prune @qbs-autonaim/web --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer

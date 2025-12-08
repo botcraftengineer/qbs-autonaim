@@ -11,7 +11,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 RUN bun add -g turbo
 COPY . .
-RUN turbo prune @selectio/jobs --docker
+RUN turbo prune @qbs-autonaim/jobs --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -33,7 +33,7 @@ COPY --from=builder /app/out/full/ .
 # ARG TURBO_TOKEN
 # ENV TURBO_TOKEN=$TURBO_TOKEN
 
-RUN bunx turbo build --filter=@selectio/jobs
+RUN bunx turbo build --filter=@qbs-autonaim/jobs
 
 FROM base AS runner
 WORKDIR /app

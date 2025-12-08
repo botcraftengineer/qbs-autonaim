@@ -1,4 +1,4 @@
-import { Badge, Button } from "@selectio/ui";
+import { Badge, Button } from "@qbs-autonaim/ui";
 import { ExternalLink, MapPin } from "lucide-react";
 
 interface VacancyHeaderProps {

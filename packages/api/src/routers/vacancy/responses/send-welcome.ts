@@ -1,8 +1,6 @@
-import { eq, workspaceRepository } from "@selectio/db";
-import { telegramConversation, vacancyResponse } from "@selectio/db/schema";
-import { inngest } from "@selectio/jobs/client";
-import { workspaceIdSchema } from "@selectio/validators";
-import { TRPCError } from "@trpc/server";
+import { eq } from "@qbs-autonaim/db";
+import { telegramConversation, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 

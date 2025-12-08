@@ -1,5 +1,5 @@
 {
-  "name": "@selectio/emails",
+  "name": "@qbs-autonaim/emails",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -21,8 +21,8 @@
   "dependencies": {
     "@radix-ui/colors": "3.0.0",
     "@react-email/components": "1.0.1",
-    "@selectio/config": "workspace:*",
-    "@selectio/tsconfig": "workspace:*",
+    "@qbs-autonaim/config": "workspace:*",
+    "@qbs-autonaim/tsconfig": "workspace:*",
     "@tailwindcss/typography": "0.5.19",
     "nodemailer": "^7.0.11",
     "react": "19.2.1",

@@ -1,1 +1,1 @@
-export { default } from "@selectio/tailwind-config/postcss-config";
+export { default } from "@qbs-autonaim/tailwind-config/postcss-config";

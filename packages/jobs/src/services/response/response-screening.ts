@@ -1,7 +1,7 @@
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
-import { responseScreening, vacancyResponse } from "@selectio/db/schema";
-import { buildResponseScreeningPrompt } from "@selectio/prompts";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { buildResponseScreeningPrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { generateText } from "../../lib/ai-client";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";

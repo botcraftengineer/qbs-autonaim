@@ -1,14 +1,14 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
-import { env } from "@selectio/config";
-import { eq } from "@selectio/db";
-import { db } from "@selectio/db/client";
+import { env } from "@qbs-autonaim/config";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import {
   file,
   telegramConversation,
   telegramMessage,
-} from "@selectio/db/schema";
-import { uploadFile as uploadToS3 } from "@selectio/lib";
+} from "@qbs-autonaim/db/schema";
+import { uploadFile as uploadToS3 } from "@qbs-autonaim/lib";
 
 /**
  * Загрузить файл в S3 и создать запись в БД
@@ -91,22 +91,61 @@ async function handleStartCommand(
     firstName = sender.firstName || undefined;
   }
 
+  // Extract invite token from /start command
+  const messageText = message.text || "";
+  const startPayload = messageText.replace("/start", "").trim();
+
   console.log("🆔 Telegram Chat Info:", {
     chatId,
     username: username ? `@${username}` : "no username",
     firstName,
+    startPayload: startPayload || "none",
   });
+
+  let responseId: string | null = null;
+  let candidateName = firstName;
+
+  // If we have invite token, link conversation to response
+  if (startPayload) {
+    try {
+      const { findResponseByInviteToken } = await import("@qbs-autonaim/jobs");
+      const responseResult = await findResponseByInviteToken(startPayload);
+
+      if (responseResult.success) {
+        responseId = responseResult.data.id;
+        candidateName = responseResult.data.candidateName || candidateName;
+
+        console.log("✅ Linked conversation to response", {
+          chatId,
+          responseId,
+          candidateName,
+        });
+      } else {
+        console.warn("⚠️ Invalid invite token", { token: startPayload });
+      }
+    } catch (error) {
+      console.error("❌ Error processing invite token", {
+        error,
+        startPayload,
+      });
+    }
+  }
 
   await db
     .insert(telegramConversation)
     .values({
       chatId,
-      candidateName: firstName,
+      responseId: responseId || undefined,
+      candidateName,
       status: "ACTIVE",
     })
     .onConflictDoUpdate({
       target: telegramConversation.chatId,
-      set: { status: "ACTIVE" },
+      set: {
+        status: "ACTIVE",
+        ...(responseId && { responseId }),
+        ...(candidateName && { candidateName }),
+      },
     })
     .returning();
 
@@ -123,16 +162,28 @@ async function handleStartCommand(
   // Задержка как у человека
   await humanDelay(1500, 3000);
 
-  // Естественное приветствие без упоминания "бот"
-  const greetings = [
-    `Привет${firstName ? `, ${firstName}` : ""}! 👋`,
-    `Здравствуй${firstName ? `, ${firstName}` : ""}!`,
-    `Привет! Рад знакомству${firstName ? `, ${firstName}` : ""} 😊`,
-    `Здорово${firstName ? `, ${firstName}` : ""}! Как дела?`,
-  ];
+  // If we have valid invite token, send personalized greeting
+  if (responseId) {
+    const personalizedGreetings = [
+      `Привет${candidateName ? `, ${candidateName}` : ""}! 👋\n\nОтлично, что перешёл в Telegram! Здесь нам будет удобнее общаться.\n\nМожешь записать голосовое сообщение и рассказать о себе 🎤`,
+      `Здорово${candidateName ? `, ${candidateName}` : ""}! Рад, что ты здесь 😊\n\nДавай продолжим наше знакомство. Запиши голосовое и расскажи немного о себе`,
+      `Привет${candidateName ? `, ${candidateName}` : ""}!\n\nСупер, что написал! В Telegram общаться намного удобнее.\n\nГотов послушать твой рассказ о себе — запиши голосовое 🎤`,
+    ];
 
-  const greeting = randomChoice(greetings);
-  await client.sendText(message.chat.id, greeting);
+    const greeting = randomChoice(personalizedGreetings);
+    await client.sendText(message.chat.id, greeting);
+  } else {
+    // Generic greeting for users without invite token
+    const greetings = [
+      `Привет${firstName ? `, ${firstName}` : ""}! 👋`,
+      `Здравствуй${firstName ? `, ${firstName}` : ""}!`,
+      `Привет! Рад знакомству${firstName ? `, ${firstName}` : ""} 😊`,
+      `Здорово${firstName ? `, ${firstName}` : ""}! Как дела?`,
+    ];
+
+    const greeting = randomChoice(greetings);
+    await client.sendText(message.chat.id, greeting);
+  }
 }
 
 /**
@@ -186,7 +237,7 @@ async function handleTextMessage(
 
   // Проверяем статус vacancy response для определения этапа
   if (conversation.responseId) {
-    const { vacancyResponse } = await import("@selectio/db/schema");
+    const { vacancyResponse } = await import("@qbs-autonaim/db/schema");
     const [response] = await db
       .select()
       .from(vacancyResponse)
@@ -261,7 +312,7 @@ async function handleVoiceMessage(
   message: Message,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
-  console.log('handleVoiceMessage', chatId);
+  console.log("handleVoiceMessage", chatId);
   if (!message.media || message.media.type !== "voice") {
     return;
   }
@@ -427,7 +478,7 @@ async function handleAudioFile(
   message: Message,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
-  console.log('handleAudioFile', chatId);
+  console.log("handleAudioFile", chatId);
   if (!message.media || message.media.type !== "audio") {
     return;
   }

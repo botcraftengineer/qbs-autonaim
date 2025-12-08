@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
   cn,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { IconTrendingDown, IconTrendingUp } from "@tabler/icons-react";
 
 interface VacancyAnalyticsProps {

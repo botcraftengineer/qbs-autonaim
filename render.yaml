@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: selectio-jobs
+    name: qbs-autonaim-jobs
     runtime: docker
     dockerfilePath: ./packages/jobs/Dockerfile
     dockerContext: .

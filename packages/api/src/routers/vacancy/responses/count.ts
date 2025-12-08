@@ -1,7 +1,5 @@
-import { and, count, eq, workspaceRepository } from "@selectio/db";
-import { vacancy, vacancyResponse } from "@selectio/db/schema";
-import { workspaceIdSchema } from "@selectio/validators";
-import { TRPCError } from "@trpc/server";
+import { count, eq } from "@qbs-autonaim/db";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 

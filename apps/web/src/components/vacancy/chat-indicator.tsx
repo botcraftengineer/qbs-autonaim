@@ -3,7 +3,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 

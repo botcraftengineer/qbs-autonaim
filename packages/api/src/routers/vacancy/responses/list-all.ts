@@ -1,13 +1,5 @@
-import { and, desc, eq, inArray, lt, workspaceRepository } from "@selectio/db";
-import {
-  responseScreening,
-  telegramInterviewScoring,
-  vacancy,
-  vacancyResponse,
-} from "@selectio/db/schema";
-import { workspaceIdSchema } from "@selectio/validators";
-import { TRPCError } from "@trpc/server";
-import { z } from "zod";
+import { desc } from "@qbs-autonaim/db";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { protectedProcedure } from "../../../trpc";
 
 export const listAll = protectedProcedure

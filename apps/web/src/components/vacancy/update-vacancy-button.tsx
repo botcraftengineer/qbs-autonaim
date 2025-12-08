@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@selectio/ui";
+import { Button } from "@qbs-autonaim/ui";
 import { RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";

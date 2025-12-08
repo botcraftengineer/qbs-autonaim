@@ -11,7 +11,7 @@ import {
   FormLabel,
   FormMessage,
   Input,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import { Eye, EyeOff, Key } from "lucide-react";
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";

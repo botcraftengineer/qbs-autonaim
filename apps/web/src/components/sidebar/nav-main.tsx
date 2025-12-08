@@ -6,7 +6,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@selectio/ui";
+} from "@qbs-autonaim/ui";
 import type { Icon } from "@tabler/icons-react";
 import { usePathname } from "next/navigation";
 

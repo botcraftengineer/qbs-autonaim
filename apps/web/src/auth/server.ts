@@ -1,8 +1,8 @@
 import "server-only";
 
-import { initAuth } from "@selectio/auth";
-import { env } from "@selectio/config";
-import { OtpSignInEmail, sendEmail } from "@selectio/emails";
+import { initAuth } from "@qbs-autonaim/auth";
+import { env } from "@qbs-autonaim/config";
+import { OtpSignInEmail, sendEmail } from "@qbs-autonaim/emails";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { cache } from "react";
@@ -21,7 +21,7 @@ export const auth = initAuth({
   googleClientId: env.AUTH_GOOGLE_ID,
   googleClientSecret: env.AUTH_GOOGLE_SECRET,
   extraPlugins: [nextCookies()],
-  // sendEmail is used by the internal emailOTP plugin defined in @selectio/auth
+  // sendEmail is used by the internal emailOTP plugin defined in @qbs-autonaim/auth
   sendEmail: async ({
     email,
     otp,

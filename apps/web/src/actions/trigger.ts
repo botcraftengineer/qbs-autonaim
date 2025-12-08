@@ -3,7 +3,7 @@
 import { getSubscriptionToken } from "@inngest/realtime";
 
 export async function getParseResumesToken() {
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: "parse-new-resumes",
     topics: ["status"],
@@ -12,7 +12,7 @@ export async function getParseResumesToken() {
 }
 
 export async function getParseMissingContactsToken() {
-  const { inngest } = await import("@selectio/jobs/client");
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: "parse-missing-contacts",
     topics: ["status"],
@@ -22,7 +22,7 @@ export async function getParseMissingContactsToken() {
 
 export async function triggerScreenResponse(responseId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/screen",
       data: {
@@ -38,7 +38,7 @@ export async function triggerScreenResponse(responseId: string) {
 
 export async function triggerScreenAllResponses(vacancyId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/screen.all",
       data: {
@@ -61,7 +61,7 @@ export async function triggerScreenResponsesBatch(responseIds: string[]) {
       };
     }
 
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/screen.batch",
       data: {
@@ -83,7 +83,7 @@ export async function triggerScreenResponsesBatch(responseIds: string[]) {
 
 export async function triggerScreenNewResponses(vacancyId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/screen.new",
       data: {
@@ -99,7 +99,7 @@ export async function triggerScreenNewResponses(vacancyId: string) {
 
 export async function triggerUpdateVacancies(workspaceId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "vacancy/update.active",
       data: { workspaceId },
@@ -116,7 +116,7 @@ export async function triggerUpdateVacancies(workspaceId: string) {
 
 export async function triggerRefreshVacancyResponses(vacancyId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "vacancy/responses.refresh",
       data: {
@@ -145,7 +145,7 @@ export async function triggerSendWelcomeBatch(responseIds: string[]) {
       };
     }
 
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "candidate/welcome.batch",
       data: {
@@ -168,7 +168,7 @@ export async function triggerSendWelcomeBatch(responseIds: string[]) {
 
 export async function triggerParseNewResumes(vacancyId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/resume.parse-new",
       data: {
@@ -188,7 +188,7 @@ export async function triggerParseNewResumes(vacancyId: string) {
 
 export async function triggerParseMissingContacts(vacancyId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/contacts.parse-missing",
       data: {
@@ -208,7 +208,7 @@ export async function triggerParseMissingContacts(vacancyId: string) {
 
 export async function triggerRefreshSingleResume(responseId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "response/resume.refresh",
       data: {
@@ -231,7 +231,7 @@ export async function triggerSendWelcome(
   phone?: string | null,
 ) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "candidate/welcome",
       data: {
@@ -255,7 +255,7 @@ export async function triggerGenerateRequirements(
   description: string,
 ) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "vacancy/requirements.extract",
       data: {
@@ -275,7 +275,7 @@ export async function triggerGenerateRequirements(
 
 export async function triggerUpdateSingleVacancy(vacancyId: string) {
   try {
-    const { inngest } = await import("@selectio/jobs/client");
+    const { inngest } = await import("@qbs-autonaim/jobs/client");
     await inngest.send({
       name: "vacancy/update.single",
       data: {

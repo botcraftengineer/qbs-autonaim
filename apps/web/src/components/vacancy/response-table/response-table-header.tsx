@@ -1,4 +1,4 @@
-import { Checkbox, TableHead, TableHeader, TableRow } from "@selectio/ui";
+import { Checkbox, TableHead, TableHeader, TableRow } from "@qbs-autonaim/ui";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import type { SortDirection, SortField } from "./types";
 
