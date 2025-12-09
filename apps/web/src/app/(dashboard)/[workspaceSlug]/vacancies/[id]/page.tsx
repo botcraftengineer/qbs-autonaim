@@ -44,17 +44,14 @@ export default function VacancyResponsesPage({
         })
       : skipToken,
   );
-  const { data: responsesCount, isLoading: responsesLoading } = useQuery({
-    ...trpc.vacancy.responses.getCount.queryOptions(
-      workspaceId
-        ? {
-            vacancyId: id,
-            workspaceId,
-          }
-        : ({} as never),
-    ),
-    enabled: Boolean(workspaceId),
-  });
+  const { data: responsesCount, isLoading: responsesLoading } = useQuery(
+    workspaceId
+      ? trpc.vacancy.responses.getCount.queryOptions({
+          vacancyId: id,
+          workspaceId,
+        })
+      : skipToken,
+  );
 
   const isLoading = vacancyLoading || responsesLoading;
 
