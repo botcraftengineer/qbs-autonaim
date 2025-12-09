@@ -19,6 +19,7 @@ import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import { ResponseTable } from "~/components/vacancy";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyResponsesPageProps {
@@ -33,13 +34,30 @@ export default function VacancyResponsesPage({
   const { workspaceSlug, id } = use(params);
   const { tab } = use(searchParams);
   const trpc = useTRPC();
+  const { workspaceId } = useWorkspaceContext();
 
-  const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({ id }),
-  );
-  const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.getCount.queryOptions({ vacancyId: id }),
-  );
+  const { data: vacancy, isLoading: vacancyLoading } = useQuery({
+    ...trpc.vacancy.getById.queryOptions(
+      workspaceId
+        ? {
+            id,
+            workspaceId,
+          }
+        : ({} as never),
+    ),
+    enabled: Boolean(workspaceId),
+  });
+  const { data: responsesCount, isLoading: responsesLoading } = useQuery({
+    ...trpc.vacancy.responses.getCount.queryOptions(
+      workspaceId
+        ? {
+            vacancyId: id,
+            workspaceId,
+          }
+        : ({} as never),
+    ),
+    enabled: Boolean(workspaceId),
+  });
 
   const isLoading = vacancyLoading || responsesLoading;
 
@@ -164,15 +182,6 @@ export default function VacancyResponsesPage({
                 <div className="flex items-center justify-between">
                   <TabsList className="w-full sm:w-auto">
                     <TabsTrigger
-                      value="overview"
-                      asChild
-                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
-                    >
-                      <Link href={`/${workspaceSlug}/vacancies/${id}`}>
-                        Обзор
-                      </Link>
-                    </TabsTrigger>
-                    <TabsTrigger
                       value="responses"
                       asChild
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
@@ -184,6 +193,15 @@ export default function VacancyResponsesPage({
                           Отклики ({responsesCount?.total ?? 0})
                         </span>
                         <span className="sm:hidden">Отклики</span>
+                      </Link>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="overview"
+                      asChild
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                    >
+                      <Link href={`/${workspaceSlug}/vacancies/${id}`}>
+                        Обзор
                       </Link>
                     </TabsTrigger>
                   </TabsList>

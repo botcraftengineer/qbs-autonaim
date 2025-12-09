@@ -20,6 +20,7 @@ import {
   VacancyRequirements,
   VacancyStats,
 } from "~/components/vacancy";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyDetailPageProps {
@@ -34,16 +35,28 @@ export default function VacancyDetailPage({
   const { workspaceSlug, id } = use(params);
   const { tab } = use(searchParams);
   const trpc = useTRPC();
+  const { workspaceId } = useWorkspaceContext();
 
-  const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({ id }),
-  );
-  const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.getCount.queryOptions({ vacancyId: id }),
-  );
+  const { data: vacancy, isLoading: vacancyLoading } = useQuery({
+    ...trpc.vacancy.getById.queryOptions({
+      id,
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: Boolean(workspaceId),
+  });
+  const { data: responsesCount, isLoading: responsesLoading } = useQuery({
+    ...trpc.vacancy.responses.getCount.queryOptions({
+      vacancyId: id,
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: Boolean(workspaceId),
+  });
   const { data: analytics } = useQuery({
-    ...trpc.vacancy.getAnalytics.queryOptions({ vacancyId: id }),
-    enabled: !!id,
+    ...trpc.vacancy.getAnalytics.queryOptions({
+      vacancyId: id,
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: Boolean(id) && Boolean(workspaceId),
   });
 
   const isLoading = vacancyLoading || responsesLoading;
@@ -105,19 +118,19 @@ export default function VacancyDetailPage({
                 </Link>
               </div>
 
-              <Tabs defaultValue={tab || "overview"} className="space-y-6">
+              <Tabs defaultValue={tab || "responses"} className="space-y-6">
                 <div className="flex items-center justify-between">
                   <TabsList>
-                    <TabsTrigger value="overview" asChild>
-                      <Link href={`/${workspaceSlug}/vacancies/${id}`}>
-                        Обзор
-                      </Link>
-                    </TabsTrigger>
                     <TabsTrigger value="responses" asChild>
                       <Link
                         href={`/${workspaceSlug}/vacancies/${id}/responses`}
                       >
                         Отклики ({responsesCount?.total ?? 0})
+                      </Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="overview" asChild>
+                      <Link href={`/${workspaceSlug}/vacancies/${id}`}>
+                        Обзор
                       </Link>
                     </TabsTrigger>
                   </TabsList>
@@ -158,8 +171,7 @@ export default function VacancyDetailPage({
                           <UpdateVacancyButton vacancyId={vacancy.id} />
                         </div>
                         <div
-                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-4 [&_p]:leading-relaxed"
-                          // biome-ignore lint/security/noDangerouslySetInnerHtml: Vacancy description is sanitized
+                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-snug text-muted-foreground [&_p]:mb-2 [&_p]:leading-snug"
                           dangerouslySetInnerHTML={{
                             __html: vacancy.description,
                           }}

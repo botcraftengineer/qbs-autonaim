@@ -13,14 +13,19 @@ import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
 import { FileText, Star } from "lucide-react";
 import Link from "next/link";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 export function RecentResponses({ workspaceSlug }: { workspaceSlug: string }) {
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
 
-  const { data: recentResponses, isLoading } = useQuery(
-    trpc.vacancy.responses.listRecent.queryOptions(),
-  );
+  const { data: recentResponses, isLoading } = useQuery({
+    ...trpc.vacancy.responses.listRecent.queryOptions({
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
 
   if (isLoading) {
     return (

@@ -1,6 +1,12 @@
 "use client";
 
-import { Button, Sheet, SheetContent, SheetTrigger, toast } from "@qbs-autonaim/ui";
+import {
+  Button,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  toast,
+} from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Info } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +18,7 @@ import { ChatInput } from "~/components/chat/chat-input";
 import { ChatLoading } from "~/components/chat/chat-loading";
 import { ChatMessages } from "~/components/chat/chat-messages";
 import { ChatSidebar } from "~/components/chat/sidebar/chat-sidebar";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 export function ChatView({ conversationId }: { conversationId: string }) {
@@ -19,6 +26,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const queryClient = useQueryClient();
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { workspaceId } = useWorkspaceContext();
   const [transcribingMessageId, setTranscribingMessageId] = useState<
     string | null
   >(null);
@@ -28,8 +36,12 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const conversationQueryOptions =
     trpc.telegram.conversation.getById.queryOptions({
       id: conversationId,
+      workspaceId: workspaceId ?? "",
     });
-  const { data: currentConversation } = useQuery(conversationQueryOptions);
+  const { data: currentConversation } = useQuery({
+    ...conversationQueryOptions,
+    enabled: Boolean(workspaceId),
+  });
 
   const metadata = currentConversation?.metadata
     ? JSON.parse(currentConversation.metadata)
@@ -38,10 +50,11 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
   const responseQueryOptions = trpc.vacancy.responses.getById.queryOptions({
     id: candidateResponseId ?? "",
+    workspaceId: workspaceId ?? "",
   });
   const { data: responseData } = useQuery({
     ...responseQueryOptions,
-    enabled: !!candidateResponseId,
+    enabled: Boolean(candidateResponseId) && Boolean(workspaceId),
   });
 
   // Debug: проверка данных telegramInterviewScoring
@@ -59,8 +72,9 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   } = useQuery({
     ...trpc.telegram.messages.getByConversationId.queryOptions({
       conversationId,
+      workspaceId: workspaceId ?? "",
     }),
-    enabled: !!conversationId,
+    enabled: Boolean(conversationId) && Boolean(workspaceId),
     refetchInterval: 3000,
   });
 

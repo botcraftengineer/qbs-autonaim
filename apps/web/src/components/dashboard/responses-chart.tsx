@@ -23,6 +23,7 @@ import { useIsMobile } from "@qbs-autonaim/ui/hooks";
 import { useQuery } from "@tanstack/react-query";
 import * as React from "react";
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 const chartConfig = {
@@ -45,6 +46,7 @@ const chartConfig = {
 
 export function ResponsesChart() {
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
   const isMobile = useIsMobile();
   const [timeRange, setTimeRange] = React.useState("90d");
 
@@ -54,9 +56,12 @@ export function ResponsesChart() {
     }
   }, [isMobile]);
 
-  const { data: chartData, isLoading } = useQuery(
-    trpc.vacancy.getResponsesChartData.queryOptions(),
-  );
+  const { data: chartData, isLoading } = useQuery({
+    ...trpc.vacancy.getResponsesChartData.queryOptions({
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
 
   const filteredData = React.useMemo(() => {
     if (!chartData) return [];

@@ -17,30 +17,32 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { triggerUpdateVacancies } from "~/actions/trigger";
 import { SiteHeader } from "~/components/layout";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 export default function VacanciesPage() {
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
   const trpc = useTRPC();
-  const { data: vacancies, isLoading } = useQuery(
-    trpc.vacancy.list.queryOptions(),
-  );
+  const { workspace } = useWorkspace();
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const { data: workspace } = useQuery(
-    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
-  );
+  const { data: vacancies, isLoading } = useQuery({
+    ...trpc.vacancy.list.queryOptions({
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
 
   const handleUpdate = async () => {
-    if (!workspace?.workspace?.id) {
+    if (!workspace?.id) {
       toast.error("Workspace не найден");
       return;
     }
 
     setIsUpdating(true);
     try {
-      const result = await triggerUpdateVacancies(workspace.workspace.id);
+      const result = await triggerUpdateVacancies(workspace.id);
       if (result.success) {
         toast.success("Обновление вакансий запущено");
       } else {

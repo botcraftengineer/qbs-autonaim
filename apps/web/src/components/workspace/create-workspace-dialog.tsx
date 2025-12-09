@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { env as baseEnv } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -149,7 +150,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">
-                        app.selectio.ru/
+                        {new URL(baseEnv.APP_URL).host}/
                       </span>
                       <Input placeholder="acme" {...field} className="flex-1" />
                     </div>

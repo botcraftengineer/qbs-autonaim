@@ -10,6 +10,7 @@ import {
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 import { ResponseRow } from "../response-row";
 import { BulkActionsBar } from "./bulk-actions-bar";
@@ -33,6 +34,7 @@ export function ResponseTable({
   accessToken,
 }: ResponseTableProps) {
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
   const {
     currentPage,
     setCurrentPage,
@@ -53,6 +55,7 @@ export function ResponseTable({
 
   const { data, isLoading, isFetching } = useQuery({
     ...trpc.vacancy.responses.list.queryOptions({
+      workspaceId: workspace?.id ?? "",
       vacancyId,
       page: currentPage,
       limit: ITEMS_PER_PAGE,
@@ -62,6 +65,7 @@ export function ResponseTable({
       statusFilter,
       search: debouncedSearch,
     }),
+    enabled: !!workspace?.id,
     placeholderData: (previousData) => previousData,
   });
 
