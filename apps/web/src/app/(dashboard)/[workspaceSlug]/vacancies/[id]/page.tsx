@@ -135,7 +135,7 @@ export default function VacancyResponsesPage({
     );
   }
 
-  if (!vacancy) {
+  if (!vacancyLoading && !vacancy) {
     return (
       <>
         <SiteHeader title="Не найдено" />
@@ -148,7 +148,7 @@ export default function VacancyResponsesPage({
 
   return (
     <>
-      <SiteHeader title={vacancy.title} />
+      <SiteHeader title={vacancy?.title ?? "Вакансия"} />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
