@@ -38,6 +38,7 @@ async function downloadResumeFile(
   page: Page,
   resumeUrl: string,
   fileType: "pdf" | "txt",
+  candidateName?: string,
 ): Promise<Buffer | null> {
   try {
     console.log(`📥 Скачивание ${fileType.toUpperCase()} резюме...`);
@@ -53,16 +54,10 @@ async function downloadResumeFile(
     const resumeHash = urlMatch[1];
     const vacancyId = vacancyIdMatch?.[1] || "";
 
-    const candidateName = await page
-      .evaluate(() => {
-        const nameEl = document.querySelector(
-          'span[data-qa="resume-personal-name"]',
-        );
-        return nameEl?.textContent?.trim() || "resume";
-      })
-      .catch(() => "resume");
+    // Используем переданное имя кандидата или fallback
+    const fileName = candidateName || "resume";
 
-    const fileUrl = `https://hh.ru/resume_converter/${encodeURIComponent(candidateName)}.${fileType}?hash=${resumeHash}${vacancyId ? `&vacancyId=${vacancyId}` : ""}&type=${fileType}&hhtmSource=resume&hhtmFrom=employer_vacancy_responses`;
+    const fileUrl = `https://hh.ru/resume_converter/${encodeURIComponent(fileName)}.${fileType}?hash=${resumeHash}${vacancyId ? `&vacancyId=${vacancyId}` : ""}&type=${fileType}&hhtmSource=resume&hhtmFrom=employer_vacancy_responses`;
 
     console.log(`📄 URL: ${fileUrl}`);
 
@@ -82,7 +77,7 @@ async function downloadResumeFile(
         Cookie: cookieString,
         Host: "hh.ru",
         Pragma: "no-cache",
-        Referer: page.url(),
+        Referer: resumeUrl,
         "Sec-Ch-Ua":
           '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
         "Sec-Ch-Ua-Mobile": "?0",
@@ -128,15 +123,9 @@ async function downloadResumeFile(
 export async function parseResumeExperience(
   page: Page,
   url: string,
+  candidateName?: string,
 ): Promise<ResumeExperience> {
-  console.log(`📄 Переход на страницу резюме: ${url}`);
-
-  if (page.url() !== url) {
-    await page.goto(url, {
-      waitUntil: "domcontentloaded",
-      timeout: 60000,
-    });
-  }
+  console.log(`📄 Парсинг резюме: ${url}`);
 
   let contacts = null;
   let phone: string | null = null;
@@ -235,8 +224,8 @@ export async function parseResumeExperience(
 
   try {
     [pdfBuffer, txtBuffer] = await Promise.all([
-      downloadResumeFile(page, url, "pdf"),
-      downloadResumeFile(page, url, "txt"),
+      downloadResumeFile(page, url, "pdf", candidateName),
+      downloadResumeFile(page, url, "txt", candidateName),
     ]);
 
     if (txtBuffer) {
