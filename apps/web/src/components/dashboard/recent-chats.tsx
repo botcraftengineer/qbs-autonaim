@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { ChatPreviewCard } from "~/components/chat";
-import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface RecentChatsProps {
@@ -11,13 +11,13 @@ interface RecentChatsProps {
 
 export function RecentChats({ workspaceSlug }: RecentChatsProps) {
   const trpc = useTRPC();
-  const { workspace } = useWorkspace();
+  const { workspaceId } = useWorkspaceContext();
 
   // Получаем последние сообщения с помощью queryOptions
   const recentMessagesQueryOptions =
     trpc.telegram.messages.getRecent.queryOptions({
       limit: 5,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     });
 
   const { data: recentMessages = [], isPending } = useQuery(

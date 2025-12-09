@@ -106,7 +106,6 @@ export function ScreeningHoverCard({ screening }: ScreeningHoverCardProps) {
               </h4>
               <div
                 className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
-                // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
                 dangerouslySetInnerHTML={{
                   __html: sanitizeHtml(screening.analysis),
                 }}

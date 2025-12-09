@@ -20,7 +20,7 @@ import {
   VacancyRequirements,
   VacancyStats,
 } from "~/components/vacancy";
-import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyDetailPageProps {
@@ -35,26 +35,28 @@ export default function VacancyDetailPage({
   const { workspaceSlug, id } = use(params);
   const { tab } = use(searchParams);
   const trpc = useTRPC();
-  const { workspace } = useWorkspace();
+  const { workspaceId } = useWorkspaceContext();
 
-  const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({
+  const { data: vacancy, isLoading: vacancyLoading } = useQuery({
+    ...trpc.vacancy.getById.queryOptions({
       id,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     }),
-  );
-  const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.getCount.queryOptions({
+    enabled: Boolean(workspaceId),
+  });
+  const { data: responsesCount, isLoading: responsesLoading } = useQuery({
+    ...trpc.vacancy.responses.getCount.queryOptions({
       vacancyId: id,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     }),
-  );
+    enabled: Boolean(workspaceId),
+  });
   const { data: analytics } = useQuery({
     ...trpc.vacancy.getAnalytics.queryOptions({
       vacancyId: id,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     }),
-    enabled: !!id && !!workspace?.id,
+    enabled: Boolean(id) && Boolean(workspaceId),
   });
 
   const isLoading = vacancyLoading || responsesLoading;
@@ -169,8 +171,7 @@ export default function VacancyDetailPage({
                           <UpdateVacancyButton vacancyId={vacancy.id} />
                         </div>
                         <div
-                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-4 [&_p]:leading-relaxed"
-                          // biome-ignore lint/security/noDangerouslySetInnerHtml: Vacancy description is sanitized
+                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-snug text-muted-foreground [&_p]:mb-2 [&_p]:leading-snug"
                           dangerouslySetInnerHTML={{
                             __html: vacancy.description,
                           }}
