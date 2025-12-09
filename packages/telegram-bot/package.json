@@ -18,7 +18,7 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/openai": "2.0.79",
+    "@ai-sdk/openai": "2.0.80",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
@@ -28,7 +28,7 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/bun": "1.3.4",
-    "@types/node": "24.10.1",
+    "@types/node": "24.10.2",
     "typescript": "5.9.3"
   }
 }
