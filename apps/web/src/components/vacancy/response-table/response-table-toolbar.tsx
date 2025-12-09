@@ -413,8 +413,15 @@ export function ResponseTableToolbar({
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-4 md:px-0">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-          <div className="text-sm text-muted-foreground">
-            Всего откликов: {totalResponses}
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Поиск по ФИО..."
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-9 w-full md:w-64 min-h-[44px] md:min-h-0 text-base md:text-sm"
+              style={{ fontSize: "16px" }}
+            />
           </div>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <ResponseFilters
@@ -424,16 +431,6 @@ export function ResponseTableToolbar({
             <ResponseStatusFilter
               selectedStatuses={statusFilter}
               onStatusChange={onStatusFilterChange}
-            />
-          </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Поиск по ФИО..."
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 w-full md:w-64 min-h-[44px] md:min-h-0 text-base md:text-sm"
-              style={{ fontSize: "16px" }}
             />
           </div>
         </div>

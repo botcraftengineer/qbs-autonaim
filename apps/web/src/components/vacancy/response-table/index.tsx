@@ -192,6 +192,14 @@ export function ResponseTable({
         onScreeningDialogClose={handleScreeningDialogClose}
       />
 
+      {total > 0 && (
+        <div className="flex items-center justify-between px-4 py-3 rounded-lg border bg-muted/50">
+          <div className="text-sm font-medium">
+            Всего откликов: <span className="text-foreground">{total}</span>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-lg border">
         {selectedIds.size > 0 && (
           <BulkActionsBar
