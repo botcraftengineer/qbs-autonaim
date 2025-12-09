@@ -59,7 +59,12 @@ export const env = createEnv({
     APP_URL: z.url().optional().default("https://qbs-autonaim-web.vercel.app"),
     APP_NAME: z.string().optional().default("QBS Автонайм"),
   },
-  client: {},
+  client: {
+    NEXT_PUBLIC_APP_URL: z
+      .url()
+      .optional()
+      .default("https://qbs-autonaim-web.vercel.app"),
+  },
   clientPrefix: "NEXT_PUBLIC_",
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
@@ -96,6 +101,7 @@ export const env = createEnv({
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,
     APP_URL: process.env.APP_URL,
     APP_NAME: process.env.APP_NAME,
+    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
   },
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",

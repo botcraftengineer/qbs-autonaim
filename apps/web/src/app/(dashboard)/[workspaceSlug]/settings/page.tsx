@@ -1,5 +1,6 @@
 "use client";
 
+import { env as baseEnv } from "@qbs-autonaim/config";
 import { Skeleton } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
@@ -46,6 +47,7 @@ export default function SettingsPage() {
           }}
           workspaceId={workspace.id}
           userRole={role}
+          appUrl={baseEnv.NEXT_PUBLIC_APP_URL}
         />
       </div>
     </div>

@@ -10,9 +10,13 @@ import {
   FormMessage,
   Input,
   Separator,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Upload } from "lucide-react";
+import { HelpCircle, Upload } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -39,10 +43,12 @@ export function WorkspaceForm({
   initialData,
   workspaceId,
   userRole,
+  appUrl,
 }: {
   initialData?: Partial<WorkspaceFormValues>;
   workspaceId: string;
   userRole?: string;
+  appUrl?: string;
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -164,10 +170,36 @@ export function WorkspaceForm({
             name="slug"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Адрес пространства
-                </FormLabel>
-                <Input placeholder="spillwood" {...field} />
+                <div className="flex items-center gap-2">
+                  <FormLabel className="text-foreground font-medium">
+                    Адрес пространства
+                  </FormLabel>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          Уникальный адрес для доступа к вашему рабочему
+                          пространству. Используется в URL{" "}
+                          {appUrl && (
+                            <>
+                              (например,{" "}
+                              <span className="font-mono text-xs">
+                                {new URL(appUrl).host}/spillwood
+                              </span>
+                              )
+                            </>
+                          )}
+                          . После изменения все ссылки на старый адрес
+                          перестанут работать.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input placeholder="qbs" {...field} />
                 <p className="text-sm text-muted-foreground">
                   Только строчные буквы, цифры и дефисы. Максимум 48 символов.
                 </p>
