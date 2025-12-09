@@ -101,7 +101,6 @@ export const collectChatIdsFunction = inngest.createFunction(
             params: {
               vacancyIds: vacancyId,
               filterUnread: false,
-              filterHasTextMessage: true,
               do_not_track_session_events: true,
               page: currentPage,
             },
