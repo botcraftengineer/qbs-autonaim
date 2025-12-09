@@ -40,7 +40,7 @@ jobs:
           CR_REPOSITORY: qbs-autonaim-jobs
           IMAGE_TAG: ${{ github.sha }}
         with:
-          args: set image deployment/$CR_REPOSITORY $CR_REPOSITORY=cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
+          args: set image deployment/$CR_REPOSITORY $CR_REPOSITORY=cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG -n qbs
       - name: Verify Deployment
         uses: kodermax/kubectl-aws-eks@main
         env:

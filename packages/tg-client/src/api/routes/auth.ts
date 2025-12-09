@@ -12,7 +12,7 @@ auth.post("/send-code", async (c) => {
 
     if (!result.success) {
       return c.json(
-        { error: "Invalid request data", details: result.error.issues },
+        { error: "Неверные данные запроса", details: result.error.issues },
         400,
       );
     }
@@ -33,9 +33,12 @@ auth.post("/send-code", async (c) => {
       });
     }
 
-    return c.json({ error: "User already authorized" }, 400);
+    return c.json({ error: "Пользователь уже авторизован" }, 400);
   } catch (error) {
-    return c.json({ error: handleError(error, "Failed to send code") }, 500);
+    return c.json(
+      { error: handleError(error, "Не удалось отправить код") },
+      500,
+    );
   }
 });
 
@@ -48,7 +51,7 @@ auth.post("/sign-in", async (c) => {
 
     if (!result.success) {
       return c.json(
-        { error: "Invalid request data", details: result.error.issues },
+        { error: "Неверные данные запроса", details: result.error.issues },
         400,
       );
     }
@@ -100,13 +103,13 @@ auth.post("/sign-in", async (c) => {
       }
     }
     if (isAuthError(error, "PHONE_CODE_EXPIRED")) {
-      return c.json({ error: "PHONE_CODE_EXPIRED" }, 400);
+      return c.json({ error: "Код подтверждения истек" }, 400);
     }
     if (isAuthError(error, "PHONE_CODE_INVALID")) {
-      return c.json({ error: "PHONE_CODE_INVALID" }, 400);
+      return c.json({ error: "Неверный код подтверждения" }, 400);
     }
 
-    return c.json({ error: handleError(error, "Failed to sign in") }, 500);
+    return c.json({ error: handleError(error, "Не удалось войти") }, 500);
   }
 });
 
@@ -116,7 +119,7 @@ auth.post("/check-password", async (c) => {
     const result = checkPasswordSchema.safeParse(body);
     if (!result.success) {
       return c.json(
-        { error: "Invalid request data", details: result.error.issues },
+        { error: "Неверные данные запроса", details: result.error.issues },
         400,
       );
     }
@@ -144,7 +147,7 @@ auth.post("/check-password", async (c) => {
     });
   } catch (error) {
     return c.json(
-      { error: handleError(error, "Failed to check password") },
+      { error: handleError(error, "Не удалось проверить пароль") },
       500,
     );
   }
