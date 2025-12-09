@@ -115,8 +115,8 @@ export function ResponseTable({
   const renderTableContent = () => {
     if (isLoading || (isFetching && !isLoading)) {
       // Показываем скелетон во время загрузки
-      return Array.from({ length: 5 }, () => (
-        <TableRow key={crypto.randomUUID()}>
+      return Array.from({ length: 5 }, (_, i) => (
+        <TableRow key={`skeleton-${i}`}>
           <TableCell>
             <Skeleton className="h-5 w-5" />
           </TableCell>

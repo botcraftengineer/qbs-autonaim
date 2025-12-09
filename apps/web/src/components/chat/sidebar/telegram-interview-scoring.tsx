@@ -1,6 +1,6 @@
 "use client";
 
-import { Progress } from "@qbs-autonaim/ui";
+import { Progress, ScrollArea } from "@qbs-autonaim/ui";
 import { Star } from "lucide-react";
 import { sanitizeHtml } from "~/lib/sanitize-html";
 
@@ -72,10 +72,12 @@ export function TelegramInterviewScoring({
         {analysis && (
           <div>
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
-            <div
-              className="text-sm prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
-            />
+            <ScrollArea className="max-h-64">
+              <div
+                className="text-sm prose prose-sm max-w-none pr-4"
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
+              />
+            </ScrollArea>
           </div>
         )}
       </div>
