@@ -39,12 +39,22 @@ export async function handleStartCommand(
 
   if (startPayload) {
     try {
-      const { findResponseByInviteToken } = await import("@qbs-autonaim/db");
+      const { findResponseByInviteToken, eq } = await import(
+        "@qbs-autonaim/db"
+      );
+      const { vacancyResponse } = await import("@qbs-autonaim/db/schema");
+
       const responseResult = await findResponseByInviteToken(startPayload);
 
       if (responseResult.success) {
         responseId = responseResult.data.id;
         candidateName = responseResult.data.candidateName || candidateName;
+
+        // Обновляем chatId в vacancy_response для будущей идентификации
+        await db
+          .update(vacancyResponse)
+          .set({ chatId })
+          .where(eq(vacancyResponse.id, responseId));
 
         console.log("✅ Linked conversation to response", {
           chatId,
