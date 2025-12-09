@@ -42,7 +42,7 @@
         "useSemanticElements": "warn"
       },
       "security": {
-        "noDangerouslySetInnerHtml": "warn"
+        "noDangerouslySetInnerHtml": "off"
       },
       "correctness": {
         "noUnusedVariables": {

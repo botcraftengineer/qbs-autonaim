@@ -38,7 +38,10 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       id: conversationId,
       workspaceId: workspaceId ?? "",
     });
-  const { data: currentConversation } = useQuery(conversationQueryOptions);
+  const { data: currentConversation } = useQuery({
+    ...conversationQueryOptions,
+    enabled: Boolean(workspaceId),
+  });
 
   const metadata = currentConversation?.metadata
     ? JSON.parse(currentConversation.metadata)
@@ -51,7 +54,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   });
   const { data: responseData } = useQuery({
     ...responseQueryOptions,
-    enabled: !!candidateResponseId,
+    enabled: Boolean(candidateResponseId) && Boolean(workspaceId),
   });
 
   // Debug: проверка данных telegramInterviewScoring
@@ -71,7 +74,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       conversationId,
       workspaceId: workspaceId ?? "",
     }),
-    enabled: !!conversationId && !!workspaceId,
+    enabled: Boolean(conversationId) && Boolean(workspaceId),
     refetchInterval: 3000,
   });
 

@@ -37,24 +37,26 @@ export default function VacancyDetailPage({
   const trpc = useTRPC();
   const { workspaceId } = useWorkspaceContext();
 
-  const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({
+  const { data: vacancy, isLoading: vacancyLoading } = useQuery({
+    ...trpc.vacancy.getById.queryOptions({
       id,
       workspaceId: workspaceId ?? "",
     }),
-  );
-  const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.getCount.queryOptions({
+    enabled: Boolean(workspaceId),
+  });
+  const { data: responsesCount, isLoading: responsesLoading } = useQuery({
+    ...trpc.vacancy.responses.getCount.queryOptions({
       vacancyId: id,
       workspaceId: workspaceId ?? "",
     }),
-  );
+    enabled: Boolean(workspaceId),
+  });
   const { data: analytics } = useQuery({
     ...trpc.vacancy.getAnalytics.queryOptions({
       vacancyId: id,
       workspaceId: workspaceId ?? "",
     }),
-    enabled: !!id && !!workspaceId,
+    enabled: Boolean(id) && Boolean(workspaceId),
   });
 
   const isLoading = vacancyLoading || responsesLoading;
@@ -169,8 +171,7 @@ export default function VacancyDetailPage({
                           <UpdateVacancyButton vacancyId={vacancy.id} />
                         </div>
                         <div
-                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-4 [&_p]:leading-relaxed"
-                          // biome-ignore lint/security/noDangerouslySetInnerHtml: Vacancy description is sanitized
+                          className="prose prose-sm max-w-none dark:prose-invert text-sm leading-snug text-muted-foreground [&_p]:mb-2 [&_p]:leading-snug"
                           dangerouslySetInnerHTML={{
                             __html: vacancy.description,
                           }}

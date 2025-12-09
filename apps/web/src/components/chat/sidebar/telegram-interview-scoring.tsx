@@ -74,7 +74,6 @@ export function TelegramInterviewScoring({
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
             <div
               className="text-sm prose prose-sm max-w-none"
-              // biome-ignore lint/security/noDangerouslySetInnerHtml: Content is sanitized with DOMPurify
               dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
             />
           </div>

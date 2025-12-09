@@ -34,12 +34,26 @@ export default function ResponseDetailPage({
   const trpc = useTRPC();
   const { workspaceId } = useWorkspaceContext();
 
-  const { data: response, isLoading } = useQuery(
-    trpc.vacancy.responses.getById.queryOptions({
+  const { data: response, isLoading } = useQuery({
+    ...trpc.vacancy.responses.getById.queryOptions({
       id,
       workspaceId: workspaceId ?? "",
     }),
-  );
+    enabled: Boolean(workspaceId),
+  });
+
+  if (!workspaceId) {
+    return (
+      <>
+        <SiteHeader title="Ошибка" />
+        <div className="flex flex-1 flex-col items-center justify-center">
+          <p className="text-muted-foreground">
+            Рабочее пространство не найдено
+          </p>
+        </div>
+      </>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -323,7 +337,7 @@ export default function ResponseDetailPage({
                     </CardHeader>
                     <CardContent className="pt-0">
                       <div
-                        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert"
+                        className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert [&_p]:leading-relaxed [&_p]:mb-3"
                         dangerouslySetInnerHTML={{
                           __html: response.experience,
                         }}

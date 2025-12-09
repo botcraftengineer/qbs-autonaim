@@ -89,7 +89,7 @@ export function AppSidebar({
             >
               <a href={activeWorkspace ? `/${activeWorkspace.slug}` : "/"}>
                 <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">Selectio</span>
+                <span className="text-base font-semibold">QBS Автонайм</span>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
