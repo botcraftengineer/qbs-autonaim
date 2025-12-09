@@ -20,7 +20,7 @@ import {
   VacancyRequirements,
   VacancyStats,
 } from "~/components/vacancy";
-import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyDetailPageProps {
@@ -35,26 +35,26 @@ export default function VacancyDetailPage({
   const { workspaceSlug, id } = use(params);
   const { tab } = use(searchParams);
   const trpc = useTRPC();
-  const { workspace } = useWorkspace();
+  const { workspaceId } = useWorkspaceContext();
 
   const { data: vacancy, isLoading: vacancyLoading } = useQuery(
     trpc.vacancy.getById.queryOptions({
       id,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     }),
   );
   const { data: responsesCount, isLoading: responsesLoading } = useQuery(
     trpc.vacancy.responses.getCount.queryOptions({
       vacancyId: id,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     }),
   );
   const { data: analytics } = useQuery({
     ...trpc.vacancy.getAnalytics.queryOptions({
       vacancyId: id,
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspaceId ?? "",
     }),
-    enabled: !!id && !!workspace?.id,
+    enabled: !!id && !!workspaceId,
   });
 
   const isLoading = vacancyLoading || responsesLoading;
