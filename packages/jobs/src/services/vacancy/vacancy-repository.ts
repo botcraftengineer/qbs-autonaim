@@ -8,7 +8,7 @@ import { triggerVacancyRequirementsExtraction } from "../triggers";
 const logger = createLogger("VacancyRepository");
 
 /**
- * Database-ready vacancy data
+ * Данные вакансии для сохранения в БД
  */
 interface VacancyDbData {
   id: string;
@@ -26,7 +26,7 @@ interface VacancyDbData {
 }
 
 /**
- * Transforms parser vacancy data to database format
+ * Преобразует данные вакансии из парсера в формат БД
  */
 function mapVacancyData(
   vacancyData: VacancyData,
@@ -50,7 +50,7 @@ function mapVacancyData(
 }
 
 /**
- * Checks if vacancy exists in database
+ * Проверяет существование вакансии в БД
  */
 export async function checkVacancyExists(
   vacancyId: string,
@@ -60,11 +60,11 @@ export async function checkVacancyExists(
       where: eq(vacancy.id, vacancyId),
     });
     return !!existingVacancy;
-  }, "Failed to check vacancy existence");
+  }, "Ошибка проверки существования вакансии");
 }
 
 /**
- * Checks if vacancy has description
+ * Проверяет наличие описания у вакансии
  */
 export async function hasVacancyDescription(
   vacancyId: string,
@@ -76,11 +76,11 @@ export async function hasVacancyDescription(
 
     if (!existingVacancy) return false;
     return !!existingVacancy.description?.trim();
-  }, "Failed to check vacancy description");
+  }, "Ошибка проверки описания вакансии");
 }
 
 /**
- * Gets vacancy by ID
+ * Получает вакансию по ID
  */
 export async function getVacancyById(vacancyId: string) {
   return tryCatch(async () => {
@@ -88,28 +88,35 @@ export async function getVacancyById(vacancyId: string) {
       where: eq(vacancy.id, vacancyId),
     });
     return result ?? null;
-  }, "Failed to get vacancy");
+  }, "Ошибка получения вакансии");
 }
 
 /**
- * Gets all vacancies without description
+ * Получает все вакансии без описания
  */
 export async function getVacanciesWithoutDescription() {
   return tryCatch(async () => {
     return await db.query.vacancy.findMany({
       where: or(isNull(vacancy.description), eq(vacancy.description, "")),
     });
-  }, "Failed to get vacancies without description");
+  }, "Ошибка получения вакансий без описания");
 }
 
 /**
- * Saves basic vacancy info (without description)
+ * Сохраняет базовую информацию о вакансии (без описания)
+ * Возвращает true если вакансия была создана впервые
  */
 export async function saveBasicVacancy(
   vacancyData: VacancyData,
   workspaceId: string,
-): Promise<Result<void>> {
+): Promise<Result<boolean>> {
   return tryCatch(async () => {
+    // Проверяем существование вакансии
+    const existingVacancy = await db.query.vacancy.findFirst({
+      where: eq(vacancy.id, vacancyData.id),
+    });
+
+    const isNew = !existingVacancy;
     const dataToSave = mapVacancyData(vacancyData, workspaceId, "");
 
     await db.insert(vacancy).values(dataToSave).onConflictDoUpdate({
@@ -117,16 +124,21 @@ export async function saveBasicVacancy(
       set: dataToSave,
     });
 
-    logger.info(`Basic info saved/updated: ${vacancyData.title}`);
-  }, `Failed to save basic vacancy ${vacancyData.title}`);
+    logger.info(
+      `Базовая информация ${isNew ? "создана" : "обновлена"}: ${vacancyData.title}`,
+    );
+
+    return isNew;
+  }, `Ошибка сохранения базовой информации вакансии ${vacancyData.title}`);
 }
 
 /**
- * Updates vacancy description and triggers requirements extraction
+ * Обновляет описание вакансии и запускает извлечение требований
  */
 export async function updateVacancyDescription(
   vacancyId: string,
   description: string,
+  isNewVacancy = false,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
     await db
@@ -134,11 +146,15 @@ export async function updateVacancyDescription(
       .set({ description })
       .where(eq(vacancy.id, vacancyId));
 
-    logger.info(`Description updated: ${vacancyId}`);
+    logger.info(
+      `Описание ${isNewVacancy ? "добавлено для новой вакансии" : "обновлено"}: ${vacancyId}`,
+    );
 
-    // Trigger requirements extraction if description is not empty
+    // Запускаем извлечение требований если описание не пустое
     if (description?.trim()) {
-      logger.info(`Triggering requirements extraction: ${vacancyId}`);
+      logger.info(
+        `Запуск извлечения требований для ${isNewVacancy ? "новой" : "существующей"} вакансии: ${vacancyId}`,
+      );
       await triggerVacancyRequirementsExtraction(
         {
           vacancyId,
@@ -147,11 +163,11 @@ export async function updateVacancyDescription(
         { swallow: true },
       );
     }
-  }, `Failed to update vacancy description ${vacancyId}`);
+  }, `Ошибка обновления описания вакансии ${vacancyId}`);
 }
 
 /**
- * Saves or updates full vacancy data
+ * Сохраняет или обновляет полные данные вакансии
  */
 export async function saveVacancyToDb(
   vacancyData: VacancyData,
@@ -165,11 +181,11 @@ export async function saveVacancyToDb(
       set: dataToSave,
     });
 
-    logger.info(`Vacancy saved/updated: ${vacancyData.title}`);
+    logger.info(`Вакансия сохранена/обновлена: ${vacancyData.title}`);
 
-    // Trigger requirements extraction if description is not empty
+    // Запускаем извлечение требований если описание не пустое
     if (vacancyData.description?.trim()) {
-      logger.info(`Triggering requirements extraction: ${vacancyData.id}`);
+      logger.info(`Запуск извлечения требований: ${vacancyData.id}`);
       await triggerVacancyRequirementsExtraction(
         {
           vacancyId: vacancyData.id,
@@ -178,5 +194,5 @@ export async function saveVacancyToDb(
         { swallow: true },
       );
     }
-  }, `Failed to save vacancy ${vacancyData.id}`);
+  }, `Ошибка сохранения вакансии ${vacancyData.id}`);
 }

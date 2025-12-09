@@ -1,139 +1,65 @@
-import { getIntegrationCredentials } from "@qbs-autonaim/db";
-import { PuppeteerCrawler } from "crawlee";
-import puppeteer from "puppeteer-extra";
-import StealthPlugin from "puppeteer-extra-plugin-stealth";
-import { loadCookies, performLogin } from "./auth";
+import {
+  ensureAuthenticated,
+  navigateWithAuth,
+  setupAuthenticatedBrowser,
+} from "./browser-setup";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
 
-puppeteer.use(StealthPlugin());
-
 /**
- * Парсит только новые отклики для конкретной вакансии
- * Не парсит саму вакансию, только обновляет список откликов
+ * Parse only new responses for a specific vacancy
+ * Does not parse the vacancy itself, only updates the response list
  */
 export async function refreshVacancyResponses(
   vacancyId: string,
   workspaceId: string,
 ): Promise<{ newCount: number }> {
-  console.log(`🔄 Обновление откликов для вакансии ${vacancyId}...`);
+  console.log(`🔄 Refreshing responses for vacancy ${vacancyId}...`);
 
-  const credentials = await getIntegrationCredentials("hh", workspaceId);
-  if (!credentials?.email || !credentials?.password) {
-    throw new Error("HH credentials не найдены в интеграциях");
-  }
-
-  const { email, password } = credentials;
-  const savedCookies = await loadCookies("hh", workspaceId);
-  const startUrl = HH_CONFIG.urls.login;
-
-  let newResponsesCount = 0;
-
-  const crawler = new PuppeteerCrawler({
-    headless: HH_CONFIG.puppeteer.headless,
-    launchContext: {
-      launcher: puppeteer,
-      launchOptions: {
-        headless: HH_CONFIG.puppeteer.headless,
-        args: HH_CONFIG.puppeteer.args,
-        ignoreDefaultArgs: HH_CONFIG.puppeteer.ignoreDefaultArgs,
-        slowMo: HH_CONFIG.puppeteer.slowMo,
-      },
-    },
-    preNavigationHooks: [
-      async ({ page, log }) => {
-        await page.evaluateOnNewDocument(() => {
-          Object.defineProperty(navigator, "webdriver", {
-            get: () => false,
-          });
-
-          Object.defineProperty(navigator, "plugins", {
-            get: () => [1, 2, 3, 4, 5],
-          });
-
-          Object.defineProperty(navigator, "languages", {
-            get: () => ["ru-RU", "ru", "en-US", "en"],
-          });
-
-          (window as { chrome?: unknown }).chrome = {
-            runtime: {},
-          };
-
-          const originalQuery = window.navigator.permissions.query;
-          window.navigator.permissions.query = (
-            parameters: PermissionDescriptor,
-          ) =>
-            parameters.name === "notifications"
-              ? Promise.resolve({
-                  state: Notification.permission,
-                } as PermissionStatus)
-              : originalQuery(parameters);
-        });
-
-        if (savedCookies) {
-          log.info("🍪 Восстанавливаем сохраненные куки...");
-          await page.browserContext().setCookie(...(savedCookies as never[]));
-        }
-
-        await page.setUserAgent({
-          userAgent: HH_CONFIG.userAgent,
-        });
-
-        await page.setViewport({
-          width: 1920,
-          height: 1080,
-          deviceScaleFactor: 1,
-        });
-      },
-    ],
-    async requestHandler({ page, request, log }) {
-      log.info(`📄 Обработка страницы: ${request.url}`);
-
-      try {
-        log.info("⏳ Ожидание загрузки страницы...");
-        await page.waitForNetworkIdle({
-          timeout: HH_CONFIG.timeouts.networkIdle,
-        });
-
-        const loginInput = await page.$('input[type="text"][name="username"]');
-
-        if (loginInput) {
-          await performLogin(page, log, email, password, workspaceId);
-        } else {
-          log.info("✅ Форма входа не найдена. Похоже, мы уже авторизованы.");
-        }
-
-        // Формируем URL для откликов конкретной вакансии
-        const responsesUrl = `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&order=DATE`;
-
-        log.info(`📋 Парсинг откликов для вакансии ${vacancyId}...`);
-        const result = await parseResponses(page, responsesUrl, vacancyId);
-        newResponsesCount = result.newCount;
-        log.info(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
-
-        await new Promise((resolve) =>
-          setTimeout(resolve, HH_CONFIG.delays.afterParsing),
-        );
-
-        console.log("\n✨ Обновление откликов завершено!");
-      } catch (error) {
-        if (error instanceof Error) {
-          log.error(error.message);
-          if (error.stack) {
-            log.error(error.stack);
-          }
-        } else {
-          log.error(String(error));
-        }
-        throw error;
-      }
-    },
-    maxRequestsPerCrawl: 100,
-    requestHandlerTimeoutSecs: HH_CONFIG.timeouts.requestHandler,
+  // Setup authenticated browser with universal function
+  const { browser, page, credentials } = await setupAuthenticatedBrowser({
+    workspaceId,
   });
 
-  await crawler.run([startUrl]);
-  await crawler.teardown();
+  const { email, password } = credentials;
 
-  return { newCount: newResponsesCount };
+  try {
+    // Navigate to login page and check authentication
+    console.log("🔗 Navigating to login page...");
+    await page.goto(HH_CONFIG.urls.login, {
+      waitUntil: "domcontentloaded",
+      timeout: HH_CONFIG.timeouts.navigation,
+    });
+
+    await page.waitForNetworkIdle({
+      timeout: HH_CONFIG.timeouts.networkIdle,
+    });
+
+    // Ensure authentication (will login if needed)
+    await ensureAuthenticated(page, email, password, workspaceId);
+
+    // Navigate to responses page with auth check
+    const responsesUrl = `https://hh.ru/employer/vacancyresponses?vacancyId=${vacancyId}&order=DATE`;
+    await navigateWithAuth(page, responsesUrl, email, password, workspaceId);
+
+    // Parse responses
+    console.log(`📋 Parsing responses for vacancy ${vacancyId}...`);
+    const result = await parseResponses(page, responsesUrl, vacancyId);
+
+    console.log(`✅ Responses for vacancy ${vacancyId} updated successfully`);
+    console.log(`📊 New responses: ${result.newCount}`);
+
+    await new Promise((resolve) =>
+      setTimeout(resolve, HH_CONFIG.delays.afterParsing),
+    );
+
+    console.log("\n✨ Response refresh completed!");
+
+    return { newCount: result.newCount };
+  } catch (error) {
+    console.error("❌ Error refreshing responses:", error);
+    throw error;
+  } finally {
+    await browser.close();
+  }
 }

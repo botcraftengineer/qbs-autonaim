@@ -27,11 +27,11 @@ export async function parseVacancies(
 
   // ЭТАП 2: Сохраняем базовую информацию всех вакансий
   console.log("\n💾 ЭТАП 2: Сохранение базовой информации...");
-  await saveBasicVacancies(vacancies, workspaceId);
+  const newVacancyIds = await saveBasicVacancies(vacancies, workspaceId);
 
   // ЭТАП 3: Парсим описания для вакансий без описания
   console.log("\n📊 ЭТАП 3: Парсинг описаний вакансий...");
-  await parseVacancyDescriptions(page, vacancies);
+  await parseVacancyDescriptions(page, vacancies, newVacancyIds);
 
   console.log(`\n🎉 Парсинг вакансий завершен!`);
 
@@ -127,20 +127,25 @@ async function collectVacancies(page: Page): Promise<VacancyData[]> {
 
 /**
  * ЭТАП 2: Сохраняет базовую информацию всех вакансий
+ * Возвращает Set с ID новых вакансий
  */
 async function saveBasicVacancies(
   vacancies: VacancyData[],
   workspaceId: string,
-): Promise<void> {
+): Promise<Set<string>> {
   let savedCount = 0;
   let errorCount = 0;
+  const newVacancyIds = new Set<string>();
 
   for (let i = 0; i < vacancies.length; i++) {
     const vacancy = vacancies[i];
     if (!vacancy) continue;
 
     try {
-      await saveBasicVacancy(vacancy, workspaceId);
+      const isNew = await saveBasicVacancy(vacancy, workspaceId);
+      if (isNew) {
+        newVacancyIds.add(vacancy.id);
+      }
       savedCount++;
     } catch (error) {
       errorCount++;
@@ -150,8 +155,10 @@ async function saveBasicVacancies(
   }
 
   console.log(
-    `✅ Базовая информация: успешно ${savedCount}, ошибок ${errorCount}`,
+    `✅ Базовая информация: успешно ${savedCount}, ошибок ${errorCount}, новых ${newVacancyIds.size}`,
   );
+
+  return newVacancyIds;
 }
 
 /**
@@ -160,6 +167,7 @@ async function saveBasicVacancies(
 async function parseVacancyDescriptions(
   page: Page,
   vacancies: VacancyData[],
+  newVacancyIds: Set<string>,
 ): Promise<void> {
   let parsedCount = 0;
   let skippedCount = 0;
@@ -181,8 +189,9 @@ async function parseVacancyDescriptions(
         continue;
       }
 
+      const isNewVacancy = newVacancyIds.has(vacancy.id);
       console.log(
-        `\n📊 Парсинг описания ${i + 1}/${vacancies.length}: ${vacancy.title}`,
+        `\n📊 Парсинг описания ${i + 1}/${vacancies.length}: ${vacancy.title}${isNewVacancy ? " [НОВАЯ]" : ""}`,
       );
 
       // Задержка между просмотром вакансий
@@ -197,11 +206,11 @@ async function parseVacancyDescriptions(
       const description = await parseVacancyDetails(page, vacancy.url);
 
       if (description) {
-        await updateVacancyDescription(vacancy.id, description);
+        await updateVacancyDescription(vacancy.id, description, isNewVacancy);
         vacancy.description = description;
         parsedCount++;
         console.log(
-          `✅ Описание ${i + 1}/${vacancies.length} обработано успешно`,
+          `✅ Описание ${i + 1}/${vacancies.length} обработано успешно${isNewVacancy ? " (запущена генерация требований)" : ""}`,
         );
       } else {
         console.log(`⚠️ Пустое описание для ${vacancy.title}`);
