@@ -1,3 +1,5 @@
+import { env } from "@qbs-autonaim/config";
+
 export const HH_CONFIG = {
   urls: {
     login:
@@ -25,7 +27,7 @@ export const HH_CONFIG = {
     parseContacts: true,
   },
   puppeteer: {
-    headless: false,
+    headless: env.NODE_ENV === "production",
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
