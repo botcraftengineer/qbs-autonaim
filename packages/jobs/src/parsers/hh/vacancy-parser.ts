@@ -141,15 +141,20 @@ async function saveBasicVacancies(
     const vacancy = vacancies[i];
     if (!vacancy) continue;
 
-    try {
-      const isNew = await saveBasicVacancy(vacancy, workspaceId);
+    const result = await saveBasicVacancy(vacancy, workspaceId);
+
+    if (result.success) {
+      const isNew = result.data;
       if (isNew) {
         newVacancyIds.add(vacancy.id);
       }
       savedCount++;
-    } catch (error) {
+    } else {
       errorCount++;
-      console.error(`❌ Ошибка сохранения вакансии ${vacancy.title}:`, error);
+      console.error(
+        `❌ Ошибка сохранения вакансии ${vacancy.title}:`,
+        result.error,
+      );
       // Продолжаем работу со следующей вакансией
     }
   }
@@ -179,9 +184,18 @@ async function parseVacancyDescriptions(
 
     try {
       // Проверяем, есть ли уже описание
-      const hasDescription = await hasVacancyDescription(vacancy.id);
+      const hasDescriptionResult = await hasVacancyDescription(vacancy.id);
 
-      if (hasDescription) {
+      if (!hasDescriptionResult.success) {
+        errorCount++;
+        console.error(
+          `❌ Ошибка проверки описания ${vacancy.title}:`,
+          hasDescriptionResult.error,
+        );
+        continue;
+      }
+
+      if (hasDescriptionResult.data) {
         skippedCount++;
         console.log(
           `⏭️ Пропуск ${i + 1}/${vacancies.length}: ${vacancy.title} (описание есть)`,
@@ -206,12 +220,25 @@ async function parseVacancyDescriptions(
       const description = await parseVacancyDetails(page, vacancy.url);
 
       if (description) {
-        await updateVacancyDescription(vacancy.id, description, isNewVacancy);
-        vacancy.description = description;
-        parsedCount++;
-        console.log(
-          `✅ Описание ${i + 1}/${vacancies.length} обработано успешно${isNewVacancy ? " (запущена генерация требований)" : ""}`,
+        const updateResult = await updateVacancyDescription(
+          vacancy.id,
+          description,
+          isNewVacancy,
         );
+
+        if (updateResult.success) {
+          vacancy.description = description;
+          parsedCount++;
+          console.log(
+            `✅ Описание ${i + 1}/${vacancies.length} обработано успешно${isNewVacancy ? " (запущена генерация требований)" : ""}`,
+          );
+        } else {
+          errorCount++;
+          console.error(
+            `❌ Ошибка обновления описания ${vacancy.title}:`,
+            updateResult.error,
+          );
+        }
       } else {
         console.log(`⚠️ Пустое описание для ${vacancy.title}`);
       }

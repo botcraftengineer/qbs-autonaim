@@ -33,7 +33,6 @@ export async function setupAuthenticatedBrowser(
 
   // Get credentials
   const credentials = await getIntegrationCredentials("hh", workspaceId);
-  console.log(credentials);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("HH credentials not found in integrations");
   }

@@ -44,12 +44,7 @@ export async function generateWelcomeMessage(
       where: eq(companySettings.workspaceId, response.vacancy.workspaceId),
     });
 
-    if (!company) {
-      throw new Error(
-        `Company settings not found for workspace ${response.vacancy.workspaceId}`,
-      );
-    }
-
+    // Company settings are optional - we can generate message without them
     return { response, screening, company };
   }, "Failed to fetch data for welcome message");
 
@@ -137,12 +132,7 @@ export async function generateTelegramInviteMessage(
       where: eq(companySettings.workspaceId, response.vacancy.workspaceId),
     });
 
-    if (!company) {
-      throw new Error(
-        `Company settings not found for workspace ${response.vacancy.workspaceId}`,
-      );
-    }
-
+    // Company settings are optional - we can generate message without them
     return { response, screening, company };
   }, "Failed to fetch data for invite message");
 
