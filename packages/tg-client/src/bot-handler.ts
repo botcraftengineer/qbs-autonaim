@@ -1,11 +1,11 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
-import { handleAudioFile } from "./handlers/audio-file.js";
-import { handleStartCommand } from "./handlers/start-command.js";
-import { handleTextMessage } from "./handlers/text-message.js";
+import { handleAudioFile } from "./handlers/audio-file";
+import { handleStartCommand } from "./handlers/start-command";
+import { handleTextMessage } from "./handlers/text-message";
 import { handleTokenCommand } from "./handlers/token-command.js";
-import { handleUnidentifiedMessage } from "./handlers/unidentified-message.js";
-import { handleVoiceMessage } from "./handlers/voice-message.js";
+import { handleUnidentifiedMessage } from "./handlers/unidentified-message";
+import { handleVoiceMessage } from "./handlers/voice-message";
 import { identifyCandidate } from "./utils/candidate-identifier";
 
 /**
