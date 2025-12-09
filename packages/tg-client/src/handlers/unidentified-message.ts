@@ -1,6 +1,6 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
-import { db, ilike, or } from "@qbs-autonaim/db";
+import { and, db, eq, ilike } from "@qbs-autonaim/db";
 import {
   telegramConversation,
   vacancy,
@@ -8,6 +8,10 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { humanDelay } from "../utils/delays.js";
 import { markRead, showTyping } from "../utils/telegram.js";
+
+function escapeSqlLike(text: string): string {
+  return text.replace(/[\\%_]/g, "\\$&");
+}
 
 export async function handleUnidentifiedMessage(
   client: TelegramClient,
@@ -32,8 +36,9 @@ export async function handleUnidentifiedMessage(
   }
 
   // Пытаемся найти вакансии по тексту сообщения
+  const escapedText = escapeSqlLike(text);
   const vacancies = await db.query.vacancy.findMany({
-    where: ilike(vacancy.title, `%${text}%`),
+    where: ilike(vacancy.title, `%${escapedText}%`),
     limit: 5,
   });
 
@@ -53,14 +58,14 @@ export async function handleUnidentifiedMessage(
 
     if (!foundVacancy) return;
 
-    // Ищем отклик по username или по вакансии
+    // Ищем отклик по username и вакансии
     const response = await db.query.vacancyResponse.findFirst({
-      where: or(
-        username
-          ? ilike(vacancyResponse.telegramUsername, username)
-          : undefined,
-        ilike(vacancyResponse.vacancyId, foundVacancy.id),
-      ),
+      where: username
+        ? and(
+            ilike(vacancyResponse.telegramUsername, username),
+            eq(vacancyResponse.vacancyId, foundVacancy.id),
+          )
+        : eq(vacancyResponse.vacancyId, foundVacancy.id),
       orderBy: (fields, { desc }) => [desc(fields.createdAt)],
     });
 
@@ -90,7 +95,7 @@ export async function handleUnidentifiedMessage(
       await db
         .update(vacancyResponse)
         .set({ chatId })
-        .where(ilike(vacancyResponse.id, response.id));
+        .where(eq(vacancyResponse.id, response.id));
 
       await client.sendText(
         chatId,

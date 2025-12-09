@@ -1,4 +1,3 @@
-import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
 import { db, eq, or } from "@qbs-autonaim/db";
 import { telegramConversation, vacancyResponse } from "@qbs-autonaim/db/schema";
@@ -14,7 +13,6 @@ interface IdentificationResult {
  * Идентифицировать кандидата по различным параметрам
  */
 export async function identifyCandidate(
-  client: TelegramClient,
   message: Message,
 ): Promise<IdentificationResult> {
   const chatId = message.chat.id.toString();
@@ -50,7 +48,7 @@ export async function identifyCandidate(
       });
 
       if (responseByUsername) {
-        // Создаем новую беседу
+        // Создаем новую беседу или обновляем существующую
         const [conversation] = await db
           .insert(telegramConversation)
           .values({
@@ -62,6 +60,18 @@ export async function identifyCandidate(
               identifiedBy: "username",
               username,
             }),
+          })
+          .onConflictDoUpdate({
+            target: telegramConversation.chatId,
+            set: {
+              responseId: responseByUsername.id,
+              candidateName: responseByUsername.candidateName || undefined,
+              status: "ACTIVE",
+              metadata: JSON.stringify({
+                identifiedBy: "username",
+                username,
+              }),
+            },
           })
           .returning();
 
@@ -100,6 +110,18 @@ export async function identifyCandidate(
               phone,
             }),
           })
+          .onConflictDoUpdate({
+            target: telegramConversation.chatId,
+            set: {
+              responseId: responseByPhone.id,
+              candidateName: responseByPhone.candidateName || undefined,
+              status: "ACTIVE",
+              metadata: JSON.stringify({
+                identifiedBy: "phone",
+                phone,
+              }),
+            },
+          })
           .returning();
 
         return {
@@ -131,6 +153,18 @@ export async function identifyCandidate(
               identifiedBy: "token",
               token: `${text.slice(0, 8)}...`,
             }),
+          })
+          .onConflictDoUpdate({
+            target: telegramConversation.chatId,
+            set: {
+              responseId: responseByToken.id,
+              candidateName: responseByToken.candidateName || undefined,
+              status: "ACTIVE",
+              metadata: JSON.stringify({
+                identifiedBy: "token",
+                token: `${text.slice(0, 8)}...`,
+              }),
+            },
           })
           .returning();
 
@@ -200,7 +234,7 @@ export async function linkConversationByToken(
       };
     }
 
-    // Создаем новую беседу
+    // Создаем новую беседу или обновляем существующую
     const [conversation] = await db
       .insert(telegramConversation)
       .values({
@@ -212,6 +246,18 @@ export async function linkConversationByToken(
           identifiedBy: "token",
           token: `${token.slice(0, 8)}...`,
         }),
+      })
+      .onConflictDoUpdate({
+        target: telegramConversation.chatId,
+        set: {
+          responseId: response.id,
+          candidateName: response.candidateName || undefined,
+          status: "ACTIVE",
+          metadata: JSON.stringify({
+            identifiedBy: "token",
+            token: `${token.slice(0, 8)}...`,
+          }),
+        },
       })
       .returning();
 
