@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import {
   Body,
   Container,
@@ -31,10 +32,7 @@ export default function OtpSignInEmail({
           <Container className="mx-auto my-[40px] w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
               {action} в{" "}
-              <Link
-                href="https://bun-turbo-starter.vercel.app"
-                className="text-black"
-              >
+              <Link href={env.APP_URL} className="text-black">
                 <strong>QBS Автонайм</strong>
               </Link>
             </Heading>
