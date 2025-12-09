@@ -58,16 +58,17 @@ export async function handleUnidentifiedMessage(
 
     if (!foundVacancy) return;
 
-    // Ищем отклик по username и вакансии
-    const response = await db.query.vacancyResponse.findFirst({
-      where: username
-        ? and(
-            ilike(vacancyResponse.telegramUsername, username),
-            eq(vacancyResponse.vacancyId, foundVacancy.id),
-          )
-        : eq(vacancyResponse.vacancyId, foundVacancy.id),
-      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
-    });
+    // Ищем отклик только если есть username, чтобы не привязать чужой отклик
+    let response = null;
+    if (username) {
+      response = await db.query.vacancyResponse.findFirst({
+        where: and(
+          ilike(vacancyResponse.telegramUsername, username),
+          eq(vacancyResponse.vacancyId, foundVacancy.id),
+        ),
+        orderBy: (fields, { desc }) => [desc(fields.createdAt)],
+      });
+    }
 
     if (response) {
       // Создаем беседу
