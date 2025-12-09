@@ -25,7 +25,7 @@ export const HH_CONFIG = {
     parseContacts: true,
   },
   puppeteer: {
-    headless: true,
+    headless: false,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
@@ -34,11 +34,16 @@ export const HH_CONFIG = {
       "--disable-features=IsolateOrigins,site-per-process",
       "--window-size=1920,1080",
       "--disable-dev-shm-usage",
+      "--disable-background-timer-throttling",
+      "--disable-backgrounding-occluded-windows",
+      "--disable-renderer-backgrounding",
     ] as string[],
     ignoreDefaultArgs: ["--enable-automation"] as string[],
     slowMo: 100,
     handleSIGINT: false,
     handleSIGTERM: false,
     handleSIGHUP: false,
+    // Don't use userDataDir to avoid cleanup issues on Windows
+    userDataDir: undefined,
   },
 };

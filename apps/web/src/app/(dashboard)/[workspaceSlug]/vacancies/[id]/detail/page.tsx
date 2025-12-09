@@ -165,22 +165,22 @@ export default function VacancyDetailPage({
                       resumesInProgress={vacancy.resumesInProgress}
                     />
 
-                    {vacancy.description && (
-                      <div className="space-y-4 pt-4 border-t">
-                        <div className="flex items-center justify-between">
-                          <h2 className="text-xl font-semibold">
-                            Описание вакансии
-                          </h2>
-                          <UpdateVacancyButton vacancyId={vacancy.id} />
-                        </div>
+                    <div className="space-y-4 pt-4 border-t">
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-xl font-semibold">
+                          Описание вакансии
+                        </h2>
+                        <UpdateVacancyButton vacancyId={vacancy.id} />
+                      </div>
+                      {vacancy.description && (
                         <div
                           className="prose prose-sm max-w-none dark:prose-invert text-sm leading-snug text-muted-foreground [&_p]:mb-2 [&_p]:leading-snug"
                           dangerouslySetInnerHTML={{
                             __html: vacancy.description,
                           }}
                         />
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                   {vacancy.requirements ? (
                     <VacancyRequirements
