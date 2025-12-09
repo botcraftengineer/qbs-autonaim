@@ -166,7 +166,7 @@
         "axios": "^1.13.2",
         "crawlee": "3.15.3",
         "inngest": "3.47.0",
-        "langfuse": "^3.38.6",
+        "langfuse": "3.38.6",
         "puppeteer": "24.32.1",
         "puppeteer-extra": "3.3.6",
         "puppeteer-extra-plugin-stealth": "2.11.2",
