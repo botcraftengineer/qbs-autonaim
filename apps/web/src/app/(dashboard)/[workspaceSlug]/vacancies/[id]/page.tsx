@@ -20,6 +20,7 @@ import {
   VacancyRequirements,
   VacancyStats,
 } from "~/components/vacancy";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyDetailPageProps {
@@ -34,16 +35,26 @@ export default function VacancyDetailPage({
   const { workspaceSlug, id } = use(params);
   const { tab } = use(searchParams);
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
 
   const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({ id }),
+    trpc.vacancy.getById.queryOptions({
+      id,
+      workspaceId: workspace?.id ?? "",
+    }),
   );
   const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.getCount.queryOptions({ vacancyId: id }),
+    trpc.vacancy.responses.getCount.queryOptions({
+      vacancyId: id,
+      workspaceId: workspace?.id ?? "",
+    }),
   );
   const { data: analytics } = useQuery({
-    ...trpc.vacancy.getAnalytics.queryOptions({ vacancyId: id }),
-    enabled: !!id,
+    ...trpc.vacancy.getAnalytics.queryOptions({
+      vacancyId: id,
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!id && !!workspace?.id,
   });
 
   const isLoading = vacancyLoading || responsesLoading;
@@ -105,19 +116,19 @@ export default function VacancyDetailPage({
                 </Link>
               </div>
 
-              <Tabs defaultValue={tab || "overview"} className="space-y-6">
+              <Tabs defaultValue={tab || "responses"} className="space-y-6">
                 <div className="flex items-center justify-between">
                   <TabsList>
-                    <TabsTrigger value="overview" asChild>
-                      <Link href={`/${workspaceSlug}/vacancies/${id}`}>
-                        Обзор
-                      </Link>
-                    </TabsTrigger>
                     <TabsTrigger value="responses" asChild>
                       <Link
                         href={`/${workspaceSlug}/vacancies/${id}/responses`}
                       >
                         Отклики ({responsesCount?.total ?? 0})
+                      </Link>
+                    </TabsTrigger>
+                    <TabsTrigger value="overview" asChild>
+                      <Link href={`/${workspaceSlug}/vacancies/${id}`}>
+                        Обзор
                       </Link>
                     </TabsTrigger>
                   </TabsList>

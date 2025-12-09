@@ -20,6 +20,7 @@ import { ArrowLeft, Download, ExternalLink, User } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface ResponseDetailPageProps {
@@ -31,9 +32,13 @@ export default function ResponseDetailPage({
 }: ResponseDetailPageProps) {
   const { workspaceSlug, id } = use(params);
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
 
   const { data: response, isLoading } = useQuery(
-    trpc.vacancy.responses.getById.queryOptions({ id }),
+    trpc.vacancy.responses.getById.queryOptions({
+      id,
+      workspaceId: workspace?.id ?? "",
+    }),
   );
 
   if (isLoading) {

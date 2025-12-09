@@ -1,6 +1,12 @@
 "use client";
 
-import { Button, Sheet, SheetContent, SheetTrigger, toast } from "@qbs-autonaim/ui";
+import {
+  Button,
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  toast,
+} from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Info } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +18,7 @@ import { ChatInput } from "~/components/chat/chat-input";
 import { ChatLoading } from "~/components/chat/chat-loading";
 import { ChatMessages } from "~/components/chat/chat-messages";
 import { ChatSidebar } from "~/components/chat/sidebar/chat-sidebar";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 export function ChatView({ conversationId }: { conversationId: string }) {
@@ -19,6 +26,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const queryClient = useQueryClient();
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const { workspace } = useWorkspace();
   const [transcribingMessageId, setTranscribingMessageId] = useState<
     string | null
   >(null);
@@ -28,6 +36,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const conversationQueryOptions =
     trpc.telegram.conversation.getById.queryOptions({
       id: conversationId,
+      workspaceId: workspace?.id ?? "",
     });
   const { data: currentConversation } = useQuery(conversationQueryOptions);
 
@@ -38,6 +47,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
   const responseQueryOptions = trpc.vacancy.responses.getById.queryOptions({
     id: candidateResponseId ?? "",
+    workspaceId: workspace?.id ?? "",
   });
   const { data: responseData } = useQuery({
     ...responseQueryOptions,
@@ -59,8 +69,9 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   } = useQuery({
     ...trpc.telegram.messages.getByConversationId.queryOptions({
       conversationId,
+      workspaceId: workspace?.id ?? "",
     }),
-    enabled: !!conversationId,
+    enabled: !!conversationId && !!workspace?.id,
     refetchInterval: 3000,
   });
 

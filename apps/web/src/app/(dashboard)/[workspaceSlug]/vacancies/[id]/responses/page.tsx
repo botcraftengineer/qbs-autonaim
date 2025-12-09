@@ -19,6 +19,7 @@ import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import { ResponseTable } from "~/components/vacancy";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyResponsesPageProps {
@@ -33,12 +34,19 @@ export default function VacancyResponsesPage({
   const { workspaceSlug, id } = use(params);
   const { tab } = use(searchParams);
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
 
   const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    trpc.vacancy.getById.queryOptions({ id }),
+    trpc.vacancy.getById.queryOptions({
+      id,
+      workspaceId: workspace?.id ?? "",
+    }),
   );
   const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    trpc.vacancy.responses.getCount.queryOptions({ vacancyId: id }),
+    trpc.vacancy.responses.getCount.queryOptions({
+      vacancyId: id,
+      workspaceId: workspace?.id ?? "",
+    }),
   );
 
   const isLoading = vacancyLoading || responsesLoading;
