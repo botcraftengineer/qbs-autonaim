@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 
 const sidebarNavItems = [
   {
-    title: "Workspace",
+    title: "Рабочее пространство",
     href: "/settings",
     icon: Settings,
   },
