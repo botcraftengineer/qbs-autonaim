@@ -32,18 +32,49 @@ export function Step1Credentials({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 pt-2">
-        <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
-          <p>
-            Для подключения Telegram нужно создать приложение на{" "}
-            <a
-              href="https://my.telegram.org/apps"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-medium text-primary hover:underline"
-            >
-              my.telegram.org/apps
-            </a>
+        <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground space-y-3">
+          <p className="font-medium text-foreground">
+            Инструкция по созданию приложения:
           </p>
+          <ol className="space-y-2 list-decimal list-inside">
+            <li>
+              Откройте{" "}
+              <a
+                href="https://my.telegram.org/apps"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-primary hover:underline"
+              >
+                my.telegram.org/apps
+              </a>{" "}
+              <span className="font-medium text-amber-600 dark:text-amber-500">
+                без VPN и прокси
+              </span>
+            </li>
+            <li>Войдите с номером телефона вашего Telegram аккаунта</li>
+            <li>
+              Нажмите "Create new application" и заполните форму:
+              <ul className="mt-1.5 ml-6 space-y-1 list-disc list-inside text-xs">
+                <li>
+                  <span className="font-medium">App title:</span> только
+                  латинские буквы и цифры, 5-32 символа
+                </li>
+                <li>
+                  <span className="font-medium">Short name:</span> только
+                  латинские буквы и цифры, 5-32 символа
+                </li>
+                <li>
+                  <span className="font-medium">Platform:</span> выберите
+                  "Desktop"
+                </li>
+                <li>
+                  <span className="font-medium">Description:</span> любое
+                  описание (необязательно)
+                </li>
+              </ul>
+            </li>
+            <li>После создания скопируйте API ID и API Hash</li>
+          </ol>
         </div>
 
         <FormField
