@@ -52,21 +52,25 @@ export function ChatSidebar({
           )}
 
           {responseData?.screening && (
-            <ScreeningInfo
-              score={responseData.screening.score}
-              detailedScore={responseData.screening.detailedScore}
-              analysis={responseData.screening.analysis}
-            />
+            <div className="max-h-96">
+              <ScreeningInfo
+                score={responseData.screening.score}
+                detailedScore={responseData.screening.detailedScore}
+                analysis={responseData.screening.analysis}
+              />
+            </div>
           )}
 
           {responseData?.telegramInterviewScoring && (
-            <TelegramInterviewScoring
-              score={responseData.telegramInterviewScoring.score}
-              detailedScore={
-                responseData.telegramInterviewScoring.detailedScore
-              }
-              analysis={responseData.telegramInterviewScoring.analysis}
-            />
+            <div className="max-h-96">
+              <TelegramInterviewScoring
+                score={responseData.telegramInterviewScoring.score}
+                detailedScore={
+                  responseData.telegramInterviewScoring.detailedScore
+                }
+                analysis={responseData.telegramInterviewScoring.analysis}
+              />
+            </div>
           )}
 
           {responseData?.vacancy && (

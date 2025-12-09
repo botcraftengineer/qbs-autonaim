@@ -37,25 +37,17 @@ export default function VacancyResponsesPage({
   const { workspaceId } = useWorkspaceContext();
 
   const { data: vacancy, isLoading: vacancyLoading } = useQuery({
-    ...trpc.vacancy.getById.queryOptions(
-      workspaceId
-        ? {
-            id,
-            workspaceId,
-          }
-        : ({} as never),
-    ),
+    ...trpc.vacancy.getById.queryOptions({
+      id,
+      workspaceId: workspaceId ?? "",
+    }),
     enabled: Boolean(workspaceId),
   });
   const { data: responsesCount, isLoading: responsesLoading } = useQuery({
-    ...trpc.vacancy.responses.getCount.queryOptions(
-      workspaceId
-        ? {
-            vacancyId: id,
-            workspaceId,
-          }
-        : ({} as never),
-    ),
+    ...trpc.vacancy.responses.getCount.queryOptions({
+      vacancyId: id,
+      workspaceId: workspaceId ?? "",
+    }),
     enabled: Boolean(workspaceId),
   });
 

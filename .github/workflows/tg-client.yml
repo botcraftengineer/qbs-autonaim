@@ -44,4 +44,4 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: rollout status deployment/qbs-autonaim-tg-client
+          args: rollout status deployment/qbs-autonaim-tg-client -n qbs
