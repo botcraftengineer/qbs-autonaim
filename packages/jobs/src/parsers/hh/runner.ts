@@ -1,7 +1,6 @@
 import { getIntegrationCredentials } from "@qbs-autonaim/db";
-import { Log } from "crawlee";
 import puppeteer from "puppeteer";
-import { performLogin } from "./auth";
+import { checkAndPerformLogin, loadCookies } from "./auth";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
 import { parseVacancies } from "./vacancy-parser";
@@ -19,7 +18,6 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
   console.log(`   Пропустить отклики: ${skipResponses}`);
 
   const credentials = await getIntegrationCredentials("hh", workspaceId);
-
   if (!credentials?.email || !credentials?.password) {
     throw new Error("Не найдены учетные данные для HH.ru");
   }
@@ -32,20 +30,19 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
     await page.setUserAgent(HH_CONFIG.userAgent);
     await page.setViewport({ width: 1920, height: 1080 });
 
-    console.log("🔐 Авторизация на HH.ru...");
+    // Load existing cookies if available
+    const savedCookies = await loadCookies("hh", workspaceId);
+    if (savedCookies && savedCookies.length > 0) {
+      await page.setCookie(...savedCookies);
+    }
 
-    const log = new Log();
-
-    await performLogin(
+    // Check authentication and perform login if needed
+    await checkAndPerformLogin(
       page,
-      log,
       credentials.email,
       credentials.password,
       workspaceId,
-      true,
     );
-
-    console.log("✅ Авторизация успешна");
 
     const vacancies = await parseVacancies(page, workspaceId);
 

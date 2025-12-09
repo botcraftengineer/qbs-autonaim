@@ -1,4 +1,4 @@
-import { eq, isNull, or } from "@qbs-autonaim/db";
+import { and, eq, isNull, or } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { file, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uploadFile } from "@qbs-autonaim/lib";
@@ -55,11 +55,15 @@ export async function getResponseByResumeId(resumeId: string) {
  * Checks if response has detailed info (experience or contacts)
  */
 export async function hasDetailedInfo(
+  vacancyId: string,
   resumeId: string,
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
     const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeId, resumeId),
+      where: and(
+        eq(vacancyResponse.vacancyId, vacancyId),
+        eq(vacancyResponse.resumeId, resumeId),
+      ),
     });
 
     if (!response) return false;
@@ -106,7 +110,9 @@ export async function saveBasicResponse(
         phone: null,
         respondedAt,
       })
-      .onConflictDoNothing({ target: vacancyResponse.resumeId });
+      .onConflictDoNothing({
+        target: [vacancyResponse.vacancyId, vacancyResponse.resumeId],
+      });
 
     const isNew = (result.rowCount ?? 0) > 0;
 
@@ -210,7 +216,9 @@ export async function saveResponseToDb(
         contacts: response.contacts,
         phone: response.phone,
       })
-      .onConflictDoNothing({ target: vacancyResponse.resumeId });
+      .onConflictDoNothing({
+        target: [vacancyResponse.vacancyId, vacancyResponse.resumeId],
+      });
 
     if ((result.rowCount ?? 0) === 0) {
       logger.info("Response already exists, skipped insert");

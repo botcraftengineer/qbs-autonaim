@@ -187,7 +187,7 @@ export async function runEnricher(workspaceId: string) {
           }
         }
 
-        await updateResponseDetails({
+        const updateResult = await updateResponseDetails({
           vacancyId,
           resumeId,
           resumeUrl,
@@ -198,6 +198,12 @@ export async function runEnricher(workspaceId: string) {
           telegramUsername,
           resumePdfFileId,
         });
+
+        if (!updateResult.success) {
+          throw new Error(
+            `Failed to update response details: ${updateResult.error}`,
+          );
+        }
 
         console.log(`✅ Данные обновлены для: ${candidateName}`);
       } catch (error) {

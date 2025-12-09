@@ -202,7 +202,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           }
         }
 
-        await updateResponseDetails({
+        const updateResult = await updateResponseDetails({
           vacancyId: response.vacancyId,
           resumeId: response.resumeId,
           resumeUrl: response.resumeUrl,
@@ -213,6 +213,12 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           telegramUsername,
           resumePdfFileId,
         });
+
+        if (!updateResult.success) {
+          throw new Error(
+            `Failed to update response details: ${updateResult.error}`,
+          );
+        }
 
         console.log(
           `✅ Резюме обновлено для: ${response.candidateName ?? "кандидата"}`,

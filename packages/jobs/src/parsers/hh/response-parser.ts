@@ -40,8 +40,10 @@ export async function parseResponses(
   console.log(`✅ Всего обработано откликов: ${allResponses.length}`);
 
   console.log("\n🔍 ЭТАП 2: Поиск откликов без детальной информации...");
-  const responsesNeedingDetails =
-    await filterResponsesNeedingDetails(allResponses);
+  const responsesNeedingDetails = await filterResponsesNeedingDetails(
+    allResponses,
+    vacancyId,
+  );
 
   console.log(
     `✅ Откликов требующих парсинга деталей: ${responsesNeedingDetails.length}`,
@@ -205,7 +207,7 @@ async function collectAndSaveResponses(
         allResponses.push(responseWithId);
 
         try {
-          const saved = await saveBasicResponse(
+          const result = await saveBasicResponse(
             vacancyIdForSave,
             response.resumeId,
             response.url,
@@ -213,7 +215,13 @@ async function collectAndSaveResponses(
             respondedAt,
           );
 
-          if (saved) {
+          if (!result.success) {
+            pageErrors++;
+            console.error(
+              `❌ Ошибка сохранения отклика ${response.name}:`,
+              result.error,
+            );
+          } else if (result.data) {
             pageSaved++;
           } else {
             pageSkipped++;
@@ -265,6 +273,7 @@ async function collectAndSaveResponses(
 
 async function filterResponsesNeedingDetails(
   responses: ResponseWithId[],
+  vacancyId: string,
 ): Promise<ResponseWithId[]> {
   const responsesNeedingDetails: ResponseWithId[] = [];
 
@@ -273,9 +282,18 @@ async function filterResponsesNeedingDetails(
     if (!response) continue;
 
     try {
-      const hasDetails = await hasDetailedInfo(response.resumeId);
+      const result = await hasDetailedInfo(vacancyId, response.resumeId);
 
-      if (!hasDetails) {
+      if (!result.success) {
+        console.error(
+          `❌ Ошибка проверки деталей для ${response.name}:`,
+          result.error,
+        );
+        responsesNeedingDetails.push(response);
+        continue;
+      }
+
+      if (!result.data) {
         responsesNeedingDetails.push(response);
         console.log(
           `Требуется парсинг ${i + 1}/${responses.length}: ${response.name}`,
@@ -324,7 +342,7 @@ async function parseResponseDetails(
         }
       }
 
-      await updateResponseDetails({
+      const updateResult = await updateResponseDetails({
         vacancyId,
         resumeId: response.resumeId,
         resumeUrl: response.url,
@@ -334,6 +352,12 @@ async function parseResponseDetails(
         phone: experienceData.phone,
         resumePdfFileId,
       });
+
+      if (!updateResult.success) {
+        throw new Error(
+          `Failed to update response details: ${updateResult.error}`,
+        );
+      }
 
       successCount++;
       console.log(`✅ Резюме ${i + 1}/${responses.length} обработано успешно`);

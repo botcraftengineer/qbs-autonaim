@@ -1,6 +1,7 @@
-import type { Log } from "crawlee";
+import { Log } from "crawlee";
 import type { Page } from "puppeteer";
 import { loadCookies, saveCookies } from "../../utils/cookies";
+import { HH_CONFIG } from "./config";
 
 export async function performLogin(
   page: Page,
@@ -69,6 +70,39 @@ export async function performLogin(
     log.info(`🍪 Получено ${cookies.length} cookies`);
     await saveCookies("hh", cookies, workspaceId);
   }
+}
+
+/**
+ * Check if user is authenticated and perform login if needed
+ */
+export async function checkAndPerformLogin(
+  page: Page,
+  email: string,
+  password: string,
+  workspaceId: string,
+) {
+  console.log("🔐 Проверка авторизации...");
+
+  await page.goto(HH_CONFIG.urls.login, {
+    waitUntil: "domcontentloaded",
+    timeout: HH_CONFIG.timeouts.navigation,
+  });
+
+  await page.waitForNetworkIdle({
+    timeout: HH_CONFIG.timeouts.networkIdle,
+  });
+
+  const loginInput = await page.$('input[type="text"][name="username"]');
+  if (loginInput) {
+    const log = new Log();
+    await performLogin(page, log, email, password, workspaceId);
+  } else {
+    console.log("✅ Успешно авторизованы");
+  }
+
+  // Save cookies after successful check/login
+  const cookies = await page.cookies();
+  await saveCookies("hh", cookies, workspaceId);
 }
 
 export { loadCookies, saveCookies };

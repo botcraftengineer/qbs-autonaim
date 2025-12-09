@@ -5,6 +5,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -30,34 +31,42 @@ export const hrSelectionStatusEnum = pgEnum("hr_selection_status", [
   "REJECTED",
 ]);
 
-export const vacancyResponse = pgTable("vacancy_responses", {
-  id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  vacancyId: varchar("vacancy_id", { length: 50 })
-    .notNull()
-    .references(() => vacancy.id, { onDelete: "cascade" }),
-  resumeId: varchar("resume_id", { length: 100 }).notNull(),
-  resumeUrl: text("resume_url").notNull(),
-  candidateName: varchar("candidate_name", { length: 500 }),
-  telegramUsername: varchar("telegram_username", { length: 100 }),
-  chatId: varchar("chat_id", { length: 100 }),
-  status: responseStatusEnum("status").default("NEW").notNull(),
-  hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
-  experience: text("experience"),
-  contacts: jsonb("contacts"),
-  phone: varchar("phone", { length: 50 }),
-  telegramInviteToken: varchar("telegram_invite_token", {
-    length: 100,
-  }).unique(),
-  resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
-    onDelete: "set null",
+export const vacancyResponse = pgTable(
+  "vacancy_responses",
+  {
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+    vacancyId: varchar("vacancy_id", { length: 50 })
+      .notNull()
+      .references(() => vacancy.id, { onDelete: "cascade" }),
+    resumeId: varchar("resume_id", { length: 100 }).notNull(),
+    resumeUrl: text("resume_url").notNull(),
+    candidateName: varchar("candidate_name", { length: 500 }),
+    telegramUsername: varchar("telegram_username", { length: 100 }),
+    chatId: varchar("chat_id", { length: 100 }),
+    status: responseStatusEnum("status").default("NEW").notNull(),
+    hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
+    experience: text("experience"),
+    contacts: jsonb("contacts"),
+    phone: varchar("phone", { length: 50 }),
+    telegramInviteToken: varchar("telegram_invite_token", {
+      length: 100,
+    }).unique(),
+    resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
+      onDelete: "set null",
+    }),
+    respondedAt: timestamp("responded_at"),
+    welcomeSentAt: timestamp("welcome_sent_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => ({
+    // Composite unique constraint: one resume can apply to multiple vacancies
+    // but can only apply once per vacancy
+    vacancyResumeUnique: unique().on(table.vacancyId, table.resumeId),
   }),
-  respondedAt: timestamp("responded_at"),
-  welcomeSentAt: timestamp("welcome_sent_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .$onUpdate(() => new Date())
-    .notNull(),
-});
+);
 
 export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   vacancyId: z.string().max(50),
