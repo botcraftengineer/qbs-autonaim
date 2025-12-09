@@ -16,7 +16,14 @@ import {
   Skeleton,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Download, ExternalLink, Play, User } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  ExternalLink,
+  Pause,
+  Play,
+  User,
+} from "lucide-react";
 import Link from "next/link";
 import { use, useRef, useState } from "react";
 import { SiteHeader } from "~/components/layout";
@@ -38,10 +45,11 @@ function VoicePlayer({ url, duration }: { url: string; duration: string }) {
 
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
       audioRef.current.play();
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   };
 
   const handleTimeUpdate = () => {
@@ -57,7 +65,7 @@ function VoicePlayer({ url, duration }: { url: string; duration: string }) {
   };
 
   const handleEnded = () => {
-    setIsPlaying(false);
+    setIsPlaying(() => false);
     setCurrentTime(0);
   };
 
@@ -73,11 +81,16 @@ function VoicePlayer({ url, duration }: { url: string; duration: string }) {
         variant="outline"
         size="sm"
         onClick={togglePlay}
-        aria-label={isPlaying ? "Pause voice message" : "Play voice message"}
+        aria-label={
+          isPlaying
+            ? "Приостановить голосовое сообщение"
+            : "Воспроизвести голосовое сообщение"
+        }
+        aria-pressed={isPlaying}
         className="h-8 w-8 shrink-0 p-0"
       >
         {isPlaying ? (
-          <span className="text-xs">⏸</span>
+          <Pause className="h-3.5 w-3.5" />
         ) : (
           <Play className="h-3.5 w-3.5" />
         )}
@@ -102,7 +115,7 @@ function VoicePlayer({ url, duration }: { url: string; duration: string }) {
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
         preload="metadata"
-        aria-label="Voice message audio"
+        aria-label="Аудио голосового сообщения"
       >
         <track kind="captions" />
       </audio>
@@ -407,19 +420,24 @@ export default function ResponseDetailPage({
                                         {message.contentType === "VOICE" ? (
                                           <div className="space-y-2">
                                             {"voiceUrl" in message &&
-                                              message.voiceUrl && (
-                                                <VoicePlayer
-                                                  url={message.voiceUrl}
-                                                  duration={
-                                                    message.voiceDuration || ""
-                                                  }
-                                                />
-                                              )}
-                                            {message.voiceTranscription && (
+                                            message.voiceUrl ? (
+                                              <VoicePlayer
+                                                url={message.voiceUrl}
+                                                duration={
+                                                  message.voiceDuration || ""
+                                                }
+                                              />
+                                            ) : null}
+                                            {message.voiceTranscription ? (
                                               <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
                                                 {message.voiceTranscription}
                                               </p>
-                                            )}
+                                            ) : !("voiceUrl" in message) ||
+                                              !message.voiceUrl ? (
+                                              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                                Аудиозапись недоступна
+                                              </p>
+                                            ) : null}
                                           </div>
                                         ) : (
                                           <p className="text-sm leading-relaxed sm:text-base">
