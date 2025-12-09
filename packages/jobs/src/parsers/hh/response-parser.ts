@@ -329,7 +329,11 @@ async function parseResponseDetails(
         `\n📊 Парсинг резюме ${i + 1}/${responses.length}: ${response.name}`,
       );
 
-      const experienceData = await parseResumeExperience(page, response.url);
+      const experienceData = await parseResumeExperience(
+        page,
+        response.url,
+        response.name,
+      );
 
       let resumePdfFileId: string | null = null;
       if (experienceData.pdfBuffer) {
