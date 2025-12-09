@@ -28,7 +28,7 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
       }),
     );
 
-    return await step.run("parse-vacancy-responses", async () => {
+    const result = await step.run("parse-vacancy-responses", async () => {
       console.log(`🚀 Запуск обновления откликов для вакансии ${vacancyId}`);
 
       const vacancyData = await db.query.vacancy.findFirst({
@@ -73,18 +73,6 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
 
         console.log(`✅ Отклики для вакансии ${vacancyId} обновлены успешно`);
 
-        // Запускаем сбор chat_id после получения откликов
-        await step.run("trigger-chat-ids-collection", async () => {
-          console.log(`🔄 Запускаем сбор chat_id для вакансии ${vacancyId}`);
-          await inngest.send({
-            name: "vacancy/chat-ids.collect",
-            data: { vacancyId },
-          });
-          console.log(
-            `✅ Событие сбора chat_id отправлено для вакансии ${vacancyId}`,
-          );
-        });
-
         return { success: true, vacancyId, newCount };
       } catch (error) {
         console.error(
@@ -102,5 +90,19 @@ export const refreshVacancyResponsesFunction = inngest.createFunction(
         throw error;
       }
     });
+
+    // Запускаем сбор chat_id после получения откликов
+    await step.run("trigger-chat-ids-collection", async () => {
+      console.log(`🔄 Запускаем сбор chat_id для вакансии ${vacancyId}`);
+      await inngest.send({
+        name: "vacancy/chat-ids.collect",
+        data: { vacancyId },
+      });
+      console.log(
+        `✅ Событие сбора chat_id отправлено для вакансии ${vacancyId}`,
+      );
+    });
+
+    return result;
   },
 );
