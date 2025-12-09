@@ -18,18 +18,23 @@ import { MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
   const pathname = usePathname();
   const [selectedVacancyId, setSelectedVacancyId] = useState<string>("all");
 
-  const vacanciesQueryOptions = trpc.vacancy.list.queryOptions();
-  const { data: vacancies = [] } = useQuery(vacanciesQueryOptions);
+  const { data: vacancies = [] } = useQuery({
+    ...trpc.vacancy.list.queryOptions({ workspaceId: workspace?.id ?? "" }),
+    enabled: !!workspace?.id,
+  });
 
   const conversationsQueryOptions =
     trpc.telegram.conversation.getAll.queryOptions({
+      workspaceId: workspace?.id ?? "",
       vacancyId: selectedVacancyId === "all" ? undefined : selectedVacancyId,
     });
   const {

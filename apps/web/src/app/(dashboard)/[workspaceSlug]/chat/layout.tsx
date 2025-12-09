@@ -13,11 +13,13 @@ export default function ChatLayout({
   params: Promise<{ workspaceSlug: string }>;
 }) {
   const pathname = usePathname();
+  const { workspaceSlug } = use(params);
+
   // Check if pathname matches pattern: /[workspaceSlug]/chat/[responseId]
   // A chat is selected when there's a non-empty segment after /chat/
   const chatSegmentMatch = pathname.match(/\/chat\/([^/]+)/);
   const isChatSelected = Boolean(chatSegmentMatch?.[1]);
-  const { workspaceSlug } = use(params);
+
   return (
     <>
       <SiteHeader title="" />

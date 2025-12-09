@@ -11,14 +11,20 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink } from "lucide-react";
 import Link from "next/link";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
   const trpc = useTRPC();
+  const { workspace } = useWorkspace();
 
-  const { data: vacancies, isLoading } = useQuery(
-    trpc.vacancy.listActive.queryOptions({ limit: 5 }),
-  );
+  const { data: vacancies, isLoading } = useQuery({
+    ...trpc.vacancy.listActive.queryOptions({
+      limit: 5,
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
 
   if (isLoading) {
     return (

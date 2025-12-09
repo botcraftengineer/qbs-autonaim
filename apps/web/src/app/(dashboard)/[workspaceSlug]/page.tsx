@@ -1,3 +1,6 @@
+"use client";
+
+import { use } from "react";
 import {
   ActiveVacancies,
   DashboardStats,
@@ -7,12 +10,13 @@ import {
 } from "~/components/dashboard";
 import { SiteHeader } from "~/components/layout";
 
-export default async function WorkspacePage({
+export default function WorkspacePage({
   params,
 }: {
   params: Promise<{ workspaceSlug: string }>;
 }) {
-  const { workspaceSlug } = await params;
+  const { workspaceSlug } = use(params);
+
   return (
     <>
       <SiteHeader />
