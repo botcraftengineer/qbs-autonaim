@@ -13,7 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
-import { skipToken, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
@@ -36,22 +36,20 @@ export default function VacancyResponsesPage({
   const trpc = useTRPC();
   const { workspaceId } = useWorkspaceContext();
 
-  const { data: vacancy, isLoading: vacancyLoading } = useQuery(
-    workspaceId
-      ? trpc.vacancy.getById.queryOptions({
-          id,
-          workspaceId,
-        })
-      : skipToken,
-  );
-  const { data: responsesCount, isLoading: responsesLoading } = useQuery(
-    workspaceId
-      ? trpc.vacancy.responses.getCount.queryOptions({
-          vacancyId: id,
-          workspaceId,
-        })
-      : skipToken,
-  );
+  const { data: vacancy, isLoading: vacancyLoading } = useQuery({
+    ...trpc.vacancy.getById.queryOptions({
+      id,
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: Boolean(workspaceId),
+  });
+  const { data: responsesCount, isLoading: responsesLoading } = useQuery({
+    ...trpc.vacancy.responses.getCount.queryOptions({
+      vacancyId: id,
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: Boolean(workspaceId),
+  });
 
   const isLoading = vacancyLoading || responsesLoading;
 
