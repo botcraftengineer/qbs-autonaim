@@ -27,7 +27,6 @@ export default async function WorkspaceLayout({
   const currentWorkspace = userWorkspaces.find(
     (uw) => uw.workspace.slug === workspaceSlug,
   );
-
   if (!currentWorkspace) {
     notFound();
   }

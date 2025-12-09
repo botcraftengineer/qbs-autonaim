@@ -39,7 +39,7 @@ export async function handleStartCommand(
 
   if (startPayload) {
     try {
-      const { findResponseByInviteToken } = await import("@qbs-autonaim/jobs");
+      const { findResponseByInviteToken } = await import("@qbs-autonaim/db");
       const responseResult = await findResponseByInviteToken(startPayload);
 
       if (responseResult.success) {

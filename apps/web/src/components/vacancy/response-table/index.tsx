@@ -111,15 +111,10 @@ export function ResponseTable({
     }
   };
 
-  // Первоначальная загрузка - показываем простой индикатор
-  if (isLoading) {
-    return <div className="text-center py-8">Загрузка...</div>;
-  }
-
-  // Рендерим скелетон для строк таблицы при фоновой загрузке
+  // Рендерим скелетон для строк таблицы при загрузке
   const renderTableContent = () => {
-    if (isFetching && !isLoading) {
-      // Показываем скелетон во время фоновой загрузки (сортировка/пагинация)
+    if (isLoading || (isFetching && !isLoading)) {
+      // Показываем скелетон во время загрузки
       return Array.from({ length: 5 }, () => (
         <TableRow key={crypto.randomUUID()}>
           <TableCell>

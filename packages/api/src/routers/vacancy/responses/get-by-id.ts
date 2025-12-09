@@ -25,12 +25,19 @@ export const getById = protectedProcedure
     const response = await ctx.db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, input.id),
       with: {
-        vacancy: true,
+        vacancy: {
+          with: {
+            workspace: true,
+          },
+        },
         screening: true,
         conversation: {
           with: {
             interviewScoring: true,
             messages: {
+              with: {
+                file: true,
+              },
               orderBy: (messages, { asc }) => [asc(messages.createdAt)],
             },
           },
@@ -57,8 +64,27 @@ export const getById = protectedProcedure
       resumePdfUrl = await getDownloadUrl(response.resumePdfFile.key);
     }
 
+    // Get voice file URLs for messages
+    const messagesWithUrls = response.conversation?.messages
+      ? await Promise.all(
+          response.conversation.messages.map(async (message) => {
+            if (message.file) {
+              const voiceUrl = await getDownloadUrl(message.file.key);
+              return { ...message, voiceUrl };
+            }
+            return message;
+          }),
+        )
+      : undefined;
+
     return {
       ...response,
       resumePdfUrl,
+      conversation: response.conversation
+        ? {
+            ...response.conversation,
+            messages: messagesWithUrls,
+          }
+        : undefined,
     };
   });

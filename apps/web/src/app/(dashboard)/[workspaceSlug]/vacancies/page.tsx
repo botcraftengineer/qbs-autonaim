@@ -120,7 +120,7 @@ export default function VacanciesPage() {
                           </TableCell>
                           <TableCell className="text-right">
                             <Link
-                              href={`/${workspaceSlug}/vacancies/${vacancy.id}/responses`}
+                              href={`/${workspaceSlug}/vacancies/${vacancy.id}`}
                               className="font-medium hover:underline text-primary"
                             >
                               {vacancy.responses}
