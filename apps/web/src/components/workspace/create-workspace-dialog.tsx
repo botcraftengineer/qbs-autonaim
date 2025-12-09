@@ -150,7 +150,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">
-                        {new URL(baseEnv.APP_URL).host}/
+                        {new URL(baseEnv.NEXT_PUBLIC_APP_URL).host}/
                       </span>
                       <Input placeholder="acme" {...field} className="flex-1" />
                     </div>
