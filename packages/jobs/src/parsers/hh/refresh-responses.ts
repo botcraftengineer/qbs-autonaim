@@ -128,7 +128,7 @@ export async function refreshVacancyResponses(
         throw error;
       }
     },
-    maxRequestsPerCrawl: 10,
+    maxRequestsPerCrawl: 100,
     requestHandlerTimeoutSecs: HH_CONFIG.timeouts.requestHandler,
   });
 
