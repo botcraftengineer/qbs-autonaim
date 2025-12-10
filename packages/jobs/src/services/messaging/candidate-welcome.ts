@@ -5,9 +5,9 @@ import {
   responseScreening,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { generateText } from "@qbs-autonaim/lib";
 import { buildCandidateWelcomePrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
-import { generateText } from "../../lib/ai-client";
 import { AI, createLogger, err, type Result, tryCatch } from "../base";
 
 const logger = createLogger("CandidateWelcome");

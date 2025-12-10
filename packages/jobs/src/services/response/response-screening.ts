@@ -1,9 +1,9 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { generateText } from "@qbs-autonaim/lib";
 import { buildResponseScreeningPrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
-import { generateText } from "../../lib/ai-client";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";
 import { extractJsonFromText } from "../../utils/json-extractor";
 import {

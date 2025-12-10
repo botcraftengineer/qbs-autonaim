@@ -1,13 +1,13 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation } from "@qbs-autonaim/db/schema";
+import { generateText } from "@qbs-autonaim/lib";
 import {
   buildInterviewQuestionPrompt,
   buildInterviewScoringPrompt,
 } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import type { z } from "zod";
-import { generateText } from "../../lib/ai-client";
 import {
   type InterviewAnalysis,
   type InterviewScoring,

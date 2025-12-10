@@ -1,8 +1,8 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { vacancy } from "@qbs-autonaim/db/schema";
+import { generateText } from "@qbs-autonaim/lib";
 import { buildVacancyRequirementsExtractionPrompt } from "@qbs-autonaim/prompts";
-import { generateText } from "../../lib/ai-client";
 import { vacancyRequirementsSchema } from "../../schemas/vacancy-requirements.schema";
 import type { VacancyRequirements } from "../../types/screening";
 import { extractJsonFromText } from "../../utils/json-extractor";
