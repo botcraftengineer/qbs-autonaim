@@ -17,7 +17,7 @@ export function createBotHandler(client: TelegramClient) {
       if (message.isOutgoing) {
         return;
       }
-
+      console.log("Message received:", message);
       // Обработка команды /start с токеном
       if (message.text?.startsWith("/start")) {
         await handleStartCommand(client, message);
