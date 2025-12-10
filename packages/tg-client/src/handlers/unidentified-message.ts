@@ -41,11 +41,9 @@ export async function handleUnidentifiedMessage(
   const sender = message.sender;
   let username: string | undefined;
   let firstName: string | undefined;
-
   if (sender && "username" in sender && sender.username) {
     username = sender.username;
   }
-
   if (sender?.type === "user") {
     firstName = sender.firstName || undefined;
   }
@@ -70,6 +68,7 @@ export async function handleUnidentifiedMessage(
           chatId,
           responseId: response.id,
           candidateName: response.candidateName || firstName || undefined,
+          username,
           status: "ACTIVE",
           metadata: JSON.stringify({
             identifiedBy: "pin_code",
@@ -80,6 +79,7 @@ export async function handleUnidentifiedMessage(
           target: telegramConversation.chatId,
           set: {
             responseId: response.id,
+            username,
             status: "ACTIVE",
           },
         })
@@ -184,6 +184,7 @@ export async function handleUnidentifiedMessage(
           chatId,
           responseId: response.id,
           candidateName: response.candidateName || firstName || undefined,
+          username,
           status: "ACTIVE",
           metadata: JSON.stringify({
             identifiedBy: "vacancy_search",
@@ -194,6 +195,7 @@ export async function handleUnidentifiedMessage(
           target: telegramConversation.chatId,
           set: {
             responseId: response.id,
+            username,
             status: "ACTIVE",
           },
         })

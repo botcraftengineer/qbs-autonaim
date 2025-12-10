@@ -220,6 +220,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   chatId: sendResult.chatId,
                   responseId: response.id,
                   candidateName: response.candidateName,
+                  username: response.telegramUsername || undefined,
                   status: "ACTIVE",
                   metadata: JSON.stringify({
                     responseId: response.id,
@@ -232,6 +233,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   set: {
                     responseId: response.id,
                     candidateName: response.candidateName,
+                    username: response.telegramUsername || undefined,
                     status: "ACTIVE",
                     metadata: JSON.stringify({
                       responseId: response.id,

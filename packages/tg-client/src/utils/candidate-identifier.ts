@@ -55,6 +55,7 @@ export async function identifyCandidate(
             chatId,
             responseId: responseByUsername.id,
             candidateName: responseByUsername.candidateName || undefined,
+            username,
             status: "ACTIVE",
             metadata: JSON.stringify({
               identifiedBy: "username",
@@ -66,6 +67,7 @@ export async function identifyCandidate(
             set: {
               responseId: responseByUsername.id,
               candidateName: responseByUsername.candidateName || undefined,
+              username,
               status: "ACTIVE",
               metadata: JSON.stringify({
                 identifiedBy: "username",
@@ -104,6 +106,7 @@ export async function identifyCandidate(
             chatId,
             responseId: responseByPhone.id,
             candidateName: responseByPhone.candidateName || undefined,
+            username,
             status: "ACTIVE",
             metadata: JSON.stringify({
               identifiedBy: "phone",
@@ -115,6 +118,7 @@ export async function identifyCandidate(
             set: {
               responseId: responseByPhone.id,
               candidateName: responseByPhone.candidateName || undefined,
+              username,
               status: "ACTIVE",
               metadata: JSON.stringify({
                 identifiedBy: "phone",

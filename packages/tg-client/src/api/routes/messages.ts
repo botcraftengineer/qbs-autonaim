@@ -77,7 +77,6 @@ messages.post("/send", async (c) => {
               },
             ],
           });
-
           if (users && users.length > 0) {
             const user = users[0];
             if (

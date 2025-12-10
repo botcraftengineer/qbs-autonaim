@@ -67,6 +67,7 @@ export const sendWelcome = protectedProcedure
         chatId,
         responseId,
         candidateName: response.candidateName,
+        username: chatId.startsWith("@") ? chatId.substring(1) : undefined,
         status: "ACTIVE",
         metadata: JSON.stringify({
           responseId,
@@ -78,6 +79,7 @@ export const sendWelcome = protectedProcedure
         set: {
           responseId,
           candidateName: response.candidateName,
+          username: chatId.startsWith("@") ? chatId.substring(1) : undefined,
           status: "ACTIVE",
           metadata: JSON.stringify({
             responseId,

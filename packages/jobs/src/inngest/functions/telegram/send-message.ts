@@ -84,34 +84,20 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           senderId: string;
         };
 
-        if (username) {
-          console.log(`📨 Отправка по username: @${username}`);
-          result = await tgClientSDK.sendMessageByUsername({
-            apiId: Number.parseInt(session.apiId, 10),
-            apiHash: session.apiHash,
-            sessionData: session.sessionData as Record<string, string>,
-            username,
-            text: content,
-          });
-        } else if (senderId) {
-          console.log(`📨 Отправка по senderId: ${senderId}`);
-          result = await tgClientSDK.sendMessage({
-            apiId: Number.parseInt(session.apiId, 10),
-            apiHash: session.apiHash,
-            sessionData: session.sessionData as Record<string, string>,
-            chatId: Number(senderId),
-            text: content,
-          });
-        } else {
-          console.log(`📨 Отправка по chatId: ${chatId}`);
-          result = await tgClientSDK.sendMessage({
-            apiId: Number.parseInt(session.apiId, 10),
-            apiHash: session.apiHash,
-            sessionData: session.sessionData as Record<string, string>,
-            chatId: Number(chatId),
-            text: content,
-          });
+        if (!username) {
+          throw new Error(
+            `Не удалось определить username для отправки сообщения. chatId: ${chatId}`,
+          );
         }
+
+        console.log(`📨 Отправка по username: @${username}`);
+        result = await tgClientSDK.sendMessageByUsername({
+          apiId: Number.parseInt(session.apiId, 10),
+          apiHash: session.apiHash,
+          sessionData: session.sessionData as Record<string, string>,
+          username,
+          text: content,
+        });
 
         const telegramMessageId = result.messageId;
 
