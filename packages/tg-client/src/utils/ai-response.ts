@@ -21,7 +21,7 @@ export async function generateAIResponse(
     vacancyTitle,
     responseStatus,
     conversationHistory = [],
-    isIdentified = true,
+    isIdentified = false,
   } = params;
 
   const historyText =

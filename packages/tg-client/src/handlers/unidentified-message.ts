@@ -110,6 +110,7 @@ export async function handleUnidentifiedMessage(
         candidateName: response.candidateName || firstName,
         vacancyTitle: response.vacancy?.title,
         responseStatus: response.status,
+        isIdentified: true,
       });
 
       await humanDelay(500, 1000);
@@ -143,6 +144,7 @@ export async function handleUnidentifiedMessage(
     const aiResponse = await generateAIResponse({
       messageText: text,
       candidateName: firstName,
+      isIdentified: false,
     });
 
     await client.sendText(message.chat.id, aiResponse);
@@ -215,6 +217,7 @@ export async function handleUnidentifiedMessage(
         candidateName: response.candidateName || firstName,
         vacancyTitle: foundVacancy.title,
         responseStatus: response.status,
+        isIdentified: true,
       });
 
       await humanDelay(500, 1000);
@@ -242,6 +245,7 @@ export async function handleUnidentifiedMessage(
   const aiResponse = await generateAIResponse({
     messageText: `${text}\n\nНайденные вакансии: ${vacancyList}`,
     candidateName: firstName,
+    isIdentified: false,
   });
 
   await client.sendText(message.chat.id, aiResponse);
