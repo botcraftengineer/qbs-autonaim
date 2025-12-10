@@ -23,6 +23,7 @@ export interface VacancyRequirements {
 export interface ResponseData {
   candidateName: string | null;
   experience: string | null;
+  coverLetter?: string | null;
 }
 
 /**
@@ -55,6 +56,7 @@ ${requirements.nice_to_have_skills.map((s) => `- ${s}`).join("\n")}
 
 Опыт работы:
 ${response.experience || "Не указан"}
+${response.coverLetter ? `\nСопроводительное письмо:\n${response.coverLetter}` : ""}
 
 ЗАДАЧА:
 1. Оцени соответствие резюме требованиям по двум шкалам:

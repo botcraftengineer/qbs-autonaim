@@ -10,6 +10,13 @@ interface ChatItem {
     NEGOTIATION_TOPIC: string[];
     VACANCY: string[];
   };
+  lastMessage?: {
+    text: string;
+    type: string;
+    resources?: {
+      RESPONSE_LETTER?: string[];
+    };
+  };
 }
 
 interface ChatsResponse {
@@ -37,6 +44,26 @@ function extractResumeIdFromUrl(resumeUrl: string): string | null {
     console.error("Ошибка парсинга resume_url:", error);
     return null;
   }
+}
+
+/**
+ * Извлекает сопроводительное письмо из lastMessage чата
+ */
+function extractCoverLetter(chat: ChatItem): string | null {
+  if (!chat.lastMessage) {
+    return null;
+  }
+
+  // Проверяем, что это сообщение с откликом (содержит RESPONSE_LETTER в resources)
+  const hasResponseLetter =
+    chat.lastMessage.resources?.RESPONSE_LETTER &&
+    chat.lastMessage.resources.RESPONSE_LETTER.length > 0;
+
+  if (hasResponseLetter && chat.lastMessage.text) {
+    return chat.lastMessage.text;
+  }
+
+  return null;
 }
 
 /**
@@ -158,7 +185,7 @@ export const collectChatIdsFunction = inngest.createFunction(
 
       let updatedCount = 0;
 
-      // Обновляем chat_id для каждого отклика
+      // Обновляем chat_id и сопроводительное письмо для каждого отклика
       for (const resp of responses) {
         // Пытаемся извлечь resumeId из URL
         const resumeIdFromUrl = extractResumeIdFromUrl(resp.resumeUrl);
@@ -170,13 +197,21 @@ export const collectChatIdsFunction = inngest.createFunction(
         });
 
         if (chat) {
+          // Извлекаем сопроводительное письмо из lastMessage
+          const coverLetter = extractCoverLetter(chat);
+
           await db
             .update(vacancyResponse)
-            .set({ chatId: chat.id })
+            .set({
+              chatId: chat.id,
+              coverLetter: coverLetter,
+            })
             .where(eq(vacancyResponse.id, resp.id));
 
           updatedCount++;
-          console.log(`✅ Обновлен chat_id для отклика ${resp.id}: ${chat.id}`);
+          console.log(
+            `✅ Обновлен chat_id для отклика ${resp.id}: ${chat.id}${coverLetter ? " (с сопроводительным письмом)" : ""}`,
+          );
         }
       }
 
