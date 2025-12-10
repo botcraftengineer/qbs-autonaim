@@ -43,7 +43,6 @@
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/prompts": "workspace:*",
-    "@qbs-autonaim/telegram-bot": "workspace:*",
     "@qbs-autonaim/tg-client": "workspace:*",
     "@t3-oss/env-core": "0.13.8",
     "ai": "5.0.108",
