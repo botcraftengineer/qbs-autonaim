@@ -29,7 +29,6 @@ export {
   // Messaging
   extractTelegramUsername,
   extractVacancyRequirements,
-  findResponseByInviteToken,
   findResponseByPinCode,
   // Screening
   formatResumeForScreening,

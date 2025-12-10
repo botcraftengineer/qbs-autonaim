@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
@@ -113,13 +112,4 @@ export async function findResponseByPinCode(
   }
 
   return ok(result.data);
-}
-
-/**
- * @deprecated Токены больше не используются
- */
-export async function findResponseByInviteToken(
-  token: string,
-): Promise<Result<{ id: string; candidateName: string | null }>> {
-  return err("Токены больше не используются, используйте пин-коды");
 }
