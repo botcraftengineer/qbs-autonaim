@@ -72,6 +72,7 @@ export async function screenResponse(
       experience: response.experience
         ? stripHtml(response.experience).result
         : response.experience,
+      coverLetter: response.coverLetter,
     },
     requirements,
   );

@@ -43,6 +43,7 @@ export const vacancyResponse = pgTable(
     candidateName: varchar("candidate_name", { length: 500 }),
     telegramUsername: varchar("telegram_username", { length: 100 }),
     chatId: varchar("chat_id", { length: 100 }),
+    coverLetter: text("cover_letter"),
     status: responseStatusEnum("status").default("NEW").notNull(),
     hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
     experience: text("experience"),
@@ -75,6 +76,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   candidateName: z.string().max(500).optional(),
   telegramUsername: z.string().max(100).optional(),
   chatId: z.string().max(100).optional(),
+  coverLetter: z.string().optional(),
   telegramInviteToken: z.string().max(100).optional(),
   status: z
     .enum([
