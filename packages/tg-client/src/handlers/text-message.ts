@@ -28,12 +28,12 @@ export async function handleTextMessage(
     if (!conversation) {
       await markRead(client, message.chat.id);
 
-      // Используем AI для ответа неидентифицированному пользователю
+      // Кандидат не идентифицирован - запрашиваем PIN
       const { generateAIResponse } = await import("../utils/ai-response.js");
 
       const aiResponse = await generateAIResponse({
         messageText,
-        isIdentified: false,
+        stage: "AWAITING_PIN",
       });
 
       await humanDelay(600, 1200);
@@ -73,6 +73,7 @@ export async function handleTextMessage(
     // Получаем информацию о вакансии и статусе
     let response = null;
     let vacancyTitle: string | undefined;
+    let resumeData;
 
     if (conversation.responseId) {
       response = await db.query.vacancyResponse.findFirst({
@@ -83,6 +84,14 @@ export async function handleTextMessage(
       });
 
       vacancyTitle = response?.vacancy?.title;
+
+      if (response) {
+        resumeData = {
+          experience: response.experience || undefined,
+          coverLetter: response.coverLetter || undefined,
+          phone: response.phone || undefined,
+        };
+      }
     }
 
     // Генерируем ответ через AI
@@ -90,11 +99,12 @@ export async function handleTextMessage(
 
     const aiResponse = await generateAIResponse({
       messageText,
+      stage: "INTERVIEWING",
       candidateName: conversation.candidateName || undefined,
       vacancyTitle,
       responseStatus: response?.status,
       conversationHistory,
-      isIdentified: true,
+      resumeData,
     });
 
     await client.sendText(message.chat.id, aiResponse);
