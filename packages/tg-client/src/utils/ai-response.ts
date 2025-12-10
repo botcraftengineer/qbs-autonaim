@@ -1,4 +1,4 @@
-import { generateText } from "@qbs-autonaim/jobs/lib/ai-client";
+import { generateText } from "@qbs-autonaim/lib";
 
 interface GenerateResponseParams {
   messageText: string;
