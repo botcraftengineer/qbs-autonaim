@@ -7,13 +7,7 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import {
-  getCompletedResponse,
-  getErrorResponse,
-  getGeneralResponse,
-  getInterviewResponse,
-  getOtherStatusResponse,
-} from "../responses/greetings.js";
+import { getErrorResponse } from "../responses/greetings.js";
 import { humanDelay } from "../utils/delays.js";
 import { markRead, showTyping } from "../utils/telegram.js";
 
@@ -33,16 +27,22 @@ export async function handleTextMessage(
 
     if (!conversation) {
       await markRead(client, message.chat.id);
+
+      // Используем AI для ответа неидентифицированному пользователю
+      const { generateAIResponse } = await import("../utils/ai-response.js");
+
+      const aiResponse = await generateAIResponse({
+        messageText,
+      });
+
       await humanDelay(600, 1200);
-      await client.sendText(
-        message.chat.id,
-        "Привет! А мы знакомы? Напомни, пожалуйста, откуда ты 😊",
-      );
+      await client.sendText(message.chat.id, aiResponse);
       return;
     }
 
     await markRead(client, message.chat.id);
 
+    // Сохраняем сообщение кандидата
     await db.insert(telegramMessage).values({
       conversationId: conversation.id,
       sender: "CANDIDATE",
@@ -56,31 +56,54 @@ export async function handleTextMessage(
     const readingTime = Math.min(messageText.length * 30, 2000);
     await humanDelay(readingTime, readingTime + 1000);
 
-    let responseText: string;
+    // Получаем историю переписки для контекста
+    const history = await db
+      .select()
+      .from(telegramMessage)
+      .where(eq(telegramMessage.conversationId, conversation.id))
+      .orderBy(telegramMessage.createdAt)
+      .limit(10);
+
+    const conversationHistory = history.map((msg) => ({
+      sender: msg.sender,
+      content: msg.content || "",
+    }));
+
+    // Получаем информацию о вакансии и статусе
+    let response = null;
+    let vacancyTitle: string | undefined;
 
     if (conversation.responseId) {
-      const [response] = await db
-        .select()
-        .from(vacancyResponse)
-        .where(eq(vacancyResponse.id, conversation.responseId))
-        .limit(1);
+      response = await db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, conversation.responseId),
+        with: {
+          vacancy: true,
+        },
+      });
 
-      if (response) {
-        if (response.status === "COMPLETED") {
-          responseText = getCompletedResponse();
-        } else if (response.status === "INTERVIEW_HH") {
-          responseText = getInterviewResponse();
-        } else {
-          responseText = getOtherStatusResponse();
-        }
-      } else {
-        responseText = getGeneralResponse();
-      }
-    } else {
-      responseText = getGeneralResponse();
+      vacancyTitle = response?.vacancy?.title;
     }
 
-    await client.sendText(message.chat.id, responseText);
+    // Генерируем ответ через AI
+    const { generateAIResponse } = await import("../utils/ai-response.js");
+
+    const aiResponse = await generateAIResponse({
+      messageText,
+      candidateName: conversation.candidateName || undefined,
+      vacancyTitle,
+      responseStatus: response?.status,
+      conversationHistory,
+    });
+
+    await client.sendText(message.chat.id, aiResponse);
+
+    // Сохраняем ответ бота
+    await db.insert(telegramMessage).values({
+      conversationId: conversation.id,
+      sender: "BOT",
+      contentType: "TEXT",
+      content: aiResponse,
+    });
   } catch (error) {
     console.error("Ошибка при обработке текстового сообщения:", error);
 
