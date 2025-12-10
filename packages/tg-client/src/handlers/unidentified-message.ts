@@ -3,6 +3,7 @@ import type { Message } from "@mtcute/core";
 import { and, db, eq, ilike } from "@qbs-autonaim/db";
 import {
   telegramConversation,
+  telegramMessage,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -63,7 +64,7 @@ export async function handleUnidentifiedMessage(
 
     if (response) {
       // Создаем беседу
-      await db
+      const [conversation] = await db
         .insert(telegramConversation)
         .values({
           chatId,
@@ -81,13 +82,25 @@ export async function handleUnidentifiedMessage(
             responseId: response.id,
             status: "ACTIVE",
           },
-        });
+        })
+        .returning();
 
       // Обновляем chatId
       await db
         .update(vacancyResponse)
         .set({ chatId })
         .where(eq(vacancyResponse.id, response.id));
+
+      // Сохраняем сообщение кандидата
+      if (conversation) {
+        await db.insert(telegramMessage).values({
+          conversationId: conversation.id,
+          sender: "CANDIDATE",
+          contentType: "TEXT",
+          content: text,
+          telegramMessageId: message.id.toString(),
+        });
+      }
 
       // После идентификации передаем управление AI боту
       const { generateAIResponse } = await import("../utils/ai-response.js");
@@ -101,6 +114,17 @@ export async function handleUnidentifiedMessage(
 
       await humanDelay(500, 1000);
       await client.sendText(message.chat.id, aiResponse);
+
+      // Сохраняем ответ бота
+      if (conversation) {
+        await db.insert(telegramMessage).values({
+          conversationId: conversation.id,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: aiResponse,
+        });
+      }
+
       return;
     }
   }
@@ -145,7 +169,7 @@ export async function handleUnidentifiedMessage(
 
     if (response) {
       // Создаем беседу
-      await db
+      const [conversation] = await db
         .insert(telegramConversation)
         .values({
           chatId,
@@ -163,13 +187,25 @@ export async function handleUnidentifiedMessage(
             responseId: response.id,
             status: "ACTIVE",
           },
-        });
+        })
+        .returning();
 
       // Обновляем chatId
       await db
         .update(vacancyResponse)
         .set({ chatId })
         .where(eq(vacancyResponse.id, response.id));
+
+      // Сохраняем сообщение кандидата
+      if (conversation) {
+        await db.insert(telegramMessage).values({
+          conversationId: conversation.id,
+          sender: "CANDIDATE",
+          contentType: "TEXT",
+          content: text,
+          telegramMessageId: message.id.toString(),
+        });
+      }
 
       // После идентификации передаем управление AI боту
       const { generateAIResponse } = await import("../utils/ai-response.js");
@@ -183,6 +219,17 @@ export async function handleUnidentifiedMessage(
 
       await humanDelay(500, 1000);
       await client.sendText(message.chat.id, aiResponse);
+
+      // Сохраняем ответ бота
+      if (conversation) {
+        await db.insert(telegramMessage).values({
+          conversationId: conversation.id,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: aiResponse,
+        });
+      }
+
       return;
     }
   }

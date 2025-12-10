@@ -1,6 +1,6 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
-import { eq } from "@qbs-autonaim/db";
+import { desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   telegramConversation,
@@ -61,10 +61,10 @@ export async function handleTextMessage(
       .select()
       .from(telegramMessage)
       .where(eq(telegramMessage.conversationId, conversation.id))
-      .orderBy(telegramMessage.createdAt)
+      .orderBy(desc(telegramMessage.createdAt))
       .limit(10);
 
-    const conversationHistory = history.map((msg) => ({
+    const conversationHistory = history.reverse().map((msg) => ({
       sender: msg.sender,
       content: msg.content || "",
     }));
