@@ -15,7 +15,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
   {
     id: "send-telegram-message",
     name: "Send Telegram Message",
-    retries: 3,
+    retries: 0,
   },
   { event: "telegram/message.send" },
   async ({ event, step }) => {
