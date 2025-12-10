@@ -172,9 +172,15 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         if (!sendResult) {
           console.log(`📧 Попытка отправки через hh.ru`);
 
-          // Generate Telegram invite message (different from welcome message)
+          // Generate Telegram invite message with PIN code
           const { generateTelegramInviteMessage, generateTelegramInvite } =
             await import("../../../services/messaging");
+
+          // Generate PIN code first
+          const pinCodeResult = await generateTelegramInvite({
+            responseId,
+            botUsername: "", // Not needed anymore
+          });
 
           const inviteMessageResult =
             await generateTelegramInviteMessage(responseId);
@@ -188,15 +194,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           const telegramUsername =
             userInfo?.username || env.TELEGRAM_BOT_USERNAME;
 
-          if (telegramUsername) {
-            const inviteLinkResult = await generateTelegramInvite({
-              responseId,
-              botUsername: telegramUsername,
-            });
-
-            if (inviteLinkResult.success) {
-              messageWithInvite = `${messageWithInvite}\n\n📱 Давай продолжим общение в Telegram — там удобнее! Просто напиши мне:\n${inviteLinkResult.data}`;
-            }
+          if (telegramUsername && pinCodeResult.success) {
+            messageWithInvite = `${messageWithInvite}\n\n📱 Напиши мне в Telegram @${telegramUsername} и сообщи пин-код: ${pinCodeResult.data}`;
           }
 
           const hhResult = await sendHHChatMessage({

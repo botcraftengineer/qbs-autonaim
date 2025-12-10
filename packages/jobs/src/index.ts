@@ -30,6 +30,7 @@ export {
   extractTelegramUsername,
   extractVacancyRequirements,
   findResponseByInviteToken,
+  findResponseByPinCode,
   // Screening
   formatResumeForScreening,
   generateTelegramInvite,
