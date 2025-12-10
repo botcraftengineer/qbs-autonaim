@@ -33,6 +33,7 @@ export async function handleTextMessage(
 
       const aiResponse = await generateAIResponse({
         messageText,
+        isIdentified: false,
       });
 
       await humanDelay(600, 1200);
@@ -93,6 +94,7 @@ export async function handleTextMessage(
       vacancyTitle,
       responseStatus: response?.status,
       conversationHistory,
+      isIdentified: true,
     });
 
     await client.sendText(message.chat.id, aiResponse);
