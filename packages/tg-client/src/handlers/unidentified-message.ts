@@ -102,15 +102,22 @@ export async function handleUnidentifiedMessage(
         });
       }
 
-      // После идентификации передаем управление AI боту
+      // После идентификации по PIN начинаем интервью
       const { generateAIResponse } = await import("../utils/ai-response.js");
+
+      const resumeData = {
+        experience: response.experience || undefined,
+        coverLetter: response.coverLetter || undefined,
+        phone: response.phone || undefined,
+      };
 
       const aiResponse = await generateAIResponse({
         messageText: text,
+        stage: "PIN_RECEIVED",
         candidateName: response.candidateName || firstName,
         vacancyTitle: response.vacancy?.title,
         responseStatus: response.status,
-        isIdentified: true,
+        resumeData,
       });
 
       await humanDelay(500, 1000);
@@ -138,13 +145,13 @@ export async function handleUnidentifiedMessage(
   });
 
   if (vacancies.length === 0) {
-    // Используем AI для ответа
+    // Вакансии не найдены - запрашиваем PIN
     const { generateAIResponse } = await import("../utils/ai-response.js");
 
     const aiResponse = await generateAIResponse({
       messageText: text,
+      stage: "AWAITING_PIN",
       candidateName: firstName,
-      isIdentified: false,
     });
 
     await client.sendText(message.chat.id, aiResponse);
@@ -209,15 +216,22 @@ export async function handleUnidentifiedMessage(
         });
       }
 
-      // После идентификации передаем управление AI боту
+      // После идентификации по вакансии начинаем интервью
       const { generateAIResponse } = await import("../utils/ai-response.js");
+
+      const resumeData = {
+        experience: response.experience || undefined,
+        coverLetter: response.coverLetter || undefined,
+        phone: response.phone || undefined,
+      };
 
       const aiResponse = await generateAIResponse({
         messageText: text,
+        stage: "PIN_RECEIVED",
         candidateName: response.candidateName || firstName,
         vacancyTitle: foundVacancy.title,
         responseStatus: response.status,
-        isIdentified: true,
+        resumeData,
       });
 
       await humanDelay(500, 1000);
@@ -237,15 +251,15 @@ export async function handleUnidentifiedMessage(
     }
   }
 
-  // Если нашли несколько вакансий - используем AI для ответа
+  // Если нашли несколько вакансий - запрашиваем PIN
   const { generateAIResponse } = await import("../utils/ai-response.js");
 
   const vacancyList = vacancies.map((v) => v?.title).join(", ");
 
   const aiResponse = await generateAIResponse({
     messageText: `${text}\n\nНайденные вакансии: ${vacancyList}`,
+    stage: "AWAITING_PIN",
     candidateName: firstName,
-    isIdentified: false,
   });
 
   await client.sendText(message.chat.id, aiResponse);
