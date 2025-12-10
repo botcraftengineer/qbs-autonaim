@@ -101,7 +101,7 @@ export async function generateWelcomeMessage(
 }
 
 /**
- * Generates personalized invite message for HH.ru (with Telegram invitation)
+ * Generates personalized invite message for HH.ru (with Telegram invitation and PIN code)
  */
 export async function generateTelegramInviteMessage(
   responseId: string,
@@ -180,5 +180,12 @@ export async function generateTelegramInviteMessage(
 
   logger.info("Telegram invite message generated");
 
-  return { success: true, data: aiResult.data.trim() };
+  let finalMessage = aiResult.data.trim();
+
+  // Добавляем пин-код в конце сообщения
+  if (response.telegramPinCode) {
+    finalMessage += `\n\nВаш пин-код: ${response.telegramPinCode}`;
+  }
+
+  return { success: true, data: finalMessage };
 }

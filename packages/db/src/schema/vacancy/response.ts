@@ -49,9 +49,7 @@ export const vacancyResponse = pgTable(
     experience: text("experience"),
     contacts: jsonb("contacts"),
     phone: varchar("phone", { length: 50 }),
-    telegramInviteToken: varchar("telegram_invite_token", {
-      length: 100,
-    }).unique(),
+    telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
@@ -77,7 +75,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   telegramUsername: z.string().max(100).optional(),
   chatId: z.string().max(100).optional(),
   coverLetter: z.string().optional(),
-  telegramInviteToken: z.string().max(100).optional(),
+  telegramPinCode: z.string().length(4).optional(),
   status: z
     .enum([
       "NEW",

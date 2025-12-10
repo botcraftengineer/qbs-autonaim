@@ -13,6 +13,15 @@ function escapeSqlLike(text: string): string {
   return text.replace(/[\\%_]/g, "\\$&");
 }
 
+/**
+ * Извлекает 4-значный пин-код из текста
+ */
+function extractPinCode(text: string): string | null {
+  // Ищем 4 цифры подряд
+  const match = text.match(/\b\d{4}\b/);
+  return match ? match[0] : null;
+}
+
 export async function handleUnidentifiedMessage(
   client: TelegramClient,
   message: Message,
@@ -30,9 +39,70 @@ export async function handleUnidentifiedMessage(
 
   const sender = message.sender;
   let username: string | undefined;
+  let firstName: string | undefined;
 
   if (sender && "username" in sender && sender.username) {
     username = sender.username;
+  }
+
+  if (sender?.type === "user") {
+    firstName = sender.firstName || undefined;
+  }
+
+  // Сначала пытаемся найти пин-код в сообщении
+  const pinCode = extractPinCode(text);
+
+  if (pinCode) {
+    // Ищем отклик по пин-коду
+    const response = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.telegramPinCode, pinCode),
+      with: {
+        vacancy: true,
+      },
+    });
+
+    if (response) {
+      // Создаем беседу
+      await db
+        .insert(telegramConversation)
+        .values({
+          chatId,
+          responseId: response.id,
+          candidateName: response.candidateName || firstName || undefined,
+          status: "ACTIVE",
+          metadata: JSON.stringify({
+            identifiedBy: "pin_code",
+            pinCode,
+          }),
+        })
+        .onConflictDoUpdate({
+          target: telegramConversation.chatId,
+          set: {
+            responseId: response.id,
+            status: "ACTIVE",
+          },
+        });
+
+      // Обновляем chatId
+      await db
+        .update(vacancyResponse)
+        .set({ chatId })
+        .where(eq(vacancyResponse.id, response.id));
+
+      // После идентификации передаем управление AI боту
+      const { generateAIResponse } = await import("../utils/ai-response.js");
+
+      const aiResponse = await generateAIResponse({
+        messageText: text,
+        candidateName: response.candidateName || firstName,
+        vacancyTitle: response.vacancy?.title,
+        responseStatus: response.status,
+      });
+
+      await humanDelay(500, 1000);
+      await client.sendText(message.chat.id, aiResponse);
+      return;
+    }
   }
 
   // Пытаемся найти вакансии по тексту сообщения
@@ -43,12 +113,15 @@ export async function handleUnidentifiedMessage(
   });
 
   if (vacancies.length === 0) {
-    await client.sendText(
-      message.chat.username ?? message.chat.id,
-      "Хм, не могу найти такую вакансию 🤔\n\n" +
-        "Попробуйте написать название точнее, или перейдите по ссылке из моего сообщения в HH.ru — так я точно смогу вас идентифицировать.\n\n" +
-        "Также можете просто рассказать, чем вы занимаетесь и что ищете — обсудим!",
-    );
+    // Используем AI для ответа
+    const { generateAIResponse } = await import("../utils/ai-response.js");
+
+    const aiResponse = await generateAIResponse({
+      messageText: text,
+      candidateName: firstName,
+    });
+
+    await client.sendText(message.chat.id, aiResponse);
     return;
   }
 
@@ -77,7 +150,7 @@ export async function handleUnidentifiedMessage(
         .values({
           chatId,
           responseId: response.id,
-          candidateName: response.candidateName || undefined,
+          candidateName: response.candidateName || firstName || undefined,
           status: "ACTIVE",
           metadata: JSON.stringify({
             identifiedBy: "vacancy_search",
@@ -98,23 +171,31 @@ export async function handleUnidentifiedMessage(
         .set({ chatId })
         .where(eq(vacancyResponse.id, response.id));
 
-      await client.sendText(
-        message.chat.username ?? message.chat.id,
-        `Отлично, нашел! Вы откликались на вакансию "${foundVacancy.title}" 👍\n\n` +
-          "Теперь можем продолжить общение. Расскажите о себе или задайте вопросы по вакансии!",
-      );
+      // После идентификации передаем управление AI боту
+      const { generateAIResponse } = await import("../utils/ai-response.js");
+
+      const aiResponse = await generateAIResponse({
+        messageText: text,
+        candidateName: response.candidateName || firstName,
+        vacancyTitle: foundVacancy.title,
+        responseStatus: response.status,
+      });
+
+      await humanDelay(500, 1000);
+      await client.sendText(message.chat.id, aiResponse);
       return;
     }
   }
 
-  // Если нашли несколько вакансий
-  const vacancyList = vacancies
-    .map((v, i) => `${i + 1}. ${v?.title}`)
-    .join("\n");
+  // Если нашли несколько вакансий - используем AI для ответа
+  const { generateAIResponse } = await import("../utils/ai-response.js");
 
-  await client.sendText(
-    message.chat.username ?? message.chat.id,
-    `Нашел несколько подходящих вакансий:\n\n${vacancyList}\n\n` +
-      "Уточните, пожалуйста, на какую именно вы откликались? Или перейдите по ссылке из моего сообщения в HH.ru.",
-  );
+  const vacancyList = vacancies.map((v) => v?.title).join(", ");
+
+  const aiResponse = await generateAIResponse({
+    messageText: `${text}\n\nНайденные вакансии: ${vacancyList}`,
+    candidateName: firstName,
+  });
+
+  await client.sendText(message.chat.id, aiResponse);
 }

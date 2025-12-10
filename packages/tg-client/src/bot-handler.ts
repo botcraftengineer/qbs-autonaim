@@ -1,9 +1,7 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
 import { handleAudioFile } from "./handlers/audio-file";
-import { handleStartCommand } from "./handlers/start-command";
 import { handleTextMessage } from "./handlers/text-message";
-import { handleTokenCommand } from "./handlers/token-command.js";
 import { handleUnidentifiedMessage } from "./handlers/unidentified-message";
 import { handleVoiceMessage } from "./handlers/voice-message";
 import { identifyCandidate } from "./utils/candidate-identifier";
@@ -18,17 +16,6 @@ export function createBotHandler(client: TelegramClient) {
         return;
       }
       console.log("Message received:", message);
-      // Обработка команды /start с токеном
-      if (message.text?.startsWith("/start")) {
-        await handleStartCommand(client, message);
-        return;
-      }
-
-      // Обработка команды /token для связывания беседы
-      if (message.text?.startsWith("/token")) {
-        await handleTokenCommand(client, message);
-        return;
-      }
 
       // Попытка идентифицировать кандидата перед обработкой сообщения
       const identification = await identifyCandidate(message);
@@ -44,9 +31,8 @@ export function createBotHandler(client: TelegramClient) {
           // Пользователь отправил голосовое/аудио без идентификации
           await client.sendText(
             message.chat.id,
-            "Я пока не могу вас идентифицировать 🤔\n\n" +
-              "Чтобы я мог обработать ваше голосовое сообщение, сначала отправьте текстовое сообщение с названием вакансии, на которую вы откликались, или используйте команду /token с вашим токеном идентификации.\n\n" +
-              "Также можете перейти по ссылке из моего сообщения в HH.ru — так я точно смогу вас идентифицировать.",
+            "Привет! Не могу понять, кто ты 🤔\n\n" +
+              "Напиши, пожалуйста, на какую вакансию откликался и свой 4-значный пин-код из сообщения. Тогда смогу послушать твое голосовое.",
           );
         }
         return;

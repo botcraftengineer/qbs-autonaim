@@ -51,7 +51,7 @@ export { transcribeAudio } from "./media";
 // ==================== Messaging ====================
 export {
   extractTelegramUsername,
-  findResponseByInviteToken,
+  findResponseByPinCode,
   generateTelegramInvite,
   generateTelegramInviteMessage,
   generateWelcomeMessage,

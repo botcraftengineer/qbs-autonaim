@@ -2,28 +2,52 @@ import { eq } from "drizzle-orm";
 import { db } from "../client";
 import { vacancyResponse } from "../schema";
 
-export interface ResponseByToken {
+export interface ResponseByPinCode {
   id: string;
   candidateName: string | null;
 }
 
 /**
- * Поиск отклика по токену приглашения Telegram
+ * Поиск отклика по пин-коду
  */
-export async function findResponseByInviteToken(
-  token: string,
+export async function findResponseByPinCode(
+  pinCode: string,
 ): Promise<
-  { success: true; data: ResponseByToken } | { success: false; error: string }
+  { success: true; data: ResponseByPinCode } | { success: false; error: string }
 > {
+  // Validate pinCode input
+  const trimmedPinCode = pinCode?.trim();
+
+  if (!trimmedPinCode) {
+    return {
+      success: false,
+      error: "Пин-код не может быть пустым",
+    };
+  }
+
+  if (trimmedPinCode.length !== 4) {
+    return {
+      success: false,
+      error: "Пин-код должен содержать ровно 4 символа",
+    };
+  }
+
+  if (!/^[A-Z0-9]{4}$/.test(trimmedPinCode)) {
+    return {
+      success: false,
+      error: "Пин-код должен содержать только заглавные буквы и цифры",
+    };
+  }
+
   try {
     const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramInviteToken, token),
+      where: eq(vacancyResponse.telegramPinCode, trimmedPinCode),
     });
 
     if (!response) {
       return {
         success: false,
-        error: "Неверный или устаревший токен приглашения",
+        error: "Неверный пин-код",
       };
     }
 
@@ -40,7 +64,7 @@ export async function findResponseByInviteToken(
       error:
         error instanceof Error
           ? error.message
-          : "Не удалось найти отклик по токену",
+          : "Не удалось найти отклик по пин-коду",
     };
   }
 }

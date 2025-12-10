@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
@@ -12,52 +11,23 @@ interface GenerateInviteParams {
 }
 
 /**
- * Маскирование токена для безопасного логирования
- * Показывает первые 4 и последние 4 символа с многоточием посередине
+ * Генерация уникального 4-значного пин-кода для идентификации кандидата
  */
-function maskToken(token: string): string {
-  if (!token || token.length <= 8) {
-    return "***";
-  }
-  return `${token.slice(0, 4)}...${token.slice(-4)}`;
+function generatePinCode(): string {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
 /**
- * Валидация формата username Telegram
- * Username должен содержать только латинские буквы, цифры и подчеркивания
- * Минимальная длина 5 символов
- */
-function isValidTelegramUsername(username: string): boolean {
-  if (!username || username.length < 5) {
-    return false;
-  }
-  // Username Telegram: только a-z, A-Z, 0-9, подчеркивание (без точек и дефисов)
-  const validPattern = /^[A-Za-z0-9_]{5,}$/;
-  return validPattern.test(username);
-}
-
-/**
- * Генерация уникального токена приглашения и создание ссылки на Telegram бота
+ * Генерация уникального пин-кода для кандидата
  */
 export async function generateTelegramInvite(
   params: GenerateInviteParams,
 ): Promise<Result<string>> {
-  const { responseId, botUsername } = params;
+  const { responseId } = params;
 
-  // Валидация botUsername
-  if (!botUsername || botUsername.trim().length === 0) {
-    return err("Не указан username Telegram бота");
-  }
+  logger.info("Генерация пин-кода для кандидата", { responseId });
 
-  if (!isValidTelegramUsername(botUsername)) {
-    return err(
-      "Неверный формат username Telegram (допустимы только латинские буквы, цифры и _, минимум 5 символов)",
-    );
-  }
-
-  logger.info("Генерация приглашения Telegram", { responseId });
-
-  // Проверка существования токена
+  // Проверка существования пин-кода
   const existingResponse = await tryCatch(async () => {
     return await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
@@ -72,55 +42,70 @@ export async function generateTelegramInvite(
     return err("Отклик не найден");
   }
 
-  // Если токен уже существует, переиспользуем его
-  if (existingResponse.data.telegramInviteToken) {
-    const inviteLink = `https://t.me/${botUsername}?start=${existingResponse.data.telegramInviteToken}`;
-    logger.info("Переиспользование существующего токена", {
+  // Если пин-код уже существует, переиспользуем его
+  if (existingResponse.data.telegramPinCode) {
+    logger.info("Переиспользование существующего пин-кода", {
       responseId,
-      inviteLink,
+      pinCode: existingResponse.data.telegramPinCode,
     });
-    return ok(inviteLink);
+    return ok(existingResponse.data.telegramPinCode);
   }
 
-  // Генерация нового уникального токена
-  const token = randomBytes(16).toString("hex");
+  // Генерация нового уникального пин-кода
+  let pinCode = generatePinCode();
+  let attempts = 0;
+  const maxAttempts = 10;
 
-  // Сохранение токена в базу данных
+  // Проверяем уникальность пин-кода
+  while (attempts < maxAttempts) {
+    const existing = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.telegramPinCode, pinCode),
+    });
+
+    if (!existing) {
+      break;
+    }
+
+    pinCode = generatePinCode();
+    attempts++;
+  }
+
+  if (attempts >= maxAttempts) {
+    return err("Не удалось сгенерировать уникальный пин-код");
+  }
+
+  // Сохранение пин-кода в базу данных
   const updateResult = await tryCatch(async () => {
     await db
       .update(vacancyResponse)
-      .set({ telegramInviteToken: token })
+      .set({ telegramPinCode: pinCode })
       .where(eq(vacancyResponse.id, responseId));
-  }, "Не удалось сохранить токен приглашения");
+  }, "Не удалось сохранить пин-код");
 
   if (!updateResult.success) {
     return err(updateResult.error);
   }
 
-  const inviteLink = `https://t.me/${botUsername}?start=${token}`;
-  logger.info("Сгенерирован новый токен приглашения", {
+  logger.info("Сгенерирован новый пин-код", {
     responseId,
-    inviteLink,
+    pinCode,
   });
 
-  return ok(inviteLink);
+  return ok(pinCode);
 }
 
 /**
- * Поиск отклика по токену приглашения
- * @deprecated Используйте findResponseByInviteToken из @qbs-autonaim/db
+ * Поиск отклика по пин-коду
  */
-export async function findResponseByInviteToken(
-  token: string,
+export async function findResponseByPinCode(
+  pinCode: string,
 ): Promise<Result<{ id: string; candidateName: string | null }>> {
-  logger.info("Поиск отклика по токену приглашения", {
-    token: maskToken(token),
-  });
+  logger.info("Поиск отклика по пин-коду", { pinCode });
 
-  const { findResponseByInviteToken: findResponse } = await import(
+  const { findResponseByPinCode: findResponse } = await import(
     "@qbs-autonaim/db"
   );
-  const result = await findResponse(token);
+  const result = await findResponse(pinCode);
 
   if (!result.success) {
     return err(result.error);
