@@ -59,12 +59,10 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         }
 
         // Пытаемся получить senderId или username из metadata
-        let senderId: string | undefined;
         let username: string | undefined;
         if (conversation.metadata) {
           try {
             const metadata = JSON.parse(conversation.metadata);
-            senderId = metadata.senderId;
             username = metadata.username;
           } catch (e) {
             console.warn("Не удалось распарсить metadata", e);
@@ -81,7 +79,6 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           success: boolean;
           messageId: string;
           chatId: string;
-          senderId: string;
         };
 
         if (!username) {

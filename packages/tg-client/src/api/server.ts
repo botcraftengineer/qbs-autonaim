@@ -10,7 +10,7 @@ export const customLogger = (message: unknown) => {
 
 const app = new Hono();
 
-//app.use("*", logger());
+app.use("*", logger());
 app.use("*", cors());
 app.use(logger(customLogger));
 
