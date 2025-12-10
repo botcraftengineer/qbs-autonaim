@@ -24,7 +24,85 @@ messages.post("/send", async (c) => {
     const { apiId, apiHash, sessionData, chatId, text } = result.data;
     const { client } = await createUserClient(apiId, apiHash, sessionData);
 
-    const peer = await client.resolvePeer(chatId);
+    // Try to resolve peer from cache first
+    const { Long } = await import("@mtcute/core");
+
+    type LongType = InstanceType<typeof Long>;
+    type InputPeer =
+      | Awaited<ReturnType<typeof client.resolvePeer>>
+      | { _: "inputPeerChannel"; channelId: number; accessHash: LongType }
+      | { _: "inputPeerChat"; chatId: number }
+      | { _: "inputPeerUser"; userId: number; accessHash: LongType };
+
+    let peer: InputPeer | undefined;
+    try {
+      peer = await client.resolvePeer(chatId);
+    } catch {
+      // If not in cache, fetch from Telegram API
+      const chatIdNum =
+        typeof chatId === "string" ? Number.parseInt(chatId, 10) : chatId;
+
+      // Try to get chat/user info from Telegram
+      try {
+        const chats = await client.call({
+          _: "messages.getChats",
+          id: [chatIdNum],
+        });
+
+        if (chats.chats && chats.chats.length > 0) {
+          const chat = chats.chats[0];
+          if (chat && chat._ === "chat") {
+            peer = {
+              _: "inputPeerChat",
+              chatId: chat.id,
+            };
+          } else if (chat && chat._ === "channel" && "accessHash" in chat) {
+            peer = {
+              _: "inputPeerChannel",
+              channelId: chat.id,
+              accessHash: chat.accessHash || Long.ZERO,
+            };
+          }
+        }
+      } catch {
+        // If getChats fails, try as user
+        try {
+          const users = await client.call({
+            _: "users.getUsers",
+            id: [
+              {
+                _: "inputUser",
+                userId: chatIdNum,
+                accessHash: Long.ZERO,
+              },
+            ],
+          });
+
+          if (users && users.length > 0) {
+            const user = users[0];
+            if (
+              user &&
+              user._ === "user" &&
+              "accessHash" in user &&
+              user.accessHash
+            ) {
+              peer = {
+                _: "inputPeerUser",
+                userId: user.id,
+                accessHash: user.accessHash,
+              };
+            }
+          }
+        } catch {
+          // Ignore user lookup errors
+        }
+      }
+
+      if (!peer) {
+        return c.json({ error: `Chat ${chatId} not found` }, 404);
+      }
+    }
+
     const messageResult = await client.sendText(peer, text);
 
     return c.json({
