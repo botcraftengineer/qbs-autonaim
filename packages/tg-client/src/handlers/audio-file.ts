@@ -25,7 +25,8 @@ export async function handleAudioFile(
     .where(eq(telegramConversation.chatId, chatId))
     .limit(1);
 
-  if (!conversation) {
+  // Если беседа не найдена или пользователь не идентифицирован (нет responseId)
+  if (!conversation || !conversation.responseId) {
     await markRead(client, message.chat.id);
 
     const errorMessage = "Привет! А мы раньше общались? Не могу вспомнить 🤔";

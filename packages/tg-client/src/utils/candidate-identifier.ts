@@ -23,10 +23,11 @@ export async function identifyCandidate(
       where: eq(telegramConversation.chatId, chatId),
     });
 
-    if (existingConversation) {
+    // Беседа считается идентифицированной только если есть responseId
+    if (existingConversation && existingConversation.responseId) {
       return {
         identified: true,
-        responseId: existingConversation.responseId || undefined,
+        responseId: existingConversation.responseId,
         conversationId: existingConversation.id,
         method: "chatId",
       };

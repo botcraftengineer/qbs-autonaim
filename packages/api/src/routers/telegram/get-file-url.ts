@@ -1,4 +1,4 @@
-import { getDownloadUrl } from "@qbs-autonaim/lib";
+import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

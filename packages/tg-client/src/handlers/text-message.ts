@@ -8,7 +8,6 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { getTextErrorResponse } from "../responses/greetings";
-import { humanDelay } from "../utils/delays";
 import { triggerMessageSend } from "../utils/inngest";
 import { getChatHistory, markRead } from "../utils/telegram";
 
@@ -26,42 +25,13 @@ export async function handleTextMessage(
       .where(eq(telegramConversation.chatId, chatId))
       .limit(1);
 
-    if (!conversation) {
-      await markRead(client, message.chat.id);
-
-      // Кандидат не идентифицирован - запрашиваем PIN
-      // Получаем контекст из чата через mtcute (не сохраняем в БД)
-      const conversationHistory = await getChatHistory(
-        client,
-        message.chat.id,
-        10,
+    // Если беседа не найдена или пользователь не идентифицирован (нет responseId),
+    // перенаправляем в handleUnidentifiedMessage для попытки идентификации
+    if (!conversation || !conversation.responseId) {
+      const { handleUnidentifiedMessage } = await import(
+        "./unidentified-message"
       );
-      const { generateAIResponse } = await import("../utils/ai-response");
-
-      const aiResponse = await generateAIResponse({
-        messageText,
-        stage: "AWAITING_PIN",
-        conversationHistory,
-      });
-
-      // Получаем username из сообщения
-      const username =
-        message.sender?.username ||
-        (message.sender && "username" in message.sender
-          ? (message.sender as { username?: string }).username
-          : undefined);
-
-      if (!username) {
-        console.warn(
-          "⚠️ Не удалось получить username для неидентифицированного пользователя",
-        );
-        return;
-      }
-
-      // Отправляем сообщение через inngest без сохранения в БД
-      await humanDelay(600, 1200);
-      await triggerMessageSend("", username, aiResponse);
-
+      await handleUnidentifiedMessage(client, message);
       return;
     }
 
