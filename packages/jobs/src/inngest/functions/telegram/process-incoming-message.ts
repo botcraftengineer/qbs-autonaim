@@ -193,9 +193,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
               return { identified: true };
             }
 
-            // Неверный пин-код
-            const errorResponse = `К сожалению, указанный PIN-код не найден. Пожалуйста, проверьте правильность кода и попробуйте снова. PIN-код должен состоять из 4 цифр.`;
-
+            // Неверный пин-код - генерируем ответ через AI
             if (tempConv) {
               const existingMsg = await db.query.telegramMessage.findFirst({
                 where: (messages, { and, eq }) =>
@@ -214,6 +212,35 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   telegramMessageId: messageData.id.toString(),
                 });
               }
+
+              // Получаем историю для контекста
+              const conversationHistory =
+                await db.query.telegramMessage.findMany({
+                  where: eq(telegramMessage.conversationId, tempConv.id),
+                  orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+                  limit: 10,
+                });
+
+              // Генерируем ответ через AI для неверного PIN
+              const prompt = buildTelegramRecruiterPrompt({
+                messageText: text,
+                stage: "INVALID_PIN",
+                candidateName: firstName,
+                conversationHistory: conversationHistory.map((msg) => ({
+                  sender: msg.sender,
+                  content: msg.content,
+                  contentType: msg.contentType,
+                })),
+              });
+
+              const { text: errorResponse } = await generateText({
+                prompt,
+                generationName: "telegram-invalid-pin",
+                entityId: tempConv.id,
+                metadata: {
+                  candidateName: firstName,
+                },
+              });
 
               const [botMsg] = await db
                 .insert(telegramMessage)
@@ -241,9 +268,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
             return { identified: false, invalidPin: true };
           }
 
-          // Нет пин-кода - просим его
-          const awaitingResponse = `Здравствуйте${firstName ? `, ${firstName}` : ""}! Для начала работы, пожалуйста, предоставьте ваш 4-значный PIN-код, который вы получили в письме с откликом на вакансию.`;
-
+          // Нет пин-кода - генерируем запрос через AI
           if (tempConv) {
             const existingMsg = await db.query.telegramMessage.findFirst({
               where: (messages, { and, eq }) =>
@@ -262,6 +287,36 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 telegramMessageId: messageData.id.toString(),
               });
             }
+
+            // Получаем историю для контекста
+            const conversationHistory = await db.query.telegramMessage.findMany(
+              {
+                where: eq(telegramMessage.conversationId, tempConv.id),
+                orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+                limit: 10,
+              },
+            );
+
+            // Генерируем ответ через AI для запроса PIN
+            const prompt = buildTelegramRecruiterPrompt({
+              messageText: text,
+              stage: "AWAITING_PIN",
+              candidateName: firstName,
+              conversationHistory: conversationHistory.map((msg) => ({
+                sender: msg.sender,
+                content: msg.content,
+                contentType: msg.contentType,
+              })),
+            });
+
+            const { text: awaitingResponse } = await generateText({
+              prompt,
+              generationName: "telegram-awaiting-pin",
+              entityId: tempConv.id,
+              metadata: {
+                candidateName: firstName,
+              },
+            });
 
             const [botMsg] = await db
               .insert(telegramMessage)
@@ -293,10 +348,6 @@ export const processIncomingMessageFunction = inngest.createFunction(
         messageData.media?.type === "audio"
       ) {
         await step.run("handle-unidentified-media", async () => {
-          const errorMessage =
-            "Привет! Не могу понять, кто ты 🤔\n\n" +
-            "Напиши, пожалуйста, на какую вакансию откликался и свой 4-значный пин-код из сообщения. Тогда смогу послушать твое голосовое.";
-
           const [tempConv] = await db
             .insert(telegramConversation)
             .values({
@@ -319,6 +370,36 @@ export const processIncomingMessageFunction = inngest.createFunction(
               contentType: "VOICE",
               content: "Голосовое сообщение (кандидат не идентифицирован)",
               telegramMessageId: messageData.id.toString(),
+            });
+
+            // Получаем историю для контекста
+            const conversationHistory = await db.query.telegramMessage.findMany(
+              {
+                where: eq(telegramMessage.conversationId, tempConv.id),
+                orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+                limit: 10,
+              },
+            );
+
+            // Генерируем ответ через AI для голосового без PIN
+            const prompt = buildTelegramRecruiterPrompt({
+              messageText: "[Голосовое сообщение]",
+              stage: "AWAITING_PIN",
+              candidateName: firstName,
+              conversationHistory: conversationHistory.map((msg) => ({
+                sender: msg.sender,
+                content: msg.content,
+                contentType: msg.contentType,
+              })),
+            });
+
+            const { text: errorMessage } = await generateText({
+              prompt,
+              generationName: "telegram-voice-awaiting-pin",
+              entityId: tempConv.id,
+              metadata: {
+                candidateName: firstName,
+              },
             });
 
             const [botMsg] = await db

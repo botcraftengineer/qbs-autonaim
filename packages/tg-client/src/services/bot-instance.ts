@@ -8,6 +8,7 @@ import type { telegramSession } from "@qbs-autonaim/db/schema";
 import { ExportableStorage } from "../storage";
 import { isAuthError } from "../utils/auth-errors";
 import { triggerIncomingMessage } from "../utils/inngest";
+import { markRead } from "../utils/telegram";
 
 export interface BotInstance {
   client: TelegramClient;
@@ -110,8 +111,14 @@ export async function createBotInstance(
 
   // Регистрируем обработчик сообщений - триггерим Inngest
   dp.onNewMessage(async (msg) => {
-    console.log("new message", msg.id);
     try {
+      console.log("new msg", msg.id);
+
+      // Помечаем сообщение прочитанным
+      if (!msg.isOutgoing) {
+        //  await markRead(client, msg.chat.id);
+      }
+
       // Сериализуем данные сообщения для Inngest
       const messageData = {
         id: msg.id,
