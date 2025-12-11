@@ -141,14 +141,25 @@ export async function handleUnidentifiedMessage(
       });
 
       if (tempConversation) {
-        // Сохраняем сообщение кандидата с неверным пин-кодом
-        await db.insert(telegramMessage).values({
-          conversationId: tempConversation.id,
-          sender: "CANDIDATE",
-          contentType: "TEXT",
-          content: text,
-          telegramMessageId: message.id.toString(),
+        // Проверяем, не сохранено ли уже это сообщение
+        const existingMessage = await db.query.telegramMessage.findFirst({
+          where: (messages, { and, eq }) =>
+            and(
+              eq(messages.conversationId, tempConversation.id),
+              eq(messages.telegramMessageId, message.id.toString()),
+            ),
         });
+
+        // Сохраняем сообщение кандидата с неверным пин-кодом только если его еще нет
+        if (!existingMessage) {
+          await db.insert(telegramMessage).values({
+            conversationId: tempConversation.id,
+            sender: "CANDIDATE",
+            contentType: "TEXT",
+            content: text,
+            telegramMessageId: message.id.toString(),
+          });
+        }
 
         const [botMessage] = await db
           .insert(telegramMessage)
@@ -201,14 +212,25 @@ export async function handleUnidentifiedMessage(
 
       const conversationToUse = updatedConversation || tempConversation;
 
-      // Сохраняем сообщение кандидата
-      await db.insert(telegramMessage).values({
-        conversationId: conversationToUse.id,
-        sender: "CANDIDATE",
-        contentType: "TEXT",
-        content: text,
-        telegramMessageId: message.id.toString(),
+      // Проверяем, не сохранено ли уже это сообщение
+      const existingMessage = await db.query.telegramMessage.findFirst({
+        where: (messages, { and, eq }) =>
+          and(
+            eq(messages.conversationId, conversationToUse.id),
+            eq(messages.telegramMessageId, message.id.toString()),
+          ),
       });
+
+      // Сохраняем сообщение кандидата только если его еще нет
+      if (!existingMessage) {
+        await db.insert(telegramMessage).values({
+          conversationId: conversationToUse.id,
+          sender: "CANDIDATE",
+          contentType: "TEXT",
+          content: text,
+          telegramMessageId: message.id.toString(),
+        });
+      }
 
       const [botMessage] = await db
         .insert(telegramMessage)

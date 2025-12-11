@@ -7,7 +7,6 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { getTextErrorResponse } from "../responses/greetings";
 import { generateAIResponse } from "../utils/ai-response";
 import { triggerMessageSend } from "../utils/inngest";
 import { getChatHistory, markRead } from "../utils/telegram";
@@ -128,37 +127,6 @@ export async function handleTextMessage(
     }
   } catch (error) {
     console.error("Ошибка при обработке текстового сообщения:", error);
-
-    try {
-      const [conversation] = await db
-        .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.chatId, chatId))
-        .limit(1);
-
-      if (conversation) {
-        const errorMessage = getTextErrorResponse();
-        const [botMessage] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: conversation.id,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: errorMessage,
-          })
-          .returning();
-
-        if (botMessage && conversation.username) {
-          await triggerMessageSend(
-            botMessage.id,
-            conversation.username,
-            errorMessage,
-            workspaceId,
-          );
-        }
-      }
-    } catch (sendError) {
-      console.error("Не удалось отправить сообщение об ошибке:", sendError);
-    }
+    // Молчим при ошибках - не показываем пользователю технические проблемы
   }
 }
