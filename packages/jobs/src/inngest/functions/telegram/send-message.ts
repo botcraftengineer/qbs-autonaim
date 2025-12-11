@@ -58,8 +58,10 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           );
         }
 
-        // Пытаемся получить senderId или username из metadata
+        // Пытаемся получить username из разных источников в порядке приоритета
         let username: string | undefined;
+
+        // 1. Проверяем metadata
         if (conversation.metadata) {
           try {
             const metadata = JSON.parse(conversation.metadata);
@@ -69,9 +71,14 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           }
         }
 
-        // Если username нет в metadata, берем из vacancy_response
+        // 2. Проверяем vacancy_response.telegramUsername
         if (!username && conversation.response?.telegramUsername) {
           username = conversation.response.telegramUsername;
+        }
+
+        // 3. Проверяем conversation.username
+        if (!username && conversation.username) {
+          username = conversation.username;
         }
 
         // Отправляем сообщение через SDK
@@ -81,20 +88,27 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           chatId: string;
         };
 
-        if (!username) {
-          throw new Error(
-            `Не удалось определить username для отправки сообщения. chatId: ${chatId}`,
-          );
+        if (username) {
+          // Отправка по username
+          console.log(`📨 Отправка по username: @${username}`);
+          result = await tgClientSDK.sendMessageByUsername({
+            apiId: Number.parseInt(session.apiId, 10),
+            apiHash: session.apiHash,
+            sessionData: session.sessionData as Record<string, string>,
+            username,
+            text: content,
+          });
+        } else {
+          // Fallback: отправка по chatId
+          console.log(`📨 Отправка по chatId: ${chatId}`);
+          result = await tgClientSDK.sendMessage({
+            apiId: Number.parseInt(session.apiId, 10),
+            apiHash: session.apiHash,
+            sessionData: session.sessionData as Record<string, string>,
+            chatId,
+            text: content,
+          });
         }
-
-        console.log(`📨 Отправка по username: @${username}`);
-        result = await tgClientSDK.sendMessageByUsername({
-          apiId: Number.parseInt(session.apiId, 10),
-          apiHash: session.apiHash,
-          sessionData: session.sessionData as Record<string, string>,
-          username,
-          text: content,
-        });
 
         const telegramMessageId = result.messageId;
 
