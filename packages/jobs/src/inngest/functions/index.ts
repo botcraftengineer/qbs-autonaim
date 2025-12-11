@@ -36,8 +36,8 @@ import {
   completeInterviewFunction,
   notifyTelegramAuthErrorFunction,
   sendNextQuestionFunction,
+  sendTelegramMessageByUsernameFunction,
   sendTelegramMessageFunction,
-  sendUnidentifiedTelegramMessageFunction,
   transcribeVoiceFunction,
 } from "./telegram";
 // Re-export all functions as array for server registration
@@ -75,6 +75,6 @@ export const inngestFunctions = [
   notifyTelegramAuthErrorFunction,
   sendNextQuestionFunction,
   sendTelegramMessageFunction,
-  sendUnidentifiedTelegramMessageFunction,
+  sendTelegramMessageByUsernameFunction,
   transcribeVoiceFunction,
 ];

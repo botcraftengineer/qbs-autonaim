@@ -7,10 +7,10 @@ import { inngest } from "../../client";
  * Inngest функция для отправки сообщения по username
  * Не требует chatId и messageId, работает только с username
  */
-export const sendUnidentifiedTelegramMessageFunction = inngest.createFunction(
+export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
   {
-    id: "send-unidentified-telegram-message",
-    name: "Send Unidentified Telegram Message",
+    id: "send-telegram-message-by-username",
+    name: "Send Telegram Message By Username",
     retries: 0,
   },
   { event: "telegram/message.send.by-username" },
@@ -19,10 +19,11 @@ export const sendUnidentifiedTelegramMessageFunction = inngest.createFunction(
 
     // Задержка 3-5 минут для имитации живого человека
     const delayMinutes = Math.floor(Math.random() * 3) + 3;
-    await step.sleep("human-delay", `${delayMinutes}m`);
+    console.log(delayMinutes);
+    //await step.sleep("human-delay", `${delayMinutes}m`);
 
     const result = await step.run("send-telegram-message", async () => {
-      console.log("📤 Отправка сообщения неидентифицированному пользователю", {
+      console.log("📤 Отправка сообщения по username", {
         username,
       });
 
@@ -54,14 +55,11 @@ export const sendUnidentifiedTelegramMessageFunction = inngest.createFunction(
           .set({ lastUsedAt: new Date() })
           .where(eq(telegramSession.id, session.id));
 
-        console.log(
-          "✅ Сообщение отправлено неидентифицированному пользователю",
-          {
-            username,
-            telegramMessageId: result.messageId,
-            sessionId: session.id,
-          },
-        );
+        console.log("✅ Сообщение отправлено по username", {
+          username,
+          telegramMessageId: result.messageId,
+          sessionId: session.id,
+        });
 
         return {
           success: true,
@@ -69,13 +67,10 @@ export const sendUnidentifiedTelegramMessageFunction = inngest.createFunction(
           chatId: result.chatId,
         };
       } catch (error) {
-        console.error(
-          "❌ Ошибка отправки сообщения неидентифицированному пользователю",
-          {
-            username,
-            error,
-          },
-        );
+        console.error("❌ Ошибка отправки сообщения по username", {
+          username,
+          error,
+        });
         throw error;
       }
     });
