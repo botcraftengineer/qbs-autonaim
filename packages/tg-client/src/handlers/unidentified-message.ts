@@ -77,17 +77,6 @@ export async function handleUnidentifiedMessage(
     })
     .returning();
 
-  // Сохраняем сообщение пользователя в БД
-  if (tempConversation) {
-    await db.insert(telegramMessage).values({
-      conversationId: tempConversation.id,
-      sender: "CANDIDATE",
-      contentType: "TEXT",
-      content: text,
-      telegramMessageId: message.id.toString(),
-    });
-  }
-
   // Сначала пытаемся найти пин-код в сообщении
   const pinCode = extractPinCode(text);
 
@@ -163,6 +152,15 @@ export async function handleUnidentifiedMessage(
       });
 
       if (tempConversation) {
+        // Сохраняем сообщение кандидата с неверным пин-кодом
+        await db.insert(telegramMessage).values({
+          conversationId: tempConversation.id,
+          sender: "CANDIDATE",
+          contentType: "TEXT",
+          content: text,
+          telegramMessageId: message.id.toString(),
+        });
+
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({
@@ -221,6 +219,15 @@ export async function handleUnidentifiedMessage(
         .returning();
 
       const conversationToUse = updatedConversation || tempConversation;
+
+      // Сохраняем сообщение кандидата
+      await db.insert(telegramMessage).values({
+        conversationId: conversationToUse.id,
+        sender: "CANDIDATE",
+        contentType: "TEXT",
+        content: text,
+        telegramMessageId: message.id.toString(),
+      });
 
       const [botMessage] = await db
         .insert(telegramMessage)
@@ -353,6 +360,15 @@ export async function handleUnidentifiedMessage(
       .returning();
 
     const conversationToUse = updatedConversation || tempConversation;
+
+    // Сохраняем сообщение кандидата
+    await db.insert(telegramMessage).values({
+      conversationId: conversationToUse.id,
+      sender: "CANDIDATE",
+      contentType: "TEXT",
+      content: text,
+      telegramMessageId: message.id.toString(),
+    });
 
     const [botMessage] = await db
       .insert(telegramMessage)

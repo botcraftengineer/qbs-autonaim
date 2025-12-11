@@ -1,5 +1,6 @@
-import { telegramSession } from "@qbs-autonaim/db";
+import { eq, telegramSession } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { telegramMessage } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
 
@@ -56,7 +57,6 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
         });
 
         // Обновляем lastUsedAt для сессии
-        const { eq } = await import("@qbs-autonaim/db");
         await db
           .update(telegramSession)
           .set({ lastUsedAt: new Date() })
@@ -64,7 +64,6 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
 
         // Обновляем telegramMessageId в БД, если messageId не пустой
         if (messageId) {
-          const { telegramMessage } = await import("@qbs-autonaim/db/schema");
           await db
             .update(telegramMessage)
             .set({ telegramMessageId: result.messageId })
