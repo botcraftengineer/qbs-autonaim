@@ -19,7 +19,7 @@
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
     "api": "bun run src/api/index.ts",
-    "api:dev": "bun --watch src/api/index.ts",
+    "api:dev": "bun run --env-file ../../.env --watch src/api/index.ts",
     "bot": "bun run --env-file ../../.env src/start-bot.ts",
     "bot:dev": "bun --watch --env-file ../../.env src/start-bot.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
