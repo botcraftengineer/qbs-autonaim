@@ -38,7 +38,7 @@ export function createBotHandler(client: TelegramClient) {
             "@qbs-autonaim/db/schema"
           );
           const { eq } = await import("@qbs-autonaim/db");
-          const { triggerMessageSend } = await import("./utils/inngest.js");
+          const { triggerMessageSend } = await import("./utils/inngest");
 
           const sender = message.sender;
           let username: string | undefined;

@@ -7,9 +7,9 @@ import {
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { humanDelay } from "../utils/delays.js";
-import { triggerMessageSend } from "../utils/inngest.js";
-import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
+import { humanDelay } from "../utils/delays";
+import { triggerMessageSend } from "../utils/inngest";
+import { getChatHistory, markRead } from "../utils/telegram";
 
 function escapeSqlLike(text: string): string {
   return text.replace(/[\\%_]/g, "\\$&");
@@ -36,8 +36,6 @@ export async function handleUnidentifiedMessage(
   }
 
   await markRead(client, message.chat.id);
-  await showTyping(client, message.chat.id);
-  await humanDelay(1500, 2500);
 
   const sender = message.sender;
   let username: string | undefined;
@@ -138,7 +136,7 @@ export async function handleUnidentifiedMessage(
       }
 
       // После идентификации по PIN начинаем интервью
-      const { generateAIResponse } = await import("../utils/ai-response.js");
+      const { generateAIResponse } = await import("../utils/ai-response");
 
       const resumeData = {
         experience: response.experience || undefined,
@@ -189,7 +187,7 @@ export async function handleUnidentifiedMessage(
 
   if (vacancies.length === 0) {
     // Вакансии не найдены - запрашиваем PIN
-    const { generateAIResponse } = await import("../utils/ai-response.js");
+    const { generateAIResponse } = await import("../utils/ai-response");
 
     const aiResponse = await generateAIResponse({
       messageText: text,
@@ -293,7 +291,7 @@ export async function handleUnidentifiedMessage(
       }
 
       // После идентификации по вакансии начинаем интервью
-      const { generateAIResponse } = await import("../utils/ai-response.js");
+      const { generateAIResponse } = await import("../utils/ai-response");
 
       const resumeData = {
         experience: response.experience || undefined,
@@ -333,7 +331,7 @@ export async function handleUnidentifiedMessage(
   }
 
   // Если нашли несколько вакансий - запрашиваем PIN
-  const { generateAIResponse } = await import("../utils/ai-response.js");
+  const { generateAIResponse } = await import("../utils/ai-response");
 
   const vacancyList = vacancies.map((v) => v?.title).join(", ");
 

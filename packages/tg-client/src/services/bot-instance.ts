@@ -44,7 +44,6 @@ export async function createBotInstance(
     sessionData,
     phone,
   } = session;
-
   if (!apiId || !apiHash) {
     throw new Error(
       `Отсутствуют apiId или apiHash для workspace ${workspaceId}`,
@@ -155,7 +154,7 @@ export async function createBotInstance(
   console.log(`✅ Dispatcher зарегистрирован для workspace ${workspaceId}`);
 
   // Подключаемся
-  await client.connect();
+  await client.start();
 
   console.log(
     `✅ Бот запущен для workspace ${workspaceId}: ${user.firstName || ""} ${user.lastName || ""} (@${user.username || "no username"}) [${phone}]`,

@@ -7,13 +7,13 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { getTextErrorResponse } from "../responses/greetings.js";
-import { humanDelay } from "../utils/delays.js";
+import { getTextErrorResponse } from "../responses/greetings";
+import { humanDelay } from "../utils/delays";
 import {
   triggerMessageSend,
   triggerUnidentifiedMessageSend,
-} from "../utils/inngest.js";
-import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
+} from "../utils/inngest";
+import { getChatHistory, markRead } from "../utils/telegram";
 
 export async function handleTextMessage(
   client: TelegramClient,
@@ -39,7 +39,7 @@ export async function handleTextMessage(
         message.chat.id,
         10,
       );
-      const { generateAIResponse } = await import("../utils/ai-response.js");
+      const { generateAIResponse } = await import("../utils/ai-response");
 
       const aiResponse = await generateAIResponse({
         messageText,
@@ -78,8 +78,6 @@ export async function handleTextMessage(
       content: messageText,
       telegramMessageId: message.id.toString(),
     });
-
-    await showTyping(client, message.chat.id);
 
     const readingTime = Math.min(messageText.length * 30, 2000);
     await humanDelay(readingTime, readingTime + 1000);
@@ -135,7 +133,7 @@ export async function handleTextMessage(
     }
 
     // Генерируем ответ через AI
-    const { generateAIResponse } = await import("../utils/ai-response.js");
+    const { generateAIResponse } = await import("../utils/ai-response");
 
     const aiResponse = await generateAIResponse({
       messageText,

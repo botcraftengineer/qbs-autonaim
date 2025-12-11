@@ -28,7 +28,7 @@ export async function triggerTranscription(
 }
 
 /**
- * Отправить событие отправки сообщения в Inngest по username
+ * Отправить событие отправки сообщения в Inngest по chatId
  */
 export async function triggerMessageSend(
   messageId: string,
@@ -46,7 +46,7 @@ export async function triggerMessageSend(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: "telegram/message.send.by-username",
+      name: "telegram/message.send.by-chatid",
       data: {
         messageId,
         chatId,

@@ -16,7 +16,7 @@
     "db:migrate-workspaces": "bun --filter @qbs-autonaim/db migrate-workspaces",
     "dev": "turbo watch dev --continue",
     "dev:next": "turbo watch dev -F @qbs-autonaim/nextjs...",
-    "dev:all": "concurrently \"bun run api:dev\" \"bun run bot:dev\" \"bun run jobs:dev\"",
+    "dev:all": "concurrently \"bun run api:dev\" \"bun run jobs:dev\" \"bun run bot:dev\"",
     "jobs:dev": "bun --filter @qbs-autonaim/jobs dev",
     "api:dev": "bun --filter @qbs-autonaim/tg-client api:dev",
     "bot:dev": "bun --filter @qbs-autonaim/tg-client bot:dev",

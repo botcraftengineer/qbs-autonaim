@@ -3,11 +3,11 @@ import type { Message } from "@mtcute/core";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
-import { getErrorResponse } from "../responses/greetings.js";
-import { humanDelay } from "../utils/delays.js";
-import { uploadFile } from "../utils/file-upload.js";
-import { triggerTranscription } from "../utils/inngest.js";
-import { markRead, showRecordingAudio } from "../utils/telegram.js";
+import { getErrorResponse } from "../responses/greetings";
+import { humanDelay } from "../utils/delays";
+import { uploadFile } from "../utils/file-upload";
+import { triggerTranscription } from "../utils/inngest";
+import { markRead, showRecordingAudio } from "../utils/telegram";
 
 export async function handleVoiceMessage(
   client: TelegramClient,
@@ -78,7 +78,7 @@ export async function handleVoiceMessage(
         telegramMessageId: message.id.toString(),
       });
 
-      const { triggerMessageSend } = await import("../utils/inngest.js");
+      const { triggerMessageSend } = await import("../utils/inngest");
       const [botMessage] = await db
         .insert(telegramMessage)
         .values({
@@ -143,7 +143,7 @@ export async function handleVoiceMessage(
       const errorMessage = getErrorResponse();
 
       if (conversation) {
-        const { triggerMessageSend } = await import("../utils/inngest.js");
+        const { triggerMessageSend } = await import("../utils/inngest");
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({

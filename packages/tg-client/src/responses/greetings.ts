@@ -1,4 +1,4 @@
-import { randomChoice } from "../utils/delays.js";
+import { randomChoice } from "../utils/delays";
 
 export function getErrorResponse(): string {
   const responses = [
