@@ -1,15 +1,13 @@
-import { desc, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
 import {
-  telegramConversation,
-  telegramMessage,
-  vacancyResponse,
-} from "@qbs-autonaim/db/schema";
-import {
+  generateText,
   getInterviewStartData,
   identifyByPinCode,
   saveMessage,
 } from "@qbs-autonaim/lib";
+import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
 import { inngest } from "../../client";
 
 interface MessagePayload {
@@ -115,7 +113,11 @@ export const processIncomingMessageFunction = inngest.createFunction(
               firstName,
             );
 
-            if (identification.success && identification.conversationId) {
+            if (
+              identification.success &&
+              identification.conversationId &&
+              identification.responseId
+            ) {
               await saveMessage(
                 identification.conversationId,
                 "CANDIDATE",
@@ -124,7 +126,50 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 messageData.id.toString(),
               );
 
-              const aiResponse = `Здравствуйте${identification.candidateName ? `, ${identification.candidateName}` : ""}! Спасибо за предоставленный PIN-код. Я ваш рекрутер, и я готов обсудить с вами вакансию${identification.vacancyTitle ? ` "${identification.vacancyTitle}"` : ""}. Расскажите, пожалуйста, немного о себе и своем опыте.`;
+              // Получаем данные для интервью
+              const interviewData = await getInterviewStartData(
+                identification.responseId,
+              );
+
+              // Получаем историю сообщений для контекста
+              const conversationHistory =
+                await db.query.telegramMessage.findMany({
+                  where: eq(
+                    telegramMessage.conversationId,
+                    identification.conversationId,
+                  ),
+                  orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+                  limit: 10,
+                });
+
+              // Генерируем ответ через AI
+              const prompt = buildTelegramRecruiterPrompt({
+                messageText: text,
+                stage: "PIN_RECEIVED",
+                candidateName: interviewData?.candidateName ?? undefined,
+                vacancyTitle: interviewData?.vacancyTitle ?? undefined,
+                vacancyRequirements:
+                  interviewData?.vacancyRequirements ?? undefined,
+                conversationHistory: conversationHistory.map((msg) => ({
+                  sender: msg.sender,
+                  content: msg.content,
+                  contentType: msg.contentType,
+                })),
+                resumeData: {
+                  experience: interviewData?.experience ?? undefined,
+                  coverLetter: interviewData?.coverLetter ?? undefined,
+                },
+              });
+
+              const { text: aiResponse } = await generateText({
+                prompt,
+                generationName: "telegram-pin-received",
+                entityId: identification.conversationId,
+                metadata: {
+                  candidateName: interviewData?.candidateName ?? undefined,
+                  vacancyTitle: interviewData?.vacancyTitle ?? undefined,
+                },
+              });
 
               const botMessageId = await saveMessage(
                 identification.conversationId,
