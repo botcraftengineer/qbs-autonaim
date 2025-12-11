@@ -73,7 +73,13 @@ export async function handleTextMessage(
     // Получаем информацию о вакансии и статусе
     let response = null;
     let vacancyTitle: string | undefined;
-    let resumeData;
+    let resumeData:
+      | {
+          experience?: string;
+          coverLetter?: string;
+          phone?: string;
+        }
+      | undefined;
 
     if (conversation.responseId) {
       response = await db.query.vacancyResponse.findFirst({

@@ -12,7 +12,7 @@ export const sendUserMessageRouter = protectedProcedure
     z.object({
       workspaceId: z.string(),
       sessionId: z.string().optional(), // Если не указан, берем последнюю активную
-      chatId: z.string(),
+      username: z.string(),
       text: z.string().min(1),
     }),
   )
@@ -36,11 +36,11 @@ export const sendUserMessageRouter = protectedProcedure
       }
 
       // Отправляем сообщение через SDK
-      const result = await tgClientSDK.sendMessage({
+      const result = await tgClientSDK.sendMessageByUsername({
         apiId: Number.parseInt(session.apiId, 10),
         apiHash: session.apiHash,
         sessionData: session.sessionData as Record<string, string>,
-        chatId: Number(input.chatId),
+        username: input.username,
         text: input.text,
       });
 

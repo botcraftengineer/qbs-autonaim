@@ -58,22 +58,27 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           );
         }
 
-        // Пытаемся получить senderId или username из metadata
-        let senderId: string | undefined;
+        // Пытаемся получить username из разных источников в порядке приоритета
         let username: string | undefined;
+
+        // 1. Проверяем metadata
         if (conversation.metadata) {
           try {
             const metadata = JSON.parse(conversation.metadata);
-            senderId = metadata.senderId;
             username = metadata.username;
           } catch (e) {
             console.warn("Не удалось распарсить metadata", e);
           }
         }
 
-        // Если username нет в metadata, берем из vacancy_response
+        // 2. Проверяем vacancy_response.telegramUsername
         if (!username && conversation.response?.telegramUsername) {
           username = conversation.response.telegramUsername;
+        }
+
+        // 3. Проверяем conversation.username
+        if (!username && conversation.username) {
+          username = conversation.username;
         }
 
         // Отправляем сообщение через SDK
@@ -81,10 +86,10 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           success: boolean;
           messageId: string;
           chatId: string;
-          senderId: string;
         };
 
         if (username) {
+          // Отправка по username
           console.log(`📨 Отправка по username: @${username}`);
           result = await tgClientSDK.sendMessageByUsername({
             apiId: Number.parseInt(session.apiId, 10),
@@ -93,22 +98,14 @@ export const sendTelegramMessageFunction = inngest.createFunction(
             username,
             text: content,
           });
-        } else if (senderId) {
-          console.log(`📨 Отправка по senderId: ${senderId}`);
-          result = await tgClientSDK.sendMessage({
-            apiId: Number.parseInt(session.apiId, 10),
-            apiHash: session.apiHash,
-            sessionData: session.sessionData as Record<string, string>,
-            chatId: Number(senderId),
-            text: content,
-          });
         } else {
+          // Fallback: отправка по chatId
           console.log(`📨 Отправка по chatId: ${chatId}`);
           result = await tgClientSDK.sendMessage({
             apiId: Number.parseInt(session.apiId, 10),
             apiHash: session.apiHash,
             sessionData: session.sessionData as Record<string, string>,
-            chatId: Number(chatId),
+            chatId,
             text: content,
           });
         }

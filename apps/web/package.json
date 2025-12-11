@@ -49,7 +49,7 @@
     "@qbs-autonaim/tailwind-config": "workspace:*",
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/dompurify": "^3.2.0",
-    "@types/node": "24.10.2",
+    "@types/node": "25.0.0",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "jiti": "^2.6.1",

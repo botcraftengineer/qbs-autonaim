@@ -259,6 +259,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
             chatId,
             responseId,
             candidateName: response.candidateName,
+            username: username || undefined,
             status: "ACTIVE",
             metadata: JSON.stringify({
               responseId,
@@ -272,6 +273,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
             set: {
               responseId,
               candidateName: response.candidateName,
+              username: username || undefined,
               status: "ACTIVE",
               metadata: JSON.stringify({
                 responseId,
