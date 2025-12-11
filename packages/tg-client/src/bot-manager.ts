@@ -134,6 +134,18 @@ class BotManager {
 
     const existing = this.bots.get(workspaceId);
     if (existing) {
+      // Корректно закрываем соединение перед удалением
+      try {
+        console.log(`🔌 Закрытие соединения для workspace ${workspaceId}...`);
+        await existing.client.disconnect();
+        console.log(`✅ Соединение закрыто для workspace ${workspaceId}`);
+      } catch (error) {
+        console.error(
+          `⚠️ Ошибка при закрытии соединения для workspace ${workspaceId}:`,
+          error,
+        );
+        // Продолжаем перезапуск даже при ошибке закрытия
+      }
       this.bots.delete(workspaceId);
     }
 

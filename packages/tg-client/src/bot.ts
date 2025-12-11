@@ -30,8 +30,8 @@ export async function startBot(): Promise<TelegramClient> {
     storage,
   });
 
-  // Подключаемся
-  await client.connect();
+  // Подключаемся и выполняем аутентификацию
+  await client.start();
 
   // Проверяем авторизацию
   const me = await client.call({

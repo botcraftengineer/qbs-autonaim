@@ -49,6 +49,40 @@ export async function handleUnidentifiedMessage(
     firstName = sender.firstName || undefined;
   }
 
+  // Создаем или получаем временную беседу для неидентифицированного пользователя
+  let [tempConversation] = await db
+    .select()
+    .from(telegramConversation)
+    .where(eq(telegramConversation.chatId, chatId))
+    .limit(1);
+
+  if (!tempConversation) {
+    [tempConversation] = await db
+      .insert(telegramConversation)
+      .values({
+        chatId,
+        candidateName: firstName || undefined,
+        username,
+        status: "ACTIVE",
+        metadata: JSON.stringify({
+          identifiedBy: "none",
+          awaitingPin: true,
+        }),
+      })
+      .returning();
+  }
+
+  // Сохраняем сообщение пользователя в БД
+  if (tempConversation) {
+    await db.insert(telegramMessage).values({
+      conversationId: tempConversation.id,
+      sender: "CANDIDATE",
+      contentType: "TEXT",
+      content: text,
+      telegramMessageId: message.id.toString(),
+    });
+  }
+
   // Сначала пытаемся найти пин-код в сообщении
   const pinCode = extractPinCode(text);
 
@@ -164,32 +198,26 @@ export async function handleUnidentifiedMessage(
       conversationHistory,
     });
 
-    // Создаем временную беседу для неидентифицированного пользователя
-    const [tempConversation] = await db
-      .insert(telegramConversation)
-      .values({
-        chatId,
-        candidateName: firstName || undefined,
-        username,
-        status: "ACTIVE",
-        metadata: JSON.stringify({
-          identifiedBy: "none",
-          awaitingPin: true,
-        }),
-      })
-      .onConflictDoUpdate({
-        target: telegramConversation.chatId,
-        set: {
-          username,
-        },
-      })
-      .returning();
-
+    // Обновляем существующую беседу
     if (tempConversation) {
+      const [updatedConversation] = await db
+        .update(telegramConversation)
+        .set({
+          username,
+          metadata: JSON.stringify({
+            identifiedBy: "none",
+            awaitingPin: true,
+          }),
+        })
+        .where(eq(telegramConversation.id, tempConversation.id))
+        .returning();
+
+      const conversationToUse = updatedConversation || tempConversation;
+
       const [botMessage] = await db
         .insert(telegramMessage)
         .values({
-          conversationId: tempConversation.id,
+          conversationId: conversationToUse.id,
           sender: "BOT",
           contentType: "TEXT",
           content: aiResponse,
@@ -316,33 +344,27 @@ export async function handleUnidentifiedMessage(
     conversationHistory,
   });
 
-  // Создаем или обновляем временную беседу
-  const [tempConversation] = await db
-    .insert(telegramConversation)
-    .values({
-      chatId,
-      candidateName: firstName || undefined,
-      username,
-      status: "ACTIVE",
-      metadata: JSON.stringify({
-        identifiedBy: "none",
-        awaitingPin: true,
-        foundVacancies: vacancyList,
-      }),
-    })
-    .onConflictDoUpdate({
-      target: telegramConversation.chatId,
-      set: {
-        username,
-      },
-    })
-    .returning();
-
+  // Обновляем существующую беседу
   if (tempConversation) {
+    const [updatedConversation] = await db
+      .update(telegramConversation)
+      .set({
+        username,
+        metadata: JSON.stringify({
+          identifiedBy: "none",
+          awaitingPin: true,
+          foundVacancies: vacancyList,
+        }),
+      })
+      .where(eq(telegramConversation.id, tempConversation.id))
+      .returning();
+
+    const conversationToUse = updatedConversation || tempConversation;
+
     const [botMessage] = await db
       .insert(telegramMessage)
       .values({
-        conversationId: tempConversation.id,
+        conversationId: conversationToUse.id,
         sender: "BOT",
         contentType: "TEXT",
         content: aiResponse,

@@ -4,7 +4,7 @@ import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
 
 /**
- * Inngest функция для отправки сообщения неидентифицированному пользователю
+ * Inngest функция для отправки сообщения по username
  * Не требует chatId и messageId, работает только с username
  */
 export const sendUnidentifiedTelegramMessageFunction = inngest.createFunction(
@@ -13,7 +13,7 @@ export const sendUnidentifiedTelegramMessageFunction = inngest.createFunction(
     name: "Send Unidentified Telegram Message",
     retries: 0,
   },
-  { event: "telegram/message.send.unidentified" },
+  { event: "telegram/message.send.by-username" },
   async ({ event, step }) => {
     const { username, content } = event.data;
 

@@ -32,11 +32,23 @@ export async function handleVoiceMessage(
     const errorMessage =
       "Привет! Не могу вспомнить, откуда мы знакомы. Напомнишь?";
 
+    const sender = message.sender;
+    let username: string | undefined;
+    let firstName: string | undefined;
+    if (sender && "username" in sender && sender.username) {
+      username = sender.username;
+    }
+    if (sender?.type === "user") {
+      firstName = sender.firstName || undefined;
+    }
+
     // Создаем временную беседу
     const [tempConversation] = await db
       .insert(telegramConversation)
       .values({
         chatId,
+        candidateName: firstName || undefined,
+        username,
         status: "ACTIVE",
         metadata: JSON.stringify({
           identifiedBy: "none",
@@ -46,6 +58,7 @@ export async function handleVoiceMessage(
       .onConflictDoUpdate({
         target: telegramConversation.chatId,
         set: {
+          username,
           status: "ACTIVE",
           metadata: JSON.stringify({
             identifiedBy: "none",
@@ -56,6 +69,15 @@ export async function handleVoiceMessage(
       .returning();
 
     if (tempConversation) {
+      // Сохраняем голосовое сообщение пользователя
+      await db.insert(telegramMessage).values({
+        conversationId: tempConversation.id,
+        sender: "CANDIDATE",
+        contentType: "VOICE",
+        content: "Голосовое сообщение (кандидат не идентифицирован)",
+        telegramMessageId: message.id.toString(),
+      });
+
       const { triggerMessageSend } = await import("../utils/inngest.js");
       const [botMessage] = await db
         .insert(telegramMessage)

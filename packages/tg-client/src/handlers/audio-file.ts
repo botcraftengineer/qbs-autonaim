@@ -31,21 +31,48 @@ export async function handleAudioFile(
 
     const errorMessage = "Привет! А мы раньше общались? Не могу вспомнить 🤔";
 
+    const sender = message.sender;
+    let username: string | undefined;
+    let firstName: string | undefined;
+    if (sender && "username" in sender && sender.username) {
+      username = sender.username;
+    }
+    if (sender?.type === "user") {
+      firstName = sender.firstName || undefined;
+    }
+
     // Создаем временную беседу
     const [tempConversation] = await db
       .insert(telegramConversation)
       .values({
         chatId,
+        candidateName: firstName || undefined,
+        username,
         status: "ACTIVE",
         metadata: JSON.stringify({
           identifiedBy: "none",
           awaitingPin: true,
         }),
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: telegramConversation.chatId,
+        set: {
+          username,
+          status: "ACTIVE",
+        },
+      })
       .returning();
 
     if (tempConversation) {
+      // Сохраняем аудио сообщение пользователя
+      await db.insert(telegramMessage).values({
+        conversationId: tempConversation.id,
+        sender: "CANDIDATE",
+        contentType: "VOICE",
+        content: "Аудиофайл (кандидат не идентифицирован)",
+        telegramMessageId: message.id.toString(),
+      });
+
       const [botMessage] = await db
         .insert(telegramMessage)
         .values({

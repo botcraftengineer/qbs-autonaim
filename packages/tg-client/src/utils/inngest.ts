@@ -28,7 +28,7 @@ export async function triggerTranscription(
 }
 
 /**
- * Отправить событие отправки сообщения в Inngest для идентифицированного клиента
+ * Отправить событие отправки сообщения в Inngest по username
  */
 export async function triggerMessageSend(
   messageId: string,
@@ -46,7 +46,7 @@ export async function triggerMessageSend(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: "telegram/message.send",
+      name: "telegram/message.send.by-username",
       data: {
         messageId,
         chatId,
@@ -57,7 +57,7 @@ export async function triggerMessageSend(
 }
 
 /**
- * Отправить событие отправки сообщения в Inngest для неидентифицированного клиента
+ * Отправить событие отправки сообщения в Inngest по username
  */
 export async function triggerUnidentifiedMessageSend(
   username: string,
@@ -74,7 +74,7 @@ export async function triggerUnidentifiedMessageSend(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      name: "telegram/message.send.unidentified",
+      name: "telegram/message.send.by-username",
       data: {
         username,
         content,

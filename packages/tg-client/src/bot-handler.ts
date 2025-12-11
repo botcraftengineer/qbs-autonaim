@@ -33,27 +33,57 @@ export function createBotHandler(client: TelegramClient) {
             "Привет! Не могу понять, кто ты 🤔\n\n" +
             "Напиши, пожалуйста, на какую вакансию откликался и свой 4-значный пин-код из сообщения. Тогда смогу послушать твое голосовое.";
 
-          // Создаем временную беседу
           const { db } = await import("@qbs-autonaim/db/client");
           const { telegramConversation, telegramMessage } = await import(
             "@qbs-autonaim/db/schema"
           );
+          const { eq } = await import("@qbs-autonaim/db");
           const { triggerMessageSend } = await import("./utils/inngest.js");
 
-          const [tempConversation] = await db
-            .insert(telegramConversation)
-            .values({
-              chatId,
-              status: "ACTIVE",
-              metadata: JSON.stringify({
-                identifiedBy: "none",
-                awaitingPin: true,
-              }),
-            })
-            .onConflictDoNothing()
-            .returning();
+          const sender = message.sender;
+          let username: string | undefined;
+          let firstName: string | undefined;
+          if (sender && "username" in sender && sender.username) {
+            username = sender.username;
+          }
+          if (sender?.type === "user") {
+            firstName = sender.firstName || undefined;
+          }
+
+          // Создаем или получаем временную беседу
+          let [tempConversation] = await db
+            .select()
+            .from(telegramConversation)
+            .where(eq(telegramConversation.chatId, chatId))
+            .limit(1);
+
+          if (!tempConversation) {
+            [tempConversation] = await db
+              .insert(telegramConversation)
+              .values({
+                chatId,
+                candidateName: firstName || undefined,
+                username,
+                status: "ACTIVE",
+                metadata: JSON.stringify({
+                  identifiedBy: "none",
+                  awaitingPin: true,
+                }),
+              })
+              .returning();
+          }
 
           if (tempConversation) {
+            // Сохраняем голосовое/аудио сообщение пользователя
+            await db.insert(telegramMessage).values({
+              conversationId: tempConversation.id,
+              sender: "CANDIDATE",
+              contentType: "VOICE",
+              content: "Голосовое сообщение (кандидат не идентифицирован)",
+              telegramMessageId: message.id.toString(),
+            });
+
+            // Сохраняем ответ бота
             const [botMessage] = await db
               .insert(telegramMessage)
               .values({

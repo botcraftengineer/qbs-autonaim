@@ -25,6 +25,13 @@ export async function sendAuthErrorEvent(
       return;
     }
 
+    if (!baseUrl) {
+      console.warn(
+        "⚠️ INNGEST_EVENT_API_BASE_URL не установлен, невозможно отправить событие",
+      );
+      return;
+    }
+
     const response = await fetch(`${baseUrl}/e/${eventKey}`, {
       method: "POST",
       headers: {

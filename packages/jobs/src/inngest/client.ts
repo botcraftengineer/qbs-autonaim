@@ -46,7 +46,7 @@ export const inngest = new Inngest({
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
     "telegram/message.send": telegramMessageSendDataSchema,
-    "telegram/message.send.unidentified":
+    "telegram/message.send.by-username":
       telegramUnidentifiedMessageSendDataSchema,
     "telegram/voice.transcribe": voiceTranscriptionDataSchema,
     "telegram/interview.analyze": interviewAnalysisDataSchema,

@@ -51,6 +51,14 @@ export async function createBotInstance(
     );
   }
 
+  // Парсим и валидируем apiId
+  const parsedApiId = Number.parseInt(apiId, 10);
+  if (Number.isNaN(parsedApiId)) {
+    throw new Error(
+      `Некорректное значение apiId для workspace ${workspaceId}: "${apiId}" не является числом`,
+    );
+  }
+
   // Создаем storage и импортируем сессию
   const storage = new ExportableStorage();
   if (sessionData) {
@@ -62,7 +70,7 @@ export async function createBotInstance(
 
   // Создаем клиент
   const client = new TelegramClient({
-    apiId: Number.parseInt(apiId, 10),
+    apiId: parsedApiId,
     apiHash,
     storage,
     updates: {
