@@ -54,7 +54,6 @@ export async function generateAIResponse(
   try {
     const { text } = await generateText({
       prompt,
-      temperature: 0.7,
       generationName: "telegram-response",
       entityId: "telegram-chat",
       metadata: {

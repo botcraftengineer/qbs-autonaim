@@ -62,7 +62,6 @@ export function getAIModelName(): string {
 interface GenerateTextOptions {
   model?: LanguageModel;
   prompt: string;
-  temperature?: number;
   generationName: string;
   entityId?: string;
   metadata?: Record<string, unknown>;
@@ -72,7 +71,6 @@ export async function generateText(options: GenerateTextOptions) {
   const {
     model = getAIModel(),
     prompt,
-    temperature = 0.3,
     generationName,
     entityId,
     metadata = {},
@@ -97,7 +95,6 @@ export async function generateText(options: GenerateTextOptions) {
     const result = await aiGenerateText({
       model,
       prompt,
-      temperature,
     });
 
     generation.end({
@@ -133,7 +130,6 @@ interface GenerateObjectOptions<T extends z.ZodType> {
   model?: LanguageModel;
   schema: T;
   prompt: string;
-  temperature?: number;
   generationName: string;
   entityId?: string;
   metadata?: Record<string, unknown>;
@@ -146,7 +142,6 @@ export async function generateObject<T extends z.ZodType>(
     model = getAIModel(),
     schema,
     prompt,
-    temperature = 0.3,
     generationName,
     entityId,
     metadata = {},
@@ -172,7 +167,6 @@ export async function generateObject<T extends z.ZodType>(
       model,
       schema,
       prompt,
-      temperature,
     });
 
     generation.end({

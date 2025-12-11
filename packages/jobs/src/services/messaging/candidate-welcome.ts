@@ -8,7 +8,7 @@ import {
 import { generateText } from "@qbs-autonaim/lib";
 import { buildCandidateWelcomePrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
-import { AI, createLogger, err, type Result, tryCatch } from "../base";
+import { createLogger, err, type Result, tryCatch } from "../base";
 
 const logger = createLogger("CandidateWelcome");
 
@@ -72,7 +72,6 @@ export async function generateWelcomeMessage(
   const aiResult = await tryCatch(async () => {
     const { text } = await generateText({
       prompt,
-      temperature: AI.TEMPERATURE_CREATIVE,
       generationName: "candidate-welcome",
       entityId: responseId,
       metadata: {
@@ -162,7 +161,6 @@ export async function generateTelegramInviteMessage(
   const aiResult = await tryCatch(async () => {
     const { text } = await generateText({
       prompt,
-      temperature: AI.TEMPERATURE_CREATIVE,
       generationName: "telegram-invite",
       entityId: responseId,
       metadata: {

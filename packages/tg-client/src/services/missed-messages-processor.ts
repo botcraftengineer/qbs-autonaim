@@ -102,7 +102,7 @@ async function processConversationMissedMessages(
     return { processed, errors };
   }
 
-  const messageHandler = createBotHandler(client);
+  const messageHandler = createBotHandler(client, response.vacancy.workspaceId);
 
   // Получаем историю из Telegram
   const chatIdNumber = Number.parseInt(conversation.chatId, 10);

@@ -7,7 +7,6 @@ import { stripHtml } from "string-strip-html";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";
 import { extractJsonFromText } from "../../utils/json-extractor";
 import {
-  AI,
   createLogger,
   err,
   RESPONSE_STATUS,
@@ -82,7 +81,6 @@ export async function screenResponse(
   const aiResult = await tryCatch(async () => {
     const { text } = await generateText({
       prompt,
-      temperature: AI.TEMPERATURE_MODERATE,
       generationName: "screen-response",
       entityId: responseId,
       metadata: {
