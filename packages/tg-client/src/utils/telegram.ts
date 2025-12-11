@@ -8,7 +8,13 @@ export async function getChatHistory(
   client: TelegramClient,
   chatId: number,
   limit = 20,
-): Promise<Array<{ sender: "CANDIDATE" | "BOT"; content: string }>> {
+): Promise<
+  Array<{
+    sender: "CANDIDATE" | "BOT";
+    content: string;
+    contentType?: "TEXT" | "VOICE";
+  }>
+> {
   try {
     const messages: Message[] = [];
 
@@ -22,10 +28,11 @@ export async function getChatHistory(
 
     return messages
       .reverse()
-      .filter((msg) => msg.text)
+      .filter((msg) => msg.text || msg.voice)
       .map((msg) => ({
         sender: msg.sender?.id === botId ? "BOT" : "CANDIDATE",
-        content: msg.text || "",
+        content: msg.voice ? "Голосовое сообщение" : msg.text || "",
+        contentType: msg.voice ? ("VOICE" as const) : ("TEXT" as const),
       }));
   } catch (error) {
     console.error("Ошибка при получении истории чата:", error);

@@ -15,7 +15,11 @@ export interface TelegramRecruiterContext {
   vacancyTitle?: string;
   vacancyRequirements?: string; // Требования к вакансии
   responseStatus?: string;
-  conversationHistory?: Array<{ sender: string; content: string }>;
+  conversationHistory?: Array<{
+    sender: string;
+    content: string;
+    contentType?: "TEXT" | "VOICE";
+  }>;
   resumeData?: {
     experience?: string;
     coverLetter?: string;

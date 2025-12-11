@@ -111,11 +111,7 @@ export async function createBotInstance(
 
   // Регистрируем обработчик сообщений
   dp.onNewMessage(async (msg) => {
-    try {
-      console.log("new message", msg.id);
-
-      await messageHandler(msg);
-    } catch (error) {
+    messageHandler(msg).catch(async (error) => {
       const authCheck = isAuthError(error);
       if (authCheck.isAuth) {
         await onAuthError(
@@ -127,8 +123,13 @@ export async function createBotInstance(
         );
         return;
       }
-      console.error(`❌ [${workspaceId}] Ошибка обработки:`, error);
-    }
+      console.error(
+        `❌ [${workspaceId}] Ошибка обработки сообщения ${msg.id}:`,
+        error,
+      );
+    });
+
+    console.log("new message", msg.id);
   });
 
   // Обработчик ошибок dispatcher

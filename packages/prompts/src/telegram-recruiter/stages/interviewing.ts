@@ -15,8 +15,9 @@ export function buildInterviewingPrompt(
     conversationHistory = [],
   } = context;
 
-  const hasVoiceMessages = conversationHistory.some((msg) =>
-    msg.content.includes("[VOICE]"),
+  const hasVoiceMessages = conversationHistory.some(
+    (msg) =>
+      msg.contentType === "VOICE" || msg.content === "Голосовое сообщение",
   );
 
   const voiceTaskText = !hasVoiceMessages
