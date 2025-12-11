@@ -3,7 +3,7 @@ import {
   findResponseByPinCode as findResponseByPinCodeDB,
   vacancyResponse,
 } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/.ws";
+import { db } from "@qbs-autonaim/db/client";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("TelegramInvite");

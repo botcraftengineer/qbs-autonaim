@@ -1,4 +1,4 @@
-import { db } from "@qbs-autonaim/db/.ws";
+import { db } from "@qbs-autonaim/db/client.ws";
 import { telegramSession } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { TRPCError } from "@trpc/server";

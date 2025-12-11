@@ -1,5 +1,5 @@
 import { desc, eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/.ws";
+import { db } from "@qbs-autonaim/db/client";
 import {
   telegramConversation,
   telegramMessage,
@@ -317,30 +317,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           telegramMessageId: messageData.id.toString(),
         });
 
-        // Простой ответ (без AI пока)
-        const aiResponse = `Спасибо за ваше сообщение! Я обрабатываю информацию...`;
-
-        const [botMsg] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: conversation.id,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: aiResponse,
-          })
-          .returning();
-
-        if (botMsg && conversation.username) {
-          await inngest.send({
-            name: "telegram/message.send.by-username",
-            data: {
-              messageId: botMsg.id,
-              username: conversation.username,
-              content: aiResponse,
-              workspaceId,
-            },
-          });
-        }
+        // Сообщение сохранено, ответ будет сгенерирован AI позже
       });
     } else if (messageData.media?.type === "voice") {
       await step.run("handle-voice", async () => {

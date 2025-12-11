@@ -1,4 +1,4 @@
-import { db } from "@qbs-autonaim/db/.ws";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import { eq } from "drizzle-orm";
 import { refreshVacancyResponses } from "../../../parsers/hh";
