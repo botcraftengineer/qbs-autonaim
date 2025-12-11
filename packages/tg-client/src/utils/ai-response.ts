@@ -54,7 +54,6 @@ export async function generateAIResponse(
   try {
     const { text } = await generateText({
       prompt,
-      temperature: 0.7,
       generationName: "telegram-response",
       entityId: "telegram-chat",
       metadata: {
@@ -67,6 +66,6 @@ export async function generateAIResponse(
     return text.trim();
   } catch (error) {
     console.error("Ошибка генерации AI ответа:", error);
-    return "Извини, что-то пошло не так. Можешь повторить?";
+    throw error;
   }
 }

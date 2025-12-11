@@ -1,6 +1,6 @@
 import { generateText } from "@qbs-autonaim/lib";
 import { buildTelegramUsernameExtractionPrompt } from "@qbs-autonaim/prompts";
-import { AI, createLogger, TELEGRAM } from "../base";
+import { createLogger, TELEGRAM } from "../base";
 
 const logger = createLogger("TelegramUsername");
 
@@ -23,7 +23,6 @@ export async function extractTelegramUsername(
 
     const { text } = await generateText({
       prompt,
-      temperature: AI.TEMPERATURE_DETERMINISTIC,
       generationName: "extract-telegram-username",
       metadata: {
         contactsPreview: contactsJson.substring(0, 200),

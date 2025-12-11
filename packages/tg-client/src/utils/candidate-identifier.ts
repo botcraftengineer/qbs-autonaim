@@ -24,7 +24,7 @@ export async function identifyCandidate(
     });
 
     // Беседа считается идентифицированной только если есть responseId
-    if (existingConversation && existingConversation.responseId) {
+    if (existingConversation?.responseId) {
       return {
         identified: true,
         responseId: existingConversation.responseId,
