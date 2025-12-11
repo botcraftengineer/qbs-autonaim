@@ -1,7 +1,7 @@
 import { deepseek } from "@ai-sdk/deepseek";
 import { openai } from "@ai-sdk/openai";
 import { env } from "@qbs-autonaim/config";
-import type { LanguageModel } from "ai";
+import type { GenerateObjectResult, LanguageModel } from "ai";
 import {
   generateObject as aiGenerateObject,
   generateText as aiGenerateText,
@@ -140,7 +140,7 @@ interface GenerateObjectOptions<T extends z.ZodType> {
 
 export async function generateObject<T extends z.ZodType>(
   options: GenerateObjectOptions<T>,
-) {
+): Promise<Awaited<ReturnType<typeof aiGenerateObject<T>>>> {
   const {
     model = getAIModel(),
     schema,
