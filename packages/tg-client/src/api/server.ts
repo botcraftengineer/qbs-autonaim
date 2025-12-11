@@ -24,9 +24,8 @@ app.get("/bots/status", (c) => {
   return c.json({
     count: bots.length,
     bots: bots.map((bot) => ({
-      workspaceId: bot.workspaceId,
-      username: bot.username,
-      phone: bot.phone,
+      sessionId: bot.sessionId,
+      hasUsername: !!bot.username,
     })),
   });
 });
