@@ -54,12 +54,12 @@ class BotManager {
 
     this.isRunning = true;
 
-    if (successful > 0) {
-      console.log("⏳ Запуск обработки пропущенных сообщений...");
-      this.processMissedMessages().catch((error) => {
-        console.error("❌ Ошибка обработки пропущенных сообщений:", error);
-      });
-    }
+    // if (successful > 0) {
+    //   console.log("⏳ Запуск обработки пропущенных сообщений...");
+    //   this.processMissedMessages().catch((error) => {
+    //     console.error("❌ Ошибка обработки пропущенных сообщений:", error);
+    //   });
+    // }
   }
 
   /**

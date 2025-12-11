@@ -120,6 +120,7 @@ export function createBotHandler(client: TelegramClient) {
       }
     } catch (error) {
       console.error("Ошибка обработки сообщения:", error);
+      throw error;
     }
   };
 }
