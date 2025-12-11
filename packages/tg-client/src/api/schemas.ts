@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { VALIDATION_MESSAGES } from "./validation-messages";
 
 export const sendCodeSchema = z.object({
   apiId: z.number().positive(),
@@ -39,7 +40,7 @@ export const sendMessageSchema = z.object({
       .string()
       .transform((val) => Number.parseInt(val, 10))
       .refine((value) => !Number.isNaN(value), {
-        message: "chatId must be a valid integer",
+        message: VALIDATION_MESSAGES.CHAT_ID_INVALID_INTEGER,
       }),
     z.number(),
   ]),
@@ -62,7 +63,7 @@ export const sendMessageByPhoneSchema = z.object({
   firstName: z.string().optional(),
 });
 
-// Response schemas
+// Схемы ответов
 export const userSchema = z.object({
   id: z.string(),
   firstName: z.string(),
@@ -110,7 +111,7 @@ export const downloadFileSchema = z.object({
       .string()
       .transform((val) => Number.parseInt(val, 10))
       .refine((value) => !Number.isNaN(value), {
-        message: "chatId must be a valid integer",
+        message: VALIDATION_MESSAGES.CHAT_ID_INVALID_INTEGER,
       }),
     z.number(),
   ]),
@@ -125,7 +126,7 @@ export const downloadFileResponseSchema = z.object({
   duration: z.number(),
 });
 
-// Input types
+// Типы входных данных
 export type SendCodeInput = z.infer<typeof sendCodeSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type CheckPasswordInput = z.infer<typeof checkPasswordSchema>;
@@ -136,7 +137,7 @@ export type SendMessageByUsernameInput = z.infer<
 export type SendMessageByPhoneInput = z.infer<typeof sendMessageByPhoneSchema>;
 export type DownloadFileInput = z.infer<typeof downloadFileSchema>;
 
-// Response types
+// Типы ответов
 export type User = z.infer<typeof userSchema>;
 export type SendCodeResponse = z.infer<typeof sendCodeResponseSchema>;
 export type AuthResponse = z.infer<typeof authResponseSchema>;
