@@ -15,7 +15,6 @@ import { getChatHistory, markRead } from "../utils/telegram";
  * Извлекает 4-значный пин-код из текста
  */
 function extractPinCode(text: string): string | null {
-  // Ищем 4 цифры подряд
   const match = text.match(/\b\d{4}\b/);
   return match ? match[0] : null;
 }
@@ -74,6 +73,7 @@ export async function handleUnidentifiedMessage(
     const identification = await identifyByPinCode(
       pinCode,
       chatId,
+      workspaceId,
       username,
       firstName,
     );
