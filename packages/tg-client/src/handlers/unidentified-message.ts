@@ -47,27 +47,27 @@ export async function handleUnidentifiedMessage(
   }
 
   // Создаем или получаем временную беседу для неидентифицированного пользователя
-  let [tempConversation] = await db
-    .select()
-    .from(telegramConversation)
-    .where(eq(telegramConversation.chatId, chatId))
-    .limit(1);
-
-  if (!tempConversation) {
-    [tempConversation] = await db
-      .insert(telegramConversation)
-      .values({
-        chatId,
+  // Используем атомарную операцию с onConflict для предотвращения race condition
+  const [tempConversation] = await db
+    .insert(telegramConversation)
+    .values({
+      chatId,
+      candidateName: firstName || undefined,
+      username,
+      status: "ACTIVE",
+      metadata: JSON.stringify({
+        identifiedBy: "none",
+        awaitingPin: true,
+      }),
+    })
+    .onConflictDoUpdate({
+      target: telegramConversation.chatId,
+      set: {
+        username: username || undefined,
         candidateName: firstName || undefined,
-        username,
-        status: "ACTIVE",
-        metadata: JSON.stringify({
-          identifiedBy: "none",
-          awaitingPin: true,
-        }),
-      })
-      .returning();
-  }
+      },
+    })
+    .returning();
 
   // Сохраняем сообщение пользователя в БД
   if (tempConversation) {
