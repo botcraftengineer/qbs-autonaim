@@ -2,7 +2,7 @@
  * Управление отдельным экземпляром бота
  */
 
-import type { TelegramClient } from "@mtcute/bun";
+import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
 import type { telegramSession } from "@qbs-autonaim/db/schema";
 import { createBotHandler } from "../bot-handler";
@@ -64,9 +64,6 @@ export async function createBotInstance(
     await storage.import(sessionData as Record<string, string>);
   }
 
-  // Динамический импорт TelegramClient
-  const { TelegramClient } = await import("@mtcute/bun");
-
   // Создаем клиент
   const client = new TelegramClient({
     apiId: parsedApiId,
@@ -113,8 +110,10 @@ export async function createBotInstance(
   const messageHandler = createBotHandler(client);
 
   // Регистрируем обработчик сообщений
-  dp.onNewMessage((msg) => {
-    messageHandler(msg).catch(async (error) => {
+  dp.onNewMessage(async (msg) => {
+    try {
+      await messageHandler(msg);
+    } catch (error) {
       const authCheck = isAuthError(error);
       if (authCheck.isAuth) {
         await onAuthError(
@@ -127,7 +126,7 @@ export async function createBotInstance(
         return;
       }
       console.error(`❌ [${workspaceId}] Ошибка обработки:`, error);
-    });
+    }
   });
 
   // Обработчик ошибок dispatcher

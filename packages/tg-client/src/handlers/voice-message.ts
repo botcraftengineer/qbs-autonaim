@@ -5,7 +5,7 @@ import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
 import { getErrorResponse } from "../responses/greetings";
 import { uploadFile } from "../utils/file-upload";
-import { triggerTranscription } from "../utils/inngest";
+import { triggerMessageSend, triggerTranscription } from "../utils/inngest";
 import { markRead, showRecordingAudio } from "../utils/telegram";
 
 export async function handleVoiceMessage(
@@ -78,7 +78,6 @@ export async function handleVoiceMessage(
         telegramMessageId: message.id.toString(),
       });
 
-      const { triggerMessageSend } = await import("../utils/inngest");
       const [botMessage] = await db
         .insert(telegramMessage)
         .values({
@@ -140,7 +139,6 @@ export async function handleVoiceMessage(
       const errorMessage = getErrorResponse();
 
       if (conversation && conversation.username) {
-        const { triggerMessageSend } = await import("../utils/inngest");
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({

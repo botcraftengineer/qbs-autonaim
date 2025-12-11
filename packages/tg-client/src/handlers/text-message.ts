@@ -8,8 +8,10 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { getTextErrorResponse } from "../responses/greetings";
+import { generateAIResponse } from "../utils/ai-response";
 import { triggerMessageSend } from "../utils/inngest";
 import { getChatHistory, markRead } from "../utils/telegram";
+import { handleUnidentifiedMessage } from "./unidentified-message";
 
 export async function handleTextMessage(
   client: TelegramClient,
@@ -28,9 +30,6 @@ export async function handleTextMessage(
     // Если беседа не найдена или пользователь не идентифицирован (нет responseId),
     // перенаправляем в handleUnidentifiedMessage для попытки идентификации
     if (!conversation || !conversation.responseId) {
-      const { handleUnidentifiedMessage } = await import(
-        "./unidentified-message"
-      );
       await handleUnidentifiedMessage(client, message);
       return;
     }
@@ -97,8 +96,6 @@ export async function handleTextMessage(
     }
 
     // Генерируем ответ через AI
-    const { generateAIResponse } = await import("../utils/ai-response");
-
     const aiResponse = await generateAIResponse({
       messageText,
       stage: "INTERVIEWING",
