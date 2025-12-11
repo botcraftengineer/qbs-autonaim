@@ -32,80 +32,73 @@ messages.post("/send", async (c) => {
       );
     }
 
-    // Try to resolve peer from cache first
+    // chatId is a numeric ID - we need to construct InputPeer directly
+    // because resolvePeer only works with usernames
     type LongType = InstanceType<typeof Long>;
     type InputPeer =
-      | Awaited<ReturnType<typeof client.resolvePeer>>
       | { _: "inputPeerChannel"; channelId: number; accessHash: LongType }
       | { _: "inputPeerChat"; chatId: number }
       | { _: "inputPeerUser"; userId: number; accessHash: LongType };
 
     let peer: InputPeer | undefined;
+
+    // Try to get chat/user info from Telegram
     try {
-      peer = await client.resolvePeer(chatId);
+      const chats = await client.call({
+        _: "messages.getChats",
+        id: [chatId],
+      });
+
+      if (chats.chats && chats.chats.length > 0) {
+        const chat = chats.chats[0];
+        if (chat && chat._ === "chat") {
+          peer = {
+            _: "inputPeerChat",
+            chatId: chat.id,
+          };
+        } else if (chat && chat._ === "channel" && "accessHash" in chat) {
+          peer = {
+            _: "inputPeerChannel",
+            channelId: chat.id,
+            accessHash: chat.accessHash || Long.ZERO,
+          };
+        }
+      }
     } catch {
-      // If not in cache, fetch from Telegram API
-      const chatIdNum =
-        typeof chatId === "string" ? Number.parseInt(chatId, 10) : chatId;
-
-      // Try to get chat/user info from Telegram
+      // If getChats fails, try as user
       try {
-        const chats = await client.call({
-          _: "messages.getChats",
-          id: [chatIdNum],
+        const users = await client.call({
+          _: "users.getUsers",
+          id: [
+            {
+              _: "inputUser",
+              userId: chatId,
+              accessHash: Long.ZERO,
+            },
+          ],
         });
-
-        if (chats.chats && chats.chats.length > 0) {
-          const chat = chats.chats[0];
-          if (chat && chat._ === "chat") {
+        if (users && users.length > 0) {
+          const user = users[0];
+          if (
+            user &&
+            user._ === "user" &&
+            "accessHash" in user &&
+            user.accessHash
+          ) {
             peer = {
-              _: "inputPeerChat",
-              chatId: chat.id,
-            };
-          } else if (chat && chat._ === "channel" && "accessHash" in chat) {
-            peer = {
-              _: "inputPeerChannel",
-              channelId: chat.id,
-              accessHash: chat.accessHash || Long.ZERO,
+              _: "inputPeerUser",
+              userId: user.id,
+              accessHash: user.accessHash,
             };
           }
         }
       } catch {
-        // If getChats fails, try as user
-        try {
-          const users = await client.call({
-            _: "users.getUsers",
-            id: [
-              {
-                _: "inputUser",
-                userId: chatIdNum,
-                accessHash: Long.ZERO,
-              },
-            ],
-          });
-          if (users && users.length > 0) {
-            const user = users[0];
-            if (
-              user &&
-              user._ === "user" &&
-              "accessHash" in user &&
-              user.accessHash
-            ) {
-              peer = {
-                _: "inputPeerUser",
-                userId: user.id,
-                accessHash: user.accessHash,
-              };
-            }
-          }
-        } catch {
-          // Ignore user lookup errors
-        }
+        // Ignore user lookup errors
       }
+    }
 
-      if (!peer) {
-        return c.json({ error: `Chat ${chatId} not found` }, 404);
-      }
+    if (!peer) {
+      return c.json({ error: `Chat ${chatId} not found` }, 404);
     }
 
     const messageResult = await client.sendText(peer, text);

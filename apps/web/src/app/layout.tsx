@@ -9,7 +9,7 @@ import "~/app/styles.css";
 export const metadata: Metadata = {
   metadataBase: new URL(
     env.VERCEL_ENV === "production"
-      ? "https://qbs-autonaim-web.vercel.app"
+      ? "https://qbs-autonaim.vercel.app"
       : "http://localhost:3000",
   ),
   title: "QBS Автонайм - Автоматизация работы с вакансиями HH.ru",
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     title: "QBS Автонайм - Автоматизация работы с вакансиями HH.ru",
     description:
       "Платформа для автоматизации рекрутинга на HH.ru. Автоматический парсинг вакансий, откликов кандидатов и управление процессом найма.",
-    url: "https://qbs-autonaim-web.vercel.app",
+    url: "https://qbs-autonaim.vercel.app",
     siteName: "QBS Автонайм",
   },
 };

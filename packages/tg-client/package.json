@@ -29,7 +29,9 @@
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/prompts": "workspace:*",
+    "file-type": "^21.1.1",
     "hono": "4.10.8",
+    "mime-types": "^3.0.2",
     "zod": "^4.1.13"
   },
   "devDependencies": {

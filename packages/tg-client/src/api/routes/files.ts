@@ -1,4 +1,6 @@
+import { fileTypeFromBuffer } from "file-type";
 import { Hono } from "hono";
+import mime from "mime-types";
 import { z } from "zod";
 import { botManager } from "../../bot-manager";
 import { uploadFile } from "../../utils/file-upload";
@@ -8,7 +10,10 @@ const files = new Hono();
 
 const downloadFileSchema = z.object({
   workspaceId: z.string(),
-  chatId: z.string(),
+  chatId: z.union([
+    z.string().transform((val) => Number.parseInt(val, 10)),
+    z.number(),
+  ]),
   messageId: z.number(),
 });
 
@@ -54,8 +59,34 @@ files.post("/download", async (c) => {
 
     // Скачиваем файл
     const fileBuffer = await client.downloadAsBuffer(message.media);
-    const fileName = `${message.media.type}_${messageId}.${message.media.type === "voice" ? "ogg" : "mp3"}`;
-    const mimeType = message.media.mimeType || "audio/ogg";
+
+    // Определяем MIME type и расширение
+    let mimeType = message.media.mimeType || null;
+    let extension: string | null = null;
+
+    // Если есть mimeType в сообщении, получаем расширение из него
+    if (mimeType) {
+      extension = mime.extension(mimeType) || null;
+    }
+
+    // Если mimeType отсутствует или расширение не определено, детектим из содержимого файла
+    if (!mimeType || !extension) {
+      const detectedType = await fileTypeFromBuffer(Buffer.from(fileBuffer));
+      if (detectedType) {
+        mimeType = detectedType.mime;
+        extension = detectedType.ext;
+      }
+    }
+
+    // Fallback если ничего не определилось
+    if (!mimeType) {
+      mimeType = "application/octet-stream";
+    }
+    if (!extension) {
+      extension = "bin";
+    }
+
+    const fileName = `${message.media.type}_${messageId}.${extension}`;
 
     // Загружаем в S3 и создаем запись в БД
     const fileId = await uploadFile(

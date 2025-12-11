@@ -34,9 +34,10 @@ export const checkPasswordSchema = z.object({
 
 export const sendMessageSchema = z.object({
   workspaceId: z.string().min(1),
-  chatId: z
-    .union([z.string(), z.number()])
-    .transform((val) => (typeof val === "string" ? Number(val) : val)),
+  chatId: z.union([
+    z.string().transform((val) => Number.parseInt(val, 10)),
+    z.number(),
+  ]),
   text: z.string().min(1),
 });
 

@@ -59,14 +59,14 @@ export const env = createEnv({
     INNGEST_EVENT_API_BASE_URL: z.url().optional().default("https://inn.gs"),
 
     // App URL
-    APP_URL: z.url().optional().default("https://qbs-autonaim-web.vercel.app"),
+    APP_URL: z.url().optional().default("https://qbs-autonaim.vercel.app"),
     APP_NAME: z.string().optional().default("QBS Автонайм"),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z
       .url()
       .optional()
-      .default("https://qbs-autonaim-web.vercel.app"),
+      .default("https://qbs-autonaim.vercel.app"),
   },
   clientPrefix: "NEXT_PUBLIC_",
   runtimeEnv: {
