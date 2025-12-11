@@ -96,9 +96,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           // Отправка по username
           console.log(`📨 Отправка по username: @${username}`);
           result = await tgClientSDK.sendMessageByUsername({
-            apiId: Number.parseInt(session.apiId, 10),
-            apiHash: session.apiHash,
-            sessionData: session.sessionData as Record<string, string>,
+            workspaceId,
             username,
             text: content,
           });
@@ -106,9 +104,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           // Fallback: отправка по chatId
           console.log(`📨 Отправка по chatId: ${chatId}`);
           result = await tgClientSDK.sendMessage({
-            apiId: Number.parseInt(session.apiId, 10),
-            apiHash: session.apiHash,
-            sessionData: session.sessionData as Record<string, string>,
+            workspaceId,
             chatId: Number.parseInt(chatId, 10),
             text: content,
           });

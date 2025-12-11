@@ -3,7 +3,7 @@
  */
 
 import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client.ws";
+import { db } from "@qbs-autonaim/db/client";
 import { telegramSession } from "@qbs-autonaim/db/schema";
 
 /**

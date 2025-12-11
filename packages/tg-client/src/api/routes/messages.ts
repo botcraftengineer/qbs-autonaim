@@ -1,6 +1,6 @@
 import { Long } from "@mtcute/core";
 import { Hono } from "hono";
-import { createUserClient } from "../../user-client";
+import { botManager } from "../../bot-manager";
 import {
   sendMessageByPhoneSchema,
   sendMessageByUsernameSchema,
@@ -22,8 +22,15 @@ messages.post("/send", async (c) => {
       );
     }
 
-    const { apiId, apiHash, sessionData, chatId, text } = result.data;
-    const { client } = await createUserClient(apiId, apiHash, sessionData);
+    const { workspaceId, chatId, text } = result.data;
+
+    const client = botManager.getClient(workspaceId);
+    if (!client) {
+      return c.json(
+        { error: `Bot not running for workspace ${workspaceId}` },
+        404,
+      );
+    }
 
     // Try to resolve peer from cache first
     type LongType = InstanceType<typeof Long>;
@@ -117,16 +124,27 @@ messages.post("/send", async (c) => {
 messages.post("/send-by-username", async (c) => {
   try {
     const body = await c.req.json();
+    console.log("📥 /send-by-username received body:", JSON.stringify(body));
+
     const result = sendMessageByUsernameSchema.safeParse(body);
     if (!result.success) {
+      console.error("❌ Validation failed:", result.error.issues);
       return c.json(
         { error: "Invalid request data", details: result.error.issues },
         400,
       );
     }
 
-    const { apiId, apiHash, sessionData, username, text } = result.data;
-    const { client } = await createUserClient(apiId, apiHash, sessionData);
+    const { workspaceId, username, text } = result.data;
+
+    const client = botManager.getClient(workspaceId);
+    if (!client) {
+      console.error(`❌ Bot not running for workspace ${workspaceId}`);
+      return c.json(
+        { error: `Bot not running for workspace ${workspaceId}` },
+        404,
+      );
+    }
     const cleanedUsername = cleanUsername(username);
     const messageResult = await client.sendText(cleanedUsername, text);
 
@@ -153,9 +171,15 @@ messages.post("/send-by-phone", async (c) => {
       );
     }
 
-    const { apiId, apiHash, sessionData, phone, text, firstName } = result.data;
+    const { workspaceId, phone, text, firstName } = result.data;
 
-    const { client } = await createUserClient(apiId, apiHash, sessionData);
+    const client = botManager.getClient(workspaceId);
+    if (!client) {
+      return c.json(
+        { error: `Bot not running for workspace ${workspaceId}` },
+        404,
+      );
+    }
 
     if (!phone.startsWith("+")) {
       return c.json({ error: "Phone must be in international format" }, 400);
@@ -183,7 +207,6 @@ messages.post("/send-by-phone", async (c) => {
       return c.json({ error: "Failed to get user data" }, 500);
     }
 
-    // Create InputPeer directly with accessHash from imported user
     const inputPeer = {
       _: "inputPeerUser" as const,
       userId: user.id,

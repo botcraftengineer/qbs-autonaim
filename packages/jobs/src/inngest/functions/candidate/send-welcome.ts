@@ -110,9 +110,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           console.log(`📨 Попытка отправки по username: @${username}`);
           try {
             sendResult = await tgClientSDK.sendMessageByUsername({
-              apiId: Number.parseInt(session.apiId, 10),
-              apiHash: session.apiHash,
-              sessionData: session.sessionData as Record<string, string>,
+              workspaceId,
               username,
               text: welcomeMessage,
             });
@@ -142,9 +140,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           console.log(`📞 Попытка отправки по номеру телефона: ${phone}`);
           try {
             sendResult = await tgClientSDK.sendMessageByPhone({
-              apiId: Number.parseInt(session.apiId, 10),
-              apiHash: session.apiHash,
-              sessionData: session.sessionData as Record<string, string>,
+              workspaceId,
               phone,
               text: welcomeMessage,
               firstName: response.candidateName || undefined,

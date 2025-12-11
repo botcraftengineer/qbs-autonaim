@@ -1,4 +1,4 @@
-import { db } from "@qbs-autonaim/db/client.ws";
+import { db } from "@qbs-autonaim/db/client";
 import { file } from "@qbs-autonaim/db/schema";
 import { uploadFile as uploadToS3 } from "@qbs-autonaim/lib";
 
