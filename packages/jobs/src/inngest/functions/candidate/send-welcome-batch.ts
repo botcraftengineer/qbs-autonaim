@@ -112,9 +112,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
               );
               try {
                 sendResult = await tgClientSDK.sendMessageByUsername({
-                  apiId: Number.parseInt(session.apiId, 10),
-                  apiHash: session.apiHash,
-                  sessionData: session.sessionData as Record<string, string>,
+                  workspaceId,
                   username: response.telegramUsername,
                   text: welcomeMessage,
                 });
@@ -133,9 +131,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 `📞 Попытка отправки по номеру телефона: ${response.phone}`,
               );
               sendResult = await tgClientSDK.sendMessageByPhone({
-                apiId: Number.parseInt(session.apiId, 10),
-                apiHash: session.apiHash,
-                sessionData: session.sessionData as Record<string, string>,
+                workspaceId,
                 phone: response.phone,
                 text: welcomeMessage,
                 firstName: response.candidateName || undefined,

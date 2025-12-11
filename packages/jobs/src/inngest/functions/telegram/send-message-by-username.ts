@@ -49,9 +49,7 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
         // Отправляем сообщение по username
         console.log(`📨 Отправка по username: @${username}`);
         const result = await tgClientSDK.sendMessageByUsername({
-          apiId: Number.parseInt(session.apiId, 10),
-          apiHash: session.apiHash,
-          sessionData: session.sessionData as Record<string, string>,
+          workspaceId,
           username,
           text: content,
         });

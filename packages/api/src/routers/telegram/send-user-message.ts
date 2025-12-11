@@ -37,9 +37,7 @@ export const sendUserMessageRouter = protectedProcedure
 
       // Отправляем сообщение через SDK
       const result = await tgClientSDK.sendMessageByUsername({
-        apiId: Number.parseInt(session.apiId, 10),
-        apiHash: session.apiHash,
-        sessionData: session.sessionData as Record<string, string>,
+        workspaceId: input.workspaceId,
         username: input.username,
         text: input.text,
       });
@@ -97,9 +95,7 @@ export const sendUserMessageByPhoneRouter = protectedProcedure
 
       // Отправляем сообщение через SDK
       const result = await tgClientSDK.sendMessageByPhone({
-        apiId: Number.parseInt(session.apiId, 10),
-        apiHash: session.apiHash,
-        sessionData: session.sessionData as Record<string, string>,
+        workspaceId: input.workspaceId,
         phone: input.phone,
         text: input.text,
         firstName: input.firstName,

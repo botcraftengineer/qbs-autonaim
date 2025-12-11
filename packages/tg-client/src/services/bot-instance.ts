@@ -116,7 +116,7 @@ export async function createBotInstance(
 
       // Помечаем сообщение прочитанным
       if (!msg.isOutgoing) {
-        //  await markRead(client, msg.chat.id);
+        await markRead(client, msg.chat.id);
       }
 
       // Сериализуем данные сообщения для Inngest

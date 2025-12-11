@@ -33,9 +33,7 @@ export const checkPasswordSchema = z.object({
 });
 
 export const sendMessageSchema = z.object({
-  apiId: z.number().positive(),
-  apiHash: z.string().min(1),
-  sessionData: z.record(z.string(), z.string()),
+  workspaceId: z.string().min(1),
   chatId: z
     .union([z.string(), z.number()])
     .transform((val) => (typeof val === "string" ? Number(val) : val)),
@@ -43,17 +41,13 @@ export const sendMessageSchema = z.object({
 });
 
 export const sendMessageByUsernameSchema = z.object({
-  apiId: z.number().positive(),
-  apiHash: z.string().min(1),
-  sessionData: z.record(z.string(), z.string()),
+  workspaceId: z.string().min(1),
   username: z.string().min(1),
   text: z.string().min(1),
 });
 
 export const sendMessageByPhoneSchema = z.object({
-  apiId: z.number().positive(),
-  apiHash: z.string().min(1),
-  sessionData: z.record(z.string(), z.string()),
+  workspaceId: z.string().min(1),
   phone: z
     .string()
     .min(1)
