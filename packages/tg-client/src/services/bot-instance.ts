@@ -114,10 +114,13 @@ export async function createBotInstance(
     try {
       console.log("new msg", msg.id);
 
-      // Помечаем сообщение прочитанным
-      if (!msg.isOutgoing) {
-        await markRead(client, msg.chat.id);
+      // Игнорируем исходящие сообщения от самого бота
+      if (msg.isOutgoing) {
+        return;
       }
+
+      // Помечаем сообщение прочитанным
+      await markRead(client, msg.chat.id);
 
       // Сериализуем данные сообщения для Inngest
       const messageData = {
