@@ -1,6 +1,9 @@
-import { eq } from "@qbs-autonaim/db";
+import {
+  eq,
+  findResponseByPinCode as findResponseByPinCodeDB,
+  vacancyResponse,
+} from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("TelegramInvite");
@@ -102,10 +105,7 @@ export async function findResponseByPinCode(
 ): Promise<Result<{ id: string; candidateName: string | null }>> {
   logger.info("Поиск отклика по пин-коду", { pinCode });
 
-  const { findResponseByPinCode: findResponse } = await import(
-    "@qbs-autonaim/db"
-  );
-  const result = await findResponse(pinCode);
+  const result = await findResponseByPinCodeDB(pinCode);
 
   if (!result.success) {
     return err(result.error);

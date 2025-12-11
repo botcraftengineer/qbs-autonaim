@@ -15,6 +15,7 @@ import {
   screenNewResponsesDataSchema,
   screenResponsesBatchDataSchema,
   telegramAuthErrorDataSchema,
+  telegramMessageReceivedDataSchema,
   telegramMessageSendDataSchema,
   telegramUnidentifiedMessageSendDataSchema,
   vacancyRequirementsExtractDataSchema,
@@ -45,6 +46,7 @@ export const inngest = new Inngest({
     "vacancy/chat-ids.collect": collectChatIdsDataSchema,
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
+    "telegram/message.received": telegramMessageReceivedDataSchema,
     "telegram/message.send": telegramMessageSendDataSchema,
     "telegram/message.send.by-username":
       telegramUnidentifiedMessageSendDataSchema,

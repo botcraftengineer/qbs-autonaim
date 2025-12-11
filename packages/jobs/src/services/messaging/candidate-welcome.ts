@@ -6,7 +6,10 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
-import { buildCandidateWelcomePrompt } from "@qbs-autonaim/prompts";
+import {
+  buildCandidateWelcomePrompt,
+  buildTelegramInvitePrompt,
+} from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { createLogger, err, type Result, tryCatch } from "../base";
 
@@ -140,8 +143,6 @@ export async function generateTelegramInviteMessage(
   }
 
   const { response, screening, company } = dataResult.data;
-
-  const { buildTelegramInvitePrompt } = await import("@qbs-autonaim/prompts");
 
   const prompt = buildTelegramInvitePrompt({
     companyName: company?.name || "наша компания",

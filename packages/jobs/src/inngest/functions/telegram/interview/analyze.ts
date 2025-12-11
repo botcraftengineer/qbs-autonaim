@@ -1,4 +1,13 @@
-import { and, db, desc, eq, telegramMessage } from "@qbs-autonaim/db";
+import {
+  and,
+  db,
+  desc,
+  eq,
+  telegramConversation,
+  telegramInterviewScoring,
+  telegramMessage,
+  vacancyResponse,
+} from "@qbs-autonaim/db";
 import {
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
@@ -27,7 +36,6 @@ export const analyzeInterviewFunction = inngest.createFunction(
       });
 
       // Получаем последний вопрос из истории сообщений
-      const { telegramConversation } = await import("@qbs-autonaim/db");
       const [conv] = await db
         .select()
         .from(telegramConversation)
@@ -160,7 +168,6 @@ export const sendNextQuestionFunction = inngest.createFunction(
     });
 
     const chatId = await step.run("get-chat-id", async () => {
-      const { telegramConversation } = await import("@qbs-autonaim/db");
       const [conv] = await db
         .select()
         .from(telegramConversation)
@@ -319,7 +326,6 @@ export const completeInterviewFunction = inngest.createFunction(
           detailedScore: scoring.detailedScore,
         });
 
-        const { telegramInterviewScoring } = await import("@qbs-autonaim/db");
         await db
           .insert(telegramInterviewScoring)
           .values({
@@ -350,8 +356,6 @@ export const completeInterviewFunction = inngest.createFunction(
           detailedScore: scoringResult.detailedScore,
         });
 
-        const { vacancyResponse } = await import("@qbs-autonaim/db");
-
         // Определяем hrSelectionStatus на основе оценки
         // Если detailedScore >= 70, то RECOMMENDED, иначе NOT_RECOMMENDED
         const hrSelectionStatus =
@@ -374,7 +378,6 @@ export const completeInterviewFunction = inngest.createFunction(
     }
 
     const chatId = await step.run("get-chat-id", async () => {
-      const { telegramConversation } = await import("@qbs-autonaim/db");
       const [conv] = await db
         .select()
         .from(telegramConversation)
@@ -402,8 +405,9 @@ export const completeInterviewFunction = inngest.createFunction(
         "Благодарю за ответы! Все записал, теперь изучу детали. Скоро вернусь с фидбеком.",
       ] as const;
 
-      const finalMessage =
-        finalMessages[Math.floor(Math.random() * finalMessages.length)] as string;
+      const finalMessage = finalMessages[
+        Math.floor(Math.random() * finalMessages.length)
+      ] as string;
 
       const [newMessage] = await db
         .insert(telegramMessage)

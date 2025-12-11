@@ -5,9 +5,9 @@
 import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
 import type { telegramSession } from "@qbs-autonaim/db/schema";
-import { createBotHandler } from "../bot-handler";
 import { ExportableStorage } from "../storage";
 import { isAuthError } from "../utils/auth-errors";
+import { triggerIncomingMessage } from "../utils/inngest";
 
 export interface BotInstance {
   client: TelegramClient;
@@ -105,15 +105,48 @@ export async function createBotInstance(
     );
   }
 
-  // Создаем dispatcher и обработчики
+  // Создаем dispatcher
   const dp = Dispatcher.for(client);
-  const messageHandler = createBotHandler(client, workspaceId);
 
-  // Регистрируем обработчик сообщений
+  // Регистрируем обработчик сообщений - триггерим Inngest
   dp.onNewMessage(async (msg) => {
     console.log("new message", msg.id);
     try {
-      await messageHandler(msg);
+      // Сериализуем данные сообщения для Inngest
+      const messageData = {
+        id: msg.id,
+        chatId: msg.chat.id.toString(),
+        text: msg.text,
+        isOutgoing: msg.isOutgoing,
+        media: msg.media
+          ? {
+              type: msg.media.type,
+              fileId:
+                "fileId" in msg.media
+                  ? (msg.media.fileId as string | undefined)
+                  : undefined,
+              mimeType:
+                "mimeType" in msg.media
+                  ? (msg.media.mimeType as string | undefined)
+                  : undefined,
+              duration:
+                "duration" in msg.media
+                  ? (msg.media.duration as number | undefined)
+                  : undefined,
+            }
+          : undefined,
+        sender: msg.sender
+          ? {
+              type: msg.sender.type,
+              username:
+                "username" in msg.sender ? msg.sender.username : undefined,
+              firstName:
+                msg.sender.type === "user" ? msg.sender.firstName : undefined,
+            }
+          : undefined,
+      };
+
+      await triggerIncomingMessage(workspaceId, messageData);
     } catch (error) {
       const authCheck = isAuthError(error);
       if (authCheck.isAuth) {
@@ -127,7 +160,7 @@ export async function createBotInstance(
         return;
       }
       console.error(
-        `❌ [${workspaceId}] Ошибка обработки сообщения ${msg.id}:`,
+        `❌ [${workspaceId}] Ошибка триггера сообщения ${msg.id}:`,
         error,
       );
     }

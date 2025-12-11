@@ -1,3 +1,4 @@
+import { Long } from "@mtcute/core";
 import { Hono } from "hono";
 import { createUserClient } from "../../user-client";
 import {
@@ -25,8 +26,6 @@ messages.post("/send", async (c) => {
     const { client } = await createUserClient(apiId, apiHash, sessionData);
 
     // Try to resolve peer from cache first
-    const { Long } = await import("@mtcute/core");
-
     type LongType = InstanceType<typeof Long>;
     type InputPeer =
       | Awaited<ReturnType<typeof client.resolvePeer>>
@@ -162,7 +161,6 @@ messages.post("/send-by-phone", async (c) => {
       return c.json({ error: "Phone must be in international format" }, 400);
     }
 
-    const { Long } = await import("@mtcute/core");
     const importResult = await client.call({
       _: "contacts.importContacts",
       contacts: [
