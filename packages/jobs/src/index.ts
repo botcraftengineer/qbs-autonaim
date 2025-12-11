@@ -3,6 +3,7 @@ export {
   extractVacancyRequirementsFunction,
   inngest,
   inngestFunctions,
+  processIncomingMessageFunction,
   refreshVacancyResponsesFunction,
   screenNewResponsesChannel,
   screenResponseFunction,

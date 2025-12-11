@@ -28,11 +28,17 @@ export async function getChatHistory(
 
     return messages
       .reverse()
-      .filter((msg) => msg.text || msg.voice)
+      .filter((msg) => msg.text || (msg.media && msg.media.type === "voice"))
       .map((msg) => ({
         sender: msg.sender?.id === botId ? "BOT" : "CANDIDATE",
-        content: msg.voice ? "Голосовое сообщение" : msg.text || "",
-        contentType: msg.voice ? ("VOICE" as const) : ("TEXT" as const),
+        content:
+          msg.media && msg.media.type === "voice"
+            ? "Голосовое сообщение"
+            : msg.text || "",
+        contentType:
+          msg.media && msg.media.type === "voice"
+            ? ("VOICE" as const)
+            : ("TEXT" as const),
       }));
   } catch (error) {
     console.error("Ошибка при получении истории чата:", error);

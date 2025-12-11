@@ -105,15 +105,38 @@ export async function createBotInstance(
     );
   }
 
-  // Создаем dispatcher и обработчики
+  // Создаем dispatcher
   const dp = Dispatcher.for(client);
-  const messageHandler = createBotHandler(client, workspaceId);
 
-  // Регистрируем обработчик сообщений
+  // Регистрируем обработчик сообщений - триггерим Inngest
   dp.onNewMessage(async (msg) => {
     console.log("new message", msg.id);
     try {
-      await messageHandler(msg);
+      const { triggerIncomingMessage } = await import("../utils/inngest");
+
+      // Сериализуем данные сообщения для Inngest
+      const messageData = {
+        id: msg.id,
+        chatId: msg.chat.id.toString(),
+        text: msg.text,
+        isOutgoing: msg.isOutgoing,
+        media: msg.media
+          ? {
+              type: msg.media.type,
+            }
+          : undefined,
+        sender: msg.sender
+          ? {
+              type: msg.sender.type,
+              username:
+                "username" in msg.sender ? msg.sender.username : undefined,
+              firstName:
+                msg.sender.type === "user" ? msg.sender.firstName : undefined,
+            }
+          : undefined,
+      };
+
+      await triggerIncomingMessage(workspaceId, messageData);
     } catch (error) {
       const authCheck = isAuthError(error);
       if (authCheck.isAuth) {
@@ -127,7 +150,7 @@ export async function createBotInstance(
         return;
       }
       console.error(
-        `❌ [${workspaceId}] Ошибка обработки сообщения ${msg.id}:`,
+        `❌ [${workspaceId}] Ошибка триггера сообщения ${msg.id}:`,
         error,
       );
     }
