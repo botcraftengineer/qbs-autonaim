@@ -270,10 +270,21 @@ export async function getInterviewStartData(responseId: string) {
       ? response.screening[0]
       : undefined;
 
+    // Преобразуем requirements из jsonb в строку
+    let requirementsText: string | undefined;
+    if (response.vacancy?.requirements) {
+      if (typeof response.vacancy.requirements === "string") {
+        requirementsText = response.vacancy.requirements;
+      } else if (typeof response.vacancy.requirements === "object") {
+        requirementsText = JSON.stringify(response.vacancy.requirements);
+      }
+    }
+
     return {
       candidateName: response.candidateName,
       vacancyTitle: response.vacancy?.title,
       vacancyDescription: response.vacancy?.description,
+      vacancyRequirements: requirementsText,
       experience: response.experience,
       coverLetter: response.coverLetter,
       phone: response.phone,

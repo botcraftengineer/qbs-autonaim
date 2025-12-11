@@ -112,6 +112,8 @@ export async function createBotInstance(
   // Регистрируем обработчик сообщений
   dp.onNewMessage(async (msg) => {
     try {
+      console.log("new message", msg.id);
+
       await messageHandler(msg);
     } catch (error) {
       const authCheck = isAuthError(error);

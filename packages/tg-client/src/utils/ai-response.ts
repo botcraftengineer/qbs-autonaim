@@ -18,6 +18,7 @@ interface GenerateResponseParams {
   stage: ConversationStage;
   candidateName?: string;
   vacancyTitle?: string;
+  vacancyRequirements?: string;
   responseStatus?: string;
   conversationHistory?: Array<{ sender: string; content: string }>;
   resumeData?: {
@@ -43,6 +44,7 @@ export async function generateAIResponse(
     stage: params.stage,
     candidateName: params.candidateName,
     vacancyTitle: params.vacancyTitle,
+    vacancyRequirements: params.vacancyRequirements,
     responseStatus: params.responseStatus,
     conversationHistory: params.conversationHistory || [],
     resumeData: params.resumeData,

@@ -109,6 +109,7 @@ export async function handleUnidentifiedMessage(
           stage: "PIN_RECEIVED",
           candidateName: identification.candidateName || firstName,
           vacancyTitle: identification.vacancyTitle,
+          vacancyRequirements: interviewData?.vacancyRequirements,
           responseStatus: interviewData?.status,
           resumeData,
         });

@@ -1,5 +1,5 @@
 import type { Message } from "@mtcute/core";
-import { db, eq, or } from "@qbs-autonaim/db";
+import { db, eq } from "@qbs-autonaim/db";
 import { telegramConversation, vacancyResponse } from "@qbs-autonaim/db/schema";
 
 interface IdentificationResult {

@@ -68,6 +68,7 @@ export async function handleTextMessage(
     // Получаем информацию о вакансии и статусе
     let response = null;
     let vacancyTitle: string | undefined;
+    let vacancyRequirements: string | undefined;
     let resumeData:
       | {
           experience?: string;
@@ -86,6 +87,15 @@ export async function handleTextMessage(
 
       vacancyTitle = response?.vacancy?.title;
 
+      // Преобразуем requirements из jsonb в строку
+      if (response?.vacancy?.requirements) {
+        if (typeof response.vacancy.requirements === "string") {
+          vacancyRequirements = response.vacancy.requirements;
+        } else if (typeof response.vacancy.requirements === "object") {
+          vacancyRequirements = JSON.stringify(response.vacancy.requirements);
+        }
+      }
+
       if (response) {
         resumeData = {
           experience: response.experience || undefined,
@@ -101,6 +111,7 @@ export async function handleTextMessage(
       stage: "INTERVIEWING",
       candidateName: conversation.candidateName || undefined,
       vacancyTitle,
+      vacancyRequirements,
       responseStatus: response?.status,
       conversationHistory,
       resumeData,
