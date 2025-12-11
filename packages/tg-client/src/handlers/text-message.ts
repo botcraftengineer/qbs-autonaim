@@ -9,6 +9,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { getErrorResponse } from "../responses/greetings.js";
 import { humanDelay } from "../utils/delays.js";
+import { triggerMessageSend } from "../utils/inngest.js";
 import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
 
 export async function handleTextMessage(
@@ -35,7 +36,6 @@ export async function handleTextMessage(
         message.chat.id,
         10,
       );
-
       const { generateAIResponse } = await import("../utils/ai-response.js");
 
       const aiResponse = await generateAIResponse({
@@ -44,8 +44,37 @@ export async function handleTextMessage(
         conversationHistory,
       });
 
-      await humanDelay(600, 1200);
-      await client.sendText(message.chat.id, aiResponse);
+      // Создаем временную беседу для неидентифицированного пользователя
+      const [tempConversation] = await db
+        .insert(telegramConversation)
+        .values({
+          chatId,
+          status: "ACTIVE",
+          metadata: JSON.stringify({
+            identifiedBy: "none",
+            awaitingPin: true,
+          }),
+        })
+        .onConflictDoNothing()
+        .returning();
+
+      if (tempConversation) {
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: tempConversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: aiResponse,
+          })
+          .returning();
+
+        if (botMessage) {
+          await humanDelay(600, 1200);
+          await triggerMessageSend(botMessage.id, chatId, aiResponse);
+        }
+      }
+
       return;
     }
 
@@ -128,21 +157,47 @@ export async function handleTextMessage(
       resumeData,
     });
 
-    await client.sendText(message.chat.id, aiResponse);
-
     // Сохраняем ответ бота
-    await db.insert(telegramMessage).values({
-      conversationId: conversation.id,
-      sender: "BOT",
-      contentType: "TEXT",
-      content: aiResponse,
-    });
+    const [botMessage] = await db
+      .insert(telegramMessage)
+      .values({
+        conversationId: conversation.id,
+        sender: "BOT",
+        contentType: "TEXT",
+        content: aiResponse,
+      })
+      .returning();
+
+    if (botMessage) {
+      await triggerMessageSend(botMessage.id, chatId, aiResponse);
+    }
   } catch (error) {
     console.error("Ошибка при обработке текстового сообщения:", error);
 
     try {
-      await humanDelay(800, 1500);
-      await client.sendText(message.chat.id, getErrorResponse());
+      const [conversation] = await db
+        .select()
+        .from(telegramConversation)
+        .where(eq(telegramConversation.chatId, chatId))
+        .limit(1);
+
+      if (conversation) {
+        const errorMessage = getErrorResponse();
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: errorMessage,
+          })
+          .returning();
+
+        if (botMessage) {
+          await humanDelay(800, 1500);
+          await triggerMessageSend(botMessage.id, chatId, errorMessage);
+        }
+      }
     } catch (sendError) {
       console.error("Не удалось отправить сообщение об ошибке:", sendError);
     }

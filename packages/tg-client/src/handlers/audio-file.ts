@@ -28,10 +28,40 @@ export async function handleAudioFile(
 
   if (!conversation) {
     await markRead(client, message.chat.id);
-    await client.sendText(
-      message.chat.id,
-      "Привет! А мы раньше общались? Не могу вспомнить 🤔",
-    );
+
+    const errorMessage = "Привет! А мы раньше общались? Не могу вспомнить 🤔";
+
+    // Создаем временную беседу
+    const [tempConversation] = await db
+      .insert(telegramConversation)
+      .values({
+        chatId,
+        status: "ACTIVE",
+        metadata: JSON.stringify({
+          identifiedBy: "none",
+          awaitingPin: true,
+        }),
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    if (tempConversation) {
+      const { triggerMessageSend } = await import("../utils/inngest.js");
+      const [botMessage] = await db
+        .insert(telegramMessage)
+        .values({
+          conversationId: tempConversation.id,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: errorMessage,
+        })
+        .returning();
+
+      if (botMessage) {
+        await triggerMessageSend(botMessage.id, chatId, errorMessage);
+      }
+    }
+
     return;
   }
 
@@ -77,7 +107,29 @@ export async function handleAudioFile(
     await humanDelay(listeningTime, listeningTime + 2000);
   } catch (error) {
     console.error("Ошибка при обработке аудиофайла:", error);
-    await humanDelay(800, 1500);
-    await client.sendText(message.chat.id, getAudioErrorResponse());
+
+    try {
+      const errorMessage = getAudioErrorResponse();
+
+      if (conversation) {
+        const { triggerMessageSend } = await import("../utils/inngest.js");
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: errorMessage,
+          })
+          .returning();
+
+        if (botMessage) {
+          await humanDelay(800, 1500);
+          await triggerMessageSend(botMessage.id, chatId, errorMessage);
+        }
+      }
+    } catch (sendError) {
+      console.error("Не удалось отправить сообщение об ошибке:", sendError);
+    }
   }
 }

@@ -28,10 +28,41 @@ export async function handleVoiceMessage(
 
   if (!conversation) {
     await markRead(client, message.chat.id);
-    await client.sendText(
-      message.chat.id,
-      "Привет! Не могу вспомнить, откуда мы знакомы. Напомнишь?",
-    );
+
+    const errorMessage =
+      "Привет! Не могу вспомнить, откуда мы знакомы. Напомнишь?";
+
+    // Создаем временную беседу
+    const [tempConversation] = await db
+      .insert(telegramConversation)
+      .values({
+        chatId,
+        status: "ACTIVE",
+        metadata: JSON.stringify({
+          identifiedBy: "none",
+          awaitingPin: true,
+        }),
+      })
+      .onConflictDoNothing()
+      .returning();
+
+    if (tempConversation) {
+      const { triggerMessageSend } = await import("../utils/inngest.js");
+      const [botMessage] = await db
+        .insert(telegramMessage)
+        .values({
+          conversationId: tempConversation.id,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: errorMessage,
+        })
+        .returning();
+
+      if (botMessage) {
+        await triggerMessageSend(botMessage.id, chatId, errorMessage);
+      }
+    }
+
     return;
   }
 
@@ -76,7 +107,29 @@ export async function handleVoiceMessage(
     await humanDelay(listeningTime, listeningTime + 2000);
   } catch (error) {
     console.error("Ошибка при обработке голосового сообщения:", error);
-    await humanDelay(800, 1500);
-    await client.sendText(message.chat.id, getErrorResponse());
+
+    try {
+      const errorMessage = getErrorResponse();
+
+      if (conversation) {
+        const { triggerMessageSend } = await import("../utils/inngest.js");
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: errorMessage,
+          })
+          .returning();
+
+        if (botMessage) {
+          await humanDelay(800, 1500);
+          await triggerMessageSend(botMessage.id, chatId, errorMessage);
+        }
+      }
+    } catch (sendError) {
+      console.error("Не удалось отправить сообщение об ошибке:", sendError);
+    }
   }
 }

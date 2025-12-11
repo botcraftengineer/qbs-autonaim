@@ -8,6 +8,7 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { humanDelay } from "../utils/delays.js";
+import { triggerMessageSend } from "../utils/inngest.js";
 import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
 
 function escapeSqlLike(text: string): string {
@@ -120,17 +121,22 @@ export async function handleUnidentifiedMessage(
         resumeData,
       });
 
-      await humanDelay(500, 1000);
-      await client.sendText(message.chat.id, aiResponse);
-
       // Сохраняем ответ бота
       if (conversation) {
-        await db.insert(telegramMessage).values({
-          conversationId: conversation.id,
-          sender: "BOT",
-          contentType: "TEXT",
-          content: aiResponse,
-        });
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: aiResponse,
+          })
+          .returning();
+
+        if (botMessage) {
+          await humanDelay(500, 1000);
+          await triggerMessageSend(botMessage.id, chatId, aiResponse);
+        }
       }
 
       return;
@@ -158,7 +164,43 @@ export async function handleUnidentifiedMessage(
       conversationHistory,
     });
 
-    await client.sendText(message.chat.id, aiResponse);
+    // Создаем временную беседу для неидентифицированного пользователя
+    const [tempConversation] = await db
+      .insert(telegramConversation)
+      .values({
+        chatId,
+        candidateName: firstName || undefined,
+        username,
+        status: "ACTIVE",
+        metadata: JSON.stringify({
+          identifiedBy: "none",
+          awaitingPin: true,
+        }),
+      })
+      .onConflictDoUpdate({
+        target: telegramConversation.chatId,
+        set: {
+          username,
+        },
+      })
+      .returning();
+
+    if (tempConversation) {
+      const [botMessage] = await db
+        .insert(telegramMessage)
+        .values({
+          conversationId: tempConversation.id,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: aiResponse,
+        })
+        .returning();
+
+      if (botMessage) {
+        await triggerMessageSend(botMessage.id, chatId, aiResponse);
+      }
+    }
+
     return;
   }
 
@@ -240,17 +282,22 @@ export async function handleUnidentifiedMessage(
         resumeData,
       });
 
-      await humanDelay(500, 1000);
-      await client.sendText(message.chat.id, aiResponse);
-
       // Сохраняем ответ бота
       if (conversation) {
-        await db.insert(telegramMessage).values({
-          conversationId: conversation.id,
-          sender: "BOT",
-          contentType: "TEXT",
-          content: aiResponse,
-        });
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: aiResponse,
+          })
+          .returning();
+
+        if (botMessage) {
+          await humanDelay(500, 1000);
+          await triggerMessageSend(botMessage.id, chatId, aiResponse);
+        }
       }
 
       return;
@@ -269,5 +316,41 @@ export async function handleUnidentifiedMessage(
     conversationHistory,
   });
 
-  await client.sendText(message.chat.id, aiResponse);
+  // Создаем или обновляем временную беседу
+  const [tempConversation] = await db
+    .insert(telegramConversation)
+    .values({
+      chatId,
+      candidateName: firstName || undefined,
+      username,
+      status: "ACTIVE",
+      metadata: JSON.stringify({
+        identifiedBy: "none",
+        awaitingPin: true,
+        foundVacancies: vacancyList,
+      }),
+    })
+    .onConflictDoUpdate({
+      target: telegramConversation.chatId,
+      set: {
+        username,
+      },
+    })
+    .returning();
+
+  if (tempConversation) {
+    const [botMessage] = await db
+      .insert(telegramMessage)
+      .values({
+        conversationId: tempConversation.id,
+        sender: "BOT",
+        contentType: "TEXT",
+        content: aiResponse,
+      })
+      .returning();
+
+    if (botMessage) {
+      await triggerMessageSend(botMessage.id, chatId, aiResponse);
+    }
+  }
 }

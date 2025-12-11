@@ -191,6 +191,15 @@ class BotManager {
     }
 
     this.isRunning = true;
+
+    // Обрабатываем пропущенные сообщения после запуска всех ботов
+    if (successful > 0) {
+      console.log("⏳ Запуск обработки пропущенных сообщений...");
+      // Запускаем асинхронно, чтобы не блокировать старт
+      this.processMissedMessages().catch((error) => {
+        console.error("❌ Ошибка обработки пропущенных сообщений:", error);
+      });
+    }
   }
 
   /**
@@ -454,6 +463,168 @@ class BotManager {
    */
   getBotsCount(): number {
     return this.bots.size;
+  }
+
+  /**
+   * Обработать пропущенные сообщения для всех активных диалогов
+   * Вызывается при запуске сервиса для обработки сообщений, полученных во время простоя
+   */
+  async processMissedMessages(): Promise<void> {
+    console.log("🔍 Проверка пропущенных сообщений...");
+
+    const { telegramConversation, telegramMessage } = await import(
+      "@qbs-autonaim/db/schema"
+    );
+
+    // Получаем все активные беседы
+    const conversations = await db
+      .select()
+      .from(telegramConversation)
+      .where(eq(telegramConversation.status, "ACTIVE"));
+
+    if (conversations.length === 0) {
+      console.log("ℹ️ Нет активных бесед для проверки");
+      return;
+    }
+
+    console.log(`📋 Найдено ${conversations.length} активных бесед`);
+
+    let processedCount = 0;
+    let errorCount = 0;
+
+    for (const conversation of conversations) {
+      try {
+        // Получаем последнее сообщение из БД для этой беседы
+        const { desc } = await import("@qbs-autonaim/db");
+        const lastMessage = await db
+          .select()
+          .from(telegramMessage)
+          .where(eq(telegramMessage.conversationId, conversation.id))
+          .orderBy(desc(telegramMessage.createdAt))
+          .limit(1);
+
+        const lastMessageDate = lastMessage[0]?.createdAt;
+
+        // Получаем workspace для этой беседы
+        if (!conversation.responseId) {
+          continue;
+        }
+
+        const { vacancyResponse } = await import("@qbs-autonaim/db/schema");
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, conversation.responseId),
+          with: {
+            vacancy: true,
+          },
+        });
+
+        if (!response?.vacancy?.workspaceId) {
+          continue;
+        }
+
+        const client = this.getClient(response.vacancy.workspaceId);
+        if (!client) {
+          console.log(
+            `⚠️ Клиент не найден для workspace ${response.vacancy.workspaceId}`,
+          );
+          continue;
+        }
+
+        // Получаем историю сообщений из Telegram
+        const messages: Array<{
+          id: number;
+          text?: string;
+          date: Date;
+          isOutgoing: boolean;
+        }> = [];
+
+        // Преобразуем chatId в число для MTCute
+        const chatIdNumber = Number.parseInt(conversation.chatId, 10);
+        if (Number.isNaN(chatIdNumber)) {
+          console.log(
+            `⚠️ Некорректный chatId для беседы ${conversation.id}: ${conversation.chatId}`,
+          );
+          continue;
+        }
+
+        try {
+          for await (const msg of client.iterHistory(chatIdNumber, {
+            limit: 20,
+          })) {
+            messages.push({
+              id: msg.id,
+              text: msg.text,
+              date: msg.date,
+              isOutgoing: msg.isOutgoing,
+            });
+          }
+        } catch (historyError) {
+          // Пропускаем чаты, которые не найдены в кэше или недоступны
+          const errorMessage =
+            historyError instanceof Error
+              ? historyError.message
+              : String(historyError);
+
+          if (
+            errorMessage.includes("not found in local cache") ||
+            errorMessage.includes("PEER_ID_INVALID") ||
+            errorMessage.includes("CHANNEL_INVALID")
+          ) {
+            console.log(
+              `⚠️ Чат ${conversation.chatId} не найден в кэше, пропускаем`,
+            );
+            continue;
+          }
+          // Другие ошибки пробрасываем дальше
+          throw historyError;
+        }
+
+        // Фильтруем только входящие сообщения, которые новее последнего в БД
+        const missedMessages = messages.filter((msg) => {
+          if (msg.isOutgoing) return false;
+          if (!lastMessageDate) return true;
+          return msg.date > lastMessageDate;
+        });
+
+        if (missedMessages.length > 0) {
+          console.log(
+            `📨 Найдено ${missedMessages.length} пропущенных сообщений в чате ${conversation.chatId}`,
+          );
+
+          // Обрабатываем пропущенные сообщения в хронологическом порядке
+          for (const msg of missedMessages.reverse()) {
+            try {
+              // Получаем полное сообщение из Telegram
+              const fullMessage = await client.getMessages(chatIdNumber, [
+                msg.id,
+              ]);
+
+              if (fullMessage[0]) {
+                const messageHandler = createBotHandler(client);
+                await messageHandler(fullMessage[0]);
+                processedCount++;
+              }
+            } catch (msgError) {
+              console.error(
+                `❌ Ошибка обработки сообщения ${msg.id}:`,
+                msgError,
+              );
+              errorCount++;
+            }
+          }
+        }
+      } catch (error) {
+        console.error(
+          `❌ Ошибка проверки беседы ${conversation.chatId}:`,
+          error,
+        );
+        errorCount++;
+      }
+    }
+
+    console.log(
+      `✅ Обработка пропущенных сообщений завершена: обработано ${processedCount}, ошибок ${errorCount}`,
+    );
   }
 }
 

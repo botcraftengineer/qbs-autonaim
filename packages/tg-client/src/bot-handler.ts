@@ -28,11 +28,46 @@ export function createBotHandler(client: TelegramClient) {
           message.media?.type === "audio"
         ) {
           // Пользователь отправил голосовое/аудио без идентификации
-          await client.sendText(
-            message.chat.id,
+          const chatId = message.chat.id.toString();
+          const errorMessage =
             "Привет! Не могу понять, кто ты 🤔\n\n" +
-              "Напиши, пожалуйста, на какую вакансию откликался и свой 4-значный пин-код из сообщения. Тогда смогу послушать твое голосовое.",
+            "Напиши, пожалуйста, на какую вакансию откликался и свой 4-значный пин-код из сообщения. Тогда смогу послушать твое голосовое.";
+
+          // Создаем временную беседу
+          const { db } = await import("@qbs-autonaim/db/client");
+          const { telegramConversation, telegramMessage } = await import(
+            "@qbs-autonaim/db/schema"
           );
+          const { triggerMessageSend } = await import("./utils/inngest.js");
+
+          const [tempConversation] = await db
+            .insert(telegramConversation)
+            .values({
+              chatId,
+              status: "ACTIVE",
+              metadata: JSON.stringify({
+                identifiedBy: "none",
+                awaitingPin: true,
+              }),
+            })
+            .onConflictDoNothing()
+            .returning();
+
+          if (tempConversation) {
+            const [botMessage] = await db
+              .insert(telegramMessage)
+              .values({
+                conversationId: tempConversation.id,
+                sender: "BOT",
+                contentType: "TEXT",
+                content: errorMessage,
+              })
+              .returning();
+
+            if (botMessage) {
+              await triggerMessageSend(botMessage.id, chatId, errorMessage);
+            }
+          }
         }
         return;
       }
