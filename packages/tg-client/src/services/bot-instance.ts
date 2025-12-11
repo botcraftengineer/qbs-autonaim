@@ -107,7 +107,7 @@ export async function createBotInstance(
 
   // Создаем dispatcher и обработчики
   const dp = Dispatcher.for(client);
-  const messageHandler = createBotHandler(client);
+  const messageHandler = createBotHandler(client, workspaceId);
 
   // Регистрируем обработчик сообщений
   dp.onNewMessage(async (msg) => {

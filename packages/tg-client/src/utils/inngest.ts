@@ -34,6 +34,7 @@ export async function triggerMessageSend(
   messageId: string,
   username: string,
   content: string,
+  workspaceId: string,
 ): Promise<void> {
   if (!env.INNGEST_EVENT_KEY) {
     console.warn("⚠️ INNGEST_EVENT_KEY не установлен, событие не отправлено");
@@ -51,6 +52,7 @@ export async function triggerMessageSend(
         messageId,
         username,
         content,
+        workspaceId,
       },
     }),
   });

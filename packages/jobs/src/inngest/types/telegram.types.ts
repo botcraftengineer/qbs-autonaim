@@ -47,6 +47,7 @@ export const telegramUnidentifiedMessageSendDataSchema = z.object({
   messageId: z.string(),
   username: z.string().min(1, "Username is required"),
   content: z.string().min(1, "Content is required"),
+  workspaceId: z.string().min(1, "Workspace ID is required"),
 });
 
 /**

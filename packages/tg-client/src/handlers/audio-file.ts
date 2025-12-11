@@ -11,6 +11,7 @@ import { markRead, showRecordingAudio } from "../utils/telegram";
 export async function handleAudioFile(
   client: TelegramClient,
   message: Message,
+  workspaceId: string,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
   console.log("handleAudioFile", chatId);
@@ -84,7 +85,12 @@ export async function handleAudioFile(
         .returning();
 
       if (botMessage && username) {
-        await triggerMessageSend(botMessage.id, username, errorMessage);
+        await triggerMessageSend(
+          botMessage.id,
+          username,
+          errorMessage,
+          workspaceId,
+        );
       }
     }
 
@@ -150,6 +156,7 @@ export async function handleAudioFile(
             botMessage.id,
             conversation.username,
             errorMessage,
+            workspaceId,
           );
         }
       }

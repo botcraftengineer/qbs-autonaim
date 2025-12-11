@@ -16,6 +16,7 @@ import { handleUnidentifiedMessage } from "./unidentified-message";
 export async function handleTextMessage(
   client: TelegramClient,
   message: Message,
+  workspaceId: string,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
   const messageText = message.text || "";
@@ -30,7 +31,7 @@ export async function handleTextMessage(
     // Если беседа не найдена или пользователь не идентифицирован (нет responseId),
     // перенаправляем в handleUnidentifiedMessage для попытки идентификации
     if (!conversation || !conversation.responseId) {
-      await handleUnidentifiedMessage(client, message);
+      await handleUnidentifiedMessage(client, message, workspaceId);
       return;
     }
 
@@ -122,6 +123,7 @@ export async function handleTextMessage(
         botMessage.id,
         conversation.username,
         aiResponse,
+        workspaceId,
       );
     }
   } catch (error) {
@@ -151,6 +153,7 @@ export async function handleTextMessage(
             botMessage.id,
             conversation.username,
             errorMessage,
+            workspaceId,
           );
         }
       }

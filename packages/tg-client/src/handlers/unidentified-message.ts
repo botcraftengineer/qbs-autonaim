@@ -33,6 +33,7 @@ function extractPinCode(text: string): string | null {
 export async function handleUnidentifiedMessage(
   client: TelegramClient,
   message: Message,
+  workspaceId: string,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
   const text = message.text?.trim();
@@ -141,7 +142,12 @@ export async function handleUnidentifiedMessage(
       );
 
       if (botMessageId && username) {
-        await triggerMessageSend(botMessageId, username, aiResponse);
+        await triggerMessageSend(
+          botMessageId,
+          username,
+          aiResponse,
+          workspaceId,
+        );
       }
 
       return;
@@ -168,7 +174,12 @@ export async function handleUnidentifiedMessage(
           .returning();
 
         if (botMessage && username) {
-          await triggerMessageSend(botMessage.id, username, aiResponse);
+          await triggerMessageSend(
+            botMessage.id,
+            username,
+            aiResponse,
+            workspaceId,
+          );
         }
       }
 
@@ -222,7 +233,12 @@ export async function handleUnidentifiedMessage(
         .returning();
 
       if (botMessage && username) {
-        await triggerMessageSend(botMessage.id, username, aiResponse);
+        await triggerMessageSend(
+          botMessage.id,
+          username,
+          aiResponse,
+          workspaceId,
+        );
       }
     }
 
@@ -298,7 +314,12 @@ export async function handleUnidentifiedMessage(
         );
 
         if (botMessageId && username) {
-          await triggerMessageSend(botMessageId, username, aiResponse);
+          await triggerMessageSend(
+            botMessageId,
+            username,
+            aiResponse,
+            workspaceId,
+          );
         }
       }
 
@@ -344,7 +365,12 @@ export async function handleUnidentifiedMessage(
       .returning();
 
     if (botMessage && username) {
-      await triggerMessageSend(botMessage.id, username, aiResponse);
+      await triggerMessageSend(
+        botMessage.id,
+        username,
+        aiResponse,
+        workspaceId,
+      );
     }
   }
 }

@@ -11,6 +11,7 @@ import { markRead, showRecordingAudio } from "../utils/telegram";
 export async function handleVoiceMessage(
   client: TelegramClient,
   message: Message,
+  workspaceId: string,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
   console.log("handleVoiceMessage", chatId);
@@ -89,7 +90,12 @@ export async function handleVoiceMessage(
         .returning();
 
       if (botMessage && username) {
-        await triggerMessageSend(botMessage.id, username, errorMessage);
+        await triggerMessageSend(
+          botMessage.id,
+          username,
+          errorMessage,
+          workspaceId,
+        );
       }
     }
 
@@ -154,6 +160,7 @@ export async function handleVoiceMessage(
             botMessage.id,
             conversation.username,
             errorMessage,
+            workspaceId,
           );
         }
       }

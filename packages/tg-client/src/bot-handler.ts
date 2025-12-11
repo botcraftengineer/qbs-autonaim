@@ -13,7 +13,7 @@ import { triggerMessageSend } from "./utils/inngest";
 /**
  * Создать обработчик обновлений для MTProto клиента
  */
-export function createBotHandler(client: TelegramClient) {
+export function createBotHandler(client: TelegramClient, workspaceId: string) {
   return async (message: Message) => {
     try {
       if (message.isOutgoing) {
@@ -25,7 +25,7 @@ export function createBotHandler(client: TelegramClient) {
       if (!identification.identified) {
         // Кандидат не идентифицирован - пытаемся помочь найти его заявку
         if (message.text) {
-          await handleUnidentifiedMessage(client, message);
+          await handleUnidentifiedMessage(client, message, workspaceId);
           return;
         } else if (
           message.media?.type === "voice" ||
@@ -92,7 +92,12 @@ export function createBotHandler(client: TelegramClient) {
               .returning();
 
             if (botMessage && username) {
-              await triggerMessageSend(botMessage.id, username, errorMessage);
+              await triggerMessageSend(
+                botMessage.id,
+                username,
+                errorMessage,
+                workspaceId,
+              );
             }
           }
         }
@@ -101,19 +106,19 @@ export function createBotHandler(client: TelegramClient) {
 
       // Обработка голосовых сообщений
       if (message.media?.type === "voice") {
-        await handleVoiceMessage(client, message);
+        await handleVoiceMessage(client, message, workspaceId);
         return;
       }
 
       // Обработка аудиофайлов
       if (message.media?.type === "audio") {
-        await handleAudioFile(client, message);
+        await handleAudioFile(client, message, workspaceId);
         return;
       }
 
       // Обработка текстовых сообщений
       if (message.text) {
-        await handleTextMessage(client, message);
+        await handleTextMessage(client, message, workspaceId);
       }
     } catch (error) {
       console.error("Ошибка обработки сообщения:", error);

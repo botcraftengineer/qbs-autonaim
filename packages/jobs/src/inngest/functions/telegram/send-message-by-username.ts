@@ -15,7 +15,7 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
   },
   { event: "telegram/message.send.by-username" },
   async ({ event, step }) => {
-    const { messageId, username, content } = event.data;
+    const { messageId, username, content, workspaceId } = event.data;
 
     // Задержка 3-5 минут для имитации живого человека
     const delayMinutes = Math.floor(Math.random() * 3) + 3;
@@ -25,17 +25,24 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
     const result = await step.run("send-telegram-message", async () => {
       console.log("📤 Отправка сообщения по username", {
         username,
+        workspaceId,
       });
 
       try {
-        // Получаем любую активную сессию (можно улучшить логику выбора)
+        // Получаем активную сессию для конкретного workspace
         const session = await db.query.telegramSession.findFirst({
-          where: (sessions, { eq }) => eq(sessions.isActive, true),
+          where: (sessions, { eq, and }) =>
+            and(
+              eq(sessions.isActive, true),
+              eq(sessions.workspaceId, workspaceId),
+            ),
           orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
         });
 
         if (!session) {
-          throw new Error("Нет активной Telegram сессии");
+          throw new Error(
+            `Нет активной Telegram сессии для workspace ${workspaceId}`,
+          );
         }
 
         // Отправляем сообщение по username
