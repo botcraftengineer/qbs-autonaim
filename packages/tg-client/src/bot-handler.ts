@@ -15,7 +15,6 @@ export function createBotHandler(client: TelegramClient) {
       if (message.isOutgoing) {
         return;
       }
-      console.log(message);
 
       // Попытка идентифицировать кандидата перед обработкой сообщения
       const identification = await identifyCandidate(message);
