@@ -1,5 +1,5 @@
 import { desc, eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db } from "@qbs-autonaim/db/.ws";
 import {
   telegramConversation,
   telegramMessage,

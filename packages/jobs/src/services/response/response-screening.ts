@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db } from "@qbs-autonaim/db/client.ws";
 import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import { buildResponseScreeningPrompt } from "@qbs-autonaim/prompts";

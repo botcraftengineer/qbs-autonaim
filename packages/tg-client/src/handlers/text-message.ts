@@ -1,7 +1,7 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
 import { desc, eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db } from "@qbs-autonaim/db/client.ws";
 import {
   telegramConversation,
   telegramMessage,
