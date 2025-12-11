@@ -67,6 +67,6 @@ export async function generateAIResponse(
     return text.trim();
   } catch (error) {
     console.error("Ошибка генерации AI ответа:", error);
-    return "Извини, что-то пошло не так. Можешь повторить?";
+    return "Не удалось обработать сообщение. Попробуй написать снова";
   }
 }
