@@ -56,16 +56,16 @@ export function buildTelegramRecruiterPrompt(
 
   switch (stage) {
     case "AWAITING_PIN":
-      stageInstructions = buildAwaitingPinPrompt();
+      stageInstructions = buildAwaitingPinPrompt(historyText);
       break;
     case "INVALID_PIN":
-      stageInstructions = buildInvalidPinPrompt();
+      stageInstructions = buildInvalidPinPrompt(historyText);
       break;
     case "PIN_RECEIVED":
-      stageInstructions = buildPinReceivedPrompt(context);
+      stageInstructions = buildPinReceivedPrompt(context, historyText);
       break;
     case "INTERVIEWING":
-      stageInstructions = buildInterviewingPrompt(context);
+      stageInstructions = buildInterviewingPrompt(context, historyText);
       break;
   }
 
@@ -84,8 +84,7 @@ export function buildTelegramRecruiterPrompt(
 - Используй контекст предыдущих сообщений
 - Не повторяй то, что уже говорил
 - Избегай фраз типа "Рад вас видеть", "Приятно познакомиться" — это звучит неестественно
-
-${historyText ? `ПОСЛЕДНИЕ СООБЩЕНИЯ (для контекста):\n${historyText}\n` : ""}
+- НЕ здоровайся повторно, если уже здоровался в истории
 
 НОВОЕ СООБЩЕНИЕ КАНДИДАТА:
 ${messageText}

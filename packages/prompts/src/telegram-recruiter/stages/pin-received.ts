@@ -6,6 +6,7 @@ import type { TelegramRecruiterContext } from "../types";
  */
 export function buildPinReceivedPrompt(
   context: TelegramRecruiterContext,
+  historyText: string,
 ): string {
   const { vacancyTitle, vacancyRequirements, resumeData } = context;
 
@@ -58,9 +59,12 @@ export function buildPinReceivedPrompt(
 ⚠️ ЭТАП 2: PIN-КОД ПОЛУЧЕН — НАЧАЛО ИНТЕРВЬЮ
 Кандидат только что отправил PIN-код и идентифицирован. Начинаем интервью.
 
+${historyText ? `ИСТОРИЯ ДИАЛОГА (для контекста):\n${historyText}\n` : ""}
+
 СТРОГОЕ ПРАВИЛО ПРИВЕТСТВИЯ:
 - ЗАПРЕЩЕНО использовать слово "Привет"
 - ОБЯЗАТЕЛЬНО используй только "Добрый день" или "Здравствуйте"
+- НЕ здоровайся повторно, если уже здоровался в истории выше
 
 КОНТЕКСТ О КАНДИДАТЕ (используй для персонализации вопросов):
 ${vacancyTitle ? `Вакансия: ${vacancyTitle}` : "Вакансия не указана"}${requirementsContext}${experienceContext}${coverLetterContext}

@@ -35,7 +35,7 @@ USER bunjs
 
 COPY --from=installer /app .
 
-# Health check port
-EXPOSE 8002
+# API port
+EXPOSE 8001
 
-CMD ["bun", "run", "packages/tg-client/src/start-bot.ts"]
+CMD ["bun", "run", "packages/tg-client/src/api/index.ts"]
