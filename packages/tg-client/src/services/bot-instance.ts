@@ -121,6 +121,18 @@ export async function createBotInstance(
         media: msg.media
           ? {
               type: msg.media.type,
+              fileId:
+                "fileId" in msg.media
+                  ? (msg.media.fileId as string | undefined)
+                  : undefined,
+              mimeType:
+                "mimeType" in msg.media
+                  ? (msg.media.mimeType as string | undefined)
+                  : undefined,
+              duration:
+                "duration" in msg.media
+                  ? (msg.media.duration as number | undefined)
+                  : undefined,
             }
           : undefined,
         sender: msg.sender

@@ -79,6 +79,14 @@ export const processIncomingMessageFunction = inngest.createFunction(
           const pinCode = extractPinCode(text);
 
           // Создаем или обновляем временную беседу
+          const updateSet: Record<string, string | undefined> = {};
+          if (username !== undefined) {
+            updateSet.username = username;
+          }
+          if (firstName !== undefined) {
+            updateSet.candidateName = firstName;
+          }
+
           const [tempConv] = await db
             .insert(telegramConversation)
             .values({
@@ -93,10 +101,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
             })
             .onConflictDoUpdate({
               target: telegramConversation.chatId,
-              set: {
-                username: username || undefined,
-                candidateName: firstName || undefined,
-              },
+              set: updateSet,
             })
             .returning();
 
@@ -345,8 +350,6 @@ export const processIncomingMessageFunction = inngest.createFunction(
           data: {
             messageId: messageData.id.toString(),
             fileId: messageData.media?.fileId || "",
-            conversationId: conversation.id,
-            workspaceId,
           },
         });
       });
@@ -357,8 +360,6 @@ export const processIncomingMessageFunction = inngest.createFunction(
           data: {
             messageId: messageData.id.toString(),
             fileId: messageData.media?.fileId || "",
-            conversationId: conversation.id,
-            workspaceId,
           },
         });
       });
