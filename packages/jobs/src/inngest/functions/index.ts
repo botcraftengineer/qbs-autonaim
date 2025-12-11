@@ -36,6 +36,7 @@ import {
   completeInterviewFunction,
   notifyTelegramAuthErrorFunction,
   sendNextQuestionFunction,
+  sendTelegramMessageByUsernameFunction,
   sendTelegramMessageFunction,
   transcribeVoiceFunction,
 } from "./telegram";
@@ -74,5 +75,6 @@ export const inngestFunctions = [
   notifyTelegramAuthErrorFunction,
   sendNextQuestionFunction,
   sendTelegramMessageFunction,
+  sendTelegramMessageByUsernameFunction,
   transcribeVoiceFunction,
 ];

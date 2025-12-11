@@ -21,6 +21,10 @@ export const sendTelegramMessageFunction = inngest.createFunction(
   async ({ event, step }) => {
     const { messageId, chatId, content } = event.data;
 
+    // Задержка 3-5 минут для имитации живого человека
+    const delayMinutes = Math.floor(Math.random() * 3) + 3; // 3-5 минут
+    await step.sleep("human-delay", `${delayMinutes}m`);
+
     const result = await step.run("send-telegram-message", async () => {
       console.log("📤 Отправка сообщения в Telegram", {
         messageId,
@@ -105,7 +109,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
             apiId: Number.parseInt(session.apiId, 10),
             apiHash: session.apiHash,
             sessionData: session.sessionData as Record<string, string>,
-            chatId,
+            chatId: Number.parseInt(chatId, 10),
             text: content,
           });
         }

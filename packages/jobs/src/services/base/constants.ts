@@ -27,19 +27,6 @@ export const SCREENING = {
   MAX_SIMPLE_SCORE: 5,
 } as const;
 
-export const AI = {
-  /** Температура для детерминированных ответов */
-  TEMPERATURE_DETERMINISTIC: 0,
-  /** Температура для низкой креативности */
-  TEMPERATURE_LOW: 0.1,
-  /** Температура для умеренной креативности */
-  TEMPERATURE_MODERATE: 0.3,
-  /** Температура для повышенной креативности (приветственные сообщения, вопросы) */
-  TEMPERATURE_CREATIVE: 0.7,
-  /** Температура для очень креативных ответов */
-  TEMPERATURE_HIGH: 0.8,
-} as const;
-
 export const TELEGRAM = {
   /** Минимальная длина имени пользователя */
   MIN_USERNAME_LENGTH: 5,

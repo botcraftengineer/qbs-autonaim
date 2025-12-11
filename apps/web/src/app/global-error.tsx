@@ -32,7 +32,7 @@ export default function GlobalError({
               <div className="space-y-2">
                 <h1 className="text-6xl font-bold tracking-tight">Ошибка</h1>
                 <h2 className="text-2xl font-semibold tracking-tight">
-                  Что-то пошло не так
+                  Произошла ошибка
                 </h2>
               </div>
               <p className="text-lg text-muted-foreground max-w-md mx-auto">

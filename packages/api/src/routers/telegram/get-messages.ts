@@ -70,7 +70,7 @@ export const getMessagesRouter = {
       });
 
       // Генерируем presigned URLs для файлов
-      const { getDownloadUrl } = await import("@qbs-autonaim/lib");
+      const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
 
       const messagesWithUrls = await Promise.all(
         messages.map(async (msg) => {

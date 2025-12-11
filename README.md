@@ -63,11 +63,43 @@ AUTH_SECRET="your-secret-key"
 # Шифрование (сгенерировать через bun db:generate-key)
 ENCRYPTION_KEY="your-encryption-key"
 
-# DeepSeek API для AI-скрининга
+# AI Provider (deepseek или openai)
+AI_PROVIDER="deepseek"
+
+# DeepSeek API (если AI_PROVIDER=deepseek)
 DEEPSEEK_API_KEY="your-api-key"
+
+# OpenAI API (если AI_PROVIDER=openai)
+OPENAI_API_KEY="your-api-key"
 ```
 
 Приложение будет доступно по адресу: http://localhost:3000
+
+## AI Провайдеры
+
+Проект поддерживает гибкое переключение между DeepSeek и OpenAI для AI-скрининга резюме.
+
+### Настройка провайдера
+
+**DeepSeek (по умолчанию, экономичный):**
+```env
+AI_PROVIDER=deepseek
+DEEPSEEK_API_KEY=your-deepseek-key
+```
+
+**OpenAI (более мощный):**
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=your-openai-key
+AI_MODEL=gpt-4o-mini  # опционально
+```
+
+### Доступные модели
+
+- **DeepSeek**: `deepseek-chat` (по умолчанию), `deepseek-coder`
+- **OpenAI**: `gpt-4o-mini` (по умолчанию), `gpt-4o`, `gpt-4-turbo`, `gpt-3.5-turbo`
+
+Подробнее: [AI_PROVIDER_GUIDE.md](AI_PROVIDER_GUIDE.md)
 
 ## Интеграции
 

@@ -1,6 +1,10 @@
 import type { Message } from "@mtcute/core";
-import { db, eq, or } from "@qbs-autonaim/db";
-import { telegramConversation, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, db, eq } from "@qbs-autonaim/db";
+import {
+  telegramConversation,
+  vacancy,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 
 interface IdentificationResult {
   identified: boolean;
@@ -14,6 +18,7 @@ interface IdentificationResult {
  */
 export async function identifyCandidate(
   message: Message,
+  workspaceId: string,
 ): Promise<IdentificationResult> {
   const chatId = message.chat.id.toString();
 
@@ -23,10 +28,11 @@ export async function identifyCandidate(
       where: eq(telegramConversation.chatId, chatId),
     });
 
-    if (existingConversation) {
+    // Беседа считается идентифицированной только если есть responseId
+    if (existingConversation?.responseId) {
       return {
         identified: true,
-        responseId: existingConversation.responseId || undefined,
+        responseId: existingConversation.responseId,
         conversationId: existingConversation.id,
         method: "chatId",
       };
@@ -40,12 +46,24 @@ export async function identifyCandidate(
       username = sender.username;
     }
 
-    // 3. Поиск по username в vacancy_response
+    // 3. Поиск по username в vacancy_response с проверкой workspaceId
     if (username) {
-      const responseByUsername = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.telegramUsername, username),
-        orderBy: (fields, { desc }) => [desc(fields.createdAt)],
-      });
+      const responseByUsername = await db
+        .select({
+          id: vacancyResponse.id,
+          candidateName: vacancyResponse.candidateName,
+        })
+        .from(vacancyResponse)
+        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+        .where(
+          and(
+            eq(vacancyResponse.telegramUsername, username),
+            eq(vacancy.workspaceId, workspaceId),
+          ),
+        )
+        .orderBy(vacancyResponse.createdAt)
+        .limit(1)
+        .then((rows) => rows[0]);
 
       if (responseByUsername) {
         // Создаем новую беседу или обновляем существующую
@@ -94,10 +112,22 @@ export async function identifyCandidate(
         : undefined;
 
     if (phone) {
-      const responseByPhone = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.phone, phone),
-        orderBy: (fields, { desc }) => [desc(fields.createdAt)],
-      });
+      const responseByPhone = await db
+        .select({
+          id: vacancyResponse.id,
+          candidateName: vacancyResponse.candidateName,
+        })
+        .from(vacancyResponse)
+        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+        .where(
+          and(
+            eq(vacancyResponse.phone, phone),
+            eq(vacancy.workspaceId, workspaceId),
+          ),
+        )
+        .orderBy(vacancyResponse.createdAt)
+        .limit(1)
+        .then((rows) => rows[0]);
 
       if (responseByPhone) {
         const [conversation] = await db

@@ -13,7 +13,7 @@ export {
 // ==================== Services ====================
 // Re-export all services from new structure
 export {
-  AI,
+  addQuestionAnswer,
   // Interview
   analyzeAndGenerateNextQuestion,
   checkHHCredentials,
@@ -35,7 +35,10 @@ export {
   generateTelegramInvite,
   generateTelegramInviteMessage,
   generateWelcomeMessage,
+  getConversationMetadata,
   getInterviewContext,
+  getInterviewStartData,
+  getQuestionCount,
   getResponseById,
   getResponseByResumeId,
   getResponsesWithoutDetails,
@@ -45,7 +48,12 @@ export {
   hasDetailedInfo,
   hasVacancyDescription,
   INTERVIEW,
+  identifyByPinCode,
+  identifyByVacancy,
+  isInterviewCompleted,
+  isInterviewStarted,
   logger,
+  markInterviewCompleted,
   ok,
   parseScreeningResult,
   prepareScreeningPrompt,
@@ -56,6 +64,7 @@ export {
   SCREENING,
   saveBasicResponse,
   saveBasicVacancy,
+  saveMessage,
   saveQuestionAnswer,
   saveResponseToDb,
   saveVacancyToDb,
@@ -76,6 +85,7 @@ export {
   tryCatch,
   unwrap,
   unwrapOr,
+  updateConversationMetadata,
   updateResponseDetails,
   updateResponseStatus,
   updateVacancyDescription,

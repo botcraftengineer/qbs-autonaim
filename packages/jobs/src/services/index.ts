@@ -19,8 +19,6 @@ export { checkHHCredentials } from "./auth";
 
 // ==================== Base Utilities ====================
 export {
-  // Constants
-  AI,
   // Logger
   createLogger,
   err,
@@ -41,10 +39,21 @@ export {
 } from "./base";
 // ==================== Interview ====================
 export {
+  addQuestionAnswer,
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
+  getConversationMetadata,
   getInterviewContext,
+  getInterviewStartData,
+  getQuestionCount,
+  identifyByPinCode,
+  identifyByVacancy,
+  isInterviewCompleted,
+  isInterviewStarted,
+  markInterviewCompleted,
+  saveMessage,
   saveQuestionAnswer,
+  updateConversationMetadata,
 } from "./interview";
 // ==================== Media ====================
 export { transcribeAudio } from "./media";

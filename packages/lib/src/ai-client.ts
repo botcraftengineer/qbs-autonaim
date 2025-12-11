@@ -1,4 +1,6 @@
 import { deepseek } from "@ai-sdk/deepseek";
+import { openai } from "@ai-sdk/openai";
+import { env } from "@qbs-autonaim/config";
 import type { LanguageModel } from "ai";
 import {
   generateObject as aiGenerateObject,
@@ -13,10 +15,56 @@ const langfuse = new Langfuse({
   baseUrl: process.env.LANGFUSE_BASE_URL,
 });
 
+const DEFAULT_MODEL_OPENAI = "gpt-5-mini";
+const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
+
+/**
+ * Получить модель AI на основе конфигурации окружения
+ */
+export function getAIModel(): LanguageModel {
+  const provider = env.AI_PROVIDER;
+
+  switch (provider) {
+    case "openai": {
+      const model = env.AI_MODEL || DEFAULT_MODEL_OPENAI;
+      if (!env.OPENAI_API_KEY) {
+        throw new Error(
+          "OPENAI_API_KEY не установлен. Добавьте его в .env файл.",
+        );
+      }
+      return openai(model);
+    }
+    case "deepseek": {
+      const model = env.AI_MODEL || DEFAULT_MODEL_DEEPSEEK;
+      if (!env.DEEPSEEK_API_KEY) {
+        throw new Error(
+          "DEEPSEEK_API_KEY не установлен. Добавьте его в .env файл.",
+        );
+      }
+      return deepseek(model);
+    }
+    default:
+      throw new Error(`Неподдерживаемый AI провайдер: ${provider}`);
+  }
+}
+
+/**
+ * Получить название модели для логирования
+ */
+export function getAIModelName(): string {
+  const provider = env.AI_PROVIDER;
+  const customModel = env.AI_MODEL;
+
+  if (customModel) {
+    return customModel;
+  }
+
+  return provider === "openai" ? DEFAULT_MODEL_OPENAI : DEFAULT_MODEL_DEEPSEEK;
+}
+
 interface GenerateTextOptions {
   model?: LanguageModel;
   prompt: string;
-  temperature?: number;
   generationName: string;
   entityId?: string;
   metadata?: Record<string, unknown>;
@@ -24,13 +72,14 @@ interface GenerateTextOptions {
 
 export async function generateText(options: GenerateTextOptions) {
   const {
-    model = deepseek("deepseek-chat"),
+    model = getAIModel(),
     prompt,
-    temperature = 0.3,
     generationName,
     entityId,
     metadata = {},
   } = options;
+
+  const modelName = getAIModelName();
 
   const trace = langfuse.trace({
     name: generationName,
@@ -40,7 +89,7 @@ export async function generateText(options: GenerateTextOptions) {
 
   const generation = trace.generation({
     name: generationName,
-    model: "deepseek-chat",
+    model: modelName,
     input: prompt,
     metadata,
   });
@@ -49,7 +98,6 @@ export async function generateText(options: GenerateTextOptions) {
     const result = await aiGenerateText({
       model,
       prompt,
-      temperature,
     });
 
     generation.end({
@@ -85,7 +133,6 @@ interface GenerateObjectOptions<T extends z.ZodType> {
   model?: LanguageModel;
   schema: T;
   prompt: string;
-  temperature?: number;
   generationName: string;
   entityId?: string;
   metadata?: Record<string, unknown>;
@@ -95,14 +142,15 @@ export async function generateObject<T extends z.ZodType>(
   options: GenerateObjectOptions<T>,
 ) {
   const {
-    model = deepseek("deepseek-chat"),
+    model = getAIModel(),
     schema,
     prompt,
-    temperature = 0.3,
     generationName,
     entityId,
     metadata = {},
   } = options;
+
+  const modelName = getAIModelName();
 
   const trace = langfuse.trace({
     name: generationName,
@@ -112,7 +160,7 @@ export async function generateObject<T extends z.ZodType>(
 
   const generation = trace.generation({
     name: generationName,
-    model: "deepseek-chat",
+    model: modelName,
     input: prompt,
     metadata,
   });
@@ -122,7 +170,6 @@ export async function generateObject<T extends z.ZodType>(
       model,
       schema,
       prompt,
-      temperature,
     });
 
     generation.end({

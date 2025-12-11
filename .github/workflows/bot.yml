@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'packages/tg-client/**'
+      - 'packages/prompts/**'
 jobs:
   # Deploy to EKS
   deploy:

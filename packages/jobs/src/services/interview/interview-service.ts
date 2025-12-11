@@ -15,7 +15,7 @@ import {
   interviewScoringSchema,
 } from "../../schemas/interview";
 import { extractJsonFromText } from "../../utils/json-extractor";
-import { AI, createLogger, INTERVIEW } from "../base";
+import { createLogger, INTERVIEW } from "../base";
 
 const logger = createLogger("Interview");
 
@@ -123,7 +123,6 @@ export async function analyzeAndGenerateNextQuestion(
 
   const { text } = await generateText({
     prompt,
-    temperature: AI.TEMPERATURE_HIGH,
     generationName: "interview-next-question",
     entityId: context.conversationId,
     metadata: {
@@ -244,7 +243,6 @@ export async function createInterviewScoring(
 
   const { text } = await generateText({
     prompt,
-    temperature: AI.TEMPERATURE_MODERATE,
     generationName: "interview-scoring",
     entityId: context.conversationId,
     metadata: {

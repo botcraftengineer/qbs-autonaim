@@ -18,13 +18,19 @@ interface GenerateResponseParams {
   stage: ConversationStage;
   candidateName?: string;
   vacancyTitle?: string;
+  vacancyRequirements?: string;
   responseStatus?: string;
-  conversationHistory?: Array<{ sender: string; content: string }>;
+  conversationHistory?: Array<{
+    sender: string;
+    content: string;
+    contentType?: "TEXT" | "VOICE";
+  }>;
   resumeData?: {
     experience?: string;
     coverLetter?: string;
     phone?: string;
   };
+  errorMessage?: string;
 }
 
 /**
@@ -42,9 +48,11 @@ export async function generateAIResponse(
     stage: params.stage,
     candidateName: params.candidateName,
     vacancyTitle: params.vacancyTitle,
+    vacancyRequirements: params.vacancyRequirements,
     responseStatus: params.responseStatus,
     conversationHistory: params.conversationHistory || [],
     resumeData: params.resumeData,
+    errorMessage: params.errorMessage,
   };
 
   const prompt = buildTelegramRecruiterPrompt(context);
@@ -52,7 +60,6 @@ export async function generateAIResponse(
   try {
     const { text } = await generateText({
       prompt,
-      temperature: 0.7,
       generationName: "telegram-response",
       entityId: "telegram-chat",
       metadata: {
@@ -65,6 +72,6 @@ export async function generateAIResponse(
     return text.trim();
   } catch (error) {
     console.error("Ошибка генерации AI ответа:", error);
-    return "Извини, что-то пошло не так. Можешь повторить?";
+    throw error;
   }
 }

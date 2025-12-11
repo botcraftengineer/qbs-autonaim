@@ -6,7 +6,7 @@ import { buildVacancyRequirementsExtractionPrompt } from "@qbs-autonaim/prompts"
 import { vacancyRequirementsSchema } from "../../schemas/vacancy-requirements.schema";
 import type { VacancyRequirements } from "../../types/screening";
 import { extractJsonFromText } from "../../utils/json-extractor";
-import { AI, createLogger, err, type Result, tryCatch } from "../base";
+import { createLogger, err, type Result, tryCatch } from "../base";
 
 const logger = createLogger("VacancyRequirements");
 
@@ -58,7 +58,6 @@ export async function extractVacancyRequirements(
   const aiResult = await tryCatch(async () => {
     const { text } = await generateText({
       prompt,
-      temperature: AI.TEMPERATURE_LOW,
       generationName: "extract-vacancy-requirements",
       entityId: vacancyId,
       metadata: {
