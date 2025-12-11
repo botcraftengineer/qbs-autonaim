@@ -105,7 +105,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
             apiId: Number.parseInt(session.apiId, 10),
             apiHash: session.apiHash,
             sessionData: session.sessionData as Record<string, string>,
-            chatId,
+            chatId: Number.parseInt(chatId, 10),
             text: content,
           });
         }
