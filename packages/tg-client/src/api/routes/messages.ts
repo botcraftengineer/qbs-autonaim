@@ -136,11 +136,6 @@ messages.post("/send-by-username", async (c) => {
     }
 
     const { workspaceId, username, text } = result.data;
-    console.log("✅ Validated data:", {
-      workspaceId,
-      username,
-      textLength: text.length,
-    });
 
     const client = botManager.getClient(workspaceId);
     if (!client) {
