@@ -1,21 +1,12 @@
 import { fileTypeFromBuffer } from "file-type";
 import { Hono } from "hono";
 import mime from "mime-types";
-import { z } from "zod";
 import { botManager } from "../../bot-manager";
 import { uploadFile } from "../../utils/file-upload";
+import { downloadFileSchema } from "../schemas";
 import { handleError } from "../utils";
 
 const files = new Hono();
-
-const downloadFileSchema = z.object({
-  workspaceId: z.string(),
-  chatId: z.union([
-    z.string().transform((val) => Number.parseInt(val, 10)),
-    z.number(),
-  ]),
-  messageId: z.number(),
-});
 
 files.post("/download", async (c) => {
   try {
@@ -96,7 +87,9 @@ files.post("/download", async (c) => {
     );
 
     const duration =
-      "duration" in message.media ? (message.media.duration as number) : 0;
+      "duration" in message.media && typeof message.media.duration === "number"
+        ? message.media.duration
+        : 0;
 
     return c.json({
       success: true,

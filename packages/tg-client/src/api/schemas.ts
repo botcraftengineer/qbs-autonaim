@@ -35,7 +35,12 @@ export const checkPasswordSchema = z.object({
 export const sendMessageSchema = z.object({
   workspaceId: z.string().min(1),
   chatId: z.union([
-    z.string().transform((val) => Number.parseInt(val, 10)),
+    z
+      .string()
+      .transform((val) => Number.parseInt(val, 10))
+      .refine((value) => !Number.isNaN(value), {
+        message: "chatId must be a valid integer",
+      }),
     z.number(),
   ]),
   text: z.string().min(1),
@@ -99,9 +104,17 @@ export const healthResponseSchema = z.object({
 });
 
 export const downloadFileSchema = z.object({
-  workspaceId: z.string(),
-  chatId: z.string(),
-  messageId: z.number(),
+  workspaceId: z.string().min(1),
+  chatId: z.union([
+    z
+      .string()
+      .transform((val) => Number.parseInt(val, 10))
+      .refine((value) => !Number.isNaN(value), {
+        message: "chatId must be a valid integer",
+      }),
+    z.number(),
+  ]),
+  messageId: z.number().int().positive(),
 });
 
 export const downloadFileResponseSchema = z.object({

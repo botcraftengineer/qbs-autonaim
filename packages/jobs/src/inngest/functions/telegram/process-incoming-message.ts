@@ -1,4 +1,3 @@
-import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
@@ -452,7 +451,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         // Скачиваем файл и загружаем в S3 через tg-client SDK
         const downloadData = await tgClientSDK.downloadFile({
           workspaceId,
-          chatId,
+          chatId: Number.parseInt(chatId, 10),
           messageId: messageData.id,
         });
 
@@ -486,7 +485,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         // Скачиваем файл и загружаем в S3 через tg-client SDK
         const downloadData = await tgClientSDK.downloadFile({
           workspaceId,
-          chatId,
+          chatId: Number.parseInt(chatId, 10),
           messageId: messageData.id,
         });
 

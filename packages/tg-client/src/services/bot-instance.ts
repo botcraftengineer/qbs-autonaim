@@ -5,6 +5,8 @@
 import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
 import type { telegramSession } from "@qbs-autonaim/db/schema";
+import type { MessageData } from "../schemas/message-data.schema";
+import { messageDataSchema } from "../schemas/message-data.schema";
 import { ExportableStorage } from "../storage";
 import { isAuthError } from "../utils/auth-errors";
 import { triggerIncomingMessage } from "../utils/inngest";
@@ -122,8 +124,8 @@ export async function createBotInstance(
       // Помечаем сообщение прочитанным
       await markRead(client, msg.chat.id);
 
-      // Сериализуем данные сообщения для Inngest
-      const messageData = {
+      // Конструируем данные сообщения с проверкой типов
+      const messageDataRaw: MessageData = {
         id: msg.id,
         chatId: msg.chat.id.toString(),
         text: msg.text,
@@ -132,16 +134,18 @@ export async function createBotInstance(
           ? {
               type: msg.media.type,
               fileId:
-                "fileId" in msg.media
-                  ? (msg.media.fileId as string | undefined)
+                "fileId" in msg.media && typeof msg.media.fileId === "string"
+                  ? msg.media.fileId
                   : undefined,
               mimeType:
-                "mimeType" in msg.media
-                  ? (msg.media.mimeType as string | undefined)
+                "mimeType" in msg.media &&
+                typeof msg.media.mimeType === "string"
+                  ? msg.media.mimeType
                   : undefined,
               duration:
-                "duration" in msg.media
-                  ? (msg.media.duration as number | undefined)
+                "duration" in msg.media &&
+                typeof msg.media.duration === "number"
+                  ? msg.media.duration
                   : undefined,
             }
           : undefined,
@@ -149,14 +153,31 @@ export async function createBotInstance(
           ? {
               type: msg.sender.type,
               username:
-                "username" in msg.sender ? msg.sender.username : undefined,
+                "username" in msg.sender &&
+                typeof msg.sender.username === "string"
+                  ? msg.sender.username
+                  : undefined,
               firstName:
-                msg.sender.type === "user" ? msg.sender.firstName : undefined,
+                msg.sender.type === "user" &&
+                "firstName" in msg.sender &&
+                typeof msg.sender.firstName === "string"
+                  ? msg.sender.firstName
+                  : undefined,
             }
           : undefined,
       };
 
-      await triggerIncomingMessage(workspaceId, messageData);
+      // Валидируем данные перед отправкой
+      const validationResult = messageDataSchema.safeParse(messageDataRaw);
+      if (!validationResult.success) {
+        console.error(
+          "❌ Ошибка валидации данных сообщения:",
+          validationResult.error.format(),
+        );
+        return;
+      }
+
+      await triggerIncomingMessage(workspaceId, validationResult.data);
     } catch (error) {
       const authCheck = isAuthError(error);
       if (authCheck.isAuth) {

@@ -1,4 +1,5 @@
 import { env } from "@qbs-autonaim/config";
+import type { MessageData } from "../schemas/message-data.schema";
 
 /**
  * Отправить событие транскрибации в Inngest
@@ -63,7 +64,7 @@ export async function triggerMessageSend(
  */
 export async function triggerIncomingMessage(
   workspaceId: string,
-  messageData: Record<string, unknown>,
+  messageData: MessageData,
 ): Promise<void> {
   if (!env.INNGEST_EVENT_KEY) {
     console.warn("⚠️ INNGEST_EVENT_KEY не установлен, событие не отправлено");

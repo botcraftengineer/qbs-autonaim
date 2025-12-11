@@ -10,6 +10,8 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import type { MessageData } from "../schemas/message-data.schema";
+import { messageDataSchema } from "../schemas/message-data.schema";
 import { triggerIncomingMessage } from "../utils/inngest";
 
 export interface MissedMessagesProcessorConfig {
@@ -162,8 +164,8 @@ async function processConversationMissedMessages(
         if (fullMessage[0]) {
           const message = fullMessage[0];
 
-          // Отправляем событие в Inngest для обработки
-          const messageData = {
+          // Конструируем данные сообщения с проверкой типов
+          const messageDataRaw: MessageData = {
             id: message.id,
             chatId: message.chat.id.toString(),
             text: message.text,
@@ -172,16 +174,19 @@ async function processConversationMissedMessages(
               ? {
                   type: message.media.type,
                   fileId:
-                    "fileId" in message.media
-                      ? (message.media.fileId as string | undefined)
+                    "fileId" in message.media &&
+                    typeof message.media.fileId === "string"
+                      ? message.media.fileId
                       : undefined,
                   mimeType:
-                    "mimeType" in message.media
-                      ? (message.media.mimeType as string | undefined)
+                    "mimeType" in message.media &&
+                    typeof message.media.mimeType === "string"
+                      ? message.media.mimeType
                       : undefined,
                   duration:
-                    "duration" in message.media
-                      ? (message.media.duration as number | undefined)
+                    "duration" in message.media &&
+                    typeof message.media.duration === "number"
+                      ? message.media.duration
                       : undefined,
                 }
               : undefined,
@@ -189,20 +194,34 @@ async function processConversationMissedMessages(
               ? {
                   type: message.sender.type,
                   username:
-                    "username" in message.sender
+                    "username" in message.sender &&
+                    typeof message.sender.username === "string"
                       ? message.sender.username
                       : undefined,
                   firstName:
-                    message.sender.type === "user"
+                    message.sender.type === "user" &&
+                    "firstName" in message.sender &&
+                    typeof message.sender.firstName === "string"
                       ? message.sender.firstName
                       : undefined,
                 }
               : undefined,
           };
 
+          // Валидируем данные перед отправкой
+          const validationResult = messageDataSchema.safeParse(messageDataRaw);
+          if (!validationResult.success) {
+            console.error(
+              `❌ Ошибка валидации данных сообщения ${msg.id}:`,
+              validationResult.error.format(),
+            );
+            errors++;
+            continue;
+          }
+
           await triggerIncomingMessage(
             response.vacancy.workspaceId,
-            messageData,
+            validationResult.data,
           );
           processed++;
         }

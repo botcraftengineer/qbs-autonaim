@@ -1,7 +1,7 @@
 import { deepseek } from "@ai-sdk/deepseek";
 import { openai } from "@ai-sdk/openai";
 import { env } from "@qbs-autonaim/config";
-import type { GenerateObjectResult, LanguageModel } from "ai";
+import type { LanguageModel } from "ai";
 import {
   generateObject as aiGenerateObject,
   generateText as aiGenerateText,
