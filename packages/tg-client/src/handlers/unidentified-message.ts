@@ -84,89 +84,62 @@ export async function handleUnidentifiedMessage(
   const pinCode = extractPinCode(text);
 
   if (pinCode) {
-    // Ищем отклик по пин-коду
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, pinCode),
-      with: {
-        vacancy: true,
-      },
-    });
+    // Используем сервис идентификации
+    const { identifyByPinCode, getInterviewStartData, saveMessage } =
+      await import("@qbs-autonaim/lib");
 
-    if (response) {
-      // Создаем беседу
-      const [conversation] = await db
-        .insert(telegramConversation)
-        .values({
-          chatId,
-          responseId: response.id,
-          candidateName: response.candidateName || firstName || undefined,
-          username,
-          status: "ACTIVE",
-          metadata: JSON.stringify({
-            identifiedBy: "pin_code",
-            pinCode,
-          }),
-        })
-        .onConflictDoUpdate({
-          target: telegramConversation.chatId,
-          set: {
-            responseId: response.id,
-            username,
-            status: "ACTIVE",
-          },
-        })
-        .returning();
+    const identification = await identifyByPinCode(
+      pinCode,
+      chatId,
+      username,
+      firstName,
+    );
 
-      // Обновляем chatId
-      await db
-        .update(vacancyResponse)
-        .set({ chatId })
-        .where(eq(vacancyResponse.id, response.id));
+    if (identification.success && identification.conversationId) {
+      // Сохраняем сообщение кандидата с пин-кодом
+      await saveMessage(
+        identification.conversationId,
+        "CANDIDATE",
+        text,
+        "TEXT",
+        message.id.toString(),
+      );
 
-      // Сохраняем сообщение кандидата
-      if (conversation) {
-        await db.insert(telegramMessage).values({
-          conversationId: conversation.id,
-          sender: "CANDIDATE",
-          contentType: "TEXT",
-          content: text,
-          telegramMessageId: message.id.toString(),
-        });
-      }
+      // Получаем данные для начала интервью
+      const interviewData = identification.responseId
+        ? await getInterviewStartData(identification.responseId)
+        : null;
 
-      // После идентификации по PIN начинаем интервью
+      // Генерируем приветственное сообщение и начинаем интервью
       const { generateAIResponse } = await import("../utils/ai-response");
 
-      const resumeData = {
-        experience: response.experience || undefined,
-        coverLetter: response.coverLetter || undefined,
-        phone: response.phone || undefined,
-      };
+      const resumeData = interviewData
+        ? {
+            experience: interviewData.experience || undefined,
+            coverLetter: interviewData.coverLetter || undefined,
+            phone: interviewData.phone || undefined,
+          }
+        : undefined;
 
       const aiResponse = await generateAIResponse({
         messageText: text,
         stage: "PIN_RECEIVED",
-        candidateName: response.candidateName || firstName,
-        vacancyTitle: response.vacancy?.title,
-        responseStatus: response.status,
+        candidateName: identification.candidateName || firstName,
+        vacancyTitle: identification.vacancyTitle,
+        responseStatus: interviewData?.status,
         resumeData,
       });
 
       // Сохраняем ответ бота
-      if (conversation && username) {
-        const [botMessage] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: conversation.id,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: aiResponse,
-          })
-          .returning();
+      const botMessageId = await saveMessage(
+        identification.conversationId,
+        "BOT",
+        aiResponse,
+        "TEXT",
+      );
 
-        if (botMessage) {
-          await triggerMessageSend(botMessage.id, username, aiResponse);
-        }
+      if (botMessageId && username) {
+        await triggerMessageSend(botMessageId, username, aiResponse);
       }
 
       return;
@@ -246,80 +219,63 @@ export async function handleUnidentifiedMessage(
       });
     }
 
-    if (response) {
-      // Создаем беседу
-      const [conversation] = await db
-        .insert(telegramConversation)
-        .values({
-          chatId,
-          responseId: response.id,
-          candidateName: response.candidateName || firstName || undefined,
-          username,
-          status: "ACTIVE",
-          metadata: JSON.stringify({
-            identifiedBy: "vacancy_search",
-            searchQuery: text,
-          }),
-        })
-        .onConflictDoUpdate({
-          target: telegramConversation.chatId,
-          set: {
-            responseId: response.id,
-            username,
-            status: "ACTIVE",
-          },
-        })
-        .returning();
+    if (response && username) {
+      // Используем сервис идентификации
+      const { identifyByVacancy, getInterviewStartData, saveMessage } =
+        await import("@qbs-autonaim/lib");
 
-      // Обновляем chatId
-      await db
-        .update(vacancyResponse)
-        .set({ chatId })
-        .where(eq(vacancyResponse.id, response.id));
+      const identification = await identifyByVacancy(
+        foundVacancy.id,
+        chatId,
+        username,
+        firstName,
+      );
 
-      // Сохраняем сообщение кандидата
-      if (conversation) {
-        await db.insert(telegramMessage).values({
-          conversationId: conversation.id,
-          sender: "CANDIDATE",
-          contentType: "TEXT",
-          content: text,
-          telegramMessageId: message.id.toString(),
+      if (identification.success && identification.conversationId) {
+        // Сохраняем сообщение кандидата
+        await saveMessage(
+          identification.conversationId,
+          "CANDIDATE",
+          text,
+          "TEXT",
+          message.id.toString(),
+        );
+
+        // Получаем данные для начала интервью
+        const interviewData = identification.responseId
+          ? await getInterviewStartData(identification.responseId)
+          : null;
+
+        // Генерируем приветственное сообщение и начинаем интервью
+        const { generateAIResponse } = await import("../utils/ai-response");
+
+        const resumeData = interviewData
+          ? {
+              experience: interviewData.experience || undefined,
+              coverLetter: interviewData.coverLetter || undefined,
+              phone: interviewData.phone || undefined,
+            }
+          : undefined;
+
+        const aiResponse = await generateAIResponse({
+          messageText: text,
+          stage: "PIN_RECEIVED",
+          candidateName: identification.candidateName || firstName,
+          vacancyTitle: identification.vacancyTitle,
+          responseStatus: interviewData?.status,
+          resumeData,
         });
-      }
 
-      // После идентификации по вакансии начинаем интервью
-      const { generateAIResponse } = await import("../utils/ai-response");
+        // Сохраняем ответ бота
+        const botMessageId = await saveMessage(
+          identification.conversationId,
+          "BOT",
+          aiResponse,
+          "TEXT",
+        );
 
-      const resumeData = {
-        experience: response.experience || undefined,
-        coverLetter: response.coverLetter || undefined,
-        phone: response.phone || undefined,
-      };
-
-      const aiResponse = await generateAIResponse({
-        messageText: text,
-        stage: "PIN_RECEIVED",
-        candidateName: response.candidateName || firstName,
-        vacancyTitle: foundVacancy.title,
-        responseStatus: response.status,
-        resumeData,
-      });
-
-      // Сохраняем ответ бота
-      if (conversation && username) {
-        const [botMessage] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: conversation.id,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: aiResponse,
-          })
-          .returning();
-
-        if (botMessage) {
-          await triggerMessageSend(botMessage.id, username, aiResponse);
+        if (botMessageId && username) {
+          await triggerMessageSend(botMessageId, username, aiResponse);
         }
       }
 
