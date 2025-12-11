@@ -28,7 +28,7 @@ export async function triggerTranscription(
 }
 
 /**
- * Отправить событие отправки сообщения в Inngest
+ * Отправить событие отправки сообщения в Inngest для идентифицированного клиента
  */
 export async function triggerMessageSend(
   messageId: string,
@@ -50,6 +50,33 @@ export async function triggerMessageSend(
       data: {
         messageId,
         chatId,
+        content,
+      },
+    }),
+  });
+}
+
+/**
+ * Отправить событие отправки сообщения в Inngest для неидентифицированного клиента
+ */
+export async function triggerUnidentifiedMessageSend(
+  username: string,
+  content: string,
+): Promise<void> {
+  if (!env.INNGEST_EVENT_KEY) {
+    console.warn("⚠️ INNGEST_EVENT_KEY не установлен, событие не отправлено");
+    return;
+  }
+
+  await fetch(`${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: "telegram/message.send.unidentified",
+      data: {
+        username,
         content,
       },
     }),

@@ -9,7 +9,10 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { getErrorResponse } from "../responses/greetings.js";
 import { humanDelay } from "../utils/delays.js";
-import { triggerMessageSend } from "../utils/inngest.js";
+import {
+  triggerMessageSend,
+  triggerUnidentifiedMessageSend,
+} from "../utils/inngest.js";
 import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
 
 export async function handleTextMessage(
@@ -30,7 +33,7 @@ export async function handleTextMessage(
       await markRead(client, message.chat.id);
 
       // Кандидат не идентифицирован - запрашиваем PIN
-      // Получаем контекст из чата через mtcute
+      // Получаем контекст из чата через mtcute (не сохраняем в БД)
       const conversationHistory = await getChatHistory(
         client,
         message.chat.id,
@@ -44,36 +47,23 @@ export async function handleTextMessage(
         conversationHistory,
       });
 
-      // Создаем временную беседу для неидентифицированного пользователя
-      const [tempConversation] = await db
-        .insert(telegramConversation)
-        .values({
-          chatId,
-          status: "ACTIVE",
-          metadata: JSON.stringify({
-            identifiedBy: "none",
-            awaitingPin: true,
-          }),
-        })
-        .onConflictDoNothing()
-        .returning();
+      // Получаем username из сообщения
+      const username =
+        message.sender?.username ||
+        (message.sender && "username" in message.sender
+          ? (message.sender as { username?: string }).username
+          : undefined);
 
-      if (tempConversation) {
-        const [botMessage] = await db
-          .insert(telegramMessage)
-          .values({
-            conversationId: tempConversation.id,
-            sender: "BOT",
-            contentType: "TEXT",
-            content: aiResponse,
-          })
-          .returning();
-
-        if (botMessage) {
-          await humanDelay(600, 1200);
-          await triggerMessageSend(botMessage.id, chatId, aiResponse);
-        }
+      if (!username) {
+        console.warn(
+          "⚠️ Не удалось получить username для неидентифицированного пользователя",
+        );
+        return;
       }
+
+      // Отправляем сообщение через inngest без сохранения в БД
+      await humanDelay(600, 1200);
+      await triggerUnidentifiedMessageSend(username, aiResponse);
 
       return;
     }

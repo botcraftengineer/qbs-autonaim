@@ -43,6 +43,11 @@ export const telegramAuthErrorDataSchema = z.object({
   phone: z.string().min(1, "Phone is required"),
 });
 
+export const telegramUnidentifiedMessageSendDataSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  content: z.string().min(1, "Content is required"),
+});
+
 /**
  * Type inference
  */
@@ -63,4 +68,7 @@ export type InterviewCompletePayload = z.infer<
 >;
 export type TelegramAuthErrorPayload = z.infer<
   typeof telegramAuthErrorDataSchema
+>;
+export type TelegramUnidentifiedMessageSendPayload = z.infer<
+  typeof telegramUnidentifiedMessageSendDataSchema
 >;
