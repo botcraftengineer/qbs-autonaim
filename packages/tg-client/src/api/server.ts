@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { botManager } from "../bot-manager";
 import auth from "./routes/auth";
+import files from "./routes/files";
 import messages from "./routes/messages";
 
 export const customLogger = (message: unknown) => {
@@ -32,5 +33,6 @@ app.get("/bots/status", (c) => {
 
 app.route("/auth", auth);
 app.route("/messages", messages);
+app.route("/files", files);
 
 export default app;

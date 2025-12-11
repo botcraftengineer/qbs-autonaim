@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
@@ -8,6 +9,7 @@ import {
   saveMessage,
 } from "@qbs-autonaim/lib";
 import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
+import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
 
 interface MessagePayload {
@@ -447,24 +449,71 @@ export const processIncomingMessageFunction = inngest.createFunction(
       });
     } else if (messageData.media?.type === "voice") {
       await step.run("handle-voice", async () => {
-        // Триггерим транскрибацию через отдельное событие
-        await inngest.send({
-          name: "telegram/voice.transcribe",
-          data: {
-            messageId: messageData.id.toString(),
-            fileId: messageData.media?.fileId || "",
-          },
+        // Скачиваем файл и загружаем в S3 через tg-client SDK
+        const downloadData = await tgClientSDK.downloadFile({
+          workspaceId,
+          chatId,
+          messageId: messageData.id,
         });
+
+        // Сохраняем сообщение в базу с fileId из S3
+        const [savedMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "CANDIDATE",
+            contentType: "VOICE",
+            content: "Голосовое сообщение",
+            fileId: downloadData.fileId,
+            voiceDuration: downloadData.duration.toString(),
+            telegramMessageId: messageData.id.toString(),
+          })
+          .returning();
+
+        // Триггерим транскрибацию с ID сообщения из нашей базы
+        if (savedMessage) {
+          await inngest.send({
+            name: "telegram/voice.transcribe",
+            data: {
+              messageId: savedMessage.id,
+              fileId: downloadData.fileId,
+            },
+          });
+        }
       });
     } else if (messageData.media?.type === "audio") {
       await step.run("handle-audio", async () => {
-        await inngest.send({
-          name: "telegram/voice.transcribe",
-          data: {
-            messageId: messageData.id.toString(),
-            fileId: messageData.media?.fileId || "",
-          },
+        // Скачиваем файл и загружаем в S3 через tg-client SDK
+        const downloadData = await tgClientSDK.downloadFile({
+          workspaceId,
+          chatId,
+          messageId: messageData.id,
         });
+
+        // Сохраняем сообщение в базу с fileId из S3
+        const [savedMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "CANDIDATE",
+            contentType: "VOICE",
+            content: "Аудио сообщение",
+            fileId: downloadData.fileId,
+            voiceDuration: downloadData.duration.toString(),
+            telegramMessageId: messageData.id.toString(),
+          })
+          .returning();
+
+        // Триггерим транскрибацию с ID сообщения из нашей базы
+        if (savedMessage) {
+          await inngest.send({
+            name: "telegram/voice.transcribe",
+            data: {
+              messageId: savedMessage.id,
+              fileId: downloadData.fileId,
+            },
+          });
+        }
       });
     }
 

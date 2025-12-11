@@ -1,6 +1,8 @@
 import type {
   AuthResponse,
   CheckPasswordInput,
+  DownloadFileInput,
+  DownloadFileResponse,
   HealthResponse,
   SendCodeInput,
   SendCodeResponse,
@@ -105,6 +107,13 @@ export class TgClientSDK {
     params: SendMessageByPhoneInput,
   ): Promise<SendMessageByPhoneResponse> {
     return this.request("/messages/send-by-phone", params);
+  }
+
+  /**
+   * Скачать файл из сообщения
+   */
+  async downloadFile(params: DownloadFileInput): Promise<DownloadFileResponse> {
+    return this.request("/files/download", params);
   }
 
   /**

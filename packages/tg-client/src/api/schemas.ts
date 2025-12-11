@@ -97,6 +97,20 @@ export const healthResponseSchema = z.object({
   service: z.string(),
 });
 
+export const downloadFileSchema = z.object({
+  workspaceId: z.string(),
+  chatId: z.string(),
+  messageId: z.number(),
+});
+
+export const downloadFileResponseSchema = z.object({
+  success: z.boolean(),
+  fileId: z.string(),
+  fileName: z.string(),
+  mimeType: z.string(),
+  duration: z.number(),
+});
+
 // Input types
 export type SendCodeInput = z.infer<typeof sendCodeSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
@@ -106,6 +120,7 @@ export type SendMessageByUsernameInput = z.infer<
   typeof sendMessageByUsernameSchema
 >;
 export type SendMessageByPhoneInput = z.infer<typeof sendMessageByPhoneSchema>;
+export type DownloadFileInput = z.infer<typeof downloadFileSchema>;
 
 // Response types
 export type User = z.infer<typeof userSchema>;
@@ -116,3 +131,4 @@ export type SendMessageByPhoneResponse = z.infer<
   typeof sendMessageByPhoneResponseSchema
 >;
 export type HealthResponse = z.infer<typeof healthResponseSchema>;
+export type DownloadFileResponse = z.infer<typeof downloadFileResponseSchema>;

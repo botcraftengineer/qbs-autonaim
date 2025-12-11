@@ -10,7 +10,7 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { createBotHandler } from "../bot-handler";
+import { triggerIncomingMessage } from "../utils/inngest";
 
 export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
@@ -102,8 +102,6 @@ async function processConversationMissedMessages(
     return { processed, errors };
   }
 
-  const messageHandler = createBotHandler(client, response.vacancy.workspaceId);
-
   // Получаем историю из Telegram
   const chatIdNumber = Number.parseInt(conversation.chatId, 10);
   if (Number.isNaN(chatIdNumber)) {
@@ -162,7 +160,50 @@ async function processConversationMissedMessages(
       try {
         const fullMessage = await client.getMessages(chatIdNumber, [msg.id]);
         if (fullMessage[0]) {
-          await messageHandler(fullMessage[0]);
+          const message = fullMessage[0];
+
+          // Отправляем событие в Inngest для обработки
+          const messageData = {
+            id: message.id,
+            chatId: message.chat.id.toString(),
+            text: message.text,
+            isOutgoing: message.isOutgoing,
+            media: message.media
+              ? {
+                  type: message.media.type,
+                  fileId:
+                    "fileId" in message.media
+                      ? (message.media.fileId as string | undefined)
+                      : undefined,
+                  mimeType:
+                    "mimeType" in message.media
+                      ? (message.media.mimeType as string | undefined)
+                      : undefined,
+                  duration:
+                    "duration" in message.media
+                      ? (message.media.duration as number | undefined)
+                      : undefined,
+                }
+              : undefined,
+            sender: message.sender
+              ? {
+                  type: message.sender.type,
+                  username:
+                    "username" in message.sender
+                      ? message.sender.username
+                      : undefined,
+                  firstName:
+                    message.sender.type === "user"
+                      ? message.sender.firstName
+                      : undefined,
+                }
+              : undefined,
+          };
+
+          await triggerIncomingMessage(
+            response.vacancy.workspaceId,
+            messageData,
+          );
           processed++;
         }
       } catch (msgError) {

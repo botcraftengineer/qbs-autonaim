@@ -51,6 +51,7 @@ export const env = createEnv({
     TELEGRAM_API_HASH: z.string().min(1).optional(),
     TELEGRAM_BOT_TOKEN: z.string().min(1).optional(),
     TELEGRAM_BOT_USERNAME: z.string().min(1).optional(),
+    TG_CLIENT_URL: z.url().optional().default("http://localhost:8001"),
 
     // Inngest
     INNGEST_EVENT_KEY: z.string().min(1).optional(),
@@ -100,6 +101,7 @@ export const env = createEnv({
     TELEGRAM_API_HASH: process.env.TELEGRAM_API_HASH,
     TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN,
     TELEGRAM_BOT_USERNAME: process.env.TELEGRAM_BOT_USERNAME,
+    TG_CLIENT_URL: process.env.TG_CLIENT_URL,
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,
