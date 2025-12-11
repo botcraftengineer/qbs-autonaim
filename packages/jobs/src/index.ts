@@ -13,7 +13,6 @@ export {
 // ==================== Services ====================
 // Re-export all services from new structure
 export {
-  AI,
   addQuestionAnswer,
   // Interview
   analyzeAndGenerateNextQuestion,

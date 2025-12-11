@@ -19,8 +19,6 @@ export { checkHHCredentials } from "./auth";
 
 // ==================== Base Utilities ====================
 export {
-  // Constants
-  AI,
   // Logger
   createLogger,
   err,
