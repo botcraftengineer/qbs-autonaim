@@ -21,7 +21,7 @@ export function createBotHandler(client: TelegramClient, workspaceId: string) {
       }
 
       // Попытка идентифицировать кандидата перед обработкой сообщения
-      const identification = await identifyCandidate(message);
+      const identification = await identifyCandidate(message, workspaceId);
       if (!identification.identified) {
         // Кандидат не идентифицирован - пытаемся помочь найти его заявку
         if (message.text) {

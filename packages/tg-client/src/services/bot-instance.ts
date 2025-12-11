@@ -111,6 +111,7 @@ export async function createBotInstance(
 
   // Регистрируем обработчик сообщений
   dp.onNewMessage(async (msg) => {
+    console.log("new message", msg.id);
     try {
       await messageHandler(msg);
     } catch (error) {
@@ -125,7 +126,10 @@ export async function createBotInstance(
         );
         return;
       }
-      console.error(`❌ [${workspaceId}] Ошибка обработки:`, error);
+      console.error(
+        `❌ [${workspaceId}] Ошибка обработки сообщения ${msg.id}:`,
+        error,
+      );
     }
   });
 

@@ -15,7 +15,7 @@ import {
   interviewScoringSchema,
 } from "../../schemas/interview";
 import { extractJsonFromText } from "../../utils/json-extractor";
-import { AI, createLogger, INTERVIEW } from "../base";
+import { createLogger, INTERVIEW } from "../base";
 
 const logger = createLogger("Interview");
 

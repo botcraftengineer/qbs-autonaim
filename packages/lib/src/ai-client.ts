@@ -15,6 +15,9 @@ const langfuse = new Langfuse({
   baseUrl: process.env.LANGFUSE_BASE_URL,
 });
 
+const DEFAULT_MODEL_OPENAI = "gpt-5-mini";
+const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
+
 /**
  * Получить модель AI на основе конфигурации окружения
  */
@@ -23,7 +26,7 @@ export function getAIModel(): LanguageModel {
 
   switch (provider) {
     case "openai": {
-      const model = env.AI_MODEL || "gpt-5-mini";
+      const model = env.AI_MODEL || DEFAULT_MODEL_OPENAI;
       if (!env.OPENAI_API_KEY) {
         throw new Error(
           "OPENAI_API_KEY не установлен. Добавьте его в .env файл.",
@@ -32,7 +35,7 @@ export function getAIModel(): LanguageModel {
       return openai(model);
     }
     case "deepseek": {
-      const model = env.AI_MODEL || "deepseek-chat";
+      const model = env.AI_MODEL || DEFAULT_MODEL_DEEPSEEK;
       if (!env.DEEPSEEK_API_KEY) {
         throw new Error(
           "DEEPSEEK_API_KEY не установлен. Добавьте его в .env файл.",
@@ -56,7 +59,7 @@ export function getAIModelName(): string {
     return customModel;
   }
 
-  return provider === "openai" ? "gpt-5-mini" : "deepseek-chat";
+  return provider === "openai" ? DEFAULT_MODEL_OPENAI : DEFAULT_MODEL_DEEPSEEK;
 }
 
 interface GenerateTextOptions {

@@ -57,17 +57,25 @@ export async function handleTextMessage(
     let conversationHistory = history.reverse().map((msg) => ({
       sender: msg.sender,
       content: msg.content || "",
+      contentType: msg.contentType,
     }));
 
     // Если в БД мало сообщений, дополняем из чата через mtcute
     if (conversationHistory.length < 3) {
       const chatHistory = await getChatHistory(client, message.chat.id, 10);
-      conversationHistory = chatHistory;
+      conversationHistory = chatHistory
+        .filter((msg) => msg.contentType !== undefined)
+        .map((msg) => ({
+          sender: msg.sender,
+          content: msg.content,
+          contentType: msg.contentType as "TEXT" | "VOICE",
+        }));
     }
 
     // Получаем информацию о вакансии и статусе
     let response = null;
     let vacancyTitle: string | undefined;
+    let vacancyRequirements: string | undefined;
     let resumeData:
       | {
           experience?: string;
@@ -86,6 +94,15 @@ export async function handleTextMessage(
 
       vacancyTitle = response?.vacancy?.title;
 
+      // Преобразуем requirements из jsonb в строку
+      if (response?.vacancy?.requirements) {
+        if (typeof response.vacancy.requirements === "string") {
+          vacancyRequirements = response.vacancy.requirements;
+        } else if (typeof response.vacancy.requirements === "object") {
+          vacancyRequirements = JSON.stringify(response.vacancy.requirements);
+        }
+      }
+
       if (response) {
         resumeData = {
           experience: response.experience || undefined,
@@ -101,6 +118,7 @@ export async function handleTextMessage(
       stage: "INTERVIEWING",
       candidateName: conversation.candidateName || undefined,
       vacancyTitle,
+      vacancyRequirements,
       responseStatus: response?.status,
       conversationHistory,
       resumeData,

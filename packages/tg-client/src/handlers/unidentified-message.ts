@@ -15,7 +15,6 @@ import { getChatHistory, markRead } from "../utils/telegram";
  * Извлекает 4-значный пин-код из текста
  */
 function extractPinCode(text: string): string | null {
-  // Ищем 4 цифры подряд
   const match = text.match(/\b\d{4}\b/);
   return match ? match[0] : null;
 }
@@ -74,6 +73,7 @@ export async function handleUnidentifiedMessage(
     const identification = await identifyByPinCode(
       pinCode,
       chatId,
+      workspaceId,
       username,
       firstName,
     );
@@ -102,14 +102,26 @@ export async function handleUnidentifiedMessage(
           }
         : undefined;
 
-      const aiResponse = await generateAIResponse({
-        messageText: text,
-        stage: "PIN_RECEIVED",
-        candidateName: identification.candidateName || firstName,
-        vacancyTitle: identification.vacancyTitle,
-        responseStatus: interviewData?.status,
-        resumeData,
-      });
+      let aiResponse: string;
+      try {
+        aiResponse = await generateAIResponse({
+          messageText: text,
+          stage: "PIN_RECEIVED",
+          candidateName: identification.candidateName || firstName,
+          vacancyTitle: identification.vacancyTitle,
+          vacancyRequirements: interviewData?.vacancyRequirements,
+          responseStatus: interviewData?.status,
+          resumeData,
+        });
+      } catch (error) {
+        console.error("Ошибка генерации AI ответа для PIN_RECEIVED:", {
+          error,
+          chatId,
+          candidateName: identification.candidateName || firstName,
+          vacancyTitle: identification.vacancyTitle,
+        });
+        aiResponse = `Здравствуйте${identification.candidateName ? `, ${identification.candidateName}` : ""}! Спасибо за предоставленный PIN-код. Я ваш рекрутер, и я готов обсудить с вами вакансию${identification.vacancyTitle ? ` "${identification.vacancyTitle}"` : ""}. Расскажите, пожалуйста, немного о себе и своем опыте.`;
+      }
 
       // Сохраняем ответ бота
       const botMessageId = await saveMessage(
@@ -133,12 +145,23 @@ export async function handleUnidentifiedMessage(
 
     // Если пин-код неверный, сообщаем об этом пользователю
     if (!identification.success) {
-      const aiResponse = await generateAIResponse({
-        messageText: text,
-        stage: "INVALID_PIN",
-        candidateName: firstName,
-        errorMessage: identification.error,
-      });
+      let aiResponse: string;
+      try {
+        aiResponse = await generateAIResponse({
+          messageText: text,
+          stage: "INVALID_PIN",
+          candidateName: firstName,
+          errorMessage: identification.error,
+        });
+      } catch (error) {
+        console.error("Ошибка генерации AI ответа для INVALID_PIN:", {
+          error,
+          chatId,
+          candidateName: firstName,
+          pinCode,
+        });
+        aiResponse = `К сожалению, указанный PIN-код не найден. Пожалуйста, проверьте правильность кода и попробуйте снова. PIN-код должен состоять из 4 цифр.`;
+      }
 
       if (tempConversation) {
         // Проверяем, не сохранено ли уже это сообщение
@@ -190,12 +213,23 @@ export async function handleUnidentifiedMessage(
       10,
     );
 
-    const aiResponse = await generateAIResponse({
-      messageText: text,
-      stage: "AWAITING_PIN",
-      candidateName: firstName,
-      conversationHistory,
-    });
+    let aiResponse: string;
+    try {
+      aiResponse = await generateAIResponse({
+        messageText: text,
+        stage: "AWAITING_PIN",
+        candidateName: firstName,
+        conversationHistory,
+      });
+    } catch (error) {
+      console.error("Ошибка генерации AI ответа для AWAITING_PIN:", {
+        error,
+        chatId,
+        candidateName: firstName,
+      });
+      aiResponse = `Здравствуйте${firstName ? `, ${firstName}` : ""}! Для начала работы, пожалуйста, предоставьте ваш 4-значный PIN-код, который вы получили в письме с откликом на вакансию.`;
+    }
+
     // Обновляем существующую беседу
     if (tempConversation) {
       const [updatedConversation] = await db

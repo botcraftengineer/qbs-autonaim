@@ -36,11 +36,12 @@ interface ConversationData {
 export async function identifyByPinCode(
   pinCode: string,
   chatId: string,
+  workspaceId: string,
   username?: string,
   firstName?: string,
 ): Promise<IdentificationResult> {
   try {
-    // Ищем отклик по пин-коду
+    // Ищем отклик по пин-коду с проверкой workspaceId
     const response = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.telegramPinCode, pinCode),
       with: {
@@ -48,10 +49,19 @@ export async function identifyByPinCode(
           columns: {
             title: true,
             id: true,
+            workspaceId: true,
           },
         },
       },
     });
+
+    // Проверяем, что вакансия принадлежит нужному workspace
+    if (response && response.vacancy?.workspaceId !== workspaceId) {
+      return {
+        success: false,
+        error: "Отклик не найден по указанному пин-коду",
+      };
+    }
     if (!response) {
       return {
         success: false,
@@ -103,11 +113,12 @@ export async function identifyByPinCode(
 export async function identifyByVacancy(
   vacancyId: string,
   chatId: string,
+  workspaceId: string,
   username: string,
   firstName?: string,
 ): Promise<IdentificationResult> {
   try {
-    // Ищем отклик по username и вакансии
+    // Ищем отклик по username и вакансии с проверкой workspaceId
     const response = await db.query.vacancyResponse.findFirst({
       where: and(
         ilike(vacancyResponse.telegramUsername, username),
@@ -118,6 +129,14 @@ export async function identifyByVacancy(
       },
       orderBy: (fields, { desc }) => [desc(fields.createdAt)],
     });
+
+    // Проверяем, что вакансия принадлежит нужному workspace
+    if (response && response.vacancy?.workspaceId !== workspaceId) {
+      return {
+        success: false,
+        error: "Отклик не найден",
+      };
+    }
 
     if (!response) {
       return {
@@ -270,10 +289,21 @@ export async function getInterviewStartData(responseId: string) {
       ? response.screening[0]
       : undefined;
 
+    // Преобразуем requirements из jsonb в строку
+    let requirementsText: string | undefined;
+    if (response.vacancy?.requirements) {
+      if (typeof response.vacancy.requirements === "string") {
+        requirementsText = response.vacancy.requirements;
+      } else if (typeof response.vacancy.requirements === "object") {
+        requirementsText = JSON.stringify(response.vacancy.requirements);
+      }
+    }
+
     return {
       candidateName: response.candidateName,
       vacancyTitle: response.vacancy?.title,
       vacancyDescription: response.vacancy?.description,
+      vacancyRequirements: requirementsText,
       experience: response.experience,
       coverLetter: response.coverLetter,
       phone: response.phone,

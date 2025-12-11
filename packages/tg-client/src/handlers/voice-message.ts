@@ -144,7 +144,7 @@ export async function handleVoiceMessage(
     try {
       const errorMessage = getErrorResponse();
 
-      if (conversation && conversation.username) {
+      if (conversation?.username) {
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({
