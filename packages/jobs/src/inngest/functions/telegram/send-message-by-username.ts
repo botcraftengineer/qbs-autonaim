@@ -5,7 +5,7 @@ import { inngest } from "../../client";
 
 /**
  * Inngest функция для отправки сообщения по username
- * Не требует chatId и messageId, работает только с username
+ * Работает с username и messageId для обновления статуса в БД
  */
 export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
   {
@@ -15,7 +15,7 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
   },
   { event: "telegram/message.send.by-username" },
   async ({ event, step }) => {
-    const { username, content } = event.data;
+    const { messageId, username, content } = event.data;
 
     // Задержка 3-5 минут для имитации живого человека
     const delayMinutes = Math.floor(Math.random() * 3) + 3;
@@ -55,10 +55,20 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
           .set({ lastUsedAt: new Date() })
           .where(eq(telegramSession.id, session.id));
 
+        // Обновляем telegramMessageId в БД, если messageId не пустой
+        if (messageId) {
+          const { telegramMessage } = await import("@qbs-autonaim/db/schema");
+          await db
+            .update(telegramMessage)
+            .set({ telegramMessageId: result.messageId })
+            .where(eq(telegramMessage.id, messageId));
+        }
+
         console.log("✅ Сообщение отправлено по username", {
           username,
           telegramMessageId: result.messageId,
           sessionId: session.id,
+          dbMessageId: messageId,
         });
 
         return {

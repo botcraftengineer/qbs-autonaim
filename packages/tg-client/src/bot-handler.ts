@@ -94,8 +94,8 @@ export function createBotHandler(client: TelegramClient) {
               })
               .returning();
 
-            if (botMessage) {
-              await triggerMessageSend(botMessage.id, chatId, errorMessage);
+            if (botMessage && username) {
+              await triggerMessageSend(botMessage.id, username, errorMessage);
             }
           }
         }

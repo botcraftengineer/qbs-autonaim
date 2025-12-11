@@ -4,7 +4,6 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
 import { getErrorResponse } from "../responses/greetings";
-import { humanDelay } from "../utils/delays";
 import { uploadFile } from "../utils/file-upload";
 import { triggerTranscription } from "../utils/inngest";
 import { markRead, showRecordingAudio } from "../utils/telegram";
@@ -89,8 +88,8 @@ export async function handleVoiceMessage(
         })
         .returning();
 
-      if (botMessage) {
-        await triggerMessageSend(botMessage.id, chatId, errorMessage);
+      if (botMessage && username) {
+        await triggerMessageSend(botMessage.id, username, errorMessage);
       }
     }
 
@@ -133,16 +132,13 @@ export async function handleVoiceMessage(
     }
 
     await triggerTranscription(voiceMessage.id, fileId);
-
-    const listeningTime = Math.min(duration * 1000, 10000);
-    await humanDelay(listeningTime, listeningTime + 2000);
   } catch (error) {
     console.error("Ошибка при обработке голосового сообщения:", error);
 
     try {
       const errorMessage = getErrorResponse();
 
-      if (conversation) {
+      if (conversation && conversation.username) {
         const { triggerMessageSend } = await import("../utils/inngest");
         const [botMessage] = await db
           .insert(telegramMessage)
@@ -155,8 +151,11 @@ export async function handleVoiceMessage(
           .returning();
 
         if (botMessage) {
-          await humanDelay(800, 1500);
-          await triggerMessageSend(botMessage.id, chatId, errorMessage);
+          await triggerMessageSend(
+            botMessage.id,
+            conversation.username,
+            errorMessage,
+          );
         }
       }
     } catch (sendError) {

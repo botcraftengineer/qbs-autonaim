@@ -9,10 +9,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { getTextErrorResponse } from "../responses/greetings";
 import { humanDelay } from "../utils/delays";
-import {
-  triggerMessageSend,
-  triggerUnidentifiedMessageSend,
-} from "../utils/inngest";
+import { triggerMessageSend } from "../utils/inngest";
 import { getChatHistory, markRead } from "../utils/telegram";
 
 export async function handleTextMessage(
@@ -63,7 +60,7 @@ export async function handleTextMessage(
 
       // Отправляем сообщение через inngest без сохранения в БД
       await humanDelay(600, 1200);
-      await triggerUnidentifiedMessageSend(username, aiResponse);
+      await triggerMessageSend("", username, aiResponse);
 
       return;
     }
@@ -78,9 +75,6 @@ export async function handleTextMessage(
       content: messageText,
       telegramMessageId: message.id.toString(),
     });
-
-    const readingTime = Math.min(messageText.length * 30, 2000);
-    await humanDelay(readingTime, readingTime + 1000);
 
     // Получаем историю переписки для контекста
     // Сначала пытаемся получить из БД
@@ -156,8 +150,12 @@ export async function handleTextMessage(
       })
       .returning();
 
-    if (botMessage) {
-      await triggerMessageSend(botMessage.id, chatId, aiResponse);
+    if (botMessage && conversation.username) {
+      await triggerMessageSend(
+        botMessage.id,
+        conversation.username,
+        aiResponse,
+      );
     }
   } catch (error) {
     console.error("Ошибка при обработке текстового сообщения:", error);
@@ -181,9 +179,12 @@ export async function handleTextMessage(
           })
           .returning();
 
-        if (botMessage) {
-          await humanDelay(800, 1500);
-          await triggerMessageSend(botMessage.id, chatId, errorMessage);
+        if (botMessage && conversation.username) {
+          await triggerMessageSend(
+            botMessage.id,
+            conversation.username,
+            errorMessage,
+          );
         }
       }
     } catch (sendError) {

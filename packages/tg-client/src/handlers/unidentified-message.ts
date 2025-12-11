@@ -7,7 +7,6 @@ import {
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { humanDelay } from "../utils/delays";
 import { triggerMessageSend } from "../utils/inngest";
 import { getChatHistory, markRead } from "../utils/telegram";
 
@@ -154,7 +153,7 @@ export async function handleUnidentifiedMessage(
       });
 
       // Сохраняем ответ бота
-      if (conversation) {
+      if (conversation && username) {
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({
@@ -166,8 +165,7 @@ export async function handleUnidentifiedMessage(
           .returning();
 
         if (botMessage) {
-          await humanDelay(500, 1000);
-          await triggerMessageSend(botMessage.id, chatId, aiResponse);
+          await triggerMessageSend(botMessage.id, username, aiResponse);
         }
       }
 
@@ -222,8 +220,8 @@ export async function handleUnidentifiedMessage(
         })
         .returning();
 
-      if (botMessage) {
-        await triggerMessageSend(botMessage.id, chatId, aiResponse);
+      if (botMessage && username) {
+        await triggerMessageSend(botMessage.id, username, aiResponse);
       }
     }
 
@@ -309,7 +307,7 @@ export async function handleUnidentifiedMessage(
       });
 
       // Сохраняем ответ бота
-      if (conversation) {
+      if (conversation && username) {
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({
@@ -321,8 +319,7 @@ export async function handleUnidentifiedMessage(
           .returning();
 
         if (botMessage) {
-          await humanDelay(500, 1000);
-          await triggerMessageSend(botMessage.id, chatId, aiResponse);
+          await triggerMessageSend(botMessage.id, username, aiResponse);
         }
       }
 
@@ -369,8 +366,8 @@ export async function handleUnidentifiedMessage(
       })
       .returning();
 
-    if (botMessage) {
-      await triggerMessageSend(botMessage.id, chatId, aiResponse);
+    if (botMessage && username) {
+      await triggerMessageSend(botMessage.id, username, aiResponse);
     }
   }
 }
