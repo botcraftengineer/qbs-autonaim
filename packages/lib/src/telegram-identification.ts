@@ -44,10 +44,14 @@ export async function identifyByPinCode(
     const response = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.telegramPinCode, pinCode),
       with: {
-        vacancy: true,
+        vacancy: {
+          columns: {
+            title: true,
+            id: true,
+          },
+        },
       },
     });
-
     if (!response) {
       return {
         success: false,
@@ -189,7 +193,11 @@ async function createOrUpdateConversation(
       .where(eq(telegramConversation.id, existing.id))
       .returning();
 
-    return updated!;
+    if (!updated) {
+      throw new Error("Failed to update conversation");
+    }
+
+    return updated;
   }
 
   // Создаем новую conversation
@@ -205,7 +213,11 @@ async function createOrUpdateConversation(
     })
     .returning();
 
-  return created!;
+  if (!created) {
+    throw new Error("Failed to create conversation");
+  }
+
+  return created;
 }
 
 /**

@@ -22,11 +22,11 @@ export function createBotHandler(client: TelegramClient) {
 
       // Попытка идентифицировать кандидата перед обработкой сообщения
       const identification = await identifyCandidate(message);
-
       if (!identification.identified) {
         // Кандидат не идентифицирован - пытаемся помочь найти его заявку
         if (message.text) {
           await handleUnidentifiedMessage(client, message);
+          return;
         } else if (
           message.media?.type === "voice" ||
           message.media?.type === "audio"

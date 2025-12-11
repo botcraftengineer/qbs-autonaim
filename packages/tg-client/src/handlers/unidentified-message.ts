@@ -92,7 +92,6 @@ export async function handleUnidentifiedMessage(
 
   if (pinCode) {
     // Используем сервис идентификации
-
     const identification = await identifyByPinCode(
       pinCode,
       chatId,

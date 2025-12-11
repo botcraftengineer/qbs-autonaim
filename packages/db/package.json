@@ -9,6 +9,12 @@
     "./client": {
       "default": "./src/client.ts"
     },
+    "./client.ws": {
+      "default": "./src/client.ws.ts"
+    },
+    "./client.edge": {
+      "default": "./src/client.edge.ts"
+    },
     "./schema": {
       "default": "./src/schema/index.ts"
     }
@@ -35,13 +41,17 @@
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/validators": "workspace:*",
     "@vercel/postgres": "0.10.0",
-    "drizzle-orm": "0.45.0",
+    "drizzle-orm": "0.45.1",
     "drizzle-zod": "0.8.3",
     "nanoid": "^5.1.6",
+    "pg": "^8.16.3",
+    "ws": "^8.18.3",
     "zod": "4.1.13"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
+    "@types/pg": "^8.16.0",
+    "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.8",
     "typescript": "5.9.3"
   }
