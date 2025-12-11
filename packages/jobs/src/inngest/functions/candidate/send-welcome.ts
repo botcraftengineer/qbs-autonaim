@@ -8,6 +8,8 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import {
+  generateTelegramInvite,
+  generateTelegramInviteMessage,
   generateWelcomeMessage,
   sendHHChatMessage,
 } from "../../../services/messaging";
@@ -171,10 +173,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         // Если Telegram не сработал, пробуем hh.ru
         if (!sendResult) {
           console.log(`📧 Попытка отправки через hh.ru`);
-
-          // Generate Telegram invite message with PIN code
-          const { generateTelegramInviteMessage, generateTelegramInvite } =
-            await import("../../../services/messaging");
 
           // Generate PIN code first
           const pinCodeResult = await generateTelegramInvite({

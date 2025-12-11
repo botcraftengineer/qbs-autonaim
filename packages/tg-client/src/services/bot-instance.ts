@@ -5,9 +5,9 @@
 import { TelegramClient } from "@mtcute/bun";
 import { Dispatcher } from "@mtcute/dispatcher";
 import type { telegramSession } from "@qbs-autonaim/db/schema";
-import { createBotHandler } from "../bot-handler";
 import { ExportableStorage } from "../storage";
 import { isAuthError } from "../utils/auth-errors";
+import { triggerIncomingMessage } from "../utils/inngest";
 
 export interface BotInstance {
   client: TelegramClient;
@@ -112,8 +112,6 @@ export async function createBotInstance(
   dp.onNewMessage(async (msg) => {
     console.log("new message", msg.id);
     try {
-      const { triggerIncomingMessage } = await import("../utils/inngest");
-
       // Сериализуем данные сообщения для Inngest
       const messageData = {
         id: msg.id,
