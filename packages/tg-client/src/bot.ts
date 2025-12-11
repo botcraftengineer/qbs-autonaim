@@ -31,7 +31,7 @@ export async function startBot(): Promise<TelegramClient> {
   });
 
   // Подключаемся
-  await client.start();
+  await client.connect();
 
   // Проверяем авторизацию
   const me = await client.call({
