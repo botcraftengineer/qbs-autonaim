@@ -8,7 +8,7 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { humanDelay } from "../utils/delays.js";
-import { markRead, showTyping } from "../utils/telegram.js";
+import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
 
 function escapeSqlLike(text: string): string {
   return text.replace(/[\\%_]/g, "\\$&");
@@ -137,6 +137,9 @@ export async function handleUnidentifiedMessage(
     }
   }
 
+  // Получаем историю диалога из чата для контекста
+  const conversationHistory = await getChatHistory(client, message.chat.id, 10);
+
   // Пытаемся найти вакансии по тексту сообщения
   const escapedText = escapeSqlLike(text);
   const vacancies = await db.query.vacancy.findMany({
@@ -152,6 +155,7 @@ export async function handleUnidentifiedMessage(
       messageText: text,
       stage: "AWAITING_PIN",
       candidateName: firstName,
+      conversationHistory,
     });
 
     await client.sendText(message.chat.id, aiResponse);
@@ -262,6 +266,7 @@ export async function handleUnidentifiedMessage(
     messageText: `${text}\n\nНайденные вакансии: ${vacancyList}`,
     stage: "AWAITING_PIN",
     candidateName: firstName,
+    conversationHistory,
   });
 
   await client.sendText(message.chat.id, aiResponse);

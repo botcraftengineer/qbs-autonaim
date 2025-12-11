@@ -9,7 +9,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { getErrorResponse } from "../responses/greetings.js";
 import { humanDelay } from "../utils/delays.js";
-import { markRead, showTyping } from "../utils/telegram.js";
+import { getChatHistory, markRead, showTyping } from "../utils/telegram.js";
 
 export async function handleTextMessage(
   client: TelegramClient,
@@ -29,11 +29,19 @@ export async function handleTextMessage(
       await markRead(client, message.chat.id);
 
       // Кандидат не идентифицирован - запрашиваем PIN
+      // Получаем контекст из чата через mtcute
+      const conversationHistory = await getChatHistory(
+        client,
+        message.chat.id,
+        10,
+      );
+
       const { generateAIResponse } = await import("../utils/ai-response.js");
 
       const aiResponse = await generateAIResponse({
         messageText,
         stage: "AWAITING_PIN",
+        conversationHistory,
       });
 
       await humanDelay(600, 1200);
@@ -58,6 +66,7 @@ export async function handleTextMessage(
     await humanDelay(readingTime, readingTime + 1000);
 
     // Получаем историю переписки для контекста
+    // Сначала пытаемся получить из БД
     const history = await db
       .select()
       .from(telegramMessage)
@@ -65,10 +74,16 @@ export async function handleTextMessage(
       .orderBy(desc(telegramMessage.createdAt))
       .limit(10);
 
-    const conversationHistory = history.reverse().map((msg) => ({
+    let conversationHistory = history.reverse().map((msg) => ({
       sender: msg.sender,
       content: msg.content || "",
     }));
+
+    // Если в БД мало сообщений, дополняем из чата через mtcute
+    if (conversationHistory.length < 3) {
+      const chatHistory = await getChatHistory(client, message.chat.id, 10);
+      conversationHistory = chatHistory;
+    }
 
     // Получаем информацию о вакансии и статусе
     let response = null;
