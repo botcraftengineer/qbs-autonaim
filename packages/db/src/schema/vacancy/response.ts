@@ -53,10 +53,15 @@ export const vacancyResponse = pgTable(
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
-    respondedAt: timestamp("responded_at"),
-    welcomeSentAt: timestamp("welcome_sent_at"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    respondedAt: timestamp("responded_at", { withTimezone: true, mode: "date" }),
+    welcomeSentAt: timestamp("welcome_sent_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .$onUpdate(() => new Date())
       .notNull(),
   },

@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -29,11 +30,16 @@ export const vacancy = pgTable("vacancies", {
   description: text("description"),
   requirements: jsonb("requirements"),
   isActive: boolean("is_active").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .$onUpdate(() => new Date())
     .notNull(),
-});
+},
+(table) => ({
+  workspaceIdx: index("vacancy_workspace_idx").on(table.workspaceId),
+}));
 
 export const CreateVacancySchema = createInsertSchema(vacancy, {
   id: z.string().max(50),

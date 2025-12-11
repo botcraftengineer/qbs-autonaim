@@ -1,6 +1,14 @@
 import { uuidv7Schema } from "@qbs-autonaim/validators";
 import { sql } from "drizzle-orm";
-import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  check,
+  index,
+  integer,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { vacancyResponse } from "./response";
@@ -13,17 +21,27 @@ export const responseScreening = pgTable("response_screenings", {
   responseId: uuid("response_id")
     .notNull()
     .references(() => vacancyResponse.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(), // Оценка от 1 до 5
+  score: integer("score").notNull(), // Оценка от 0 до 5
   detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
   analysis: text("analysis"), // Анализ соответствия резюме вакансии
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+},
+(table) => ({
+  responseIdx: index("screening_response_idx").on(table.responseId),
+  scoreCheck: check("score_check", sql`${table.score} BETWEEN 0 AND 5`),
+  detailedScoreCheck: check(
+    "detailed_score_check",
+    sql`${table.detailedScore} BETWEEN 0 AND 100`,
+  ),
+}));
 
 export const CreateResponseScreeningSchema = createInsertSchema(
   responseScreening,
   {
     responseId: uuidv7Schema,
-    score: z.number().int().min(1).max(5),
+    score: z.number().int().min(0).max(5),
     detailedScore: z.number().int().min(0).max(100),
     analysis: z.string().optional(),
   },

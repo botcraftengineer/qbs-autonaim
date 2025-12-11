@@ -12,8 +12,10 @@ export const user = pgTable("users", {
   username: text("username"),
   bio: text("bio"),
   role: text("role", { enum: userRoleEnum }).default("user").notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),

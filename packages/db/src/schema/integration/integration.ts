@@ -53,10 +53,12 @@ export const integration = pgTable(
     isActive: boolean("is_active").default(true).notNull(),
 
     // Дата последнего использования
-    lastUsedAt: timestamp("last_used_at"),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: "date" }),
 
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
