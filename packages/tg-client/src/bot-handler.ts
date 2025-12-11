@@ -1,10 +1,14 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
 import { handleAudioFile } from "./handlers/audio-file";
 import { handleTextMessage } from "./handlers/text-message";
 import { handleUnidentifiedMessage } from "./handlers/unidentified-message";
 import { handleVoiceMessage } from "./handlers/voice-message";
 import { identifyCandidate } from "./utils/candidate-identifier";
+import { triggerMessageSend } from "./utils/inngest";
 
 /**
  * Создать обработчик обновлений для MTProto клиента
@@ -32,13 +36,6 @@ export function createBotHandler(client: TelegramClient) {
           const errorMessage =
             "Привет! Не могу понять, кто ты 🤔\n\n" +
             "Напиши, пожалуйста, на какую вакансию откликался и свой 4-значный пин-код из сообщения. Тогда смогу послушать твое голосовое.";
-
-          const { db } = await import("@qbs-autonaim/db/client");
-          const { telegramConversation, telegramMessage } = await import(
-            "@qbs-autonaim/db/schema"
-          );
-          const { eq } = await import("@qbs-autonaim/db");
-          const { triggerMessageSend } = await import("./utils/inngest");
 
           const sender = message.sender;
           let username: string | undefined;

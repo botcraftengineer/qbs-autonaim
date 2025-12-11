@@ -7,6 +7,13 @@ import {
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import {
+  getInterviewStartData,
+  identifyByPinCode,
+  identifyByVacancy,
+  saveMessage,
+} from "@qbs-autonaim/lib";
+import { generateAIResponse } from "../utils/ai-response";
 import { triggerMessageSend } from "../utils/inngest";
 import { getChatHistory, markRead } from "../utils/telegram";
 
@@ -85,8 +92,6 @@ export async function handleUnidentifiedMessage(
 
   if (pinCode) {
     // Используем сервис идентификации
-    const { identifyByPinCode, getInterviewStartData, saveMessage } =
-      await import("@qbs-autonaim/lib");
 
     const identification = await identifyByPinCode(
       pinCode,
@@ -111,8 +116,6 @@ export async function handleUnidentifiedMessage(
         : null;
 
       // Генерируем приветственное сообщение и начинаем интервью
-      const { generateAIResponse } = await import("../utils/ai-response");
-
       const resumeData = interviewData
         ? {
             experience: interviewData.experience || undefined,
@@ -144,6 +147,34 @@ export async function handleUnidentifiedMessage(
 
       return;
     }
+
+    // Если пин-код неверный, сообщаем об этом пользователю
+    if (!identification.success) {
+      const aiResponse = await generateAIResponse({
+        messageText: text,
+        stage: "INVALID_PIN",
+        candidateName: firstName,
+        errorMessage: identification.error,
+      });
+
+      if (tempConversation) {
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: tempConversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: aiResponse,
+          })
+          .returning();
+
+        if (botMessage && username) {
+          await triggerMessageSend(botMessage.id, username, aiResponse);
+        }
+      }
+
+      return;
+    }
   }
 
   // Получаем историю диалога из чата для контекста
@@ -158,8 +189,6 @@ export async function handleUnidentifiedMessage(
 
   if (vacancies.length === 0) {
     // Вакансии не найдены - запрашиваем PIN
-    const { generateAIResponse } = await import("../utils/ai-response");
-
     const aiResponse = await generateAIResponse({
       messageText: text,
       stage: "AWAITING_PIN",
@@ -221,9 +250,6 @@ export async function handleUnidentifiedMessage(
 
     if (response && username) {
       // Используем сервис идентификации
-      const { identifyByVacancy, getInterviewStartData, saveMessage } =
-        await import("@qbs-autonaim/lib");
-
       const identification = await identifyByVacancy(
         foundVacancy.id,
         chatId,
@@ -247,8 +273,6 @@ export async function handleUnidentifiedMessage(
           : null;
 
         // Генерируем приветственное сообщение и начинаем интервью
-        const { generateAIResponse } = await import("../utils/ai-response");
-
         const resumeData = interviewData
           ? {
               experience: interviewData.experience || undefined,
@@ -284,8 +308,6 @@ export async function handleUnidentifiedMessage(
   }
 
   // Если нашли несколько вакансий - запрашиваем PIN
-  const { generateAIResponse } = await import("../utils/ai-response");
-
   const vacancyList = vacancies.map((v) => v?.title).join(", ");
 
   const aiResponse = await generateAIResponse({

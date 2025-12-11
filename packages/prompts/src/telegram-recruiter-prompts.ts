@@ -24,6 +24,7 @@
 
 export type ConversationStage =
   | "AWAITING_PIN" // Ждем PIN-код от кандидата
+  | "INVALID_PIN" // Неверный PIN-код
   | "PIN_RECEIVED" // PIN получен, начинаем интервью
   | "INTERVIEWING"; // Проводим интервью
 
@@ -39,6 +40,7 @@ export interface TelegramRecruiterContext {
     coverLetter?: string;
     phone?: string;
   };
+  errorMessage?: string;
 }
 
 /**
@@ -65,6 +67,31 @@ function buildAwaitingPinPrompt(): string {
 
 ПЕРВОЕ СООБЩЕНИЕ (ТОЧНО ИСПОЛЬЗУЙ ЭТОТ ФОРМАТ):
 "Добрый день! Отправьте код из письма, чтобы начать"`;
+}
+
+/**
+ * Строит промпт для этапа неверного PIN-кода
+ */
+function buildInvalidPinPrompt(): string {
+  return `
+⚠️ ОШИБКА: НЕВЕРНЫЙ PIN-КОД
+Кандидат ввел неправильный 4-значный код.
+
+СТРОГОЕ ПРАВИЛО ПРИВЕТСТВИЯ:
+- ЗАПРЕЩЕНО использовать слово "Привет"
+- ОБЯЗАТЕЛЬНО используй только "Добрый день" или "Здравствуйте"
+
+ТВОЯ ЗАДАЧА:
+- Вежливо сообщи, что код не подошел
+- Попроси проверить письмо и попробовать снова
+- Объясни, что код должен быть 4-значным
+- Пиши коротко и по делу
+
+ПРИМЕРЫ ХОРОШИХ СООБЩЕНИЙ:
+"Код не подошел. Проверьте письмо и отправьте 4-значный код еще раз"
+"Этот код не найден. Убедитесь, что вводите код из письма правильно"
+
+ВАЖНО: Будь вежливым, но кратким. Не извиняйся слишком много.`;
 }
 
 /**
@@ -230,6 +257,9 @@ export function buildTelegramRecruiterPrompt(
   switch (stage) {
     case "AWAITING_PIN":
       stageInstructions = buildAwaitingPinPrompt();
+      break;
+    case "INVALID_PIN":
+      stageInstructions = buildInvalidPinPrompt();
       break;
     case "PIN_RECEIVED":
       stageInstructions = buildPinReceivedPrompt(context);
