@@ -7,7 +7,7 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { getErrorResponse } from "../responses/greetings.js";
+import { getTextErrorResponse } from "../responses/greetings.js";
 import { humanDelay } from "../utils/delays.js";
 import {
   triggerMessageSend,
@@ -172,7 +172,7 @@ export async function handleTextMessage(
         .limit(1);
 
       if (conversation) {
-        const errorMessage = getErrorResponse();
+        const errorMessage = getTextErrorResponse();
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({

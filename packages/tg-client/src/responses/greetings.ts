@@ -21,3 +21,14 @@ export function getAudioErrorResponse(): string {
 
   return randomChoice(responses);
 }
+
+export function getTextErrorResponse(): string {
+  const responses = [
+    "Что-то пошло не так, попробуй написать еще раз",
+    "Хм, не получилось обработать сообщение. Напиши еще раз?",
+    "Произошла ошибка, можешь повторить?",
+    "Не смог обработать, попробуй написать снова",
+  ];
+
+  return randomChoice(responses);
+}
