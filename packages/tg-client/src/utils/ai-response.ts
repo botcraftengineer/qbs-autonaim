@@ -25,6 +25,7 @@ interface GenerateResponseParams {
     coverLetter?: string;
     phone?: string;
   };
+  errorMessage?: string;
 }
 
 /**
@@ -45,6 +46,7 @@ export async function generateAIResponse(
     responseStatus: params.responseStatus,
     conversationHistory: params.conversationHistory || [],
     resumeData: params.resumeData,
+    errorMessage: params.errorMessage,
   };
 
   const prompt = buildTelegramRecruiterPrompt(context);

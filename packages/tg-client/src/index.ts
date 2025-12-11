@@ -1,4 +1,3 @@
-export { startBot, stopBot } from "./bot";
 export { createBotHandler, sendMessage } from "./bot-handler";
 export { botManager } from "./bot-manager";
 export { clearClientCache, getClient, removeClient } from "./client";

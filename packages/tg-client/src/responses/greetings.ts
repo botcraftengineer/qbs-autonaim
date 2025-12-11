@@ -1,4 +1,4 @@
-import { randomChoice } from "../utils/delays.js";
+import { randomChoice } from "../utils/delays";
 
 export function getErrorResponse(): string {
   const responses = [
@@ -17,6 +17,17 @@ export function getAudioErrorResponse(): string {
     "Что-то не так с файлом, попробуй голосовым?",
     "Не смог прослушать файл, запиши голосовое?",
     "Хм, не получилось открыть. Попробуй голосовым?",
+  ];
+
+  return randomChoice(responses);
+}
+
+export function getTextErrorResponse(): string {
+  const responses = [
+    "Что-то пошло не так, попробуй написать еще раз",
+    "Хм, не получилось обработать сообщение. Напиши еще раз?",
+    "Произошла ошибка, можешь повторить?",
+    "Не смог обработать, попробуй написать снова",
   ];
 
   return randomChoice(responses);

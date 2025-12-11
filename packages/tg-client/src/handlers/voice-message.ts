@@ -3,15 +3,15 @@ import type { Message } from "@mtcute/core";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
-import { getErrorResponse } from "../responses/greetings.js";
-import { humanDelay } from "../utils/delays.js";
-import { uploadFile } from "../utils/file-upload.js";
-import { triggerTranscription } from "../utils/inngest.js";
-import { markRead, showRecordingAudio } from "../utils/telegram.js";
+import { getErrorResponse } from "../responses/greetings";
+import { uploadFile } from "../utils/file-upload";
+import { triggerMessageSend, triggerTranscription } from "../utils/inngest";
+import { markRead, showRecordingAudio } from "../utils/telegram";
 
 export async function handleVoiceMessage(
   client: TelegramClient,
   message: Message,
+  workspaceId: string,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
   console.log("handleVoiceMessage", chatId);
@@ -26,12 +26,79 @@ export async function handleVoiceMessage(
     .where(eq(telegramConversation.chatId, chatId))
     .limit(1);
 
-  if (!conversation) {
+  // Если беседа не найдена или пользователь не идентифицирован (нет responseId)
+  if (!conversation || !conversation.responseId) {
     await markRead(client, message.chat.id);
-    await client.sendText(
-      message.chat.id,
-      "Привет! Не могу вспомнить, откуда мы знакомы. Напомнишь?",
-    );
+
+    const errorMessage =
+      "Привет! Не могу вспомнить, откуда мы знакомы. Напомнишь?";
+
+    const sender = message.sender;
+    let username: string | undefined;
+    let firstName: string | undefined;
+    if (sender && "username" in sender && sender.username) {
+      username = sender.username;
+    }
+    if (sender?.type === "user") {
+      firstName = sender.firstName || undefined;
+    }
+
+    // Создаем временную беседу
+    const [tempConversation] = await db
+      .insert(telegramConversation)
+      .values({
+        chatId,
+        candidateName: firstName || undefined,
+        username,
+        status: "ACTIVE",
+        metadata: JSON.stringify({
+          identifiedBy: "none",
+          awaitingPin: true,
+        }),
+      })
+      .onConflictDoUpdate({
+        target: telegramConversation.chatId,
+        set: {
+          username,
+          status: "ACTIVE",
+          metadata: JSON.stringify({
+            identifiedBy: "none",
+            awaitingPin: true,
+          }),
+        },
+      })
+      .returning();
+
+    if (tempConversation) {
+      // Сохраняем голосовое сообщение пользователя
+      await db.insert(telegramMessage).values({
+        conversationId: tempConversation.id,
+        sender: "CANDIDATE",
+        contentType: "VOICE",
+        content: "Голосовое сообщение (кандидат не идентифицирован)",
+        telegramMessageId: message.id.toString(),
+      });
+
+      const [botMessage] = await db
+        .insert(telegramMessage)
+        .values({
+          conversationId: tempConversation.id,
+          sender: "BOT",
+          contentType: "TEXT",
+          content: errorMessage,
+        })
+        .returning();
+
+      if (botMessage && username) {
+        await triggerMessageSend(
+          botMessage.id,
+          username,
+          errorMessage,
+          workspaceId,
+        );
+      }
+    }
+
     return;
   }
 
@@ -71,12 +138,34 @@ export async function handleVoiceMessage(
     }
 
     await triggerTranscription(voiceMessage.id, fileId);
-
-    const listeningTime = Math.min(duration * 1000, 10000);
-    await humanDelay(listeningTime, listeningTime + 2000);
   } catch (error) {
     console.error("Ошибка при обработке голосового сообщения:", error);
-    await humanDelay(800, 1500);
-    await client.sendText(message.chat.id, getErrorResponse());
+
+    try {
+      const errorMessage = getErrorResponse();
+
+      if (conversation && conversation.username) {
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: errorMessage,
+          })
+          .returning();
+
+        if (botMessage) {
+          await triggerMessageSend(
+            botMessage.id,
+            conversation.username,
+            errorMessage,
+            workspaceId,
+          );
+        }
+      }
+    } catch (sendError) {
+      console.error("Не удалось отправить сообщение об ошибке:", sendError);
+    }
   }
 }

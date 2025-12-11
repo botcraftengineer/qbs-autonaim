@@ -25,7 +25,7 @@ export const workspaceMutations = {
       // Оптимизируем логотип, если он передан
       const dataToCreate = { ...input };
       if (dataToCreate.logo?.startsWith("data:image/")) {
-        const { optimizeLogo } = await import("@qbs-autonaim/lib");
+        const { optimizeLogo } = await import("@qbs-autonaim/lib/image");
         dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
       }
 
@@ -85,7 +85,7 @@ export const workspaceMutations = {
       // Оптимизируем логотип, если он передан
       const dataToUpdate = { ...input.data };
       if (dataToUpdate.logo?.startsWith("data:image/")) {
-        const { optimizeLogo } = await import("@qbs-autonaim/lib");
+        const { optimizeLogo } = await import("@qbs-autonaim/lib/image");
         dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
       }
 

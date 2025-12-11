@@ -7,13 +7,16 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { getErrorResponse } from "../responses/greetings.js";
-import { humanDelay } from "../utils/delays.js";
-import { markRead, showTyping } from "../utils/telegram.js";
+import { getTextErrorResponse } from "../responses/greetings";
+import { generateAIResponse } from "../utils/ai-response";
+import { triggerMessageSend } from "../utils/inngest";
+import { getChatHistory, markRead } from "../utils/telegram";
+import { handleUnidentifiedMessage } from "./unidentified-message";
 
 export async function handleTextMessage(
   client: TelegramClient,
   message: Message,
+  workspaceId: string,
 ): Promise<void> {
   const chatId = message.chat.id.toString();
   const messageText = message.text || "";
@@ -25,19 +28,10 @@ export async function handleTextMessage(
       .where(eq(telegramConversation.chatId, chatId))
       .limit(1);
 
-    if (!conversation) {
-      await markRead(client, message.chat.id);
-
-      // Кандидат не идентифицирован - запрашиваем PIN
-      const { generateAIResponse } = await import("../utils/ai-response.js");
-
-      const aiResponse = await generateAIResponse({
-        messageText,
-        stage: "AWAITING_PIN",
-      });
-
-      await humanDelay(600, 1200);
-      await client.sendText(message.chat.id, aiResponse);
+    // Если беседа не найдена или пользователь не идентифицирован (нет responseId),
+    // перенаправляем в handleUnidentifiedMessage для попытки идентификации
+    if (!conversation || !conversation.responseId) {
+      await handleUnidentifiedMessage(client, message, workspaceId);
       return;
     }
 
@@ -52,12 +46,8 @@ export async function handleTextMessage(
       telegramMessageId: message.id.toString(),
     });
 
-    await showTyping(client, message.chat.id);
-
-    const readingTime = Math.min(messageText.length * 30, 2000);
-    await humanDelay(readingTime, readingTime + 1000);
-
     // Получаем историю переписки для контекста
+    // Сначала пытаемся получить из БД
     const history = await db
       .select()
       .from(telegramMessage)
@@ -65,10 +55,16 @@ export async function handleTextMessage(
       .orderBy(desc(telegramMessage.createdAt))
       .limit(10);
 
-    const conversationHistory = history.reverse().map((msg) => ({
+    let conversationHistory = history.reverse().map((msg) => ({
       sender: msg.sender,
       content: msg.content || "",
     }));
+
+    // Если в БД мало сообщений, дополняем из чата через mtcute
+    if (conversationHistory.length < 3) {
+      const chatHistory = await getChatHistory(client, message.chat.id, 10);
+      conversationHistory = chatHistory;
+    }
 
     // Получаем информацию о вакансии и статусе
     let response = null;
@@ -101,8 +97,6 @@ export async function handleTextMessage(
     }
 
     // Генерируем ответ через AI
-    const { generateAIResponse } = await import("../utils/ai-response.js");
-
     const aiResponse = await generateAIResponse({
       messageText,
       stage: "INTERVIEWING",
@@ -113,21 +107,56 @@ export async function handleTextMessage(
       resumeData,
     });
 
-    await client.sendText(message.chat.id, aiResponse);
-
     // Сохраняем ответ бота
-    await db.insert(telegramMessage).values({
-      conversationId: conversation.id,
-      sender: "BOT",
-      contentType: "TEXT",
-      content: aiResponse,
-    });
+    const [botMessage] = await db
+      .insert(telegramMessage)
+      .values({
+        conversationId: conversation.id,
+        sender: "BOT",
+        contentType: "TEXT",
+        content: aiResponse,
+      })
+      .returning();
+
+    if (botMessage && conversation.username) {
+      await triggerMessageSend(
+        botMessage.id,
+        conversation.username,
+        aiResponse,
+        workspaceId,
+      );
+    }
   } catch (error) {
     console.error("Ошибка при обработке текстового сообщения:", error);
 
     try {
-      await humanDelay(800, 1500);
-      await client.sendText(message.chat.id, getErrorResponse());
+      const [conversation] = await db
+        .select()
+        .from(telegramConversation)
+        .where(eq(telegramConversation.chatId, chatId))
+        .limit(1);
+
+      if (conversation) {
+        const errorMessage = getTextErrorResponse();
+        const [botMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "BOT",
+            contentType: "TEXT",
+            content: errorMessage,
+          })
+          .returning();
+
+        if (botMessage && conversation.username) {
+          await triggerMessageSend(
+            botMessage.id,
+            conversation.username,
+            errorMessage,
+            workspaceId,
+          );
+        }
+      }
     } catch (sendError) {
       console.error("Не удалось отправить сообщение об ошибке:", sendError);
     }

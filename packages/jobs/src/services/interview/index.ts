@@ -1,3 +1,19 @@
+// Реэкспортируем из lib для обратной совместимости
+export {
+  getInterviewStartData,
+  identifyByPinCode,
+  identifyByVacancy,
+  saveMessage,
+} from "@qbs-autonaim/lib";
+export {
+  addQuestionAnswer,
+  getConversationMetadata,
+  getQuestionCount,
+  isInterviewCompleted,
+  isInterviewStarted,
+  markInterviewCompleted,
+  updateConversationMetadata,
+} from "./conversation-metadata";
 export {
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
