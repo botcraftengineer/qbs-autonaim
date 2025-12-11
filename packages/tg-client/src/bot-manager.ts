@@ -472,9 +472,9 @@ class BotManager {
   async processMissedMessages(): Promise<void> {
     console.log("🔍 Проверка пропущенных сообщений...");
 
-    const { telegramConversation, telegramMessage } = await import(
-      "@qbs-autonaim/db/schema"
-    );
+    const { telegramConversation, telegramMessage, vacancyResponse } =
+      await import("@qbs-autonaim/db/schema");
+    const { desc } = await import("@qbs-autonaim/db");
 
     // Получаем все активные беседы
     const conversations = await db
@@ -495,7 +495,6 @@ class BotManager {
     for (const conversation of conversations) {
       try {
         // Получаем последнее сообщение из БД для этой беседы
-        const { desc } = await import("@qbs-autonaim/db");
         const lastMessage = await db
           .select()
           .from(telegramMessage)
@@ -510,7 +509,6 @@ class BotManager {
           continue;
         }
 
-        const { vacancyResponse } = await import("@qbs-autonaim/db/schema");
         const response = await db.query.vacancyResponse.findFirst({
           where: eq(vacancyResponse.id, conversation.responseId),
           with: {
@@ -529,6 +527,9 @@ class BotManager {
           );
           continue;
         }
+
+        // Создаем обработчик один раз для этого клиента
+        const messageHandler = createBotHandler(client);
 
         // Получаем историю сообщений из Telegram
         const messages: Array<{
@@ -600,7 +601,6 @@ class BotManager {
               ]);
 
               if (fullMessage[0]) {
-                const messageHandler = createBotHandler(client);
                 await messageHandler(fullMessage[0]);
                 processedCount++;
               }

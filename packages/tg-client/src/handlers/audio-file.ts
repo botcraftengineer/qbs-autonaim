@@ -6,7 +6,7 @@ import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
 import { getAudioErrorResponse } from "../responses/greetings.js";
 import { humanDelay } from "../utils/delays.js";
 import { normalizeAudioExtension, uploadFile } from "../utils/file-upload.js";
-import { triggerTranscription } from "../utils/inngest.js";
+import { triggerMessageSend, triggerTranscription } from "../utils/inngest.js";
 import { markRead, showRecordingAudio } from "../utils/telegram.js";
 
 export async function handleAudioFile(
@@ -46,7 +46,6 @@ export async function handleAudioFile(
       .returning();
 
     if (tempConversation) {
-      const { triggerMessageSend } = await import("../utils/inngest.js");
       const [botMessage] = await db
         .insert(telegramMessage)
         .values({
@@ -112,7 +111,6 @@ export async function handleAudioFile(
       const errorMessage = getAudioErrorResponse();
 
       if (conversation) {
-        const { triggerMessageSend } = await import("../utils/inngest.js");
         const [botMessage] = await db
           .insert(telegramMessage)
           .values({

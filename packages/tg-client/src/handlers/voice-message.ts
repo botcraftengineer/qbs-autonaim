@@ -43,7 +43,16 @@ export async function handleVoiceMessage(
           awaitingPin: true,
         }),
       })
-      .onConflictDoNothing()
+      .onConflictDoUpdate({
+        target: telegramConversation.chatId,
+        set: {
+          status: "ACTIVE",
+          metadata: JSON.stringify({
+            identifiedBy: "none",
+            awaitingPin: true,
+          }),
+        },
+      })
       .returning();
 
     if (tempConversation) {
