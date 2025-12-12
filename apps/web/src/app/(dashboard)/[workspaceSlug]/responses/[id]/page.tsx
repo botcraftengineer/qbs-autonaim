@@ -25,59 +25,18 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useRef, useState } from "react";
 import { SiteHeader } from "~/components/layout";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
-import { sanitizeHtmlAction } from "./actions";
 
 interface ResponseDetailPageProps {
   params: Promise<{ workspaceSlug: string; id: string }>;
 }
 
 function SafeHtml({ html, className }: { html: string; className?: string }) {
-  const [sanitizedHtml, setSanitizedHtml] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    setIsLoading(true);
-
-    sanitizeHtmlAction(html)
-      .then((result) => {
-        if (isMounted) {
-          setSanitizedHtml(result);
-          setIsLoading(false);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [html]);
-
-  if (isLoading) {
-    return (
-      <div className={className} aria-live="polite" aria-busy="true">
-        Загрузка…
-      </div>
-    );
-  }
-
-  if (!sanitizedHtml) {
-    return null;
-  }
-
   return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-    />
+    <div className={className} dangerouslySetInnerHTML={{ __html: html }} />
   );
 }
 

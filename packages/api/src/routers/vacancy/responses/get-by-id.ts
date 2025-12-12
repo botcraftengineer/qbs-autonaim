@@ -5,6 +5,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
+import { sanitizeHtml } from "../../utils/sanitize-html";
 
 export const getById = protectedProcedure
   .input(z.object({ id: z.string(), workspaceId: workspaceIdSchema }))
@@ -80,6 +81,22 @@ export const getById = protectedProcedure
     return {
       ...response,
       resumePdfUrl,
+      screening: response.screening
+        ? {
+            ...response.screening,
+            analysis: response.screening.analysis
+              ? sanitizeHtml(response.screening.analysis)
+              : null,
+          }
+        : null,
+      telegramInterviewScoring: response.telegramInterviewScoring
+        ? {
+            ...response.telegramInterviewScoring,
+            analysis: response.telegramInterviewScoring.analysis
+              ? sanitizeHtml(response.telegramInterviewScoring.analysis)
+              : null,
+          }
+        : null,
       conversation: response.conversation
         ? {
             ...response.conversation,

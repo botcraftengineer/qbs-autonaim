@@ -18,19 +18,19 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "1.0.31",
-    "@ai-sdk/openai": "2.0.80",
+    "@ai-sdk/deepseek": "1.0.32",
+    "@ai-sdk/openai": "2.0.85",
     "@aws-sdk/client-s3": "3.948.0",
     "@aws-sdk/s3-request-presigner": "3.948.0",
     "@qbs-autonaim/config": "workspace:*",
-    "ai": "5.0.110",
+    "ai": "5.0.112",
     "langfuse": "3.38.6",
     "sharp": "^0.34.5",
     "zod": "4.1.13"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
-    "@types/node": "25.0.0",
+    "@types/node": "25.0.1",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
   }

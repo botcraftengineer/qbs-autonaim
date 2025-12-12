@@ -2,7 +2,6 @@
 
 import { Progress } from "@qbs-autonaim/ui";
 import { Star } from "lucide-react";
-import { sanitizeHtml } from "~/lib/sanitize-html";
 
 interface TelegramInterviewScoringProps {
   score: number | null;
@@ -74,7 +73,7 @@ export function TelegramInterviewScoring({
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
             <div
               className="text-sm prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
+              dangerouslySetInnerHTML={{ __html: analysis }}
             />
           </div>
         )}
