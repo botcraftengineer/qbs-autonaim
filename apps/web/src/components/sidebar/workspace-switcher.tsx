@@ -20,6 +20,7 @@ import {
   IconUserPlus,
 } from "@tabler/icons-react";
 import { ChevronsUpDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { CreateWorkspaceDialog } from "~/components/workspace";
 
@@ -43,6 +44,7 @@ export function WorkspaceSwitcher({
   onWorkspaceChange?: (workspaceId: string) => void;
 }) {
   const { isMobile } = useSidebar();
+  const router = useRouter();
   const [activeWorkspace, setActiveWorkspace] = React.useState(
     workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0],
   );
@@ -54,7 +56,7 @@ export function WorkspaceSwitcher({
   const handleWorkspaceChange = (workspace: WorkspaceWithRole) => {
     setActiveWorkspace(workspace);
     onWorkspaceChange?.(workspace.id);
-    window.location.href = `/${workspace.slug}`;
+    router.push(`/${workspace.slug}`);
   };
 
   const getRoleLabel = (role: string) => {
@@ -135,7 +137,7 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
-                    (window.location.href = `/${activeWorkspace.slug}/settings`)
+                    router.push(`/${activeWorkspace.slug}/settings`)
                   }
                 >
                   <IconSettings className="size-4" />
@@ -144,7 +146,7 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
-                    (window.location.href = `/${activeWorkspace.slug}/settings/members`)
+                    router.push(`/${activeWorkspace.slug}/settings/members`)
                   }
                 >
                   <IconUserPlus className="size-4" />

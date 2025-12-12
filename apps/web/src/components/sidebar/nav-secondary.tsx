@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from "@qbs-autonaim/ui";
 import type { Icon } from "@tabler/icons-react";
+import Link from "next/link";
 import type * as React from "react";
 
 export function NavSecondary({
@@ -27,17 +28,10 @@ export function NavSecondary({
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>
-                {item.url.startsWith("#") ? (
-                  <a href={item.url}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                ) : (
-                  <a href={item.url}>
-                    <item.icon />
-                    <span>{item.title}</span>
-                  </a>
-                )}
+                <Link href={item.url}>
+                  <item.icon />
+                  <span>{item.title}</span>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

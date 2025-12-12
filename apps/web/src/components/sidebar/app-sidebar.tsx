@@ -16,6 +16,7 @@ import {
   IconMessage,
   IconSettings,
 } from "@tabler/icons-react";
+import Link from "next/link";
 import type * as React from "react";
 import {
   NavMain,
@@ -87,10 +88,10 @@ export function AppSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <a href={activeWorkspace ? `/${activeWorkspace.slug}` : "/"}>
+              <Link href={activeWorkspace ? `/${activeWorkspace.slug}` : "/"}>
                 <IconInnerShadowTop className="size-5!" />
                 <span className="text-base font-semibold">QBS Автонайм</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

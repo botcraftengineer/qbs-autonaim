@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from "@qbs-autonaim/ui";
 import type { Icon } from "@tabler/icons-react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function NavMain({
@@ -34,10 +35,10 @@ export function NavMain({
                 }
                 asChild
               >
-                <a href={item.url}>
+                <Link href={item.url}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                </a>
+                </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

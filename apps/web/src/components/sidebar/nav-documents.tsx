@@ -21,6 +21,7 @@ import {
   IconShare3,
   IconTrash,
 } from "@tabler/icons-react";
+import Link from "next/link";
 
 export function NavDocuments({
   items,
@@ -40,10 +41,10 @@ export function NavDocuments({
         {items.map((item) => (
           <SidebarMenuItem key={item.name}>
             <SidebarMenuButton asChild>
-              <a href={item.url}>
+              <Link href={item.url}>
                 <item.icon />
                 <span>{item.name}</span>
-              </a>
+              </Link>
             </SidebarMenuButton>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
