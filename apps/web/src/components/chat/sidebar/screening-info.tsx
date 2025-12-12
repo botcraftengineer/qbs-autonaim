@@ -1,6 +1,5 @@
 "use client";
 
-import { ScrollArea } from "@qbs-autonaim/ui";
 import { sanitizeHtml } from "~/lib/sanitize-html";
 
 interface ScreeningInfoProps {
@@ -41,12 +40,10 @@ export function ScreeningInfo({
         {analysis && (
           <div>
             <p className="text-xs text-muted-foreground mb-1">Анализ</p>
-            <ScrollArea className="max-h-64">
-              <div
-                className="text-sm prose prose-sm max-w-none pr-4"
-                dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
-              />
-            </ScrollArea>
+            <div
+              className="text-sm prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(analysis) }}
+            />
           </div>
         )}
       </div>
