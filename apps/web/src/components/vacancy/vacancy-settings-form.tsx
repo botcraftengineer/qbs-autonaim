@@ -24,7 +24,6 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface VacancySettingsFormProps {
-  vacancyId: string;
   initialData?: {
     customBotInstructions?: string | null;
     customScreeningPrompt?: string | null;
@@ -34,7 +33,6 @@ interface VacancySettingsFormProps {
 }
 
 export function VacancySettingsForm({
-  vacancyId,
   initialData,
   onSave,
 }: VacancySettingsFormProps) {
