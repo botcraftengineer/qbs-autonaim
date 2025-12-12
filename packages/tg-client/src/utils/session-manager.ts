@@ -50,3 +50,21 @@ export async function getSessionByWorkspace(workspaceId: string) {
 
   return session;
 }
+
+/**
+ * Сохраняет данные сессии (включая кэш peers) в базу данных
+ */
+export async function saveSessionData(
+  sessionId: string,
+  sessionData: Record<string, string>,
+): Promise<void> {
+  await db
+    .update(telegramSession)
+    .set({
+      sessionData,
+      updatedAt: new Date(),
+    })
+    .where(eq(telegramSession.id, sessionId));
+
+  console.log(`💾 Кэш сессии ${sessionId} сохранен в БД`);
+}

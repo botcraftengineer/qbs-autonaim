@@ -12,6 +12,7 @@ export interface InterviewContext {
   currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
+  customInterviewQuestions?: string | null;
 }
 
 /**
@@ -28,13 +29,18 @@ export function buildInterviewQuestionPrompt(
     currentQuestion,
     previousQA,
     questionNumber,
+    customInterviewQuestions,
   } = context;
 
   const name = extractFirstName(candidateName);
 
+  const customQuestionsText = customInterviewQuestions
+    ? `\n\nВОПРОСЫ ДЛЯ ИНТЕРВЬЮ (используй их как основу для формулирования следующего вопроса):\n${customInterviewQuestions}\n`
+    : "";
+
   return `Ты — опытный рекрутер, который проводит предварительное интервью с кандидатом через голосовые сообщения в Telegram.
 
-ВАЖНО: Ты должен вести себя как ЖИВОЙ ЧЕЛОВЕК, а не бот. Пиши естественно, по-человечески, как в обычной переписке.
+ВАЖНО: Ты должен вести себя как ЖИВОЙ ЧЕЛОВЕК, а не бот. Пиши естественно, по-человечески, как в обычной переписке.${customQuestionsText}
 
 КОНТЕКСТ:
 - Кандидат: ${name}

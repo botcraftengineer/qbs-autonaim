@@ -1,5 +1,12 @@
 /**
  * Обработка пропущенных сообщений
+ *
+ * Этот модуль обрабатывает сообщения, которые могли быть пропущены во время
+ * отключения бота. Работает в связке с catchUp: true в TelegramClient,
+ * который автоматически получает пропущенные обновления через MTProto.
+ *
+ * Процессор дополнительно проверяет историю активных диалогов и обрабатывает
+ * входящие сообщения, которые появились после последнего сохраненного в БД.
  */
 
 import type { TelegramClient } from "@mtcute/bun";
@@ -24,6 +31,7 @@ export interface MissedMessagesProcessorConfig {
 export async function processMissedMessages(
   config: MissedMessagesProcessorConfig,
 ): Promise<void> {
+  const startTime = Date.now();
   console.log("🔍 Проверка пропущенных сообщений...");
 
   const conversations = await db
@@ -40,6 +48,7 @@ export async function processMissedMessages(
 
   let processedCount = 0;
   let errorCount = 0;
+  let skippedCount = 0;
 
   for (const conversation of conversations) {
     try {
@@ -49,14 +58,18 @@ export async function processMissedMessages(
       );
       processedCount += result.processed;
       errorCount += result.errors;
+      if (result.processed === 0 && result.errors === 0) {
+        skippedCount++;
+      }
     } catch (error) {
       console.error(`❌ Ошибка проверки беседы ${conversation.chatId}:`, error);
       errorCount++;
     }
   }
 
+  const duration = ((Date.now() - startTime) / 1000).toFixed(2);
   console.log(
-    `✅ Обработка пропущенных сообщений завершена: обработано ${processedCount}, ошибок ${errorCount}`,
+    `✅ Обработка пропущенных сообщений завершена за ${duration}s: обработано ${processedCount}, пропущено ${skippedCount}, ошибок ${errorCount}`,
   );
 }
 
@@ -113,6 +126,8 @@ async function processConversationMissedMessages(
     return { processed, errors };
   }
 
+  // Вместо iterHistory используем прямой запрос getMessages
+  // Это не требует кэша и работает сразу после подключения
   const messages: Array<{
     id: number;
     text?: string;
@@ -121,7 +136,11 @@ async function processConversationMissedMessages(
   }> = [];
 
   try {
-    for await (const msg of client.iterHistory(chatIdNumber, { limit: 20 })) {
+    // Получаем последние 20 сообщений напрямую через API
+    const history = await client.getHistory(chatIdNumber, { limit: 20 });
+
+    // getHistory возвращает итератор, преобразуем в массив
+    for await (const msg of history) {
       messages.push({
         id: msg.id,
         text: msg.text,
@@ -135,12 +154,14 @@ async function processConversationMissedMessages(
         ? historyError.message
         : String(historyError);
 
+    // Если чат не найден или недоступен, пропускаем
     if (
-      errorMessage.includes("not found in local cache") ||
       errorMessage.includes("PEER_ID_INVALID") ||
-      errorMessage.includes("CHANNEL_INVALID")
+      errorMessage.includes("CHANNEL_INVALID") ||
+      errorMessage.includes("CHAT_INVALID") ||
+      errorMessage.includes("USER_INVALID")
     ) {
-      console.log(`⚠️ Чат ${conversation.chatId} не найден в кэше, пропускаем`);
+      console.log(`⚠️ Чат ${conversation.chatId} недоступен или не существует`);
       return { processed, errors };
     }
     throw historyError;

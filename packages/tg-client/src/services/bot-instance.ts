@@ -10,6 +10,7 @@ import { messageDataSchema } from "../schemas/message-data.schema";
 import { ExportableStorage } from "../storage";
 import { isAuthError } from "../utils/auth-errors";
 import { triggerIncomingMessage } from "../utils/inngest";
+import { saveSessionData } from "../utils/session-manager";
 import { markRead } from "../utils/telegram";
 
 export interface BotInstance {
@@ -19,6 +20,8 @@ export interface BotInstance {
   userId: string;
   username?: string;
   phone: string;
+  storage: ExportableStorage;
+  cacheSaveInterval?: NodeJS.Timeout;
 }
 
 export interface BotInstanceConfig {
@@ -73,7 +76,7 @@ export async function createBotInstance(
     apiHash,
     storage,
     updates: {
-      catchUp: true,
+      catchUp: true, // Автоматически получать пропущенные обновления при подключении
       messageGroupingInterval: 250,
     },
     logLevel: 1,
@@ -225,6 +228,23 @@ export async function createBotInstance(
     `✅ Бот запущен для workspace ${workspaceId}: ${user.firstName || ""} ${user.lastName || ""} (@${user.username || "no username"}) [${phone}]`,
   );
 
+  // Настраиваем периодическое сохранение кэша (каждые 5 минут)
+  const cacheSaveInterval = setInterval(
+    async () => {
+      try {
+        const exportedData = await storage.export();
+        await saveSessionData(sessionId, exportedData);
+      } catch (error) {
+        console.error(`❌ [${workspaceId}] Ошибка сохранения кэша:`, error);
+      }
+    },
+    5 * 60 * 1000,
+  ); // 5 минут
+
+  console.log(
+    `⏰ Автосохранение кэша настроено для workspace ${workspaceId} (каждые 5 мин)`,
+  );
+
   return {
     client,
     workspaceId,
@@ -232,5 +252,7 @@ export async function createBotInstance(
     userId: user.id.toString(),
     username: user.username || undefined,
     phone,
+    storage,
+    cacheSaveInterval,
   };
 }
