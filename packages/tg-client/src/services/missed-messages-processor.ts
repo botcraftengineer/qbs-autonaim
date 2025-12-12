@@ -216,6 +216,8 @@ async function processConversationMissedMessages(
         `⏳ FLOOD_WAIT для чата ${conversation.chatId}: ожидание ${waitSeconds} секунд...`,
       );
       await sleep(waitSeconds * 1000);
+      // Очищаем массив перед повторной попыткой, чтобы избежать дублирования
+      messages.length = 0;
       // Повторная попытка после ожидания
       try {
         let dialogFound = false;
