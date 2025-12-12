@@ -39,8 +39,8 @@ export function ChatSidebar({
   responseData,
 }: ChatSidebarProps) {
   return (
-    <div className="w-full lg:w-80 border-l flex flex-col h-full">
-      <ScrollArea className="flex-1">
+    <div className="w-full lg:w-80 border-l flex flex-col h-full overflow-hidden">
+      <ScrollArea className="h-full">
         <div className="p-4 lg:p-6 space-y-4 lg:space-y-6">
           <CandidateInfo candidateName={candidateName} chatId={chatId} />
 

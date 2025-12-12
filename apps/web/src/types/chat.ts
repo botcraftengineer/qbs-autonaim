@@ -5,6 +5,7 @@ export interface ChatMessageProps {
   content: string;
   createdAt: Date;
   candidateName: string | null;
+  companyName?: string | null;
   fileUrl?: string | null;
   fileId?: string | null;
   voiceTranscription?: string | null;
