@@ -42,6 +42,7 @@ export const vacancy = pgTable(
       .defaultNow()
       .notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },

@@ -72,7 +72,7 @@ export async function screenResponse(
   // Получаем кастомный промпт из вакансии
   const vacancyResult = await tryCatch(async () => {
     return await db.query.vacancy.findFirst({
-      where: eq(vacancyResponse.vacancyId, response.vacancyId),
+      where: eq(vacancy.id, response.vacancyId),
       columns: {
         customScreeningPrompt: true,
       },

@@ -7,17 +7,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@qbs-autonaim/ui";
-import { use } from "react";
+import { useParams } from "next/navigation";
 import { ResponseTable } from "~/components/vacancy";
 
-interface VacancyResponsesPageProps {
-  params: Promise<{ workspaceSlug: string; id: string }>;
-}
-
-export default function VacancyResponsesPage({
-  params,
-}: VacancyResponsesPageProps) {
-  const { workspaceSlug, id } = use(params);
+export default function VacancyResponsesPage() {
+  const { workspaceSlug, id } = useParams<{
+    workspaceSlug: string;
+    id: string;
+  }>();
 
   return (
     <div className="space-y-4">

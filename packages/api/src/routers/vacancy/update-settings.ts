@@ -46,14 +46,29 @@ export const updateSettings = protectedProcedure
     }
 
     // Обновляем настройки
-    const [updated] = await ctx.db
+    // Строим патч только с определенными полями (не undefined)
+    const patch: {
+      customBotInstructions?: string | null;
+      customScreeningPrompt?: string | null;
+      customInterviewQuestions?: string | null;
+      updatedAt: Date;
+    } = {
+      updatedAt: new Date(),
+    };
+
+    if (input.settings.customBotInstructions !== undefined) {
+      patch.customBotInstructions = input.settings.customBotInstructions;
+    }
+    if (input.settings.customScreeningPrompt !== undefined) {
+      patch.customScreeningPrompt = input.settings.customScreeningPrompt;
+    }
+    if (input.settings.customInterviewQuestions !== undefined) {
+      patch.customInterviewQuestions = input.settings.customInterviewQuestions;
+    }
+
+    const result = await ctx.db
       .update(vacancy)
-      .set({
-        customBotInstructions: input.settings.customBotInstructions,
-        customScreeningPrompt: input.settings.customScreeningPrompt,
-        customInterviewQuestions: input.settings.customInterviewQuestions,
-        updatedAt: new Date(),
-      })
+      .set(patch)
       .where(
         and(
           eq(vacancy.id, input.vacancyId),
@@ -62,5 +77,13 @@ export const updateSettings = protectedProcedure
       )
       .returning();
 
-    return updated;
+    // Проверяем, что строка была обновлена (race condition: вакансия могла быть удалена)
+    if (!result[0]) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
+    return result[0];
   });
