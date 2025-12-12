@@ -136,6 +136,11 @@ export default function VacancyDetailPage({
                         Обзор
                       </Link>
                     </TabsTrigger>
+                    <TabsTrigger value="settings" asChild>
+                      <Link href={`/${workspaceSlug}/vacancies/${id}/settings`}>
+                        Настройки
+                      </Link>
+                    </TabsTrigger>
                   </TabsList>
                 </div>
 

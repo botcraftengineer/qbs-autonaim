@@ -31,6 +31,8 @@ interface GenerateResponseParams {
     phone?: string;
   };
   errorMessage?: string;
+  customBotInstructions?: string | null;
+  customInterviewQuestions?: string | null;
 }
 
 /**
@@ -53,6 +55,8 @@ export async function generateAIResponse(
     conversationHistory: params.conversationHistory || [],
     resumeData: params.resumeData,
     errorMessage: params.errorMessage,
+    customBotInstructions: params.customBotInstructions,
+    customInterviewQuestions: params.customInterviewQuestions,
   };
 
   const prompt = buildTelegramRecruiterPrompt(context);

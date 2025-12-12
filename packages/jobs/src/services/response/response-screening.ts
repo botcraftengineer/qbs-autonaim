@@ -1,6 +1,10 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
+import {
+  responseScreening,
+  vacancy,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import { buildResponseScreeningPrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
@@ -65,6 +69,20 @@ export async function screenResponse(
     return err(`Requirements for vacancy ${response.vacancyId} not found`);
   }
 
+  // Получаем кастомный промпт из вакансии
+  const vacancyResult = await tryCatch(async () => {
+    return await db.query.vacancy.findFirst({
+      where: eq(vacancyResponse.vacancyId, response.vacancyId),
+      columns: {
+        customScreeningPrompt: true,
+      },
+    });
+  }, "Failed to fetch vacancy settings");
+
+  const customPrompt = vacancyResult.success
+    ? vacancyResult.data?.customScreeningPrompt
+    : null;
+
   const prompt = buildResponseScreeningPrompt(
     {
       candidateName: response.candidateName,
@@ -74,6 +92,7 @@ export async function screenResponse(
       coverLetter: response.coverLetter,
     },
     requirements,
+    customPrompt,
   );
 
   logger.info("Sending request to AI for screening");

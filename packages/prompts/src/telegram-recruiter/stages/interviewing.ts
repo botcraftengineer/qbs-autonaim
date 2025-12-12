@@ -14,6 +14,8 @@ export function buildInterviewingPrompt(
     responseStatus,
     resumeData,
     conversationHistory = [],
+    customBotInstructions,
+    customInterviewQuestions,
   } = context;
 
   const hasVoiceMessages = conversationHistory.some(
@@ -39,9 +41,17 @@ export function buildInterviewingPrompt(
         ? "⚠️ СТАТУС INTERVIEW_HH: Предложи обсудить детали собеседования"
         : "";
 
+  const customInstructionsText = customBotInstructions
+    ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ ОТ РЕКРУТЕРА:\n${customBotInstructions}\n`
+    : "";
+
+  const customQuestionsText = customInterviewQuestions
+    ? `\n\nВОПРОСЫ ДЛЯ ИНТЕРВЬЮ (используй их как основу):\n${customInterviewQuestions}\n`
+    : "";
+
   return `
 ⚠️ ЭТАП 3: ПРОВЕДЕНИЕ ИНТЕРВЬЮ
-Кандидат идентифицирован. Проводи полноценное интервью.
+Кандидат идентифицирован. Проводи полноценное интервью.${customInstructionsText}${customQuestionsText}
 
 ${historyText ? `ИСТОРИЯ ДИАЛОГА (для контекста):\n${historyText}\n` : ""}
 

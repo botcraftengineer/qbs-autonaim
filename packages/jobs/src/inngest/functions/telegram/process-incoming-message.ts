@@ -160,6 +160,10 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   experience: interviewData?.experience ?? undefined,
                   coverLetter: interviewData?.coverLetter ?? undefined,
                 },
+                customBotInstructions:
+                  interviewData?.customBotInstructions ?? undefined,
+                customInterviewQuestions:
+                  interviewData?.customInterviewQuestions ?? undefined,
               });
 
               const { text: aiResponse } = await generateText({

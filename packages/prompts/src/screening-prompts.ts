@@ -32,8 +32,15 @@ export interface ResponseData {
 export function buildResponseScreeningPrompt(
   response: ResponseData,
   requirements: VacancyRequirements,
+  customPrompt?: string | null,
 ): string {
-  return `Ты — эксперт по подбору персонала. Оцени соответствие резюме кандидата требованиям вакансии.
+  const basePrompt = `Ты — эксперт по подбору персонала. Оцени соответствие резюме кандидата требованиям вакансии.`;
+
+  const customInstructions = customPrompt
+    ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ ОТ РЕКРУТЕРА:\n${customPrompt}\n`
+    : "";
+
+  return `${basePrompt}${customInstructions}
 
 ТРЕБОВАНИЯ ВАКАНСИИ:
 Позиция: ${requirements.job_title}
@@ -114,10 +121,17 @@ export function formatResumeForScreening(
 export function buildFullResumeScreeningPrompt(
   requirements: VacancyRequirements,
   resumeData: ResumeScreeningData,
+  customPrompt?: string | null,
 ): string {
   const formattedResume = formatResumeForScreening(resumeData);
 
-  return `Ты эксперт по подбору персонала. Оцени резюме кандидата на соответствие требованиям вакансии.
+  const basePrompt = `Ты эксперт по подбору персонала. Оцени резюме кандидата на соответствие требованиям вакансии.`;
+
+  const customInstructions = customPrompt
+    ? `\n\nДОПОЛНИТЕЛЬНЫЕ ИНСТРУКЦИИ ОТ РЕКРУТЕРА:\n${customPrompt}\n`
+    : "";
+
+  return `${basePrompt}${customInstructions}
 
 ВАКАНСИЯ: ${requirements.job_title}
 
