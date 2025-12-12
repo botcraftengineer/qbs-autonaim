@@ -1,6 +1,7 @@
 import { Long } from "@mtcute/core";
 import { Hono } from "hono";
 import { botManager } from "../../bot-manager";
+import { withFloodWaitRetry } from "../../utils/flood-wait";
 import {
   sendMessageByPhoneSchema,
   sendMessageByUsernameSchema,
@@ -101,7 +102,9 @@ messages.post("/send", async (c) => {
       return c.json({ error: `Chat ${chatId} not found` }, 404);
     }
 
-    const messageResult = await client.sendText(peer, text);
+    const messageResult = await withFloodWaitRetry(() =>
+      client.sendText(peer, text),
+    );
 
     return c.json({
       success: true,
@@ -139,7 +142,9 @@ messages.post("/send-by-username", async (c) => {
       );
     }
     const cleanedUsername = cleanUsername(username);
-    const messageResult = await client.sendText(cleanedUsername, text);
+    const messageResult = await withFloodWaitRetry(() =>
+      client.sendText(cleanedUsername, text),
+    );
 
     return c.json({
       success: true,
@@ -206,7 +211,9 @@ messages.post("/send-by-phone", async (c) => {
       accessHash: user.accessHash || Long.ZERO,
     };
 
-    const messageResult = await client.sendText(inputPeer, text);
+    const messageResult = await withFloodWaitRetry(() =>
+      client.sendText(inputPeer, text),
+    );
 
     return c.json({
       success: true,
