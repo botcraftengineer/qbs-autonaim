@@ -1,6 +1,40 @@
 import { stripHtml } from "string-strip-html";
 import type { TelegramRecruiterContext } from "../types";
 
+// Константы для типов сообщений
+const MessageSender = {
+  CANDIDATE: "CANDIDATE",
+  BOT: "BOT",
+} as const;
+
+const MessageContentType = {
+  TEXT: "TEXT",
+  VOICE: "VOICE",
+} as const;
+
+const VOICE_MESSAGE_FALLBACK_TEXT = "Голосовое сообщение";
+
+/**
+ * Проверяет, является ли сообщение голосовым от кандидата
+ */
+function isCandidateVoiceMessage(msg: {
+  sender: string;
+  contentType?: string;
+  content: string;
+}): boolean {
+  if (msg.sender !== MessageSender.CANDIDATE) {
+    return false;
+  }
+
+  // Приоритет: проверяем contentType (стабильное поле)
+  if (msg.contentType === MessageContentType.VOICE) {
+    return true;
+  }
+
+  // Fallback: проверяем текст контента (последний вариант)
+  return msg.content === VOICE_MESSAGE_FALLBACK_TEXT;
+}
+
 /**
  * Промпт для этапа проведения интервью
  */
@@ -20,9 +54,7 @@ export function buildInterviewingPrompt(
 
   // Подсчитываем количество голосовых сообщений от кандидата
   const voiceMessagesCount = conversationHistory.filter(
-    (msg) =>
-      msg.sender === "CANDIDATE" &&
-      (msg.contentType === "VOICE" || msg.content === "Голосовое сообщение"),
+    isCandidateVoiceMessage,
   ).length;
 
   const hasFirstVoice = voiceMessagesCount >= 1;
@@ -36,7 +68,7 @@ export function buildInterviewingPrompt(
 Фокус: ОРГАНИЗАЦИОННЫЕ МОМЕНТЫ
 
 - Попроси записать голосовое с организационными вопросами
-- Задай 2-4 вопроса: график работы, зарплата, сроки начала, релокация
+- Выбери и задай 2-4 релевантных вопроса: график работы, зарплата, сроки начала, релокация
 - Объясни, что так быстрее познакомиться`;
   } else if (hasFirstVoice && !hasSecondVoice) {
     // Было первое голосовое - просим второе (профессиональные вопросы)
@@ -45,7 +77,7 @@ export function buildInterviewingPrompt(
 Фокус: ПРОФЕССИОНАЛЬНАЯ ДЕЯТЕЛЬНОСТЬ
 
 - Попроси записать голосовое про профессиональный опыт
-- Задай 2-4 вопроса про опыт, навыки, проекты, технологии
+- Выбери и задай 2-4 наиболее релевантных вопроса про опыт, навыки, проекты, технологии
 - Учитывай требования вакансии и резюме кандидата
 - Это последний запрос голосового - больше не проси`;
   } else {
@@ -139,7 +171,7 @@ ${
 ПРИМЕРЫ ВОПРОСОВ ДЛЯ ВТОРОГО ГОЛОСОВОГО (профессиональные):
 ${
   vacancyRequirements
-    ? `- Расскажите подробнее про опыт работы с [ключевые технологии из требований]
+    ? `- Расскажите подробнее про опыт работы с технологиями, которые указаны в требованиях вакансии (извлеки их из vacancyRequirements и перечисли конкретно)
 - Какой самый сложный проект был в вашей практике?
 - С какими технологиями работали последние 2 года?
 - Почему заинтересовала именно эта позиция?`
