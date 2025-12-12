@@ -145,6 +145,26 @@ export const sendNextQuestionFunction = inngest.createFunction(
     const { conversationId, question, transcription, questionNumber } =
       event.data;
 
+    // Проверяем SKIP в самом начале, до любых API вызовов
+    const trimmedQuestion = question.trim();
+    const shouldSkip =
+      trimmedQuestion === "[SKIP]" ||
+      trimmedQuestion === "" ||
+      trimmedQuestion.toLowerCase() === "skip";
+
+    if (shouldSkip) {
+      console.log("⏭️ Пропускаем отправку сообщения (маркер SKIP)", {
+        conversationId,
+        questionNumber,
+      });
+      return {
+        success: true,
+        conversationId,
+        questionNumber, // НЕ инкрементируем при skip
+        skipped: true,
+      };
+    }
+
     await step.run("save-qa", async () => {
       console.log("💾 Сохранение вопроса и ответа", {
         conversationId,
@@ -239,6 +259,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
       success: true,
       conversationId,
       questionNumber: questionNumber + 1,
+      skipped: false,
     };
   },
 );
