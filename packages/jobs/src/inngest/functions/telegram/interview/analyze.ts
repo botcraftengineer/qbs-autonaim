@@ -8,6 +8,8 @@ import {
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db";
+import { generateText } from "@qbs-autonaim/lib";
+import { buildInterviewCompletionPrompt } from "@qbs-autonaim/prompts";
 import {
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
@@ -397,17 +399,52 @@ export const completeInterviewFunction = inngest.createFunction(
     });
 
     await step.run("send-final-message", async () => {
-      const finalMessages = [
-        "Отлично, спасибо за развернутые ответы! 🙏 Мне нужно время, чтобы все проанализировать. Свяжусь с тобой в ближайшее время с результатами.",
-        "Супер, благодарю за беседу! Я изучу все детали и вернусь с обратной связью. Держу в курсе! 😊",
-        "Спасибо большое за уделенное время! Сейчас обработаю информацию и скоро выйду на связь с решением.",
-        "Отлично пообщались, спасибо! 👍 Мне нужно проанализировать наш разговор, после чего я с тобой свяжусь.",
-        "Благодарю за ответы! Все записал, теперь изучу детали. Скоро вернусь с фидбеком.",
-      ] as const;
+      // Получаем данные для персонализации финального сообщения
+      const [conv] = await db
+        .select()
+        .from(telegramConversation)
+        .where(eq(telegramConversation.id, conversationId))
+        .limit(1);
 
-      const finalMessage = finalMessages[
-        Math.floor(Math.random() * finalMessages.length)
-      ] as string;
+      let candidateName: string | undefined;
+      let vacancyTitle: string | undefined;
+      let score: number | undefined;
+      let detailedScore: number | undefined;
+
+      if (conv?.responseId) {
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, conv.responseId),
+          with: { vacancy: true },
+        });
+        candidateName = response?.candidateName ?? undefined;
+        vacancyTitle = response?.vacancy?.title ?? undefined;
+
+        // Получаем скоринг если есть
+        const scoring = await db.query.telegramInterviewScoring.findFirst({
+          where: eq(telegramInterviewScoring.conversationId, conversationId),
+        });
+        score = scoring?.score ?? undefined;
+        detailedScore = scoring?.detailedScore ?? undefined;
+      }
+
+      // Генерируем финальное сообщение через AI
+      const prompt = buildInterviewCompletionPrompt({
+        candidateName,
+        vacancyTitle,
+        questionCount: questionNumber,
+        score,
+        detailedScore,
+      });
+
+      const { text: finalMessage } = await generateText({
+        prompt,
+        generationName: "interview-completion",
+        entityId: conversationId,
+        metadata: {
+          conversationId,
+          questionNumber,
+        },
+      });
 
       const [newMessage] = await db
         .insert(telegramMessage)
@@ -415,7 +452,7 @@ export const completeInterviewFunction = inngest.createFunction(
           conversationId,
           sender: "BOT",
           contentType: "TEXT",
-          content: finalMessage,
+          content: finalMessage.trim(),
         })
         .returning();
 
@@ -428,7 +465,7 @@ export const completeInterviewFunction = inngest.createFunction(
         data: {
           messageId: newMessage.id,
           chatId,
-          content: finalMessage,
+          content: finalMessage.trim(),
         },
       });
 
