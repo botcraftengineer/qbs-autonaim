@@ -206,6 +206,21 @@ export const sendNextQuestionFunction = inngest.createFunction(
     await step.sleep("natural-delay", delay);
 
     await step.run("send-message", async () => {
+      // Проверяем, нужно ли отправлять сообщение
+      const trimmedQuestion = question.trim();
+      const shouldSkip =
+        trimmedQuestion === "[SKIP]" ||
+        trimmedQuestion === "" ||
+        trimmedQuestion.toLowerCase() === "skip";
+
+      if (shouldSkip) {
+        console.log("⏭️ Пропускаем отправку сообщения (маркер SKIP)", {
+          conversationId,
+          questionNumber: questionNumber + 1,
+        });
+        return;
+      }
+
       const [newMessage] = await db
         .insert(telegramMessage)
         .values({
