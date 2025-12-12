@@ -35,6 +35,67 @@ export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
 }
 
+function buildMessageData(message: {
+  id: number;
+  chat: { id: { toString: () => string } };
+  text: string;
+  isOutgoing: boolean;
+  media?: {
+    type: string;
+    fileId?: unknown;
+    mimeType?: unknown;
+    duration?: unknown;
+  } | null;
+  sender?: {
+    type: string;
+    username?: unknown;
+    firstName?: unknown;
+  } | null;
+}): MessageData {
+  return {
+    id: message.id,
+    chatId: message.chat.id.toString(),
+    text: message.text,
+    isOutgoing: message.isOutgoing,
+    media: message.media
+      ? {
+          type: message.media.type,
+          fileId:
+            "fileId" in message.media &&
+            typeof message.media.fileId === "string"
+              ? message.media.fileId
+              : undefined,
+          mimeType:
+            "mimeType" in message.media &&
+            typeof message.media.mimeType === "string"
+              ? message.media.mimeType
+              : undefined,
+          duration:
+            "duration" in message.media &&
+            typeof message.media.duration === "number"
+              ? message.media.duration
+              : undefined,
+        }
+      : undefined,
+    sender: message.sender
+      ? {
+          type: message.sender.type,
+          username:
+            "username" in message.sender &&
+            typeof message.sender.username === "string"
+              ? message.sender.username
+              : undefined,
+          firstName:
+            message.sender.type === "user" &&
+            "firstName" in message.sender &&
+            typeof message.sender.firstName === "string"
+              ? message.sender.firstName
+              : undefined,
+        }
+      : undefined,
+  };
+}
+
 /**
  * Обрабатывает пропущенные сообщения для всех активных диалогов
  */
@@ -291,52 +352,8 @@ async function processConversationMissedMessages(
         const fullMessage = await client.getMessages(chatIdNumber, [msg.id]);
         if (fullMessage[0]) {
           const message = fullMessage[0];
+          const messageDataRaw = buildMessageData(message);
 
-          // Конструируем данные сообщения с проверкой типов
-          const messageDataRaw: MessageData = {
-            id: message.id,
-            chatId: message.chat.id.toString(),
-            text: message.text,
-            isOutgoing: message.isOutgoing,
-            media: message.media
-              ? {
-                  type: message.media.type,
-                  fileId:
-                    "fileId" in message.media &&
-                    typeof message.media.fileId === "string"
-                      ? message.media.fileId
-                      : undefined,
-                  mimeType:
-                    "mimeType" in message.media &&
-                    typeof message.media.mimeType === "string"
-                      ? message.media.mimeType
-                      : undefined,
-                  duration:
-                    "duration" in message.media &&
-                    typeof message.media.duration === "number"
-                      ? message.media.duration
-                      : undefined,
-                }
-              : undefined,
-            sender: message.sender
-              ? {
-                  type: message.sender.type,
-                  username:
-                    "username" in message.sender &&
-                    typeof message.sender.username === "string"
-                      ? message.sender.username
-                      : undefined,
-                  firstName:
-                    message.sender.type === "user" &&
-                    "firstName" in message.sender &&
-                    typeof message.sender.firstName === "string"
-                      ? message.sender.firstName
-                      : undefined,
-                }
-              : undefined,
-          };
-
-          // Валидируем данные перед отправкой
           const validationResult = messageDataSchema.safeParse(messageDataRaw);
           if (!validationResult.success) {
             console.error(
@@ -368,48 +385,8 @@ async function processConversationMissedMessages(
             ]);
             if (fullMessage[0]) {
               const message = fullMessage[0];
-              const messageDataRaw: MessageData = {
-                id: message.id,
-                chatId: message.chat.id.toString(),
-                text: message.text,
-                isOutgoing: message.isOutgoing,
-                media: message.media
-                  ? {
-                      type: message.media.type,
-                      fileId:
-                        "fileId" in message.media &&
-                        typeof message.media.fileId === "string"
-                          ? message.media.fileId
-                          : undefined,
-                      mimeType:
-                        "mimeType" in message.media &&
-                        typeof message.media.mimeType === "string"
-                          ? message.media.mimeType
-                          : undefined,
-                      duration:
-                        "duration" in message.media &&
-                        typeof message.media.duration === "number"
-                          ? message.media.duration
-                          : undefined,
-                    }
-                  : undefined,
-                sender: message.sender
-                  ? {
-                      type: message.sender.type,
-                      username:
-                        "username" in message.sender &&
-                        typeof message.sender.username === "string"
-                          ? message.sender.username
-                          : undefined,
-                      firstName:
-                        message.sender.type === "user" &&
-                        "firstName" in message.sender &&
-                        typeof message.sender.firstName === "string"
-                          ? message.sender.firstName
-                          : undefined,
-                    }
-                  : undefined,
-              };
+              const messageDataRaw = buildMessageData(message);
+
               const validationResult =
                 messageDataSchema.safeParse(messageDataRaw);
               if (!validationResult.success) {

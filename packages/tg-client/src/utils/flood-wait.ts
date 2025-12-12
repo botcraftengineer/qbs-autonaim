@@ -50,19 +50,20 @@ export async function withFloodWaitRetry<T>(
   fn: () => Promise<T>,
   maxRetries = 3,
 ): Promise<T> {
+  const normalizedRetries = Math.max(0, Math.floor(maxRetries));
   let lastError: unknown;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+  for (let attempt = 0; attempt <= normalizedRetries; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error;
 
       if (isFloodWaitError(error)) {
-        if (attempt < maxRetries) {
+        if (attempt < normalizedRetries) {
           const waitSeconds = getFloodWaitSeconds(error);
           console.warn(
-            `⏳ FLOOD_WAIT: ожидание ${waitSeconds} секунд (попытка ${attempt + 1}/${maxRetries})...`,
+            `⏳ FLOOD_WAIT: ожидание ${waitSeconds} секунд (попытка ${attempt + 1}/${normalizedRetries})...`,
           );
           await sleep(waitSeconds * 1000);
           continue;
