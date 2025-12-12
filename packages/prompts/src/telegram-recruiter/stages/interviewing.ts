@@ -43,23 +43,38 @@ function isCandidateVoiceMessage(msg: {
 }
 
 /**
- * Формирует текст статуса response
+ * Формирует текст статуса response для промпта
+ *
+ * Соответствует значениям RESPONSE_STATUS из packages/db/src/schema/vacancy/response-status.ts:
+ * - NEW: Только откликнулся, резюме не проанализировано
+ * - EVALUATED: AI проанализировал резюме, выставлена оценка, предложен диалог
+ * - DIALOG_APPROVED: Вопросы проверены и одобрены HR
+ * - INTERVIEW_HH: Активный диалог с кандидатом через HH.ru
+ * - COMPLETED: Кандидат ответил на все вопросы, есть вывод по нему
+ * - SKIPPED: Кандидат не ответил в срок (24 часа)
  */
 function buildStatusText(status?: string): string {
   switch (status) {
-    case "COMPLETED":
-      return "⚠️ СТАТУС COMPLETED: Вежливо объясни, что процесс завершен";
-    case "INTERVIEW_HH":
-      return "⚠️ СТАТУС INTERVIEW_HH: Предложи обсудить детали собеседования";
-    case "REJECTED":
-      return "⚠️ СТАТУС REJECTED: Вежливо объясни, что к сожалению не получится продолжить";
+    // Стандартные статусы — информационные, не требуют особых действий
     case "NEW":
-      return "ℹ️ СТАТУС NEW: Кандидат только начал общение";
-    case "SCREENING":
-      return "ℹ️ СТАТУС SCREENING: Проводится скрининг";
-    case "INTERVIEW_TELEGRAM":
-      return "ℹ️ СТАТУС INTERVIEW_TELEGRAM: Интервью в Telegram активно";
+      return "ℹ️ СТАТУС NEW: Кандидат только откликнулся, резюме ещё не проанализировано";
+    case "EVALUATED":
+      return "ℹ️ СТАТУС EVALUATED: AI проанализировал резюме, выставлена оценка";
+    case "DIALOG_APPROVED":
+      return "ℹ️ СТАТУС DIALOG_APPROVED: Диалог одобрен HR, можно общаться";
+
+    // Активные статусы — идёт интервью
+    case "INTERVIEW_HH":
+      return "ℹ️ СТАТУС INTERVIEW_HH: Активный диалог с кандидатом через HH.ru";
+
+    // Финальные статусы — требуют особого подхода
+    case "COMPLETED":
+      return "⚠️ СТАТУС COMPLETED: Вежливо объясни, что процесс завершён";
+    case "SKIPPED":
+      return "⚠️ СТАТУС SKIPPED: Кандидат не ответил в срок — уточни, актуален ли ещё интерес";
+
     default:
+      // Неизвестный или отсутствующий статус — не выводим ничего
       return "";
   }
 }

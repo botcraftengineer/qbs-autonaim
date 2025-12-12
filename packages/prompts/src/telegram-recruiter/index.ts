@@ -29,9 +29,11 @@
 export type { ConversationStage, TelegramRecruiterContext } from "./types";
 
 import {
-  checkEscalationNeeded,
+  buildEscalationCheckPrompt,
+  checkPinFailureEscalation,
   getEscalationMessage,
   hasGreetedBefore,
+  type EscalationReason,
 } from "../utils";
 import { buildAwaitingPinPrompt } from "./stages/awaiting-pin";
 import { buildEscalatedPrompt } from "./stages/escalated";
@@ -40,6 +42,14 @@ import { buildInvalidPinPrompt } from "./stages/invalid-pin";
 import { buildPinReceivedPrompt } from "./stages/pin-received";
 import type { TelegramRecruiterContext } from "./types";
 
+// Реэкспортируем типы и функции эскалации для использования в других модулях
+export type { EscalationCheck, EscalationContext, EscalationReason } from "../utils";
+export {
+  buildEscalationCheckPrompt,
+  getEscalationMessage,
+  parseEscalationResponse,
+} from "../utils";
+
 /** Лимит истории по умолчанию */
 const DEFAULT_HISTORY_LIMIT = 5;
 
@@ -47,14 +57,18 @@ const DEFAULT_HISTORY_LIMIT = 5;
  * Результат построения промпта
  */
 export interface TelegramPromptResult {
-  /** Промпт для AI */
+  /** Промпт для AI (ответ кандидату) */
   prompt: string;
-  /** Нужна ли эскалация */
-  shouldEscalate: boolean;
-  /** Причина эскалации */
-  escalationReason?: string;
-  /** Сообщение для эскалации (если нужно) */
-  escalationMessage?: string;
+  /** Промпт для проверки эскалации (отдельный AI-вызов) */
+  escalationCheckPrompt: string;
+  /** Нужна ли синхронная эскалация (без AI-вызова, например 3+ неудачных PIN) */
+  immediateEscalation: boolean;
+  /** Причина синхронной эскалации */
+  immediateEscalationReason?: EscalationReason;
+  /** Описание причины синхронной эскалации */
+  immediateEscalationDescription?: string;
+  /** Сообщение для отправки кандидату при синхронной эскалации */
+  immediateEscalationMessage?: string;
 }
 
 /**
@@ -68,7 +82,15 @@ export function buildTelegramRecruiterPrompt(
 }
 
 /**
- * Строит промпт с метаданными (включая проверку эскалации)
+ * Строит промпт с метаданными (включая промпт для проверки эскалации)
+ *
+ * ВАЖНО: Теперь эскалация определяется через отдельный AI-вызов.
+ * Вызывающий код должен:
+ * 1. Проверить immediateEscalation — если true, эскалировать сразу
+ * 2. Если immediateEscalation === false — сделать AI-вызов с escalationCheckPrompt
+ * 3. Распарсить ответ через parseEscalationResponse()
+ * 4. Если shouldEscalate === true — эскалировать
+ * 5. Если shouldEscalate === false — сделать AI-вызов с prompt для ответа
  */
 export function buildTelegramRecruiterPromptWithMeta(
   context: TelegramRecruiterContext,
@@ -81,21 +103,39 @@ export function buildTelegramRecruiterPromptWithMeta(
     failedPinAttempts = 0,
   } = context;
 
-  // Проверяем необходимость эскалации
-  const escalationCheck = checkEscalationNeeded({
-    currentMessage: messageText,
-    conversationHistory,
-    failedPinAttempts,
-  });
+  // Дедуплицируем историю, чтобы избежать двойного подсчёта текущего сообщения
+  const normalizedCurrentMessage = messageText.trim().toLowerCase();
+  const deduplicatedHistory = conversationHistory
+    .filter((msg) => {
+      if (msg.sender === "CANDIDATE") {
+        const normalizedContent = msg.content.trim().toLowerCase();
+        if (normalizedContent === normalizedCurrentMessage) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .slice(-historyLimit);
 
-  if (escalationCheck.shouldEscalate && escalationCheck.reason) {
+  // Синхронная проверка — множественные неудачные попытки PIN
+  const pinFailureCheck = checkPinFailureEscalation(failedPinAttempts);
+  if (pinFailureCheck?.shouldEscalate && pinFailureCheck.reason) {
     return {
-      prompt: "", // Промпт не нужен при эскалации
-      shouldEscalate: true,
-      escalationReason: escalationCheck.description,
-      escalationMessage: getEscalationMessage(escalationCheck.reason),
+      prompt: "",
+      escalationCheckPrompt: "",
+      immediateEscalation: true,
+      immediateEscalationReason: pinFailureCheck.reason,
+      immediateEscalationDescription: pinFailureCheck.description,
+      immediateEscalationMessage: getEscalationMessage(pinFailureCheck.reason),
     };
   }
+
+  // Строим промпт для проверки эскалации через AI
+  const escalationCheckPrompt = buildEscalationCheckPrompt({
+    currentMessage: messageText,
+    conversationHistory: deduplicatedHistory,
+    failedPinAttempts,
+  });
 
   // Исключаем последнее сообщение из истории, так как оно уже в messageText
   // Берем предпоследние N сообщений для контекста (настраиваемый лимит)
@@ -169,6 +209,7 @@ ${stageInstructions}
 
   return {
     prompt,
-    shouldEscalate: false,
+    escalationCheckPrompt,
+    immediateEscalation: false,
   };
 }

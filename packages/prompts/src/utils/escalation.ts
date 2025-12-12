@@ -1,56 +1,20 @@
 /**
- * Утилиты для детекции необходимости эскалации к другому специалисту
+ * Утилиты для детекции необходимости эскалации к живому рекрутеру
  *
- * Определяет ситуации, когда диалог нужно передать коллеге
+ * Эскалация определяется через отдельный AI-вызов с промптом
  */
-
-/**
- * Паттерны сообщений, требующих эскалации
- */
-const ESCALATION_PATTERNS = {
-  /** Явные просьбы о человеке */
-  humanRequest: [
-    /(?:хочу|можно|дайте|соедините|свяжите|позовите)\s+(?:с\s+)?(?:человек|менеджер|рекрутер|hr|живо)/i,
-    /с\s+(?:человек|живым|настоящ)\s+(?:рекрутер|менеджер|сотрудник)/i,
-    /(?:вы\s+)?(?:бот|робот|автоответчик|ии|ai|искусственный)/i,
-    /поговорить\s+с\s+(?:кем-то|человеком)/i,
-    /есть\s+(?:живой|настоящий)/i,
-  ],
-
-  /** Жалобы и негатив */
-  complaints: [
-    /(?:не\s+)?(?:понимаю|понимаете|понял)/i,
-    /(?:это\s+)?(?:не\s+)?(?:то|правильно|верно)/i,
-    /(?:опять|снова|ещё|еще)\s+(?:ту\s+же|то\s+же|одно\s+и)/i,
-    /(?:бесполезн|бессмыслен|глуп)/i,
-    /(?:ужасн|кошмар|катастроф)/i,
-  ],
-
-  /** Сложные вопросы за рамками компетенции */
-  complexQuestions: [
-    /(?:юрид|правов|закон|договор|контракт|трудов\s+кодекс)/i,
-    /(?:медицин|больнич|отпуск|декрет)/i,
-    /(?:виза|разрешен|гражданств)/i,
-    /(?:суд|иск|претензия|жалоб)/i,
-  ],
-
-  /** Отказ от продолжения */
-  refusal: [
-    /(?:не\s+хочу|не\s+буду)\s+(?:записы|отвеча|продолжа)/i,
-    /(?:прекрати|останови|заверши|хватит)/i,
-    /(?:отстань|отвали|надоел)/i,
-  ],
-} as const;
 
 /**
  * Причины эскалации
  */
 export type EscalationReason =
   | "HUMAN_REQUESTED" // Кандидат просит связаться с человеком
-  | "COMPLAINT" // Кандидат жалуется
-  | "COMPLEX_QUESTION" // Сложный вопрос за рамками компетенции
+  | "COMPLAINT" // Кандидат жалуется или выражает недовольство
+  | "COMPLEX_QUESTION" // Сложный вопрос за рамками компетенции бота
   | "REFUSAL" // Кандидат отказывается продолжать
-  | "MULTIPLE_FAILED_ATTEMPTS"; // Множество неуспешных попыток
+  | "AGGRESSIVE" // Агрессивное или грубое поведение
+  | "URGENT" // Срочный вопрос, требующий немедленного внимания
+  | "OTHER"; // Иная причина
 
 /**
  * Результат проверки необходимости эскалации
@@ -60,120 +24,181 @@ export interface EscalationCheck {
   shouldEscalate: boolean;
   /** Причина эскалации */
   reason?: EscalationReason;
-  /** Описание причины для логирования */
+  /** Описание причины (человеко-читаемое) */
   description?: string;
   /** Уровень уверенности (0-1) */
   confidence?: number;
 }
 
 /**
- * Проверяет, нужна ли эскалация к живому рекрутеру
- *
- * @param context - Контекст для проверки
- * @returns Результат проверки
+ * Контекст для проверки эскалации
  */
-export function checkEscalationNeeded(context: {
+export interface EscalationContext {
   /** Текущее сообщение кандидата */
   currentMessage: string;
-  /** История сообщений */
+  /** История сообщений (последние N) */
   conversationHistory?: Array<{ sender: string; content: string }>;
   /** Количество неуспешных попыток идентификации */
   failedPinAttempts?: number;
-}): EscalationCheck {
-  const {
-    currentMessage,
-    conversationHistory = [],
-    failedPinAttempts = 0,
-  } = context;
-
-  const message = currentMessage.toLowerCase().trim();
-
-  // Проверка 1: Множество неуспешных попыток PIN
-  if (failedPinAttempts >= 3) {
-    return {
-      shouldEscalate: true,
-      reason: "MULTIPLE_FAILED_ATTEMPTS",
-      description: `Кандидат ${failedPinAttempts} раз(а) ввёл неверный PIN`,
-      confidence: 0.9,
-    };
-  }
-
-  // Проверка 2: Явные просьбы о человеке
-  for (const pattern of ESCALATION_PATTERNS.humanRequest) {
-    if (pattern.test(message)) {
-      return {
-        shouldEscalate: true,
-        reason: "HUMAN_REQUESTED",
-        description: "Кандидат явно просит связаться с человеком",
-        confidence: 0.95,
-      };
-    }
-  }
-
-  // Проверка 3: Жалобы (считаем только при повторных)
-  const recentCandidateMessages = conversationHistory
-    .filter((msg) => msg.sender === "CANDIDATE")
-    .slice(-3);
-
-  let complaintCount = 0;
-  for (const msg of recentCandidateMessages) {
-    for (const pattern of ESCALATION_PATTERNS.complaints) {
-      if (pattern.test(msg.content)) {
-        complaintCount++;
-        break;
-      }
-    }
-  }
-
-  // Текущее сообщение тоже проверяем
-  for (const pattern of ESCALATION_PATTERNS.complaints) {
-    if (pattern.test(message)) {
-      complaintCount++;
-      break;
-    }
-  }
-
-  if (complaintCount >= 2) {
-    return {
-      shouldEscalate: true,
-      reason: "COMPLAINT",
-      description: "Кандидат выражает недовольство несколько раз подряд",
-      confidence: 0.8,
-    };
-  }
-
-  // Проверка 4: Сложные вопросы
-  for (const pattern of ESCALATION_PATTERNS.complexQuestions) {
-    if (pattern.test(message)) {
-      return {
-        shouldEscalate: true,
-        reason: "COMPLEX_QUESTION",
-        description:
-          "Кандидат задаёт сложный вопрос за рамками компетенции",
-        confidence: 0.7,
-      };
-    }
-  }
-
-  // Проверка 5: Отказ от продолжения
-  for (const pattern of ESCALATION_PATTERNS.refusal) {
-    if (pattern.test(message)) {
-      return {
-        shouldEscalate: true,
-        reason: "REFUSAL",
-        description: "Кандидат отказывается продолжать диалог",
-        confidence: 0.85,
-      };
-    }
-  }
-
-  return {
-    shouldEscalate: false,
-  };
 }
 
 /**
- * Генерирует сообщение для эскалации
+ * Строит промпт для AI-проверки необходимости эскалации
+ *
+ * @param context - Контекст диалога
+ * @returns Промпт для AI
+ */
+export function buildEscalationCheckPrompt(context: EscalationContext): string {
+  const { currentMessage, conversationHistory = [], failedPinAttempts = 0 } = context;
+
+  // Формируем историю диалога для контекста
+  const historyText =
+    conversationHistory.length > 0
+      ? conversationHistory
+          .slice(-5) // Берём последние 5 сообщений
+          .map((msg) => `${msg.sender === "CANDIDATE" ? "Кандидат" : "Бот"}: ${msg.content}`)
+          .join("\n")
+      : "";
+
+  return `Ты — система анализа диалогов рекрутингового бота. Твоя задача — определить, нужно ли передать диалог живому рекрутеру (эскалация).
+
+ТЕКУЩЕЕ СООБЩЕНИЕ КАНДИДАТА:
+${currentMessage}
+
+${historyText ? `ИСТОРИЯ ДИАЛОГА (последние сообщения):\n${historyText}\n` : ""}
+${failedPinAttempts > 0 ? `НЕУДАЧНЫХ ПОПЫТОК ВВОДА PIN: ${failedPinAttempts}\n` : ""}
+КРИТЕРИИ ЭСКАЛАЦИИ:
+
+1. HUMAN_REQUESTED — кандидат явно просит связаться с человеком:
+   - "Хочу поговорить с человеком"
+   - "Можно связаться с живым рекрутером?"
+   - "Вы бот?" (с негативным контекстом)
+   - Любые явные просьбы о человеческом контакте
+
+2. COMPLAINT — кандидат выражает недовольство:
+   - Жалобы на качество общения
+   - Недовольство ответами бота
+   - Повторяющиеся фразы "не понимаю", "это не то"
+   - Раздражение от диалога
+
+3. COMPLEX_QUESTION — сложный вопрос за рамками компетенции:
+   - Юридические вопросы (договор, ТК, права)
+   - Медицинские вопросы (больничные, декрет)
+   - Специфические вопросы о компании, которые бот не может знать
+   - Финансовые детали (точные суммы, бонусы, опционы)
+
+4. REFUSAL — кандидат отказывается продолжать:
+   - "Не хочу отвечать"
+   - "Хватит вопросов"
+   - "Прекратите"
+   - Явный отказ от интервью
+
+5. AGGRESSIVE — агрессивное поведение:
+   - Грубость, оскорбления
+   - Угрозы
+   - Нецензурная лексика
+
+6. URGENT — срочный вопрос:
+   - Кандидат упоминает дедлайны
+   - Срочные обстоятельства
+   - Просьба о немедленном ответе
+
+7. OTHER — другие ситуации, когда бот не справляется:
+   - Кандидат явно в тупике
+   - Диалог зациклился
+   - Бот не понимает контекст
+
+ВАЖНО:
+- Если ${failedPinAttempts >= 3 ? "было 3+ неудачных попыток PIN — это автоматическая эскалация (HUMAN_REQUESTED)" : "неудачных попыток PIN меньше 3 — это ещё не повод для эскалации"}
+- Обычные вопросы о вакансии, зарплате, графике — НЕ эскалация
+- Нейтральные или позитивные сообщения — НЕ эскалация
+- Сомневаешься — лучше НЕ эскалировать
+
+ФОРМАТ ОТВЕТА (строго JSON):
+{
+  "shouldEscalate": true/false,
+  "reason": "HUMAN_REQUESTED" | "COMPLAINT" | "COMPLEX_QUESTION" | "REFUSAL" | "AGGRESSIVE" | "URGENT" | "OTHER" | null,
+  "description": "Краткое описание причины на русском" | null,
+  "confidence": 0.0-1.0
+}
+
+Ответь ТОЛЬКО JSON без пояснений.`;
+}
+
+/**
+ * Парсит ответ AI для проверки эскалации
+ *
+ * @param aiResponse - Ответ AI (ожидается JSON)
+ * @returns Результат проверки эскалации
+ */
+export function parseEscalationResponse(aiResponse: string): EscalationCheck {
+  try {
+    // Пытаемся извлечь JSON из ответа (на случай если AI добавил текст вокруг)
+    const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return { shouldEscalate: false };
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]) as {
+      shouldEscalate?: boolean;
+      reason?: string;
+      description?: string;
+      confidence?: number;
+    };
+
+    // Валидируем reason
+    const validReasons: EscalationReason[] = [
+      "HUMAN_REQUESTED",
+      "COMPLAINT",
+      "COMPLEX_QUESTION",
+      "REFUSAL",
+      "AGGRESSIVE",
+      "URGENT",
+      "OTHER",
+    ];
+
+    const reason = validReasons.includes(parsed.reason as EscalationReason)
+      ? (parsed.reason as EscalationReason)
+      : undefined;
+
+    return {
+      shouldEscalate: Boolean(parsed.shouldEscalate),
+      reason: parsed.shouldEscalate ? reason : undefined,
+      description: parsed.description ?? undefined,
+      confidence:
+        typeof parsed.confidence === "number"
+          ? Math.max(0, Math.min(1, parsed.confidence))
+          : undefined,
+    };
+  } catch {
+    // Если не удалось распарсить — не эскалируем
+    return { shouldEscalate: false };
+  }
+}
+
+/**
+ * Проверяет необходимость эскалации на основе количества неудачных попыток PIN
+ * (синхронная проверка без AI — для очевидных случаев)
+ *
+ * @param failedPinAttempts - Количество неудачных попыток
+ * @returns Результат проверки или null если нужен AI-вызов
+ */
+export function checkPinFailureEscalation(
+  failedPinAttempts: number,
+): EscalationCheck | null {
+  if (failedPinAttempts >= 3) {
+    return {
+      shouldEscalate: true,
+      reason: "HUMAN_REQUESTED",
+      description: `Кандидат ${failedPinAttempts} раз(а) ввёл неверный PIN`,
+      confidence: 0.95,
+    };
+  }
+  return null;
+}
+
+/**
+ * Генерирует сообщение для отправки кандидату при эскалации
  *
  * @param reason - Причина эскалации
  * @returns Сообщение для отправки кандидату
@@ -192,8 +217,11 @@ export function getEscalationMessage(reason: EscalationReason): string {
     case "REFUSAL":
       return "Хорошо, понимаю. Если хотите, можем продолжить позже или передам ваш контакт коллеге.";
 
-    case "MULTIPLE_FAILED_ATTEMPTS":
-      return "Похоже, возникли сложности с кодом. Передам ваш контакт коллеге, он поможет разобраться.";
+    case "AGGRESSIVE":
+      return "Понимаю, что ситуация непростая. Передам ваш контакт коллеге для личного общения.";
+
+    case "URGENT":
+      return "Понял, что вопрос срочный. Передаю коллеге — он свяжется с вами в ближайшее время.";
 
     default:
       return "Передам ваш контакт коллеге для личной связи.";
