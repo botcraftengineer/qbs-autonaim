@@ -1,15 +1,11 @@
-import DOMPurify from "dompurify";
-import { JSDOM } from "jsdom";
+import DOMPurify from "isomorphic-dompurify";
 
 /**
  * Санитизация HTML контента для защиты от XSS атак
- * Используется только на сервере через tRPC API
+ * Работает и на сервере, и на клиенте
  */
 export function sanitizeHtml(html: string): string {
-  const window = new JSDOM("").window;
-  const purify = DOMPurify(window);
-
-  return purify.sanitize(html, {
+  return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: [
       "p",
       "br",
