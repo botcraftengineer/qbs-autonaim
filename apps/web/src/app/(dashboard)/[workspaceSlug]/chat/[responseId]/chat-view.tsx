@@ -57,6 +57,14 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     enabled: Boolean(candidateResponseId) && Boolean(workspaceId),
   });
 
+  const companyQueryOptions = trpc.company.get.queryOptions({
+    workspaceId: workspaceId ?? "",
+  });
+  const { data: companyData } = useQuery({
+    ...companyQueryOptions,
+    enabled: Boolean(workspaceId),
+  });
+
   // Debug: проверка данных telegramInterviewScoring
   if (responseData?.telegramInterviewScoring) {
     console.log(
@@ -206,7 +214,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
           <ChatMessages
             messages={messages}
             candidateName={currentConversation.candidateName}
-            companyName={workspace?.name}
+            companyName={companyData?.name ?? workspace?.name}
             onTranscribe={handleTranscribe}
             transcribingMessageId={transcribingMessageId}
           />
