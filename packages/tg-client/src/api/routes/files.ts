@@ -3,6 +3,11 @@ import { Hono } from "hono";
 import mime from "mime-types";
 import { botManager } from "../../bot-manager";
 import { uploadFile } from "../../utils/file-upload";
+import {
+  getFloodWaitSeconds,
+  isFloodWaitError,
+  sleep,
+} from "../../utils/flood-wait";
 import { downloadFileSchema } from "../schemas";
 import { handleError } from "../utils";
 
@@ -30,8 +35,24 @@ files.post("/download", async (c) => {
       );
     }
 
-    // Получаем сообщение
-    const messages = await client.getMessages(chatId, [messageId]);
+    // Получаем сообщение с обработкой FLOOD_WAIT
+    let messages: Awaited<ReturnType<typeof client.getMessages>>;
+    try {
+      messages = await client.getMessages(chatId, [messageId]);
+    } catch (error) {
+      if (isFloodWaitError(error)) {
+        const waitSeconds = getFloodWaitSeconds(error);
+        console.warn(
+          `⏳ FLOOD_WAIT при получении сообщения: ожидание ${waitSeconds} секунд...`,
+        );
+        await sleep(waitSeconds * 1000);
+        // Повторная попытка
+        messages = await client.getMessages(chatId, [messageId]);
+      } else {
+        throw error;
+      }
+    }
+
     if (!messages || messages.length === 0) {
       return c.json({ error: "Message not found" }, 404);
     }
@@ -48,8 +69,23 @@ files.post("/download", async (c) => {
       );
     }
 
-    // Скачиваем файл
-    const fileBuffer = await client.downloadAsBuffer(message.media);
+    // Скачиваем файл с обработкой FLOOD_WAIT
+    let fileBuffer: Uint8Array;
+    try {
+      fileBuffer = await client.downloadAsBuffer(message.media);
+    } catch (error) {
+      if (isFloodWaitError(error)) {
+        const waitSeconds = getFloodWaitSeconds(error);
+        console.warn(
+          `⏳ FLOOD_WAIT при скачивании файла: ожидание ${waitSeconds} секунд...`,
+        );
+        await sleep(waitSeconds * 1000);
+        // Повторная попытка
+        fileBuffer = await client.downloadAsBuffer(message.media);
+      } else {
+        throw error;
+      }
+    }
 
     // Определяем MIME type и расширение
     let mimeType = message.media.mimeType || null;
