@@ -126,7 +126,7 @@ async function processConversationMissedMessages(
     return { processed, errors };
   }
 
-  // Вместо iterHistory используем прямой запрос getMessages
+  // Вместо iterHistory используем прямой запрос getHistory
   // Это не требует кэша и работает сразу после подключения
   const messages: Array<{
     id: number;

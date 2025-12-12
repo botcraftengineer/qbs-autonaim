@@ -1,10 +1,15 @@
-import DOMPurify from "isomorphic-dompurify";
+import DOMPurify from "dompurify";
+import { JSDOM } from "jsdom";
 
 /**
  * Sanitize HTML content to prevent XSS attacks
+ * Используется только на сервере
  */
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
+  const window = new JSDOM("").window;
+  const purify = DOMPurify(window);
+
+  return purify.sanitize(html, {
     ALLOWED_TAGS: [
       "p",
       "br",

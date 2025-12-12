@@ -58,13 +58,26 @@ export async function saveSessionData(
   sessionId: string,
   sessionData: Record<string, string>,
 ): Promise<void> {
-  await db
-    .update(telegramSession)
-    .set({
-      sessionData,
-      updatedAt: new Date(),
-    })
-    .where(eq(telegramSession.id, sessionId));
+  try {
+    await db
+      .update(telegramSession)
+      .set({
+        sessionData,
+        updatedAt: new Date(),
+      })
+      .where(eq(telegramSession.id, sessionId));
 
-  console.log(`💾 Кэш сессии ${sessionId} сохранен в БД`);
+    console.log(`💾 Кэш сессии ${sessionId} сохранен в БД`);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorStack = error instanceof Error ? error.stack : undefined;
+
+    console.error(`❌ Ошибка при сохранении данных сессии в БД:`, {
+      sessionId,
+      error: errorMessage,
+      stack: errorStack,
+    });
+
+    throw error;
+  }
 }
