@@ -16,6 +16,7 @@ import {
   Skeleton,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
+import DOMPurify from "isomorphic-dompurify";
 import {
   ArrowLeft,
   Download,
@@ -340,7 +341,9 @@ export default function ResponseDetailPage({
                       <div
                         className="prose prose-sm sm:prose-base max-w-none dark:prose-invert [&_span]:inline-block [&_span]:my-1"
                         dangerouslySetInnerHTML={{
-                          __html: response.screening.analysis,
+                          __html: DOMPurify.sanitize(
+                            response.screening.analysis,
+                          ),
                         }}
                       />
                     </CardContent>
@@ -365,8 +368,9 @@ export default function ResponseDetailPage({
                         <div
                           className="prose prose-sm sm:prose-base max-w-none dark:prose-invert mb-6"
                           dangerouslySetInnerHTML={{
-                            __html:
+                            __html: DOMPurify.sanitize(
                               response.conversation.interviewScoring.analysis,
+                            ),
                           }}
                         />
                       )}
@@ -467,7 +471,7 @@ export default function ResponseDetailPage({
                       <div
                         className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert [&_p]:leading-relaxed [&_p]:mb-3"
                         dangerouslySetInnerHTML={{
-                          __html: response.experience,
+                          __html: DOMPurify.sanitize(response.experience),
                         }}
                       />
                     </CardContent>
