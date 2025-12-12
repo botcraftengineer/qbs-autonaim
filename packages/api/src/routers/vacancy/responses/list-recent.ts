@@ -9,6 +9,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { protectedProcedure } from "../../../trpc";
+import { sanitizeHtml } from "../../utils/sanitize-html";
 
 export const listRecent = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
@@ -52,8 +53,22 @@ export const listRecent = protectedProcedure
         return {
           ...r.response,
           vacancy: r.vacancy,
-          screening,
-          telegramInterviewScoring: interviewScoring,
+          screening: screening
+            ? {
+                ...screening,
+                analysis: screening.analysis
+                  ? sanitizeHtml(screening.analysis)
+                  : null,
+              }
+            : null,
+          telegramInterviewScoring: interviewScoring
+            ? {
+                ...interviewScoring,
+                analysis: interviewScoring.analysis
+                  ? sanitizeHtml(interviewScoring.analysis)
+                  : null,
+              }
+            : null,
         };
       }),
     );

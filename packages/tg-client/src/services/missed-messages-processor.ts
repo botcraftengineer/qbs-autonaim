@@ -7,6 +7,10 @@
  *
  * Процессор дополнительно проверяет историю активных диалогов и обрабатывает
  * входящие сообщения, которые появились после последнего сохраненного в БД.
+ *
+ * Важно: Использует findDialogs() для получения access hash перед обращением
+ * к истории чата. Это решает проблему PEER_ID_INVALID при первом запуске,
+ * когда клиент еще не "встретил" пользователя в текущей сессии.
  */
 
 import type { TelegramClient } from "@mtcute/bun";
@@ -126,8 +130,8 @@ async function processConversationMissedMessages(
     return { processed, errors };
   }
 
-  // Вместо iterHistory используем прямой запрос getHistory
-  // Это не требует кэша и работает сразу после подключения
+  // Используем findDialogs для получения access hash
+  // Это позволяет избежать PEER_ID_INVALID при первом запуске
   const messages: Array<{
     id: number;
     text?: string;
@@ -136,17 +140,33 @@ async function processConversationMissedMessages(
   }> = [];
 
   try {
-    // Получаем последние 20 сообщений напрямую через API
-    const history = await client.getHistory(chatIdNumber, { limit: 20 });
+    // Ищем диалог среди всех диалогов клиента
+    let dialogFound = false;
 
-    // getHistory возвращает итератор, преобразуем в массив
-    for await (const msg of history) {
-      messages.push({
-        id: msg.id,
-        text: msg.text,
-        date: msg.date,
-        isOutgoing: msg.isOutgoing,
-      });
+    for await (const dialog of client.iterDialogs()) {
+      if (dialog.peer.id.toString() === conversation.chatId) {
+        dialogFound = true;
+
+        // Теперь у нас есть access hash, можем получить историю
+        const history = await client.getHistory(dialog.peer.id, { limit: 20 });
+
+        for await (const msg of history) {
+          messages.push({
+            id: msg.id,
+            text: msg.text,
+            date: msg.date,
+            isOutgoing: msg.isOutgoing,
+          });
+        }
+        break;
+      }
+    }
+
+    if (!dialogFound) {
+      console.log(
+        `⚠️ Диалог ${conversation.chatId} не найден среди активных диалогов`,
+      );
+      return { processed, errors };
     }
   } catch (historyError) {
     const errorMessage =

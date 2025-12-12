@@ -7,7 +7,6 @@ import {
   HoverCardTrigger,
 } from "@qbs-autonaim/ui";
 import { CheckCircle2, Info, XCircle } from "lucide-react";
-import { sanitizeHtml } from "~/lib/sanitize-html";
 
 interface ScreeningData {
   score: number;
@@ -107,7 +106,7 @@ export function ScreeningHoverCard({ screening }: ScreeningHoverCardProps) {
               <div
                 className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{
-                  __html: sanitizeHtml(screening.analysis),
+                  __html: screening.analysis,
                 }}
               />
             </div>

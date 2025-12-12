@@ -21,6 +21,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
+import { sanitizeHtml } from "../../utils/sanitize-html";
 
 export const list = protectedProcedure
   .input(
@@ -277,9 +278,25 @@ export const list = protectedProcedure
       );
     }
 
-    // Формируем ответ с количеством сообщений
+    // Формируем ответ с количеством сообщений и санитизацией HTML
     let responses = responsesRaw.map((r) => ({
       ...r,
+      screening: r.screening
+        ? {
+            ...r.screening,
+            analysis: r.screening.analysis
+              ? sanitizeHtml(r.screening.analysis)
+              : null,
+          }
+        : null,
+      telegramInterviewScoring: r.telegramInterviewScoring
+        ? {
+            ...r.telegramInterviewScoring,
+            analysis: r.telegramInterviewScoring.analysis
+              ? sanitizeHtml(r.telegramInterviewScoring.analysis)
+              : null,
+          }
+        : null,
       conversation: r.conversation
         ? {
             ...r.conversation,

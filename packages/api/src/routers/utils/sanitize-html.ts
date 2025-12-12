@@ -2,8 +2,8 @@ import DOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 
 /**
- * Sanitize HTML content to prevent XSS attacks
- * Используется только на сервере
+ * Санитизация HTML контента для защиты от XSS атак
+ * Используется только на сервере через tRPC API
  */
 export function sanitizeHtml(html: string): string {
   const window = new JSDOM("").window;

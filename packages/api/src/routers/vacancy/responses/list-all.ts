@@ -16,6 +16,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
 import { protectedProcedure } from "../../../trpc";
+import { sanitizeHtml } from "../../utils/sanitize-html";
 
 export const listAll = protectedProcedure
   .input(
@@ -90,13 +91,32 @@ export const listAll = protectedProcedure
       interviewScorings.map((i) => [i.responseId, i]),
     );
 
-    // Объединяем результаты
-    const responsesWithRelations = items.map((r) => ({
-      ...r.response,
-      vacancy: r.vacancy,
-      screening: screeningMap.get(r.response.id) ?? null,
-      telegramInterviewScoring: interviewScoringMap.get(r.response.id) ?? null,
-    }));
+    // Объединяем результаты с санитизацией HTML
+    const responsesWithRelations = items.map((r) => {
+      const screening = screeningMap.get(r.response.id);
+      const interviewScoring = interviewScoringMap.get(r.response.id);
+
+      return {
+        ...r.response,
+        vacancy: r.vacancy,
+        screening: screening
+          ? {
+              ...screening,
+              analysis: screening.analysis
+                ? sanitizeHtml(screening.analysis)
+                : null,
+            }
+          : null,
+        telegramInterviewScoring: interviewScoring
+          ? {
+              ...interviewScoring,
+              analysis: interviewScoring.analysis
+                ? sanitizeHtml(interviewScoring.analysis)
+                : null,
+            }
+          : null,
+      };
+    });
 
     const lastItem = items[items.length - 1];
 
