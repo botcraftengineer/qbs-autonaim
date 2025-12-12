@@ -26,7 +26,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const queryClient = useQueryClient();
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
-  const { workspaceId } = useWorkspaceContext();
+  const { workspaceId, workspace } = useWorkspaceContext();
   const [transcribingMessageId, setTranscribingMessageId] = useState<
     string | null
   >(null);
@@ -206,6 +206,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
           <ChatMessages
             messages={messages}
             candidateName={currentConversation.candidateName}
+            companyName={workspace?.name}
             onTranscribe={handleTranscribe}
             transcribingMessageId={transcribingMessageId}
           />

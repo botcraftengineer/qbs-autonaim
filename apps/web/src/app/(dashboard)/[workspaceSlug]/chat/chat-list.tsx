@@ -1,8 +1,6 @@
 "use client";
 
 import {
-  Avatar,
-  AvatarFallback,
   Badge,
   Select,
   SelectContent,
@@ -53,12 +51,8 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
         <div className="flex-1 space-y-0">
           {Array.from({ length: 5 }, (_, index) => `skeleton-${index}`).map(
             (key) => (
-              <div
-                key={key}
-                className="flex items-start gap-2 md:gap-3 px-3 md:px-4 py-3 border-b"
-              >
-                <Skeleton className="h-10 w-10 md:h-12 md:w-12 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
+              <div key={key} className="px-3 md:px-4 py-3 border-b">
+                <div className="space-y-2">
                   <Skeleton className="h-4 w-28 md:w-32" />
                   <Skeleton className="h-3 w-20 md:w-24" />
                   <Skeleton className="h-3 w-full" />
@@ -123,14 +117,6 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
       <div className="flex-1 overflow-y-auto">
         {conversations.map((conversation) => {
           const lastMessage = conversation.messages[0];
-          const initials = conversation.candidateName
-            ? conversation.candidateName
-                .split(" ")
-                .map((n: string) => n[0])
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)
-            : "??";
 
           const isActive =
             pathname === `/${workspaceSlug}/chat/${conversation.id}`;
@@ -158,12 +144,6 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
                   isActive ? "bg-muted" : ""
                 }`}
               >
-                <Avatar className="h-10 w-10 md:h-12 md:w-12 shrink-0">
-                  <AvatarFallback className="bg-teal-500 text-white font-semibold text-sm">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-
                 <div className="flex-1 min-w-0">
                   <div className="flex items-baseline justify-between gap-2 mb-1">
                     <h3 className="font-semibold truncate text-sm md:text-base">

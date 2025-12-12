@@ -18,6 +18,7 @@ interface Message {
 interface ChatMessagesProps {
   messages: Message[];
   candidateName: string | null;
+  companyName?: string | null;
   onTranscribe?: (messageId: string, fileId: string) => void;
   transcribingMessageId?: string | null;
 }
@@ -25,6 +26,7 @@ interface ChatMessagesProps {
 export function ChatMessages({
   messages,
   candidateName,
+  companyName,
   onTranscribe,
   transcribingMessageId,
 }: ChatMessagesProps) {
@@ -77,6 +79,7 @@ export function ChatMessages({
                   content={msg.content}
                   createdAt={msg.createdAt}
                   candidateName={candidateName}
+                  companyName={companyName}
                   fileUrl={msg.fileUrl}
                   fileId={msg.fileId}
                   voiceTranscription={msg.voiceTranscription}
