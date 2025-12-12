@@ -214,7 +214,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
           <ChatMessages
             messages={messages}
             candidateName={currentConversation.candidateName}
-            companyName={companyData?.name ?? workspace?.name}
+            companyName={companyData?.name ?? workspace?.name ?? ""}
             onTranscribe={handleTranscribe}
             transcribingMessageId={transcribingMessageId}
           />

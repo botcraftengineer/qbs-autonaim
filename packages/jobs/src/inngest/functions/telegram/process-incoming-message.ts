@@ -160,6 +160,10 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   experience: interviewData?.experience ?? undefined,
                   coverLetter: interviewData?.coverLetter ?? undefined,
                 },
+                customBotInstructions:
+                  interviewData?.customBotInstructions ?? undefined,
+                customInterviewQuestions:
+                  interviewData?.customInterviewQuestions ?? undefined,
               });
 
               const { text: aiResponse } = await generateText({
@@ -436,15 +440,51 @@ export const processIncomingMessageFunction = inngest.createFunction(
       await step.run("handle-identified-text", async () => {
         const text = messageData.text || "";
 
-        await db.insert(telegramMessage).values({
-          conversationId: conversation.id,
-          sender: "CANDIDATE",
-          contentType: "TEXT",
-          content: text,
-          telegramMessageId: messageData.id.toString(),
-        });
+        const [savedMessage] = await db
+          .insert(telegramMessage)
+          .values({
+            conversationId: conversation.id,
+            sender: "CANDIDATE",
+            contentType: "TEXT",
+            content: text,
+            telegramMessageId: messageData.id.toString(),
+          })
+          .returning();
 
-        // Сообщение сохранено, ответ будет сгенерирован AI позже
+        // Проверяем статус беседы - если кандидат идентифицирован и интервью активно, запускаем анализ
+        if (
+          conversation.responseId &&
+          conversation.status === "ACTIVE" &&
+          savedMessage
+        ) {
+          // Проверяем метаданные - началось ли интервью
+          const metadata = conversation.metadata
+            ? (JSON.parse(conversation.metadata) as {
+                interviewStarted?: boolean;
+                interviewCompleted?: boolean;
+              })
+            : {};
+
+          if (
+            metadata.interviewStarted === true &&
+            metadata.interviewCompleted !== true
+          ) {
+            console.log("🚀 Запуск анализа интервью для текстового сообщения", {
+              conversationId: conversation.id,
+              messageId: savedMessage.id,
+            });
+
+            await inngest.send({
+              name: "telegram/interview.analyze",
+              data: {
+                conversationId: conversation.id,
+                transcription: text,
+              },
+            });
+
+            console.log("✅ Событие анализа интервью отправлено");
+          }
+        }
       });
     } else if (messageData.media?.type === "voice") {
       await step.run("handle-voice", async () => {

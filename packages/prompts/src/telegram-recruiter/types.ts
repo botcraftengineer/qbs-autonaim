@@ -26,4 +26,6 @@ export interface TelegramRecruiterContext {
     phone?: string;
   };
   errorMessage?: string;
+  customBotInstructions?: string | null; // Кастомные инструкции для бота
+  customInterviewQuestions?: string | null; // Кастомные вопросы для интервью
 }

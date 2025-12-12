@@ -25,13 +25,60 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
-import { use, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { SiteHeader } from "~/components/layout";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
+import { sanitizeHtmlAction } from "./actions";
 
 interface ResponseDetailPageProps {
   params: Promise<{ workspaceSlug: string; id: string }>;
+}
+
+function SafeHtml({ html, className }: { html: string; className?: string }) {
+  const [sanitizedHtml, setSanitizedHtml] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    setIsLoading(true);
+
+    sanitizeHtmlAction(html)
+      .then((result) => {
+        if (isMounted) {
+          setSanitizedHtml(result);
+          setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [html]);
+
+  if (isLoading) {
+    return (
+      <div className={className} aria-live="polite" aria-busy="true">
+        Загрузка…
+      </div>
+    );
+  }
+
+  if (!sanitizedHtml) {
+    return null;
+  }
+
+  return (
+    <div
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+    />
+  );
 }
 
 function VoicePlayer({ url, duration }: { url: string; duration: string }) {
@@ -337,11 +384,9 @@ export default function ResponseDetailPage({
                       )}
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div
+                      <SafeHtml
+                        html={response.screening.analysis}
                         className="prose prose-sm sm:prose-base max-w-none dark:prose-invert [&_span]:inline-block [&_span]:my-1"
-                        dangerouslySetInnerHTML={{
-                          __html: response.screening.analysis,
-                        }}
                       />
                     </CardContent>
                   </Card>
@@ -362,12 +407,9 @@ export default function ResponseDetailPage({
                     </CardHeader>
                     <CardContent className="pt-0">
                       {response.conversation.interviewScoring.analysis && (
-                        <div
+                        <SafeHtml
+                          html={response.conversation.interviewScoring.analysis}
                           className="prose prose-sm sm:prose-base max-w-none dark:prose-invert mb-6"
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              response.conversation.interviewScoring.analysis,
-                          }}
                         />
                       )}
 
@@ -464,11 +506,9 @@ export default function ResponseDetailPage({
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      <div
+                      <SafeHtml
+                        html={response.experience}
                         className="prose prose-sm sm:prose-base lg:prose-lg max-w-none dark:prose-invert [&_p]:leading-relaxed [&_p]:mb-3"
-                        dangerouslySetInnerHTML={{
-                          __html: response.experience,
-                        }}
                       />
                     </CardContent>
                   </Card>

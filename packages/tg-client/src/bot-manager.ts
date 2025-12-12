@@ -12,6 +12,7 @@ import {
   getActiveSessions,
   getSessionByWorkspace,
   markSessionAsInvalid,
+  saveSessionData,
 } from "./utils/session-manager";
 
 /**
@@ -54,12 +55,12 @@ class BotManager {
 
     this.isRunning = true;
 
-    // if (successful > 0) {
-    //   console.log("⏳ Запуск обработки пропущенных сообщений...");
-    //   this.processMissedMessages().catch((error) => {
-    //     console.error("❌ Ошибка обработки пропущенных сообщений:", error);
-    //   });
-    // }
+    if (successful > 0) {
+      console.log("🔍 Запуск обработки пропущенных сообщений...");
+      this.processMissedMessages().catch((error) => {
+        console.error("❌ Ошибка обработки пропущенных сообщений:", error);
+      });
+    }
   }
 
   /**
@@ -117,7 +118,25 @@ class BotManager {
   async stopAll(): Promise<void> {
     console.log("🛑 Остановка всех ботов...");
 
-    for (const [workspaceId] of this.bots.entries()) {
+    for (const [workspaceId, bot] of this.bots.entries()) {
+      // Останавливаем автосохранение кэша
+      if (bot.cacheSaveInterval) {
+        clearInterval(bot.cacheSaveInterval);
+      }
+
+      // Сохраняем кэш перед остановкой
+      try {
+        const exportedData = await bot.storage.export();
+        await saveSessionData(bot.sessionId, exportedData);
+        await bot.client.disconnect();
+        console.log(`💾 Кэш сохранен для workspace ${workspaceId}`);
+      } catch (error) {
+        console.error(
+          `❌ Ошибка сохранения кэша для workspace ${workspaceId}:`,
+          error,
+        );
+      }
+
       console.log(`✅ Бот остановлен для workspace ${workspaceId}`);
     }
 
@@ -134,6 +153,23 @@ class BotManager {
 
     const existing = this.bots.get(workspaceId);
     if (existing) {
+      // Останавливаем автосохранение кэша
+      if (existing.cacheSaveInterval) {
+        clearInterval(existing.cacheSaveInterval);
+      }
+
+      // Сохраняем кэш перед закрытием
+      try {
+        console.log(`💾 Сохранение кэша для workspace ${workspaceId}...`);
+        const exportedData = await existing.storage.export();
+        await saveSessionData(existing.sessionId, exportedData);
+      } catch (error) {
+        console.error(
+          `⚠️ Ошибка сохранения кэша для workspace ${workspaceId}:`,
+          error,
+        );
+      }
+
       // Корректно закрываем соединение перед удалением
       try {
         console.log(`🔌 Закрытие соединения для workspace ${workspaceId}...`);
@@ -158,6 +194,17 @@ class BotManager {
     }
 
     await this.startBot(session);
+
+    // Обрабатываем пропущенные сообщения после перезапуска
+    console.log(
+      `🔍 Запуск обработки пропущенных сообщений для workspace ${workspaceId}...`,
+    );
+    this.processMissedMessages().catch((error) => {
+      console.error(
+        `❌ Ошибка обработки пропущенных сообщений для workspace ${workspaceId}:`,
+        error,
+      );
+    });
   }
 
   /**

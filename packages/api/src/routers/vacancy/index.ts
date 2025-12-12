@@ -6,6 +6,7 @@ import { getResponsesChartData } from "./get-responses-chart-data";
 import { list } from "./list";
 import { listActive } from "./list-active";
 import { responsesRouter } from "./responses";
+import { updateSettings } from "./update-settings";
 
 export const vacancyRouter = {
   list,
@@ -14,5 +15,6 @@ export const vacancyRouter = {
   getAnalytics,
   getDashboardStats,
   getResponsesChartData,
+  updateSettings,
   responses: responsesRouter,
 } satisfies TRPCRouterRecord;
