@@ -1,6 +1,40 @@
 import { stripHtml } from "string-strip-html";
 import type { TelegramRecruiterContext } from "../types";
 
+// Константы для типов сообщений
+const MessageSender = {
+  CANDIDATE: "CANDIDATE",
+  BOT: "BOT",
+} as const;
+
+const MessageContentType = {
+  TEXT: "TEXT",
+  VOICE: "VOICE",
+} as const;
+
+const VOICE_MESSAGE_FALLBACK_TEXT = "Голосовое сообщение";
+
+/**
+ * Проверяет, является ли сообщение голосовым от кандидата
+ */
+function isCandidateVoiceMessage(msg: {
+  sender: string;
+  contentType?: string;
+  content: string;
+}): boolean {
+  if (msg.sender !== MessageSender.CANDIDATE) {
+    return false;
+  }
+
+  // Приоритет: проверяем contentType (стабильное поле)
+  if (msg.contentType === MessageContentType.VOICE) {
+    return true;
+  }
+
+  // Fallback: проверяем текст контента (последний вариант)
+  return msg.content === VOICE_MESSAGE_FALLBACK_TEXT;
+}
+
 /**
  * Промпт для этапа проведения интервью
  */
@@ -18,21 +52,44 @@ export function buildInterviewingPrompt(
     customInterviewQuestions,
   } = context;
 
-  const hasVoiceMessages = conversationHistory.some(
-    (msg) =>
-      msg.contentType === "VOICE" || msg.content === "Голосовое сообщение",
-  );
+  // Подсчитываем количество голосовых сообщений от кандидата
+  const voiceMessagesCount = conversationHistory.filter(
+    isCandidateVoiceMessage,
+  ).length;
 
-  const voiceTaskText = !hasVoiceMessages
-    ? `
-- Попроси голосовое для интервью
-- Скажи, что так проще познакомиться
-- Укажи 1-2 вопроса для ответа`
-    : `
-- Отвечай на вопросы прямо
-- Задавай уточняющие вопросы
-- Собирай инфо: опыт, навыки, зарплата, сроки
-- Предлагай следующие шаги`;
+  const hasFirstVoice = voiceMessagesCount >= 1;
+  const hasSecondVoice = voiceMessagesCount >= 2;
+
+  let voiceTaskText = "";
+  if (!hasFirstVoice) {
+    // Еще не было голосовых - просим первое (организационные вопросы)
+    voiceTaskText = `
+⚠️ ПЕРВЫЙ ЗАПРОС ГОЛОСОВОГО (из 2-х максимум)
+Фокус: ОРГАНИЗАЦИОННЫЕ МОМЕНТЫ
+
+- Попроси записать голосовое с организационными вопросами
+- Выбери и задай 2-4 релевантных вопроса: график работы, зарплата, сроки начала, релокация
+- Объясни, что так быстрее познакомиться`;
+  } else if (hasFirstVoice && !hasSecondVoice) {
+    // Было первое голосовое - просим второе (профессиональные вопросы)
+    voiceTaskText = `
+⚠️ ВТОРОЙ И ПОСЛЕДНИЙ ЗАПРОС ГОЛОСОВОГО
+Фокус: ПРОФЕССИОНАЛЬНАЯ ДЕЯТЕЛЬНОСТЬ
+
+- Попроси записать голосовое про профессиональный опыт
+- Выбери и задай 2-4 наиболее релевантных вопроса про опыт, навыки, проекты, технологии
+- Учитывай требования вакансии и резюме кандидата
+- Это последний запрос голосового - больше не проси`;
+  } else {
+    // Уже было 2 голосовых - больше не просим
+    voiceTaskText = `
+⚠️ ОБА ГОЛОСОВЫХ ПОЛУЧЕНЫ - БОЛЬШЕ НЕ ПРОСИ
+
+- Отвечай на вопросы кандидата прямо и по делу
+- Если нужны уточнения - задавай в текстовом формате
+- Предлагай следующие шаги: созвон с рекрутером, тестовое задание и т.д.
+- КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО просить еще голосовые сообщения`;
+  }
 
   const statusText =
     responseStatus === "COMPLETED"
@@ -104,10 +161,27 @@ ${vacancyTitle ? `Вакансия: ${vacancyTitle}` : ""}
 ${vacancyRequirements ? `Требования: ${vacancyRequirements}` : ""}
 ${responseStatus ? `Статус: ${responseStatus}` : ""}
 ${resumeData?.experience ? `Опыт: ${stripHtml(resumeData.experience).result}` : ""}
-${hasVoiceMessages ? "✅ Кандидат уже отправлял голосовые сообщения" : "❌ Голосовых сообщений еще не было"}
+Голосовых сообщений от кандидата: ${voiceMessagesCount}/2 ${hasSecondVoice ? "✅✅" : hasFirstVoice ? "✅❌" : "❌❌"}
 
 ТВОЯ ЗАДАЧА:${voiceTaskText}
-${vacancyRequirements ? "\n- Проверяй соответствие кандидата требованиям вакансии\n- Задавай уточняющие вопросы по ключевым требованиям" : ""}
+${
+  hasFirstVoice && !hasSecondVoice
+    ? `
+
+ПРИМЕРЫ ВОПРОСОВ ДЛЯ ВТОРОГО ГОЛОСОВОГО (профессиональные):
+${
+  vacancyRequirements
+    ? `- Расскажите подробнее про опыт работы с технологиями, которые указаны в требованиях вакансии (извлеки их из vacancyRequirements и перечисли конкретно)
+- Какой самый сложный проект был в вашей практике?
+- С какими технологиями работали последние 2 года?
+- Почему заинтересовала именно эта позиция?`
+    : `- Расскажите про ваш профессиональный опыт подробнее
+- Какие проекты были самыми интересными?
+- С какими технологиями работаете?
+- Что привлекло в этой вакансии?`
+}`
+    : ""
+}
 
 ОБРАБОТКА КОРОТКИХ СООБЩЕНИЙ:
 - Если кандидат пишет короткие вопросы ("Комиссия?", "Ваша оплата?") - отвечай конкретно и по делу
