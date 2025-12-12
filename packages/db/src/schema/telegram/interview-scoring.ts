@@ -18,7 +18,7 @@ export const telegramInterviewScoring = pgTable("telegram_interview_scorings", {
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
     onDelete: "cascade",
   }),
-  score: integer("score").notNull(), // Оценка от 1 до 5
+  score: integer("score").notNull(), // Оценка от 0 до 5
   detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
   analysis: text("analysis"), // Анализ на основе интервью
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -29,7 +29,7 @@ export const CreateTelegramInterviewScoringSchema = createInsertSchema(
   {
     conversationId: uuidv7Schema,
     responseId: uuidv7Schema.optional(),
-    score: z.number().int().min(1).max(5),
+    score: z.number().int().min(0).max(5),
     detailedScore: z.number().int().min(0).max(100),
     analysis: z.string().optional(),
   },
