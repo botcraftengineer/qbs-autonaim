@@ -67,7 +67,6 @@ export default function VacancySettingsPage({
       </div>
 
       <VacancySettingsForm
-        vacancyId={id}
         initialData={{
           customBotInstructions: vacancy.customBotInstructions,
           customScreeningPrompt: vacancy.customScreeningPrompt,

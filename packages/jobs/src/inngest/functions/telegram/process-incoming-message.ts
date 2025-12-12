@@ -40,6 +40,20 @@ function extractPinCode(text: string): string | null {
   return match ? match[0] : null;
 }
 
+async function findDuplicateMessage(
+  conversationId: string,
+  telegramMessageId: string,
+): Promise<boolean> {
+  const existingMessage = await db.query.telegramMessage.findFirst({
+    where: (messages, { and, eq }) =>
+      and(
+        eq(messages.conversationId, conversationId),
+        eq(messages.telegramMessageId, telegramMessageId),
+      ),
+  });
+  return !!existingMessage;
+}
+
 export const processIncomingMessageFunction = inngest.createFunction(
   {
     id: "telegram-process-incoming-message",
@@ -437,26 +451,24 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     // Обработка идентифицированных сообщений
     if (messageData.text) {
+      // Проверяем дубликаты ДО step.run, чтобы можно было вернуть результат из основной функции
+      const isDuplicate = await step.run("check-duplicate-text", async () => {
+        return await findDuplicateMessage(
+          conversation.id,
+          messageData.id.toString(),
+        );
+      });
+
+      if (isDuplicate) {
+        console.log("⏭️ Сообщение уже обработано, пропускаем", {
+          conversationId: conversation.id,
+          telegramMessageId: messageData.id.toString(),
+        });
+        return { skipped: true, reason: "duplicate message" };
+      }
+
       await step.run("handle-identified-text", async () => {
         const text = messageData.text || "";
-
-        // Проверяем, существует ли уже это сообщение (дедупликация)
-        const existingMessage = await db.query.telegramMessage.findFirst({
-          where: (messages, { and, eq }) =>
-            and(
-              eq(messages.conversationId, conversation.id),
-              eq(messages.telegramMessageId, messageData.id.toString()),
-            ),
-        });
-
-        // Если сообщение уже обработано, пропускаем
-        if (existingMessage) {
-          console.log("⏭️ Сообщение уже обработано, пропускаем", {
-            conversationId: conversation.id,
-            telegramMessageId: messageData.id.toString(),
-          });
-          return { skipped: true, reason: "duplicate message" };
-        }
 
         // Вставляем новое сообщение
         const [savedMessage] = await db
@@ -521,25 +533,23 @@ export const processIncomingMessageFunction = inngest.createFunction(
         }
       });
     } else if (messageData.media?.type === "voice") {
-      await step.run("handle-voice", async () => {
-        // Проверяем, существует ли уже это сообщение (дедупликация)
-        const existingMessage = await db.query.telegramMessage.findFirst({
-          where: (messages, { and, eq }) =>
-            and(
-              eq(messages.conversationId, conversation.id),
-              eq(messages.telegramMessageId, messageData.id.toString()),
-            ),
+      // Проверяем дубликаты ДО step.run
+      const isDuplicate = await step.run("check-duplicate-voice", async () => {
+        return await findDuplicateMessage(
+          conversation.id,
+          messageData.id.toString(),
+        );
+      });
+
+      if (isDuplicate) {
+        console.log("⏭️ Голосовое сообщение уже обработано, пропускаем", {
+          conversationId: conversation.id,
+          telegramMessageId: messageData.id.toString(),
         });
+        return { skipped: true, reason: "duplicate voice message" };
+      }
 
-        // Если сообщение уже обработано, пропускаем
-        if (existingMessage) {
-          console.log("⏭️ Голосовое сообщение уже обработано, пропускаем", {
-            conversationId: conversation.id,
-            telegramMessageId: messageData.id.toString(),
-          });
-          return { skipped: true, reason: "duplicate voice message" };
-        }
-
+      await step.run("handle-voice", async () => {
         // Скачиваем файл и загружаем в S3 через tg-client SDK
         const downloadData = await tgClientSDK.downloadFile({
           workspaceId,
@@ -573,25 +583,23 @@ export const processIncomingMessageFunction = inngest.createFunction(
         }
       });
     } else if (messageData.media?.type === "audio") {
-      await step.run("handle-audio", async () => {
-        // Проверяем, существует ли уже это сообщение (дедупликация)
-        const existingMessage = await db.query.telegramMessage.findFirst({
-          where: (messages, { and, eq }) =>
-            and(
-              eq(messages.conversationId, conversation.id),
-              eq(messages.telegramMessageId, messageData.id.toString()),
-            ),
+      // Проверяем дубликаты ДО step.run
+      const isDuplicate = await step.run("check-duplicate-audio", async () => {
+        return await findDuplicateMessage(
+          conversation.id,
+          messageData.id.toString(),
+        );
+      });
+
+      if (isDuplicate) {
+        console.log("⏭️ Аудио сообщение уже обработано, пропускаем", {
+          conversationId: conversation.id,
+          telegramMessageId: messageData.id.toString(),
         });
+        return { skipped: true, reason: "duplicate audio message" };
+      }
 
-        // Если сообщение уже обработано, пропускаем
-        if (existingMessage) {
-          console.log("⏭️ Аудио сообщение уже обработано, пропускаем", {
-            conversationId: conversation.id,
-            telegramMessageId: messageData.id.toString(),
-          });
-          return { skipped: true, reason: "duplicate audio message" };
-        }
-
+      await step.run("handle-audio", async () => {
         // Скачиваем файл и загружаем в S3 через tg-client SDK
         const downloadData = await tgClientSDK.downloadFile({
           workspaceId,
