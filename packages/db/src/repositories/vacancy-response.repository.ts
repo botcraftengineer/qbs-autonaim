@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../client";
+import { dbWs as db } from "../index";
 import { vacancyResponse } from "../schema";
 
 export interface ResponseByPinCode {

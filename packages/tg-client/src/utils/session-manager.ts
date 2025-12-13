@@ -2,8 +2,7 @@
  * Управление сессиями Telegram в базе данных
  */
 
-import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db, eq } from "@qbs-autonaim/db";
 import { telegramSession } from "@qbs-autonaim/db/schema";
 
 /**

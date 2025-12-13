@@ -1,5 +1,4 @@
 import {
-  db,
   telegramConversation,
   telegramMessage,
   vacancy,
@@ -22,7 +21,6 @@ export const getConversationRouter = {
       }),
     )
     .query(async ({ input, ctx }) => {
-      // Проверка доступа к workspace
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
@@ -35,7 +33,7 @@ export const getConversationRouter = {
         });
       }
 
-      const conversations = await db
+      const conversations = await ctx.db
         .select()
         .from(telegramConversation)
         .innerJoin(
@@ -52,10 +50,9 @@ export const getConversationRouter = {
             : eq(vacancy.workspaceId, input.workspaceId),
         );
 
-      // Получаем сообщения для каждой беседы
       const conversationsWithMessages = await Promise.all(
         conversations.map(async (conv) => {
-          const messages = await db.query.telegramMessage.findMany({
+          const messages = await ctx.db.query.telegramMessage.findMany({
             where: eq(
               telegramMessage.conversationId,
               conv.telegram_conversations.id,
@@ -75,7 +72,6 @@ export const getConversationRouter = {
         }),
       );
 
-      // Сортируем по дате последнего сообщения
       conversationsWithMessages.sort((a, b) => {
         const aLastMessage = a.messages[0];
         const bLastMessage = b.messages[0];
@@ -95,7 +91,6 @@ export const getConversationRouter = {
   getById: protectedProcedure
     .input(z.object({ id: uuidv7Schema, workspaceId: workspaceIdSchema }))
     .query(async ({ input, ctx }) => {
-      // Проверка доступа к workspace
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
@@ -108,7 +103,7 @@ export const getConversationRouter = {
         });
       }
 
-      const conversation = await db.query.telegramConversation.findFirst({
+      const conversation = await ctx.db.query.telegramConversation.findFirst({
         where: eq(telegramConversation.id, input.id),
         with: {
           response: {
@@ -123,7 +118,6 @@ export const getConversationRouter = {
         return null;
       }
 
-      // Проверка принадлежности к workspace
       if (conversation.response?.vacancy?.workspaceId !== input.workspaceId) {
         throw new TRPCError({
           code: "FORBIDDEN",
@@ -139,7 +133,6 @@ export const getConversationRouter = {
       z.object({ responseId: uuidv7Schema, workspaceId: workspaceIdSchema }),
     )
     .query(async ({ input, ctx }) => {
-      // Проверка доступа к workspace
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
@@ -152,8 +145,7 @@ export const getConversationRouter = {
         });
       }
 
-      // Проверяем принадлежность отклика к workspace
-      const response = await db.query.vacancyResponse.findFirst({
+      const response = await ctx.db.query.vacancyResponse.findFirst({
         where: eq(vacancyResponse.id, input.responseId),
         with: {
           vacancy: true,
@@ -167,7 +159,7 @@ export const getConversationRouter = {
         });
       }
 
-      const conversation = await db.query.telegramConversation.findFirst({
+      const conversation = await ctx.db.query.telegramConversation.findFirst({
         where: eq(telegramConversation.responseId, input.responseId),
       });
 
@@ -177,7 +169,6 @@ export const getConversationRouter = {
   getByChatId: protectedProcedure
     .input(z.object({ chatId: z.string(), workspaceId: workspaceIdSchema }))
     .query(async ({ input, ctx }) => {
-      // Проверка доступа к workspace
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
@@ -190,7 +181,7 @@ export const getConversationRouter = {
         });
       }
 
-      const conversation = await db.query.telegramConversation.findFirst({
+      const conversation = await ctx.db.query.telegramConversation.findFirst({
         where: eq(telegramConversation.chatId, input.chatId),
         with: {
           response: {
@@ -205,7 +196,6 @@ export const getConversationRouter = {
         return null;
       }
 
-      // Проверка принадлежности к workspace
       if (conversation.response?.vacancy?.workspaceId !== input.workspaceId) {
         throw new TRPCError({
           code: "FORBIDDEN",

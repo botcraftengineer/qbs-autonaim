@@ -1,6 +1,5 @@
 import {
   CreateTelegramMessageSchema,
-  db,
   eq,
   telegramConversation,
   telegramMessage,
@@ -15,11 +14,11 @@ export const sendMessageRouter = {
   send: protectedProcedure
     .input(
       CreateTelegramMessageSchema.extend({
-        sender: z.literal("ADMIN"), // Только админ может отправлять через этот endpoint
+        sender: z.literal("ADMIN"),
       }),
     )
-    .mutation(async ({ input }) => {
-      const [message] = await db
+    .mutation(async ({ input, ctx }) => {
+      const [message] = await ctx.db
         .insert(telegramMessage)
         .values({
           conversationId: input.conversationId,
@@ -36,8 +35,7 @@ export const sendMessageRouter = {
         throw new Error("Failed to create message");
       }
 
-      // Получаем chatId из conversation
-      const conversation = await db.query.telegramConversation.findFirst({
+      const conversation = await ctx.db.query.telegramConversation.findFirst({
         where: eq(telegramConversation.id, input.conversationId),
       });
 
@@ -45,7 +43,6 @@ export const sendMessageRouter = {
         throw new Error("Conversation not found");
       }
 
-      // Отправляем событие в Inngest для отправки сообщения в Telegram
       await inngest.send({
         name: "telegram/message.send",
         data: {
@@ -65,8 +62,8 @@ export const sendMessageRouter = {
         text: z.string().min(1),
       }),
     )
-    .mutation(async ({ input }) => {
-      const [message] = await db
+    .mutation(async ({ input, ctx }) => {
+      const [message] = await ctx.db
         .insert(telegramMessage)
         .values({
           conversationId: input.conversationId,
@@ -80,7 +77,7 @@ export const sendMessageRouter = {
         throw new Error("Failed to create message");
       }
 
-      const conversation = await db.query.telegramConversation.findFirst({
+      const conversation = await ctx.db.query.telegramConversation.findFirst({
         where: eq(telegramConversation.id, input.conversationId),
       });
 

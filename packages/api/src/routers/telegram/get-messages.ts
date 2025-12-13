@@ -1,5 +1,4 @@
 import {
-  db,
   telegramConversation,
   telegramMessage,
   vacancy,
@@ -22,7 +21,6 @@ export const getMessagesRouter = {
       }),
     )
     .query(async ({ input, ctx }) => {
-      // Проверка доступа к workspace
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
@@ -35,8 +33,7 @@ export const getMessagesRouter = {
         });
       }
 
-      // Проверяем принадлежность беседы к workspace
-      const conversation = await db.query.telegramConversation.findFirst({
+      const conversation = await ctx.db.query.telegramConversation.findFirst({
         where: eq(telegramConversation.id, input.conversationId),
         with: {
           response: {
@@ -61,7 +58,7 @@ export const getMessagesRouter = {
         });
       }
 
-      const messages = await db.query.telegramMessage.findMany({
+      const messages = await ctx.db.query.telegramMessage.findMany({
         where: eq(telegramMessage.conversationId, input.conversationId),
         orderBy: [telegramMessage.createdAt],
         with: {
@@ -69,7 +66,6 @@ export const getMessagesRouter = {
         },
       });
 
-      // Генерируем presigned URLs для файлов
       const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
 
       const messagesWithUrls = await Promise.all(
@@ -101,7 +97,6 @@ export const getMessagesRouter = {
       }),
     )
     .query(async ({ input, ctx }) => {
-      // Проверка доступа к workspace
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
@@ -114,7 +109,7 @@ export const getMessagesRouter = {
         });
       }
 
-      const messages = await db
+      const messages = await ctx.db
         .select({
           message: telegramMessage,
           conversation: telegramConversation,

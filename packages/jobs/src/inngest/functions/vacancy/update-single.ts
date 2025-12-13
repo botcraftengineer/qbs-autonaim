@@ -1,5 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db, eq } from "@qbs-autonaim/db";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import puppeteer from "puppeteer";
 import { HH_CONFIG } from "../../../parsers/hh/config";
