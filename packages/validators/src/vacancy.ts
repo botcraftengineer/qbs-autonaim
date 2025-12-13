@@ -16,6 +16,11 @@ export const updateVacancySettingsSchema = z.object({
     .max(5000, { message: "Вопросы не должны превышать 5000 символов" })
     .optional()
     .nullable(),
+  customOrganizationalQuestions: z
+    .string()
+    .max(5000, { message: "Вопросы не должны превышать 5000 символов" })
+    .optional()
+    .nullable(),
 });
 
 export type UpdateVacancySettingsInput = z.infer<

@@ -43,6 +43,7 @@ export default function VacancySettingsPage({
     customBotInstructions?: string | null;
     customScreeningPrompt?: string | null;
     customInterviewQuestions?: string | null;
+    customOrganizationalQuestions?: string | null;
   }) => {
     if (!workspaceId) return;
 
@@ -71,6 +72,7 @@ export default function VacancySettingsPage({
           customBotInstructions: vacancy.customBotInstructions,
           customScreeningPrompt: vacancy.customScreeningPrompt,
           customInterviewQuestions: vacancy.customInterviewQuestions,
+          customOrganizationalQuestions: vacancy.customOrganizationalQuestions,
         }}
         onSave={handleSave}
       />
