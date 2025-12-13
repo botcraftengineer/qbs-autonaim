@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./dist/index.js",
+    "./ai": "./dist/ai.js",
     "./s3": "./dist/s3.js",
     "./image": "./dist/image.js"
   },
