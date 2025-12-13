@@ -1,30 +1,31 @@
+import type { TRPCRouterRecord } from "@trpc/server";
+
 import {
   checkPasswordRouter,
   clearAuthErrorRouter,
   deleteSessionRouter,
-  getSessionsRouter,
   getSessionStatusRouter,
+  getSessionsRouter,
   reauthorizeSessionRouter,
   sendCodeRouter,
   signInRouter,
 } from "./auth";
-import { getConversationRouter } from "./get-conversation";
-import { getFileUrlRouter } from "./get-file-url";
-import { getMessagesRouter } from "./get-messages";
-import { sendMessageRouter } from "./send-message";
+import { getConversationRouter } from "./conversation";
+import { getFileUrlRouter } from "./file";
+import { getMessagesRouter } from "./messages";
+import { sendMessageRouter } from "./send";
 import {
   sendUserMessageByPhoneRouter,
   sendUserMessageRouter,
-} from "./send-user-message";
-import { transcribeVoiceRouter } from "./transcribe-voice";
+} from "./send-user";
+import { transcribeVoiceRouter } from "./transcribe";
 
 export const telegramRouter = {
   conversation: getConversationRouter,
   messages: getMessagesRouter,
-  sendMessage: sendMessageRouter,
+  send: sendMessageRouter,
   file: getFileUrlRouter,
-  transcribeVoice: transcribeVoiceRouter,
-  // Auth
+  transcribe: transcribeVoiceRouter,
   sendCode: sendCodeRouter,
   signIn: signInRouter,
   checkPassword: checkPasswordRouter,
@@ -33,7 +34,6 @@ export const telegramRouter = {
   getSessionStatus: getSessionStatusRouter,
   clearAuthError: clearAuthErrorRouter,
   reauthorizeSession: reauthorizeSessionRouter,
-  // User messages
   sendUserMessage: sendUserMessageRouter,
   sendUserMessageByPhone: sendUserMessageByPhoneRouter,
-};
+} satisfies TRPCRouterRecord;

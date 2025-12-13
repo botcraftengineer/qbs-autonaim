@@ -1,10 +1,21 @@
 import type { TRPCRouterRecord } from "@trpc/server";
-import { workspaceMembers } from "./members";
-import { workspaceMutations } from "./mutations";
-import { workspaceQueries } from "./queries";
+
+import { create } from "./create";
+import { deleteWorkspace } from "./delete";
+import { get } from "./get";
+import { getBySlug } from "./get-by-slug";
+import { invitesRouter } from "./invites";
+import { list } from "./list";
+import { membersRouter } from "./members";
+import { update } from "./update";
 
 export const workspaceRouter = {
-  ...workspaceQueries,
-  ...workspaceMutations,
-  ...workspaceMembers,
+  list,
+  get,
+  getBySlug,
+  create,
+  update,
+  delete: deleteWorkspace,
+  members: membersRouter,
+  invites: invitesRouter,
 } satisfies TRPCRouterRecord;

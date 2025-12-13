@@ -1,11 +1,11 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
-import { deleteAccount } from "./delete-account";
+import { deleteAccount } from "./delete";
 import { me } from "./me";
-import { updateAccount } from "./update-account";
+import { updateAccount } from "./update";
 
 export const userRouter = {
   me,
-  updateAccount,
-  deleteAccount,
+  update: updateAccount,
+  delete: deleteAccount,
 } satisfies TRPCRouterRecord;
