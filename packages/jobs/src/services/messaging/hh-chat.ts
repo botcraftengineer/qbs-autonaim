@@ -1,6 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db, eq } from "@qbs-autonaim/db";
 
 import { integration } from "@qbs-autonaim/db/schema";
 import axios from "axios";

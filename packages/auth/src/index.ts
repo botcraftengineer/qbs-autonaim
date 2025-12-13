@@ -1,4 +1,4 @@
-import { db } from "@qbs-autonaim/db/client.ws";
+import { dbWs as db } from "@qbs-autonaim/db";
 import { user } from "@qbs-autonaim/db/schema";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";

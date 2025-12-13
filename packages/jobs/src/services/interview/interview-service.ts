@@ -1,5 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
+import { db, eq } from "@qbs-autonaim/db";
 import { telegramConversation } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import {
