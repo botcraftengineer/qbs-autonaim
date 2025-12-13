@@ -24,7 +24,6 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface VacancySettingsFormProps {
-  vacancyId: string;
   vacancyTitle?: string;
   vacancyDescription?: string;
   initialData?: {
@@ -37,10 +36,13 @@ interface VacancySettingsFormProps {
   onImprove: (
     fieldType: keyof UpdateVacancySettingsInput,
     currentValue: string,
+    context?: { vacancyTitle?: string; vacancyDescription?: string },
   ) => Promise<string>;
 }
 
 export function VacancySettingsForm({
+  vacancyTitle,
+  vacancyDescription,
   initialData,
   onSave,
   onImprove,
@@ -104,7 +106,10 @@ export function VacancySettingsForm({
 
     setImprovingField(fieldName);
     try {
-      const improvedText = await onImprove(fieldName, currentValue);
+      const improvedText = await onImprove(fieldName, currentValue, {
+        vacancyTitle,
+        vacancyDescription,
+      });
       form.setValue(fieldName, improvedText, {
         shouldDirty: true,
         shouldValidate: true,

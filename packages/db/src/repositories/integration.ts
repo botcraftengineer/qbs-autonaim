@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "../client";
+import { db } from "../client.ws";
 import { integration, type NewIntegration } from "../schema";
 import { decryptCredentials, encryptCredentials } from "../utils/encryption";
 

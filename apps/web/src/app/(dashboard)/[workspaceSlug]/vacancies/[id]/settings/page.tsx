@@ -65,6 +65,7 @@ export default function VacancySettingsPage({
       | "customInterviewQuestions"
       | "customOrganizationalQuestions",
     currentValue: string,
+    context?: { vacancyTitle?: string; vacancyDescription?: string },
   ): Promise<string> => {
     if (!workspaceId) throw new Error("Workspace ID not found");
 
@@ -73,8 +74,9 @@ export default function VacancySettingsPage({
       workspaceId,
       fieldType,
       currentValue,
-      vacancyTitle: vacancy?.title,
-      vacancyDescription: vacancy?.description ?? undefined,
+      vacancyTitle: context?.vacancyTitle ?? vacancy?.title,
+      vacancyDescription:
+        context?.vacancyDescription ?? vacancy?.description ?? undefined,
     });
 
     return result.improvedText;
@@ -94,7 +96,6 @@ export default function VacancySettingsPage({
       </div>
 
       <VacancySettingsForm
-        vacancyId={id}
         vacancyTitle={vacancy.title}
         vacancyDescription={vacancy.description ?? undefined}
         initialData={{

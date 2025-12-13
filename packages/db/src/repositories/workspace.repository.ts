@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db } from "../client";
+import { db } from "../client.ws";
 import { userWorkspace, workspace } from "../schema";
 
 export class WorkspaceRepository {
