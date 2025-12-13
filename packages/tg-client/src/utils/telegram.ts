@@ -1,5 +1,6 @@
 import type { TelegramClient } from "@mtcute/bun";
 import type { Message } from "@mtcute/core";
+import { withFloodWaitRetry } from "./flood-wait";
 
 /**
  * Получить историю сообщений из чата
@@ -54,10 +55,13 @@ export async function markRead(
   chatId: number,
 ): Promise<void> {
   try {
-    await client.call({
-      _: "messages.readHistory",
-      peer: await client.resolvePeer(chatId),
-      maxId: 0,
+    await withFloodWaitRetry(async () => {
+      const peer = await client.resolvePeer(chatId);
+      return await client.call({
+        _: "messages.readHistory",
+        peer,
+        maxId: 0,
+      });
     });
   } catch (error) {
     console.error("Ошибка при отметке сообщений как прочитанных:", error);
@@ -71,10 +75,13 @@ export async function showTyping(
   client: TelegramClient,
   chatId: number,
 ): Promise<void> {
-  await client.call({
-    _: "messages.setTyping",
-    peer: await client.resolvePeer(chatId),
-    action: { _: "sendMessageTypingAction" },
+  await withFloodWaitRetry(async () => {
+    const peer = await client.resolvePeer(chatId);
+    return await client.call({
+      _: "messages.setTyping",
+      peer,
+      action: { _: "sendMessageTypingAction" },
+    });
   });
 }
 
@@ -85,9 +92,12 @@ export async function showRecordingAudio(
   client: TelegramClient,
   chatId: number,
 ): Promise<void> {
-  await client.call({
-    _: "messages.setTyping",
-    peer: await client.resolvePeer(chatId),
-    action: { _: "sendMessageRecordAudioAction" },
+  await withFloodWaitRetry(async () => {
+    const peer = await client.resolvePeer(chatId);
+    return await client.call({
+      _: "messages.setTyping",
+      peer,
+      action: { _: "sendMessageRecordAudioAction" },
+    });
   });
 }

@@ -50,8 +50,7 @@ export const getConversationRouter = {
                 eq(vacancyResponse.vacancyId, input.vacancyId),
               )
             : eq(vacancy.workspaceId, input.workspaceId),
-        )
-        .orderBy(desc(telegramConversation.updatedAt));
+        );
 
       // Получаем сообщения для каждой беседы
       const conversationsWithMessages = await Promise.all(
@@ -75,6 +74,20 @@ export const getConversationRouter = {
           };
         }),
       );
+
+      // Сортируем по дате последнего сообщения
+      conversationsWithMessages.sort((a, b) => {
+        const aLastMessage = a.messages[0];
+        const bLastMessage = b.messages[0];
+
+        if (!aLastMessage && !bLastMessage) return 0;
+        if (!aLastMessage) return 1;
+        if (!bLastMessage) return -1;
+
+        return (
+          bLastMessage.createdAt.getTime() - aLastMessage.createdAt.getTime()
+        );
+      });
 
       return conversationsWithMessages;
     }),

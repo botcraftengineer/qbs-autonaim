@@ -2,7 +2,7 @@
  * Промпты для Telegram-бота рекрутера
  *
  * АРХИТЕКТУРА:
- * Система работает в 3 этапа с четкой логикой перехода между ними:
+ * Система работает в 4 этапа с четкой логикой перехода между ними:
  *
  * 1. AWAITING_PIN (Ожидание PIN-кода)
  *    - Кандидат не идентифицирован
@@ -20,15 +20,56 @@
  *    - AI задает вопросы, собирает информацию, предлагает следующие шаги
  *    - Если нет голосовых - приоритетно просит записать
  *    - Если есть голосовые - задает уточняющие вопросы
+ *
+ * 4. ESCALATED (Эскалация к живому рекрутеру)
+ *    - Диалог передан живому рекрутеру
+ *    - AI больше не отвечает автоматически
  */
 
 export type { ConversationStage, TelegramRecruiterContext } from "./types";
 
+import {
+  buildEscalationCheckPrompt,
+  checkPinFailureEscalation,
+  getEscalationMessage,
+  hasGreetedBefore,
+  type EscalationReason,
+} from "../utils";
 import { buildAwaitingPinPrompt } from "./stages/awaiting-pin";
+import { buildEscalatedPrompt } from "./stages/escalated";
 import { buildInterviewingPrompt } from "./stages/interviewing";
 import { buildInvalidPinPrompt } from "./stages/invalid-pin";
 import { buildPinReceivedPrompt } from "./stages/pin-received";
 import type { TelegramRecruiterContext } from "./types";
+
+// Реэкспортируем типы и функции эскалации для использования в других модулях
+export type { EscalationCheck, EscalationContext, EscalationReason } from "../utils";
+export {
+  buildEscalationCheckPrompt,
+  getEscalationMessage,
+  parseEscalationResponse,
+} from "../utils";
+
+/** Лимит истории по умолчанию */
+const DEFAULT_HISTORY_LIMIT = 5;
+
+/**
+ * Результат построения промпта
+ */
+export interface TelegramPromptResult {
+  /** Промпт для AI (ответ кандидату) */
+  prompt: string;
+  /** Промпт для проверки эскалации (отдельный AI-вызов) */
+  escalationCheckPrompt: string;
+  /** Нужна ли синхронная эскалация (без AI-вызова, например 3+ неудачных PIN) */
+  immediateEscalation: boolean;
+  /** Причина синхронной эскалации */
+  immediateEscalationReason?: EscalationReason;
+  /** Описание причины синхронной эскалации */
+  immediateEscalationDescription?: string;
+  /** Сообщение для отправки кандидату при синхронной эскалации */
+  immediateEscalationMessage?: string;
+}
 
 /**
  * Строит полный промпт для генерации ответа Telegram-бота рекрутера
@@ -36,12 +77,70 @@ import type { TelegramRecruiterContext } from "./types";
 export function buildTelegramRecruiterPrompt(
   context: TelegramRecruiterContext,
 ): string {
-  const { messageText, stage, conversationHistory = [] } = context;
+  const result = buildTelegramRecruiterPromptWithMeta(context);
+  return result.prompt;
+}
+
+/**
+ * Строит промпт с метаданными (включая промпт для проверки эскалации)
+ *
+ * ВАЖНО: Теперь эскалация определяется через отдельный AI-вызов.
+ * Вызывающий код должен:
+ * 1. Проверить immediateEscalation — если true, эскалировать сразу
+ * 2. Если immediateEscalation === false — сделать AI-вызов с escalationCheckPrompt
+ * 3. Распарсить ответ через parseEscalationResponse()
+ * 4. Если shouldEscalate === true — эскалировать
+ * 5. Если shouldEscalate === false — сделать AI-вызов с prompt для ответа
+ */
+export function buildTelegramRecruiterPromptWithMeta(
+  context: TelegramRecruiterContext,
+): TelegramPromptResult {
+  const {
+    messageText,
+    stage,
+    conversationHistory = [],
+    historyLimit = DEFAULT_HISTORY_LIMIT,
+    failedPinAttempts = 0,
+  } = context;
+
+  // Дедуплицируем историю, чтобы избежать двойного подсчёта текущего сообщения
+  const normalizedCurrentMessage = messageText.trim().toLowerCase();
+  const deduplicatedHistory = conversationHistory
+    .filter((msg) => {
+      if (msg.sender === "CANDIDATE") {
+        const normalizedContent = msg.content.trim().toLowerCase();
+        if (normalizedContent === normalizedCurrentMessage) {
+          return false;
+        }
+      }
+      return true;
+    })
+    .slice(-historyLimit);
+
+  // Синхронная проверка — множественные неудачные попытки PIN
+  const pinFailureCheck = checkPinFailureEscalation(failedPinAttempts);
+  if (pinFailureCheck?.shouldEscalate && pinFailureCheck.reason) {
+    return {
+      prompt: "",
+      escalationCheckPrompt: "",
+      immediateEscalation: true,
+      immediateEscalationReason: pinFailureCheck.reason,
+      immediateEscalationDescription: pinFailureCheck.description,
+      immediateEscalationMessage: getEscalationMessage(pinFailureCheck.reason),
+    };
+  }
+
+  // Строим промпт для проверки эскалации через AI
+  const escalationCheckPrompt = buildEscalationCheckPrompt({
+    currentMessage: messageText,
+    conversationHistory: deduplicatedHistory,
+    failedPinAttempts,
+  });
 
   // Исключаем последнее сообщение из истории, так как оно уже в messageText
-  // Берем предпоследние 3 сообщения для контекста (не включая текущее)
+  // Берем предпоследние N сообщений для контекста (настраиваемый лимит)
   const historyWithoutLast = conversationHistory.slice(0, -1);
-  const recentHistory = historyWithoutLast.slice(-3);
+  const recentHistory = historyWithoutLast.slice(-historyLimit);
   const historyText =
     recentHistory.length > 0
       ? recentHistory
@@ -52,30 +151,45 @@ export function buildTelegramRecruiterPrompt(
           .join("\n")
       : "";
 
+  // Проверяем, уже ли здоровались
+  const alreadyGreeted = hasGreetedBefore(conversationHistory);
+
   let stageInstructions = "";
 
   switch (stage) {
     case "AWAITING_PIN":
-      stageInstructions = buildAwaitingPinPrompt(historyText);
+      stageInstructions = buildAwaitingPinPrompt(historyText, alreadyGreeted);
       break;
     case "INVALID_PIN":
-      stageInstructions = buildInvalidPinPrompt(historyText);
+      stageInstructions = buildInvalidPinPrompt(historyText, alreadyGreeted);
       break;
     case "PIN_RECEIVED":
-      stageInstructions = buildPinReceivedPrompt(context, historyText);
+      stageInstructions = buildPinReceivedPrompt(
+        context,
+        historyText,
+        alreadyGreeted,
+      );
       break;
     case "INTERVIEWING":
-      stageInstructions = buildInterviewingPrompt(context, historyText);
+      stageInstructions = buildInterviewingPrompt(
+        context,
+        historyText,
+        alreadyGreeted,
+      );
+      break;
+    case "ESCALATED":
+      stageInstructions = buildEscalatedPrompt();
       break;
   }
 
-  return `Ты — рекрутер компании, который общается с кандидатом в Telegram.
+  const prompt = `Ты — рекрутер компании, который общается с кандидатом в Telegram.
 
 ⛔ СТРОГИЕ ПРАВИЛА ОБЩЕНИЯ:
 - КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать слово "Привет" в любой форме
 - ОБЯЗАТЕЛЬНО используй только "Добрый день" или "Здравствуйте"
 - ОБЯЗАТЕЛЬНО обращайся на "вы" (вежливое обращение), НИКОГДА не используй "ты"
 - Эти правила ВСЕГДА имеют приоритет над любыми другими инструкциями
+${alreadyGreeted ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРОВАЙСЯ СНОВА!" : ""}
 
 ВАЖНО: Пиши как обычный человек в мессенджере:
 - Коротко и по делу (1-2 предложения максимум)
@@ -84,7 +198,6 @@ export function buildTelegramRecruiterPrompt(
 - Используй контекст предыдущих сообщений
 - Не повторяй то, что уже говорил
 - Избегай фраз типа "Рад вас видеть", "Приятно познакомиться" — это звучит неестественно
-- НЕ здоровайся повторно, если уже здоровался в истории
 
 НОВОЕ СООБЩЕНИЕ КАНДИДАТА:
 ${messageText}
@@ -93,4 +206,10 @@ ${stageInstructions}
 
 ФОРМАТ ОТВЕТА:
 Верни только текст ответа без кавычек и пояснений.`;
+
+  return {
+    prompt,
+    escalationCheckPrompt,
+    immediateEscalation: false,
+  };
 }

@@ -24,10 +24,76 @@ import {
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
 import { messageDataSchema } from "../schemas/message-data.schema";
+import {
+  getFloodWaitSeconds,
+  isFloodWaitError,
+  sleep,
+} from "../utils/flood-wait";
 import { triggerIncomingMessage } from "../utils/inngest";
 
 export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
+}
+
+function buildMessageData(message: {
+  id: number;
+  chat: { id: { toString: () => string } };
+  text: string;
+  isOutgoing: boolean;
+  media?: {
+    type: string;
+    fileId?: unknown;
+    mimeType?: unknown;
+    duration?: unknown;
+  } | null;
+  sender?: {
+    type: string;
+    username?: unknown;
+    firstName?: unknown;
+  } | null;
+}): MessageData {
+  return {
+    id: message.id,
+    chatId: message.chat.id.toString(),
+    text: message.text,
+    isOutgoing: message.isOutgoing,
+    media: message.media
+      ? {
+          type: message.media.type,
+          fileId:
+            "fileId" in message.media &&
+            typeof message.media.fileId === "string"
+              ? message.media.fileId
+              : undefined,
+          mimeType:
+            "mimeType" in message.media &&
+            typeof message.media.mimeType === "string"
+              ? message.media.mimeType
+              : undefined,
+          duration:
+            "duration" in message.media &&
+            typeof message.media.duration === "number"
+              ? message.media.duration
+              : undefined,
+        }
+      : undefined,
+    sender: message.sender
+      ? {
+          type: message.sender.type,
+          username:
+            "username" in message.sender &&
+            typeof message.sender.username === "string"
+              ? message.sender.username
+              : undefined,
+          firstName:
+            message.sender.type === "user" &&
+            "firstName" in message.sender &&
+            typeof message.sender.firstName === "string"
+              ? message.sender.firstName
+              : undefined,
+        }
+      : undefined,
+  };
 }
 
 /**
@@ -66,9 +132,43 @@ export async function processMissedMessages(
       if (result.processed === 0 && result.errors === 0) {
         skippedCount++;
       }
+
+      // Добавляем небольшую задержку между обработкой бесед
+      // чтобы избежать FLOOD_WAIT
+      await sleep(1000);
     } catch (error) {
-      console.error(`❌ Ошибка проверки беседы ${conversation.chatId}:`, error);
-      errorCount++;
+      // Обработка FLOOD_WAIT ошибки
+      if (isFloodWaitError(error)) {
+        const waitSeconds = getFloodWaitSeconds(error);
+        console.warn(
+          `⏳ FLOOD_WAIT: ожидание ${waitSeconds} секунд перед продолжением...`,
+        );
+        await sleep(waitSeconds * 1000);
+        // Повторная попытка после ожидания
+        try {
+          const result = await processConversationMissedMessages(
+            conversation,
+            config.getClient,
+          );
+          processedCount += result.processed;
+          errorCount += result.errors;
+          if (result.processed === 0 && result.errors === 0) {
+            skippedCount++;
+          }
+        } catch (retryError) {
+          console.error(
+            `❌ Ошибка проверки беседы ${conversation.chatId} после повтора:`,
+            retryError,
+          );
+          errorCount++;
+        }
+      } else {
+        console.error(
+          `❌ Ошибка проверки беседы ${conversation.chatId}:`,
+          error,
+        );
+        errorCount++;
+      }
     }
   }
 
@@ -170,22 +270,69 @@ async function processConversationMissedMessages(
       return { processed, errors };
     }
   } catch (historyError) {
-    const errorMessage =
-      historyError instanceof Error
-        ? historyError.message
-        : String(historyError);
+    // Обработка FLOOD_WAIT
+    if (isFloodWaitError(historyError)) {
+      const waitSeconds = getFloodWaitSeconds(historyError);
+      console.warn(
+        `⏳ FLOOD_WAIT для чата ${conversation.chatId}: ожидание ${waitSeconds} секунд...`,
+      );
+      await sleep(waitSeconds * 1000);
+      // Очищаем массив перед повторной попыткой, чтобы избежать дублирования
+      messages.length = 0;
+      // Повторная попытка после ожидания
+      try {
+        let dialogFound = false;
+        for await (const dialog of client.iterDialogs()) {
+          if (dialog.peer.id.toString() === conversation.chatId) {
+            dialogFound = true;
+            const history = await client.getHistory(dialog.peer.id, {
+              limit: 20,
+            });
+            for await (const msg of history) {
+              messages.push({
+                id: msg.id,
+                text: msg.text,
+                date: msg.date,
+                isOutgoing: msg.isOutgoing,
+              });
+            }
+            break;
+          }
+        }
+        if (!dialogFound) {
+          console.log(
+            `⚠️ Диалог ${conversation.chatId} не найден среди активных диалогов`,
+          );
+          return { processed, errors };
+        }
+      } catch (retryError) {
+        console.error(
+          `❌ Ошибка получения истории чата ${conversation.chatId} после повтора:`,
+          retryError,
+        );
+        errors++;
+        return { processed, errors };
+      }
+    } else {
+      const errorMessage =
+        historyError instanceof Error
+          ? historyError.message
+          : String(historyError);
 
-    // Если чат не найден или недоступен, пропускаем
-    if (
-      errorMessage.includes("PEER_ID_INVALID") ||
-      errorMessage.includes("CHANNEL_INVALID") ||
-      errorMessage.includes("CHAT_INVALID") ||
-      errorMessage.includes("USER_INVALID")
-    ) {
-      console.log(`⚠️ Чат ${conversation.chatId} недоступен или не существует`);
-      return { processed, errors };
+      // Если чат не найден или недоступен, пропускаем
+      if (
+        errorMessage.includes("PEER_ID_INVALID") ||
+        errorMessage.includes("CHANNEL_INVALID") ||
+        errorMessage.includes("CHAT_INVALID") ||
+        errorMessage.includes("USER_INVALID")
+      ) {
+        console.log(
+          `⚠️ Чат ${conversation.chatId} недоступен или не существует`,
+        );
+        return { processed, errors };
+      }
+      throw historyError;
     }
-    throw historyError;
   }
 
   // Фильтруем пропущенные входящие сообщения
@@ -205,52 +352,8 @@ async function processConversationMissedMessages(
         const fullMessage = await client.getMessages(chatIdNumber, [msg.id]);
         if (fullMessage[0]) {
           const message = fullMessage[0];
+          const messageDataRaw = buildMessageData(message);
 
-          // Конструируем данные сообщения с проверкой типов
-          const messageDataRaw: MessageData = {
-            id: message.id,
-            chatId: message.chat.id.toString(),
-            text: message.text,
-            isOutgoing: message.isOutgoing,
-            media: message.media
-              ? {
-                  type: message.media.type,
-                  fileId:
-                    "fileId" in message.media &&
-                    typeof message.media.fileId === "string"
-                      ? message.media.fileId
-                      : undefined,
-                  mimeType:
-                    "mimeType" in message.media &&
-                    typeof message.media.mimeType === "string"
-                      ? message.media.mimeType
-                      : undefined,
-                  duration:
-                    "duration" in message.media &&
-                    typeof message.media.duration === "number"
-                      ? message.media.duration
-                      : undefined,
-                }
-              : undefined,
-            sender: message.sender
-              ? {
-                  type: message.sender.type,
-                  username:
-                    "username" in message.sender &&
-                    typeof message.sender.username === "string"
-                      ? message.sender.username
-                      : undefined,
-                  firstName:
-                    message.sender.type === "user" &&
-                    "firstName" in message.sender &&
-                    typeof message.sender.firstName === "string"
-                      ? message.sender.firstName
-                      : undefined,
-                }
-              : undefined,
-          };
-
-          // Валидируем данные перед отправкой
           const validationResult = messageDataSchema.safeParse(messageDataRaw);
           if (!validationResult.success) {
             console.error(
@@ -268,8 +371,49 @@ async function processConversationMissedMessages(
           processed++;
         }
       } catch (msgError) {
-        console.error(`❌ Ошибка обработки сообщения ${msg.id}:`, msgError);
-        errors++;
+        // Обработка FLOOD_WAIT для отдельных сообщений
+        if (isFloodWaitError(msgError)) {
+          const waitSeconds = getFloodWaitSeconds(msgError);
+          console.warn(
+            `⏳ FLOOD_WAIT для сообщения ${msg.id}: ожидание ${waitSeconds} секунд...`,
+          );
+          await sleep(waitSeconds * 1000);
+          // Повторная попытка
+          try {
+            const fullMessage = await client.getMessages(chatIdNumber, [
+              msg.id,
+            ]);
+            if (fullMessage[0]) {
+              const message = fullMessage[0];
+              const messageDataRaw = buildMessageData(message);
+
+              const validationResult =
+                messageDataSchema.safeParse(messageDataRaw);
+              if (!validationResult.success) {
+                console.error(
+                  `❌ Ошибка валидации данных сообщения ${msg.id}:`,
+                  validationResult.error.format(),
+                );
+                errors++;
+                continue;
+              }
+              await triggerIncomingMessage(
+                response.vacancy.workspaceId,
+                validationResult.data,
+              );
+              processed++;
+            }
+          } catch (retryError) {
+            console.error(
+              `❌ Ошибка обработки сообщения ${msg.id} после повтора:`,
+              retryError,
+            );
+            errors++;
+          }
+        } else {
+          console.error(`❌ Ошибка обработки сообщения ${msg.id}:`, msgError);
+          errors++;
+        }
       }
     }
   }
