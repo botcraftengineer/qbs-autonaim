@@ -1,4 +1,3 @@
-import { db } from "@qbs-autonaim/db/client.ws";
 import { telegramSession } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { TRPCError } from "@trpc/server";
@@ -6,9 +5,6 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-/**
- * Проверяет, требуется ли 2FA и возвращает соответствующий ответ
- */
 function handle2FAError(
   error: unknown,
   fallbackSessionData?: string,
@@ -20,7 +16,6 @@ function handle2FAError(
   ) {
     let sessionData: string | undefined;
 
-    // Проверяем наличие data в error с type guard
     if ("data" in error && error.data && typeof error.data === "object") {
       const errorData = error.data as Record<string, unknown>;
       if (
@@ -32,7 +27,6 @@ function handle2FAError(
       }
     }
 
-    // Используем fallback только если он валидный
     if (
       !sessionData &&
       fallbackSessionData &&
@@ -42,7 +36,6 @@ function handle2FAError(
       sessionData = fallbackSessionData;
     }
 
-    // Если нет валидного sessionData, возвращаем null
     if (!sessionData) {
       return null;
     }
@@ -55,9 +48,6 @@ function handle2FAError(
   return null;
 }
 
-/**
- * Отправить код авторизации на телефон
- */
 export const sendCodeRouter = protectedProcedure
   .input(
     z.object({
@@ -90,9 +80,6 @@ export const sendCodeRouter = protectedProcedure
     }
   });
 
-/**
- * Войти с кодом из SMS
- */
 export const signInRouter = protectedProcedure
   .input(
     z.object({
@@ -105,10 +92,9 @@ export const signInRouter = protectedProcedure
       sessionData: z.string().optional(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
     try {
-      // Проверяем, есть ли уже сессия для этого workspace
-      const existingSession = await db.query.telegramSession.findFirst({
+      const existingSession = await ctx.db.query.telegramSession.findFirst({
         where: eq(telegramSession.workspaceId, input.workspaceId),
       });
 
@@ -130,9 +116,8 @@ export const signInRouter = protectedProcedure
         sessionData: input.sessionData,
       });
 
-      // Сохраняем в БД
       const sessionDataObj = JSON.parse(result.sessionData);
-      const [session] = await db
+      const [session] = await ctx.db
         .insert(telegramSession)
         .values({
           workspaceId: input.workspaceId,
@@ -174,9 +159,6 @@ export const signInRouter = protectedProcedure
     }
   });
 
-/**
- * Войти с паролем 2FA
- */
 export const checkPasswordRouter = protectedProcedure
   .input(
     z.object({
@@ -188,10 +170,9 @@ export const checkPasswordRouter = protectedProcedure
       sessionData: z.string(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
     try {
-      // Проверяем, есть ли уже сессия для этого workspace
-      const existingSession = await db.query.telegramSession.findFirst({
+      const existingSession = await ctx.db.query.telegramSession.findFirst({
         where: eq(telegramSession.workspaceId, input.workspaceId),
       });
 
@@ -212,9 +193,8 @@ export const checkPasswordRouter = protectedProcedure
         sessionData: input.sessionData,
       });
 
-      // Сохраняем в БД
       const sessionDataObj = JSON.parse(result.sessionData);
-      const [session] = await db
+      const [session] = await ctx.db
         .insert(telegramSession)
         .values({
           workspaceId: input.workspaceId,
@@ -247,13 +227,10 @@ export const checkPasswordRouter = protectedProcedure
     }
   });
 
-/**
- * Получить список сессий
- */
 export const getSessionsRouter = protectedProcedure
   .input(z.object({ workspaceId: z.string() }))
-  .query(async ({ input }) => {
-    const sessions = await db
+  .query(async ({ input, ctx }) => {
+    const sessions = await ctx.db
       .select()
       .from(telegramSession)
       .where(eq(telegramSession.workspaceId, input.workspaceId));
@@ -270,13 +247,10 @@ export const getSessionsRouter = protectedProcedure
     }));
   });
 
-/**
- * Удалить сессию
- */
 export const deleteSessionRouter = protectedProcedure
   .input(z.object({ sessionId: z.string(), workspaceId: z.string() }))
-  .mutation(async ({ input }) => {
-    const result = await db
+  .mutation(async ({ input, ctx }) => {
+    const result = await ctx.db
       .delete(telegramSession)
       .where(
         and(
@@ -296,13 +270,10 @@ export const deleteSessionRouter = protectedProcedure
     return { success: true };
   });
 
-/**
- * Получить статус сессии
- */
 export const getSessionStatusRouter = protectedProcedure
   .input(z.object({ sessionId: z.string(), workspaceId: z.string() }))
-  .query(async ({ input }) => {
-    const [session] = await db
+  .query(async ({ input, ctx }) => {
+    const [session] = await ctx.db
       .select()
       .from(telegramSession)
       .where(
@@ -332,13 +303,10 @@ export const getSessionStatusRouter = protectedProcedure
     };
   });
 
-/**
- * Очистить ошибку авторизации (перед повторной авторизацией)
- */
 export const clearAuthErrorRouter = protectedProcedure
   .input(z.object({ sessionId: z.string(), workspaceId: z.string() }))
-  .mutation(async ({ input }) => {
-    const result = await db
+  .mutation(async ({ input, ctx }) => {
+    const result = await ctx.db
       .update(telegramSession)
       .set({
         authError: null,
@@ -364,9 +332,6 @@ export const clearAuthErrorRouter = protectedProcedure
     return { success: true };
   });
 
-/**
- * Обновить существующую сессию (реавторизация)
- */
 export const reauthorizeSessionRouter = protectedProcedure
   .input(
     z.object({
@@ -380,7 +345,7 @@ export const reauthorizeSessionRouter = protectedProcedure
       sessionData: z.string().optional(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
     try {
       const phone = input.phone.trim().replace(/\s+/g, "");
       const result = await tgClientSDK.signIn({
@@ -392,9 +357,8 @@ export const reauthorizeSessionRouter = protectedProcedure
         sessionData: input.sessionData,
       });
 
-      // Обновляем существующую сессию с проверкой workspace
       const sessionDataObj = JSON.parse(result.sessionData);
-      const updated = await db
+      const updated = await ctx.db
         .update(telegramSession)
         .set({
           sessionData: sessionDataObj as Record<string, unknown>,

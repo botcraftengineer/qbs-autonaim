@@ -1,29 +1,25 @@
-import { db, eq, telegramSession } from "@qbs-autonaim/db";
+import { eq, telegramSession } from "@qbs-autonaim/db";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-/**
- * Отправить сообщение через пользовательскую сессию Telegram
- */
 export const sendUserMessageRouter = protectedProcedure
   .input(
     z.object({
       workspaceId: z.string(),
-      sessionId: z.string().optional(), // Если не указан, берем последнюю активную
+      sessionId: z.string().optional(),
       username: z.string(),
       text: z.string().min(1),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
     try {
-      // Получаем сессию
       const session = input.sessionId
-        ? await db.query.telegramSession.findFirst({
+        ? await ctx.db.query.telegramSession.findFirst({
             where: eq(telegramSession.id, input.sessionId),
           })
-        : await db.query.telegramSession.findFirst({
+        : await ctx.db.query.telegramSession.findFirst({
             where: eq(telegramSession.workspaceId, input.workspaceId),
             orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
           });
@@ -35,15 +31,13 @@ export const sendUserMessageRouter = protectedProcedure
         });
       }
 
-      // Отправляем сообщение через SDK
       const result = await tgClientSDK.sendMessageByUsername({
         workspaceId: input.workspaceId,
         username: input.username,
         text: input.text,
       });
 
-      // Обновляем lastUsedAt
-      await db
+      await ctx.db
         .update(telegramSession)
         .set({ lastUsedAt: new Date() })
         .where(eq(telegramSession.id, session.id));
@@ -61,9 +55,6 @@ export const sendUserMessageRouter = protectedProcedure
     }
   });
 
-/**
- * Отправить сообщение по номеру телефона через пользовательскую сессию
- */
 export const sendUserMessageByPhoneRouter = protectedProcedure
   .input(
     z.object({
@@ -74,14 +65,13 @@ export const sendUserMessageByPhoneRouter = protectedProcedure
       firstName: z.string().optional(),
     }),
   )
-  .mutation(async ({ input }) => {
+  .mutation(async ({ input, ctx }) => {
     try {
-      // Получаем сессию
       const session = input.sessionId
-        ? await db.query.telegramSession.findFirst({
+        ? await ctx.db.query.telegramSession.findFirst({
             where: eq(telegramSession.id, input.sessionId),
           })
-        : await db.query.telegramSession.findFirst({
+        : await ctx.db.query.telegramSession.findFirst({
             where: eq(telegramSession.workspaceId, input.workspaceId),
             orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
           });
@@ -93,7 +83,6 @@ export const sendUserMessageByPhoneRouter = protectedProcedure
         });
       }
 
-      // Отправляем сообщение через SDK
       const result = await tgClientSDK.sendMessageByPhone({
         workspaceId: input.workspaceId,
         phone: input.phone,
@@ -101,8 +90,7 @@ export const sendUserMessageByPhoneRouter = protectedProcedure
         firstName: input.firstName,
       });
 
-      // Обновляем lastUsedAt
-      await db
+      await ctx.db
         .update(telegramSession)
         .set({ lastUsedAt: new Date() })
         .where(eq(telegramSession.id, session.id));
