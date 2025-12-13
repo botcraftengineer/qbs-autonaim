@@ -48,7 +48,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     : null;
   const candidateResponseId = metadata?.responseId;
 
-  const responseQueryOptions = trpc.vacancy.responses.getById.queryOptions({
+  const responseQueryOptions = trpc.vacancy.responses.get.queryOptions({
     id: candidateResponseId ?? "",
     workspaceId: workspaceId ?? "",
   });
@@ -86,29 +86,28 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     refetchInterval: 3000,
   });
 
-  const sendMessageMutationOptions =
-    trpc.telegram.sendMessage.send.mutationOptions({
-      onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: [
-            ["telegram", "messages", "getByConversationId"],
-            { input: { conversationId }, type: "query" },
-          ],
-        });
-      },
-      onError: (error) => {
-        toast.error("Ошибка отправки сообщения", {
-          description: error.message || "Не удалось отправить сообщение",
-        });
-      },
-    });
+  const sendMessageMutationOptions = trpc.telegram.send.send.mutationOptions({
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [
+          ["telegram", "messages", "getByConversationId"],
+          { input: { conversationId }, type: "query" },
+        ],
+      });
+    },
+    onError: (error) => {
+      toast.error("Ошибка отправки сообщения", {
+        description: error.message || "Не удалось отправить сообщение",
+      });
+    },
+  });
 
   const { mutate: sendMessage, isPending: isSending } = useMutation(
     sendMessageMutationOptions,
   );
 
   const transcribeVoiceMutationOptions =
-    trpc.telegram.transcribeVoice.trigger.mutationOptions({
+    trpc.telegram.transcribe.trigger.mutationOptions({
       onSuccess: () => {
         if (toastId) {
           toast.success("Транскрибация запущена", {

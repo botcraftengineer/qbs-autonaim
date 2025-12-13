@@ -46,16 +46,16 @@ function InviteLinkModalContent({
 
   // Получение существующей ссылки
   const { data: invite, isLoading } = useQuery(
-    trpc.workspace.getInviteLink.queryOptions({ workspaceId }),
+    trpc.workspace.invites.getLink.queryOptions({ workspaceId }),
   );
 
   // Создание новой ссылки
   const createInvite = useMutation(
-    trpc.workspace.createInviteLink.mutationOptions({
+    trpc.workspace.invites.createLink.mutationOptions({
       onSuccess: () => {
         toast.success("Ссылка создана");
         queryClient.invalidateQueries(
-          trpc.workspace.getInviteLink.pathFilter(),
+          trpc.workspace.invites.getLink.pathFilter(),
         );
       },
       onError: (err) => {

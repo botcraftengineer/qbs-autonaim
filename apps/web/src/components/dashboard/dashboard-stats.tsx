@@ -20,7 +20,7 @@ export function DashboardStats() {
   const { workspace } = useWorkspace();
 
   const { data: stats, isLoading } = useQuery({
-    ...trpc.vacancy.getDashboardStats.queryOptions({
+    ...trpc.vacancy.dashboardStats.queryOptions({
       workspaceId: workspace?.id ?? "",
     }),
     enabled: !!workspace?.id,

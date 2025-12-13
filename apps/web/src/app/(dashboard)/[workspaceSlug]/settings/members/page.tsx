@@ -17,7 +17,9 @@ export default async function MembersPage({
 
   // Получаем workspace по slug
   const caller = await api();
-  const workspaceData = await caller.workspace.bySlug({ slug: workspaceSlug });
+  const workspaceData = await caller.workspace.getBySlug({
+    slug: workspaceSlug,
+  });
 
   return (
     <WorkspaceMembersClient

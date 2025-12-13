@@ -57,7 +57,7 @@ export function ResponsesChart() {
   }, [isMobile]);
 
   const { data: chartData, isLoading } = useQuery({
-    ...trpc.vacancy.getResponsesChartData.queryOptions({
+    ...trpc.vacancy.responsesChart.queryOptions({
       workspaceId: workspace?.id ?? "",
     }),
     enabled: !!workspace?.id,

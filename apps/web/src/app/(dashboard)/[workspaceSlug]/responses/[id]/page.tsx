@@ -137,7 +137,7 @@ export default function ResponseDetailPage({
   const { workspaceId } = useWorkspaceContext();
 
   const { data: response, isLoading } = useQuery({
-    ...trpc.vacancy.responses.getById.queryOptions({
+    ...trpc.vacancy.responses.get.queryOptions({
       id,
       workspaceId: workspaceId ?? "",
     }),

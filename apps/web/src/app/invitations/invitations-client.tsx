@@ -40,7 +40,7 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
 
   const trpc = useTRPC();
   const acceptMutation = useMutation(
-    trpc.workspace.acceptInvite.mutationOptions({
+    trpc.workspace.invites.accept.mutationOptions({
       onSuccess: (data) => {
         router.push(`/${data.workspace.slug}`);
         router.refresh();

@@ -35,7 +35,7 @@ export function VacancyLayoutClient({
     isLoading: vacancyLoading,
     isError: vacancyError,
   } = useQuery({
-    ...trpc.vacancy.getById.queryOptions({
+    ...trpc.vacancy.get.queryOptions({
       id: vacancyId,
       workspaceId: workspaceId ?? "",
     }),
@@ -47,7 +47,7 @@ export function VacancyLayoutClient({
     isLoading: responsesLoading,
     isError: responsesError,
   } = useQuery({
-    ...trpc.vacancy.responses.getCount.queryOptions({
+    ...trpc.vacancy.responses.count.queryOptions({
       vacancyId: vacancyId,
       workspaceId: workspaceId ?? "",
     }),

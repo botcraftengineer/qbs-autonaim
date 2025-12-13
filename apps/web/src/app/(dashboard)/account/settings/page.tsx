@@ -68,7 +68,7 @@ export default function AccountSettingsPage() {
   };
 
   const deleteAccount = useMutation(
-    trpc.user.deleteAccount.mutationOptions({
+    trpc.user.delete.mutationOptions({
       onSuccess: async () => {
         toast.success("Аккаунт успешно удален");
         window.location.href = "/auth/signin";

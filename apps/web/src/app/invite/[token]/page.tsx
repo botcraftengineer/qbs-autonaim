@@ -19,7 +19,7 @@ export default async function InvitePage({
   try {
     // Получаем информацию о приглашении
     const caller = await api();
-    const invite = await caller.workspace.getInviteByToken({ token });
+    const invite = await caller.workspace.invites.getByToken({ token });
 
     if (!invite) {
       return (

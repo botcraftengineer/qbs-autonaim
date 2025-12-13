@@ -13,7 +13,7 @@ export default function SettingsCompanyPage() {
 
   // Получаем workspace по slug
   const { data: workspaceData } = useQuery(
-    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
+    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
   );
 
   const workspaceId = workspaceData?.workspace.id;

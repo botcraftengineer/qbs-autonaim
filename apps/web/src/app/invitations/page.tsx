@@ -11,7 +11,7 @@ export default async function InvitationsPage() {
   }
 
   const caller = await api();
-  const invites = await caller.workspace.getPendingInvites();
+  const invites = await caller.workspace.invites.pending();
 
   // Если нет приглашений, редиректим на главную
   if (invites.length === 0) {

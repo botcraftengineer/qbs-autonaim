@@ -27,7 +27,7 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
   const router = useRouter();
 
   const acceptInvite = useMutation(
-    trpc.workspace.acceptInvite.mutationOptions({
+    trpc.workspace.invites.accept.mutationOptions({
       onSuccess: () => {
         toast.success(`Вы присоединились к ${invite.workspace.name}`);
         // Редиректим в рабочее пространство и обновляем страницу для загрузки новых данных

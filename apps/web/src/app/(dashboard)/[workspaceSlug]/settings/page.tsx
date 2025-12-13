@@ -13,7 +13,7 @@ export default function SettingsPage() {
   const workspaceSlug = params.workspaceSlug as string;
 
   const { data, isLoading } = useQuery(
-    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
+    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
   );
 
   if (isLoading) {

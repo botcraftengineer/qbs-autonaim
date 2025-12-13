@@ -52,7 +52,7 @@ function InviteMemberModalContent({
   const [role, setRole] = useState<"owner" | "admin" | "member">("member");
 
   const addUser = useMutation(
-    trpc.workspace.addUser.mutationOptions({
+    trpc.workspace.members.add.mutationOptions({
       onSuccess: () => {
         toast.success("Приглашение отправлено");
         setEmail("");

@@ -122,7 +122,7 @@ export function IntegrationDialog({
   const [showPassword, setShowPassword] = useState(false);
 
   const { data: workspaceData } = useQuery(
-    trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug }),
+    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
   );
 
   const workspaceId = useMemo(

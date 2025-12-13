@@ -98,7 +98,7 @@ function MemberActionsDropdown({
   const [open, setOpen] = useState(false);
 
   const resendInvite = useMutation(
-    trpc.workspace.resendInvite.mutationOptions({
+    trpc.workspace.invites.resend.mutationOptions({
       onSuccess: () => {
         toast.success("Приглашение отправлено повторно");
         setOpen(false);
@@ -191,7 +191,7 @@ function RemoveMemberDialog({
   const queryClient = useQueryClient();
 
   const removeUser = useMutation(
-    trpc.workspace.removeUser.mutationOptions({
+    trpc.workspace.members.remove.mutationOptions({
       onSuccess: () => {
         toast.success(`${member.name} удален из workspace`);
         onOpenChange(false);
@@ -253,7 +253,7 @@ function LeaveWorkspaceDialog({
   const queryClient = useQueryClient();
 
   const leaveWorkspace = useMutation(
-    trpc.workspace.removeUser.mutationOptions({
+    trpc.workspace.members.remove.mutationOptions({
       onSuccess: () => {
         toast.success("Вы покинули workspace");
         onOpenChange(false);
@@ -316,7 +316,7 @@ function CancelInviteDialog({
   const queryClient = useQueryClient();
 
   const cancelInvite = useMutation(
-    trpc.workspace.cancelInvite.mutationOptions({
+    trpc.workspace.invites.cancel.mutationOptions({
       onSuccess: () => {
         toast.success("Приглашение отменено");
         onOpenChange(false);

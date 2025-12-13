@@ -22,7 +22,7 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
   const { workspaceId } = useWorkspaceContext();
 
   const { data: vacancy } = useQuery({
-    ...trpc.vacancy.getById.queryOptions({
+    ...trpc.vacancy.get.queryOptions({
       id,
       workspaceId: workspaceId ?? "",
     }),
@@ -30,7 +30,7 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
   });
 
   const { data: analytics } = useQuery({
-    ...trpc.vacancy.getAnalytics.queryOptions({
+    ...trpc.vacancy.analytics.queryOptions({
       vacancyId: id,
       workspaceId: workspaceId ?? "",
     }),

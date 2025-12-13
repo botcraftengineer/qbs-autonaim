@@ -10,7 +10,7 @@ export function useWorkspace() {
   const trpc = useTRPC();
 
   const { data, isLoading, error } = useQuery({
-    ...trpc.workspace.bySlug.queryOptions({ slug: workspaceSlug ?? "" }),
+    ...trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug ?? "" }),
     enabled: !!workspaceSlug,
   });
 

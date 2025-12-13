@@ -36,7 +36,7 @@ export function AccountForm({
   });
 
   const updateAccount = useMutation(
-    trpc.user.updateAccount.mutationOptions({
+    trpc.user.update.mutationOptions({
       onSuccess: async () => {
         toast.success("Аккаунт успешно обновлен");
         await queryClient.invalidateQueries(trpc.user.pathFilter());

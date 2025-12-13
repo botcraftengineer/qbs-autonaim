@@ -18,7 +18,7 @@ export default function IntegrationsPage() {
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const workspaceQueryOptions = api.workspace.bySlug.queryOptions({
+  const workspaceQueryOptions = api.workspace.getBySlug.queryOptions({
     slug: workspaceSlug,
   });
   const { data: workspaceData } = useQuery(workspaceQueryOptions);

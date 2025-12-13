@@ -13,7 +13,7 @@ export default async function Page() {
   const caller = await api();
 
   // Проверяем наличие pending invitations
-  const pendingInvites = await caller.workspace.getPendingInvites();
+  const pendingInvites = await caller.workspace.invites.pending();
   if (pendingInvites.length > 0) {
     redirect("/invitations");
   }

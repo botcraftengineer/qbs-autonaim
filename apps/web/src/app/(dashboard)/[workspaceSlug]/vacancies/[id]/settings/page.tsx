@@ -19,7 +19,7 @@ export default function VacancySettingsPage({
   const queryClient = useQueryClient();
 
   const { data: vacancy } = useQuery({
-    ...trpc.vacancy.getById.queryOptions({
+    ...trpc.vacancy.get.queryOptions({
       id,
       workspaceId: workspaceId ?? "",
     }),
@@ -27,7 +27,7 @@ export default function VacancySettingsPage({
   });
 
   const updateSettingsMutation = useMutation(
-    trpc.vacancy.updateSettings.mutationOptions({
+    trpc.vacancy.update.mutationOptions({
       onSuccess: () => {
         void queryClient.invalidateQueries({
           queryKey: [

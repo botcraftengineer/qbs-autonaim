@@ -151,7 +151,7 @@ export function WorkspaceMembersClient({
 
   // Получение участников
   const { data: members, isLoading: membersLoading } = useQuery(
-    trpc.workspace.members.queryOptions({ workspaceId }),
+    trpc.workspace.members.list.queryOptions({ workspaceId }),
   );
 
   // Определение роли текущего пользователя
@@ -166,7 +166,7 @@ export function WorkspaceMembersClient({
 
   // Получение приглашений (только для админов)
   const { data: invites, isLoading: invitesLoading } = useQuery({
-    ...trpc.workspace.invites.queryOptions({ workspaceId }),
+    ...trpc.workspace.invites.list.queryOptions({ workspaceId }),
     enabled: canManageMembers,
   });
 
@@ -446,7 +446,7 @@ function MemberRow({
   const initials = getInitials(member.user.name);
 
   const updateRole = useMutation(
-    trpc.workspace.updateUserRole.mutationOptions({
+    trpc.workspace.members.updateRole.mutationOptions({
       onSuccess: () => {
         toast.success("Роль обновлена");
         queryClient.invalidateQueries(trpc.workspace.members.pathFilter());
