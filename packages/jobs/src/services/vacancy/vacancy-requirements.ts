@@ -1,4 +1,5 @@
-import { db, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import { buildVacancyRequirementsExtractionPrompt } from "@qbs-autonaim/prompts";

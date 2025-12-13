@@ -1,4 +1,5 @@
-import { db, inArray } from "@qbs-autonaim/db";
+import { inArray } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { runEnricher } from "../../../parsers/hh/enricher";
 import { parseNewResumesChannel } from "../../channels/client";

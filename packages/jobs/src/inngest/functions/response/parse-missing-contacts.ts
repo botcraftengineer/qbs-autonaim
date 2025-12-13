@@ -1,4 +1,5 @@
-import { db, inArray } from "@qbs-autonaim/db";
+import { inArray } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { extractContactsFromResponses } from "../../../services/response";
 import { parseMissingContactsChannel } from "../../channels/client";
@@ -142,4 +143,3 @@ export const parseMissingContactsFunction = inngest.createFunction(
     };
   },
 );
-

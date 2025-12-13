@@ -8,7 +8,7 @@
  */
 
 import type { Auth } from "@qbs-autonaim/auth";
-import { dbWs as db } from "@qbs-autonaim/db";
+import { dbEdge as db } from "@qbs-autonaim/db";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError, z } from "zod";

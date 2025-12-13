@@ -1,4 +1,5 @@
-import { db, eq, file, telegramMessage } from "@qbs-autonaim/db";
+import { eq, file, telegramMessage } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
 import { transcribeAudio } from "../../../services/media";
 import { inngest } from "../../client";

@@ -3,7 +3,8 @@
  * Вынесен в lib для использования в tg-client и jobs без циклических зависимостей
  */
 
-import { and, db, eq, ilike } from "@qbs-autonaim/db";
+import { and, eq, ilike } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import {
   telegramConversation,
   telegramMessage,
