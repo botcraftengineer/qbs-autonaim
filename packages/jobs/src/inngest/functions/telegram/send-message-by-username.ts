@@ -1,4 +1,5 @@
-import { db, eq, telegramSession } from "@qbs-autonaim/db";
+import { eq, telegramSession } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { telegramMessage } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";

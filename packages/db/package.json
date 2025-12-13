@@ -12,9 +12,6 @@
     "./client.ws": {
       "default": "./src/client.ws.ts"
     },
-    "./client.edge": {
-      "default": "./src/client.edge.ts"
-    },
     "./schema": {
       "default": "./src/schema/index.ts"
     }

@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { dbWs as db } from "../index";
+import { dbEdge as db } from "../index";
 import { integration, type NewIntegration } from "../schema";
 import { decryptCredentials, encryptCredentials } from "../utils/encryption";
 

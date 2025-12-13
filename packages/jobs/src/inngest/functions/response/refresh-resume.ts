@@ -1,5 +1,6 @@
 import os from "node:os";
-import { db, eq, getIntegrationCredentials } from "@qbs-autonaim/db";
+import { eq, getIntegrationCredentials } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { Log } from "crawlee";
 import type { Browser, Page } from "puppeteer";

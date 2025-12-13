@@ -1,4 +1,5 @@
-import { db, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 import { extractTelegramUsername } from "../messaging/telegram-username";

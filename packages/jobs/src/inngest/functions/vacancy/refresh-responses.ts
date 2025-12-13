@@ -1,4 +1,5 @@
-import { db, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import { refreshVacancyResponses } from "../../../parsers/hh";
 import { refreshVacancyResponsesChannel } from "../../channels/client";

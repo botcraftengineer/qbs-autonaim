@@ -1,5 +1,6 @@
 import type { Message } from "@mtcute/core";
-import { and, db, eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import {
   telegramConversation,
   vacancy,

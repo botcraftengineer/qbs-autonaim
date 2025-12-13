@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { dbWs as db } from "../index";
+import { dbEdge as db } from "../index";
 import { userWorkspace, workspace } from "../schema";
 
 export class WorkspaceRepository {
