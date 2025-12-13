@@ -1,12 +1,12 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitize from "sanitize-html";
 
 /**
  * Санитизация HTML контента для защиты от XSS атак
  * Работает и на сервере, и на клиенте
  */
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
+  return sanitize(html, {
+    allowedTags: [
       "p",
       "br",
       "strong",
@@ -26,6 +26,8 @@ export function sanitizeHtml(html: string): string {
       "pre",
       "blockquote",
     ],
-    ALLOWED_ATTR: ["href", "target", "rel"],
+    allowedAttributes: {
+      a: ["href", "target", "rel"],
+    },
   });
 }
