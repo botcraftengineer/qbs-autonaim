@@ -18,12 +18,15 @@ import {
   type UpdateVacancySettingsInput,
   updateVacancySettingsSchema,
 } from "@qbs-autonaim/validators";
-import { Loader2, Save, Sparkles } from "lucide-react";
+import { Loader2, Save, Sparkles, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface VacancySettingsFormProps {
+  vacancyId: string;
+  vacancyTitle?: string;
+  vacancyDescription?: string;
   initialData?: {
     customBotInstructions?: string | null;
     customScreeningPrompt?: string | null;
@@ -31,14 +34,20 @@ interface VacancySettingsFormProps {
     customOrganizationalQuestions?: string | null;
   };
   onSave: (data: UpdateVacancySettingsInput) => Promise<void>;
+  onImprove: (
+    fieldType: keyof UpdateVacancySettingsInput,
+    currentValue: string,
+  ) => Promise<string>;
 }
 
 export function VacancySettingsForm({
   initialData,
   onSave,
+  onImprove,
 }: VacancySettingsFormProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [improvingField, setImprovingField] = useState<string | null>(null);
 
   const form = useForm<UpdateVacancySettingsInput>({
     resolver: zodResolver(updateVacancySettingsSchema),
@@ -85,6 +94,30 @@ export function VacancySettingsForm({
     }
   };
 
+  const handleImprove = async (fieldName: keyof UpdateVacancySettingsInput) => {
+    const currentValue = form.getValues(fieldName);
+
+    if (!currentValue?.trim()) {
+      toast.error("Сначала введите текст для улучшения");
+      return;
+    }
+
+    setImprovingField(fieldName);
+    try {
+      const improvedText = await onImprove(fieldName, currentValue);
+      form.setValue(fieldName, improvedText, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      toast.success("Текст улучшен с помощью AI");
+    } catch (error) {
+      toast.error("Не удалось улучшить текст");
+      console.error(error);
+    } finally {
+      setImprovingField(null);
+    }
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -107,7 +140,36 @@ export function VacancySettingsForm({
               name="customBotInstructions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Общие инструкции для бота</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Общие инструкции для бота</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleImprove("customBotInstructions")}
+                      disabled={
+                        improvingField === "customBotInstructions" ||
+                        !field.value?.trim()
+                      }
+                      className="h-8 gap-1.5 text-xs"
+                      aria-label="Улучшить инструкции с помощью AI"
+                    >
+                      {improvingField === "customBotInstructions" ? (
+                        <>
+                          <Loader2
+                            className="size-3.5 animate-spin"
+                            aria-hidden="true"
+                          />
+                          Улучшение…
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="size-3.5" aria-hidden="true" />
+                          Улучшить
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -137,7 +199,36 @@ export function VacancySettingsForm({
               name="customInterviewQuestions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Вопросы для интервью</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Вопросы для интервью</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleImprove("customInterviewQuestions")}
+                      disabled={
+                        improvingField === "customInterviewQuestions" ||
+                        !field.value?.trim()
+                      }
+                      className="h-8 gap-1.5 text-xs"
+                      aria-label="Улучшить вопросы с помощью AI"
+                    >
+                      {improvingField === "customInterviewQuestions" ? (
+                        <>
+                          <Loader2
+                            className="size-3.5 animate-spin"
+                            aria-hidden="true"
+                          />
+                          Улучшение…
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="size-3.5" aria-hidden="true" />
+                          Улучшить
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -166,7 +257,38 @@ export function VacancySettingsForm({
               name="customOrganizationalQuestions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Организационные вопросы</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Организационные вопросы</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() =>
+                        handleImprove("customOrganizationalQuestions")
+                      }
+                      disabled={
+                        improvingField === "customOrganizationalQuestions" ||
+                        !field.value?.trim()
+                      }
+                      className="h-8 gap-1.5 text-xs"
+                      aria-label="Улучшить вопросы с помощью AI"
+                    >
+                      {improvingField === "customOrganizationalQuestions" ? (
+                        <>
+                          <Loader2
+                            className="size-3.5 animate-spin"
+                            aria-hidden="true"
+                          />
+                          Улучшение…
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="size-3.5" aria-hidden="true" />
+                          Улучшить
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -195,7 +317,36 @@ export function VacancySettingsForm({
               name="customScreeningPrompt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Инструкции для скрининга резюме</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Инструкции для скрининга резюме</FormLabel>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleImprove("customScreeningPrompt")}
+                      disabled={
+                        improvingField === "customScreeningPrompt" ||
+                        !field.value?.trim()
+                      }
+                      className="h-8 gap-1.5 text-xs"
+                      aria-label="Улучшить инструкции с помощью AI"
+                    >
+                      {improvingField === "customScreeningPrompt" ? (
+                        <>
+                          <Loader2
+                            className="size-3.5 animate-spin"
+                            aria-hidden="true"
+                          />
+                          Улучшение…
+                        </>
+                      ) : (
+                        <>
+                          <Wand2 className="size-3.5" aria-hidden="true" />
+                          Улучшить
+                        </>
+                      )}
+                    </Button>
+                  </div>
                   <FormControl>
                     <Textarea
                       {...field}

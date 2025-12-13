@@ -39,6 +39,10 @@ export default function VacancySettingsPage({
     }),
   );
 
+  const improveInstructionsMutation = useMutation(
+    trpc.vacancy.improveInstructions.mutationOptions(),
+  );
+
   const handleSave = async (data: {
     customBotInstructions?: string | null;
     customScreeningPrompt?: string | null;
@@ -52,6 +56,28 @@ export default function VacancySettingsPage({
       workspaceId,
       settings: data,
     });
+  };
+
+  const handleImprove = async (
+    fieldType:
+      | "customBotInstructions"
+      | "customScreeningPrompt"
+      | "customInterviewQuestions"
+      | "customOrganizationalQuestions",
+    currentValue: string,
+  ): Promise<string> => {
+    if (!workspaceId) throw new Error("Workspace ID not found");
+
+    const result = await improveInstructionsMutation.mutateAsync({
+      vacancyId: id,
+      workspaceId,
+      fieldType,
+      currentValue,
+      vacancyTitle: vacancy?.title,
+      vacancyDescription: vacancy?.description ?? undefined,
+    });
+
+    return result.improvedText;
   };
 
   if (!vacancy) {
@@ -68,6 +94,9 @@ export default function VacancySettingsPage({
       </div>
 
       <VacancySettingsForm
+        vacancyId={id}
+        vacancyTitle={vacancy.title}
+        vacancyDescription={vacancy.description ?? undefined}
         initialData={{
           customBotInstructions: vacancy.customBotInstructions,
           customScreeningPrompt: vacancy.customScreeningPrompt,
@@ -75,6 +104,7 @@ export default function VacancySettingsPage({
           customOrganizationalQuestions: vacancy.customOrganizationalQuestions,
         }}
         onSave={handleSave}
+        onImprove={handleImprove}
       />
     </div>
   );
