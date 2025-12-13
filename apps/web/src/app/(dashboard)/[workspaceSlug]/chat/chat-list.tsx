@@ -2,6 +2,7 @@
 
 import {
   Badge,
+  Input,
   Select,
   SelectContent,
   SelectItem,
@@ -24,6 +25,7 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
   const { workspace } = useWorkspace();
   const pathname = usePathname();
   const [selectedVacancyId, setSelectedVacancyId] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
 
   const { data: vacancies = [] } = useQuery({
     ...trpc.vacancy.list.queryOptions({ workspaceId: workspace?.id ?? "" }),
@@ -99,83 +101,120 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
       <div className="border-b px-3 md:px-4 py-3 space-y-3">
         <h1 className="text-lg md:text-xl font-semibold">Чаты</h1>
 
-        <Select value={selectedVacancyId} onValueChange={setSelectedVacancyId}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Все вакансии" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Все вакансии</SelectItem>
-            {vacancies.map((vacancy) => (
-              <SelectItem key={vacancy.id} value={vacancy.id}>
-                {vacancy.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="space-y-2">
+          <label
+            htmlFor="search-input"
+            className="text-sm font-medium text-muted-foreground"
+          >
+            Поиск по ФИО
+          </label>
+          <Input
+            id="search-input"
+            type="text"
+            placeholder="Введите имя кандидата…"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label
+            htmlFor="vacancy-filter"
+            className="text-sm font-medium text-muted-foreground"
+          >
+            Фильтр по вакансии
+          </label>
+          <Select
+            value={selectedVacancyId}
+            onValueChange={setSelectedVacancyId}
+          >
+            <SelectTrigger id="vacancy-filter" className="w-full">
+              <SelectValue placeholder="Все вакансии" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все вакансии</SelectItem>
+              {vacancies.map((vacancy) => (
+                <SelectItem key={vacancy.id} value={vacancy.id}>
+                  {vacancy.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {conversations.map((conversation) => {
-          const lastMessage = conversation.messages[0];
+        {conversations
+          .filter((conversation) => {
+            if (!searchQuery) return true;
+            const candidateName =
+              conversation.candidateName?.toLowerCase() ?? "";
+            return candidateName.includes(searchQuery.toLowerCase());
+          })
+          .map((conversation) => {
+            const lastMessage = conversation.messages[0];
 
-          const isActive =
-            pathname === `/${workspaceSlug}/chat/${conversation.id}`;
+            const isActive =
+              pathname === `/${workspaceSlug}/chat/${conversation.id}`;
 
-          let vacancyTitle = null;
-          if (conversation.metadata) {
-            try {
-              const metadata = JSON.parse(conversation.metadata);
-              const vacancy = vacancies.find(
-                (v) => v.id === metadata.vacancyId,
-              );
-              vacancyTitle = vacancy?.title;
-            } catch {
-              // ignore
+            let vacancyTitle = null;
+            if (conversation.metadata) {
+              try {
+                const metadata = JSON.parse(conversation.metadata);
+                const vacancy = vacancies.find(
+                  (v) => v.id === metadata.vacancyId,
+                );
+                vacancyTitle = vacancy?.title;
+              } catch {
+                // ignore
+              }
             }
-          }
 
-          return (
-            <Link
-              key={conversation.id}
-              href={`/${workspaceSlug}/chat/${conversation.id}`}
-            >
-              <div
-                className={`flex items-start gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b ${
-                  isActive ? "bg-muted" : ""
-                }`}
+            return (
+              <Link
+                key={conversation.id}
+                href={`/${workspaceSlug}/chat/${conversation.id}`}
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline justify-between gap-2 mb-1">
-                    <h3 className="font-semibold truncate text-sm md:text-base">
-                      {conversation.candidateName ?? "Без имени"}
-                    </h3>
+                <div
+                  className={`flex items-start gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b ${
+                    isActive ? "bg-muted" : ""
+                  }`}
+                >
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <h3 className="font-semibold truncate text-sm md:text-base">
+                        {conversation.candidateName ?? "Без имени"}
+                      </h3>
+                      {lastMessage && (
+                        <span className="text-xs text-muted-foreground shrink-0">
+                          {format(lastMessage.createdAt, "HH:mm", {
+                            locale: ru,
+                          })}
+                        </span>
+                      )}
+                    </div>
+
+                    {vacancyTitle && (
+                      <Badge
+                        variant="outline"
+                        className="mb-1 text-xs text-teal-600 border-teal-200"
+                      >
+                        {vacancyTitle}
+                      </Badge>
+                    )}
+
                     {lastMessage && (
-                      <span className="text-xs text-muted-foreground shrink-0">
-                        {format(lastMessage.createdAt, "HH:mm", { locale: ru })}
-                      </span>
+                      <p className="text-xs md:text-sm text-muted-foreground truncate">
+                        {lastMessage.sender === "ADMIN" && "Вы: "}
+                        {lastMessage.content}
+                      </p>
                     )}
                   </div>
-
-                  {vacancyTitle && (
-                    <Badge
-                      variant="outline"
-                      className="mb-1 text-xs text-teal-600 border-teal-200"
-                    >
-                      {vacancyTitle}
-                    </Badge>
-                  )}
-
-                  {lastMessage && (
-                    <p className="text-xs md:text-sm text-muted-foreground truncate">
-                      {lastMessage.sender === "ADMIN" && "Вы: "}
-                      {lastMessage.content}
-                    </p>
-                  )}
                 </div>
-              </div>
-            </Link>
-          );
-        })}
+              </Link>
+            );
+          })}
       </div>
     </div>
   );
