@@ -312,6 +312,8 @@ export async function getInterviewStartData(responseId: string) {
       screeningAnalysis: firstScreening?.analysis,
       customBotInstructions: response.vacancy?.customBotInstructions,
       customInterviewQuestions: response.vacancy?.customInterviewQuestions,
+      customOrganizationalQuestions:
+        response.vacancy?.customOrganizationalQuestions,
     };
   } catch (error) {
     console.error("Error getting interview start data:", error);

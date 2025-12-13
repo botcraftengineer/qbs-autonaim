@@ -28,6 +28,7 @@ interface VacancySettingsFormProps {
     customBotInstructions?: string | null;
     customScreeningPrompt?: string | null;
     customInterviewQuestions?: string | null;
+    customOrganizationalQuestions?: string | null;
   };
   onSave: (data: UpdateVacancySettingsInput) => Promise<void>;
 }
@@ -45,6 +46,8 @@ export function VacancySettingsForm({
       customBotInstructions: initialData?.customBotInstructions ?? "",
       customScreeningPrompt: initialData?.customScreeningPrompt ?? "",
       customInterviewQuestions: initialData?.customInterviewQuestions ?? "",
+      customOrganizationalQuestions:
+        initialData?.customOrganizationalQuestions ?? "",
     },
   });
 
@@ -147,6 +150,35 @@ export function VacancySettingsForm({
                   <FormDescription>
                     Список вопросов, которые бот будет задавать кандидатам во
                     время интервью в Telegram. Каждый вопрос с новой строки.
+                  </FormDescription>
+                  <FormMessage />
+                  <div className="text-muted-foreground text-xs">
+                    {field.value?.length ?? 0} / 5000
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <Separator />
+
+            <FormField
+              control={form.control}
+              name="customOrganizationalQuestions"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Организационные вопросы</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="Например:&#10;1. Когда вы готовы приступить к работе?&#10;2. Какой формат работы вам подходит?&#10;3. Есть ли у вас другие офферы на рассмотрении?…"
+                      className="min-h-[120px] resize-y font-mono text-sm"
+                      maxLength={5000}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    Организационные вопросы, которые бот будет задавать после
+                    основного интервью. Каждый вопрос с новой строки.
                   </FormDescription>
                   <FormMessage />
                   <div className="text-muted-foreground text-xs">

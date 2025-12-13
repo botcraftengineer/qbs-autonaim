@@ -36,6 +36,7 @@ export const vacancy = pgTable(
     customBotInstructions: text("custom_bot_instructions"),
     customScreeningPrompt: text("custom_screening_prompt"),
     customInterviewQuestions: text("custom_interview_questions"),
+    customOrganizationalQuestions: text("custom_organizational_questions"),
 
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -58,6 +59,7 @@ export const CreateVacancySchema = createInsertSchema(vacancy, {
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),
   customInterviewQuestions: z.string().max(5000).optional(),
+  customOrganizationalQuestions: z.string().max(5000).optional(),
 }).omit({
   createdAt: true,
   updatedAt: true,
@@ -67,4 +69,5 @@ export const UpdateVacancySettingsSchema = z.object({
   customBotInstructions: z.string().max(5000).optional().nullable(),
   customScreeningPrompt: z.string().max(5000).optional().nullable(),
   customInterviewQuestions: z.string().max(5000).optional().nullable(),
+  customOrganizationalQuestions: z.string().max(5000).optional().nullable(),
 });

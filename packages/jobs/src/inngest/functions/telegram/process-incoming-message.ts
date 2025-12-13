@@ -178,6 +178,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   interviewData?.customBotInstructions ?? undefined,
                 customInterviewQuestions:
                   interviewData?.customInterviewQuestions ?? undefined,
+                customOrganizationalQuestions:
+                  interviewData?.customOrganizationalQuestions ?? undefined,
               });
 
               const { text: aiResponse } = await generateText({
