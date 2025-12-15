@@ -42,6 +42,11 @@ interface InterviewContext {
   previousQA: QuestionAnswer[];
   questionNumber: number;
   responseId: string | null;
+  conversationHistory?: Array<{
+    sender: string;
+    content: string;
+    contentType?: string;
+  }>;
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -119,6 +124,7 @@ export async function analyzeAndGenerateNextQuestion(
     currentQuestion,
     previousQA,
     questionNumber,
+    conversationHistory: context.conversationHistory,
   });
 
   const { text } = await generateText({
@@ -180,6 +186,13 @@ export async function getInterviewContext(
   const metadata = parseMetadata(conversation.metadata);
   const questionAnswers = metadata.questionAnswers ?? [];
 
+  // Формируем историю диалога
+  const conversationHistory = conversation.messages.map((msg) => ({
+    sender: msg.sender,
+    content: msg.content,
+    contentType: msg.contentType,
+  }));
+
   return {
     conversationId: conversation.id,
     candidateName: conversation.candidateName,
@@ -192,6 +205,7 @@ export async function getInterviewContext(
     previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conversation.responseId || null,
+    conversationHistory,
   };
 }
 

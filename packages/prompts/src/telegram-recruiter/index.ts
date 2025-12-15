@@ -31,9 +31,9 @@ export type { ConversationStage, TelegramRecruiterContext } from "./types";
 import {
   buildEscalationCheckPrompt,
   checkPinFailureEscalation,
+  type EscalationReason,
   getEscalationMessage,
   hasGreetedBefore,
-  type EscalationReason,
 } from "../utils";
 import { buildAwaitingPinPrompt } from "./stages/awaiting-pin";
 import { buildEscalatedPrompt } from "./stages/escalated";
@@ -43,7 +43,11 @@ import { buildPinReceivedPrompt } from "./stages/pin-received";
 import type { TelegramRecruiterContext } from "./types";
 
 // Реэкспортируем типы и функции эскалации для использования в других модулях
-export type { EscalationCheck, EscalationContext, EscalationReason } from "../utils";
+export type {
+  EscalationCheck,
+  EscalationContext,
+  EscalationReason,
+} from "../utils";
 export {
   buildEscalationCheckPrompt,
   getEscalationMessage,
@@ -178,7 +182,7 @@ export function buildTelegramRecruiterPromptWithMeta(
       );
       break;
     case "ESCALATED":
-      stageInstructions = buildEscalatedPrompt();
+      stageInstructions = buildEscalatedPrompt(historyText);
       break;
   }
 
