@@ -15,6 +15,7 @@ export const accept = protectedProcedure
       });
     }
 
+    // Проверка срока действия
     if (new Date(invite.expiresAt) < new Date()) {
       throw new TRPCError({
         code: "BAD_REQUEST",
@@ -22,6 +23,7 @@ export const accept = protectedProcedure
       });
     }
 
+    // Проверка: приглашение для конкретного пользователя по ID
     if (invite.invitedUserId && invite.invitedUserId !== ctx.session.user.id) {
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -29,21 +31,27 @@ export const accept = protectedProcedure
       });
     }
 
-    if (
-      invite.invitedEmail &&
-      (!invite.invitedUserId || invite.invitedUserId !== ctx.session.user.id)
-    ) {
+    // Проверка: приглашение для конкретного email
+    if (invite.invitedEmail) {
       const sessionEmail = ctx.session.user.email?.toLowerCase();
       const invitedEmail = invite.invitedEmail.toLowerCase();
 
-      if (!sessionEmail || sessionEmail !== invitedEmail) {
+      if (!sessionEmail) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "У вашего аккаунта не указан email",
+        });
+      }
+
+      if (sessionEmail !== invitedEmail) {
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: "Это приглашение предназначено для другого пользователя",
+          message: `Это приглашение предназначено для ${invite.invitedEmail}`,
         });
       }
     }
 
+    // Проверка: пользователь уже является участником
     const existingMember = await workspaceRepository.checkAccess(
       invite.workspaceId,
       ctx.session.user.id,
@@ -52,16 +60,18 @@ export const accept = protectedProcedure
     if (existingMember) {
       throw new TRPCError({
         code: "BAD_REQUEST",
-        message: "Вы уже являетесь участником этого workspace",
+        message: "Вы уже являетесь участником этого рабочего пространства",
       });
     }
 
+    // Добавляем пользователя в workspace
     await workspaceRepository.addUser(
       invite.workspaceId,
       ctx.session.user.id,
       invite.role,
     );
 
+    // Удаляем использованное приглашение
     await workspaceRepository.deleteInviteByToken(input.token);
 
     return { success: true, workspace: invite.workspace };

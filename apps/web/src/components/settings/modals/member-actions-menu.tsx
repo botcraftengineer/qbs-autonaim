@@ -134,8 +134,14 @@ function MemberActionsDropdown({
       await navigator.clipboard.writeText(inviteUrl);
       toast.success("Ссылка скопирована в буфер обмена");
       setOpen(false);
-    } catch {
-      toast.error("Не удалось скопировать ссылку");
+    } catch (err) {
+      console.error(
+        `Failed to copy invite link for memberId=${member.id}:`,
+        err,
+      );
+      const errorMessage =
+        err instanceof Error ? err.message : "Неизвестная ошибка";
+      toast.error(`Не удалось скопировать ссылку: ${errorMessage}`);
     }
   };
 

@@ -16,6 +16,7 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 
 type Invite = {
@@ -42,8 +43,12 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
   const acceptMutation = useMutation(
     trpc.workspace.invites.accept.mutationOptions({
       onSuccess: (data) => {
+        toast.success(`Вы присоединились к ${data.workspace.name}`);
         router.push(`/${data.workspace.slug}`);
         router.refresh();
+      },
+      onError: (error) => {
+        toast.error(error.message || "Не удалось принять приглашение");
       },
     }),
   );
@@ -53,7 +58,6 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
     try {
       await acceptMutation.mutateAsync({ token });
     } catch (error) {
-      console.error("Failed to accept invite:", error);
       setProcessingTokens((prev) => {
         const next = new Set(prev);
         next.delete(token);
@@ -63,7 +67,8 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
   };
 
   const handleSkip = () => {
-    router.push("/");
+    // Редирект на onboarding для создания собственного workspace
+    router.push("/onboarding");
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -140,7 +145,7 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
                   className="flex-1"
                 >
                   {processingTokens.has(invite.token)
-                    ? "Принимаем..."
+                    ? "Принимаем…"
                     : "Принять"}
                 </Button>
               </CardFooter>
@@ -150,7 +155,7 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
 
         <div className="text-center">
           <Button variant="ghost" onClick={handleSkip}>
-            Пропустить
+            Создать своё пространство
           </Button>
         </div>
       </div>

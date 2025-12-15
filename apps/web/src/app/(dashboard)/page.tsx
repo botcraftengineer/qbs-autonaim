@@ -12,21 +12,21 @@ export default async function Page() {
 
   const caller = await api();
 
+  // Получаем workspaces пользователя
+  const userWorkspaces = await caller.workspace.list();
+
+  // Если есть workspaces, редирект на первый
+  const firstWorkspace = userWorkspaces[0];
+  if (firstWorkspace) {
+    redirect(`/${firstWorkspace.workspace.slug}`);
+  }
+
   // Проверяем наличие pending invitations
   const pendingInvites = await caller.workspace.invites.pending();
   if (pendingInvites.length > 0) {
     redirect("/invitations");
   }
 
-  // Получаем workspaces пользователя
-  const userWorkspaces = await caller.workspace.list();
-
-  // Редирект на первый workspace
-  const firstWorkspace = userWorkspaces[0];
-  if (firstWorkspace) {
-    redirect(`/${firstWorkspace.workspace.slug}`);
-  }
-
-  // Если нет workspaces, редирект на создание
+  // Если нет workspaces и нет приглашений, редирект на создание
   redirect("/onboarding");
 }
