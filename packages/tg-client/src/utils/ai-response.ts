@@ -58,7 +58,8 @@ export async function generateAIResponse(
   }
 
   // Для других этапов используем старую систему
-  return await generateWithLegacySystem(params);
+  const legacyResult = await generateWithLegacySystem(params);
+  return legacyResult.text;
 }
 
 /**

@@ -1,34 +1,34 @@
 /**
- * Инструменты для агентов на базе AI SDK
+ * Инструменты для агентов на базе AI SDK 6
  *
  * Эти инструменты предоставляют AI возможность анализировать контекст
  * и принимать решения на основе данных
  */
 
-import { tool } from "ai";
 import { z } from "zod";
+
+/**
+ * Схема для сообщения в истории
+ */
+const messageSchema = z.object({
+  sender: z.string().describe("Отправитель: CANDIDATE или BOT"),
+  content: z.string().optional(),
+  contentType: z.string().optional().describe("Тип контента: TEXT или VOICE"),
+});
+
+type Message = z.infer<typeof messageSchema>;
 
 /**
  * Инструмент для получения информации о голосовых сообщениях
  * AI использует это для принятия решений о запросе голосовых
  */
-export const getVoiceMessagesInfo = tool({
+export const getVoiceMessagesInfo = {
   description:
     "Получает информацию о количестве голосовых сообщений от кандидата в истории диалога",
-  parameters: z.object({
-    history: z
-      .array(
-        z.object({
-          sender: z.string().describe("Отправитель: CANDIDATE или BOT"),
-          contentType: z
-            .string()
-            .optional()
-            .describe("Тип контента: TEXT или VOICE"),
-        }),
-      )
-      .describe("История сообщений диалога"),
+  inputSchema: z.object({
+    history: z.array(messageSchema).describe("История сообщений диалога"),
   }),
-  execute: async ({ history }) => {
+  execute: async ({ history }: { history: Message[] }) => {
     const voiceMessages = history.filter(
       (msg) => msg.sender === "CANDIDATE" && msg.contentType === "VOICE",
     );
@@ -39,26 +39,18 @@ export const getVoiceMessagesInfo = tool({
       description: `Кандидат отправил ${voiceMessages.length} голосовых сообщений`,
     };
   },
-});
+};
 
 /**
  * Инструмент для получения контекста диалога
  * AI использует это для понимания истории общения
  */
-export const getConversationContext = tool({
+export const getConversationContext = {
   description: "Получает контекст и статистику текущего диалога с кандидатом",
-  parameters: z.object({
-    history: z
-      .array(
-        z.object({
-          sender: z.string(),
-          content: z.string(),
-          contentType: z.string().optional(),
-        }),
-      )
-      .describe("История сообщений"),
+  inputSchema: z.object({
+    history: z.array(messageSchema).describe("История сообщений"),
   }),
-  execute: async ({ history }) => {
+  execute: async ({ history }: { history: Message[] }) => {
     const candidateMessages = history.filter((m) => m.sender === "CANDIDATE");
     const botMessages = history.filter((m) => m.sender === "BOT");
     const voiceCount = history.filter(
@@ -75,4 +67,4 @@ export const getConversationContext = tool({
       conversationLength: history.length,
     };
   },
-});
+};

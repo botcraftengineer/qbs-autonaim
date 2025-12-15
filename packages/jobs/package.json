@@ -35,8 +35,8 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "1.0.32",
-    "@ai-sdk/openai": "2.0.86",
+    "@ai-sdk/deepseek": "2.0.0-beta.50",
+    "@ai-sdk/openai": "3.0.0-beta.96",
     "@inngest/realtime": "0.4.5",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/emails": "workspace:*",
@@ -45,7 +45,7 @@
     "@qbs-autonaim/prompts": "workspace:*",
     "@qbs-autonaim/tg-client": "workspace:*",
     "@t3-oss/env-core": "0.13.10",
-    "ai": "5.0.113",
+    "ai": "6.0.0-beta.151",
     "axios": "^1.13.2",
     "crawlee": "3.15.3",
     "inngest": "3.47.0",
