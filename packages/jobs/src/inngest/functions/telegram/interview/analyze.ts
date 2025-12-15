@@ -107,8 +107,20 @@ export const analyzeInterviewFunction = inngest.createFunction(
           questionNumber: context.questionNumber,
         },
       });
+    } else if (result.nextQuestion) {
+      // Если есть nextQuestion, но shouldContinue = false
+      // (например, кандидат задал вопрос), отправляем ответ без завершения интервью
+      await step.sendEvent("send-next-question-event", {
+        name: "telegram/interview.send-question",
+        data: {
+          conversationId: context.conversationId,
+          question: result.nextQuestion,
+          transcription,
+          questionNumber: context.questionNumber,
+        },
+      });
     } else {
-      // Отправляем событие для завершения интервью
+      // Отправляем событие для завершения интервью только если нет nextQuestion
       await step.sendEvent("complete-interview-event", {
         name: "telegram/interview.complete",
         data: {
