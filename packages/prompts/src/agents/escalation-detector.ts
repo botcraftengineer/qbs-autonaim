@@ -66,15 +66,13 @@ export class EscalationDetectorAgent extends BaseAgent<
 
   async execute(
     input: EscalationInput,
-    context: BaseAgentContext,
+    _context: BaseAgentContext,
   ): Promise<AgentResult<EscalationOutput>> {
     if (!this.validate(input)) {
       return { success: false, error: "Invalid input" };
     }
 
     try {
-      const prompt = this.buildPrompt(input, context);
-
       // Синхронная проверка критических условий
       if (input.failedPinAttempts && input.failedPinAttempts >= 3) {
         return {
