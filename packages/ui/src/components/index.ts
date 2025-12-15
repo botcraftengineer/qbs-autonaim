@@ -35,6 +35,7 @@ export * from "./textarea";
 export * from "./theme";
 export * from "./toast";
 export * from "./skeleton";
+export * from "./switch";
 export * from "./toggle";
 export * from "./toggle-group";
 export * from "./tooltip";
