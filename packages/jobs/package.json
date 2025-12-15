@@ -54,7 +54,7 @@
     "puppeteer-extra": "3.3.6",
     "puppeteer-extra-plugin-stealth": "2.11.2",
     "string-strip-html": "13.5.0",
-    "zod": "4.1.13"
+    "zod": "4.2.0"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",

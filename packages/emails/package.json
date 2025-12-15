@@ -32,7 +32,7 @@
     "sharp": "^0.34.5",
     "tailwindcss": "4.1.18",
     "tailwindcss-animate": "1.0.7",
-    "zod": "4.1.13"
+    "zod": "4.2.0"
   },
   "devDependencies": {
     "@react-email/preview-server": "5.0.7",

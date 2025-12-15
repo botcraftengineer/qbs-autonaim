@@ -1,15 +1,16 @@
 /**
- * AI Response Generator для Telegram-бота рекрутера
+ * AI Response Generator с мультиагентной системой
  *
- * ИСПОЛЬЗОВАНИЕ:
- * - text-message.ts: проверяет наличие conversation → AWAITING_PIN или INTERVIEWING
- * - unidentified-message.ts: обрабатывает PIN → создает conversation → PIN_RECEIVED
+ * Использует новую архитектуру с специализированными агентами
  */
 
 import { generateText } from "@qbs-autonaim/lib";
 import {
   buildTelegramRecruiterPrompt,
   type ConversationStage,
+  convertLegacyContext,
+  // Мультиагентная система
+  InterviewOrchestrator,
   type TelegramRecruiterContext,
 } from "@qbs-autonaim/prompts";
 
@@ -33,18 +34,98 @@ interface GenerateResponseParams {
   errorMessage?: string;
   customBotInstructions?: string | null;
   customInterviewQuestions?: string | null;
+  failedPinAttempts?: number;
+  screeningScore?: number;
+  screeningAnalysis?: string;
+}
+
+interface AIResponseResult {
+  text: string;
+  shouldEscalate?: boolean;
+  escalationReason?: string;
 }
 
 /**
- * Генерирует ответ через AI, имитируя живого рекрутера
- * Работает в 3 этапа:
- * 1. AWAITING_PIN - запрашивает PIN-код для идентификации
- * 2. PIN_RECEIVED - приветствует и начинает интервью
- * 3. INTERVIEWING - проводит интервью, задает вопросы
+ * Генерирует ответ через мультиагентную систему
  */
 export async function generateAIResponse(
   params: GenerateResponseParams,
 ): Promise<string> {
+  // Для этапа INTERVIEWING используем мультиагентную систему
+  if (params.stage === "INTERVIEWING") {
+    const result = await generateWithMultiAgent(params);
+    return result.text;
+  }
+
+  // Для других этапов используем старую систему
+  return await generateWithLegacySystem(params);
+}
+
+/**
+ * Генерация через мультиагентную систему
+ */
+async function generateWithMultiAgent(
+  params: GenerateResponseParams,
+): Promise<AIResponseResult> {
+  const orchestrator = new InterviewOrchestrator();
+
+  const legacyContext: TelegramRecruiterContext = {
+    messageText: params.messageText,
+    stage: params.stage,
+    candidateName: params.candidateName,
+    vacancyTitle: params.vacancyTitle,
+    vacancyRequirements: params.vacancyRequirements,
+    responseStatus: params.responseStatus,
+    conversationHistory: params.conversationHistory || [],
+    resumeData: params.resumeData,
+    errorMessage: params.errorMessage,
+    customBotInstructions: params.customBotInstructions,
+    customInterviewQuestions: params.customInterviewQuestions,
+    failedPinAttempts: params.failedPinAttempts,
+    screeningScore: params.screeningScore,
+    screeningAnalysis: params.screeningAnalysis,
+  };
+
+  const { context, state } = convertLegacyContext(legacyContext);
+
+  try {
+    const result = await orchestrator.execute(
+      {
+        message: params.messageText,
+        currentState: state,
+        failedPinAttempts: params.failedPinAttempts,
+        customQuestions: params.customInterviewQuestions,
+      },
+      context,
+    );
+
+    // Эскалация
+    if (result.decision.action === "ESCALATE") {
+      return {
+        text: "Передаю ваш запрос коллеге. Он свяжется с вами в ближайшее время.",
+        shouldEscalate: true,
+        escalationReason: result.decision.reason,
+      };
+    }
+
+    // Пропуск ответа (благодарность и т.д.)
+    if (result.decision.action === "SKIP") {
+      return { text: "" };
+    }
+
+    return { text: result.response || "" };
+  } catch (error) {
+    console.error("Ошибка мультиагентной системы, fallback:", error);
+    return await generateWithLegacySystem(params);
+  }
+}
+
+/**
+ * Fallback на старую систему для не-INTERVIEWING этапов
+ */
+async function generateWithLegacySystem(
+  params: GenerateResponseParams,
+): Promise<AIResponseResult> {
   const context: TelegramRecruiterContext = {
     messageText: params.messageText,
     stage: params.stage,
@@ -73,7 +154,7 @@ export async function generateAIResponse(
       },
     });
 
-    return text.trim();
+    return { text: text.trim() };
   } catch (error) {
     console.error("Ошибка генерации AI ответа:", error);
     throw error;

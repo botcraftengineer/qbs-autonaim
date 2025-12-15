@@ -1,3 +1,5 @@
+// Мультиагентная система
+export * from "./agents";
 export * from "./candidate-prompts";
 export * from "./completion-prompts";
 export * from "./interview-prompts";
