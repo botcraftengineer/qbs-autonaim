@@ -82,7 +82,6 @@ async function generateWithMultiAgent(
 
   const orchestrator = new InterviewOrchestrator({
     model,
-    temperature: 0.7,
   });
 
   const legacyContext: TelegramRecruiterContext = {

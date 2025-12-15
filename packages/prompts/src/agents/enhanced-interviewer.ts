@@ -39,7 +39,19 @@ export class EnhancedInterviewerAgent extends AIPoweredAgent<
   }
 
   protected validate(input: EnhancedInterviewerInput): boolean {
-    return !!input.message;
+    if (!input.message) return false;
+
+    if (
+      !Number.isFinite(input.voiceMessagesCount) ||
+      input.voiceMessagesCount < 0
+    )
+      return false;
+    if (!Number.isFinite(input.maxVoiceMessages) || input.maxVoiceMessages < 0)
+      return false;
+    if (!Number.isFinite(input.questionsAsked) || input.questionsAsked < 0)
+      return false;
+
+    return true;
   }
 
   protected buildPrompt(

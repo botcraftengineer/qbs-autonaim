@@ -4,7 +4,7 @@
 
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
-import type { AgentResult, BaseAgentContext } from "./types";
+import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
 
 export interface EnhancedContextAnalysisInput {
   message: string;

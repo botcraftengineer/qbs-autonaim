@@ -3,7 +3,7 @@
  */
 
 import { BaseAgent } from "./base-agent";
-import type { AgentResult, BaseAgentContext } from "./types";
+import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
 
 export interface EvaluatorInput {
   question: string;

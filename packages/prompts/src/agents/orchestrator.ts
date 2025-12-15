@@ -153,7 +153,7 @@ export class InterviewOrchestrator {
         {
           message: input.message,
           voiceMessagesCount: input.currentState.voiceMessagesCount,
-          maxVoiceMessages: this.config.maxVoiceMessages,
+          maxVoiceMessages: this.config.maxVoiceMessages ?? 2,
           questionsAsked: input.currentState.questionsAsked,
           customQuestions: input.customQuestions,
         },
