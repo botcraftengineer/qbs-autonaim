@@ -24,6 +24,9 @@ export interface InterviewContext {
 /**
  * Промпт для генерации следующего вопроса в интервью
  */
+// Максимальное количество сообщений из истории для предотвращения превышения лимита токенов LLM
+const MAX_HISTORY_MESSAGES = 10;
+
 export function buildInterviewQuestionPrompt(
   context: InterviewContext,
 ): string {
@@ -41,10 +44,16 @@ export function buildInterviewQuestionPrompt(
 
   const name = extractFirstName(candidateName);
 
+  // Ограничиваем историю последними N сообщениями для предотвращения превышения лимита токенов
+  const recentHistory =
+    conversationHistory.length > MAX_HISTORY_MESSAGES
+      ? conversationHistory.slice(-MAX_HISTORY_MESSAGES)
+      : conversationHistory;
+
   // Формируем историю диалога для контекста
   const historyText =
-    conversationHistory.length > 0
-      ? conversationHistory
+    recentHistory.length > 0
+      ? recentHistory
           .map((msg) => {
             const sender = msg.sender === "CANDIDATE" ? "Кандидат" : "Бот";
             return `${sender}: ${msg.content}`;
