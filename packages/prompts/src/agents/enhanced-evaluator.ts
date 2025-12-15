@@ -1,17 +1,18 @@
 /**
- * Агент для оценки ответов кандидата
+ * Улучшенный агент оценки с AI SDK
  */
 
-import { BaseAgent } from "./base-agent";
+import type { AIPoweredAgentConfig } from "./ai-powered-agent";
+import { AIPoweredAgent } from "./ai-powered-agent";
 import type { AgentResult, AgentType, BaseAgentContext } from "./types";
 
-export interface EvaluatorInput {
+export interface EnhancedEvaluatorInput {
   question: string;
   answer: string;
   allQA: Array<{ question: string; answer: string }>;
 }
 
-export interface EvaluatorOutput {
+export interface EnhancedEvaluatorOutput {
   score: number; // 0-5
   detailedScore: number; // 0-100
   analysis: string;
@@ -20,21 +21,25 @@ export interface EvaluatorOutput {
   recommendation: "CONTINUE" | "COMPLETE" | "NEED_MORE_INFO";
 }
 
-export class EvaluatorAgent extends BaseAgent<EvaluatorInput, EvaluatorOutput> {
-  constructor() {
+export class EnhancedEvaluatorAgent extends AIPoweredAgent<
+  EnhancedEvaluatorInput,
+  EnhancedEvaluatorOutput
+> {
+  constructor(config: AIPoweredAgentConfig) {
     super(
-      "Evaluator",
+      "EnhancedEvaluator",
       "evaluator" as AgentType,
-      `Ты — эксперт по оценке кандидатов на основе интервью.`,
+      "Ты — эксперт по оценке кандидатов на основе интервью.",
+      config,
     );
   }
 
-  protected validate(input: EvaluatorInput): boolean {
+  protected validate(input: EnhancedEvaluatorInput): boolean {
     return !!input.question && !!input.answer;
   }
 
   protected buildPrompt(
-    input: EvaluatorInput,
+    input: EnhancedEvaluatorInput,
     context: BaseAgentContext,
   ): string {
     const qaHistory = input.allQA
@@ -75,9 +80,9 @@ ${input.answer}
   }
 
   async execute(
-    input: EvaluatorInput,
+    input: EnhancedEvaluatorInput,
     context: BaseAgentContext,
-  ): Promise<AgentResult<EvaluatorOutput>> {
+  ): Promise<AgentResult<EnhancedEvaluatorOutput>> {
     if (!this.validate(input)) {
       return { success: false, error: "Invalid input" };
     }
@@ -85,21 +90,16 @@ ${input.answer}
     try {
       const prompt = this.buildPrompt(input, context);
 
-      // Базовая оценка без AI - средний балл
-      // Для детального AI-анализа используйте EnhancedEvaluatorAgent
-      return {
-        success: true,
-        data: {
-          score: 3,
-          detailedScore: 60,
-          analysis:
-            "<p>Базовая оценка. Для детального анализа используйте AI.</p>",
-          strengths: ["Ответ получен"],
-          weaknesses: ["Требуется детальный анализ"],
-          recommendation: "CONTINUE",
-        },
-        metadata: { prompt },
-      };
+      // Реальный AI-вызов
+      const aiResponse = await this.generateAIResponse(prompt);
+      const parsed =
+        this.parseJSONResponse<EnhancedEvaluatorOutput>(aiResponse);
+
+      if (!parsed) {
+        return { success: false, error: "Failed to parse AI response" };
+      }
+
+      return { success: true, data: parsed, metadata: { prompt } };
     } catch (error) {
       return {
         success: false,

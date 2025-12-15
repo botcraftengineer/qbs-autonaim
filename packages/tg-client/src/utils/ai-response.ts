@@ -4,7 +4,7 @@
  * Использует новую архитектуру с специализированными агентами
  */
 
-import { generateText } from "@qbs-autonaim/lib";
+import { generateText, getAIModel } from "@qbs-autonaim/lib";
 import {
   buildTelegramRecruiterPrompt,
   type ConversationStage,
@@ -68,7 +68,13 @@ export async function generateAIResponse(
 async function generateWithMultiAgent(
   params: GenerateResponseParams,
 ): Promise<AIResponseResult> {
-  const orchestrator = new InterviewOrchestrator();
+  // Получаем AI модель из конфигурации
+  const model = getAIModel();
+
+  const orchestrator = new InterviewOrchestrator({
+    model,
+    temperature: 0.7,
+  });
 
   const legacyContext: TelegramRecruiterContext = {
     messageText: params.messageText,

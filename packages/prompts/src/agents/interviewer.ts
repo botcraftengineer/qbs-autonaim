@@ -109,15 +109,22 @@ ${context.conversationHistory
     try {
       const prompt = this.buildPrompt(input, context);
 
-      // Здесь будет AI-вызов
-      const mockResult: InterviewerOutput = {
-        response: "Расскажите, пожалуйста, подробнее о вашем опыте",
-        shouldRequestVoice: input.voiceMessagesCount < input.maxVoiceMessages,
-        questionType: "PROFESSIONAL",
-        shouldContinue: true,
-      };
+      // Базовый ответ без AI
+      // Для AI-генерации используйте EnhancedInterviewerAgent
+      const needsVoice = input.voiceMessagesCount < input.maxVoiceMessages;
 
-      return { success: true, data: mockResult, metadata: { prompt } };
+      return {
+        success: true,
+        data: {
+          response: needsVoice
+            ? "Расскажите, пожалуйста, подробнее о вашем опыте голосовым сообщением"
+            : "Спасибо за информацию. Расскажите подробнее о ваших навыках",
+          shouldRequestVoice: needsVoice,
+          questionType: needsVoice ? "ORGANIZATIONAL" : "PROFESSIONAL",
+          shouldContinue: true,
+        },
+        metadata: { prompt },
+      };
     } catch (error) {
       return {
         success: false,

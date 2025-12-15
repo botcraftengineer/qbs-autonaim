@@ -1,41 +1,43 @@
 /**
- * Агент для определения необходимости эскалации к живому рекрутеру
+ * Улучшенный агент детектора эскалации с AI SDK
  */
 
-import { BaseAgent } from "./base-agent";
+import type { AIPoweredAgentConfig } from "./ai-powered-agent";
+import { AIPoweredAgent } from "./ai-powered-agent";
 import type { AgentResult, AgentType, BaseAgentContext } from "./types";
 
-export interface EscalationInput {
+export interface EnhancedEscalationInput {
   message: string;
   failedPinAttempts?: number;
   conversationLength: number;
 }
 
-export interface EscalationOutput {
+export interface EnhancedEscalationOutput {
   shouldEscalate: boolean;
   reason?: string;
   urgency: "LOW" | "MEDIUM" | "HIGH";
   suggestedAction?: string;
 }
 
-export class EscalationDetectorAgent extends BaseAgent<
-  EscalationInput,
-  EscalationOutput
+export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
+  EnhancedEscalationInput,
+  EnhancedEscalationOutput
 > {
-  constructor() {
+  constructor(config: AIPoweredAgentConfig) {
     super(
-      "EscalationDetector",
+      "EnhancedEscalationDetector",
       "escalation_detector" as AgentType,
-      `Ты — эксперт по определению ситуаций, требующих вмешательства человека.`,
+      "Ты — эксперт по определению ситуаций, требующих вмешательства человека.",
+      config,
     );
   }
 
-  protected validate(input: EscalationInput): boolean {
+  protected validate(input: EnhancedEscalationInput): boolean {
     return !!input.message;
   }
 
   protected buildPrompt(
-    input: EscalationInput,
+    input: EnhancedEscalationInput,
     _context: BaseAgentContext,
   ): string {
     return `${this.systemPrompt}
@@ -65,16 +67,14 @@ export class EscalationDetectorAgent extends BaseAgent<
   }
 
   async execute(
-    input: EscalationInput,
+    input: EnhancedEscalationInput,
     context: BaseAgentContext,
-  ): Promise<AgentResult<EscalationOutput>> {
+  ): Promise<AgentResult<EnhancedEscalationOutput>> {
     if (!this.validate(input)) {
       return { success: false, error: "Invalid input" };
     }
 
     try {
-      const prompt = this.buildPrompt(input, context);
-
       // Синхронная проверка критических условий
       if (input.failedPinAttempts && input.failedPinAttempts >= 3) {
         return {
@@ -88,15 +88,18 @@ export class EscalationDetectorAgent extends BaseAgent<
         };
       }
 
-      // Для сложных случаев без явных критериев - не эскалируем по умолчанию
-      // Для AI-анализа используйте EnhancedEscalationDetectorAgent
-      return {
-        success: true,
-        data: {
-          shouldEscalate: false,
-          urgency: "LOW",
-        },
-      };
+      const prompt = this.buildPrompt(input, context);
+
+      // Реальный AI-вызов для более сложных случаев
+      const aiResponse = await this.generateAIResponse(prompt);
+      const parsed =
+        this.parseJSONResponse<EnhancedEscalationOutput>(aiResponse);
+
+      if (!parsed) {
+        return { success: false, error: "Failed to parse AI response" };
+      }
+
+      return { success: true, data: parsed, metadata: { prompt } };
     } catch (error) {
       return {
         success: false,

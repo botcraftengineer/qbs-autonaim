@@ -1,17 +1,17 @@
 /**
- * Агент для анализа контекста сообщения
- * Определяет намерения кандидата, тип сообщения, необходимость ответа
+ * Улучшенный агент анализа контекста с AI SDK
  */
 
-import { BaseAgent } from "./base-agent";
+import type { AIPoweredAgentConfig } from "./ai-powered-agent";
+import { AIPoweredAgent } from "./ai-powered-agent";
 import type { AgentResult, AgentType, BaseAgentContext } from "./types";
 
-export interface ContextAnalysisInput {
+export interface EnhancedContextAnalysisInput {
   message: string;
   previousMessages?: Array<{ sender: string; content: string }>;
 }
 
-export interface ContextAnalysisOutput {
+export interface EnhancedContextAnalysisOutput {
   messageType:
     | "QUESTION"
     | "ANSWER"
@@ -26,24 +26,25 @@ export interface ContextAnalysisOutput {
   confidence: number;
 }
 
-export class ContextAnalyzerAgent extends BaseAgent<
-  ContextAnalysisInput,
-  ContextAnalysisOutput
+export class EnhancedContextAnalyzerAgent extends AIPoweredAgent<
+  EnhancedContextAnalysisInput,
+  EnhancedContextAnalysisOutput
 > {
-  constructor() {
+  constructor(config: AIPoweredAgentConfig) {
     super(
-      "ContextAnalyzer",
+      "EnhancedContextAnalyzer",
       "context_analyzer" as AgentType,
-      `Ты — эксперт по анализу коммуникаций. Твоя задача — понять намерения собеседника и определить тип сообщения.`,
+      "Ты — эксперт по анализу коммуникаций. Твоя задача — понять намерения собеседника и определить тип сообщения.",
+      config,
     );
   }
 
-  protected validate(input: ContextAnalysisInput): boolean {
+  protected validate(input: EnhancedContextAnalysisInput): boolean {
     return !!input.message && input.message.trim().length > 0;
   }
 
   protected buildPrompt(
-    input: ContextAnalysisInput,
+    input: EnhancedContextAnalysisInput,
     _context: BaseAgentContext,
   ): string {
     const historyText = input.previousMessages
@@ -78,9 +79,9 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
   }
 
   async execute(
-    input: ContextAnalysisInput,
+    input: EnhancedContextAnalysisInput,
     context: BaseAgentContext,
-  ): Promise<AgentResult<ContextAnalysisOutput>> {
+  ): Promise<AgentResult<EnhancedContextAnalysisOutput>> {
     if (!this.validate(input)) {
       return {
         success: false,
@@ -91,18 +92,18 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
     try {
       const prompt = this.buildPrompt(input, context);
 
-      // Базовый анализ без AI - считаем что требуется ответ
-      // Для детального AI-анализа используйте EnhancedContextAnalyzerAgent
+      // Реальный AI-вызов
+      const aiResponse = await this.generateAIResponse(prompt);
+      const parsed =
+        this.parseJSONResponse<EnhancedContextAnalysisOutput>(aiResponse);
+
+      if (!parsed) {
+        return { success: false, error: "Failed to parse AI response" };
+      }
+
       return {
         success: true,
-        data: {
-          messageType: "QUESTION",
-          intent: "Сообщение от кандидата",
-          requiresResponse: true,
-          sentiment: "NEUTRAL",
-          topics: [],
-          confidence: 0.5,
-        },
+        data: parsed,
         metadata: {
           prompt,
           agentName: this.name,

@@ -19,7 +19,9 @@ export class InterviewWorkflow {
   private config: InterviewWorkflowConfig;
 
   constructor(config: InterviewWorkflowConfig) {
-    this.orchestrator = new InterviewOrchestrator();
+    this.orchestrator = new InterviewOrchestrator({
+      model: config.model,
+    });
     this.config = {
       maxSteps: 20,
       maxVoiceMessages: 2,

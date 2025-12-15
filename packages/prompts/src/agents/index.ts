@@ -10,12 +10,29 @@ export { AIPoweredAgent } from "./ai-powered-agent";
 export { BaseAgent } from "./base-agent";
 // Конфигурация
 export { AGENT_CONFIG, getAgentConfig } from "./config";
+
+// Базовые агенты (требуют AI модель для работы)
 export type {
   ContextAnalysisInput,
   ContextAnalysisOutput,
 } from "./context-analyzer";
-// Агенты
 export { ContextAnalyzerAgent } from "./context-analyzer";
+// Улучшенные агенты с AI SDK (рекомендуется использовать)
+export type {
+  EnhancedContextAnalysisInput,
+  EnhancedContextAnalysisOutput,
+} from "./enhanced-context-analyzer";
+export { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
+export type {
+  EnhancedEscalationInput,
+  EnhancedEscalationOutput,
+} from "./enhanced-escalation-detector";
+export { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
+export type {
+  EnhancedEvaluatorInput,
+  EnhancedEvaluatorOutput,
+} from "./enhanced-evaluator";
+export { EnhancedEvaluatorAgent } from "./enhanced-evaluator";
 export type {
   EnhancedInterviewerInput,
   EnhancedInterviewerOutput,
@@ -27,8 +44,13 @@ export type { EvaluatorInput, EvaluatorOutput } from "./evaluator";
 export { EvaluatorAgent } from "./evaluator";
 export type { InterviewerInput, InterviewerOutput } from "./interviewer";
 export { InterviewerAgent } from "./interviewer";
-export type { OrchestratorInput, OrchestratorOutput } from "./orchestrator";
+
 // Оркестратор
+export type {
+  OrchestratorConfig,
+  OrchestratorInput,
+  OrchestratorOutput,
+} from "./orchestrator";
 export { InterviewOrchestrator } from "./orchestrator";
 // Инструменты
 export {
@@ -43,6 +65,15 @@ export type {
   BaseAgentContext,
   WorkflowState,
 } from "./types";
+// Примеры использования (для разработки)
+export {
+  basicWorkflowExample,
+  escalationExample,
+  evaluationExample,
+  fullInterviewExample,
+  individualAgentsExample,
+  orchestratorExample,
+} from "./usage-example";
 // Утилиты
 export { convertLegacyContext } from "./utils/legacy-converter";
 export type { InterviewWorkflowConfig } from "./workflows/interview-workflow";

@@ -3,10 +3,11 @@
  * Координирует работу всех агентов
  */
 
-import { ContextAnalyzerAgent } from "./context-analyzer";
-import { EscalationDetectorAgent } from "./escalation-detector";
-import { EvaluatorAgent } from "./evaluator";
-import { InterviewerAgent } from "./interviewer";
+import type { LanguageModel } from "ai";
+import { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
+import { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
+import { EnhancedEvaluatorAgent } from "./enhanced-evaluator";
+import { EnhancedInterviewerAgent } from "./enhanced-interviewer";
 import type { AgentDecision, BaseAgentContext, WorkflowState } from "./types";
 
 export interface OrchestratorInput {
@@ -28,17 +29,29 @@ export interface OrchestratorOutput {
   }>;
 }
 
-export class InterviewOrchestrator {
-  private contextAnalyzer: ContextAnalyzerAgent;
-  private escalationDetector: EscalationDetectorAgent;
-  private interviewer: InterviewerAgent;
-  private evaluator: EvaluatorAgent;
+export interface OrchestratorConfig {
+  model: LanguageModel;
+  maxTokens?: number;
+  temperature?: number;
+}
 
-  constructor() {
-    this.contextAnalyzer = new ContextAnalyzerAgent();
-    this.escalationDetector = new EscalationDetectorAgent();
-    this.interviewer = new InterviewerAgent();
-    this.evaluator = new EvaluatorAgent();
+export class InterviewOrchestrator {
+  private contextAnalyzer: EnhancedContextAnalyzerAgent;
+  private escalationDetector: EnhancedEscalationDetectorAgent;
+  private interviewer: EnhancedInterviewerAgent;
+  private evaluator: EnhancedEvaluatorAgent;
+
+  constructor(config: OrchestratorConfig) {
+    const agentConfig = {
+      model: config.model,
+      maxTokens: config.maxTokens,
+      temperature: config.temperature,
+    };
+
+    this.contextAnalyzer = new EnhancedContextAnalyzerAgent(agentConfig);
+    this.escalationDetector = new EnhancedEscalationDetectorAgent(agentConfig);
+    this.interviewer = new EnhancedInterviewerAgent(agentConfig);
+    this.evaluator = new EnhancedEvaluatorAgent(agentConfig);
   }
 
   /**
