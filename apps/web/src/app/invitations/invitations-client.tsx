@@ -57,7 +57,7 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
     setProcessingTokens((prev) => new Set(prev).add(token));
     try {
       await acceptMutation.mutateAsync({ token });
-    } catch (error) {
+    } catch (_error) {
       setProcessingTokens((prev) => {
         const next = new Set(prev);
         next.delete(token);

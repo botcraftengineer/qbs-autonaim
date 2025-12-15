@@ -44,9 +44,13 @@ export const accept = protectedProcedure
       }
 
       if (sessionEmail !== invitedEmail) {
+        // Логируем для отладки на сервере, но не раскрываем email пользователю
+        console.warn(
+          `Invite email mismatch: session=${sessionEmail}, invited=${invitedEmail}`,
+        );
         throw new TRPCError({
           code: "FORBIDDEN",
-          message: `Это приглашение предназначено для ${invite.invitedEmail}`,
+          message: "Это приглашение не предназначено для вашей учётной записи",
         });
       }
     }

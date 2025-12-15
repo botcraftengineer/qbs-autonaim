@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export async function generateMetadata({
-  params,
+  params: _params,
 }: {
   params: Promise<{ token: string }>;
 }): Promise<Metadata> {
