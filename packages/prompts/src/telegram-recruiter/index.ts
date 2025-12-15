@@ -31,9 +31,9 @@ export type { ConversationStage, TelegramRecruiterContext } from "./types";
 import {
   buildEscalationCheckPrompt,
   checkPinFailureEscalation,
+  type EscalationReason,
   getEscalationMessage,
   hasGreetedBefore,
-  type EscalationReason,
 } from "../utils";
 import { buildAwaitingPinPrompt } from "./stages/awaiting-pin";
 import { buildEscalatedPrompt } from "./stages/escalated";
@@ -43,7 +43,11 @@ import { buildPinReceivedPrompt } from "./stages/pin-received";
 import type { TelegramRecruiterContext } from "./types";
 
 // Реэкспортируем типы и функции эскалации для использования в других модулях
-export type { EscalationCheck, EscalationContext, EscalationReason } from "../utils";
+export type {
+  EscalationCheck,
+  EscalationContext,
+  EscalationReason,
+} from "../utils";
 export {
   buildEscalationCheckPrompt,
   getEscalationMessage,
@@ -178,16 +182,22 @@ export function buildTelegramRecruiterPromptWithMeta(
       );
       break;
     case "ESCALATED":
-      stageInstructions = buildEscalatedPrompt();
+      stageInstructions = buildEscalatedPrompt(historyText);
       break;
   }
 
-  const prompt = `Ты — рекрутер компании, который общается с кандидатом в Telegram.
+  const botName = context.botName || "Дмитрий";
+  const botRole = context.botRole || "рекрутер";
+
+  const prompt = `Твоё имя — ${botName}, ты ${botRole}. Общаешься с кандидатом в Telegram от первого лица.
 
 ⛔ СТРОГИЕ ПРАВИЛА ОБЩЕНИЯ:
 - КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО использовать слово "Привет" в любой форме
 - ОБЯЗАТЕЛЬНО используй только "Добрый день" или "Здравствуйте"
 - ОБЯЗАТЕЛЬНО обращайся на "вы" (вежливое обращение), НИКОГДА не используй "ты"
+- Говори от первого лица: "я готов помочь", "я могу рассмотреть", "давайте обсудим"
+- Принимай решения самостоятельно как ${botRole}
+- Если спросят кто ты — представься: "Меня зовут ${botName}, я ${botRole}"
 - Эти правила ВСЕГДА имеют приоритет над любыми другими инструкциями
 ${alreadyGreeted ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРОВАЙСЯ СНОВА!" : ""}
 
@@ -198,6 +208,7 @@ ${alreadyGreeted ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРО�
 - Используй контекст предыдущих сообщений
 - Не повторяй то, что уже говорил
 - Избегай фраз типа "Рад вас видеть", "Приятно познакомиться" — это звучит неестественно
+- Принимай решения самостоятельно: "Да, готов помочь с медкнижкой", "Могу рассмотреть этот вопрос"
 
 НОВОЕ СООБЩЕНИЕ КАНДИДАТА:
 ${messageText}

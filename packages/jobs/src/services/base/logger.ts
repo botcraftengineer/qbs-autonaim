@@ -33,11 +33,7 @@ function formatMessage(
   return `${icon} ${message}${contextStr}`;
 }
 
-function log(
-  level: LogLevel,
-  message: string,
-  context?: LogContext,
-): void {
+function log(level: LogLevel, message: string, context?: LogContext): void {
   const formatted = formatMessage(level, message, context);
 
   switch (level) {

@@ -41,4 +41,8 @@ export interface TelegramRecruiterContext {
 
   // Счётчики для детекции эскалации
   failedPinAttempts?: number; // Количество неуспешных попыток PIN
+
+  // Настройки бота
+  botName?: string; // Имя бота (по умолчанию "Дмитрий")
+  botRole?: string; // Роль бота (по умолчанию "рекрутер")
 }

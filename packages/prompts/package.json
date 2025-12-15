@@ -17,11 +17,11 @@
   },
   "dependencies": {
     "string-strip-html": "^13.5.0",
-    "zod": "4.1.13"
+    "zod": "4.2.0"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
-    "@types/node": "25.0.1",
+    "@types/node": "25.0.2",
     "tsup": "8.5.1",
     "typescript": "5.9.3"
   }

@@ -49,14 +49,21 @@ export interface EscalationContext {
  * @returns Промпт для AI
  */
 export function buildEscalationCheckPrompt(context: EscalationContext): string {
-  const { currentMessage, conversationHistory = [], failedPinAttempts = 0 } = context;
+  const {
+    currentMessage,
+    conversationHistory = [],
+    failedPinAttempts = 0,
+  } = context;
 
   // Формируем историю диалога для контекста
   const historyText =
     conversationHistory.length > 0
       ? conversationHistory
           .slice(-5) // Берём последние 5 сообщений
-          .map((msg) => `${msg.sender === "CANDIDATE" ? "Кандидат" : "Бот"}: ${msg.content}`)
+          .map(
+            (msg) =>
+              `${msg.sender === "CANDIDATE" ? "Кандидат" : "Бот"}: ${msg.content}`,
+          )
           .join("\n")
       : "";
 

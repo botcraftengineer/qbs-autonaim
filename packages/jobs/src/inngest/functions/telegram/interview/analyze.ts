@@ -107,8 +107,20 @@ export const analyzeInterviewFunction = inngest.createFunction(
           questionNumber: context.questionNumber,
         },
       });
+    } else if (result.nextQuestion) {
+      // Если есть nextQuestion, но shouldContinue = false
+      // (например, кандидат задал вопрос), отправляем ответ без завершения интервью
+      await step.sendEvent("send-next-question-event", {
+        name: "telegram/interview.send-question",
+        data: {
+          conversationId: context.conversationId,
+          question: result.nextQuestion,
+          transcription,
+          questionNumber: context.questionNumber,
+        },
+      });
     } else {
-      // Отправляем событие для завершения интервью
+      // Отправляем событие для завершения интервью только если нет nextQuestion
       await step.sendEvent("complete-interview-event", {
         name: "telegram/interview.complete",
         data: {
@@ -421,20 +433,23 @@ export const completeInterviewFunction = inngest.createFunction(
 
     await step.run("send-final-message", async () => {
       // Получаем данные для персонализации финального сообщения
-      const [conv] = await db
-        .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.id, conversationId))
-        .limit(1);
+      const conversation = await db.query.telegramConversation.findFirst({
+        where: eq(telegramConversation.id, conversationId),
+        with: {
+          messages: {
+            orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+          },
+        },
+      });
 
       let candidateName: string | undefined;
       let vacancyTitle: string | undefined;
       let score: number | undefined;
       let detailedScore: number | undefined;
 
-      if (conv?.responseId) {
+      if (conversation?.responseId) {
         const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, conv.responseId),
+          where: eq(vacancyResponse.id, conversation.responseId),
           with: { vacancy: true },
         });
         candidateName = response?.candidateName ?? undefined;
@@ -448,6 +463,14 @@ export const completeInterviewFunction = inngest.createFunction(
         detailedScore = scoring?.detailedScore ?? undefined;
       }
 
+      // Формируем историю диалога
+      const conversationHistory =
+        conversation?.messages.map((msg) => ({
+          sender: msg.sender,
+          content: msg.content,
+          contentType: msg.contentType,
+        })) ?? [];
+
       // Генерируем финальное сообщение через AI
       const prompt = buildInterviewCompletionPrompt({
         candidateName,
@@ -455,6 +478,7 @@ export const completeInterviewFunction = inngest.createFunction(
         questionCount: questionNumber,
         score,
         detailedScore,
+        conversationHistory,
       });
 
       const { text: finalMessage } = await generateText({

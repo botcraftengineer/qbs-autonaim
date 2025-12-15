@@ -70,7 +70,9 @@ interface GenerateTextOptions {
   metadata?: Record<string, unknown>;
 }
 
-export async function generateText(options: GenerateTextOptions) {
+export async function generateText(
+  options: GenerateTextOptions,
+): Promise<Awaited<ReturnType<typeof aiGenerateText>>> {
   const {
     model = getAIModel(),
     prompt,

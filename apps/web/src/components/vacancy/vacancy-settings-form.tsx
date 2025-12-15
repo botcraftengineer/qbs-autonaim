@@ -179,7 +179,7 @@ export function VacancySettingsForm({
                     <Textarea
                       {...field}
                       value={field.value ?? ""}
-                      placeholder="Например: Обращай внимание на опыт работы с React и TypeScript. Важно уточнить готовность к релокации…"
+                      placeholder="Например: Обращай внимание на релевантный опыт работы и ключевые навыки. Важно уточнить мотивацию кандидата и готовность к условиям работы…"
                       className="min-h-[120px] resize-y font-mono text-sm"
                       maxLength={5000}
                     />
@@ -238,7 +238,7 @@ export function VacancySettingsForm({
                     <Textarea
                       {...field}
                       value={field.value ?? ""}
-                      placeholder="Например:&#10;1. Расскажите о вашем опыте с микросервисной архитектурой&#10;2. Какие проекты вы считаете наиболее успешными?&#10;3. Почему вас интересует эта позиция?…"
+                      placeholder="Например:&#10;1. Расскажите о вашем профессиональном опыте и ключевых достижениях&#10;2. Какие проекты или задачи вы считаете наиболее успешными?&#10;3. Почему вас интересует эта позиция?…"
                       className="min-h-[160px] resize-y font-mono text-sm"
                       maxLength={5000}
                     />
@@ -356,7 +356,7 @@ export function VacancySettingsForm({
                     <Textarea
                       {...field}
                       value={field.value ?? ""}
-                      placeholder="Например: При оценке резюме обрати особое внимание на коммерческий опыт с GraphQL и опыт работы в продуктовых компаниях…"
+                      placeholder="Например: При оценке резюме обрати особое внимание на релевантный коммерческий опыт, наличие ключевых навыков и достижения в профильной области…"
                       className="min-h-[120px] resize-y font-mono text-sm"
                       maxLength={5000}
                     />

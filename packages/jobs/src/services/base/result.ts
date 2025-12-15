@@ -33,8 +33,7 @@ export async function tryCatch<T>(
     const data = await fn();
     return ok(data);
   } catch (error) {
-    const message =
-      error instanceof Error ? error.message : String(error);
+    const message = error instanceof Error ? error.message : String(error);
     return err(errorMessage ? `${errorMessage}: ${message}` : message);
   }
 }
@@ -63,10 +62,7 @@ export function unwrapOr<T>(result: Result<T>, defaultValue: T): T {
 /**
  * Maps a successful Result to a new value
  */
-export function map<T, U>(
-  result: Result<T>,
-  fn: (data: T) => U,
-): Result<U> {
+export function map<T, U>(result: Result<T>, fn: (data: T) => U): Result<U> {
   if (result.success) {
     return ok(fn(result.data));
   }

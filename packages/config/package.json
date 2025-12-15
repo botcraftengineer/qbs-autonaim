@@ -23,8 +23,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@t3-oss/env-core": "0.13.8",
-    "zod": "4.1.13"
+    "@t3-oss/env-core": "0.13.10",
+    "zod": "4.2.0"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",

@@ -54,6 +54,7 @@ interface WorkspaceInvite {
   invitedEmail: string | null;
   invitedUserId: string | null;
   role: MemberRole;
+  token: string;
   expiresAt: Date;
   createdAt: Date;
 }
@@ -358,6 +359,7 @@ function InviteRow({
       email: invite.invitedEmail ?? "",
       role: invite.role,
       status: "invited",
+      inviteToken: invite.token,
     },
     workspaceId,
     canManage: canManageMembers,

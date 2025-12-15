@@ -8,6 +8,11 @@ export interface InterviewCompletionContext {
   questionCount: number;
   score?: number;
   detailedScore?: number;
+  conversationHistory?: Array<{
+    sender: string;
+    content: string;
+    contentType?: string;
+  }>;
 }
 
 /**
@@ -16,8 +21,14 @@ export interface InterviewCompletionContext {
 export function buildInterviewCompletionPrompt(
   context: InterviewCompletionContext,
 ): string {
-  const { candidateName, vacancyTitle, questionCount, score, detailedScore } =
-    context;
+  const {
+    candidateName,
+    vacancyTitle,
+    questionCount,
+    score,
+    detailedScore,
+    conversationHistory = [],
+  } = context;
 
   const candidateNameText = candidateName
     ? `Имя кандидата: ${candidateName}`
@@ -32,7 +43,21 @@ export function buildInterviewCompletionPrompt(
       ? `\nОценка интервью: ${score}/5${detailedScore !== undefined ? ` (${detailedScore}/100)` : ""}`
       : "";
 
+  // Формируем историю диалога для контекста
+  const historyText =
+    conversationHistory.length > 0
+      ? conversationHistory
+          .slice(-10) // Берем последние 10 сообщений
+          .map((msg) => {
+            const sender = msg.sender === "CANDIDATE" ? "Кандидат" : "Бот";
+            return `${sender}: ${msg.content}`;
+          })
+          .join("\n")
+      : "";
+
   return `Ты — рекрутер, который только что закончил предварительное интервью с кандидатом в Telegram.
+
+${historyText ? `ИСТОРИЯ ДИАЛОГА (последние сообщения для контекста):\n${historyText}\n` : ""}
 
 КОНТЕКСТ:
 ${candidateNameText}

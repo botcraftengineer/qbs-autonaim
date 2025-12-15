@@ -15,7 +15,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@qbs-autonaim/ui";
-import { IconMail, IconTrash, IconUserMinus, IconX } from "@tabler/icons-react";
+import {
+  IconCopy,
+  IconMail,
+  IconTrash,
+  IconUserMinus,
+  IconX,
+} from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
@@ -27,6 +33,7 @@ interface Member {
   email: string;
   role: "owner" | "admin" | "member";
   status: "active" | "invited";
+  inviteToken?: string;
 }
 
 type DialogType = "remove" | "leave" | "cancel-invite" | null;
@@ -117,6 +124,27 @@ function MemberActionsDropdown({
     });
   };
 
+  const handleCopyInviteLink = async () => {
+    try {
+      if (!member.inviteToken) {
+        toast.error("Токен приглашения не найден");
+        return;
+      }
+      const inviteUrl = `${window.location.origin}/invite/${member.inviteToken}`;
+      await navigator.clipboard.writeText(inviteUrl);
+      toast.success("Ссылка скопирована в буфер обмена");
+      setOpen(false);
+    } catch (err) {
+      console.error(
+        `Failed to copy invite link for memberId=${member.id}:`,
+        err,
+      );
+      const errorMessage =
+        err instanceof Error ? err.message : "Неизвестная ошибка";
+      toast.error(`Не удалось скопировать ссылку: ${errorMessage}`);
+    }
+  };
+
   const handleRemove = () => {
     setOpen(false);
     onAction("remove");
@@ -146,6 +174,10 @@ function MemberActionsDropdown({
             >
               <IconMail className="mr-2 h-4 w-4" />
               Отправить повторно
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleCopyInviteLink}>
+              <IconCopy className="mr-2 h-4 w-4" />
+              Скопировать ссылку
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleCancelInvite}>
               <IconX className="mr-2 h-4 w-4" />

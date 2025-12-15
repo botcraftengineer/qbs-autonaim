@@ -1,10 +1,12 @@
 /**
  * Промпт для этапа эскалации к другому сотруднику
  */
-export function buildEscalatedPrompt(): string {
+export function buildEscalatedPrompt(historyText = ""): string {
   return `
 ⚠️ ЭТАП: ПЕРЕДАЧА КОЛЛЕГЕ
 Этот диалог нужно передать другому специалисту.
+
+${historyText ? `ИСТОРИЯ ДИАЛОГА (для контекста):\n${historyText}\n` : ""}
 
 ТВОЯ ЗАДАЧА:
 - Сообщи кандидату, что передашь его вопрос/заявку коллеге
@@ -18,4 +20,3 @@ export function buildEscalatedPrompt(): string {
 - "Хорошо, мой коллега свяжется с вами и всё обсудит"
 - "Окей, передам информацию. С вами свяжутся в ближайшее время"`;
 }
-

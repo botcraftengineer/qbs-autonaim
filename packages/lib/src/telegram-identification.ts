@@ -277,7 +277,15 @@ export async function getInterviewStartData(responseId: string) {
     const response = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
       with: {
-        vacancy: true,
+        vacancy: {
+          with: {
+            workspace: {
+              with: {
+                companySettings: true,
+              },
+            },
+          },
+        },
         screening: true,
       },
     });
@@ -300,6 +308,8 @@ export async function getInterviewStartData(responseId: string) {
       }
     }
 
+    const companySettings = response.vacancy?.workspace?.companySettings;
+
     return {
       candidateName: response.candidateName,
       vacancyTitle: response.vacancy?.title,
@@ -315,6 +325,8 @@ export async function getInterviewStartData(responseId: string) {
       customInterviewQuestions: response.vacancy?.customInterviewQuestions,
       customOrganizationalQuestions:
         response.vacancy?.customOrganizationalQuestions,
+      botName: companySettings?.botName ?? "Дмитрий",
+      botRole: companySettings?.botRole ?? "рекрутер",
     };
   } catch (error) {
     console.error("Error getting interview start data:", error);

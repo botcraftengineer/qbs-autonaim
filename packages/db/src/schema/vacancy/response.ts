@@ -53,7 +53,10 @@ export const vacancyResponse = pgTable(
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
-    respondedAt: timestamp("responded_at", { withTimezone: true, mode: "date" }),
+    respondedAt: timestamp("responded_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     welcomeSentAt: timestamp("welcome_sent_at", {
       withTimezone: true,
       mode: "date",

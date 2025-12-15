@@ -1,6 +1,10 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { telegramConversation, telegramMessage } from "@qbs-autonaim/db/schema";
+import {
+  companySettings,
+  telegramConversation,
+  telegramMessage,
+} from "@qbs-autonaim/db/schema";
 import {
   generateText,
   getInterviewStartData,
@@ -54,6 +58,30 @@ async function findDuplicateMessage(
   return !!existingMessage;
 }
 
+async function getCompanyBotSettings(workspaceId: string) {
+  try {
+    const company = await db.query.companySettings.findFirst({
+      where: eq(companySettings.workspaceId, workspaceId),
+    });
+    return {
+      botName: company?.botName ?? "Дмитрий",
+      botRole: company?.botRole ?? "рекрутер",
+    };
+  } catch (error) {
+    console.error(
+      "❌ Ошибка загрузки настроек бота, используем значения по умолчанию",
+      {
+        workspaceId,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    );
+    return {
+      botName: "Дмитрий",
+      botRole: "рекрутер",
+    };
+  }
+}
+
 export const processIncomingMessageFunction = inngest.createFunction(
   {
     id: "telegram-process-incoming-message",
@@ -71,6 +99,11 @@ export const processIncomingMessageFunction = inngest.createFunction(
     const chatId = messageData.chatId;
     const username = messageData.sender?.username;
     const firstName = messageData.sender?.firstName;
+
+    // Загружаем настройки бота
+    const botSettings = await step.run("load-bot-settings", async () => {
+      return await getCompanyBotSettings(workspaceId);
+    });
 
     // Проверяем идентификацию
     const conversation = await step.run("check-conversation", async () => {
@@ -180,6 +213,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   interviewData?.customInterviewQuestions ?? undefined,
                 customOrganizationalQuestions:
                   interviewData?.customOrganizationalQuestions ?? undefined,
+                botName: botSettings.botName,
+                botRole: botSettings.botRole,
               });
 
               const { text: aiResponse } = await generateText({
@@ -210,6 +245,15 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   },
                 });
               }
+
+              // Запускаем анализ интервью для первого сообщения после идентификации
+              await inngest.send({
+                name: "telegram/interview.analyze",
+                data: {
+                  conversationId: identification.conversationId,
+                  transcription: text,
+                },
+              });
 
               return { identified: true };
             }
@@ -252,6 +296,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   content: msg.content,
                   contentType: msg.contentType,
                 })),
+                botName: botSettings.botName,
+                botRole: botSettings.botRole,
               });
 
               const { text: errorResponse } = await generateText({
@@ -328,6 +374,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 content: msg.content,
                 contentType: msg.contentType,
               })),
+              botName: botSettings.botName,
+              botRole: botSettings.botRole,
             });
 
             const { text: awaitingResponse } = await generateText({
@@ -412,6 +460,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 content: msg.content,
                 contentType: msg.contentType,
               })),
+              botName: botSettings.botName,
+              botRole: botSettings.botRole,
             });
 
             const { text: errorMessage } = await generateText({

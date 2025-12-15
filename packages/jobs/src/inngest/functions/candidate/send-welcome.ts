@@ -261,6 +261,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               vacancyId: response.vacancyId,
               username,
               senderId: "senderId" in result ? result.senderId : result.chatId,
+              interviewStarted: true,
+              questionAnswers: [],
             }),
           })
           .onConflictDoUpdate({
@@ -276,6 +278,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 username,
                 senderId:
                   "senderId" in result ? result.senderId : result.chatId,
+                interviewStarted: true,
+                questionAnswers: [],
               }),
             },
           })

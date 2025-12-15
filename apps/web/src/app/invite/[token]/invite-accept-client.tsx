@@ -30,18 +30,32 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
     trpc.workspace.invites.accept.mutationOptions({
       onSuccess: () => {
         toast.success(`Вы присоединились к ${invite.workspace.name}`);
-        // Редиректим в рабочее пространство и обновляем страницу для загрузки новых данных
         router.push(`/${invite.workspace.slug}`);
         router.refresh();
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось принять приглашение");
+        const errorMessage = err.message || "Не удалось принять приглашение";
+        toast.error(errorMessage);
+
+        // Если ошибка связана с доступом, перезагружаем страницу
+        if (
+          err.message?.includes("другого пользователя") ||
+          err.message?.includes("участником")
+        ) {
+          setTimeout(() => {
+            router.refresh();
+          }, 2000);
+        }
       },
     }),
   );
 
   const handleAccept = () => {
     acceptInvite.mutate({ token });
+  };
+
+  const handleDecline = () => {
+    router.push("/");
   };
 
   const getRoleLabel = (role: string) => {
@@ -88,7 +102,11 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Действительно до:</span>
             <span className="font-medium">
-              {new Date(invite.expiresAt).toLocaleDateString("ru-RU")}
+              {new Date(invite.expiresAt).toLocaleDateString("ru-RU", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
             </span>
           </div>
         </div>
@@ -99,13 +117,11 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
             disabled={acceptInvite.isPending}
             className="w-full"
           >
-            {acceptInvite.isPending
-              ? "Присоединение..."
-              : "Принять приглашение"}
+            {acceptInvite.isPending ? "Присоединение…" : "Принять приглашение"}
           </Button>
           <Button
             variant="outline"
-            onClick={() => router.push("/")}
+            onClick={handleDecline}
             className="w-full"
             disabled={acceptInvite.isPending}
           >

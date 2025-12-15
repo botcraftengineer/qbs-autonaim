@@ -16,26 +16,29 @@ import { vacancyResponse } from "./response";
 /**
  * Таблица для результатов скрининга откликов
  */
-export const responseScreening = pgTable("response_screenings", {
-  id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  responseId: uuid("response_id")
-    .notNull()
-    .references(() => vacancyResponse.id, { onDelete: "cascade" }),
-  score: integer("score").notNull(), // Оценка от 0 до 5
-  detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
-  analysis: text("analysis"), // Анализ соответствия резюме вакансии
-  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-    .defaultNow()
-    .notNull(),
-},
-(table) => ({
-  responseIdx: index("screening_response_idx").on(table.responseId),
-  scoreCheck: check("score_check", sql`${table.score} BETWEEN 0 AND 5`),
-  detailedScoreCheck: check(
-    "detailed_score_check",
-    sql`${table.detailedScore} BETWEEN 0 AND 100`,
-  ),
-}));
+export const responseScreening = pgTable(
+  "response_screenings",
+  {
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+    responseId: uuid("response_id")
+      .notNull()
+      .references(() => vacancyResponse.id, { onDelete: "cascade" }),
+    score: integer("score").notNull(), // Оценка от 0 до 5
+    detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
+    analysis: text("analysis"), // Анализ соответствия резюме вакансии
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    responseIdx: index("screening_response_idx").on(table.responseId),
+    scoreCheck: check("score_check", sql`${table.score} BETWEEN 0 AND 5`),
+    detailedScoreCheck: check(
+      "detailed_score_check",
+      sql`${table.detailedScore} BETWEEN 0 AND 100`,
+    ),
+  }),
+);
 
 export const CreateResponseScreeningSchema = createInsertSchema(
   responseScreening,
