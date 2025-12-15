@@ -38,6 +38,8 @@ export const update = protectedProcedure
           name: input.data.name,
           website: input.data.website || null,
           description: input.data.description || null,
+          botName: input.data.botName,
+          botRole: input.data.botRole,
           updatedAt: new Date(),
         })
         .where(eq(companySettings.id, existing.id))
@@ -54,6 +56,8 @@ export const update = protectedProcedure
         name: input.data.name,
         website: input.data.website || null,
         description: input.data.description || null,
+        botName: input.data.botName,
+        botRole: input.data.botRole,
       })
       .returning();
 

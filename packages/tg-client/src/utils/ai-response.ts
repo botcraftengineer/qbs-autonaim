@@ -37,6 +37,8 @@ interface GenerateResponseParams {
   failedPinAttempts?: number;
   screeningScore?: number;
   screeningAnalysis?: string;
+  botName?: string;
+  botRole?: string;
 }
 
 interface AIResponseResult {
@@ -99,6 +101,8 @@ async function generateWithMultiAgent(
     failedPinAttempts: params.failedPinAttempts,
     screeningScore: params.screeningScore,
     screeningAnalysis: params.screeningAnalysis,
+    botName: params.botName,
+    botRole: params.botRole,
   };
 
   const { context, state } = convertLegacyContext(legacyContext);
@@ -153,6 +157,8 @@ async function generateWithLegacySystem(
     errorMessage: params.errorMessage,
     customBotInstructions: params.customBotInstructions,
     customInterviewQuestions: params.customInterviewQuestions,
+    botName: params.botName,
+    botRole: params.botRole,
   };
 
   const prompt = buildTelegramRecruiterPrompt(context);

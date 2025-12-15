@@ -14,6 +14,11 @@ export const companySettings = pgTable("company_settings", {
   name: text("name").notNull(),
   website: text("website"),
   description: text("description"),
+
+  // Настройки бота
+  botName: text("bot_name").default("Дмитрий"),
+  botRole: text("bot_role").default("рекрутер"),
+
   createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
