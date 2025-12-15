@@ -25,7 +25,7 @@ export class EscalationDetectorAgent extends BaseAgent<
   constructor() {
     super(
       "EscalationDetector",
-      "escalation_detector" as AgentType,
+      AgentType.ESCALATION_DETECTOR,
       `Ты — эксперт по определению ситуаций, требующих вмешательства человека.`,
     );
   }

@@ -24,7 +24,7 @@ export class EvaluatorAgent extends BaseAgent<EvaluatorInput, EvaluatorOutput> {
   constructor() {
     super(
       "Evaluator",
-      "evaluator" as AgentType,
+      AgentType.EVALUATOR,
       `Ты — эксперт по оценке кандидатов на основе интервью.`,
     );
   }

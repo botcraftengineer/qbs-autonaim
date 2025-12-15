@@ -32,7 +32,7 @@ export class EnhancedInterviewerAgent extends AIPoweredAgent<
   constructor(config: AIPoweredAgentConfig) {
     super(
       "EnhancedInterviewer",
-      "interviewer" as AgentType,
+      AgentType.INTERVIEWER,
       "Ты — опытный рекрутер, проводящий интервью через Telegram.",
       config,
     );

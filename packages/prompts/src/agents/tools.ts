@@ -11,9 +11,14 @@ import { z } from "zod";
  * Схема для сообщения в истории
  */
 const messageSchema = z.object({
-  sender: z.string().describe("Отправитель: CANDIDATE или BOT"),
+  sender: z
+    .enum(["CANDIDATE", "BOT"])
+    .describe("Отправитель: CANDIDATE или BOT"),
   content: z.string().optional(),
-  contentType: z.string().optional().describe("Тип контента: TEXT или VOICE"),
+  contentType: z
+    .enum(["TEXT", "VOICE"])
+    .optional()
+    .describe("Тип контента: TEXT или VOICE"),
 });
 
 type Message = z.infer<typeof messageSchema>;

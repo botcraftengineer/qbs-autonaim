@@ -28,7 +28,7 @@ export class EnhancedEvaluatorAgent extends AIPoweredAgent<
   constructor(config: AIPoweredAgentConfig) {
     super(
       "EnhancedEvaluator",
-      "evaluator" as AgentType,
+      AgentType.EVALUATOR,
       "Ты — эксперт по оценке кандидатов на основе интервью.",
       config,
     );

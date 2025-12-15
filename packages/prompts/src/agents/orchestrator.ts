@@ -32,7 +32,6 @@ export interface OrchestratorOutput {
 export interface OrchestratorConfig {
   model: LanguageModel;
   maxTokens?: number;
-  temperature?: number;
 }
 
 export class InterviewOrchestrator {
@@ -45,7 +44,6 @@ export class InterviewOrchestrator {
     const agentConfig = {
       model: config.model,
       maxTokens: config.maxTokens,
-      temperature: config.temperature,
     };
 
     this.contextAnalyzer = new EnhancedContextAnalyzerAgent(agentConfig);

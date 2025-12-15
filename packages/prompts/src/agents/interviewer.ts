@@ -27,7 +27,7 @@ export class InterviewerAgent extends BaseAgent<
   constructor() {
     super(
       "Interviewer",
-      "interviewer" as AgentType,
+      AgentType.INTERVIEWER,
       `Ты — опытный рекрутер, проводящий интервью через Telegram.`,
     );
   }

@@ -33,7 +33,7 @@ export class EnhancedContextAnalyzerAgent extends AIPoweredAgent<
   constructor(config: AIPoweredAgentConfig) {
     super(
       "EnhancedContextAnalyzer",
-      "context_analyzer" as AgentType,
+      AgentType.CONTEXT_ANALYZER,
       "Ты — эксперт по анализу коммуникаций. Твоя задача — понять намерения собеседника и определить тип сообщения.",
       config,
     );

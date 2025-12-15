@@ -59,7 +59,6 @@ export async function individualAgentsExample() {
   // Создаем агент анализа контекста
   const contextAnalyzer = new EnhancedContextAnalyzerAgent({
     model: openai("gpt-4o"),
-    temperature: 0.3,
   });
 
   const context: BaseAgentContext = {
@@ -135,7 +134,6 @@ export async function orchestratorExample() {
 
   const orchestrator = new InterviewOrchestrator({
     model: openai("gpt-4o"),
-    temperature: 0.7,
   });
 
   const context: BaseAgentContext = {
@@ -213,7 +211,6 @@ export async function evaluationExample() {
 
   const evaluator = new EnhancedEvaluatorAgent({
     model: openai("gpt-4o"),
-    temperature: 0.3,
   });
 
   const context: BaseAgentContext = {

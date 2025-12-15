@@ -4,7 +4,8 @@
  */
 
 import { BaseAgent } from "./base-agent";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import type { AgentResult, BaseAgentContext } from "./types";
+import { AgentType } from "./types";
 
 export interface ContextAnalysisInput {
   message: string;
@@ -33,7 +34,7 @@ export class ContextAnalyzerAgent extends BaseAgent<
   constructor() {
     super(
       "ContextAnalyzer",
-      "context_analyzer" as AgentType,
+      AgentType.CONTEXT_ANALYZER,
       `Ты — эксперт по анализу коммуникаций. Твоя задача — понять намерения собеседника и определить тип сообщения.`,
     );
   }

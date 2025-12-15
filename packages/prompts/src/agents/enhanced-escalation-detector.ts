@@ -4,7 +4,8 @@
 
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import type { AgentResult, BaseAgentContext } from "./types";
+import { AgentType } from "./types";
 
 export interface EnhancedEscalationInput {
   message: string;
@@ -26,7 +27,7 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
   constructor(config: AIPoweredAgentConfig) {
     super(
       "EnhancedEscalationDetector",
-      "escalation_detector" as AgentType,
+      AgentType.ESCALATION_DETECTOR,
       "Ты — эксперт по определению ситуаций, требующих вмешательства человека.",
       config,
     );

@@ -19,7 +19,6 @@ export const AGENT_CONFIG = {
   // Настройки AI
   AI_SETTINGS: {
     MAX_TOKENS: 2000,
-    TEMPERATURE: 0.7,
     TOP_P: 0.9,
   },
 

@@ -10,7 +10,6 @@ import type { AgentType } from "./types";
 export interface AIPoweredAgentConfig {
   model: LanguageModel;
   maxTokens?: number;
-  temperature?: number;
 }
 
 /**
@@ -22,7 +21,6 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
 > {
   protected model: LanguageModel;
   protected maxTokens: number;
-  protected temperature: number;
 
   constructor(
     name: string,
@@ -33,7 +31,6 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
     super(name, type, systemPrompt);
     this.model = config.model;
     this.maxTokens = config.maxTokens || 2000;
-    this.temperature = config.temperature || 0.7;
   }
 
   /**
@@ -47,7 +44,7 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
     const result = await generateText({
       model: this.model,
       prompt,
-      temperature: this.temperature,
+      maxOutputTokens: this.maxTokens,
       ...(tools && { tools }),
     });
 
