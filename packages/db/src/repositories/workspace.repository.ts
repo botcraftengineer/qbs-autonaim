@@ -91,11 +91,14 @@ export class WorkspaceRepository {
 
   // Удалить пользователя из workspace
   async removeUser(workspaceId: string, userId: string) {
+    const { and } = await import("drizzle-orm");
     await db
       .delete(userWorkspace)
       .where(
-        eq(userWorkspace.workspaceId, workspaceId) &&
+        and(
+          eq(userWorkspace.workspaceId, workspaceId),
           eq(userWorkspace.userId, userId),
+        ),
       );
   }
 
@@ -105,12 +108,15 @@ export class WorkspaceRepository {
     userId: string,
     role: "owner" | "admin" | "member",
   ) {
+    const { and } = await import("drizzle-orm");
     const [updated] = await db
       .update(userWorkspace)
       .set({ role })
       .where(
-        eq(userWorkspace.workspaceId, workspaceId) &&
+        and(
+          eq(userWorkspace.workspaceId, workspaceId),
           eq(userWorkspace.userId, userId),
+        ),
       )
       .returning();
     return updated;
@@ -118,10 +124,12 @@ export class WorkspaceRepository {
 
   // Проверить доступ пользователя к workspace
   async checkAccess(workspaceId: string, userId: string) {
+    const { and } = await import("drizzle-orm");
     const member = await db.query.userWorkspace.findFirst({
-      where:
-        eq(userWorkspace.workspaceId, workspaceId) &&
+      where: and(
+        eq(userWorkspace.workspaceId, workspaceId),
         eq(userWorkspace.userId, userId),
+      ),
     });
     return member;
   }
