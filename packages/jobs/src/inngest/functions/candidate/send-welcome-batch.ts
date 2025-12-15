@@ -221,6 +221,8 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                     responseId: response.id,
                     vacancyId: response.vacancyId,
                     username: response.telegramUsername,
+                    interviewStarted: true,
+                    questionAnswers: [],
                   }),
                 })
                 .onConflictDoUpdate({
@@ -234,6 +236,8 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                       responseId: response.id,
                       vacancyId: response.vacancyId,
                       username: response.telegramUsername,
+                      interviewStarted: true,
+                      questionAnswers: [],
                     }),
                   },
                 })

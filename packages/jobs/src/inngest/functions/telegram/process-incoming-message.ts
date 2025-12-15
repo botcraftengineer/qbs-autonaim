@@ -211,6 +211,15 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 });
               }
 
+              // Запускаем анализ интервью для первого сообщения после идентификации
+              await inngest.send({
+                name: "telegram/interview.analyze",
+                data: {
+                  conversationId: identification.conversationId,
+                  transcription: text,
+                },
+              });
+
               return { identified: true };
             }
 
