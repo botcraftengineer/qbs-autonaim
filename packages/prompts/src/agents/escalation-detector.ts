@@ -3,7 +3,7 @@
  */
 
 import { BaseAgent } from "./base-agent";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import type { AgentResult, BaseAgentContext } from "./types";
 
 export interface EscalationInput {
   message: string;
@@ -69,7 +69,7 @@ export class EscalationDetectorAgent extends BaseAgent<
     _context: BaseAgentContext,
   ): Promise<AgentResult<EscalationOutput>> {
     if (!this.validate(input)) {
-      return { success: false, error: "Invalid input" };
+      return { success: false, error: "Некорректные входные данные" };
     }
 
     try {
@@ -98,7 +98,7 @@ export class EscalationDetectorAgent extends BaseAgent<
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

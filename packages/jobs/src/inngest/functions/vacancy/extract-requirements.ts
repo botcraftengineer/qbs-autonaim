@@ -20,10 +20,7 @@ export const extractVacancyRequirementsFunction = inngest.createFunction(
       });
 
       try {
-        const result = await extractVacancyRequirements(
-          vacancyId,
-          description,
-        );
+        const result = await extractVacancyRequirements(vacancyId, description);
 
         // Unwrap Result - throws if error
         const requirements = unwrap(result);
@@ -50,4 +47,3 @@ export const extractVacancyRequirementsFunction = inngest.createFunction(
     });
   },
 );
-

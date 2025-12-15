@@ -32,6 +32,7 @@ export interface OrchestratorOutput {
 export interface OrchestratorConfig {
   model: LanguageModel;
   maxTokens?: number;
+  maxVoiceMessages?: number;
 }
 
 export class InterviewOrchestrator {
@@ -39,8 +40,14 @@ export class InterviewOrchestrator {
   private escalationDetector: EnhancedEscalationDetectorAgent;
   private interviewer: EnhancedInterviewerAgent;
   private evaluator: EnhancedEvaluatorAgent;
+  private config: OrchestratorConfig;
 
   constructor(config: OrchestratorConfig) {
+    this.config = {
+      ...config,
+      maxVoiceMessages: config.maxVoiceMessages ?? 2,
+    };
+
     const agentConfig = {
       model: config.model,
       maxTokens: config.maxTokens,
@@ -79,8 +86,24 @@ export class InterviewOrchestrator {
         timestamp: new Date(),
       });
 
+      // Проверяем успешность анализа контекста
+      if (!contextAnalysis.success || !contextAnalysis.data) {
+        return {
+          decision: {
+            action: "ESCALATE",
+            reason: "Context analysis failed",
+            confidence: 0.5,
+          },
+          updatedState: {
+            ...input.currentState,
+            currentStage: "ESCALATED",
+          },
+          agentTrace,
+        };
+      }
+
       // Если не требуется ответ (благодарность, "ок" и т.д.)
-      if (contextAnalysis.data && !contextAnalysis.data.requiresResponse) {
+      if (!contextAnalysis.data.requiresResponse) {
         return {
           decision: {
             action: "SKIP",
@@ -130,7 +153,7 @@ export class InterviewOrchestrator {
         {
           message: input.message,
           voiceMessagesCount: input.currentState.voiceMessagesCount,
-          maxVoiceMessages: 2,
+          maxVoiceMessages: this.config.maxVoiceMessages,
           questionsAsked: input.currentState.questionsAsked,
           customQuestions: input.customQuestions,
         },

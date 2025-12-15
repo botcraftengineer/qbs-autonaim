@@ -1,7 +1,10 @@
 "use client";
 
 import type { ResponseStatus } from "@qbs-autonaim/db/schema";
-import { RESPONSE_STATUS, RESPONSE_STATUS_LABELS } from "@qbs-autonaim/db/schema";
+import {
+  RESPONSE_STATUS,
+  RESPONSE_STATUS_LABELS,
+} from "@qbs-autonaim/db/schema";
 import {
   Button,
   DropdownMenu,

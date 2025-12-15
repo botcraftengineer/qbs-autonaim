@@ -4,7 +4,7 @@
 
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import type { AgentResult, BaseAgentContext } from "./types";
 
 export interface EnhancedContextAnalysisInput {
   message: string;
@@ -85,7 +85,7 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
     if (!this.validate(input)) {
       return {
         success: false,
-        error: "Invalid input: message is required",
+        error: "Некорректные входные данные: сообщение обязательно",
       };
     }
 
@@ -98,7 +98,7 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
         this.parseJSONResponse<EnhancedContextAnalysisOutput>(aiResponse);
 
       if (!parsed) {
-        return { success: false, error: "Failed to parse AI response" };
+        return { success: false, error: "Не удалось разобрать ответ AI" };
       }
 
       return {
@@ -112,7 +112,7 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

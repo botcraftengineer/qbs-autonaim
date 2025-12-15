@@ -5,7 +5,7 @@
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { getConversationContext, getVoiceMessagesInfo } from "./tools";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
 
 export interface EnhancedInterviewerInput {
   message: string;
@@ -92,7 +92,7 @@ ${context.conversationHistory
     context: BaseAgentContext,
   ): Promise<AgentResult<EnhancedInterviewerOutput>> {
     if (!this.validate(input)) {
-      return { success: false, error: "Invalid input" };
+      return { success: false, error: "Некорректные входные данные" };
     }
 
     try {
@@ -110,7 +110,7 @@ ${context.conversationHistory
         >(aiResponse);
 
       if (!parsed) {
-        return { success: false, error: "Failed to parse AI response" };
+        return { success: false, error: "Не удалось разобрать ответ AI" };
       }
 
       const result: EnhancedInterviewerOutput = {
@@ -123,7 +123,7 @@ ${context.conversationHistory
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

@@ -72,7 +72,7 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
     context: BaseAgentContext,
   ): Promise<AgentResult<EnhancedEscalationOutput>> {
     if (!this.validate(input)) {
-      return { success: false, error: "Invalid input" };
+      return { success: false, error: "Некорректные входные данные" };
     }
 
     try {
@@ -97,14 +97,14 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
         this.parseJSONResponse<EnhancedEscalationOutput>(aiResponse);
 
       if (!parsed) {
-        return { success: false, error: "Failed to parse AI response" };
+        return { success: false, error: "Не удалось разобрать ответ AI" };
       }
 
       return { success: true, data: parsed, metadata: { prompt } };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

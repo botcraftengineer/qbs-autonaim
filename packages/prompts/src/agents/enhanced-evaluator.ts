@@ -4,7 +4,7 @@
 
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import type { AgentResult, BaseAgentContext } from "./types";
 
 export interface EnhancedEvaluatorInput {
   question: string;
@@ -84,7 +84,7 @@ ${input.answer}
     context: BaseAgentContext,
   ): Promise<AgentResult<EnhancedEvaluatorOutput>> {
     if (!this.validate(input)) {
-      return { success: false, error: "Invalid input" };
+      return { success: false, error: "Некорректные входные данные" };
     }
 
     try {
@@ -96,14 +96,14 @@ ${input.answer}
         this.parseJSONResponse<EnhancedEvaluatorOutput>(aiResponse);
 
       if (!parsed) {
-        return { success: false, error: "Failed to parse AI response" };
+        return { success: false, error: "Не удалось разобрать ответ AI" };
       }
 
       return { success: true, data: parsed, metadata: { prompt } };
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

@@ -3,7 +3,7 @@
  */
 
 import { BaseAgent } from "./base-agent";
-import type { AgentResult, AgentType, BaseAgentContext } from "./types";
+import type { AgentResult, BaseAgentContext } from "./types";
 
 export interface EvaluatorInput {
   question: string;
@@ -79,7 +79,7 @@ ${input.answer}
     context: BaseAgentContext,
   ): Promise<AgentResult<EvaluatorOutput>> {
     if (!this.validate(input)) {
-      return { success: false, error: "Invalid input" };
+      return { success: false, error: "Некорректные входные данные" };
     }
 
     try {
@@ -103,7 +103,7 @@ ${input.answer}
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

@@ -85,7 +85,7 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
     if (!this.validate(input)) {
       return {
         success: false,
-        error: "Invalid input: message is required",
+        error: "Некорректные входные данные: сообщение обязательно",
       };
     }
 
@@ -112,7 +112,7 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
     } catch (error) {
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: error instanceof Error ? error.message : "Неизвестная ошибка",
       };
     }
   }

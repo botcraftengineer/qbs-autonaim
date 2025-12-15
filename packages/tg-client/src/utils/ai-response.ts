@@ -46,20 +46,29 @@ interface AIResponseResult {
 }
 
 /**
- * Генерирует ответ через мультиагентную систему
+ * Генерирует ответ через мультиагентную систему с полными метаданными
+ */
+export async function generateAIResponseWithMetadata(
+  params: GenerateResponseParams,
+): Promise<AIResponseResult> {
+  // Для этапа INTERVIEWING используем мультиагентную систему
+  if (params.stage === "INTERVIEWING") {
+    return await generateWithMultiAgent(params);
+  }
+
+  // Для других этапов используем старую систему
+  return await generateWithLegacySystem(params);
+}
+
+/**
+ * Генерирует ответ через мультиагентную систему (backward compatible)
+ * @deprecated Используйте generateAIResponseWithMetadata для получения метаданных эскалации
  */
 export async function generateAIResponse(
   params: GenerateResponseParams,
 ): Promise<string> {
-  // Для этапа INTERVIEWING используем мультиагентную систему
-  if (params.stage === "INTERVIEWING") {
-    const result = await generateWithMultiAgent(params);
-    return result.text;
-  }
-
-  // Для других этапов используем старую систему
-  const legacyResult = await generateWithLegacySystem(params);
-  return legacyResult.text;
+  const result = await generateAIResponseWithMetadata(params);
+  return result.text;
 }
 
 /**
