@@ -59,13 +59,27 @@ async function findDuplicateMessage(
 }
 
 async function getCompanyBotSettings(workspaceId: string) {
-  const company = await db.query.companySettings.findFirst({
-    where: eq(companySettings.workspaceId, workspaceId),
-  });
-  return {
-    botName: company?.botName ?? "Дмитрий",
-    botRole: company?.botRole ?? "рекрутер",
-  };
+  try {
+    const company = await db.query.companySettings.findFirst({
+      where: eq(companySettings.workspaceId, workspaceId),
+    });
+    return {
+      botName: company?.botName ?? "Дмитрий",
+      botRole: company?.botRole ?? "рекрутер",
+    };
+  } catch (error) {
+    console.error(
+      "❌ Ошибка загрузки настроек бота, используем значения по умолчанию",
+      {
+        workspaceId,
+        error: error instanceof Error ? error.message : String(error),
+      },
+    );
+    return {
+      botName: "Дмитрий",
+      botRole: "рекрутер",
+    };
+  }
 }
 
 export const processIncomingMessageFunction = inngest.createFunction(
@@ -199,8 +213,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   interviewData?.customInterviewQuestions ?? undefined,
                 customOrganizationalQuestions:
                   interviewData?.customOrganizationalQuestions ?? undefined,
-                botName: interviewData?.botName ?? "Дмитрий",
-                botRole: interviewData?.botRole ?? "рекрутер",
+                botName: botSettings.botName,
+                botRole: botSettings.botRole,
               });
 
               const { text: aiResponse } = await generateText({
