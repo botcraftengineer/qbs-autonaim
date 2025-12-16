@@ -105,7 +105,7 @@ export function FunnelBoard() {
               />
             </div>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 h-10 px-4">
+          <Button variant="outline" size="sm" className="gap-2 h-10 px-4" disabled>
             <SlidersHorizontal className="h-4 w-4" />
             Фильтры
           </Button>

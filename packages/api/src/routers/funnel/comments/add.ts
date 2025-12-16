@@ -22,7 +22,7 @@ export const add = protectedProcedure
       .returning();
 
     if (!comment) {
-      throw new Error("Failed to create comment");
+      throw new Error("Не удалось создать комментарий");
     }
 
     await ctx.db.insert(funnelActivity).values({
