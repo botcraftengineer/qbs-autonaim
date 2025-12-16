@@ -15,9 +15,15 @@ export const vacancyStats = protectedProcedure
       where: eq(vacancy.workspaceId, input.workspaceId),
     });
 
+    const workspaceVacancyIds = new Set(vacancies.map((v) => v.id));
+    
+    if (input.vacancyId && !workspaceVacancyIds.has(input.vacancyId)) {
+      throw new Error("Вакансия не найдена в указанном workspace");
+    }
+    
     const vacancyIds = input.vacancyId
       ? [input.vacancyId]
-      : vacancies.map((v) => v.id);
+      : Array.from(workspaceVacancyIds);
 
     if (vacancyIds.length === 0) {
       return [];
