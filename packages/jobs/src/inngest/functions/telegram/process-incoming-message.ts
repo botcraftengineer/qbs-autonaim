@@ -198,10 +198,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 candidateName:
                   interviewData?.response.candidateName ?? undefined,
                 vacancyTitle: vacancy?.title ?? undefined,
-                vacancyRequirements:
-                  typeof vacancy?.requirements === "string"
-                    ? vacancy.requirements
-                    : undefined,
+                vacancyRequirements: vacancy?.requirements
+                  ? JSON.stringify(vacancy.requirements)
+                  : undefined,
                 conversationHistory: conversationHistory.map((msg) => ({
                   sender: msg.sender,
                   content: msg.content,

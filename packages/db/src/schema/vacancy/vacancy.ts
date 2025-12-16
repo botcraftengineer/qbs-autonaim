@@ -12,6 +12,24 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { workspace } from "../workspace/workspace";
 
+export interface VacancyRequirements {
+  job_title: string;
+  summary: string;
+  mandatory_requirements: string[];
+  nice_to_have_skills: string[];
+  tech_stack: string[];
+  experience_years: {
+    min: number | null;
+    description: string;
+  };
+  languages: Array<{
+    language: string;
+    level: string;
+  }>;
+  location_type: string;
+  keywords_for_matching: string[];
+}
+
 export const vacancy = pgTable(
   "vacancies",
   {
@@ -30,7 +48,7 @@ export const vacancy = pgTable(
     suitableResumes: integer("suitable_resumes").default(0),
     region: varchar("region", { length: 200 }),
     description: text("description"),
-    requirements: jsonb("requirements"),
+    requirements: jsonb("requirements").$type<VacancyRequirements>(),
 
     // Кастомные настройки для бота
     customBotInstructions: text("custom_bot_instructions"),

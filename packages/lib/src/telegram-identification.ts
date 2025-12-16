@@ -6,6 +6,8 @@
 import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  type companySettings,
+  type responseScreening,
   telegramConversation,
   telegramMessage,
   type vacancy,
@@ -279,18 +281,11 @@ export async function getInterviewStartData(responseId: string): Promise<{
     vacancy:
       | (typeof vacancy.$inferSelect & {
           workspace: typeof workspace.$inferSelect & {
-            companySettings: {
-              id: string;
-              workspaceId: string;
-              botName: string | null;
-              botRole: string | null;
-              customBotInstructions: string | null;
-              createdAt: Date;
-              updatedAt: Date;
-            } | null;
+            companySettings: typeof companySettings.$inferSelect | null;
           };
         })
       | null;
+    screening: typeof responseScreening.$inferSelect | null;
   };
 } | null> {
   try {
