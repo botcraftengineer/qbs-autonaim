@@ -30,6 +30,7 @@ import {
 export function FunnelAnalytics() {
   const params = useParams<{ workspaceSlug: string }>();
   const [timeRange, setTimeRange] = useState("30d");
+  const [selectedVacancyId, setSelectedVacancyId] = useState<string>("all");
   const trpc = useTRPC();
 
   const { data: workspaceData, isLoading: isLoadingWorkspace } = useQuery(
@@ -37,6 +38,13 @@ export function FunnelAnalytics() {
   );
 
   const workspaceId = workspaceData?.workspace.id;
+
+  const { data: vacanciesList } = useQuery({
+    ...trpc.vacancy.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: !!workspaceId,
+  });
 
   const {
     data: analytics,
@@ -46,6 +54,7 @@ export function FunnelAnalytics() {
   } = useQuery({
     ...trpc.funnel.analytics.queryOptions({
       workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancyId === "all" ? undefined : selectedVacancyId,
     }),
     enabled: !!workspaceId,
   });
@@ -57,6 +66,7 @@ export function FunnelAnalytics() {
   } = useQuery({
     ...trpc.funnel.vacancyStats.queryOptions({
       workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancyId === "all" ? undefined : selectedVacancyId,
     }),
     enabled: !!workspaceId,
   });
@@ -153,17 +163,36 @@ export function FunnelAnalytics() {
             Детальная статистика процесса найма
           </p>
         </div>
-        <Select value={timeRange} onValueChange={setTimeRange}>
-          <SelectTrigger className="w-full sm:w-[180px]">
-            <Filter className="h-4 w-4 mr-2 shrink-0" />
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="7d">Последние 7 дней</SelectItem>
-            <SelectItem value="30d">Последние 30 дней</SelectItem>
-            <SelectItem value="90d">Последние 3 месяца</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <Select
+            value={selectedVacancyId}
+            onValueChange={setSelectedVacancyId}
+          >
+            <SelectTrigger className="w-full sm:w-[220px]">
+              <Filter className="h-4 w-4 mr-2 shrink-0" />
+              <SelectValue placeholder="Все вакансии" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Все вакансии</SelectItem>
+              {vacanciesList?.map((vacancy) => (
+                <SelectItem key={vacancy.id} value={vacancy.id}>
+                  {vacancy.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <Filter className="h-4 w-4 mr-2 shrink-0" />
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="7d">Последние 7 дней</SelectItem>
+              <SelectItem value="30d">Последние 30 дней</SelectItem>
+              <SelectItem value="90d">Последние 3 месяца</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {analyticsError && !vacancyStatsError && (

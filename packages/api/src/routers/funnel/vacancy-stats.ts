@@ -7,6 +7,7 @@ export const vacancyStats = protectedProcedure
   .input(
     z.object({
       workspaceId: z.string(),
+      vacancyId: z.string().optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
@@ -14,7 +15,9 @@ export const vacancyStats = protectedProcedure
       where: eq(vacancy.workspaceId, input.workspaceId),
     });
 
-    const vacancyIds = vacancies.map((v) => v.id);
+    const vacancyIds = input.vacancyId
+      ? [input.vacancyId]
+      : vacancies.map((v) => v.id);
 
     if (vacancyIds.length === 0) {
       return [];

@@ -14,14 +14,7 @@ export function ProfessionalInfo({ candidate }: ProfessionalInfoProps) {
         <Briefcase className="h-4 w-4 text-primary" />
         Профессиональная информация
       </h3>
-      <div className="grid grid-cols-3 gap-3">
-        <div className="p-3 bg-muted/50 rounded-lg border space-y-1">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Briefcase className="h-3.5 w-3.5" />
-            <span className="text-xs font-medium">Опыт работы</span>
-          </div>
-          <p className="text-sm font-semibold">{candidate.experience}</p>
-        </div>
+      <div className="grid grid-cols-2 gap-3">
         <div className="p-3 bg-muted/50 rounded-lg border space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <MapPin className="h-3.5 w-3.5" />
@@ -32,7 +25,7 @@ export function ProfessionalInfo({ candidate }: ProfessionalInfoProps) {
         <div className="p-3 bg-muted/50 rounded-lg border space-y-1">
           <div className="flex items-center gap-2 text-muted-foreground">
             <DollarSign className="h-3.5 w-3.5" />
-            <span className="text-xs font-medium">Ожидания</span>
+            <span className="text-xs font-medium">Ожидания по зарплате</span>
           </div>
           <p className="text-sm font-semibold">{candidate.salaryExpectation}</p>
         </div>
