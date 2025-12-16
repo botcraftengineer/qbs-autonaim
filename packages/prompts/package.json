@@ -10,7 +10,7 @@
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
@@ -22,7 +22,7 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/node": "25.0.2",
-    "tsup": "8.5.1",
+    "tsdown": "0.18.0",
     "typescript": "5.9.3"
   }
 }

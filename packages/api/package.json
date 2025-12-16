@@ -12,8 +12,8 @@
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "tsdown",
+    "dev": "tsdown --watch",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "format": "biome format .",
     "lint": "biome lint .",
@@ -33,7 +33,7 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/sanitize-html": "^2.16.0",
-    "tsup": "^8.5.1",
+    "tsdown": "^0.18.0",
     "typescript": "5.9.3"
   }
 }

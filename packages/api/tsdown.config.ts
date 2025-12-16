@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   entry: ["src/index.ts"],
@@ -7,11 +7,11 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   treeshake: true,
-  splitting: false,
   external: [
     "@qbs-autonaim/auth",
     "@qbs-autonaim/db",
     "@qbs-autonaim/jobs",
+    "@qbs-autonaim/lib",
     "@qbs-autonaim/validators",
   ],
 });

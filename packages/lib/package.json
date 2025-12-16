@@ -13,7 +13,7 @@
   "types": "./dist/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
@@ -21,7 +21,6 @@
   "dependencies": {
     "@ai-sdk/deepseek": "^2.0.0-beta.54",
     "@ai-sdk/openai": "^3.0.0-beta.100",
-    "@ai-sdk/provider-utils": "^4.0.0-beta.51",
     "@aws-sdk/client-s3": "3.952.0",
     "@aws-sdk/s3-request-presigner": "3.952.0",
     "@qbs-autonaim/config": "workspace:*",
@@ -33,7 +32,7 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/node": "25.0.2",
-    "tsup": "8.5.1",
+    "tsdown": "0.18.0",
     "typescript": "5.9.3"
   }
 }

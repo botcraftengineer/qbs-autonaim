@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import {
   Body,
   Button,
@@ -12,7 +13,6 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { env } from "@qbs-autonaim/config";
 
 import { emailTailwindConfig } from "../tailwind";
 
@@ -29,7 +29,7 @@ export default function TelegramAuthErrorEmail({
   phone = "+7 XXX XXX-XX-XX",
   errorType = "AUTH_KEY_UNREGISTERED",
   reauthorizeLink = `${env.APP_URL}/settings/telegram`,
-}: TelegramAuthErrorEmailProps) {
+}: TelegramAuthErrorEmailProps): JSX.Element {
   const errorDescriptions: Record<string, string> = {
     AUTH_KEY_UNREGISTERED:
       "Ключ авторизации был аннулирован. Возможно, вы завершили сессию с другого устройства или Telegram отозвал доступ.",

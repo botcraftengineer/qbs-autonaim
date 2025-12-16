@@ -8,7 +8,9 @@ import { db } from "@qbs-autonaim/db/client";
 import {
   telegramConversation,
   telegramMessage,
+  type vacancy,
   vacancyResponse,
+  type workspace,
 } from "@qbs-autonaim/db/schema";
 
 interface IdentificationResult {
@@ -272,7 +274,13 @@ export async function saveMessage(
 /**
  * Получает данные для начала интервью
  */
-export async function getInterviewStartData(responseId: string) {
+export async function getInterviewStartData(responseId: string): Promise<{
+  response: typeof vacancyResponse.$inferSelect & {
+    vacancy: typeof vacancy.$inferSelect & {
+      workspace: typeof workspace.$inferSelect;
+    };
+  };
+} | null> {
   try {
     const response = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
@@ -325,7 +333,7 @@ export async function getInterviewStartData(responseId: string) {
       customInterviewQuestions: response.vacancy?.customInterviewQuestions,
       customOrganizationalQuestions:
         response.vacancy?.customOrganizationalQuestions,
-      botName: companySettings?.botName ?? "Дмитрий",
+      botName: companySettings?.botName ?? "",
       botRole: companySettings?.botRole ?? "рекрутер",
     };
   } catch (error) {

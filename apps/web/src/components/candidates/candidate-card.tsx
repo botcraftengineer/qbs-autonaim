@@ -71,11 +71,12 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
         <div className="h-px bg-border" aria-hidden="true" />
 
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5" aria-label="Опыт работы">
+          <div className="flex items-center gap-1.5">
             <Briefcase
               className="h-3.5 w-3.5 text-primary/60"
               aria-hidden="true"
             />
+            <span>{candidate.experience}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <MapPin
