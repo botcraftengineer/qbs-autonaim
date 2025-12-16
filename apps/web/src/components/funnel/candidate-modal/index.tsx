@@ -174,11 +174,13 @@ export function CandidateModal({
                     <SelectItem value="REJECTED">Отклонен</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="icon" aria-label="Закрыть">
-                  <XCircle
-                    className="h-4 w-4"
-                    onClick={() => onOpenChange(false)}
-                  />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="Закрыть"
+                  onClick={() => onOpenChange(false)}
+                >
+                  <XCircle className="h-4 w-4" />
                 </Button>
               </div>
             </div>
@@ -248,7 +250,7 @@ export function CandidateModal({
                       Результаты скрининга
                     </h3>
                   </div>
-                  <div className="p-6 bg-linear-to-br from-primary/5 to-primary/10 rounded-lg border-2 border-primary/20 space-y-4">
+                  <div className="p-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-lg border-2 border-primary/20 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
@@ -316,7 +318,7 @@ export function CandidateModal({
                     <div className="p-4 bg-muted/30 rounded-lg border space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-muted-foreground">
-                          Технические навыки
+                          Технические навыки (примерно)
                         </span>
                         <span className="text-sm font-bold tabular-nums">
                           {Math.min(100, candidate.matchScore + 5)}%
@@ -330,7 +332,7 @@ export function CandidateModal({
                     <div className="p-4 bg-muted/30 rounded-lg border space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-muted-foreground">
-                          Опыт работы
+                          Опыт работы (примерно)
                         </span>
                         <span className="text-sm font-bold tabular-nums">
                           {Math.max(0, candidate.matchScore - 10)}%
@@ -344,7 +346,7 @@ export function CandidateModal({
                     <div className="p-4 bg-muted/30 rounded-lg border space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-muted-foreground">
-                          Зарплатные ожидания
+                          Зарплатные ожидания (примерно)
                         </span>
                         <span className="text-sm font-bold tabular-nums">
                           {Math.min(100, candidate.matchScore + 15)}%

@@ -24,9 +24,23 @@ export function extractExperienceSummary(html: string): string {
       ? Number.parseInt(dateMatch[2], 10)
       : new Date().getFullYear();
     const years = endYear - startYear;
-    return years > 0
-      ? `${years} ${years === 1 ? "год" : years < 5 ? "года" : "лет"}`
-      : dateMatch[0];
+    if (years <= 0) return dateMatch[0];
+
+    const lastTwoDigits = years % 100;
+    const lastDigit = years % 10;
+
+    let yearWord: string;
+    if (lastTwoDigits >= 11 && lastTwoDigits <= 14) {
+      yearWord = "лет";
+    } else if (lastDigit === 1) {
+      yearWord = "год";
+    } else if (lastDigit >= 2 && lastDigit <= 4) {
+      yearWord = "года";
+    } else {
+      yearWord = "лет";
+    }
+
+    return `${years} ${yearWord}`;
   }
 
   const firstHeading = doc.querySelector("h2, h3, h4, strong");

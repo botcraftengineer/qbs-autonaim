@@ -9,7 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qbs-autonaim/ui";
-import { Briefcase, MapPin, Star } from "lucide-react";
+import { MapPin, Star } from "lucide-react";
 import type { FunnelCandidate, FunnelStage } from "../funnel/types";
 import { STAGE_COLORS, STAGE_LABELS } from "../funnel/types";
 
@@ -42,7 +42,6 @@ export function CandidatesTable({
           <TableRow>
             <TableHead>Кандидат</TableHead>
             <TableHead>Должность</TableHead>
-            <TableHead>Опыт</TableHead>
             <TableHead>Локация</TableHead>
             <TableHead>Навыки</TableHead>
             <TableHead>Совпадение</TableHead>
@@ -67,12 +66,6 @@ export function CandidatesTable({
             >
               <TableCell className="font-medium">{candidate.name}</TableCell>
               <TableCell>{candidate.position}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Briefcase className="h-3.5 w-3.5" aria-hidden="true" />
-                  {candidate.experience}
-                </div>
-              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                   <MapPin className="h-3.5 w-3.5" aria-hidden="true" />

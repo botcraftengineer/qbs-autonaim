@@ -8,8 +8,7 @@ import {
   Card,
   CardContent,
 } from "@qbs-autonaim/ui";
-import { Briefcase, Calendar, MapPin, Star } from "lucide-react";
-import { extractExperienceSummary } from "~/lib/parse-experience";
+import { Calendar, MapPin, Star } from "lucide-react";
 import { MatchScoreCircle } from "../funnel/match-score-circle";
 import type { FunnelCandidate } from "../funnel/types";
 
@@ -19,8 +18,6 @@ interface CandidateCardProps {
 }
 
 export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
-  const experienceSummary = extractExperienceSummary(candidate.experience);
-
   const getAvailabilityColor = () => {
     if (candidate.availability === "IMMEDIATE")
       return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800";
@@ -74,15 +71,6 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
         <div className="h-px bg-border" aria-hidden="true" />
 
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1.5 min-w-0">
-            <Briefcase
-              className="h-3.5 w-3.5 text-primary/60 shrink-0"
-              aria-hidden="true"
-            />
-            <span className="truncate" title={experienceSummary}>
-              {experienceSummary}
-            </span>
-          </div>
           <div className="flex items-center gap-1.5 min-w-0">
             <MapPin
               className="h-3.5 w-3.5 text-primary/60 shrink-0"
