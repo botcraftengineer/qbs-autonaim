@@ -249,7 +249,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
     });
 
     // Если получили chatId, сохраняем в базу
-    if (result && result.chatId) {
+    if (result?.chatId) {
       const chatId = result.chatId;
       await step.run("save-conversation", async () => {
         const [conversation] = await db

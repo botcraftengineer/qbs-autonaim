@@ -4,10 +4,26 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./dist/index.js",
-    "./ai": "./dist/ai.js",
-    "./s3": "./dist/s3.js",
-    "./image": "./dist/image.js"
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./ai": {
+      "import": "./dist/ai.mjs",
+      "require": "./dist/ai.js",
+      "types": "./dist/ai.d.ts"
+    },
+    "./s3": {
+      "import": "./dist/s3.mjs",
+      "require": "./dist/s3.js",
+      "types": "./dist/s3.d.ts"
+    },
+    "./image": {
+      "import": "./dist/image.mjs",
+      "require": "./dist/image.js",
+      "types": "./dist/image.d.ts"
+    }
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
