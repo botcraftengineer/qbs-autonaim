@@ -36,7 +36,8 @@ export const sendEmail = async (email: Emails): Promise<void> => {
       secure: false,
       port: 2500,
     });
-    return transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
+    return;
   }
   if (!resend) {
     console.log(
