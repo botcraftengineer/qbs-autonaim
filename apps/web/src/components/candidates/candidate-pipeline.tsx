@@ -35,6 +35,7 @@ const STAGES: { id: FunnelStage; title: string; color: string }[] = [
   { id: "REVIEW", title: "Рассмотрение", color: "bg-amber-500" },
   { id: "INTERVIEW", title: "Собеседование", color: "bg-purple-500" },
   { id: "HIRED", title: "Наняты", color: "bg-emerald-500" },
+  { id: "REJECTED", title: "Отказ", color: "bg-rose-500" },
 ];
 
 export function CandidatePipeline() {
@@ -190,7 +191,7 @@ export function CandidatePipeline() {
 
       {activeView === "board" ? (
         <section
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6"
           aria-label="Канбан-доска кандидатов"
         >
           {STAGES.map((stage) => (

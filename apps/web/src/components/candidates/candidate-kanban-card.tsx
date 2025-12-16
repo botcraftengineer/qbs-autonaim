@@ -7,7 +7,7 @@ import {
   Badge,
   cn,
 } from "@qbs-autonaim/ui";
-import { Calendar, MapPin, Star } from "lucide-react";
+import { Calendar, Star } from "lucide-react";
 import { MatchScoreCircle } from "../funnel/match-score-circle";
 import type { FunnelCandidate } from "../funnel/types";
 

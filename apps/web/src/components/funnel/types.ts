@@ -10,6 +10,9 @@ export interface FunnelCandidate {
   location: string;
   skills: string[];
   matchScore: number;
+  resumeScore?: number;
+  interviewScore?: number;
+  scoreAnalysis?: string;
   availability: string;
   salaryExpectation: string;
   stage: string;
