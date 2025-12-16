@@ -12,7 +12,7 @@
   "types": "./dist/index.d.mts",
   "license": "MIT",
   "scripts": {
-    "build": "tsdown",
+    "build": "tsc",
     "dev": "tsdown --watch",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "format": "biome format .",
