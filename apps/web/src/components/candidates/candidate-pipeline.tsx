@@ -377,16 +377,14 @@ export function CandidatePipeline() {
             ))}
           </section>
           <DragOverlay>
-            {activeId ? (
-              <CandidateKanbanCard
-                candidate={
-                  (candidates?.items ?? []).find(
-                    (c) => c.id === activeId,
-                  ) as FunnelCandidate
-                }
-                onClick={() => {}}
-              />
-            ) : null}
+            {(() => {
+              const candidate = (candidates?.items ?? []).find(
+                (c) => c.id === activeId,
+              );
+              return activeId && candidate ? (
+                <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
+              ) : null;
+            })()}
           </DragOverlay>
         </DndContext>
       ) : (

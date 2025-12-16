@@ -1,9 +1,10 @@
 import {
   user,
+  vacancy,
   vacancyResponse,
   vacancyResponseComment,
 } from "@qbs-autonaim/db";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -31,8 +32,14 @@ export const listComments = protectedProcedure
         vacancyResponse,
         eq(vacancyResponseComment.responseId, vacancyResponse.id),
       )
+      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
       .innerJoin(user, eq(vacancyResponseComment.authorId, user.id))
-      .where(eq(vacancyResponse.id, input.candidateId))
+      .where(
+        and(
+          eq(vacancyResponse.id, input.candidateId),
+          eq(vacancy.workspaceId, input.workspaceId),
+        ),
+      )
       .orderBy(desc(vacancyResponseComment.createdAt));
 
     return comments.map((comment) => ({
@@ -56,13 +63,28 @@ export const addComment = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const candidate = await ctx.db
-      .select()
+    const [candidate] = await ctx.db
+      .select({
+        id: vacancyResponse.id,
+        vacancyId: vacancyResponse.vacancyId,
+      })
       .from(vacancyResponse)
       .where(eq(vacancyResponse.id, input.candidateId))
       .limit(1);
 
-    if (!candidate.length) {
+    if (!candidate) {
+      throw new Error("Candidate not found");
+    }
+
+    const [vacancyRecord] = await ctx.db
+      .select({
+        workspaceId: vacancy.workspaceId,
+      })
+      .from(vacancy)
+      .where(eq(vacancy.id, candidate.vacancyId))
+      .limit(1);
+
+    if (!vacancyRecord || vacancyRecord.workspaceId !== input.workspaceId) {
       throw new Error("Candidate not found");
     }
 
@@ -80,23 +102,13 @@ export const addComment = protectedProcedure
       throw new Error("Failed to create comment");
     }
 
-    const [author] = await ctx.db
-      .select({
-        id: user.id,
-        name: user.name,
-        image: user.image,
-      })
-      .from(user)
-      .where(eq(user.id, ctx.session.user.id))
-      .limit(1);
-
     return {
       id: comment.id,
       candidateId: comment.responseId,
       content: comment.content,
       isPrivate: comment.isPrivate,
       createdAt: comment.createdAt,
-      author: author?.name ?? "Unknown",
-      authorAvatar: author?.image,
+      author: ctx.session.user.name ?? "Unknown",
+      authorAvatar: ctx.session.user.image,
     };
   });

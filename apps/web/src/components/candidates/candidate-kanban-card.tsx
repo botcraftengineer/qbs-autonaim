@@ -7,7 +7,7 @@ import {
   Badge,
   cn,
 } from "@qbs-autonaim/ui";
-import { Calendar, Linkedin, Mail, Phone, Star } from "lucide-react";
+import { Mail, Phone, Star } from "lucide-react";
 import { MatchScoreCircle } from "./match-score-circle";
 import type { FunnelCandidate } from "./types";
 
@@ -20,20 +20,6 @@ export function CandidateKanbanCard({
   candidate,
   onClick,
 }: CandidateKanbanCardProps) {
-  const getAvailabilityColor = () => {
-    if (candidate.availability === "IMMEDIATE")
-      return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800";
-    if (candidate.availability === "TWO_WEEKS")
-      return "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400 dark:border-amber-800";
-    return "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400 dark:border-blue-800";
-  };
-
-  const getAvailabilityText = () => {
-    if (candidate.availability === "IMMEDIATE") return "Сразу";
-    if (candidate.availability === "TWO_WEEKS") return "2 нед.";
-    return "1 мес.";
-  };
-
   const getMatchScoreColor = () => {
     if (candidate.matchScore >= 70)
       return "text-emerald-600 dark:text-emerald-400";
@@ -93,17 +79,7 @@ export function CandidateKanbanCard({
           )}
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t">
-          <Badge
-            variant="outline"
-            className={cn(
-              "text-[10px] font-medium px-2 py-0.5 h-auto border",
-              getAvailabilityColor(),
-            )}
-          >
-            <Calendar className="h-2.5 w-2.5 mr-1" aria-hidden="true" />
-            {getAvailabilityText()}
-          </Badge>
+        <div className="flex items-center justify-end pt-2 border-t">
           <div className="flex items-center gap-1">
             <Star
               className={cn(
@@ -166,18 +142,6 @@ export function CandidateKanbanCard({
             title={candidate.phone}
           >
             <Phone className="h-4 w-4" />
-          </a>
-        )}
-        {candidate.linkedin && (
-          <a
-            href={candidate.linkedin}
-            target="_blank"
-            rel="noreferrer"
-            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-[#0a66c2] transition-colors"
-            onClick={(e) => e.stopPropagation()}
-            title="LinkedIn"
-          >
-            <Linkedin className="h-4 w-4" />
           </a>
         )}
       </div>

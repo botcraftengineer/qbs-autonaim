@@ -21,7 +21,6 @@ export interface FunnelCandidate {
   vacancyName: string;
   email: string | null;
   phone: string | null;
-  linkedin: string | null;
   github: string | null;
   telegram: string | null;
   createdAt: Date;

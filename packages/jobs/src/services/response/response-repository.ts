@@ -207,12 +207,43 @@ export async function uploadCandidatePhoto(
   mimeType: string,
 ): Promise<Result<string | null>> {
   return tryCatch(async () => {
-    const extension = mimeType.split("/")[1] || "jpeg";
-    const fileName = `photo_${resumeId}.${extension}`;
+    const ALLOWED_MIME_TYPES: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+    // Validate buffer size
+    if (photoBuffer.length > MAX_FILE_SIZE) {
+      logger.warn(
+        `Photo upload rejected: file size ${photoBuffer.length} exceeds limit ${MAX_FILE_SIZE}`,
+      );
+      throw new Error("Invalid file");
+    }
+
+    // Normalize and validate MIME type
+    const normalizedMimeType = mimeType.toLowerCase().trim();
+    const extension = ALLOWED_MIME_TYPES[normalizedMimeType];
+
+    if (!extension) {
+      logger.warn(`Photo upload rejected: invalid MIME type ${mimeType}`);
+      throw new Error("Invalid file type");
+    }
+
+    // Sanitize resumeId (allow only alphanumerics, hyphen, underscore)
+    const sanitizedResumeId = resumeId.replace(/[^a-zA-Z0-9_-]/g, "");
+    if (!sanitizedResumeId) {
+      logger.warn(`Photo upload rejected: invalid resumeId ${resumeId}`);
+      throw new Error("Invalid identifier");
+    }
+
+    const fileName = `photo_${sanitizedResumeId}.${extension}`;
     const key = await uploadFile(
       photoBuffer,
       fileName,
-      mimeType,
+      normalizedMimeType,
       "candidate-photos",
     );
 
@@ -222,14 +253,14 @@ export async function uploadCandidatePhoto(
         provider: "S3",
         key,
         fileName,
-        mimeType,
+        mimeType: normalizedMimeType,
         fileSize: photoBuffer.length.toString(),
       })
       .returning();
 
     logger.info(`Candidate photo uploaded to S3: ${key}`);
     return fileRecord?.id ?? null;
-  }, "Failed to upload photo to S3");
+  }, "Failed to upload photo");
 }
 
 /**
