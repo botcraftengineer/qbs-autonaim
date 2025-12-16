@@ -52,12 +52,13 @@ export function FunnelBoard() {
   };
 
   const filteredCandidates = useMemo(() => {
-    if (!candidates) return [];
+    const items = candidates?.items ?? [];
+    if (items.length === 0) return [];
     const query = searchText.trim().toLowerCase();
-    if (!query) return candidates;
+    if (!query) return items;
 
     const terms = query.split(/\s+/).filter(Boolean);
-    return candidates.filter((c) => {
+    return items.filter((c) => {
       const searchable = [
         c.name.toLowerCase(),
         c.position.toLowerCase(),
@@ -105,7 +106,12 @@ export function FunnelBoard() {
               />
             </div>
           </div>
-          <Button variant="outline" size="sm" className="gap-2 h-10 px-4" disabled>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 h-10 px-4"
+            disabled
+          >
             <SlidersHorizontal className="h-4 w-4" />
             Фильтры
           </Button>
@@ -170,6 +176,7 @@ export function FunnelBoard() {
         candidate={selectedCandidate}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
+        workspaceId={params.workspaceSlug}
       />
     </div>
   );

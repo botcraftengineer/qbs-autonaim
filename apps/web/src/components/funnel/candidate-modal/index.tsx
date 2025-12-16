@@ -31,6 +31,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import type { FunnelCandidate } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
@@ -43,12 +44,14 @@ interface CandidateModalProps {
   candidate: FunnelCandidate | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  workspaceId: string;
 }
 
 export function CandidateModal({
   candidate,
   open,
   onOpenChange,
+  workspaceId,
 }: CandidateModalProps) {
   const [selectedStatus, setSelectedStatus] = useState(
     candidate?.stage ?? "REVIEW",
@@ -92,6 +95,10 @@ export function CandidateModal({
         queryKey: trpc.funnel.activities.list.queryKey(),
       });
     },
+    onError: (error) => {
+      console.error("Failed to add comment:", error);
+      toast.error("Не удалось добавить комментарий");
+    },
   });
 
   const deleteComment = useMutation({
@@ -109,12 +116,17 @@ export function CandidateModal({
     setSelectedStatus(stage);
     updateStage.mutate({
       candidateId: candidate.id,
+      workspaceId,
       stage: stage as "NEW" | "REVIEW" | "INTERVIEW" | "HIRED" | "REJECTED",
     });
   };
 
-  const handleAddComment = (content: string, isPrivate: boolean) => {
-    addComment.mutate({ candidateId: candidate.id, content, isPrivate });
+  const handleAddComment = async (content: string, isPrivate: boolean) => {
+    await addComment.mutateAsync({
+      candidateId: candidate.id,
+      content,
+      isPrivate,
+    });
   };
 
   const getMatchScoreColor = () => {
@@ -208,7 +220,7 @@ export function CandidateModal({
             </TabsList>
 
             <TabsContent value="timeline" className="mt-4">
-              <ActivityTimeline activities={activities ?? []} />
+              <ActivityTimeline activities={activities?.items ?? []} />
             </TabsContent>
 
             <TabsContent value="comments" className="mt-4">

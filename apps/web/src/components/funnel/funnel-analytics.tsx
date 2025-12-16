@@ -58,7 +58,6 @@ export function FunnelAnalytics() {
   } = useQuery({
     ...trpc.funnel.analytics.queryOptions({
       workspaceId: params.workspaceSlug,
-      timeRange,
     }),
   });
 
@@ -69,7 +68,6 @@ export function FunnelAnalytics() {
   } = useQuery({
     ...trpc.funnel.vacancyStats.queryOptions({
       workspaceId: params.workspaceSlug,
-      timeRange,
     }),
   });
 

@@ -24,7 +24,7 @@ export interface Comment {
 
 export interface CommentsSectionProps {
   comments: Comment[];
-  onAddComment: (content: string, isPrivate: boolean) => void;
+  onAddComment: (content: string, isPrivate: boolean) => Promise<void>;
   onDeleteComment: (commentId: string) => void;
   isAdding?: boolean;
 }
@@ -38,15 +38,14 @@ export function CommentsSection({
   const [comment, setComment] = useState("");
   const [isPrivate, setIsPrivate] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!comment.trim()) return;
     try {
-      onAddComment(comment, isPrivate);
+      await onAddComment(comment, isPrivate);
       setComment("");
       setIsPrivate(false);
-    } catch (error) {
-      // Обработка ошибки или toast уведомление
-      console.error("Failed to add comment:", error);
+    } catch {
+      // Ошибка обрабатывается в родительском компоненте через onError мутации
     }
   };
 

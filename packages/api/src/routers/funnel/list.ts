@@ -33,14 +33,14 @@ export const list = protectedProcedure
       conditions.push(eq(funnelCandidate.vacancyId, input.vacancyId));
     }
 
+    if (input.cursor) {
+      conditions.push(lt(funnelCandidate.id, input.cursor));
+    }
+
     const candidates = await ctx.db.query.funnelCandidate.findMany({
       where: and(...conditions),
       orderBy: (candidates, { desc }) => [desc(candidates.id)],
       limit: input.limit + 1,
-      ...(input.cursor && {
-        cursor: { id: input.cursor },
-        skip: 1,
-      }),
     });
 
     let nextCursor: string | undefined;
