@@ -106,10 +106,18 @@ export function CommentsSection({
                       alt={c.author}
                     />
                     <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                      {c.author
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                      {(() => {
+                        const fallback = "?";
+                        const trimmed = (c.author ?? "").trim();
+                        if (!trimmed) return fallback;
+                        const initials = trimmed
+                          .split(/\s+/)
+                          .filter(Boolean)
+                          .map((part) => part[0] ?? "")
+                          .join("")
+                          .toUpperCase();
+                        return initials || fallback;
+                      })()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">

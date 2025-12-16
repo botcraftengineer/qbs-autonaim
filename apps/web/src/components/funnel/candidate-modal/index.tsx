@@ -30,7 +30,7 @@ import {
   MessageSquare,
   XCircle,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTRPC } from "~/trpc/react";
 import type { FunnelCandidate } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
@@ -53,6 +53,11 @@ export function CandidateModal({
   const [selectedStatus, setSelectedStatus] = useState(
     candidate?.stage ?? "REVIEW",
   );
+
+  useEffect(() => {
+    setSelectedStatus(candidate?.stage ?? "REVIEW");
+  }, [candidate?.stage]);
+
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 

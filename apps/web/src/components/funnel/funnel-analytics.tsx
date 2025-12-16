@@ -53,12 +53,14 @@ export function FunnelAnalytics() {
   const { data: analytics, isLoading } = useQuery({
     ...trpc.funnel.analytics.queryOptions({
       workspaceId: params.workspaceSlug,
+      timeRange,
     }),
   });
 
   const { data: vacancyStats } = useQuery({
     ...trpc.funnel.vacancyStats.queryOptions({
       workspaceId: params.workspaceSlug,
+      timeRange,
     }),
   });
 

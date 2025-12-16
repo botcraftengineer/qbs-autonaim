@@ -42,9 +42,7 @@ export interface FunnelActivity {
   createdAt: Date;
 }
 
-export type StageKey = "NEW" | "REVIEW" | "INTERVIEW" | "HIRED" | "REJECTED";
-
-export const STAGE_LABELS: Record<StageKey, string> = {
+export const STAGE_LABELS: Record<FunnelStage, string> = {
   NEW: "Новые",
   REVIEW: "На рассмотрении",
   INTERVIEW: "Собеседование",
@@ -52,7 +50,7 @@ export const STAGE_LABELS: Record<StageKey, string> = {
   REJECTED: "Отклонен",
 };
 
-export const STAGE_COLORS: Record<StageKey, string> = {
+export const STAGE_COLORS: Record<FunnelStage, string> = {
   NEW: "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400",
   REVIEW:
     "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400",

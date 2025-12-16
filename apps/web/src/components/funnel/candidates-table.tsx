@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@qbs-autonaim/ui";
 import { Briefcase, MapPin, Star } from "lucide-react";
-import type { FunnelCandidate, StageKey } from "./types";
+import type { FunnelCandidate, FunnelStage } from "./types";
 import { STAGE_COLORS, STAGE_LABELS } from "./types";
 
 interface CandidatesTableProps {
@@ -23,9 +23,9 @@ export function CandidatesTable({
   onRowClick,
 }: CandidatesTableProps) {
   const getStageText = (stage: string) =>
-    STAGE_LABELS[stage as StageKey] ?? stage;
+    STAGE_LABELS[stage as FunnelStage] ?? stage;
   const getStageColor = (stage: string) =>
-    STAGE_COLORS[stage as StageKey] ?? "";
+    STAGE_COLORS[stage as FunnelStage] ?? "";
 
   if (candidates.length === 0) {
     return (

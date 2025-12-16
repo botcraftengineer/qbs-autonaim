@@ -16,7 +16,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, Search, SlidersHorizontal } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTRPC } from "~/trpc/react";
 import { CandidateModal } from "./candidate-modal";
 import { CandidatesTable } from "./candidates-table";
@@ -30,6 +30,7 @@ export function FunnelBoard() {
   const [selectedCandidate, setSelectedCandidate] =
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchText, setSearchText] = useState("");
   const trpc = useTRPC();
 
   const { data: vacancies } = useQuery({
@@ -50,10 +51,26 @@ export function FunnelBoard() {
     setIsModalOpen(true);
   };
 
-  const newCandidates = candidates?.filter((c) => c.stage === "NEW") ?? [];
-  const inReview = candidates?.filter((c) => c.stage === "REVIEW") ?? [];
-  const interview = candidates?.filter((c) => c.stage === "INTERVIEW") ?? [];
-  const hired = candidates?.filter((c) => c.stage === "HIRED") ?? [];
+  const filteredCandidates = useMemo(() => {
+    if (!candidates) return [];
+    const query = searchText.trim().toLowerCase();
+    if (!query) return candidates;
+
+    const terms = query.split(/\s+/).filter(Boolean);
+    return candidates.filter((c) => {
+      const searchable = [
+        c.name.toLowerCase(),
+        c.position.toLowerCase(),
+        ...c.skills.map((s) => s.toLowerCase()),
+      ].join(" ");
+      return terms.every((term) => searchable.includes(term));
+    });
+  }, [candidates, searchText]);
+
+  const newCandidates = filteredCandidates.filter((c) => c.stage === "NEW");
+  const inReview = filteredCandidates.filter((c) => c.stage === "REVIEW");
+  const interview = filteredCandidates.filter((c) => c.stage === "INTERVIEW");
+  const hired = filteredCandidates.filter((c) => c.stage === "HIRED");
 
   return (
     <div className="space-y-6">
@@ -80,6 +97,11 @@ export function FunnelBoard() {
               <Input
                 placeholder="Поиск по имени, навыкам или должности…"
                 className="pl-9 h-10 bg-background"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                aria-label="Поиск кандидатов по имени, навыкам или должности"
+                type="search"
+                autoComplete="off"
               />
             </div>
           </div>
@@ -139,7 +161,7 @@ export function FunnelBoard() {
         </div>
       ) : (
         <CandidatesTable
-          candidates={candidates ?? []}
+          candidates={filteredCandidates}
           onRowClick={handleCardClick}
         />
       )}

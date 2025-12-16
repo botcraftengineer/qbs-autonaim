@@ -25,8 +25,13 @@ export const funnelActivity = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
+
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
   },
   (table) => ({
     candidateIdx: index("funnel_activity_candidate_idx").on(table.candidateId),
-  })
+  }),
 );
