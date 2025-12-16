@@ -181,8 +181,8 @@ export const list = protectedProcedure
           : (resumeScore ?? interviewScore ?? 0);
 
       const contacts = r.contacts as Record<string, string> | null;
-      // Приоритет: данные из contacts, затем top-level поле phone (если есть)
-      const contactPhone = contacts?.phone || r.phone;
+      // Телефон берем только из top-level поля phone
+      const contactPhone = r.phone;
       // Пробуем разные варианты ключей, так как структура может варьироваться
       const email = contacts?.email || null;
       const linkedin = contacts?.linkedin || contacts?.linkedIn || null;

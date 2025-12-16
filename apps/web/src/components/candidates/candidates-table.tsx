@@ -148,7 +148,6 @@ export function CandidatesTable({
             <TableRow>
               <TableHead className="w-[280px]">Кандидат</TableHead>
               <TableHead>Вакансия</TableHead>
-              <TableHead>Навыки</TableHead>
               <TableHead className="w-[100px]">Совпадение</TableHead>
               <TableHead>Зарплата</TableHead>
               <TableHead>Дата</TableHead>
@@ -167,12 +166,7 @@ export function CandidatesTable({
                 <TableCell>
                   <div className="h-4 w-28 bg-muted animate-pulse rounded" />
                 </TableCell>
-                <TableCell>
-                  <div className="flex gap-1">
-                    <div className="h-5 w-14 bg-muted animate-pulse rounded" />
-                    <div className="h-5 w-14 bg-muted animate-pulse rounded" />
-                  </div>
-                </TableCell>
+
                 <TableCell>
                   <div className="h-4 w-12 bg-muted animate-pulse rounded" />
                 </TableCell>
@@ -214,7 +208,6 @@ export function CandidatesTable({
               Кандидат
             </SortableHeader>
             <SortableHeader field="position">Вакансия</SortableHeader>
-            <TableHead>Навыки</TableHead>
             <SortableHeader field="matchScore" className="w-[100px]">
               Совпадение
             </SortableHeader>
@@ -256,28 +249,6 @@ export function CandidatesTable({
               </TableCell>
               <TableCell>
                 <span className="text-sm">{candidate.vacancyName}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex flex-wrap gap-1 max-w-[200px]">
-                  {candidate.skills.slice(0, 2).map((skill) => (
-                    <Badge
-                      key={skill}
-                      variant="secondary"
-                      className="text-xs truncate max-w-[80px]"
-                    >
-                      {skill}
-                    </Badge>
-                  ))}
-                  {candidate.skills.length > 2 && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs"
-                      title={candidate.skills.slice(2).join(", ")}
-                    >
-                      +{candidate.skills.length - 2}
-                    </Badge>
-                  )}
-                </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5">
