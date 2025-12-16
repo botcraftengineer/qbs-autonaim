@@ -276,9 +276,21 @@ export async function saveMessage(
  */
 export async function getInterviewStartData(responseId: string): Promise<{
   response: typeof vacancyResponse.$inferSelect & {
-    vacancy: typeof vacancy.$inferSelect & {
-      workspace: typeof workspace.$inferSelect;
-    };
+    vacancy:
+      | (typeof vacancy.$inferSelect & {
+          workspace: typeof workspace.$inferSelect & {
+            companySettings: {
+              id: string;
+              workspaceId: string;
+              botName: string | null;
+              botRole: string | null;
+              customBotInstructions: string | null;
+              createdAt: Date;
+              updatedAt: Date;
+            } | null;
+          };
+        })
+      | null;
   };
 } | null> {
   try {
@@ -302,39 +314,9 @@ export async function getInterviewStartData(responseId: string): Promise<{
       return null;
     }
 
-    const firstScreening = Array.isArray(response.screening)
-      ? response.screening[0]
-      : undefined;
-
-    // Преобразуем requirements из jsonb в строку
-    let requirementsText: string | undefined;
-    if (response.vacancy?.requirements) {
-      if (typeof response.vacancy.requirements === "string") {
-        requirementsText = response.vacancy.requirements;
-      } else if (typeof response.vacancy.requirements === "object") {
-        requirementsText = JSON.stringify(response.vacancy.requirements);
-      }
-    }
-
-    const companySettings = response.vacancy?.workspace?.companySettings;
-
+    // Возвращаем данные в правильной структуре
     return {
-      candidateName: response.candidateName,
-      vacancyTitle: response.vacancy?.title,
-      vacancyDescription: response.vacancy?.description,
-      vacancyRequirements: requirementsText,
-      experience: response.experience,
-      coverLetter: response.coverLetter,
-      phone: response.phone,
-      status: response.status,
-      screeningScore: firstScreening?.score,
-      screeningAnalysis: firstScreening?.analysis,
-      customBotInstructions: response.vacancy?.customBotInstructions,
-      customInterviewQuestions: response.vacancy?.customInterviewQuestions,
-      customOrganizationalQuestions:
-        response.vacancy?.customOrganizationalQuestions,
-      botName: companySettings?.botName ?? "",
-      botRole: companySettings?.botRole ?? "рекрутер",
+      response,
     };
   } catch (error) {
     console.error("Error getting interview start data:", error);

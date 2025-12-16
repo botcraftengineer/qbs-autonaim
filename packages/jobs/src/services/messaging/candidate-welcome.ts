@@ -5,7 +5,7 @@ import {
   responseScreening,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { generateText } from "@qbs-autonaim/lib";
+import { generateText } from "@qbs-autonaim/lib/ai";
 import {
   buildCandidateWelcomePrompt,
   buildTelegramInvitePrompt,

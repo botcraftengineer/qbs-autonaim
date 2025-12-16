@@ -8,7 +8,7 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { generateText } from "@qbs-autonaim/lib";
+import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildInterviewCompletionPrompt } from "@qbs-autonaim/prompts";
 import {
   analyzeAndGenerateNextQuestion,

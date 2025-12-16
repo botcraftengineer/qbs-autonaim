@@ -11,5 +11,5 @@ export default defineConfig({
   dts: true,
   sourcemap: false,
   clean: true,
-  external: [],
+  external: [/^@qbs-autonaim\/db/],
 });

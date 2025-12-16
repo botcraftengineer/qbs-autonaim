@@ -65,16 +65,7 @@ export type {
   BaseAgentContext,
   WorkflowState,
 } from "./types";
-// Примеры использования (для разработки)
-export {
-  basicWorkflowExample,
-  escalationExample,
-  evaluationExample,
-  fullInterviewExample,
-  individualAgentsExample,
-  orchestratorExample,
-} from "./usage-example";
-// Утилиты
+
 export { convertLegacyContext } from "./utils/legacy-converter";
 export type { InterviewWorkflowConfig } from "./workflows/interview-workflow";
 // Workflow

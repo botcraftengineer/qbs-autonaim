@@ -5,7 +5,7 @@ import {
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { generateText } from "@qbs-autonaim/lib";
+import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildResponseScreeningPrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";
