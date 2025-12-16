@@ -129,8 +129,8 @@ export async function parseResumeExperience(
 
   let contacts = null;
   let phone: string | null = null;
-  const photoBuffer: Buffer | null = null;
-  const photoMimeType: string | null = null;
+  let photoBuffer: Buffer | null = null;
+  let photoMimeType: string | null = null;
 
   // Парсинг контактов (телефон)
   const resumeIdMatch = url.match(/\/resume\/([a-f0-9]+)/);

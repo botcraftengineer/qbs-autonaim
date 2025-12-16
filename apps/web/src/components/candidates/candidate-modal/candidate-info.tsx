@@ -49,11 +49,7 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
             {candidate.phone && (
               <div className="flex items-center gap-3">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">
-                  {typeof candidate.phone === "string"
-                    ? candidate.phone
-                    : candidate.phone.formatted || candidate.phone.raw}
-                </span>
+                <span className="text-sm">{candidate.phone}</span>
               </div>
             )}
             <div className="flex items-center gap-3">

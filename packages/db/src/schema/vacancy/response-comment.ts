@@ -11,7 +11,7 @@ export const vacancyResponseComment = pgTable("vacancy_response_comments", {
   responseId: uuid("response_id")
     .notNull()
     .references(() => vacancyResponse.id, { onDelete: "cascade" }),
-  authorId: uuid("author_id")
+  authorId: text("author_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   content: text("content").notNull(),
@@ -28,7 +28,7 @@ export const CreateVacancyResponseCommentSchema = createInsertSchema(
   vacancyResponseComment,
   {
     responseId: z.string().uuid(),
-    authorId: z.string().uuid(),
+    authorId: z.string(),
     content: z.string().min(1),
     isPrivate: z.boolean().default(true),
   },

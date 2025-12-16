@@ -1,6 +1,16 @@
 "use client";
 
 import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   Badge,
   Button,
   Checkbox,
@@ -19,16 +29,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
-import {
-  DndContext,
-  type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
@@ -41,8 +41,8 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
-import { CandidateKanbanColumn } from "./candidate-kanban-column";
 import { CandidateKanbanCard } from "./candidate-kanban-card";
+import { CandidateKanbanColumn } from "./candidate-kanban-column";
 import { CandidateModal } from "./candidate-modal";
 import { CandidatesTable } from "./candidates-table";
 import type { FunnelCandidate, FunnelStage } from "./types";
@@ -74,7 +74,6 @@ export function CandidatePipeline() {
   const [searchText, setSearchText] = useState("");
   const [filterStages, setFilterStages] = useState<FunnelStage[]>([]);
 
-
   const trpc = useTRPC();
 
   /* DND State & Handlers */
@@ -104,7 +103,9 @@ export function CandidatePipeline() {
     trpc.candidates.updateStage.mutationOptions({
       onMutate: async (newStageData) => {
         await queryClient.cancelQueries({ queryKey: listQueryKey });
-        const previousData = queryClient.getQueryData(listQueryKey) as typeof candidates;
+        const previousData = queryClient.getQueryData(
+          listQueryKey,
+        ) as typeof candidates;
 
         if (previousData) {
           queryClient.setQueryData(listQueryKey, (old: typeof candidates) => {
@@ -121,7 +122,7 @@ export function CandidatePipeline() {
         }
         return { previousData };
       },
-      onError: (err, newStageData, context) => {
+      onError: (_err, _newStageData, context) => {
         if (context?.previousData) {
           queryClient.setQueryData(listQueryKey, context.previousData);
         }
