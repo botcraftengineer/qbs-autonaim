@@ -1,8 +1,5 @@
 import { z } from "zod";
 
-/**
- * Schema for message media data
- */
 export const messageMediaSchema = z.object({
   type: z.string(),
   fileId: z.string().optional(),
@@ -10,18 +7,12 @@ export const messageMediaSchema = z.object({
   duration: z.number().optional(),
 });
 
-/**
- * Schema for message sender data
- */
 export const messageSenderSchema = z.object({
   type: z.string(),
   username: z.string().optional(),
   firstName: z.string().optional(),
 });
 
-/**
- * Schema for message data sent to Inngest
- */
 export const messageDataSchema = z.object({
   id: z.number(),
   chatId: z.string().min(1),
@@ -31,7 +22,4 @@ export const messageDataSchema = z.object({
   sender: messageSenderSchema.optional(),
 });
 
-/**
- * Inferred TypeScript type for MessageData
- */
 export type MessageData = z.infer<typeof messageDataSchema>;
