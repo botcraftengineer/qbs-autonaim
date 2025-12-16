@@ -40,9 +40,14 @@ export function CommentsSection({
 
   const handleSubmit = () => {
     if (!comment.trim()) return;
-    onAddComment(comment, isPrivate);
-    setComment("");
-    setIsPrivate(false);
+    try {
+      onAddComment(comment, isPrivate);
+      setComment("");
+      setIsPrivate(false);
+    } catch (error) {
+      // Обработка ошибки или toast уведомление
+      console.error("Failed to add comment:", error);
+    }
   };
 
   return (
