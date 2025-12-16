@@ -13,7 +13,7 @@ import {
 import { Edit, Globe, Lock, MessageSquare, Send, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-interface Comment {
+export interface Comment {
   id: string;
   author: string;
   authorAvatar: string | null;
@@ -22,7 +22,7 @@ interface Comment {
   createdAt: Date;
 }
 
-interface CommentsSectionProps {
+export interface CommentsSectionProps {
   comments: Comment[];
   onAddComment: (content: string, isPrivate: boolean) => void;
   onDeleteComment: (commentId: string) => void;
