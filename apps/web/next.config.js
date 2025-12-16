@@ -11,7 +11,6 @@ const config = {
   output: "standalone",
 
   transpilePackages: [
-    "@qbs-autonaim/api",
     "@qbs-autonaim/auth",
     "@qbs-autonaim/db",
     "@qbs-autonaim/lib",
