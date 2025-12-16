@@ -8,7 +8,7 @@ const stageSchema = z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]);
 export const updateStage = protectedProcedure
   .input(
     z.object({
-      candidateId: z.string(),
+      candidateId: z.string().uuid(),
       stage: stageSchema,
     }),
   )
