@@ -1,7 +1,48 @@
 import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
-export const env = createEnv({
+type Prettify<T> = { [K in keyof T]: T[K] } & {};
+
+export const env: Prettify<{
+  NODE_ENV?: "development" | "production" | "test";
+  VERCEL_ENV?: "development" | "preview" | "production";
+  VERCEL_URL?: string;
+  VERCEL_PROJECT_PRODUCTION_URL?: string;
+  POSTGRES_URL?: string;
+  RESEND_API_KEY?: string;
+  EMAIL_SANDBOX_ENABLED: boolean;
+  EMAIL_SANDBOX_HOST: string;
+  EMAIL_FROM: string;
+  AUTH_SECRET?: string;
+  AUTH_GOOGLE_ID?: string;
+  AUTH_GOOGLE_SECRET?: string;
+  AWS_S3_ENDPOINT?: string;
+  AWS_S3_FORCE_PATH_STYLE?: string;
+  AWS_ACCESS_KEY_ID?: string;
+  AWS_SECRET_ACCESS_KEY?: string;
+  AWS_REGION: string;
+  AWS_S3_BUCKET: string;
+  AI_PROVIDER: "openai" | "deepseek";
+  AI_MODEL?: string;
+  OPENAI_API_KEY?: string;
+  DEEPSEEK_API_KEY?: string;
+  LANGFUSE_SECRET_KEY?: string;
+  LANGFUSE_PUBLIC_KEY?: string;
+  LANGFUSE_BASE_URL?: string;
+  PORT: number;
+  USER_ID?: string;
+  TELEGRAM_API_ID?: string;
+  TELEGRAM_API_HASH?: string;
+  TELEGRAM_BOT_TOKEN?: string;
+  TELEGRAM_BOT_USERNAME?: string;
+  TG_CLIENT_URL: string;
+  INNGEST_EVENT_KEY?: string;
+  INNGEST_SIGNING_KEY?: string;
+  INNGEST_EVENT_API_BASE_URL: string;
+  APP_URL: string;
+  APP_NAME: string;
+  NEXT_PUBLIC_APP_URL: string;
+}> = createEnv({
   server: {
     // Node environment
     NODE_ENV: z.enum(["development", "production", "test"]).optional(),

@@ -40,7 +40,7 @@ export const AGENT_CONFIG = {
 /**
  * Получение конфигурации из переменных окружения
  */
-export function getAgentConfig() {
+export function getAgentConfig(): typeof AGENT_CONFIG {
   return {
     ...AGENT_CONFIG,
     FEATURES: {

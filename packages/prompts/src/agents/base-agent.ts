@@ -39,7 +39,7 @@ export abstract class BaseAgent<TInput, TOutput> {
   /**
    * Получение метаданных агента
    */
-  getMetadata() {
+  getMetadata(): { name: string; type: AgentType } {
     return {
       name: this.name,
       type: this.type,

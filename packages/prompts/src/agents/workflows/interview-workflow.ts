@@ -36,7 +36,7 @@ export class InterviewWorkflow {
     message: string,
     currentState: WorkflowState,
     context: BaseAgentContext,
-  ) {
+  ): Promise<import("../orchestrator").OrchestratorOutput> {
     const result = await this.orchestrator.execute(
       {
         message,
@@ -75,7 +75,17 @@ export class InterviewWorkflow {
     messages: Array<{ role: "user" | "assistant"; content: string }>,
     context: BaseAgentContext,
     initialState: WorkflowState,
-  ) {
+  ): Promise<{
+    status: "COMPLETED" | "ESCALATED";
+    steps: Array<{
+      message: string;
+      response: string;
+      state: WorkflowState;
+      timestamp: Date;
+    }>;
+    finalState: WorkflowState;
+    reason?: string;
+  }> {
     let currentState = initialState;
     const steps: Array<{
       message: string;

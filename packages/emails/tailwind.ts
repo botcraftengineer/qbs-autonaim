@@ -4,7 +4,7 @@ import type { TailwindConfig } from "@react-email/components";
 /**
  * This config is used for the emails, hence why it's almost the same as the normal tailwind config, just more verbose.
  */
-export const emailTailwindConfig = {
+export const emailTailwindConfig: TailwindConfig = {
   theme: {
     container: {
       center: true,
@@ -171,4 +171,4 @@ export const emailTailwindConfig = {
       96: "384px",
     },
   },
-} satisfies TailwindConfig;
+};

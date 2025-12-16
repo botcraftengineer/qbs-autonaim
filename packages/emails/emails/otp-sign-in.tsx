@@ -20,7 +20,7 @@ export default function OtpSignInEmail({
 }: {
   otp: string;
   isSignUp?: boolean;
-}) {
+}): JSX.Element {
   const action = isSignUp ? "Регистрация" : "Вход";
 
   return (

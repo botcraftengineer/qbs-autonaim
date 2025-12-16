@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import {
   Body,
   Button,
@@ -12,7 +13,6 @@ import {
   Tailwind,
   Text,
 } from "@react-email/components";
-import { env } from "@qbs-autonaim/config";
 
 import { emailTailwindConfig } from "../tailwind";
 
@@ -30,7 +30,7 @@ export default function WorkspaceInviteEmail({
   inviterName = "Пользователь",
   inviteLink = `${env.APP_URL}/invite/token`,
   role = "участника",
-}: WorkspaceInviteEmailProps) {
+}: WorkspaceInviteEmailProps): JSX.Element {
   const roleNames: Record<string, string> = {
     owner: "владельца",
     admin: "администратора",

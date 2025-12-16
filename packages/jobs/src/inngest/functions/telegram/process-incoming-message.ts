@@ -6,11 +6,11 @@ import {
   telegramMessage,
 } from "@qbs-autonaim/db/schema";
 import {
-  generateText,
   getInterviewStartData,
   identifyByPinCode,
   saveMessage,
 } from "@qbs-autonaim/lib";
+import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
@@ -191,28 +191,32 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 });
 
               // Генерируем ответ через AI
+              const vacancy = interviewData?.response.vacancy;
               const prompt = buildTelegramRecruiterPrompt({
                 messageText: text,
                 stage: "PIN_RECEIVED",
-                candidateName: interviewData?.candidateName ?? undefined,
-                vacancyTitle: interviewData?.vacancyTitle ?? undefined,
-                vacancyRequirements:
-                  interviewData?.vacancyRequirements ?? undefined,
+                candidateName:
+                  interviewData?.response.candidateName ?? undefined,
+                vacancyTitle: vacancy?.title ?? undefined,
+                vacancyRequirements: vacancy?.requirements
+                  ? JSON.stringify(vacancy.requirements)
+                  : undefined,
                 conversationHistory: conversationHistory.map((msg) => ({
                   sender: msg.sender,
                   content: msg.content,
                   contentType: msg.contentType,
                 })),
                 resumeData: {
-                  experience: interviewData?.experience ?? undefined,
-                  coverLetter: interviewData?.coverLetter ?? undefined,
+                  experience: interviewData?.response.experience ?? undefined,
+                  coverLetter: interviewData?.response.coverLetter ?? undefined,
                 },
                 customBotInstructions:
-                  interviewData?.customBotInstructions ?? undefined,
+                  vacancy?.workspace?.companySettings?.customBotInstructions ??
+                  undefined,
                 customInterviewQuestions:
-                  interviewData?.customInterviewQuestions ?? undefined,
+                  vacancy?.customInterviewQuestions ?? undefined,
                 customOrganizationalQuestions:
-                  interviewData?.customOrganizationalQuestions ?? undefined,
+                  vacancy?.customOrganizationalQuestions ?? undefined,
                 botName: botSettings.botName,
                 botRole: botSettings.botRole,
               });
@@ -222,8 +226,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 generationName: "telegram-pin-received",
                 entityId: identification.conversationId,
                 metadata: {
-                  candidateName: interviewData?.candidateName ?? undefined,
-                  vacancyTitle: interviewData?.vacancyTitle ?? undefined,
+                  candidateName:
+                    interviewData?.response.candidateName ?? undefined,
+                  vacancyTitle: vacancy?.title ?? undefined,
                 },
               });
 

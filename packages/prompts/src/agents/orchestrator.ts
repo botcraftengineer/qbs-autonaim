@@ -6,9 +6,17 @@
 import type { LanguageModel } from "ai";
 import { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
 import { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
-import { EnhancedEvaluatorAgent } from "./enhanced-evaluator";
+import {
+  EnhancedEvaluatorAgent,
+  type EnhancedEvaluatorOutput,
+} from "./enhanced-evaluator";
 import { EnhancedInterviewerAgent } from "./enhanced-interviewer";
-import type { AgentDecision, BaseAgentContext, WorkflowState } from "./types";
+import type {
+  AgentDecision,
+  AgentResult,
+  BaseAgentContext,
+  WorkflowState,
+} from "./types";
 
 export interface OrchestratorInput {
   message: string;
@@ -224,8 +232,8 @@ export class InterviewOrchestrator {
   async evaluateInterview(
     allQA: Array<{ question: string; answer: string }>,
     context: BaseAgentContext,
-  ) {
-    const results = [];
+  ): Promise<Array<AgentResult<EnhancedEvaluatorOutput>>> {
+    const results: Array<AgentResult<EnhancedEvaluatorOutput>> = [];
 
     for (const qa of allQA) {
       const result = await this.evaluator.execute(

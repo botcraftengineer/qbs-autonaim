@@ -6,9 +6,13 @@
 import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  type companySettings,
+  type responseScreening,
   telegramConversation,
   telegramMessage,
+  type vacancy,
   vacancyResponse,
+  type workspace,
 } from "@qbs-autonaim/db/schema";
 
 interface IdentificationResult {
@@ -272,7 +276,18 @@ export async function saveMessage(
 /**
  * Получает данные для начала интервью
  */
-export async function getInterviewStartData(responseId: string) {
+export async function getInterviewStartData(responseId: string): Promise<{
+  response: typeof vacancyResponse.$inferSelect & {
+    vacancy:
+      | (typeof vacancy.$inferSelect & {
+          workspace: typeof workspace.$inferSelect & {
+            companySettings: typeof companySettings.$inferSelect | null;
+          };
+        })
+      | null;
+    screening: typeof responseScreening.$inferSelect | null;
+  };
+} | null> {
   try {
     const response = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
@@ -294,39 +309,9 @@ export async function getInterviewStartData(responseId: string) {
       return null;
     }
 
-    const firstScreening = Array.isArray(response.screening)
-      ? response.screening[0]
-      : undefined;
-
-    // Преобразуем requirements из jsonb в строку
-    let requirementsText: string | undefined;
-    if (response.vacancy?.requirements) {
-      if (typeof response.vacancy.requirements === "string") {
-        requirementsText = response.vacancy.requirements;
-      } else if (typeof response.vacancy.requirements === "object") {
-        requirementsText = JSON.stringify(response.vacancy.requirements);
-      }
-    }
-
-    const companySettings = response.vacancy?.workspace?.companySettings;
-
+    // Возвращаем данные в правильной структуре
     return {
-      candidateName: response.candidateName,
-      vacancyTitle: response.vacancy?.title,
-      vacancyDescription: response.vacancy?.description,
-      vacancyRequirements: requirementsText,
-      experience: response.experience,
-      coverLetter: response.coverLetter,
-      phone: response.phone,
-      status: response.status,
-      screeningScore: firstScreening?.score,
-      screeningAnalysis: firstScreening?.analysis,
-      customBotInstructions: response.vacancy?.customBotInstructions,
-      customInterviewQuestions: response.vacancy?.customInterviewQuestions,
-      customOrganizationalQuestions:
-        response.vacancy?.customOrganizationalQuestions,
-      botName: companySettings?.botName ?? "Дмитрий",
-      botRole: companySettings?.botRole ?? "рекрутер",
+      response,
     };
   } catch (error) {
     console.error("Error getting interview start data:", error);

@@ -1,4 +1,4 @@
-import { generateText } from "@qbs-autonaim/lib";
+import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildTelegramUsernameExtractionPrompt } from "@qbs-autonaim/prompts";
 import { createLogger, TELEGRAM } from "../base";
 
