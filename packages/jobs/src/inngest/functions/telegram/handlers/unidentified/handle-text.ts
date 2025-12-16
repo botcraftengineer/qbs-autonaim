@@ -1,4 +1,3 @@
-import type { telegramConversation } from "@qbs-autonaim/db/schema";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { createOrUpdateTempConversation, extractPinCode } from "../../utils";

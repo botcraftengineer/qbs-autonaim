@@ -94,6 +94,15 @@ export const list = protectedProcedure
       const vacancyData = vacancies.find((v) => v.id === r.vacancyId);
       const stage = mapResponseToStage(r.status, r.hrSelectionStatus);
 
+      const resumeScore = r.screening?.detailedScore;
+      const interviewScore = r.telegramInterviewScoring?.detailedScore;
+
+      // Общий скор: если есть оба - среднее, иначе тот что есть
+      const matchScore =
+        resumeScore !== undefined && interviewScore !== undefined
+          ? Math.round((resumeScore + interviewScore) / 2)
+          : (resumeScore ?? interviewScore ?? 0);
+
       return {
         id: r.id,
         name: r.candidateName || "Без имени",
@@ -110,10 +119,11 @@ export const list = protectedProcedure
         experience: r.experience || "Не указан",
         location: "Не указано",
         skills: [],
-        matchScore: r.screening?.detailedScore || 0,
-        resumeScore: r.screening?.detailedScore,
-        interviewScore: r.telegramInterviewScoring?.detailedScore,
+        matchScore,
+        resumeScore,
+        interviewScore,
         scoreAnalysis: r.telegramInterviewScoring?.analysis ?? undefined,
+        screeningAnalysis: r.screening?.analysis ?? undefined,
         availability: "Не указано",
         salaryExpectation: "Не указано",
         stage,

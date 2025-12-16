@@ -14,14 +14,29 @@ import {
   TabsTrigger,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Search, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  Briefcase,
+  LayoutGrid,
+  List,
+  Search,
+  SlidersHorizontal,
+  UserPlus,
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
-import { CandidateModal } from "../funnel/candidate-modal";
-import type { FunnelCandidate } from "../funnel/types";
-import { CandidateColumn } from "./candidate-column";
+import { CandidateKanbanColumn } from "./candidate-kanban-column";
+import { CandidateModal } from "./candidate-modal";
 import { CandidatesTable } from "./candidates-table";
+import type { FunnelCandidate, FunnelStage } from "./types";
+
+const STAGES: { id: FunnelStage; title: string; color: string }[] = [
+  { id: "NEW", title: "Новые", color: "bg-blue-500" },
+  { id: "REVIEW", title: "Рассмотрение", color: "bg-amber-500" },
+  { id: "INTERVIEW", title: "Собеседование", color: "bg-purple-500" },
+  { id: "HIRED", title: "Наняты", color: "bg-emerald-500" },
+  { id: "REJECTED", title: "Отказ", color: "bg-rose-500" },
+];
 
 export function CandidatePipeline() {
   const { workspaceId } = useWorkspaceContext();
@@ -31,6 +46,7 @@ export function CandidatePipeline() {
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+
   const trpc = useTRPC();
 
   const { data: vacancies } = useQuery({
@@ -41,17 +57,17 @@ export function CandidatePipeline() {
   });
 
   const { data: candidates, isLoading } = useQuery({
-    ...trpc.funnel.list.queryOptions({
+    ...trpc.candidates.list.queryOptions({
       workspaceId: workspaceId ?? "",
       vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
     }),
     enabled: !!workspaceId,
   });
 
-  const handleCardClick = (candidate: FunnelCandidate) => {
+  const handleCardClick = useCallback((candidate: FunnelCandidate) => {
     setSelectedCandidate(candidate);
     setIsModalOpen(true);
-  };
+  }, []);
 
   const filteredCandidates = useMemo(() => {
     const items = candidates?.items ?? [];
@@ -61,17 +77,34 @@ export function CandidatePipeline() {
 
     const terms = query.split(/\s+/).filter(Boolean);
     return items.filter((c) => {
-      const searchable = [c.name.toLowerCase(), c.position.toLowerCase()].join(
-        " ",
-      );
+      const skillsLower = c.skills.map((s: string) => s.toLowerCase());
+      const searchable = [
+        c.name.toLowerCase(),
+        c.position.toLowerCase(),
+        ...skillsLower,
+      ].join(" ");
       return terms.every((term) => searchable.includes(term));
     });
   }, [candidates, searchText]);
 
-  const newCandidates = filteredCandidates.filter((c) => c.stage === "NEW");
-  const inReview = filteredCandidates.filter((c) => c.stage === "REVIEW");
-  const interview = filteredCandidates.filter((c) => c.stage === "INTERVIEW");
-  const hired = filteredCandidates.filter((c) => c.stage === "HIRED");
+  const candidatesByStage = useMemo(() => {
+    const result: Record<FunnelStage, FunnelCandidate[]> = {
+      NEW: [],
+      REVIEW: [],
+      INTERVIEW: [],
+      HIRED: [],
+      REJECTED: [],
+    };
+    for (const c of filteredCandidates) {
+      const stage = c.stage as FunnelStage;
+      if (result[stage]) {
+        result[stage].push(c);
+      }
+    }
+    return result;
+  }, [filteredCandidates]);
+
+  const totalCount = filteredCandidates.length;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -96,79 +129,94 @@ export function CandidatePipeline() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск…"
+                placeholder="Поиск по имени, должности, навыкам…"
                 className="pl-9 h-10 bg-background"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                aria-label="Поиск кандидатов по имени, навыкам или должности"
+                aria-label="Поиск кандидатов"
                 type="search"
                 autoComplete="off"
+                spellCheck={false}
               />
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 h-10 px-4 w-full sm:w-auto"
-            disabled
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Фильтры
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-10 px-4"
+              disabled
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Фильтры</span>
+            </Button>
+            <Button size="sm" className="gap-2 h-10 px-4" disabled>
+              <UserPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Добавить</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <Tabs
           value={activeView}
           onValueChange={(v) => setActiveView(v as "board" | "table")}
         >
           <TabsList className="h-10">
-            <TabsTrigger value="board" className="px-3 sm:px-4">
-              Доска
+            <TabsTrigger value="board" className="gap-2 px-3 sm:px-4">
+              <LayoutGrid className="h-4 w-4" />
+              <span className="hidden sm:inline">Доска</span>
             </TabsTrigger>
-            <TabsTrigger value="table" className="px-3 sm:px-4">
-              Таблица
+            <TabsTrigger value="table" className="gap-2 px-3 sm:px-4">
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">Таблица</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+const pluralizeCandidate = (count: number): string => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod100 >= 11 && mod100 <= 19) return "кандидатов";
+  if (mod10 === 1) return "кандидат";
+  if (mod10 >= 2 && mod10 <= 4) return "кандидата";
+  return "кандидатов";
+};
+
+// ... (rest of component code)
+
+        <div className="text-sm text-muted-foreground tabular-nums">
+          {totalCount > 0 ? (
+            <>
+              <span className="font-medium text-foreground">{totalCount}</span>{" "}
+              {pluralizeCandidate(totalCount)}
+            </>
+          ) : null}
+        </div>
       </div>
 
       {activeView === "board" ? (
-        <div className="flex gap-3 md:gap-5 overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none">
-          <CandidateColumn
-            title="Новые"
-            count={newCandidates.length}
-            candidates={newCandidates}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-          <CandidateColumn
-            title="Рассмотрение"
-            count={inReview.length}
-            candidates={inReview}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-          <CandidateColumn
-            title="Собеседование"
-            count={interview.length}
-            candidates={interview}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-          <CandidateColumn
-            title="Наняты"
-            count={hired.length}
-            candidates={hired}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-        </div>
+        <section
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6"
+          aria-label="Канбан-доска кандидатов"
+        >
+          {STAGES.map((stage) => (
+            <CandidateKanbanColumn
+              key={stage.id}
+              title={stage.title}
+              color={stage.color}
+              candidates={candidatesByStage[stage.id]}
+              onCardClick={handleCardClick}
+              isLoading={isLoading}
+            />
+          ))}
+        </section>
       ) : (
         <CandidatesTable
           candidates={filteredCandidates}
           onRowClick={handleCardClick}
+          isLoading={isLoading}
         />
       )}
 

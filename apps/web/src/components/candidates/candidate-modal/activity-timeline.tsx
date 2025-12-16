@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Calendar,
@@ -7,17 +8,11 @@ import {
   FileText,
   MessageSquare,
 } from "lucide-react";
-
-interface Activity {
-  id: string;
-  type: string;
-  description: string;
-  createdAt: Date;
-  author?: string | null;
-}
+import { useTRPC } from "~/trpc/react";
 
 interface ActivityTimelineProps {
-  activities: Activity[];
+  candidateId: string;
+  workspaceId: string;
 }
 
 const ACTIVITY_ICONS = {
@@ -36,12 +31,48 @@ const ACTIVITY_COLORS = {
   APPLIED: "text-primary bg-primary/10 border-primary/20",
 } as const;
 
-export function ActivityTimeline({ activities }: ActivityTimelineProps) {
+export function ActivityTimeline({
+  candidateId,
+  workspaceId,
+}: ActivityTimelineProps) {
+  const trpc = useTRPC();
+  const { data: activities = [], isLoading } = useQuery({
+    ...trpc.candidates.listActivities.queryOptions({
+      candidateId,
+      workspaceId,
+    }),
+  });
+
   const getIcon = (type: string) =>
     ACTIVITY_ICONS[type as keyof typeof ACTIVITY_ICONS] ?? CheckCircle;
   const getColor = (type: string) =>
     ACTIVITY_COLORS[type as keyof typeof ACTIVITY_COLORS] ??
     "text-primary bg-primary/10 border-primary/20";
+
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-start gap-3 p-3 rounded-lg border">
+            <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />
+            <div className="flex-1 space-y-2">
+              <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+              <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (activities.length === 0) {
+    return (
+      <div className="text-center py-12 text-muted-foreground">
+        <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
+        <p className="text-sm">Нет активности</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
