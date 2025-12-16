@@ -11,4 +11,9 @@ export default defineConfig({
   minify: isProduction,
   external: ["react", "react-dom"],
   platform: "neutral",
+  inputOptions: {
+    transform: {
+      jsx: "preserve",
+    },
+  },
 });
