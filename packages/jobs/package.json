@@ -35,8 +35,8 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "2.0.0-beta.50",
-    "@ai-sdk/openai": "3.0.0-beta.96",
+    "@ai-sdk/deepseek": "2.0.0-beta.54",
+    "@ai-sdk/openai": "3.0.0-beta.100",
     "@inngest/realtime": "0.4.5",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/emails": "workspace:*",
@@ -45,7 +45,7 @@
     "@qbs-autonaim/prompts": "workspace:*",
     "@qbs-autonaim/tg-client": "workspace:*",
     "@t3-oss/env-core": "0.13.10",
-    "ai": "6.0.0-beta.151",
+    "ai": "6.0.0-beta.156",
     "axios": "^1.13.2",
     "crawlee": "3.15.3",
     "inngest": "3.47.0",
@@ -54,7 +54,7 @@
     "puppeteer-extra": "3.3.6",
     "puppeteer-extra-plugin-stealth": "2.11.2",
     "string-strip-html": "13.5.0",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",

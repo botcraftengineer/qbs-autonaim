@@ -1,4 +1,4 @@
-import { and, eq, workspaceRepository } from "@qbs-autonaim/db";
+import { and, eq, lt, workspaceRepository } from "@qbs-autonaim/db";
 import { funnelCandidate } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -35,8 +35,12 @@ export const list = protectedProcedure
 
     const candidates = await ctx.db.query.funnelCandidate.findMany({
       where: and(...conditions),
-      orderBy: (candidates, { desc }) => [desc(candidates.createdAt)],
+      orderBy: (candidates, { desc }) => [desc(candidates.id)],
       limit: input.limit + 1,
+      ...(input.cursor && {
+        cursor: { id: input.cursor },
+        skip: 1,
+      }),
     });
 
     let nextCursor: string | undefined;

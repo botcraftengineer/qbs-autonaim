@@ -27,15 +27,15 @@
     "nodemailer": "^7.0.11",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-email": "5.0.7",
+    "react-email": "5.0.8",
     "resend": "^6.6.0",
     "sharp": "^0.34.5",
     "tailwindcss": "4.1.18",
     "tailwindcss-animate": "1.0.7",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "devDependencies": {
-    "@react-email/preview-server": "5.0.7",
+    "@react-email/preview-server": "5.0.8",
     "@types/node": "25.0.2",
     "@types/nodemailer": "^7.0.4",
     "@types/react": "19.2.7",
