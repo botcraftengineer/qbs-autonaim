@@ -7,6 +7,7 @@ export const analytics = protectedProcedure
   .input(
     z.object({
       workspaceId: z.string(),
+      vacancyId: z.string().optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
@@ -15,7 +16,13 @@ export const analytics = protectedProcedure
       columns: { id: true },
     });
 
-    const vacancyIds = vacancies.map((v) => v.id);
+    const workspaceVacancyIds = vacancies.map((v) => v.id);
+
+    const vacancyIds = input.vacancyId
+      ? workspaceVacancyIds.includes(input.vacancyId)
+        ? [input.vacancyId]
+        : []
+      : workspaceVacancyIds;
 
     if (vacancyIds.length === 0) {
       return {
