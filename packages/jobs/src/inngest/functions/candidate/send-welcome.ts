@@ -106,7 +106,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           senderId?: string;
         } | null = null;
 
-        const actualSentMessage = welcomeMessage;
+        let actualSentMessage = welcomeMessage;
 
         // Пытаемся отправить по username, если он есть
         if (username) {

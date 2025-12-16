@@ -38,6 +38,15 @@ const STAGES: { id: FunnelStage; title: string; color: string }[] = [
   { id: "REJECTED", title: "Отказ", color: "bg-rose-500" },
 ];
 
+const pluralizeCandidate = (count: number): string => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod100 >= 11 && mod100 <= 19) return "кандидатов";
+  if (mod10 === 1) return "кандидат";
+  if (mod10 >= 2 && mod10 <= 4) return "кандидата";
+  return "кандидатов";
+};
+
 export function CandidatePipeline() {
   const { workspaceId } = useWorkspaceContext();
   const [selectedVacancy, setSelectedVacancy] = useState<string>("all");
@@ -174,17 +183,6 @@ export function CandidatePipeline() {
             </TabsTrigger>
           </TabsList>
         </Tabs>
-
-const pluralizeCandidate = (count: number): string => {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod100 >= 11 && mod100 <= 19) return "кандидатов";
-  if (mod10 === 1) return "кандидат";
-  if (mod10 >= 2 && mod10 <= 4) return "кандидата";
-  return "кандидатов";
-};
-
-// ... (rest of component code)
 
         <div className="text-sm text-muted-foreground tabular-nums">
           {totalCount > 0 ? (
