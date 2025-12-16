@@ -9,5 +9,6 @@ export default defineConfig({
   sourcemap: false,
   clean: true,
   minify: isProduction,
-  external: ["react"],
+  external: ["react", "react-dom"],
+  platform: "neutral",
 });
