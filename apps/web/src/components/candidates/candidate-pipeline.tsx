@@ -175,15 +175,22 @@ export function CandidatePipeline() {
           </TabsList>
         </Tabs>
 
+const pluralizeCandidate = (count: number): string => {
+  const mod10 = count % 10;
+  const mod100 = count % 100;
+  if (mod100 >= 11 && mod100 <= 19) return "кандидатов";
+  if (mod10 === 1) return "кандидат";
+  if (mod10 >= 2 && mod10 <= 4) return "кандидата";
+  return "кандидатов";
+};
+
+// ... (rest of component code)
+
         <div className="text-sm text-muted-foreground tabular-nums">
           {totalCount > 0 ? (
             <>
               <span className="font-medium text-foreground">{totalCount}</span>{" "}
-              {totalCount === 1
-                ? "кандидат"
-                : totalCount < 5
-                  ? "кандидата"
-                  : "кандидатов"}
+              {pluralizeCandidate(totalCount)}
             </>
           ) : null}
         </div>
