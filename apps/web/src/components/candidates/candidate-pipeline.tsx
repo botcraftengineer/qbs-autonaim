@@ -1,16 +1,6 @@
 "use client";
 
 import {
-  closestCorners,
-  DndContext,
-  type DragEndEvent,
-  DragOverlay,
-  type DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
   Button,
   Input,
   Select,
@@ -24,15 +14,28 @@ import {
   TabsTrigger,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { Briefcase, Search, SlidersHorizontal } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  Briefcase,
+  LayoutGrid,
+  List,
+  Search,
+  SlidersHorizontal,
+  UserPlus,
+} from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 import { CandidateModal } from "../funnel/candidate-modal";
-import type { FunnelCandidate } from "../funnel/types";
-import { CandidateCard } from "./candidate-card";
+import type { FunnelCandidate, FunnelStage } from "../funnel/types";
 import { CandidateKanbanColumn } from "./candidate-kanban-column";
 import { CandidatesTable } from "./candidates-table";
+
+const STAGES: { id: FunnelStage; title: string; color: string }[] = [
+  { id: "NEW", title: "Новые", color: "bg-blue-500" },
+  { id: "REVIEW", title: "Рассмотрение", color: "bg-amber-500" },
+  { id: "INTERVIEW", title: "Собеседование", color: "bg-purple-500" },
+  { id: "HIRED", title: "Наняты", color: "bg-emerald-500" },
+];
 
 export function CandidatePipeline() {
   const { workspaceId } = useWorkspaceContext();
@@ -42,17 +45,8 @@ export function CandidatePipeline() {
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [activeCandidate, setActiveCandidate] =
-    useState<FunnelCandidate | null>(null);
-  const trpc = useTRPC();
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
-    }),
-  );
+  const trpc = useTRPC();
 
   const { data: vacancies } = useQuery({
     ...trpc.vacancy.listActive.queryOptions({
@@ -69,10 +63,10 @@ export function CandidatePipeline() {
     enabled: !!workspaceId,
   });
 
-  const handleCardClick = (candidate: FunnelCandidate) => {
+  const handleCardClick = useCallback((candidate: FunnelCandidate) => {
     setSelectedCandidate(candidate);
     setIsModalOpen(true);
-  };
+  }, []);
 
   const filteredCandidates = useMemo(() => {
     const items = candidates?.items ?? [];
@@ -82,37 +76,34 @@ export function CandidatePipeline() {
 
     const terms = query.split(/\s+/).filter(Boolean);
     return items.filter((c) => {
-      const searchable = [c.name.toLowerCase(), c.position.toLowerCase()].join(
-        " ",
-      );
+      const skillsLower = c.skills.map((s: string) => s.toLowerCase());
+      const searchable = [
+        c.name.toLowerCase(),
+        c.position.toLowerCase(),
+        ...skillsLower,
+      ].join(" ");
       return terms.every((term) => searchable.includes(term));
     });
   }, [candidates, searchText]);
 
-  const newCandidates = filteredCandidates.filter((c) => c.stage === "NEW");
-  const inReview = filteredCandidates.filter((c) => c.stage === "REVIEW");
-  const interview = filteredCandidates.filter((c) => c.stage === "INTERVIEW");
-  const hired = filteredCandidates.filter((c) => c.stage === "HIRED");
-
-  const handleDragStart = (event: DragStartEvent) => {
-    const { active } = event;
-    const candidate = filteredCandidates.find((c) => c.id === active.id);
-    if (candidate) {
-      setActiveCandidate(candidate);
+  const candidatesByStage = useMemo(() => {
+    const result: Record<FunnelStage, FunnelCandidate[]> = {
+      NEW: [],
+      REVIEW: [],
+      INTERVIEW: [],
+      HIRED: [],
+      REJECTED: [],
+    };
+    for (const c of filteredCandidates) {
+      const stage = c.stage as FunnelStage;
+      if (result[stage]) {
+        result[stage].push(c);
+      }
     }
-  };
+    return result;
+  }, [filteredCandidates]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    setActiveCandidate(null);
-
-    if (!over) return;
-
-    const candidateId = active.id as string;
-    const newStage = over.id as string;
-
-    console.log(`Move candidate ${candidateId} to stage ${newStage}`);
-  };
+  const totalCount = filteredCandidates.length;
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -137,94 +128,87 @@ export function CandidatePipeline() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск…"
+                placeholder="Поиск по имени, должности, навыкам…"
                 className="pl-9 h-10 bg-background"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                aria-label="Поиск кандидатов по имени, навыкам или должности"
+                aria-label="Поиск кандидатов"
                 type="search"
                 autoComplete="off"
+                spellCheck={false}
               />
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2 h-10 px-4 w-full sm:w-auto"
-            disabled
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            Фильтры
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2 h-10 px-4"
+              disabled
+            >
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="hidden sm:inline">Фильтры</span>
+            </Button>
+            <Button size="sm" className="gap-2 h-10 px-4" disabled>
+              <UserPlus className="h-4 w-4" />
+              <span className="hidden sm:inline">Добавить</span>
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <Tabs
           value={activeView}
           onValueChange={(v) => setActiveView(v as "board" | "table")}
         >
           <TabsList className="h-10">
-            <TabsTrigger value="board" className="px-3 sm:px-4">
-              Доска
+            <TabsTrigger value="board" className="gap-2 px-3 sm:px-4">
+              <LayoutGrid className="h-4 w-4" />
+              <span className="hidden sm:inline">Доска</span>
             </TabsTrigger>
-            <TabsTrigger value="table" className="px-3 sm:px-4">
-              Таблица
+            <TabsTrigger value="table" className="gap-2 px-3 sm:px-4">
+              <List className="h-4 w-4" />
+              <span className="hidden sm:inline">Таблица</span>
             </TabsTrigger>
           </TabsList>
         </Tabs>
+
+        <div className="text-sm text-muted-foreground tabular-nums">
+          {totalCount > 0 ? (
+            <>
+              <span className="font-medium text-foreground">{totalCount}</span>{" "}
+              {totalCount === 1
+                ? "кандидат"
+                : totalCount < 5
+                  ? "кандидата"
+                  : "кандидатов"}
+            </>
+          ) : null}
+        </div>
       </div>
 
       {activeView === "board" ? (
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCorners}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
+        <section
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"
+          aria-label="Канбан-доска кандидатов"
         >
-          <div className="flex gap-6 overflow-x-auto pb-4">
+          {STAGES.map((stage) => (
             <CandidateKanbanColumn
-              id="NEW"
-              title="Новые"
-              candidates={newCandidates}
+              key={stage.id}
+              title={stage.title}
+              color={stage.color}
+              candidates={candidatesByStage[stage.id]}
               onCardClick={handleCardClick}
               isLoading={isLoading}
             />
-            <CandidateKanbanColumn
-              id="REVIEW"
-              title="Рассмотрение"
-              candidates={inReview}
-              onCardClick={handleCardClick}
-              isLoading={isLoading}
-            />
-            <CandidateKanbanColumn
-              id="INTERVIEW"
-              title="Собеседование"
-              candidates={interview}
-              onCardClick={handleCardClick}
-              isLoading={isLoading}
-            />
-            <CandidateKanbanColumn
-              id="HIRED"
-              title="Наняты"
-              candidates={hired}
-              onCardClick={handleCardClick}
-              isLoading={isLoading}
-            />
-          </div>
-
-          <DragOverlay>
-            {activeCandidate ? (
-              <div className="opacity-50">
-                <CandidateCard candidate={activeCandidate} onClick={() => {}} />
-              </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
+          ))}
+        </section>
       ) : (
         <CandidatesTable
           candidates={filteredCandidates}
           onRowClick={handleCardClick}
+          isLoading={isLoading}
         />
       )}
 

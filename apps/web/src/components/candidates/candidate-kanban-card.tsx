@@ -1,7 +1,12 @@
 "use client";
 
-import { useDraggable } from "@dnd-kit/core";
-import { Avatar, AvatarFallback, AvatarImage, Badge } from "@qbs-autonaim/ui";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Badge,
+  cn,
+} from "@qbs-autonaim/ui";
 import { Calendar, MapPin, Star } from "lucide-react";
 import { MatchScoreCircle } from "../funnel/match-score-circle";
 import type { FunnelCandidate } from "../funnel/types";
@@ -15,16 +20,6 @@ export function CandidateKanbanCard({
   candidate,
   onClick,
 }: CandidateKanbanCardProps) {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id: candidate.id,
-  });
-
-  const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
-    : undefined;
-
   const getAvailabilityColor = () => {
     if (candidate.availability === "IMMEDIATE")
       return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800";
@@ -35,92 +30,105 @@ export function CandidateKanbanCard({
 
   const getAvailabilityText = () => {
     if (candidate.availability === "IMMEDIATE") return "Сразу";
-    if (candidate.availability === "TWO_WEEKS") return "2 недели";
-    return "1 месяц";
+    if (candidate.availability === "TWO_WEEKS") return "2 нед.";
+    return "1 мес.";
+  };
+
+  const getMatchScoreColor = () => {
+    if (candidate.matchScore >= 70)
+      return "text-emerald-600 dark:text-emerald-400";
+    if (candidate.matchScore >= 40) return "text-amber-600 dark:text-amber-400";
+    return "text-muted-foreground";
   };
 
   return (
-    <button
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      onClick={onClick}
-      className="bg-card border rounded-lg p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow touch-action-manipulation text-left w-full"
-      aria-label={`Кандидат ${candidate.name}, ${candidate.position}`}
-    >
-      <div className="flex items-start gap-3 mb-3">
-        <Avatar className="h-11 w-11 border-2 border-muted ring-1 ring-border/30">
-          <AvatarImage
-            src={candidate.avatar ?? undefined}
-            alt={candidate.name}
-          />
-          <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
-            {candidate.initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex-1 min-w-0">
-          <h4 className="font-semibold text-sm leading-tight truncate">
-            {candidate.name}
-          </h4>
-          <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-            {candidate.position}
-          </p>
+    <div className="bg-card border rounded-lg shadow-sm transition-all duration-200 select-none hover:shadow-md hover:border-primary/30">
+      <div className="flex items-center gap-1 px-3 py-2 border-b">
+        <span className="text-xs text-muted-foreground truncate flex-1">
+          {candidate.vacancyName}
+        </span>
+        <MatchScoreCircle score={candidate.matchScore} size="sm" />
+      </div>
+
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full p-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-b-lg"
+        aria-label={`Открыть профиль ${candidate.name}`}
+      >
+        <div className="flex items-start gap-3 mb-3">
+          <Avatar className="h-10 w-10 border shrink-0">
+            <AvatarImage
+              src={candidate.avatar ?? undefined}
+              alt={candidate.name}
+            />
+            <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
+              {candidate.initials}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 min-w-0">
+            <h4 className="font-semibold text-sm leading-tight truncate">
+              {candidate.name}
+            </h4>
+            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+              {candidate.position}
+            </p>
+          </div>
         </div>
-        <MatchScoreCircle score={candidate.matchScore} />
-      </div>
 
-      <div className="h-px bg-border mb-3" aria-hidden="true" />
+        <div className="flex flex-wrap gap-1 mb-3">
+          {candidate.skills.slice(0, 3).map((skill) => (
+            <Badge
+              key={skill}
+              variant="secondary"
+              className="text-[10px] font-medium px-1.5 py-0 h-5 truncate max-w-[70px]"
+            >
+              {skill}
+            </Badge>
+          ))}
+          {candidate.skills.length > 3 && (
+            <Badge
+              variant="outline"
+              className="text-[10px] font-medium px-1.5 py-0 h-5"
+              title={candidate.skills.slice(3).join(", ")}
+            >
+              +{candidate.skills.length - 3}
+            </Badge>
+          )}
+        </div>
 
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-3">
-        <MapPin
-          className="h-3.5 w-3.5 text-primary/60 shrink-0"
-          aria-hidden="true"
-        />
-        <span className="font-medium truncate">{candidate.location}</span>
-      </div>
-
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {candidate.skills.slice(0, 4).map((skill) => (
-          <Badge
-            key={skill}
-            variant="secondary"
-            className="text-[10px] font-medium px-2 py-0.5 h-auto"
-          >
-            {skill}
-          </Badge>
-        ))}
-        {candidate.skills.length > 4 && (
+        <div className="flex items-center justify-between pt-2 border-t">
           <Badge
             variant="outline"
-            className="text-[10px] font-medium px-2 py-0.5 h-auto"
-            title={`Ещё ${candidate.skills.length - 4} навыков`}
+            className={cn(
+              "text-[10px] font-medium px-2 py-0.5 h-auto border",
+              getAvailabilityColor(),
+            )}
           >
-            +{candidate.skills.length - 4}
+            <Calendar className="h-2.5 w-2.5 mr-1" aria-hidden="true" />
+            {getAvailabilityText()}
           </Badge>
-        )}
-      </div>
-
-      <div className="h-px bg-border mb-3" aria-hidden="true" />
-
-      <div className="flex items-center justify-between">
-        <Badge
-          variant="outline"
-          className={`text-xs font-medium px-2.5 py-1 h-auto border ${getAvailabilityColor()}`}
-        >
-          <Calendar className="h-3 w-3 mr-1" aria-hidden="true" />
-          {getAvailabilityText()}
-        </Badge>
-        <div className="flex items-center gap-1.5 text-muted-foreground">
-          <Star
-            className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-            aria-hidden="true"
-          />
-          <span className="text-xs font-semibold tabular-nums">
-            {candidate.salaryExpectation}
-          </span>
+          <div className="flex items-center gap-1">
+            <Star
+              className={cn(
+                "h-3 w-3",
+                candidate.matchScore >= 70
+                  ? "fill-amber-400 text-amber-400"
+                  : "text-muted-foreground/50",
+              )}
+              aria-hidden="true"
+            />
+            <span
+              className={cn(
+                "text-xs font-semibold tabular-nums",
+                getMatchScoreColor(),
+              )}
+            >
+              {candidate.matchScore}%
+            </span>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }

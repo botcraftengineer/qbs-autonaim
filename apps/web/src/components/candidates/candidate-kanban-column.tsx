@@ -1,67 +1,54 @@
 "use client";
 
-import { useDroppable } from "@dnd-kit/core";
-import { GripVertical, MoreHorizontal, Plus } from "lucide-react";
+import { cn } from "@qbs-autonaim/ui";
+import { Users } from "lucide-react";
 import type { FunnelCandidate } from "../funnel/types";
 import { CandidateKanbanCard } from "./candidate-kanban-card";
 
 interface CandidateKanbanColumnProps {
-  id: string;
   title: string;
+  color: string;
   candidates: FunnelCandidate[];
   onCardClick: (candidate: FunnelCandidate) => void;
   isLoading?: boolean;
 }
 
 export function CandidateKanbanColumn({
-  id,
   title,
+  color,
   candidates,
   onCardClick,
   isLoading,
 }: CandidateKanbanColumnProps) {
-  const { setNodeRef } = useDroppable({
-    id,
-  });
-
   return (
-    <div className="flex flex-col w-[320px] shrink-0">
-      <div className="flex items-center justify-between mb-4 px-1">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="text-muted-foreground hover:text-foreground touch-action-manipulation"
-            aria-label="Drag column"
-          >
-            <GripVertical className="w-4 h-4" />
-          </button>
-          <h3 className="text-sm font-semibold">{title}</h3>
-          <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md tabular-nums">
-            {candidates.length}
-          </span>
-        </div>
-        <button
-          type="button"
-          className="text-muted-foreground hover:text-foreground touch-action-manipulation"
-          aria-label="Column options"
-        >
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
+    <div
+      className="flex flex-col min-w-0"
+      role="group"
+      aria-label={`Колонка ${title}`}
+    >
+      <div className="flex items-center gap-2 mb-3 px-1">
+        <div className={cn("w-2 h-2 rounded-full shrink-0", color)} />
+        <h3 className="text-sm font-semibold truncate">{title}</h3>
+        <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full tabular-nums ml-auto shrink-0">
+          {candidates.length}
+        </span>
       </div>
 
-      <div
-        ref={setNodeRef}
-        className="flex flex-col gap-3 min-h-[200px] p-3 bg-muted/30 rounded-lg"
-      >
+      <div className="flex flex-col gap-3 min-h-[300px] p-3 rounded-xl border-2 border-dashed border-transparent bg-muted/30">
         {isLoading ? (
-          <div className="space-y-3">
+          <div className="space-y-3" aria-busy="true">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-48 bg-muted animate-pulse rounded-lg" />
+              <div
+                key={i}
+                className="h-40 bg-muted animate-pulse rounded-lg"
+                aria-hidden="true"
+              />
             ))}
           </div>
         ) : candidates.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground text-sm">
-            Нет кандидатов
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+            <Users className="h-8 w-8 mb-2 opacity-40" aria-hidden="true" />
+            <p className="text-sm">Нет кандидатов</p>
           </div>
         ) : (
           candidates.map((candidate) => (
@@ -72,14 +59,6 @@ export function CandidateKanbanColumn({
             />
           ))
         )}
-
-        <button
-          type="button"
-          className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors touch-action-manipulation"
-        >
-          <Plus className="w-4 h-4" />
-          Добавить кандидата
-        </button>
       </div>
     </div>
   );
