@@ -14,6 +14,7 @@ const config = {
     "@qbs-autonaim/api",
     "@qbs-autonaim/auth",
     "@qbs-autonaim/db",
+    "@qbs-autonaim/lib",
     "@qbs-autonaim/ui",
     "@qbs-autonaim/validators",
   ],
