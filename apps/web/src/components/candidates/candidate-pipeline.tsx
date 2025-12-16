@@ -1,6 +1,16 @@
 "use client";
 
 import {
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  MouseSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   Badge,
   Button,
   Checkbox,
@@ -19,7 +29,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Briefcase,
   LayoutGrid,
@@ -31,6 +41,7 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
+import { CandidateKanbanCard } from "./candidate-kanban-card";
 import { CandidateKanbanColumn } from "./candidate-kanban-column";
 import { CandidateModal } from "./candidate-modal";
 import { CandidatesTable } from "./candidates-table";
@@ -64,6 +75,86 @@ export function CandidatePipeline() {
   const [filterStages, setFilterStages] = useState<FunnelStage[]>([]);
 
   const trpc = useTRPC();
+
+  /* DND State & Handlers */
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const sensors = useSensors(
+    useSensor(MouseSensor, {
+      activationConstraint: {
+        distance: 10,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 250,
+        tolerance: 5,
+      },
+    }),
+  );
+
+  const queryClient = useQueryClient();
+  const listQueryOptions = trpc.candidates.list.queryOptions({
+    workspaceId: workspaceId ?? "",
+    vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+  });
+  const listQueryKey = listQueryOptions.queryKey;
+
+  const updateStageMutation = useMutation(
+    trpc.candidates.updateStage.mutationOptions({
+      onMutate: async (newStageData) => {
+        await queryClient.cancelQueries({ queryKey: listQueryKey });
+        const previousData = queryClient.getQueryData(
+          listQueryKey,
+        ) as typeof candidates;
+
+        if (previousData) {
+          queryClient.setQueryData(listQueryKey, (old: typeof candidates) => {
+            if (!old) return old;
+            return {
+              ...old,
+              items: old.items.map((c) =>
+                c.id === newStageData.candidateId
+                  ? { ...c, stage: newStageData.stage }
+                  : c,
+              ),
+            };
+          });
+        }
+        return { previousData };
+      },
+      onError: (_err, _newStageData, context) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(listQueryKey, context.previousData);
+        }
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: listQueryKey });
+      },
+    }),
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const candidateId = active.id as string;
+    const newStage = over.id as FunnelStage;
+
+    const candidate = candidates?.items.find((c) => c.id === candidateId);
+    if (!candidate || candidate.stage === newStage) return;
+
+    updateStageMutation.mutate({
+      workspaceId: workspaceId ?? "",
+      candidateId,
+      stage: newStage,
+    });
+  };
 
   const { data: vacancies } = useQuery({
     ...trpc.vacancy.listActive.queryOptions({
@@ -264,21 +355,38 @@ export function CandidatePipeline() {
       </div>
 
       {activeView === "board" ? (
-        <section
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6"
-          aria-label="Канбан-доска кандидатов"
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
         >
-          {STAGES.map((stage) => (
-            <CandidateKanbanColumn
-              key={stage.id}
-              title={stage.title}
-              color={stage.color}
-              candidates={candidatesByStage[stage.id]}
-              onCardClick={handleCardClick}
-              isLoading={isLoading}
-            />
-          ))}
-        </section>
+          <section
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6"
+            aria-label="Канбан-доска кандидатов"
+          >
+            {STAGES.map((stage) => (
+              <CandidateKanbanColumn
+                key={stage.id}
+                id={stage.id}
+                title={stage.title}
+                color={stage.color}
+                candidates={candidatesByStage[stage.id]}
+                onCardClick={handleCardClick}
+                isLoading={isLoading}
+              />
+            ))}
+          </section>
+          <DragOverlay>
+            {(() => {
+              const candidate = (candidates?.items ?? []).find(
+                (c) => c.id === activeId,
+              );
+              return activeId && candidate ? (
+                <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
+              ) : null;
+            })()}
+          </DragOverlay>
+        </DndContext>
       ) : (
         <CandidatesTable
           candidates={filteredCandidates}

@@ -23,6 +23,8 @@ export interface ResumeExperience {
   phone: string | null;
   telegramUsername: string | null;
   pdfBuffer: Buffer | null;
+  photoBuffer: Buffer | null;
+  photoMimeType: string | null;
 }
 
 export interface SaveResponseData {
@@ -35,4 +37,5 @@ export interface SaveResponseData {
   phone: string | null;
   telegramUsername?: string | null;
   resumePdfFileId?: string | null;
+  photoFileId?: string | null;
 }

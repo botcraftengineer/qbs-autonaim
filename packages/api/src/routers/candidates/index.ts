@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "../../trpc";
 import { listActivities } from "./activities";
+import { addComment, listComments } from "./comments";
 import { list } from "./list";
 import { listMessages, sendMessage } from "./messages";
 import { updateSalaryExpectations } from "./update-salary";
@@ -12,4 +13,6 @@ export const candidatesRouter = createTRPCRouter({
   listActivities,
   listMessages,
   sendMessage,
+  listComments,
+  addComment,
 });

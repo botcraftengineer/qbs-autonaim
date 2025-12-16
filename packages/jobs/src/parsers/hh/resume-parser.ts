@@ -129,6 +129,8 @@ export async function parseResumeExperience(
 
   let contacts = null;
   let phone: string | null = null;
+  let photoBuffer: Buffer | null = null;
+  let photoMimeType: string | null = null;
 
   // Парсинг контактов (телефон)
   const resumeIdMatch = url.match(/\/resume\/([a-f0-9]+)/);
@@ -246,11 +248,61 @@ export async function parseResumeExperience(
     }
   }
 
+  // Парсинг фото кандидата
+  try {
+    await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
+
+    const photoUrl = await page
+      .$eval('div[data-qa="resume-card-avatar"] img', (img) =>
+        img.getAttribute("src"),
+      )
+      .catch(() => null);
+
+    if (photoUrl) {
+      console.log(`📸 Найдено фото кандидата: ${photoUrl}`);
+
+      const fullPhotoUrl = photoUrl.startsWith("http")
+        ? photoUrl
+        : `https://hh.ru${photoUrl}`;
+
+      const cookies = await page.browserContext().cookies();
+      const cookieString = cookies
+        .map((cookie) => `${cookie.name}=${cookie.value}`)
+        .join("; ");
+
+      const response = await axios.get(fullPhotoUrl, {
+        headers: {
+          Cookie: cookieString,
+          Referer: url,
+          "User-Agent": HH_CONFIG.userAgent,
+        },
+        responseType: "arraybuffer",
+        timeout: 15000,
+      });
+
+      photoBuffer = Buffer.from(response.data);
+      photoMimeType = response.headers["content-type"] || "image/jpeg";
+
+      console.log(
+        `✅ Фото скачано, размер: ${photoBuffer.length} байт, тип: ${photoMimeType}`,
+      );
+    } else {
+      console.log("⚠️ Фото кандидата не найдено");
+    }
+  } catch (error) {
+    console.log("⚠️ Ошибка скачивания фото кандидата");
+    if (error instanceof Error) {
+      console.log(`   ${error.message}`);
+    }
+  }
+
   return {
     experience: resumeHtml,
     contacts,
     phone,
     telegramUsername,
     pdfBuffer,
+    photoBuffer,
+    photoMimeType,
   };
 }

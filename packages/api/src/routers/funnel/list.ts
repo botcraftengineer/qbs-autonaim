@@ -121,7 +121,6 @@ export const list = protectedProcedure
         vacancyName: vacancyData?.title || "Неизвестная вакансия",
         email: null,
         phone: r.phone,
-        linkedin: null,
         github: null,
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,

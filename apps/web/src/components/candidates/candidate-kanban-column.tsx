@@ -27,7 +27,7 @@ export function CandidateKanbanColumn({
   });
 
   return (
-    <fieldset className="flex flex-col min-w-0 border-0 p-0 m-0 h-full">
+    <fieldset className="flex flex-col min-w-0 border-0 p-0 m-0">
       <legend className="sr-only">{`Колонка ${title}`}</legend>
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className={cn("w-2 h-2 rounded-full shrink-0", color)} />
@@ -40,7 +40,7 @@ export function CandidateKanbanColumn({
       <div
         ref={setNodeRef}
         className={cn(
-          "flex flex-col gap-3 min-h-[300px] p-3 rounded-xl border-2 border-dashed transition-colors h-full",
+          "flex flex-col gap-3 min-h-[300px] p-3 rounded-xl border-2 border-dashed transition-colors",
           isOver
             ? "border-primary/50 bg-primary/5"
             : "border-transparent bg-muted/30",

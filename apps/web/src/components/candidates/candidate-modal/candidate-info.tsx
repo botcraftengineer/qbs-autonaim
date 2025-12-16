@@ -8,7 +8,6 @@ import {
   DollarSign,
   FileText,
   Github,
-  Linkedin,
   Mail,
   MapPin,
   Phone,
@@ -56,26 +55,13 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">{candidate.location}</span>
             </div>
-            {candidate.linkedin && (
-              <div className="flex items-center gap-3">
-                <Linkedin className="h-4 w-4 text-muted-foreground" />
-                <a 
-                  href={candidate.linkedin} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
-                  className="text-sm hover:underline hover:text-primary transition-colors truncate max-w-[200px]"
-                >
-                  {candidate.linkedin.replace(/^https?:\/\/(www\.)?/, "")}
-                </a>
-              </div>
-            )}
             {candidate.github && (
               <div className="flex items-center gap-3">
                 <Github className="h-4 w-4 text-muted-foreground" />
-                <a 
-                  href={candidate.github} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href={candidate.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm hover:underline hover:text-primary transition-colors truncate max-w-[200px]"
                 >
                   {candidate.github.replace(/^https?:\/\/(www\.)?/, "")}
@@ -114,18 +100,6 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           </div>
         </div>
       </div>
-
-      <div className="space-y-2">
-        <h3 className="text-sm font-semibold">Навыки</h3>
-        <div className="flex flex-wrap gap-2">
-          {candidate.skills.map((skill: string) => (
-            <Badge key={skill} variant="secondary" className="text-xs">
-              {skill}
-            </Badge>
-          ))}
-        </div>
-      </div>
-
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">Результаты оценки</h3>
         <div className="grid grid-cols-3 gap-4">

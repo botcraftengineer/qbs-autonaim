@@ -181,11 +181,10 @@ export const list = protectedProcedure
           : (resumeScore ?? interviewScore ?? 0);
 
       const contacts = r.contacts as Record<string, string> | null;
-      // Приоритет: данные из contacts, затем top-level поле phone (если есть)
-      const contactPhone = contacts?.phone || r.phone;
+      // Телефон берем только из top-level поля phone
+      const contactPhone = r.phone;
       // Пробуем разные варианты ключей, так как структура может варьироваться
       const email = contacts?.email || null;
-      const linkedin = contacts?.linkedin || contacts?.linkedIn || null;
       const github = contacts?.github || contacts?.gitHub || null;
       const telegram = r.telegramUsername || contacts?.telegram || null;
 
@@ -217,7 +216,6 @@ export const list = protectedProcedure
         vacancyName: vacancyData?.title || "Неизвестная вакансия",
         email: email,
         phone: contactPhone,
-        linkedin: linkedin,
         github: github,
         telegram: telegram,
         createdAt: r.createdAt,

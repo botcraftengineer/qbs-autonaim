@@ -20,7 +20,7 @@ import {
   TabsTrigger,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Activity, MessageSquare, X } from "lucide-react";
+import { Activity, MessageSquare, StickyNote, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
@@ -29,6 +29,7 @@ import type { FunnelCandidate } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
 import { CandidateInfo } from "./candidate-info";
 import { ChatSection } from "./chat-section";
+import { CommentsSection } from "./comments-section";
 
 interface CandidateModalProps {
   candidate: FunnelCandidate | null;
@@ -82,7 +83,7 @@ export function CandidateModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-7xl h-[90vh] p-0 gap-0 flex flex-col"
+        className="max-w-[min(90vw,120rem)] h-[90vh] p-0 gap-0 flex flex-col"
         showCloseButton={false}
       >
         <DialogHeader className="px-6 py-4 border-b shrink-0">
@@ -162,6 +163,13 @@ export function CandidateModal({
                     Чат
                   </TabsTrigger>
                   <TabsTrigger
+                    value="comments"
+                    className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
+                  >
+                    <StickyNote className="h-4 w-4 mr-2" />
+                    Заметки
+                  </TabsTrigger>
+                  <TabsTrigger
                     value="activity"
                     className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                   >
@@ -175,6 +183,13 @@ export function CandidateModal({
                     candidateId={candidate.id}
                     candidateName={candidate.name}
                     candidateAvatar={candidate.avatar}
+                    workspaceId={workspaceId}
+                  />
+                </TabsContent>
+
+                <TabsContent value="comments" className="m-0 min-h-[400px]">
+                  <CommentsSection
+                    candidateId={candidate.id}
                     workspaceId={workspaceId}
                   />
                 </TabsContent>
