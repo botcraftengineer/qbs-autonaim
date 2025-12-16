@@ -12,17 +12,10 @@ interface CandidateCardProps {
 
 export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
   return (
-    <div
-      className="bg-card border rounded-lg shadow-lg p-3 w-[280px] cursor-grabbing"
+    <button
+      type="button"
+      className="bg-card border rounded-lg shadow-lg p-3 w-[280px] cursor-grabbing text-left"
       onClick={onClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
       aria-label={`Кандидат ${candidate.name}`}
     >
       <div className="flex items-center gap-3">
@@ -60,6 +53,6 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
           ))}
         </div>
       </div>
-    </div>
+    </button>
   );
 }

@@ -64,9 +64,11 @@ export function CandidateModal({
   const queryClient = useQueryClient();
 
   const updateStage = useMutation({
-    ...trpc.funnel.updateStage.mutationOptions(),
+    ...trpc.candidates.updateStage.mutationOptions(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: trpc.funnel.list.queryKey() });
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
       toast.success("Статус обновлен");
     },
     onError: () => {
@@ -95,7 +97,10 @@ export function CandidateModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] p-0 gap-0">
+      <DialogContent
+        className="max-w-6xl max-h-[90vh] p-0 gap-0"
+        showCloseButton={false}
+      >
         <DialogHeader className="p-6 pb-4 border-b space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -278,52 +283,42 @@ export function CandidateModal({
               </div>
             )}
 
-            {/* Вакансия */}
-            <div className="p-4 bg-muted/50 rounded-lg">
-              <div>
-                <p className="text-sm font-medium">{candidate.vacancyName}</p>
-                <p className="text-xs text-muted-foreground">
-                  Позиция, на которую подал заявку кандидат
-                </p>
+            {/* Действия */}
+            <div className="border-t p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <Button size="sm" className="gap-2">
+                    <Send className="h-4 w-4" />
+                    Отправить приветствие
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Star className="h-4 w-4" />
+                    Оценить
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Обновить резюме
+                  </Button>
+                </div>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <FileText className="h-4 w-4" />
+                  Резюме
+                </Button>
               </div>
-            </div>
-          </div>
-
-          {/* Действия */}
-          <div className="border-t p-4 space-y-3">
-            <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Button size="sm" className="gap-2">
-                  <Send className="h-4 w-4" />
-                  Отправить приветствие
+                <Button variant="outline" size="sm" className="gap-2">
+                  <CheckCircle className="h-4 w-4" />
+                  Пригласить
                 </Button>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <Star className="h-4 w-4" />
-                  Оценить
+                  <MessageSquare className="h-4 w-4" />
+                  Написать
                 </Button>
                 <Button variant="outline" size="sm" className="gap-2">
-                  <RefreshCw className="h-4 w-4" />
-                  Обновить резюме
+                  <XCircle className="h-4 w-4" />
+                  Отклонить
                 </Button>
               </div>
-              <Button variant="outline" size="sm" className="gap-2">
-                <FileText className="h-4 w-4" />
-                Резюме
-              </Button>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="gap-2">
-                <CheckCircle className="h-4 w-4" />
-                Пригласить
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <MessageSquare className="h-4 w-4" />
-                Написать
-              </Button>
-              <Button variant="outline" size="sm" className="gap-2">
-                <XCircle className="h-4 w-4" />
-                Отклонить
-              </Button>
             </div>
           </div>
         </div>

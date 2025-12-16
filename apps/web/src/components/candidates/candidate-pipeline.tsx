@@ -57,7 +57,7 @@ export function CandidatePipeline() {
   });
 
   const { data: candidates, isLoading } = useQuery({
-    ...trpc.funnel.list.queryOptions({
+    ...trpc.candidates.list.queryOptions({
       workspaceId: workspaceId ?? "",
       vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
     }),

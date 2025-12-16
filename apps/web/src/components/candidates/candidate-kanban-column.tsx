@@ -21,11 +21,8 @@ export function CandidateKanbanColumn({
   isLoading,
 }: CandidateKanbanColumnProps) {
   return (
-    <div
-      className="flex flex-col min-w-0"
-      role="group"
-      aria-label={`Колонка ${title}`}
-    >
+    <fieldset className="flex flex-col min-w-0 border-0 p-0 m-0">
+      <legend className="sr-only">{`Колонка ${title}`}</legend>
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className={cn("w-2 h-2 rounded-full shrink-0", color)} />
         <h3 className="text-sm font-semibold truncate">{title}</h3>
@@ -60,6 +57,6 @@ export function CandidateKanbanColumn({
           ))
         )}
       </div>
-    </div>
+    </fieldset>
   );
 }
