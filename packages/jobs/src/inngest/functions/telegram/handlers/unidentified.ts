@@ -156,29 +156,24 @@ export async function handleUnidentifiedMedia(params: {
   const { chatId, messageId, username, firstName, workspaceId, botSettings } =
     params;
 
-  const [tempConv] = await db
-    .insert(telegramConversation)
-    .values({
-      chatId,
-      candidateName: firstName,
-      username,
-      status: "ACTIVE",
-      metadata: JSON.stringify({
-        identifiedBy: "none",
-        awaitingPin: true,
-      }),
-    })
-    .onConflictDoNothing()
-    .returning();
+  const tempConv = await createOrUpdateTempConversation(
+    chatId,
+    username,
+    firstName,
+  );
 
   if (tempConv) {
-    await db.insert(telegramMessage).values({
-      conversationId: tempConv.id,
-      sender: "CANDIDATE",
-      contentType: "VOICE",
-      content: "Голосовое сообщение (кандидат не идентифицирован)",
-      telegramMessageId: messageId,
-    });
+    const isDuplicate = await findDuplicateMessage(tempConv.id, messageId);
+
+    if (!isDuplicate) {
+      await db.insert(telegramMessage).values({
+        conversationId: tempConv.id,
+        sender: "CANDIDATE",
+        contentType: "VOICE",
+        content: "Голосовое сообщение (кандидат не идентифицирован)",
+        telegramMessageId: messageId,
+      });
+    }
 
     await generateAndSendBotResponse({
       conversationId: tempConv.id,

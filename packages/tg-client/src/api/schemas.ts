@@ -8,7 +8,7 @@ export const sendCodeSchema = z.object({
     .string()
     .min(1)
     .transform((val) => val.replace(/\s+/g, "")),
-});
+}) satisfies z.ZodType;
 
 export const signInSchema = z.object({
   apiId: z.number().positive(),
@@ -20,7 +20,7 @@ export const signInSchema = z.object({
   phoneCode: z.string().min(1),
   phoneCodeHash: z.string().min(1),
   sessionData: z.string().optional(),
-});
+}) satisfies z.ZodType;
 
 export const checkPasswordSchema = z.object({
   apiId: z.number().positive(),
@@ -31,7 +31,7 @@ export const checkPasswordSchema = z.object({
     .transform((val) => val.replace(/\s+/g, "")),
   password: z.string().min(1),
   sessionData: z.string().min(1),
-});
+}) satisfies z.ZodType;
 
 export const sendMessageSchema = z.object({
   workspaceId: z.string().min(1),
@@ -45,13 +45,13 @@ export const sendMessageSchema = z.object({
     z.number(),
   ]),
   text: z.string().min(1),
-});
+}) satisfies z.ZodType;
 
 export const sendMessageByUsernameSchema = z.object({
   workspaceId: z.string().min(1),
   username: z.string().min(1),
   text: z.string().min(1),
-});
+}) satisfies z.ZodType;
 
 export const sendMessageByPhoneSchema = z.object({
   workspaceId: z.string().min(1),
@@ -61,7 +61,7 @@ export const sendMessageByPhoneSchema = z.object({
     .transform((val) => val.replace(/\s+/g, "")),
   text: z.string().min(1),
   firstName: z.string().optional(),
-});
+}) satisfies z.ZodType;
 
 export const userSchema = z.object({
   id: z.string(),
@@ -69,39 +69,39 @@ export const userSchema = z.object({
   lastName: z.string(),
   username: z.string(),
   phone: z.string(),
-});
+}) satisfies z.ZodType;
 
 export const sendCodeResponseSchema = z.object({
   success: z.boolean(),
   phoneCodeHash: z.string(),
   timeout: z.number(),
   sessionData: z.string(),
-});
+}) satisfies z.ZodType;
 
 export const authResponseSchema = z.object({
   success: z.boolean(),
   sessionData: z.string(),
   user: userSchema,
-});
+}) satisfies z.ZodType;
 
 export const sendMessageResponseSchema = z.object({
   success: z.boolean(),
   messageId: z.string(),
   chatId: z.string(),
   senderId: z.string(),
-});
+}) satisfies z.ZodType;
 
 export const sendMessageByPhoneResponseSchema = z.object({
   success: z.boolean(),
   messageId: z.string(),
   chatId: z.string(),
   senderId: z.string(),
-});
+}) satisfies z.ZodType;
 
 export const healthResponseSchema = z.object({
   status: z.string(),
   service: z.string(),
-});
+}) satisfies z.ZodType;
 
 export const downloadFileSchema = z.object({
   workspaceId: z.string().min(1),
@@ -115,7 +115,7 @@ export const downloadFileSchema = z.object({
     z.number(),
   ]),
   messageId: z.number().int().positive(),
-});
+}) satisfies z.ZodType;
 
 export const downloadFileResponseSchema = z.object({
   success: z.boolean(),
@@ -123,7 +123,7 @@ export const downloadFileResponseSchema = z.object({
   fileName: z.string(),
   mimeType: z.string(),
   duration: z.number(),
-});
+}) satisfies z.ZodType;
 
 export type SendCodeInput = z.infer<typeof sendCodeSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;

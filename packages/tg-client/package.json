@@ -15,7 +15,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsdown && tsc --emitDeclarationOnly",
+    "build": "tsdown",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsdown --watch",
     "start": "bun run src/api/index.ts",

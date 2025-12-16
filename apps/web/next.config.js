@@ -20,6 +20,16 @@ const config = {
 
   /** We already do linting and typechecking as separate tasks in CI */
   typescript: { ignoreBuildErrors: true },
+  webpack: (config) => {
+    // other stuff
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      effect: false,
+      "@valibot/to-json-schema": false,
+    };
+
+    return config;
+  },
 };
 
 export default config;

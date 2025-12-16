@@ -116,19 +116,21 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               text: welcomeMessage,
             });
 
-            console.log("✅ Сообщение отправлено по username", {
-              responseId,
-              username,
-              chatId: sendResult.chatId,
-            });
+            if (sendResult) {
+              console.log("✅ Сообщение отправлено по username", {
+                responseId,
+                username,
+                chatId: sendResult.chatId,
+              });
 
-            // Обновляем lastUsedAt
-            await db
-              .update(telegramSession)
-              .set({ lastUsedAt: new Date() })
-              .where(eq(telegramSession.id, session.id));
+              // Обновляем lastUsedAt
+              await db
+                .update(telegramSession)
+                .set({ lastUsedAt: new Date() })
+                .where(eq(telegramSession.id, session.id));
 
-            return sendResult;
+              return sendResult;
+            }
           } catch (error) {
             console.log(
               `⚠️ Не удалось отправить по username: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -147,19 +149,21 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               firstName: response.candidateName || undefined,
             });
 
-            console.log("✅ Сообщение отправлено по номеру телефона", {
-              responseId,
-              phone,
-              chatId: sendResult.chatId,
-            });
+            if (sendResult) {
+              console.log("✅ Сообщение отправлено по номеру телефона", {
+                responseId,
+                phone,
+                chatId: sendResult.chatId,
+              });
 
-            // Обновляем lastUsedAt
-            await db
-              .update(telegramSession)
-              .set({ lastUsedAt: new Date() })
-              .where(eq(telegramSession.id, session.id));
+              // Обновляем lastUsedAt
+              await db
+                .update(telegramSession)
+                .set({ lastUsedAt: new Date() })
+                .where(eq(telegramSession.id, session.id));
 
-            return sendResult;
+              return sendResult;
+            }
           } catch (error) {
             console.log(
               `⚠️ Не удалось отправить по телефону: ${error instanceof Error ? error.message : "Unknown error"}`,
@@ -245,7 +249,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
     });
 
     // Если получили chatId, сохраняем в базу
-    if (result.chatId) {
+    if (result && result.chatId) {
       const chatId = result.chatId;
       await step.run("save-conversation", async () => {
         const [conversation] = await db
@@ -260,7 +264,10 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               responseId,
               vacancyId: response.vacancyId,
               username,
-              senderId: "senderId" in result ? result.senderId : result.chatId,
+              senderId:
+                "senderId" in result && result.senderId
+                  ? result.senderId
+                  : result.chatId,
               interviewStarted: true,
               questionAnswers: [],
             }),
@@ -277,7 +284,9 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 vacancyId: response.vacancyId,
                 username,
                 senderId:
-                  "senderId" in result ? result.senderId : result.chatId,
+                  "senderId" in result && result.senderId
+                    ? result.senderId
+                    : result.chatId,
                 interviewStarted: true,
                 questionAnswers: [],
               }),
@@ -318,7 +327,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       success: true,
       responseId,
       username,
-      chatId: result.chatId,
+      chatId: result?.chatId,
       messageSent: true,
     };
   },

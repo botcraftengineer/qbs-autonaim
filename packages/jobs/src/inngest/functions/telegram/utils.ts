@@ -2,10 +2,20 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   companySettings,
+  type conversationStatusEnum,
   telegramConversation,
   telegramMessage,
 } from "@qbs-autonaim/db/schema";
 import type { BotSettings } from "./types";
+
+type ConversationStatus = (typeof conversationStatusEnum.enumValues)[number];
+
+interface ConversationUpdateSet {
+  status?: ConversationStatus;
+  username?: string;
+  candidateName?: string;
+  metadata?: string;
+}
 
 export function extractPinCode(text: string): string | null {
   const match = text.match(/\b\d{4}\b/);
@@ -65,14 +75,20 @@ export async function createOrUpdateTempConversation(
   username?: string,
   firstName?: string,
 ) {
-  const updateSet: Record<string, string | undefined> = {};
-  if (username !== undefined) updateSet.username = username;
-  if (firstName !== undefined) updateSet.candidateName = firstName;
-  // Всегда обновляем metadata при конфликте для сохранения awaitingPin
-  updateSet.metadata = JSON.stringify({
-    identifiedBy: "none",
-    awaitingPin: true,
-  });
+  const updateSet: ConversationUpdateSet = {
+    status: "ACTIVE",
+    metadata: JSON.stringify({
+      identifiedBy: "none",
+      awaitingPin: true,
+    }),
+  };
+
+  if (username !== undefined) {
+    updateSet.username = username;
+  }
+  if (firstName !== undefined) {
+    updateSet.candidateName = firstName;
+  }
 
   const [conv] = await db
     .insert(telegramConversation)

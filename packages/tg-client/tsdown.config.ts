@@ -21,7 +21,9 @@ export default defineConfig({
     "@qbs-autonaim/db",
     "@qbs-autonaim/lib",
     "@qbs-autonaim/prompts",
+    "file-type",
     "hono",
+    "mime-types",
     "zod",
   ],
 });
