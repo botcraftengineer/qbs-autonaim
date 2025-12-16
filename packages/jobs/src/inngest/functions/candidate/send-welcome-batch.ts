@@ -106,6 +106,8 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
               chatId: string;
             } | null = null;
 
+            let actualSentMessage = welcomeMessage;
+
             // Пытаемся отправить по username, если он есть
             if (response.telegramUsername) {
               console.log(
@@ -166,6 +168,8 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 messageWithInvite = `${messageWithInvite}\n\n📱 Напиши мне в Telegram @${telegramUsername} и сообщи пин-код: ${pinCodeResult.data}`;
               }
 
+              actualSentMessage = messageWithInvite;
+
               const hhResult = await sendHHChatMessage({
                 workspaceId,
                 responseId: response.id,
@@ -189,6 +193,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   chatId: response.chatId || "",
                   success: true,
                   method: "hh",
+                  sentMessage: actualSentMessage,
                 };
               }
 
@@ -249,7 +254,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   conversationId: conversation.id,
                   sender: "BOT",
                   contentType: "TEXT",
-                  content: welcomeMessage,
+                  content: actualSentMessage,
                 });
               }
             }
@@ -272,6 +277,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
               chatId: sendResult.chatId,
               success: true,
               method: "telegram",
+              sentMessage: actualSentMessage,
             };
           } catch (error) {
             console.error(
