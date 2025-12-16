@@ -50,14 +50,23 @@ export function FunnelAnalytics() {
   const [timeRange, setTimeRange] = useState("30d");
   const trpc = useTRPC();
 
-  const { data: analytics, isLoading } = useQuery({
+  const {
+    data: analytics,
+    isLoading,
+    isError: analyticsError,
+    error: analyticsErrorData,
+  } = useQuery({
     ...trpc.funnel.analytics.queryOptions({
       workspaceId: params.workspaceSlug,
       timeRange,
     }),
   });
 
-  const { data: vacancyStats } = useQuery({
+  const {
+    data: vacancyStats,
+    isError: vacancyStatsError,
+    error: vacancyStatsErrorData,
+  } = useQuery({
     ...trpc.funnel.vacancyStats.queryOptions({
       workspaceId: params.workspaceSlug,
       timeRange,
@@ -78,6 +87,21 @@ export function FunnelAnalytics() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (analyticsError && vacancyStatsError) {
+    return (
+      <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed border-red-200">
+        <div className="text-center px-4">
+          <h2 className="text-xl font-semibold mb-2 text-red-600">
+            Ошибка загрузки данных
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {analyticsErrorData?.message || "Не удалось загрузить аналитику"}
+          </p>
         </div>
       </div>
     );
@@ -187,6 +211,19 @@ export function FunnelAnalytics() {
         </Select>
       </div>
 
+      {analyticsError && !vacancyStatsError && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="rounded-lg border border-red-200 bg-red-50 p-4"
+        >
+          <p className="text-sm text-red-600">
+            Не удалось загрузить аналитику
+            {analyticsErrorData?.message && `: ${analyticsErrorData.message}`}
+          </p>
+        </div>
+      )}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statusStats.map((stat) => (
           <Card key={stat.label}>
@@ -245,7 +282,11 @@ export function FunnelAnalytics() {
         </TabsContent>
 
         <TabsContent value="vacancies" className="space-y-4">
-          <VacancyStatsCard vacancyStats={vacancyStats} />
+          <VacancyStatsCard
+            vacancyStats={vacancyStats}
+            isError={vacancyStatsError}
+            errorMessage={vacancyStatsErrorData?.message}
+          />
         </TabsContent>
       </Tabs>
     </div>
@@ -431,8 +472,12 @@ interface VacancyStat {
 
 function VacancyStatsCard({
   vacancyStats,
+  isError,
+  errorMessage,
 }: {
   vacancyStats: VacancyStat[] | undefined;
+  isError?: boolean;
+  errorMessage?: string;
 }) {
   return (
     <Card>
@@ -444,7 +489,17 @@ function VacancyStatsCard({
         <CardDescription>Кандидаты по открытым позициям</CardDescription>
       </CardHeader>
       <CardContent>
-        {!vacancyStats || vacancyStats.length === 0 ? (
+        {isError ? (
+          <div className="text-center py-8">
+            <Briefcase className="h-12 w-12 mx-auto mb-3 text-red-300" />
+            <p className="text-sm text-red-600">Ошибка загрузки данных</p>
+            {errorMessage && (
+              <p className="text-xs text-muted-foreground mt-1">
+                {errorMessage}
+              </p>
+            )}
+          </div>
+        ) : !vacancyStats || vacancyStats.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Briefcase className="h-12 w-12 mx-auto mb-3 opacity-20" />
             <p className="text-sm">Нет данных по вакансиям</p>

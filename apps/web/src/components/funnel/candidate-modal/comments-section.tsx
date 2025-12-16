@@ -10,10 +10,10 @@ import {
   Switch,
   Textarea,
 } from "@qbs-autonaim/ui";
-import { Edit, Globe, Lock, MessageSquare, Send, Trash2 } from "lucide-react";
+import { Globe, Lock, MessageSquare, Send, Trash2 } from "lucide-react";
 import { useState } from "react";
 
-interface Comment {
+export interface Comment {
   id: string;
   author: string;
   authorAvatar: string | null;
@@ -22,7 +22,7 @@ interface Comment {
   createdAt: Date;
 }
 
-interface CommentsSectionProps {
+export interface CommentsSectionProps {
   comments: Comment[];
   onAddComment: (content: string, isPrivate: boolean) => void;
   onDeleteComment: (commentId: string) => void;
@@ -143,25 +143,15 @@ export function CommentsSection({
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    aria-label="Редактировать"
-                  >
-                    <Edit className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => onDeleteComment(c.id)}
-                    aria-label="Удалить"
-                  >
-                    <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => onDeleteComment(c.id)}
+                  aria-label="Удалить"
+                >
+                  <Trash2 className="h-3.5 w-3.5 text-muted-foreground" />
+                </Button>
               </div>
               <p className="text-sm leading-relaxed">{c.content}</p>
             </div>
