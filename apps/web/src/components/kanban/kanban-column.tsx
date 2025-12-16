@@ -1,10 +1,6 @@
 "use client";
 
 import { useDroppable } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
 import { GripVertical, MoreHorizontal, Plus } from "lucide-react";
 import { KanbanCard } from "./kanban-card";
 import type { KanbanColumn as KanbanColumnType, KanbanTask } from "./types";
@@ -44,27 +40,22 @@ export function KanbanColumn({ column, tasks }: KanbanColumnProps) {
         </button>
       </div>
 
-      <SortableContext
-        items={tasks.map((t) => t.id)}
-        strategy={verticalListSortingStrategy}
+      <div
+        ref={setNodeRef}
+        className="flex flex-col gap-3 min-h-[200px] p-3 bg-muted/30 rounded-lg"
       >
-        <div
-          ref={setNodeRef}
-          className="flex flex-col gap-3 min-h-[200px] p-3 bg-muted/30 rounded-lg"
-        >
-          {tasks.map((task) => (
-            <KanbanCard key={task.id} task={task} />
-          ))}
+        {tasks.map((task) => (
+          <KanbanCard key={task.id} task={task} />
+        ))}
 
-          <button
-            type="button"
-            className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-          >
-            <Plus className="w-4 h-4" />
-            Add task
-          </button>
-        </div>
-      </SortableContext>
+        <button
+          type="button"
+          className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          Add task
+        </button>
+      </div>
     </div>
   );
 }

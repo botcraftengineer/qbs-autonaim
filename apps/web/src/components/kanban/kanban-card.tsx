@@ -1,7 +1,6 @@
 "use client";
 
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
+import { useDraggable } from "@dnd-kit/core";
 import { Avatar, AvatarFallback } from "@qbs-autonaim/ui";
 import { MessageSquare, Paperclip } from "lucide-react";
 import type { KanbanTask } from "./types";
@@ -12,20 +11,15 @@ interface KanbanCardProps {
 }
 
 export function KanbanCard({ task, isDragging }: KanbanCardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ id: task.id });
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: task.id,
+  });
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isSortableDragging ? 0.5 : 1,
-  };
+  const style = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+      }
+    : undefined;
 
   const priorityColors = {
     High: "text-rose-600 bg-rose-50 dark:bg-rose-950 dark:text-rose-400",
@@ -40,7 +34,7 @@ export function KanbanCard({ task, isDragging }: KanbanCardProps) {
       {...attributes}
       {...listeners}
       className={`bg-card border rounded-lg p-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${
-        isDragging ? "shadow-lg" : ""
+        isDragging ? "shadow-lg opacity-50" : ""
       }`}
     >
       <h4 className="text-sm font-semibold mb-2 line-clamp-2">{task.title}</h4>
@@ -49,16 +43,18 @@ export function KanbanCard({ task, isDragging }: KanbanCardProps) {
       </p>
 
       <div className="flex items-center gap-2 mb-3">
-        {task.assignees.slice(0, 2).map((assignee) => (
-          <Avatar
-            key={assignee.id}
-            className="w-6 h-6 border-2 border-background"
-          >
-            <AvatarFallback className="text-[10px] font-medium">
-              {assignee.initials}
-            </AvatarFallback>
-          </Avatar>
-        ))}
+        {task.assignees
+          .slice(0, 2)
+          .map((assignee: { id: string; initials: string }) => (
+            <Avatar
+              key={assignee.id}
+              className="w-6 h-6 border-2 border-background"
+            >
+              <AvatarFallback className="text-[10px] font-medium">
+                {assignee.initials}
+              </AvatarFallback>
+            </Avatar>
+          ))}
         {task.assignees.length > 2 && (
           <span className="text-xs text-muted-foreground">
             +{task.assignees.length - 2}

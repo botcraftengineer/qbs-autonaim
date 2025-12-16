@@ -1,6 +1,16 @@
 "use client";
 
 import {
+  closestCorners,
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
   Button,
   Input,
   Select,
@@ -20,7 +30,8 @@ import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 import { CandidateModal } from "../funnel/candidate-modal";
 import type { FunnelCandidate } from "../funnel/types";
-import { CandidateColumn } from "./candidate-column";
+import { CandidateCard } from "./candidate-card";
+import { CandidateKanbanColumn } from "./candidate-kanban-column";
 import { CandidatesTable } from "./candidates-table";
 
 export function CandidatePipeline() {
@@ -31,7 +42,17 @@ export function CandidatePipeline() {
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [activeCandidate, setActiveCandidate] =
+    useState<FunnelCandidate | null>(null);
   const trpc = useTRPC();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+  );
 
   const { data: vacancies } = useQuery({
     ...trpc.vacancy.listActive.queryOptions({
@@ -72,6 +93,26 @@ export function CandidatePipeline() {
   const inReview = filteredCandidates.filter((c) => c.stage === "REVIEW");
   const interview = filteredCandidates.filter((c) => c.stage === "INTERVIEW");
   const hired = filteredCandidates.filter((c) => c.stage === "HIRED");
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    const candidate = filteredCandidates.find((c) => c.id === active.id);
+    if (candidate) {
+      setActiveCandidate(candidate);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveCandidate(null);
+
+    if (!over) return;
+
+    const candidateId = active.id as string;
+    const newStage = over.id as string;
+
+    console.log(`Move candidate ${candidateId} to stage ${newStage}`);
+  };
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -135,36 +176,51 @@ export function CandidatePipeline() {
       </div>
 
       {activeView === "board" ? (
-        <div className="flex gap-3 md:gap-5 overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none">
-          <CandidateColumn
-            title="Новые"
-            count={newCandidates.length}
-            candidates={newCandidates}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-          <CandidateColumn
-            title="Рассмотрение"
-            count={inReview.length}
-            candidates={inReview}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-          <CandidateColumn
-            title="Собеседование"
-            count={interview.length}
-            candidates={interview}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-          <CandidateColumn
-            title="Наняты"
-            count={hired.length}
-            candidates={hired}
-            onCardClick={handleCardClick}
-            isLoading={isLoading}
-          />
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex gap-6 overflow-x-auto pb-4">
+            <CandidateKanbanColumn
+              id="NEW"
+              title="Новые"
+              candidates={newCandidates}
+              onCardClick={handleCardClick}
+              isLoading={isLoading}
+            />
+            <CandidateKanbanColumn
+              id="REVIEW"
+              title="Рассмотрение"
+              candidates={inReview}
+              onCardClick={handleCardClick}
+              isLoading={isLoading}
+            />
+            <CandidateKanbanColumn
+              id="INTERVIEW"
+              title="Собеседование"
+              candidates={interview}
+              onCardClick={handleCardClick}
+              isLoading={isLoading}
+            />
+            <CandidateKanbanColumn
+              id="HIRED"
+              title="Наняты"
+              candidates={hired}
+              onCardClick={handleCardClick}
+              isLoading={isLoading}
+            />
+          </div>
+
+          <DragOverlay>
+            {activeCandidate ? (
+              <div className="opacity-50">
+                <CandidateCard candidate={activeCandidate} onClick={() => {}} />
+              </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       ) : (
         <CandidatesTable
           candidates={filteredCandidates}
