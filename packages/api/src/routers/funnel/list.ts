@@ -101,6 +101,7 @@ export const list = protectedProcedure
         initials:
           r.candidateName
             ?.split(" ")
+            .filter((n) => n.length > 0)
             .map((n) => n[0])
             .join("")
             .toUpperCase()
