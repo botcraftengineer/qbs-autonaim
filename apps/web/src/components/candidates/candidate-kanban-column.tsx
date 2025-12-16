@@ -1,11 +1,12 @@
 "use client";
-
+import { useDroppable } from "@dnd-kit/core";
 import { cn } from "@qbs-autonaim/ui";
 import { Users } from "lucide-react";
-import { CandidateKanbanCard } from "./candidate-kanban-card";
+import { CandidateKanbanItem } from "./candidate-kanban-item";
 import type { FunnelCandidate } from "./types";
 
 interface CandidateKanbanColumnProps {
+  id: string;
   title: string;
   color: string;
   candidates: FunnelCandidate[];
@@ -14,14 +15,19 @@ interface CandidateKanbanColumnProps {
 }
 
 export function CandidateKanbanColumn({
+  id,
   title,
   color,
   candidates,
   onCardClick,
   isLoading,
 }: CandidateKanbanColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id,
+  });
+
   return (
-    <fieldset className="flex flex-col min-w-0 border-0 p-0 m-0">
+    <fieldset className="flex flex-col min-w-0 border-0 p-0 m-0 h-full">
       <legend className="sr-only">{`Колонка ${title}`}</legend>
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className={cn("w-2 h-2 rounded-full shrink-0", color)} />
@@ -31,7 +37,15 @@ export function CandidateKanbanColumn({
         </span>
       </div>
 
-      <div className="flex flex-col gap-3 min-h-[300px] p-3 rounded-xl border-2 border-dashed border-transparent bg-muted/30">
+      <div
+        ref={setNodeRef}
+        className={cn(
+          "flex flex-col gap-3 min-h-[300px] p-3 rounded-xl border-2 border-dashed transition-colors h-full",
+          isOver
+            ? "border-primary/50 bg-primary/5"
+            : "border-transparent bg-muted/30",
+        )}
+      >
         {isLoading ? (
           <div className="space-y-3" aria-busy="true">
             {[1, 2, 3].map((i) => (
@@ -43,16 +57,16 @@ export function CandidateKanbanColumn({
             ))}
           </div>
         ) : candidates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+          <div className="flex flex-col items-center justify-center py-12 text-muted-foreground flex-1">
             <Users className="h-8 w-8 mb-2 opacity-40" aria-hidden="true" />
             <p className="text-sm">Нет кандидатов</p>
           </div>
         ) : (
           candidates.map((candidate) => (
-            <CandidateKanbanCard
+            <CandidateKanbanItem
               key={candidate.id}
               candidate={candidate}
-              onClick={() => onCardClick(candidate)}
+              onClick={onCardClick}
             />
           ))
         )}

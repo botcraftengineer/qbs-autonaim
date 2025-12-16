@@ -106,8 +106,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           senderId?: string;
         } | null = null;
 
-        let actualSentMessage = welcomeMessage;
-
         // Пытаемся отправить по username, если он есть
         if (username) {
           console.log(`📨 Попытка отправки по username: @${username}`);
@@ -198,8 +196,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           if (telegramUsername && pinCodeResult.success) {
             messageWithInvite = `${messageWithInvite}\n\n📱 Напиши мне в Telegram @${telegramUsername} и сообщи пин-код: ${pinCodeResult.data}`;
           }
-
-          actualSentMessage = messageWithInvite;
 
           const hhResult = await sendHHChatMessage({
             workspaceId: response.vacancy.workspaceId,
@@ -302,7 +298,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
             conversationId: conversation.id,
             sender: "BOT",
             contentType: "TEXT",
-            content: actualSentMessage,
+            content: welcomeMessage,
           });
 
           console.log(`✅ Приветственное сообщение сохранено в историю`);

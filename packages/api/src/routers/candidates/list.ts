@@ -1,4 +1,12 @@
-import { and, eq, ilike, inArray, lt, or, workspaceRepository } from "@qbs-autonaim/db";
+import {
+  and,
+  eq,
+  ilike,
+  inArray,
+  lt,
+  or,
+  workspaceRepository,
+} from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -36,7 +44,9 @@ export const list = protectedProcedure
       limit: z.number().int().min(1).max(100).default(50),
       cursor: uuidv7Schema.optional(),
       search: z.string().optional(),
-      stages: z.array(z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"])).optional(),
+      stages: z
+        .array(z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]))
+        .optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
@@ -75,15 +85,19 @@ export const list = protectedProcedure
     if (input.search) {
       const search = `%${input.search}%`;
       const matchingVacancyIds = vacancies
-        .filter((v) => v.title.toLowerCase().includes(input.search!.toLowerCase()))
+        .filter((v) =>
+          v.title.toLowerCase().includes(input.search?.toLowerCase() ?? ""),
+        )
         .map((v) => v.id);
-      
+
       const searchConditions = [ilike(vacancyResponse.candidateName, search)];
-      
+
       if (matchingVacancyIds.length > 0) {
-        searchConditions.push(inArray(vacancyResponse.vacancyId, matchingVacancyIds));
+        searchConditions.push(
+          inArray(vacancyResponse.vacancyId, matchingVacancyIds),
+        );
       }
-      
+
       const searchCondition = or(...searchConditions);
       if (searchCondition) {
         conditions.push(searchCondition);
@@ -92,24 +106,31 @@ export const list = protectedProcedure
 
     if (input.stages && input.stages.length > 0) {
       const stageConditions = [];
-      
+
       if (input.stages.includes("HIRED")) {
-        stageConditions.push(inArray(vacancyResponse.hrSelectionStatus, ["INVITE", "RECOMMENDED"]));
+        stageConditions.push(
+          inArray(vacancyResponse.hrSelectionStatus, ["INVITE", "RECOMMENDED"]),
+        );
       }
-      
+
       if (input.stages.includes("REJECTED")) {
         stageConditions.push(
           or(
-            inArray(vacancyResponse.hrSelectionStatus, ["REJECTED", "NOT_RECOMMENDED"]),
-            eq(vacancyResponse.status, "SKIPPED")
-          )
+            inArray(vacancyResponse.hrSelectionStatus, [
+              "REJECTED",
+              "NOT_RECOMMENDED",
+            ]),
+            eq(vacancyResponse.status, "SKIPPED"),
+          ),
         );
       }
-      
+
       if (input.stages.includes("INTERVIEW")) {
-        stageConditions.push(inArray(vacancyResponse.status, ["DIALOG_APPROVED", "INTERVIEW_HH"]));
+        stageConditions.push(
+          inArray(vacancyResponse.status, ["DIALOG_APPROVED", "INTERVIEW_HH"]),
+        );
       }
-      
+
       if (input.stages.includes("REVIEW")) {
         stageConditions.push(eq(vacancyResponse.status, "EVALUATED"));
       }
@@ -161,7 +182,7 @@ export const list = protectedProcedure
 
       const contacts = r.contacts as Record<string, string> | null;
       // Приоритет: данные из contacts, затем top-level поле phone (если есть)
-      const contactPhone = contacts?.phone || r.phone; 
+      const contactPhone = contacts?.phone || r.phone;
       // Пробуем разные варианты ключей, так как структура может варьироваться
       const email = contacts?.email || null;
       const linkedin = contacts?.linkedin || contacts?.linkedIn || null;
@@ -209,4 +230,3 @@ export const list = protectedProcedure
       nextCursor,
     };
   });
-
