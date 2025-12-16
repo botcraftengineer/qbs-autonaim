@@ -30,13 +30,13 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "2.0.0-beta.54",
-    "@ai-sdk/openai": "3.0.0-beta.101",
+    "@ai-sdk/deepseek": "2.0.0-beta.55",
+    "@ai-sdk/openai": "3.0.0-beta.102",
     "@aws-sdk/client-s3": "3.952.0",
     "@aws-sdk/s3-request-presigner": "3.952.0",
     "@qbs-autonaim/config": "workspace:*",
     "@valibot/to-json-schema": "^1.5.0",
-    "ai": "^6.0.0-beta.156",
+    "ai": "^6.0.0-beta.157",
     "effect": "^3.19.12",
     "langfuse": "3.38.6",
     "zod": "4.2.1"
