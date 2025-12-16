@@ -69,7 +69,7 @@ export const updateStage = protectedProcedure
     if (response.vacancy.workspaceId !== input.workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Candidate does not belong to your workspace",
+        message: "Кандидат не принадлежит вашему рабочему пространству",
       });
     }
 
