@@ -191,17 +191,16 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 });
 
               // Генерируем ответ через AI
+              const vacancy = interviewData?.response.vacancy;
               const prompt = buildTelegramRecruiterPrompt({
                 messageText: text,
                 stage: "PIN_RECEIVED",
                 candidateName:
                   interviewData?.response.candidateName ?? undefined,
-                vacancyTitle:
-                  interviewData?.response.vacancy.title ?? undefined,
+                vacancyTitle: vacancy?.title ?? undefined,
                 vacancyRequirements:
-                  typeof interviewData?.response.vacancy.requirements ===
-                  "string"
-                    ? interviewData.response.vacancy.requirements
+                  typeof vacancy?.requirements === "string"
+                    ? vacancy.requirements
                     : undefined,
                 conversationHistory: conversationHistory.map((msg) => ({
                   sender: msg.sender,
@@ -213,14 +212,12 @@ export const processIncomingMessageFunction = inngest.createFunction(
                   coverLetter: interviewData?.response.coverLetter ?? undefined,
                 },
                 customBotInstructions:
-                  interviewData?.response.vacancy.workspace?.companySettings
-                    ?.customBotInstructions ?? undefined,
-                customInterviewQuestions:
-                  interviewData?.response.vacancy.customInterviewQuestions ??
+                  vacancy?.workspace?.companySettings?.customBotInstructions ??
                   undefined,
+                customInterviewQuestions:
+                  vacancy?.customInterviewQuestions ?? undefined,
                 customOrganizationalQuestions:
-                  interviewData?.response.vacancy
-                    .customOrganizationalQuestions ?? undefined,
+                  vacancy?.customOrganizationalQuestions ?? undefined,
                 botName: botSettings.botName,
                 botRole: botSettings.botRole,
               });
@@ -232,8 +229,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
                 metadata: {
                   candidateName:
                     interviewData?.response.candidateName ?? undefined,
-                  vacancyTitle:
-                    interviewData?.response.vacancy.title ?? undefined,
+                  vacancyTitle: vacancy?.title ?? undefined,
                 },
               });
 
