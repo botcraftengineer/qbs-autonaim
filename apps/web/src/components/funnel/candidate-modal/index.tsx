@@ -16,16 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
   Separator,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
 } from "@qbs-autonaim/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Award,
   CheckCircle,
-  Clock,
   FileText,
   MessageSquare,
   XCircle,
@@ -34,8 +29,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import type { FunnelCandidate } from "../types";
-import { ActivityTimeline } from "./activity-timeline";
-import { CommentsSection } from "./comments-section";
 import { ContactInfo } from "./contact-info";
 import { ProfessionalInfo } from "./professional-info";
 import { SkillsSection } from "./skills-section";
@@ -64,49 +57,14 @@ export function CandidateModal({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { data: comments } = useQuery({
-    ...trpc.funnel.comments.list.queryOptions({
-      candidateId: candidate?.id ?? "",
-    }),
-    enabled: !!candidate,
-  });
-
-  const { data: activities } = useQuery({
-    ...trpc.funnel.activities.list.queryOptions({
-      candidateId: candidate?.id ?? "",
-    }),
-    enabled: !!candidate,
-  });
-
   const updateStage = useMutation({
     ...trpc.funnel.updateStage.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: trpc.funnel.list.queryKey() });
+      toast.success("Статус обновлен");
     },
-  });
-
-  const addComment = useMutation({
-    ...trpc.funnel.comments.add.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.funnel.comments.list.queryKey(),
-      });
-      queryClient.invalidateQueries({
-        queryKey: trpc.funnel.activities.list.queryKey(),
-      });
-    },
-    onError: (error) => {
-      console.error("Failed to add comment:", error);
-      toast.error("Не удалось добавить комментарий");
-    },
-  });
-
-  const deleteComment = useMutation({
-    ...trpc.funnel.comments.delete.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.funnel.comments.list.queryKey(),
-      });
+    onError: () => {
+      toast.error("Не удалось обновить статус");
     },
   });
 
@@ -118,14 +76,6 @@ export function CandidateModal({
       candidateId: candidate.id,
       workspaceId,
       stage: stage as "NEW" | "REVIEW" | "INTERVIEW" | "HIRED" | "REJECTED",
-    });
-  };
-
-  const handleAddComment = async (content: string, isPrivate: boolean) => {
-    await addComment.mutateAsync({
-      candidateId: candidate.id,
-      content,
-      isPrivate,
     });
   };
 
@@ -207,33 +157,12 @@ export function CandidateModal({
           <SkillsSection skills={candidate.skills} />
           <Separator />
 
-          <Tabs defaultValue="timeline" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 h-10">
-              <TabsTrigger value="timeline">
-                <Clock className="h-4 w-4 mr-2" />
-                Временная шкала
-              </TabsTrigger>
-              <TabsTrigger value="comments">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                Комментарии ({comments?.length ?? 0})
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="timeline" className="mt-4">
-              <ActivityTimeline activities={activities?.items ?? []} />
-            </TabsContent>
-
-            <TabsContent value="comments" className="mt-4">
-              <CommentsSection
-                comments={comments ?? []}
-                onAddComment={handleAddComment}
-                onDeleteComment={(id) =>
-                  deleteComment.mutate({ commentId: id })
-                }
-                isAdding={addComment.isPending}
-              />
-            </TabsContent>
-          </Tabs>
+          <div className="p-4 bg-muted/30 rounded-lg border">
+            <p className="text-sm text-muted-foreground">
+              Дополнительная информация о кандидате будет доступна в следующих
+              версиях
+            </p>
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t">
             <Button variant="outline" onClick={() => onOpenChange(false)}>

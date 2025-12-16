@@ -72,7 +72,6 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
         <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <div className="flex items-center gap-1.5">
             <Briefcase className="h-3.5 w-3.5 text-primary/60" />
-            <span className="font-medium">{candidate.experience}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <MapPin className="h-3.5 w-3.5 text-primary/60" />
