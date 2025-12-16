@@ -1,4 +1,4 @@
-import { CandidatePipeline } from "~/components/funnel";
+import { CandidatePipeline } from "~/components/candidates";
 import { SiteHeader } from "~/components/layout";
 
 export default function CandidatesPage() {
