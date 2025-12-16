@@ -2,7 +2,6 @@
   "name": "@qbs-autonaim/emails",
   "version": "1.0.0",
   "private": true,
-  "type": "module",
   "workspaces": [
     ".react-email"
   ],
@@ -11,12 +10,12 @@
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     },
     "./send": {
-      "types": "./dist/send.d.ts",
-      "default": "./dist/send.js"
+      "types": "./dist/send.d.mts",
+      "default": "./dist/send.mjs"
     }
   },
   "files": [
