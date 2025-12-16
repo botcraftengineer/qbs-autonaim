@@ -7,25 +7,24 @@ import { protectedProcedure } from "../../trpc";
 
 const stageSchema = z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]);
 
+type Stage = z.infer<typeof stageSchema>;
+
 const mapStageToResponse = (
-  stage: string,
+  stage: Stage,
 ):
   | { status: "NEW" | "EVALUATED" | "DIALOG_APPROVED" }
-  | { hrSelectionStatus: "RECOMMENDED" | "REJECTED" }
-  | Record<string, never> => {
+  | { hrSelectionStatus: "RECOMMENDED" | "REJECTED" } => {
   switch (stage) {
     case "HIRED":
-      return { hrSelectionStatus: "RECOMMENDED" as const };
+      return { hrSelectionStatus: "RECOMMENDED" };
     case "REJECTED":
-      return { hrSelectionStatus: "REJECTED" as const };
+      return { hrSelectionStatus: "REJECTED" };
     case "INTERVIEW":
-      return { status: "DIALOG_APPROVED" as const };
+      return { status: "DIALOG_APPROVED" };
     case "REVIEW":
-      return { status: "EVALUATED" as const };
+      return { status: "EVALUATED" };
     case "NEW":
-      return { status: "NEW" as const };
-    default:
-      return {};
+      return { status: "NEW" };
   }
 };
 
