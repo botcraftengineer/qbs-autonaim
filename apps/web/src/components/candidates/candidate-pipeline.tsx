@@ -1,8 +1,14 @@
 "use client";
 
 import {
+  Badge,
   Button,
+  Checkbox,
   Input,
+  Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
@@ -55,6 +61,7 @@ export function CandidatePipeline() {
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [filterStages, setFilterStages] = useState<FunnelStage[]>([]);
 
   const trpc = useTRPC();
 
@@ -78,23 +85,38 @@ export function CandidatePipeline() {
     setIsModalOpen(true);
   }, []);
 
-  const filteredCandidates = useMemo(() => {
-    const items = candidates?.items ?? [];
-    if (items.length === 0) return [];
-    const query = searchText.trim().toLowerCase();
-    if (!query) return items;
+  const toggleStageFilter = (stageId: FunnelStage) => {
+    setFilterStages((prev) =>
+      prev.includes(stageId)
+        ? prev.filter((id) => id !== stageId)
+        : [...prev, stageId],
+    );
+  };
 
-    const terms = query.split(/\s+/).filter(Boolean);
-    return items.filter((c) => {
-      const skillsLower = c.skills.map((s: string) => s.toLowerCase());
-      const searchable = [
-        c.name.toLowerCase(),
-        c.position.toLowerCase(),
-        ...skillsLower,
-      ].join(" ");
-      return terms.every((term) => searchable.includes(term));
-    });
-  }, [candidates, searchText]);
+  // Client-side filtering
+  const filteredCandidates = useMemo(() => {
+    let items = candidates?.items ?? [];
+
+    // Filter by search text
+    if (searchText.trim()) {
+      const search = searchText.toLowerCase();
+      items = items.filter(
+        (c) =>
+          c.name.toLowerCase().includes(search) ||
+          c.position.toLowerCase().includes(search) ||
+          c.skills?.some((s: string) => s.toLowerCase().includes(search)),
+      );
+    }
+
+    // Filter by stages
+    if (filterStages.length > 0) {
+      items = items.filter((c) =>
+        filterStages.includes(c.stage as FunnelStage),
+      );
+    }
+
+    return items;
+  }, [candidates?.items, searchText, filterStages]);
 
   const candidatesByStage = useMemo(() => {
     const result: Record<FunnelStage, FunnelCandidate[]> = {
@@ -150,15 +172,62 @@ export function CandidatePipeline() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 h-10 px-4"
-              disabled
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="hidden sm:inline">Фильтры</span>
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 h-10 px-4">
+                  <SlidersHorizontal className="h-4 w-4" />
+                  <span className="hidden sm:inline">Фильтры</span>
+                  {filterStages.length > 0 && (
+                    <Badge
+                      variant="secondary"
+                      className="ml-1 px-1.5 py-0.5 h-5 text-[10px] min-w-5 justify-center text-foreground font-semibold"
+                    >
+                      {filterStages.length}
+                    </Badge>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-3" align="end">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium text-sm text-foreground">
+                      Статус
+                    </h4>
+                    {filterStages.length > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
+                        onClick={() => setFilterStages([])}
+                      >
+                        Сбросить
+                      </Button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {STAGES.map((stage) => (
+                      <div
+                        key={stage.id}
+                        className="flex items-center space-x-2"
+                      >
+                        <Checkbox
+                          id={`filter-${stage.id}`}
+                          checked={filterStages.includes(stage.id)}
+                          onCheckedChange={() => toggleStageFilter(stage.id)}
+                        />
+                        <Label
+                          htmlFor={`filter-${stage.id}`}
+                          className="text-sm font-normal cursor-pointer flex-1"
+                        >
+                          {stage.title}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+
             <Button size="sm" className="gap-2 h-10 px-4" disabled>
               <UserPlus className="h-4 w-4" />
               <span className="hidden sm:inline">Добавить</span>

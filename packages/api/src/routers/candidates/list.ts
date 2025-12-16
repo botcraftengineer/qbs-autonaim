@@ -1,4 +1,12 @@
-import { and, eq, inArray, lt, workspaceRepository } from "@qbs-autonaim/db";
+import {
+  and,
+  eq,
+  ilike,
+  inArray,
+  lt,
+  or,
+  workspaceRepository,
+} from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -35,6 +43,10 @@ export const list = protectedProcedure
       vacancyId: z.string().optional(),
       limit: z.number().int().min(1).max(100).default(50),
       cursor: uuidv7Schema.optional(),
+      search: z.string().optional(),
+      stages: z
+        .array(z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]))
+        .optional(),
     }),
   )
   .query(async ({ input, ctx }) => {
@@ -70,6 +82,71 @@ export const list = protectedProcedure
       conditions.push(eq(vacancyResponse.vacancyId, input.vacancyId));
     }
 
+    if (input.search) {
+      const search = `%${input.search}%`;
+      const matchingVacancyIds = vacancies
+        .filter((v) =>
+          v.title.toLowerCase().includes(input.search?.toLowerCase() ?? ""),
+        )
+        .map((v) => v.id);
+
+      const searchConditions = [ilike(vacancyResponse.candidateName, search)];
+
+      if (matchingVacancyIds.length > 0) {
+        searchConditions.push(
+          inArray(vacancyResponse.vacancyId, matchingVacancyIds),
+        );
+      }
+
+      const searchCondition = or(...searchConditions);
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+
+    if (input.stages && input.stages.length > 0) {
+      const stageConditions = [];
+
+      if (input.stages.includes("HIRED")) {
+        stageConditions.push(
+          inArray(vacancyResponse.hrSelectionStatus, ["INVITE", "RECOMMENDED"]),
+        );
+      }
+
+      if (input.stages.includes("REJECTED")) {
+        stageConditions.push(
+          or(
+            inArray(vacancyResponse.hrSelectionStatus, [
+              "REJECTED",
+              "NOT_RECOMMENDED",
+            ]),
+            eq(vacancyResponse.status, "SKIPPED"),
+          ),
+        );
+      }
+
+      if (input.stages.includes("INTERVIEW")) {
+        stageConditions.push(
+          inArray(vacancyResponse.status, ["DIALOG_APPROVED", "INTERVIEW_HH"]),
+        );
+      }
+
+      if (input.stages.includes("REVIEW")) {
+        stageConditions.push(eq(vacancyResponse.status, "EVALUATED"));
+      }
+
+      if (input.stages.includes("NEW")) {
+        stageConditions.push(eq(vacancyResponse.status, "NEW"));
+      }
+
+      if (stageConditions.length > 0) {
+        const stageCondition = or(...stageConditions);
+        if (stageCondition) {
+          conditions.push(stageCondition);
+        }
+      }
+    }
+
     if (input.cursor) {
       conditions.push(lt(vacancyResponse.id, input.cursor));
     }
@@ -103,6 +180,15 @@ export const list = protectedProcedure
           ? Math.round((resumeScore + interviewScore) / 2)
           : (resumeScore ?? interviewScore ?? 0);
 
+      const contacts = r.contacts as Record<string, string> | null;
+      // Приоритет: данные из contacts, затем top-level поле phone (если есть)
+      const contactPhone = contacts?.phone || r.phone;
+      // Пробуем разные варианты ключей, так как структура может варьироваться
+      const email = contacts?.email || null;
+      const linkedin = contacts?.linkedin || contacts?.linkedIn || null;
+      const github = contacts?.github || contacts?.gitHub || null;
+      const telegram = r.telegramUsername || contacts?.telegram || null;
+
       return {
         id: r.id,
         name: r.candidateName || "Без имени",
@@ -129,10 +215,11 @@ export const list = protectedProcedure
         stage,
         vacancyId: r.vacancyId,
         vacancyName: vacancyData?.title || "Неизвестная вакансия",
-        email: null,
-        phone: r.phone,
-        linkedin: null,
-        github: null,
+        email: email,
+        phone: contactPhone,
+        linkedin: linkedin,
+        github: github,
+        telegram: telegram,
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,
       };

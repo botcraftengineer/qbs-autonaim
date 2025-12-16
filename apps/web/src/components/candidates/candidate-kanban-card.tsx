@@ -7,7 +7,7 @@ import {
   Badge,
   cn,
 } from "@qbs-autonaim/ui";
-import { Calendar, Star } from "lucide-react";
+import { Calendar, Linkedin, Mail, Phone, Star } from "lucide-react";
 import { MatchScoreCircle } from "./match-score-circle";
 import type { FunnelCandidate } from "./types";
 
@@ -42,7 +42,7 @@ export function CandidateKanbanCard({
   };
 
   return (
-    <div className="bg-card border rounded-lg shadow-sm transition-all duration-200 select-none hover:shadow-md hover:border-primary/30">
+    <div className="bg-card border rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/30 flex flex-col group relative">
       <div className="flex items-center gap-1 px-3 py-2 border-b">
         <span className="text-xs text-muted-foreground truncate flex-1">
           {candidate.vacancyName}
@@ -51,10 +51,9 @@ export function CandidateKanbanCard({
       </div>
 
       <button
-        type="button"
         onClick={onClick}
-        className="w-full p-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-b-lg"
-        aria-label={`Открыть профиль ${candidate.name}`}
+        className="flex-1 p-3 cursor-pointer text-left focus:outline-none"
+        type="button"
       >
         <div className="flex items-start gap-3 mb-3">
           <Avatar className="h-10 w-10 border shrink-0">
@@ -129,6 +128,63 @@ export function CandidateKanbanCard({
           </div>
         </div>
       </button>
+
+      {/* Quick Actions - Visible on hover or always */}
+      <div className="flex items-center gap-1 px-3 pb-3 pt-0 opacity-0 group-hover:opacity-100 transition-opacity h-0 group-hover:h-auto overflow-hidden group-hover:overflow-visible">
+        {candidate.telegram && (
+          <a
+            href={`https://t.me/${candidate.telegram.replace("@", "")}`}
+            target="_blank"
+            rel="noreferrer"
+            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-[#2AABEE] transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            title={`Telegram: ${candidate.telegram}`}
+          >
+            <svg
+              role="img"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4 fill-current"
+              aria-label="Telegram"
+            >
+              <title>Telegram</title>
+              <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 11.944 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+            </svg>
+          </a>
+        )}
+        {candidate.email && (
+          <a
+            href={`mailto:${candidate.email}`}
+            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            title={candidate.email}
+          >
+            <Mail className="h-4 w-4" />
+          </a>
+        )}
+        {candidate.phone && (
+          <a
+            href={`tel:${candidate.phone}`}
+            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-green-600 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            title={candidate.phone}
+          >
+            <Phone className="h-4 w-4" />
+          </a>
+        )}
+        {candidate.linkedin && (
+          <a
+            href={candidate.linkedin}
+            target="_blank"
+            rel="noreferrer"
+            className="p-1.5 rounded-md hover:bg-muted text-muted-foreground hover:text-[#0a66c2] transition-colors"
+            onClick={(e) => e.stopPropagation()}
+            title="LinkedIn"
+          >
+            <Linkedin className="h-4 w-4" />
+          </a>
+        )}
+      </div>
     </div>
   );
 }

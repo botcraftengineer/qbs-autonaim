@@ -7,6 +7,8 @@ import {
   Clock,
   DollarSign,
   FileText,
+  Github,
+  Linkedin,
   Mail,
   MapPin,
   Phone,
@@ -54,6 +56,32 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">{candidate.location}</span>
             </div>
+            {candidate.linkedin && (
+              <div className="flex items-center gap-3">
+                <Linkedin className="h-4 w-4 text-muted-foreground" />
+                <a 
+                  href={candidate.linkedin} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-sm hover:underline hover:text-primary transition-colors truncate max-w-[200px]"
+                >
+                  {candidate.linkedin.replace(/^https?:\/\/(www\.)?/, "")}
+                </a>
+              </div>
+            )}
+            {candidate.github && (
+              <div className="flex items-center gap-3">
+                <Github className="h-4 w-4 text-muted-foreground" />
+                <a 
+                  href={candidate.github} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-sm hover:underline hover:text-primary transition-colors truncate max-w-[200px]"
+                >
+                  {candidate.github.replace(/^https?:\/\/(www\.)?/, "")}
+                </a>
+              </div>
+            )}
           </div>
         </div>
 

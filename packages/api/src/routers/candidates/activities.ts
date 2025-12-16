@@ -9,7 +9,7 @@ export const listActivities = protectedProcedure
       workspaceId: workspaceIdSchema,
     }),
   )
-  .query(async ({ input }) => {
+  .query(async () => {
     // TODO: Implement when DB schema is ready
     // For now return mock data based on candidate
     return [
