@@ -63,7 +63,6 @@ export const sendMessageByPhoneSchema = z.object({
   firstName: z.string().optional(),
 });
 
-// Схемы ответов
 export const userSchema = z.object({
   id: z.string(),
   firstName: z.string(),
@@ -126,7 +125,6 @@ export const downloadFileResponseSchema = z.object({
   duration: z.number(),
 });
 
-// Типы входных данных
 export type SendCodeInput = z.infer<typeof sendCodeSchema>;
 export type SignInInput = z.infer<typeof signInSchema>;
 export type CheckPasswordInput = z.infer<typeof checkPasswordSchema>;
@@ -137,7 +135,6 @@ export type SendMessageByUsernameInput = z.infer<
 export type SendMessageByPhoneInput = z.infer<typeof sendMessageByPhoneSchema>;
 export type DownloadFileInput = z.infer<typeof downloadFileSchema>;
 
-// Типы ответов
 export type User = z.infer<typeof userSchema>;
 export type SendCodeResponse = z.infer<typeof sendCodeResponseSchema>;
 export type AuthResponse = z.infer<typeof authResponseSchema>;

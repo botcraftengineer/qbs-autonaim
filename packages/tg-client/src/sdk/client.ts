@@ -126,4 +126,4 @@ export class TgClientSDK {
 }
 
 // Экспортируем singleton instance
-export const tgClientSDK = new TgClientSDK();
+export const tgClientSDK: TgClientSDK = new TgClientSDK();
