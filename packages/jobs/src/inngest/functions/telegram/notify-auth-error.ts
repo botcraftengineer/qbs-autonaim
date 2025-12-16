@@ -7,7 +7,8 @@ import {
   userWorkspace,
   workspace,
 } from "@qbs-autonaim/db/schema";
-import { sendEmail, TelegramAuthErrorEmail } from "@qbs-autonaim/emails";
+import { TelegramAuthErrorEmail } from "@qbs-autonaim/emails";
+import { sendEmail } from "@qbs-autonaim/emails/send";
 import { inngest } from "../../client";
 
 /**

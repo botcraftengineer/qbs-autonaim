@@ -3,17 +3,18 @@ import { defineConfig } from "tsdown";
 const isProduction = process.env.NODE_ENV === "production";
 
 export default defineConfig({
-  entry: ["./emails/**/*.tsx", "./emails/**/*.ts", "index.ts"],
+  entry: ["index.ts", "send.ts"],
   format: ["esm"],
   dts: true,
   sourcemap: false,
   clean: true,
   minify: isProduction,
-  external: ["react", "react-dom"],
-  platform: "neutral",
-  inputOptions: {
-    transform: {
-      jsx: "preserve",
-    },
-  },
+  external: [
+    "react",
+    "react-dom",
+    "@react-email/components",
+    "nodemailer",
+    "resend",
+  ],
+  treeshake: true,
 });

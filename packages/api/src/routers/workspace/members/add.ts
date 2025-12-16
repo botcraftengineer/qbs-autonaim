@@ -1,5 +1,5 @@
 import { workspaceRepository } from "@qbs-autonaim/db";
-import { sendEmail } from "@qbs-autonaim/emails";
+import { sendEmail } from "@qbs-autonaim/emails/send";
 import { addUserToWorkspaceSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../trpc";
