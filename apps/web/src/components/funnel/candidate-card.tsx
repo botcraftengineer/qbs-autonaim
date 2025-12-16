@@ -36,6 +36,14 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
     <Card
       className="border shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer hover:border-primary/40"
       onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onClick();
+        }
+      }}
     >
       <CardContent className="p-4 space-y-3">
         <div className="flex items-start gap-3">
