@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { funnelCandidate } from "@qbs-autonaim/db/schema";
+import { eq, inArray } from "@qbs-autonaim/db";
+import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -10,8 +10,18 @@ export const vacancyStats = protectedProcedure
     }),
   )
   .query(async ({ input, ctx }) => {
-    const candidates = await ctx.db.query.funnelCandidate.findMany({
-      where: eq(funnelCandidate.workspaceId, input.workspaceId),
+    const vacancies = await ctx.db.query.vacancy.findMany({
+      where: eq(vacancy.workspaceId, input.workspaceId),
+    });
+
+    const vacancyIds = vacancies.map((v) => v.id);
+
+    if (vacancyIds.length === 0) {
+      return [];
+    }
+
+    const responses = await ctx.db.query.vacancyResponse.findMany({
+      where: inArray(vacancyResponse.vacancyId, vacancyIds),
     });
 
     const statsByVacancy = new Map<
@@ -26,29 +36,37 @@ export const vacancyStats = protectedProcedure
       }
     >();
 
-    for (const candidate of candidates) {
-      const existing = statsByVacancy.get(candidate.vacancyId);
+    for (const response of responses) {
+      const vacancyData = vacancies.find((v) => v.id === response.vacancyId);
+      const vacancyName = vacancyData?.title ?? "Неизвестная вакансия";
+
+      const isHired =
+        response.hrSelectionStatus === "INVITE" ||
+        response.hrSelectionStatus === "RECOMMENDED";
+      const isRejected =
+        response.hrSelectionStatus === "REJECTED" ||
+        response.hrSelectionStatus === "NOT_RECOMMENDED" ||
+        response.status === "SKIPPED";
+
+      const existing = statsByVacancy.get(response.vacancyId);
 
       if (existing) {
         existing.total++;
-        if (candidate.stage === "HIRED") {
+        if (isHired) {
           existing.hired++;
-        } else if (candidate.stage === "REJECTED") {
+        } else if (isRejected) {
           existing.rejected++;
         } else {
           existing.inProcess++;
         }
       } else {
-        statsByVacancy.set(candidate.vacancyId, {
-          vacancyId: candidate.vacancyId,
-          vacancyName: candidate.vacancyName,
+        statsByVacancy.set(response.vacancyId, {
+          vacancyId: response.vacancyId,
+          vacancyName,
           total: 1,
-          inProcess:
-            candidate.stage !== "HIRED" && candidate.stage !== "REJECTED"
-              ? 1
-              : 0,
-          hired: candidate.stage === "HIRED" ? 1 : 0,
-          rejected: candidate.stage === "REJECTED" ? 1 : 0,
+          inProcess: !isHired && !isRejected ? 1 : 0,
+          hired: isHired ? 1 : 0,
+          rejected: isRejected ? 1 : 0,
         });
       }
     }

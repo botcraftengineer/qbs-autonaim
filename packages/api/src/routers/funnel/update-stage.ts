@@ -1,11 +1,33 @@
 import { eq, workspaceRepository } from "@qbs-autonaim/db";
-import { funnelActivity, funnelCandidate } from "@qbs-autonaim/db/schema";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const stageSchema = z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]);
+
+const mapStageToResponse = (
+  stage: string,
+):
+  | { status: "NEW" | "EVALUATED" | "DIALOG_APPROVED" }
+  | { hrSelectionStatus: "RECOMMENDED" | "REJECTED" }
+  | Record<string, never> => {
+  switch (stage) {
+    case "HIRED":
+      return { hrSelectionStatus: "RECOMMENDED" as const };
+    case "REJECTED":
+      return { hrSelectionStatus: "REJECTED" as const };
+    case "INTERVIEW":
+      return { status: "DIALOG_APPROVED" as const };
+    case "REVIEW":
+      return { status: "EVALUATED" as const };
+    case "NEW":
+      return { status: "NEW" as const };
+    default:
+      return {};
+  }
+};
 
 export const updateStage = protectedProcedure
   .input(
@@ -28,47 +50,38 @@ export const updateStage = protectedProcedure
       });
     }
 
-    const candidate = await ctx.db.query.funnelCandidate.findFirst({
-      where: eq(funnelCandidate.id, input.candidateId),
-      columns: { workspaceId: true },
+    const response = await ctx.db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, input.candidateId),
+      with: {
+        vacancy: {
+          columns: { workspaceId: true },
+        },
+      },
     });
 
-    if (!candidate) {
+    if (!response) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Кандидат не найден",
       });
     }
 
-    if (candidate.workspaceId !== input.workspaceId) {
+    if (response.vacancy.workspaceId !== input.workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Candidate does not belong to your workspace",
       });
     }
 
+    const updates = mapStageToResponse(input.stage);
+
     await ctx.db
-      .update(funnelCandidate)
+      .update(vacancyResponse)
       .set({
-        stage: input.stage,
+        ...updates,
         updatedAt: new Date(),
       })
-      .where(eq(funnelCandidate.id, input.candidateId));
-
-    const stageNames = {
-      NEW: "Новые кандидаты",
-      REVIEW: "На рассмотрении",
-      INTERVIEW: "Собеседование",
-      HIRED: "Наняты",
-      REJECTED: "Отклонен",
-    };
-
-    await ctx.db.insert(funnelActivity).values({
-      candidateId: input.candidateId,
-      type: "STATUS_CHANGE",
-      description: `Кандидат перемещен на этап "${stageNames[input.stage]}"`,
-      author: ctx.session.user.name ?? "Пользователь",
-    });
+      .where(eq(vacancyResponse.id, input.candidateId));
 
     return { success: true };
   });

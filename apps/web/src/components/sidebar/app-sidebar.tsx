@@ -39,9 +39,14 @@ const getNavData = (workspaceSlug?: string) => ({
       icon: IconFileDescription,
     },
     {
+      title: "Кандидаты",
+      url: workspaceSlug ? `/${workspaceSlug}/candidates` : "/candidates",
+      icon: IconUsersGroup,
+    },
+    {
       title: "Воронка найма",
       url: workspaceSlug ? `/${workspaceSlug}/funnel` : "/funnel",
-      icon: IconUsersGroup,
+      icon: IconInnerShadowTop,
     },
     {
       title: "Чаты",

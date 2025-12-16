@@ -32,15 +32,22 @@ export function FunnelAnalytics() {
   const [timeRange, setTimeRange] = useState("30d");
   const trpc = useTRPC();
 
+  const { data: workspaceData, isLoading: isLoadingWorkspace } = useQuery(
+    trpc.workspace.getBySlug.queryOptions({ slug: params.workspaceSlug }),
+  );
+
+  const workspaceId = workspaceData?.workspace.id;
+
   const {
     data: analytics,
-    isLoading,
+    isLoading: isLoadingAnalytics,
     isError: analyticsError,
     error: analyticsErrorData,
   } = useQuery({
     ...trpc.funnel.analytics.queryOptions({
-      workspaceId: params.workspaceSlug,
+      workspaceId: workspaceId ?? "",
     }),
+    enabled: !!workspaceId,
   });
 
   const {
@@ -49,9 +56,12 @@ export function FunnelAnalytics() {
     error: vacancyStatsErrorData,
   } = useQuery({
     ...trpc.funnel.vacancyStats.queryOptions({
-      workspaceId: params.workspaceSlug,
+      workspaceId: workspaceId ?? "",
     }),
+    enabled: !!workspaceId,
   });
+
+  const isLoading = isLoadingWorkspace || isLoadingAnalytics;
 
   if (isLoading) {
     return (

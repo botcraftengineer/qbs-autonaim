@@ -15,16 +15,16 @@ import {
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, Search, SlidersHorizontal } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
+import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 import { CandidateModal } from "./candidate-modal";
 import { CandidatesTable } from "./candidates-table";
 import { FunnelColumn } from "./funnel-column";
 import type { FunnelCandidate } from "./types";
 
-export function FunnelBoard() {
-  const params = useParams<{ workspaceSlug: string }>();
+export function CandidatePipeline() {
+  const { workspaceId } = useWorkspaceContext();
   const [selectedVacancy, setSelectedVacancy] = useState<string>("all");
   const [activeView, setActiveView] = useState<"board" | "table">("board");
   const [selectedCandidate, setSelectedCandidate] =
@@ -35,15 +35,17 @@ export function FunnelBoard() {
 
   const { data: vacancies } = useQuery({
     ...trpc.vacancy.listActive.queryOptions({
-      workspaceId: params.workspaceSlug,
+      workspaceId: workspaceId ?? "",
     }),
+    enabled: !!workspaceId,
   });
 
   const { data: candidates, isLoading } = useQuery({
     ...trpc.funnel.list.queryOptions({
-      workspaceId: params.workspaceSlug,
+      workspaceId: workspaceId ?? "",
       vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
     }),
+    enabled: !!workspaceId,
   });
 
   const handleCardClick = (candidate: FunnelCandidate) => {
@@ -59,11 +61,9 @@ export function FunnelBoard() {
 
     const terms = query.split(/\s+/).filter(Boolean);
     return items.filter((c) => {
-      const searchable = [
-        c.name.toLowerCase(),
-        c.position.toLowerCase(),
-        ...c.skills.map((s) => s.toLowerCase()),
-      ].join(" ");
+      const searchable = [c.name.toLowerCase(), c.position.toLowerCase()].join(
+        " ",
+      );
       return terms.every((term) => searchable.includes(term));
     });
   }, [candidates, searchText]);
@@ -176,7 +176,7 @@ export function FunnelBoard() {
         candidate={selectedCandidate}
         open={isModalOpen}
         onOpenChange={setIsModalOpen}
-        workspaceId={params.workspaceSlug}
+        workspaceId={workspaceId ?? ""}
       />
     </div>
   );
