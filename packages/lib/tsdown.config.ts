@@ -7,7 +7,7 @@ export default defineConfig({
     s3: "src/s3.ts",
     image: "src/image.ts",
   },
-  format: ["esm"],
+  format: ["esm", "cjs"],
   dts: true,
   sourcemap: false,
   clean: true,

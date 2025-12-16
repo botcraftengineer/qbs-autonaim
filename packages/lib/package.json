@@ -5,24 +5,24 @@
   "type": "module",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./ai": {
-      "import": "./dist/ai.mjs",
-      "require": "./dist/ai.js",
-      "types": "./dist/ai.d.ts"
+      "types": "./dist/ai.d.ts",
+      "import": "./dist/ai.js",
+      "require": "./dist/ai.cjs"
     },
     "./s3": {
-      "import": "./dist/s3.mjs",
-      "require": "./dist/s3.js",
-      "types": "./dist/s3.d.ts"
+      "types": "./dist/s3.d.ts",
+      "import": "./dist/s3.js",
+      "require": "./dist/s3.cjs"
     },
     "./image": {
-      "import": "./dist/image.mjs",
-      "require": "./dist/image.js",
-      "types": "./dist/image.d.ts"
+      "types": "./dist/image.d.ts",
+      "import": "./dist/image.js",
+      "require": "./dist/image.cjs"
     }
   },
   "main": "./dist/index.js",

@@ -27,20 +27,18 @@ export async function handleUnidentifiedText(params: {
   const trimmedText = text.trim();
   const pinCode = extractPinCode(trimmedText);
 
-  let tempConv: typeof telegramConversation.$inferSelect;
-  try {
-    tempConv = await createOrUpdateTempConversation(
-      chatId,
-      username,
-      firstName,
-    );
-  } catch (error) {
+  const tempConv = await createOrUpdateTempConversation(
+    chatId,
+    username,
+    firstName,
+  );
+
+  if (!tempConv) {
     console.error("Failed to create/update temp conversation:", {
       chatId,
       messageId,
-      error: error instanceof Error ? error.message : String(error),
     });
-    throw error;
+    throw new Error("Failed to create temp conversation");
   }
 
   if (pinCode) {
