@@ -3,6 +3,7 @@ import {
   hasDetailedInfo,
   saveBasicResponse,
   updateResponseDetails,
+  uploadCandidatePhoto,
   uploadResumePdf,
 } from "../../services/response";
 import type { ResponseData } from "../types";
@@ -346,6 +347,18 @@ async function parseResponseDetails(
         }
       }
 
+      let photoFileId: string | null = null;
+      if (experienceData.photoBuffer && experienceData.photoMimeType) {
+        const uploadResult = await uploadCandidatePhoto(
+          experienceData.photoBuffer,
+          response.resumeId,
+          experienceData.photoMimeType,
+        );
+        if (uploadResult.success) {
+          photoFileId = uploadResult.data;
+        }
+      }
+
       const updateResult = await updateResponseDetails({
         vacancyId,
         resumeId: response.resumeId,
@@ -355,6 +368,7 @@ async function parseResponseDetails(
         contacts: experienceData.contacts,
         phone: experienceData.phone,
         resumePdfFileId,
+        photoFileId,
       });
 
       if (!updateResult.success) {

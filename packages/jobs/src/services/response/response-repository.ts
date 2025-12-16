@@ -141,6 +141,7 @@ export async function updateResponseDetails(
         phone: response.phone,
         telegramUsername: response.telegramUsername,
         resumePdfFileId: response.resumePdfFileId,
+        photoFileId: response.photoFileId,
       })
       .where(eq(vacancyResponse.resumeId, response.resumeId));
 
@@ -195,6 +196,40 @@ export async function uploadResumePdf(
     logger.info(`PDF resume uploaded to S3: ${key}`);
     return fileRecord?.id ?? null;
   }, "Failed to upload PDF to S3");
+}
+
+/**
+ * Uploads candidate photo to S3 and saves record to DB
+ */
+export async function uploadCandidatePhoto(
+  photoBuffer: Buffer,
+  resumeId: string,
+  mimeType: string,
+): Promise<Result<string | null>> {
+  return tryCatch(async () => {
+    const extension = mimeType.split("/")[1] || "jpeg";
+    const fileName = `photo_${resumeId}.${extension}`;
+    const key = await uploadFile(
+      photoBuffer,
+      fileName,
+      mimeType,
+      "candidate-photos",
+    );
+
+    const [fileRecord] = await db
+      .insert(file)
+      .values({
+        provider: "S3",
+        key,
+        fileName,
+        mimeType,
+        fileSize: photoBuffer.length.toString(),
+      })
+      .returning();
+
+    logger.info(`Candidate photo uploaded to S3: ${key}`);
+    return fileRecord?.id ?? null;
+  }, "Failed to upload photo to S3");
 }
 
 /**

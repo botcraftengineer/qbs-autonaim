@@ -53,6 +53,9 @@ export const vacancyResponse = pgTable(
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
+    photoFileId: uuid("photo_file_id").references(() => file.id, {
+      onDelete: "set null",
+    }),
     salaryExpectations: varchar("salary_expectations", { length: 200 }),
     respondedAt: timestamp("responded_at", {
       withTimezone: true,
