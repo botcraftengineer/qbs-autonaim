@@ -6,11 +6,14 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const stageToStatusMap = {
-  NEW: { status: "NEW" as const },
-  REVIEW: { status: "EVALUATED" as const },
-  INTERVIEW: { status: "DIALOG_APPROVED" as const },
-  HIRED: { hrSelectionStatus: "INVITE" as const },
-  REJECTED: { hrSelectionStatus: "REJECTED" as const },
+  NEW: { status: "NEW" as const, hrSelectionStatus: null },
+  REVIEW: { status: "EVALUATED" as const, hrSelectionStatus: null },
+  INTERVIEW: { status: "DIALOG_APPROVED" as const, hrSelectionStatus: null },
+  HIRED: { status: "COMPLETED" as const, hrSelectionStatus: "INVITE" as const },
+  REJECTED: {
+    status: "SKIPPED" as const,
+    hrSelectionStatus: "REJECTED" as const,
+  },
 } as const;
 
 export const updateStage = protectedProcedure

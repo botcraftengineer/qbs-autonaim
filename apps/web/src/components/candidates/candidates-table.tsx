@@ -67,9 +67,12 @@ export function CandidatesTable({
         case "matchScore":
           comparison = a.matchScore - b.matchScore;
           break;
-        case "salaryExpectation":
-          comparison = a.salaryExpectation.localeCompare(b.salaryExpectation);
+        case "salaryExpectation": {
+          const aValue = Number(a.salaryExpectation) || 0;
+          const bValue = Number(b.salaryExpectation) || 0;
+          comparison = aValue - bValue;
           break;
+        }
         case "createdAt":
           comparison =
             new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
