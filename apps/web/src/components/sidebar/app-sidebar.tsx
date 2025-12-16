@@ -15,6 +15,7 @@ import {
   IconInnerShadowTop,
   IconMessage,
   IconSettings,
+  IconUsersGroup,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import type * as React from "react";
@@ -36,6 +37,11 @@ const getNavData = (workspaceSlug?: string) => ({
       title: "Вакансии",
       url: workspaceSlug ? `/${workspaceSlug}/vacancies` : "/vacancies",
       icon: IconFileDescription,
+    },
+    {
+      title: "Воронка найма",
+      url: workspaceSlug ? `/${workspaceSlug}/funnel` : "/funnel",
+      icon: IconUsersGroup,
     },
     {
       title: "Чаты",

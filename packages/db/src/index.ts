@@ -1,11 +1,9 @@
 export { alias } from "drizzle-orm/pg-core";
 export * from "drizzle-orm/sql";
-
+// Серверный db клиент для API роутов и фоновых задач
+export { db } from "./client";
 // Edge Runtime: Middleware, Edge API Routes, Next.js (HTTP - no native deps)
 export { db as dbEdge } from "./client.edge";
-
-// NOTE: db and dbWs use native modules (pg, ws) and will break Next.js builds
-// Import them directly from "./client" or "./client.ws" in non-Next.js code only
 
 export * from "./repositories/integration";
 export * from "./repositories/vacancy-response.repository";

@@ -21,7 +21,7 @@
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
     "better-auth": "1.4.7",
-    "zod": "4.2.0"
+    "zod": "4.2.1"
   },
   "devDependencies": {
     "@better-auth/cli": "1.4.7",
