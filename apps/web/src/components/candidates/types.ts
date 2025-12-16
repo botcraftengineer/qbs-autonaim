@@ -13,6 +13,7 @@ export interface FunnelCandidate {
   resumeScore?: number;
   interviewScore?: number;
   scoreAnalysis?: string;
+  screeningAnalysis?: string;
   availability: string;
   salaryExpectation: string;
   stage: string;

@@ -128,12 +128,23 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
         </div>
       </div>
 
+      {candidate.screeningAnalysis && (
+        <div className="p-4 bg-muted/50 rounded-lg border-l-4 border-blue-500">
+          <h3 className="text-sm font-medium mb-2">Анализ резюме</h3>
+          <div
+            className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: candidate.screeningAnalysis }}
+          />
+        </div>
+      )}
+
       {candidate.scoreAnalysis && (
         <div className="p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
-          <h3 className="text-sm font-medium mb-2">Анализ оценки</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-            {candidate.scoreAnalysis}
-          </p>
+          <h3 className="text-sm font-medium mb-2">Анализ интервью</h3>
+          <div
+            className="text-sm text-muted-foreground leading-relaxed prose prose-sm max-w-none dark:prose-invert"
+            dangerouslySetInnerHTML={{ __html: candidate.scoreAnalysis }}
+          />
         </div>
       )}
 
