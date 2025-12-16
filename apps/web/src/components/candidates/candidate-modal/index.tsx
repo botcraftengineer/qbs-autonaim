@@ -83,7 +83,7 @@ export function CandidateModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-max h-[90vh] p-0 gap-0 flex flex-col"
+        className="max-w-[min(90vw,120rem)] h-[90vh] p-0 gap-0 flex flex-col"
         showCloseButton={false}
       >
         <DialogHeader className="px-6 py-4 border-b shrink-0">
