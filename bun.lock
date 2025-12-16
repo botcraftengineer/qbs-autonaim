@@ -203,7 +203,6 @@
         "ai": "^6.0.0-beta.156",
         "effect": "^3.19.12",
         "langfuse": "3.38.6",
-        "sharp": "^0.34.5",
         "zod": "4.2.1",
       },
       "devDependencies": {
@@ -211,6 +210,9 @@
         "@types/node": "25.0.2",
         "tsdown": "0.18.0",
         "typescript": "5.9.3",
+      },
+      "optionalDependencies": {
+        "sharp": "^0.34.5",
       },
     },
     "packages/prompts": {
