@@ -1,9 +1,12 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["src/index.ts", "src/sdk/client.ts"],
+  entry: {
+    index: "src/index.ts",
+    sdk: "src/sdk/client.ts",
+  },
   format: ["esm"],
-  dts: false,
+  dts: true,
   clean: true,
   outDir: "dist",
   sourcemap: false,

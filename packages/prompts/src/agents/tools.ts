@@ -10,21 +10,22 @@ import { z } from "zod";
 /**
  * Схема для сообщения в истории
  */
-const messageSchema: z.ZodObject<{
-  sender: z.ZodEnum<["CANDIDATE", "BOT"]>;
-  content: z.ZodOptional<z.ZodString>;
-  contentType: z.ZodOptional<z.ZodEnum<["TEXT", "VOICE"]>>;
+export const messageSchema: z.ZodType<{
+  sender: "CANDIDATE" | "BOT";
+  content?: string;
+  contentType?: "TEXT" | "VOICE";
 }> = z.object({
   sender: z
-    .enum(["CANDIDATE", "BOT"])
+    .enum(["CANDIDATE", "BOT"] as const)
     .describe("Отправитель: CANDIDATE или BOT"),
   content: z.string().optional(),
   contentType: z
-    .enum(["TEXT", "VOICE"])
+    .enum(["TEXT", "VOICE"] as const)
     .optional()
     .describe("Тип контента: TEXT или VOICE"),
 });
 
+type MessageSchema = typeof messageSchema;
 type Message = z.infer<typeof messageSchema>;
 
 /**
@@ -34,7 +35,7 @@ type Message = z.infer<typeof messageSchema>;
 export const getVoiceMessagesInfo: {
   description: string;
   inputSchema: z.ZodObject<{
-    history: z.ZodArray<typeof messageSchema>;
+    history: z.ZodArray<MessageSchema>;
   }>;
   execute: (args: {
     history: Message[];
@@ -69,7 +70,7 @@ export const getVoiceMessagesInfo: {
 export const getConversationContext: {
   description: string;
   inputSchema: z.ZodObject<{
-    history: z.ZodArray<typeof messageSchema>;
+    history: z.ZodArray<MessageSchema>;
   }>;
   execute: (args: { history: Message[] }) => Promise<{
     totalMessages: number;

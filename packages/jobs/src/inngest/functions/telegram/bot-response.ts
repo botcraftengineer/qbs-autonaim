@@ -50,8 +50,7 @@ export async function generateAndSendBotResponse(params: {
           coverLetter: interviewData.response.coverLetter ?? undefined,
         }
       : undefined,
-    customBotInstructions:
-      vacancy?.workspace?.companySettings?.customBotInstructions ?? undefined,
+    customBotInstructions: vacancy?.customBotInstructions ?? undefined,
     customInterviewQuestions: vacancy?.customInterviewQuestions ?? undefined,
     customOrganizationalQuestions:
       vacancy?.customOrganizationalQuestions ?? undefined,
