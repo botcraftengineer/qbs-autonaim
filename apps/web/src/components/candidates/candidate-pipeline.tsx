@@ -25,10 +25,10 @@ import {
 import { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
-import { CandidateModal } from "../funnel/candidate-modal";
-import type { FunnelCandidate, FunnelStage } from "../funnel/types";
 import { CandidateKanbanColumn } from "./candidate-kanban-column";
+import { CandidateModal } from "./candidate-modal";
 import { CandidatesTable } from "./candidates-table";
+import type { FunnelCandidate, FunnelStage } from "./types";
 
 const STAGES: { id: FunnelStage; title: string; color: string }[] = [
   { id: "NEW", title: "Новые", color: "bg-blue-500" },

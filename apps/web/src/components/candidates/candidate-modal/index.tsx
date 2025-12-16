@@ -155,7 +155,6 @@ export function CandidateModal({
 
         <div className="overflow-y-auto">
           <div className="p-6 space-y-6">
-            {/* Основная информация */}
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h3 className="text-sm font-medium text-muted-foreground">
@@ -218,13 +217,12 @@ export function CandidateModal({
               </div>
             </div>
 
-            {/* Навыки */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">
                 Навыки
               </h3>
               <div className="flex flex-wrap gap-2">
-                {candidate.skills.map((skill) => (
+                {candidate.skills.map((skill: string) => (
                   <Badge key={skill} variant="secondary" className="text-xs">
                     {skill}
                   </Badge>
@@ -232,7 +230,6 @@ export function CandidateModal({
               </div>
             </div>
 
-            {/* Скоринг */}
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">
                 Результаты оценки
@@ -273,7 +270,6 @@ export function CandidateModal({
               </div>
             </div>
 
-            {/* Анализ оценки */}
             {candidate.scoreAnalysis && (
               <div className="p-4 bg-muted/50 rounded-lg border-l-4 border-primary">
                 <h3 className="text-sm font-medium mb-2">Анализ оценки</h3>
@@ -283,7 +279,6 @@ export function CandidateModal({
               </div>
             )}
 
-            {/* Действия */}
             <div className="border-t p-4 space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">

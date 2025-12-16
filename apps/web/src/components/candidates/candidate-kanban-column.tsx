@@ -2,8 +2,8 @@
 
 import { cn } from "@qbs-autonaim/ui";
 import { Users } from "lucide-react";
-import type { FunnelCandidate } from "../funnel/types";
 import { CandidateKanbanCard } from "./candidate-kanban-card";
+import type { FunnelCandidate } from "./types";
 
 interface CandidateKanbanColumnProps {
   title: string;

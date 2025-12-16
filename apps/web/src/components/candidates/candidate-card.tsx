@@ -2,8 +2,8 @@
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from "@qbs-autonaim/ui";
 import { MapPin } from "lucide-react";
-import { MatchScoreCircle } from "../funnel/match-score-circle";
-import type { FunnelCandidate } from "../funnel/types";
+import { MatchScoreCircle } from "./match-score-circle";
+import type { FunnelCandidate } from "./types";
 
 interface CandidateCardProps {
   candidate: FunnelCandidate;

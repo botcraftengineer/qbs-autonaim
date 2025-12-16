@@ -8,8 +8,8 @@ import {
   cn,
 } from "@qbs-autonaim/ui";
 import { Calendar, Star } from "lucide-react";
-import { MatchScoreCircle } from "../funnel/match-score-circle";
-import type { FunnelCandidate } from "../funnel/types";
+import { MatchScoreCircle } from "./match-score-circle";
+import type { FunnelCandidate } from "./types";
 
 interface CandidateKanbanCardProps {
   candidate: FunnelCandidate;

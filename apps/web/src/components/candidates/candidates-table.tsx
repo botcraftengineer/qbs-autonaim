@@ -22,8 +22,8 @@ import {
   Users,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-import type { FunnelCandidate, FunnelStage } from "../funnel/types";
-import { STAGE_COLORS, STAGE_LABELS } from "../funnel/types";
+import type { FunnelCandidate, FunnelStage } from "./types";
+import { STAGE_COLORS, STAGE_LABELS } from "./types";
 
 type SortField =
   | "name"
