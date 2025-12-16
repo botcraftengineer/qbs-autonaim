@@ -53,6 +53,7 @@ export const vacancyResponse = pgTable(
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
+    salaryExpectations: varchar("salary_expectations", { length: 200 }),
     respondedAt: timestamp("responded_at", {
       withTimezone: true,
       mode: "date",
@@ -84,6 +85,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   chatId: z.string().max(100).optional(),
   coverLetter: z.string().optional(),
   telegramPinCode: z.string().length(4).optional(),
+  salaryExpectations: z.string().max(200).optional(),
   status: z
     .enum([
       "NEW",

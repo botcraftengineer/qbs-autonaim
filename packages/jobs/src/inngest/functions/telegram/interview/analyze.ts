@@ -9,7 +9,10 @@ import {
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { generateText } from "@qbs-autonaim/lib/ai";
-import { buildInterviewCompletionPrompt } from "@qbs-autonaim/prompts";
+import {
+  buildInterviewCompletionPrompt,
+  buildSalaryExtractionPrompt,
+} from "@qbs-autonaim/prompts";
 import {
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
@@ -409,6 +412,59 @@ export const completeInterviewFunction = inngest.createFunction(
           hrSelectionStatus,
           detailedScore: scoringResult.detailedScore,
         });
+      });
+
+      await step.run("extract-salary-expectations", async () => {
+        console.log("💰 Извлечение зарплатных ожиданий");
+
+        // Получаем историю диалога
+        const conversation = await db.query.telegramConversation.findFirst({
+          where: eq(telegramConversation.id, conversationId),
+          with: {
+            messages: {
+              orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+            },
+          },
+        });
+
+        if (!conversation?.messages) {
+          console.log("⚠️ История диалога не найдена");
+          return;
+        }
+
+        const conversationHistory = conversation.messages.map((msg) => ({
+          sender: msg.sender,
+          content: msg.content,
+        }));
+
+        const prompt = buildSalaryExtractionPrompt(conversationHistory);
+
+        const { text: salaryExpectations } = await generateText({
+          prompt,
+          generationName: "salary-extraction",
+          entityId: conversationId,
+          metadata: {
+            conversationId,
+            responseId,
+          },
+        });
+
+        const trimmedSalary = salaryExpectations.trim();
+
+        if (trimmedSalary) {
+          await db
+            .update(vacancyResponse)
+            .set({
+              salaryExpectations: trimmedSalary,
+            })
+            .where(eq(vacancyResponse.id, responseId));
+
+          console.log("✅ Зарплатные ожидания сохранены", {
+            salaryExpectations: trimmedSalary,
+          });
+        } else {
+          console.log("ℹ️ Зарплатные ожидания не упоминались");
+        }
       });
     }
 
