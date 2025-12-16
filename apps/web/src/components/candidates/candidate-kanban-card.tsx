@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-  Badge,
-  cn,
-} from "@qbs-autonaim/ui";
-import { Mail, Phone, Star } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage, Badge } from "@qbs-autonaim/ui";
+import { Mail, Phone } from "lucide-react";
 import { MatchScoreCircle } from "./match-score-circle";
 import type { FunnelCandidate } from "./types";
 
@@ -20,13 +14,6 @@ export function CandidateKanbanCard({
   candidate,
   onClick,
 }: CandidateKanbanCardProps) {
-  const getMatchScoreColor = () => {
-    if (candidate.matchScore >= 70)
-      return "text-emerald-600 dark:text-emerald-400";
-    if (candidate.matchScore >= 40) return "text-amber-600 dark:text-amber-400";
-    return "text-muted-foreground";
-  };
-
   return (
     <div className="bg-card border rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/30 flex flex-col group relative">
       <div className="flex items-center justify-end gap-1 px-3 py-2 border-b">
@@ -58,7 +45,7 @@ export function CandidateKanbanCard({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1 mb-3">
+        <div className="flex flex-wrap gap-1">
           {candidate.skills.slice(0, 3).map((skill) => (
             <Badge
               key={skill}
@@ -77,28 +64,6 @@ export function CandidateKanbanCard({
               +{candidate.skills.length - 3}
             </Badge>
           )}
-        </div>
-
-        <div className="flex items-center justify-end pt-2 border-t">
-          <div className="flex items-center gap-1">
-            <Star
-              className={cn(
-                "h-3 w-3",
-                candidate.matchScore >= 70
-                  ? "fill-amber-400 text-amber-400"
-                  : "text-muted-foreground/50",
-              )}
-              aria-hidden="true"
-            />
-            <span
-              className={cn(
-                "text-xs font-semibold tabular-nums",
-                getMatchScoreColor(),
-              )}
-            >
-              {candidate.matchScore}%
-            </span>
-          </div>
         </div>
       </button>
 
