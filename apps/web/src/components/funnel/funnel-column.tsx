@@ -20,17 +20,17 @@ export function FunnelColumn({
   isLoading,
 }: FunnelColumnProps) {
   return (
-    <div className="flex-shrink-0 w-[340px]">
+    <div className="shrink-0 w-[280px] sm:w-[300px] md:w-[340px] snap-start">
       <Card className="h-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center justify-between text-base">
-            <span>{title}</span>
-            <span className="text-sm font-medium text-muted-foreground bg-muted px-2.5 py-1 rounded-md">
+        <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-4 md:px-6">
+          <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+            <span className="truncate">{title}</span>
+            <span className="text-xs sm:text-sm font-medium text-muted-foreground bg-muted px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md tabular-nums">
               {count}
             </span>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-2 sm:space-y-3 px-3 sm:px-4 md:px-6">
           {isLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
