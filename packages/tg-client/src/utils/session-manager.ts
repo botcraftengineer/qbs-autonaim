@@ -31,7 +31,9 @@ export async function markSessionAsInvalid(
 /**
  * Получает все активные сессии из базы данных
  */
-export async function getActiveSessions() {
+export async function getActiveSessions(): Promise<
+  (typeof telegramSession.$inferSelect)[]
+> {
   return db
     .select()
     .from(telegramSession)
@@ -41,7 +43,9 @@ export async function getActiveSessions() {
 /**
  * Получает сессию по workspaceId
  */
-export async function getSessionByWorkspace(workspaceId: string) {
+export async function getSessionByWorkspace(
+  workspaceId: string,
+): Promise<typeof telegramSession.$inferSelect | undefined> {
   const [session] = await db
     .select()
     .from(telegramSession)

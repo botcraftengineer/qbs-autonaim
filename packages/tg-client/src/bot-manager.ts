@@ -258,4 +258,4 @@ class BotManager {
 }
 
 // Singleton instance
-export const botManager = new BotManager();
+export const botManager: BotManager = new BotManager();

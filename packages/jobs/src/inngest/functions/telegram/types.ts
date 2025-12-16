@@ -1,0 +1,37 @@
+export interface MessagePayload {
+  workspaceId: string;
+  messageData: {
+    id: number;
+    chatId: string;
+    text?: string;
+    isOutgoing: boolean;
+    media?: {
+      type: string;
+      fileId?: string;
+      mimeType?: string;
+      duration?: number;
+      [key: string]: unknown;
+    };
+    sender?: {
+      type: string;
+      username?: string;
+      firstName?: string;
+      [key: string]: unknown;
+    };
+    [key: string]: unknown;
+  };
+}
+
+export interface BotSettings {
+  botName: string;
+  botRole: string;
+}
+
+export type PromptStage = "PIN_RECEIVED" | "INVALID_PIN" | "AWAITING_PIN";
+
+export interface ConversationMetadata {
+  interviewStarted?: boolean;
+  interviewCompleted?: boolean;
+  identifiedBy?: string;
+  awaitingPin?: boolean;
+}
