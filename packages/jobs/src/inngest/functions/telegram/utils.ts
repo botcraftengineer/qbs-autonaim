@@ -68,6 +68,11 @@ export async function createOrUpdateTempConversation(
   const updateSet: Record<string, string | undefined> = {};
   if (username !== undefined) updateSet.username = username;
   if (firstName !== undefined) updateSet.candidateName = firstName;
+  // Всегда обновляем metadata при конфликте для сохранения awaitingPin
+  updateSet.metadata = JSON.stringify({
+    identifiedBy: "none",
+    awaitingPin: true,
+  });
 
   const [conv] = await db
     .insert(telegramConversation)
