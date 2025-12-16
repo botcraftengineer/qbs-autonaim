@@ -56,6 +56,13 @@ export function CandidatesTable({
               key={candidate.id}
               className="cursor-pointer hover:bg-muted/50"
               onClick={() => onRowClick(candidate)}
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onRowClick(candidate);
+                }
+              }}
             >
               <TableCell className="font-medium">{candidate.name}</TableCell>
               <TableCell>{candidate.position}</TableCell>
