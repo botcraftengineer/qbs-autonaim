@@ -74,13 +74,13 @@ export function FunnelBoard() {
   const hired = filteredCandidates.filter((c) => c.stage === "HIRED");
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 p-5 bg-card rounded-lg border shadow-sm">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-3 p-3 sm:p-4 md:p-5 bg-card rounded-lg border shadow-sm">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3 flex-1">
             <Select value={selectedVacancy} onValueChange={setSelectedVacancy}>
-              <SelectTrigger className="w-[280px] h-10 gap-2 bg-background">
-                <Briefcase className="h-4 w-4 text-muted-foreground" />
+              <SelectTrigger className="w-full sm:w-[240px] md:w-[280px] h-10 gap-2 bg-background">
+                <Briefcase className="h-4 w-4 text-muted-foreground shrink-0" />
                 <SelectValue placeholder="Все вакансии" />
               </SelectTrigger>
               <SelectContent>
@@ -92,11 +92,11 @@ export function FunnelBoard() {
                 ))}
               </SelectContent>
             </Select>
-            <Separator orientation="vertical" className="h-8" />
-            <div className="relative flex-1 max-w-md">
+            <Separator orientation="vertical" className="hidden sm:block h-8" />
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Поиск по имени, навыкам или должности…"
+                placeholder="Поиск…"
                 className="pl-9 h-10 bg-background"
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
@@ -109,7 +109,7 @@ export function FunnelBoard() {
           <Button
             variant="outline"
             size="sm"
-            className="gap-2 h-10 px-4"
+            className="gap-2 h-10 px-4 w-full sm:w-auto"
             disabled
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -124,10 +124,10 @@ export function FunnelBoard() {
           onValueChange={(v) => setActiveView(v as "board" | "table")}
         >
           <TabsList className="h-10">
-            <TabsTrigger value="board" className="px-4">
+            <TabsTrigger value="board" className="px-3 sm:px-4">
               Доска
             </TabsTrigger>
-            <TabsTrigger value="table" className="px-4">
+            <TabsTrigger value="table" className="px-3 sm:px-4">
               Таблица
             </TabsTrigger>
           </TabsList>
@@ -135,16 +135,16 @@ export function FunnelBoard() {
       </div>
 
       {activeView === "board" ? (
-        <div className="flex gap-5 overflow-x-auto pb-6">
+        <div className="flex gap-3 md:gap-5 overflow-x-auto pb-4 md:pb-6 -mx-4 px-4 md:mx-0 md:px-0 snap-x snap-mandatory md:snap-none">
           <FunnelColumn
-            title="Новые кандидаты"
+            title="Новые"
             count={newCandidates.length}
             candidates={newCandidates}
             onCardClick={handleCardClick}
             isLoading={isLoading}
           />
           <FunnelColumn
-            title="На рассмотрении"
+            title="Рассмотрение"
             count={inReview.length}
             candidates={inReview}
             onCardClick={handleCardClick}

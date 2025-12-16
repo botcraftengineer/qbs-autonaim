@@ -12,18 +12,13 @@ export function HiringFunnelView() {
   );
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Воронка найма
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {currentView === "board"
-              ? "Управление процессом найма"
-              : "Аналитика и метрики"}
-          </p>
-        </div>
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm text-muted-foreground">
+          {currentView === "board"
+            ? "Управление процессом найма"
+            : "Аналитика и метрики"}
+        </p>
 
         <nav className="flex items-center gap-2">
           {currentView === "board" ? (
@@ -34,7 +29,8 @@ export function HiringFunnelView() {
               className="gap-2"
             >
               <BarChart3 className="h-4 w-4" />
-              Аналитика
+              <span className="hidden sm:inline">Аналитика</span>
+              <span className="sm:hidden">Статистика</span>
             </Button>
           ) : (
             <Button
@@ -43,7 +39,9 @@ export function HiringFunnelView() {
               size="sm"
               className="gap-2"
             >
-              <ArrowLeft className="h-4 w-4" />К доске кандидатов
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">К доске кандидатов</span>
+              <span className="sm:hidden">Назад</span>
             </Button>
           )}
         </nav>
