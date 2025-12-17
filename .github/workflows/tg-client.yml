@@ -5,6 +5,7 @@ on:
     paths:
       - 'packages/tg-client/**'
       - 'packages/jobs/**'
+      - 'packages/lib/**'
 jobs:
   # Deploy to EKS
   deploy:
