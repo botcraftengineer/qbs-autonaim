@@ -9,6 +9,9 @@ const mapResponseToStage = (
   status: string,
   hrSelectionStatus: string | null,
 ): string => {
+  if (hrSelectionStatus === "OFFER") {
+    return "OFFER";
+  }
   if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
     return "HIRED";
   }

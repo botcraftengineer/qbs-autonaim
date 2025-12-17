@@ -163,6 +163,15 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           variant="outline"
           size="sm"
           className="gap-2"
+          onClick={() => onAction?.("send-offer")}
+        >
+          <Send className="h-4 w-4" />
+          Отправить оффер
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2"
           onClick={() => onAction?.("invite")}
         >
           <CheckCircle className="h-4 w-4" />

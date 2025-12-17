@@ -17,6 +17,9 @@ const mapResponseToStage = (
   status: string,
   hrSelectionStatus: string | null,
 ): string => {
+  if (hrSelectionStatus === "OFFER") {
+    return "OFFER";
+  }
   if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
     return "HIRED";
   }
@@ -45,7 +48,9 @@ export const list = protectedProcedure
       cursor: uuidv7Schema.optional(),
       search: z.string().optional(),
       stages: z
-        .array(z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]))
+        .array(
+          z.enum(["NEW", "REVIEW", "INTERVIEW", "OFFER", "HIRED", "REJECTED"]),
+        )
         .optional(),
     }),
   )
@@ -106,6 +111,10 @@ export const list = protectedProcedure
 
     if (input.stages && input.stages.length > 0) {
       const stageConditions = [];
+
+      if (input.stages.includes("OFFER")) {
+        stageConditions.push(eq(vacancyResponse.hrSelectionStatus, "OFFER"));
+      }
 
       if (input.stages.includes("HIRED")) {
         stageConditions.push(

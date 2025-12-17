@@ -35,6 +35,7 @@ export const HR_SELECTION_STATUS = {
   RECOMMENDED: "RECOMMENDED",
   NOT_RECOMMENDED: "NOT_RECOMMENDED",
   REJECTED: "REJECTED",
+  OFFER: "OFFER",
 } as const;
 
 export type HrSelectionStatus =
@@ -45,6 +46,7 @@ export const HR_SELECTION_STATUS_LABELS: Record<HrSelectionStatus, string> = {
   [HR_SELECTION_STATUS.RECOMMENDED]: "Рекомендовано",
   [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "Не рекомендовано",
   [HR_SELECTION_STATUS.REJECTED]: "Отклонено",
+  [HR_SELECTION_STATUS.OFFER]: "Оффер",
 };
 
 export const HR_SELECTION_STATUS_DESCRIPTIONS: Record<
@@ -55,4 +57,5 @@ export const HR_SELECTION_STATUS_DESCRIPTIONS: Record<
   [HR_SELECTION_STATUS.RECOMMENDED]: "Хороший кандидат, но есть вопросы",
   [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "Не подходит по критериям",
   [HR_SELECTION_STATUS.REJECTED]: "HR вручную отклонил",
+  [HR_SELECTION_STATUS.OFFER]: "Отправлен оффер кандидату",
 };

@@ -29,6 +29,7 @@ export const hrSelectionStatusEnum = pgEnum("hr_selection_status", [
   "RECOMMENDED",
   "NOT_RECOMMENDED",
   "REJECTED",
+  "OFFER",
 ]);
 
 export const vacancyResponse = pgTable(
@@ -100,7 +101,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
     ])
     .default("NEW"),
   hrSelectionStatus: z
-    .enum(["INVITE", "RECOMMENDED", "NOT_RECOMMENDED", "REJECTED"])
+    .enum(["INVITE", "RECOMMENDED", "NOT_RECOMMENDED", "REJECTED", "OFFER"])
     .optional(),
   respondedAt: z.date().optional(),
   welcomeSentAt: z.date().optional(),

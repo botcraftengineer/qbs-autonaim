@@ -136,6 +136,15 @@ export function FunnelAnalytics() {
       color: "bg-purple-500",
     },
     {
+      name: "Оффер",
+      count: analytics?.byStage.OFFER ?? 0,
+      percentage:
+        total > 0
+          ? Math.round(((analytics?.byStage.OFFER ?? 0) / total) * 100)
+          : 0,
+      color: "bg-indigo-500",
+    },
+    {
       name: "Наняты",
       count: analytics?.byStage.HIRED ?? 0,
       percentage:
