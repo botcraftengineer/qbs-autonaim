@@ -15,11 +15,25 @@ const langfuse = new Langfuse({
   baseUrl: process.env.LANGFUSE_BASE_URL,
 });
 
-const DEFAULT_MODEL_OPENAI = "gpt-5-mini";
+const DEFAULT_MODEL_OPENAI = "gpt-5.2-chat-latest";
 const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
 
 /**
- * Получить модель AI на основе конфигурации окружения
+ * Определить фактически используемый провайдер с учётом fallback
+ */
+function getActualProvider(): "openai" | "deepseek" {
+  const provider = env.AI_PROVIDER;
+  if (provider === "openai" && !env.OPENAI_API_KEY && env.DEEPSEEK_API_KEY) {
+    return "deepseek";
+  }
+  if (provider === "deepseek" && !env.DEEPSEEK_API_KEY && env.OPENAI_API_KEY) {
+    return "openai";
+  }
+  return provider;
+}
+
+/**
+ * Получить модель AI на основе конфигурации окружения с fallback
  */
 export function getAIModel(): LanguageModel {
   const provider = env.AI_PROVIDER;
@@ -28,18 +42,32 @@ export function getAIModel(): LanguageModel {
     case "openai": {
       const model = env.AI_MODEL || DEFAULT_MODEL_OPENAI;
       if (!env.OPENAI_API_KEY) {
-        throw new Error(
-          "OPENAI_API_KEY не установлен. Добавьте его в .env файл.",
+        console.warn(
+          "OPENAI_API_KEY не установлен. Переключаюсь на DeepSeek как fallback.",
         );
+        // Fallback на DeepSeek
+        if (!env.DEEPSEEK_API_KEY) {
+          throw new Error(
+            "Ни OPENAI_API_KEY, ни DEEPSEEK_API_KEY не установлены. Добавьте хотя бы один в .env файл.",
+          );
+        }
+        return deepseek(DEFAULT_MODEL_DEEPSEEK);
       }
       return openai(model);
     }
     case "deepseek": {
       const model = env.AI_MODEL || DEFAULT_MODEL_DEEPSEEK;
       if (!env.DEEPSEEK_API_KEY) {
-        throw new Error(
-          "DEEPSEEK_API_KEY не установлен. Добавьте его в .env файл.",
+        console.warn(
+          "DEEPSEEK_API_KEY не установлен. Переключаюсь на OpenAI как fallback.",
         );
+        // Fallback на OpenAI
+        if (!env.OPENAI_API_KEY) {
+          throw new Error(
+            "Ни DEEPSEEK_API_KEY, ни OPENAI_API_KEY не установлены. Добавьте хотя бы один в .env файл.",
+          );
+        }
+        return openai(DEFAULT_MODEL_OPENAI);
       }
       return deepseek(model);
     }
@@ -116,6 +144,58 @@ export async function generateText(
       statusMessage: error instanceof Error ? error.message : String(error),
     });
 
+    // Retry с fallback моделью
+    const actualProvider = getActualProvider();
+    const canFallback =
+      (actualProvider === "openai" && env.DEEPSEEK_API_KEY) ||
+      (actualProvider === "deepseek" && env.OPENAI_API_KEY);
+
+    if (canFallback) {
+      const fallbackProvider =
+        actualProvider === "openai" ? "deepseek" : "openai";
+      const fallbackModel =
+        fallbackProvider === "deepseek"
+          ? deepseek(DEFAULT_MODEL_DEEPSEEK)
+          : openai(DEFAULT_MODEL_OPENAI);
+      const fallbackModelName =
+        fallbackProvider === "deepseek"
+          ? DEFAULT_MODEL_DEEPSEEK
+          : DEFAULT_MODEL_OPENAI;
+
+      console.warn(
+        `Ошибка ${actualProvider}, повторная попытка с ${fallbackProvider}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+
+      const fallbackGeneration = trace.generation({
+        name: `${generationName}-fallback`,
+        model: fallbackModelName,
+        input: prompt,
+        metadata: { ...metadata, fallback: true },
+      });
+
+      try {
+        const fallbackResult = await aiGenerateText({
+          model: fallbackModel,
+          prompt,
+        });
+
+        fallbackGeneration.end({
+          output: fallbackResult.text,
+        });
+
+        return fallbackResult;
+      } catch (fallbackError) {
+        fallbackGeneration.end({
+          statusMessage:
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : String(fallbackError),
+        });
+        throw fallbackError;
+      }
+    }
+
     throw error;
   } finally {
     try {
@@ -187,6 +267,59 @@ export async function generateObject<T extends z.ZodType>(
     generation.end({
       statusMessage: error instanceof Error ? error.message : String(error),
     });
+
+    // Retry с fallback моделью
+    const actualProvider = getActualProvider();
+    const canFallback =
+      (actualProvider === "openai" && env.DEEPSEEK_API_KEY) ||
+      (actualProvider === "deepseek" && env.OPENAI_API_KEY);
+
+    if (canFallback) {
+      const fallbackProvider =
+        actualProvider === "openai" ? "deepseek" : "openai";
+      const fallbackModel =
+        fallbackProvider === "deepseek"
+          ? deepseek(DEFAULT_MODEL_DEEPSEEK)
+          : openai(DEFAULT_MODEL_OPENAI);
+      const fallbackModelName =
+        fallbackProvider === "deepseek"
+          ? DEFAULT_MODEL_DEEPSEEK
+          : DEFAULT_MODEL_OPENAI;
+
+      console.warn(
+        `Ошибка ${actualProvider}, повторная попытка с ${fallbackProvider}:`,
+        error instanceof Error ? error.message : String(error),
+      );
+
+      const fallbackGeneration = trace.generation({
+        name: `${generationName}-fallback`,
+        model: fallbackModelName,
+        input: prompt,
+        metadata: { ...metadata, fallback: true },
+      });
+
+      try {
+        const fallbackResult = await aiGenerateObject({
+          model: fallbackModel,
+          schema,
+          prompt,
+        });
+
+        fallbackGeneration.end({
+          output: fallbackResult.object,
+        });
+
+        return fallbackResult;
+      } catch (fallbackError) {
+        fallbackGeneration.end({
+          statusMessage:
+            fallbackError instanceof Error
+              ? fallbackError.message
+              : String(fallbackError),
+        });
+        throw fallbackError;
+      }
+    }
 
     throw error;
   } finally {

@@ -23,6 +23,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Activity, MessageSquare, StickyNote, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  triggerRefreshSingleResume,
+  triggerSendWelcome,
+} from "~/actions/trigger";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
@@ -61,6 +65,8 @@ export function CandidateModal({
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [isSendingGreeting, setIsSendingGreeting] = useState(false);
+  const [isRefreshingResume, setIsRefreshingResume] = useState(false);
 
   const updateStage = useMutation({
     ...trpc.candidates.updateStage.mutationOptions(),
@@ -75,20 +81,7 @@ export function CandidateModal({
     },
   });
 
-  const sendGreeting = useMutation({
-    ...trpc.candidates.sendGreeting.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.list.queryKey(),
-      });
-      toast.success("Приветствие отправлено");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Не удалось отправить приветствие");
-    },
-  });
-
-  const inviteCandidate = useMutation({
+  const inviteCandidateMutation = useMutation({
     ...trpc.candidates.inviteCandidate.mutationOptions(),
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -101,18 +94,60 @@ export function CandidateModal({
     },
   });
 
-  const refreshResume = useMutation({
-    ...trpc.candidates.refreshResume.mutationOptions(),
-    onSuccess: () => {
+  const handleSendGreeting = async () => {
+    if (!candidate?.telegram && !candidate?.phone) {
+      toast.error(
+        "У кандидата не указаны ни Telegram username, ни номер телефона",
+      );
+      return;
+    }
+
+    setIsSendingGreeting(true);
+    try {
+      const result = await triggerSendWelcome(
+        candidate.id,
+        candidate.telegram,
+        candidate.phone,
+      );
+      if (!result.success) {
+        toast.error("Не удалось отправить приветствие");
+        return;
+      }
+      toast.success(
+        `Приветствие отправлено ${candidate.name ? candidate.name : candidate.telegram ? `@${candidate.telegram}` : candidate.phone}`,
+      );
       queryClient.invalidateQueries({
         queryKey: trpc.candidates.list.queryKey(),
       });
-      toast.success("Резюме обновлено");
-    },
-    onError: () => {
-      toast.error("Не удалось обновить резюме");
-    },
-  });
+    } catch (error) {
+      console.error("Ошибка отправки приветствия:", error);
+      toast.error("Ошибка отправки приветствия");
+    } finally {
+      setIsSendingGreeting(false);
+    }
+  };
+
+  const handleRefreshResume = async () => {
+    if (!candidate) return;
+
+    setIsRefreshingResume(true);
+    try {
+      const result = await triggerRefreshSingleResume(candidate.id);
+      if (!result.success) {
+        toast.error("Не удалось обновить резюме");
+        return;
+      }
+      toast.success("Обновление резюме запущено");
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
+    } catch (error) {
+      console.error("Ошибка обновления резюме:", error);
+      toast.error("Ошибка обновления резюме");
+    } finally {
+      setIsRefreshingResume(false);
+    }
+  };
 
   if (!candidate) return null;
 
@@ -189,23 +224,20 @@ export function CandidateModal({
             <CandidateInfo
               candidate={candidate}
               isLoading={{
-                sendGreeting: sendGreeting.isPending,
-                invite: inviteCandidate.isPending,
-                refreshResume: refreshResume.isPending,
+                sendGreeting: isSendingGreeting,
+                invite: inviteCandidateMutation.isPending,
+                refreshResume: isRefreshingResume,
               }}
               onAction={(action) => {
                 switch (action) {
                   case "send-greeting":
-                    sendGreeting.mutate({
-                      candidateId: candidate.id,
-                      workspaceId,
-                    });
+                    void handleSendGreeting();
                     break;
                   case "send-offer":
                     setShowOfferDialog(true);
                     break;
                   case "invite":
-                    inviteCandidate.mutate({
+                    inviteCandidateMutation.mutate({
                       candidateId: candidate.id,
                       workspaceId,
                     });
@@ -221,10 +253,7 @@ export function CandidateModal({
                     }
                     break;
                   case "refresh-resume":
-                    refreshResume.mutate({
-                      candidateId: candidate.id,
-                      workspaceId,
-                    });
+                    void handleRefreshResume();
                     break;
                   case "reject":
                     setShowRejectDialog(true);

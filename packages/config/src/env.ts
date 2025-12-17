@@ -75,7 +75,7 @@ export const env: Prettify<{
     AWS_S3_BUCKET: z.string().default("acme-bucket"),
 
     // AI Services
-    AI_PROVIDER: z.enum(["openai", "deepseek"]).default("deepseek"),
+    AI_PROVIDER: z.enum(["openai", "deepseek"]).default("openai"),
     AI_MODEL: z.string().optional(),
     OPENAI_API_KEY: z.string().min(1).optional(),
     DEEPSEEK_API_KEY: z.string().min(1).optional(),
