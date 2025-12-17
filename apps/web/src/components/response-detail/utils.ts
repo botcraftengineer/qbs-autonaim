@@ -11,7 +11,7 @@ export function getInitials(name: string): string {
   );
 }
 
-export function getAvatarUrl(name: string) {
+export function getAvatarUrl(name: string): string {
   return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=3b82f6,8b5cf6,ec4899,f59e0b,10b981`;
 }
 
