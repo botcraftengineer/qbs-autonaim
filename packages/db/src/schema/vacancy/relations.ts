@@ -33,10 +33,12 @@ export const vacancyResponseRelations = relations(
     resumePdfFile: one(file, {
       fields: [vacancyResponse.resumePdfFileId],
       references: [file.id],
+      relationName: "resumePdfFile",
     }),
     photoFile: one(file, {
       fields: [vacancyResponse.photoFileId],
       references: [file.id],
+      relationName: "photoFile",
     }),
     telegramInterviewScoring: one(telegramInterviewScoring, {
       fields: [vacancyResponse.id],

@@ -41,12 +41,64 @@ export const getImageUrl = protectedProcedure
       });
     }
 
-    // Получаем файл из БД
+    // Получаем файл из БД с проверкой принадлежности к workspace
+    // Файлы могут быть связаны через:
+    // 1. vacancyResponse (resumePdfFileId, photoFileId) → vacancy → workspace
+    // 2. telegramMessage (fileId) → conversation → vacancyResponse → vacancy → workspace
     const fileRecord = await ctx.db.query.file.findFirst({
       where: (files, { eq }) => eq(files.id, input.fileId),
+      with: {
+        // Проверяем связь через vacancyResponse (resumePdfFileId)
+        vacancyResponsesAsResumePdf: {
+          with: {
+            vacancy: true,
+          },
+        },
+        // Проверяем связь через vacancyResponse (photoFileId)
+        vacancyResponsesAsPhoto: {
+          with: {
+            vacancy: true,
+          },
+        },
+        // Проверяем связь через telegramMessage
+        telegramMessages: {
+          with: {
+            conversation: {
+              with: {
+                response: {
+                  with: {
+                    vacancy: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
 
     if (!fileRecord) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Файл не найден",
+      });
+    }
+
+    // Проверяем что файл принадлежит указанному workspace
+    const belongsToWorkspace =
+      fileRecord.vacancyResponsesAsResumePdf.some(
+        (response) => response.vacancy.workspaceId === input.workspaceId,
+      ) ||
+      fileRecord.vacancyResponsesAsPhoto.some(
+        (response) => response.vacancy.workspaceId === input.workspaceId,
+      ) ||
+      fileRecord.telegramMessages.some(
+        (message) =>
+          message.conversation?.response?.vacancy?.workspaceId ===
+          input.workspaceId,
+      );
+
+    if (!belongsToWorkspace) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Файл не найден",

@@ -96,7 +96,7 @@ export async function getDownloadUrl(key: string): Promise<string> {
     Key: key,
   });
 
-  return getSignedUrl(getS3Client(), command, { expiresIn: 3600 }); // 1 hour
+  return getSignedUrl(getS3Client(), command, { expiresIn: 300 }); // 5 minutes
 }
 
 export function getFileUrl(fileKey: string): string {
