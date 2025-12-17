@@ -38,8 +38,8 @@
     "@ai-sdk/openai": "3.0.0-beta.102",
     "@inngest/realtime": "0.4.5",
     "@qbs-autonaim/config": "workspace:*",
-    "@qbs-autonaim/emails": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
+    "@qbs-autonaim/emails": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/prompts": "workspace:*",
     "@qbs-autonaim/tg-client": "workspace:*",
@@ -52,6 +52,7 @@
     "puppeteer": "24.33.0",
     "puppeteer-extra": "3.3.6",
     "puppeteer-extra-plugin-stealth": "2.11.2",
+    "sharp": "^0.34.5",
     "string-strip-html": "13.5.0",
     "zod": "4.2.1"
   },
