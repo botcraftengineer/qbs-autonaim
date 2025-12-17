@@ -70,7 +70,5 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
     throw error;
   } finally {
     await closeBrowserSafely(browser);
-      }
-    }
   }
 }
