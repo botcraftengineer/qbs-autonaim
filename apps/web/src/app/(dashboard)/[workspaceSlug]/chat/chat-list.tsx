@@ -32,16 +32,18 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
     enabled: !!workspace?.id,
   });
 
-  const conversationsQueryOptions =
-    trpc.telegram.conversation.getAll.queryOptions({
-      workspaceId: workspace?.id ?? "",
-      vacancyId: selectedVacancyId === "all" ? undefined : selectedVacancyId,
-    });
   const {
     data: conversations = [],
     isPending,
     error,
-  } = useQuery(conversationsQueryOptions);
+  } = useQuery({
+    ...trpc.telegram.conversation.getAll.queryOptions({
+      workspaceId: workspace?.id ?? "",
+      vacancyId: selectedVacancyId === "all" ? undefined : selectedVacancyId,
+    }),
+    enabled: !!workspace?.id,
+    staleTime: 10000,
+  });
 
   if (isPending) {
     return (

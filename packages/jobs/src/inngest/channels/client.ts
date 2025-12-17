@@ -139,3 +139,17 @@ export const parseMissingContactsChannel = channel(
       }),
     ),
   );
+
+/**
+ * Канал для отслеживания новых сообщений в Telegram чате
+ */
+export const telegramMessagesChannel = channel(
+  (conversationId: string) => `telegram-messages-${conversationId}`,
+).addTopic(
+  topic("message").schema(
+    z.object({
+      conversationId: z.string(),
+      messageId: z.string(),
+    }),
+  ),
+);

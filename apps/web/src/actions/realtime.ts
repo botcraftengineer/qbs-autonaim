@@ -47,3 +47,16 @@ export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
 
   return token;
 }
+
+/**
+ * Server action для получения токена подписки на новые сообщения в чате
+ */
+export async function fetchTelegramMessagesToken(conversationId: string) {
+  const { inngest } = await import("@qbs-autonaim/jobs/client");
+  const token = await getSubscriptionToken(inngest, {
+    channel: `telegram-messages-${conversationId}`,
+    topics: ["message"],
+  });
+
+  return token;
+}

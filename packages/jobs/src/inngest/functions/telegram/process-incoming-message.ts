@@ -1,6 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { telegramConversation } from "@qbs-autonaim/db/schema";
+import { telegramMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
   handleIdentifiedMedia,
@@ -20,7 +21,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
     retries: 3,
   },
   { event: "telegram/message.received" },
-  async ({ event, step }) => {
+  async ({ event, step, publish }) => {
     const { workspaceId, messageData } = event.data as MessagePayload;
 
     if (messageData.isOutgoing) {
@@ -111,6 +112,13 @@ export const processIncomingMessageFunction = inngest.createFunction(
         });
       });
 
+      await publish(
+        telegramMessagesChannel(conversation.id).message({
+          conversationId: conversation.id,
+          messageId: messageData.id.toString(),
+        }),
+      );
+
       return { processed: true, identified: true };
     }
 
@@ -147,6 +155,13 @@ export const processIncomingMessageFunction = inngest.createFunction(
           workspaceId,
         });
       });
+
+      await publish(
+        telegramMessagesChannel(conversation.id).message({
+          conversationId: conversation.id,
+          messageId: messageData.id.toString(),
+        }),
+      );
 
       return { processed: true, identified: true };
     }
