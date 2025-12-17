@@ -38,6 +38,11 @@ export type {
   EnhancedInterviewerOutput,
 } from "./enhanced-interviewer";
 export { EnhancedInterviewerAgent } from "./enhanced-interviewer";
+export type {
+  EnhancedWelcomeInput,
+  EnhancedWelcomeOutput,
+} from "./enhanced-welcome";
+export { EnhancedWelcomeAgent } from "./enhanced-welcome";
 export type { EscalationInput, EscalationOutput } from "./escalation-detector";
 export { EscalationDetectorAgent } from "./escalation-detector";
 export type { EvaluatorInput, EvaluatorOutput } from "./evaluator";
