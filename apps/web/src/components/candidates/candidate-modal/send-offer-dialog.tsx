@@ -1,5 +1,6 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Dialog,
@@ -14,8 +15,10 @@ import {
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { useTRPC } from "~/trpc/react";
 import type { FunnelCandidate } from "../types";
 
@@ -26,20 +29,93 @@ interface SendOfferDialogProps {
   workspaceId: string;
 }
 
+const offerFormSchema = z.object({
+  position: z
+    .string()
+    .min(1, "Укажите должность")
+    .max(200, "Название должности слишком длинное"),
+  salary: z
+    .string()
+    .min(1, "Укажите зарплату")
+    .refine(
+      (val) => {
+        // Проверяем, что строка содержит хотя бы одно число
+        const hasNumber = /\d/.test(val);
+        return hasNumber;
+      },
+      { message: "Зарплата должна содержать числовое значение" },
+    ),
+  startDate: z
+    .string()
+    .min(1, "Укажите дату начала работы")
+    .refine(
+      (val) => {
+        const date = new Date(val);
+        return !Number.isNaN(date.getTime());
+      },
+      { message: "Некорректная дата" },
+    )
+    .refine(
+      (val) => {
+        const date = new Date(val);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return date >= today;
+      },
+      { message: "Дата начала работы не может быть в прошлом" },
+    ),
+  benefits: z.string().optional(),
+  message: z.string().optional(),
+});
+
+type OfferFormData = z.infer<typeof offerFormSchema>;
+
 export function SendOfferDialog({
   open,
   onOpenChange,
   candidate,
   workspaceId,
 }: SendOfferDialogProps) {
-  const [position, setPosition] = useState(candidate.position);
-  const [salary, setSalary] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [benefits, setBenefits] = useState("");
-  const [message, setMessage] = useState("");
-
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+    setFocus,
+  } = useForm<OfferFormData>({
+    resolver: zodResolver(offerFormSchema),
+    defaultValues: {
+      position: candidate.position,
+      salary: "",
+      startDate: "",
+      benefits: "",
+      message: "",
+    },
+  });
+
+  // Сбрасываем форму при открытии диалога
+  useEffect(() => {
+    if (open) {
+      reset({
+        position: candidate.position,
+        salary: "",
+        startDate: "",
+        benefits: "",
+        message: "",
+      });
+    }
+  }, [open, candidate.position, reset]);
+
+  // Фокусируемся на первой ошибке при валидации
+  useEffect(() => {
+    const firstError = Object.keys(errors)[0] as keyof OfferFormData;
+    if (firstError) {
+      setFocus(firstError);
+    }
+  }, [errors, setFocus]);
 
   const sendOfferMutation = useMutation({
     ...trpc.candidates.sendOffer.mutationOptions(),
@@ -49,32 +125,22 @@ export function SendOfferDialog({
       });
       toast.success("Оффер успешно отправлен");
       onOpenChange(false);
-      resetForm();
     },
     onError: () => {
       toast.error("Не удалось отправить оффер");
     },
   });
 
-  const resetForm = () => {
-    setPosition(candidate.position);
-    setSalary("");
-    setStartDate("");
-    setBenefits("");
-    setMessage("");
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = (data: OfferFormData) => {
     sendOfferMutation.mutate({
       workspaceId,
       candidateId: candidate.id,
       offerDetails: {
-        position,
-        salary,
-        startDate,
-        benefits,
-        message,
+        position: data.position.trim(),
+        salary: data.salary.trim(),
+        startDate: data.startDate,
+        benefits: data.benefits?.trim() || "",
+        message: data.message?.trim() || "",
       },
     });
   };
@@ -89,50 +155,66 @@ export function SendOfferDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="position">Должность</Label>
+            <Label htmlFor="position">
+              Должность <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="position"
-              name="position"
-              value={position}
-              onChange={(e) => setPosition(e.target.value)}
+              {...register("position")}
               placeholder="Например, Senior Frontend Developer"
               autoComplete="off"
+              aria-invalid={!!errors.position}
             />
+            {errors.position && (
+              <p className="text-sm text-destructive" role="alert">
+                {errors.position.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="salary">Зарплата</Label>
+            <Label htmlFor="salary">
+              Зарплата <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="salary"
-              name="salary"
-              value={salary}
-              onChange={(e) => setSalary(e.target.value)}
+              {...register("salary")}
               placeholder="Например, 200 000 - 250 000 ₽"
               autoComplete="off"
+              aria-invalid={!!errors.salary}
             />
+            {errors.salary && (
+              <p className="text-sm text-destructive" role="alert">
+                {errors.salary.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="startDate">Дата начала работы</Label>
+            <Label htmlFor="startDate">
+              Дата начала работы <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="startDate"
-              name="startDate"
               type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
+              {...register("startDate")}
               autoComplete="off"
+              aria-invalid={!!errors.startDate}
             />
+            {errors.startDate && (
+              <p className="text-sm text-destructive" role="alert">
+                {errors.startDate.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="benefits">Бенефиты</Label>
             <Textarea
               id="benefits"
-              name="benefits"
-              value={benefits}
-              onChange={(e) => setBenefits(e.target.value)}
+              {...register("benefits")}
               placeholder="ДМС, удаленная работа, гибкий график…"
               rows={3}
               className="resize-none"
@@ -143,9 +225,7 @@ export function SendOfferDialog({
             <Label htmlFor="message">Дополнительное сообщение</Label>
             <Textarea
               id="message"
-              name="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              {...register("message")}
               placeholder="Персональное сообщение кандидату…"
               rows={4}
               className="resize-none"

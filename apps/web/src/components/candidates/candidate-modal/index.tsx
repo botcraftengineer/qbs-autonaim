@@ -25,7 +25,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
-import type { FunnelCandidate } from "../types";
+import type { FunnelCandidate, FunnelStage } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
 import { CandidateInfo } from "./candidate-info";
 import { ChatSection } from "./chat-section";
@@ -78,13 +78,7 @@ export function CandidateModal({
     updateStage.mutate({
       candidateId: candidate.id,
       workspaceId,
-      stage: stage as
-        | "NEW"
-        | "REVIEW"
-        | "INTERVIEW"
-        | "OFFER"
-        | "HIRED"
-        | "REJECTED",
+      stage: stage as FunnelStage,
     });
   };
 
