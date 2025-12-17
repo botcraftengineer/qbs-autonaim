@@ -211,9 +211,6 @@
         "tsdown": "0.18.0",
         "typescript": "5.9.3",
       },
-      "optionalDependencies": {
-        "sharp": "^0.34.5",
-      },
     },
     "packages/prompts": {
       "name": "@qbs-autonaim/prompts",
