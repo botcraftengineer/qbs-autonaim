@@ -1,5 +1,5 @@
 import { deepseek } from "@ai-sdk/deepseek";
-import { openai } from "@ai-sdk/openai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@qbs-autonaim/config";
 import type { LanguageModel } from "ai";
 import {
@@ -17,6 +17,13 @@ const langfuse = new Langfuse({
 
 const DEFAULT_MODEL_OPENAI = "gpt-5.2-chat-latest";
 const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
+
+// Создаём OpenAI провайдер с прокси
+const proxyBaseUrl = env.APP_URL || "http://localhost:3000";
+const openaiProvider = createOpenAI({
+  apiKey: env.OPENAI_API_KEY || "dummy-key",
+  baseURL: `${proxyBaseUrl}/api/ai-proxy`,
+});
 
 /**
  * Определить фактически используемый провайдер с учётом fallback
@@ -53,7 +60,7 @@ export function getAIModel(): LanguageModel {
         }
         return deepseek(DEFAULT_MODEL_DEEPSEEK);
       }
-      return openai(model);
+      return openaiProvider(model);
     }
     case "deepseek": {
       const model = env.AI_MODEL || DEFAULT_MODEL_DEEPSEEK;
@@ -67,7 +74,7 @@ export function getAIModel(): LanguageModel {
             "Ни DEEPSEEK_API_KEY, ни OPENAI_API_KEY не установлены. Добавьте хотя бы один в .env файл.",
           );
         }
-        return openai(DEFAULT_MODEL_OPENAI);
+        return openaiProvider(DEFAULT_MODEL_OPENAI);
       }
       return deepseek(model);
     }
@@ -156,7 +163,7 @@ export async function generateText(
       const fallbackModel =
         fallbackProvider === "deepseek"
           ? deepseek(DEFAULT_MODEL_DEEPSEEK)
-          : openai(DEFAULT_MODEL_OPENAI);
+          : openaiProvider(DEFAULT_MODEL_OPENAI);
       const fallbackModelName =
         fallbackProvider === "deepseek"
           ? DEFAULT_MODEL_DEEPSEEK
@@ -280,7 +287,7 @@ export async function generateObject<T extends z.ZodType>(
       const fallbackModel =
         fallbackProvider === "deepseek"
           ? deepseek(DEFAULT_MODEL_DEEPSEEK)
-          : openai(DEFAULT_MODEL_OPENAI);
+          : openaiProvider(DEFAULT_MODEL_OPENAI);
       const fallbackModelName =
         fallbackProvider === "deepseek"
           ? DEFAULT_MODEL_DEEPSEEK
