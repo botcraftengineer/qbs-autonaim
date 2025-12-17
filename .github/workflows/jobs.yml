@@ -5,6 +5,7 @@ on:
     paths:
       - 'packages/jobs/**'
       - 'packages/prompts/**'
+      - 'packages/lib/**'
 jobs:
   # Deploy to EKS
   deploy:
