@@ -10,5 +10,7 @@ export const fileRelations = relations(file, ({ many }) => ({
   vacancyResponsesAsPhoto: many(vacancyResponse, {
     relationName: "photoFile",
   }),
-  telegramMessages: many(telegramMessage),
+  telegramMessages: many(telegramMessage, {
+    relationName: "file",
+  }),
 }));

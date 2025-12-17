@@ -44,7 +44,7 @@ export const list = protectedProcedure
     z.object({
       workspaceId: workspaceIdSchema,
       vacancyId: z.string().optional(),
-      limit: z.number().int().min(1).max(100).default(50),
+      limit: z.number().int().min(1).max(200).default(100),
       cursor: uuidv7Schema.optional(),
       search: z.string().optional(),
       stages: z

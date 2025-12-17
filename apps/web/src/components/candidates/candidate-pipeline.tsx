@@ -38,7 +38,7 @@ import {
   SlidersHorizontal,
   UserPlus,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 import { CandidateKanbanCard } from "./candidate-kanban-card";
@@ -73,7 +73,16 @@ export function CandidatePipeline() {
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStages, setFilterStages] = useState<FunnelStage[]>([]);
+
+  // Debounce search
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchText);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
   const trpc = useTRPC();
 
@@ -97,6 +106,9 @@ export function CandidatePipeline() {
   const listQueryOptions = trpc.candidates.list.queryOptions({
     workspaceId: workspaceId ?? "",
     vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+    search: debouncedSearch || undefined,
+    stages: filterStages.length > 0 ? filterStages : undefined,
+    limit: 100,
   });
   const listQueryKey = listQueryOptions.queryKey;
 
@@ -147,7 +159,7 @@ export function CandidatePipeline() {
     const candidateId = active.id as string;
     const newStage = over.id as FunnelStage;
 
-    const candidate = candidates?.items.find((c) => c.id === candidateId);
+    const candidate = allCandidates.find((c) => c.id === candidateId);
     if (!candidate || candidate.stage === newStage) return;
 
     updateStageMutation.mutate({
@@ -164,13 +176,13 @@ export function CandidatePipeline() {
     enabled: !!workspaceId,
   });
 
+  // Используем обычный query с увеличенным лимитом и фильтрацией на сервере
   const { data: candidates, isLoading } = useQuery({
-    ...trpc.candidates.list.queryOptions({
-      workspaceId: workspaceId ?? "",
-      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
-    }),
+    ...listQueryOptions,
     enabled: !!workspaceId,
   });
+
+  const allCandidates = useMemo(() => candidates?.items ?? [], [candidates]);
 
   const handleCardClick = useCallback((candidate: FunnelCandidate) => {
     setSelectedCandidate(candidate);
@@ -185,30 +197,8 @@ export function CandidatePipeline() {
     );
   };
 
-  // Client-side filtering
-  const filteredCandidates = useMemo(() => {
-    let items = candidates?.items ?? [];
-
-    // Filter by search text
-    if (searchText.trim()) {
-      const search = searchText.toLowerCase();
-      items = items.filter(
-        (c) =>
-          c.name.toLowerCase().includes(search) ||
-          c.position.toLowerCase().includes(search) ||
-          c.skills?.some((s: string) => s.toLowerCase().includes(search)),
-      );
-    }
-
-    // Filter by stages
-    if (filterStages.length > 0) {
-      items = items.filter((c) =>
-        filterStages.includes(c.stage as FunnelStage),
-      );
-    }
-
-    return items;
-  }, [candidates?.items, searchText, filterStages]);
+  // Фильтрация теперь на сервере, просто используем все кандидаты
+  const filteredCandidates = allCandidates;
 
   const candidatesByStage = useMemo(() => {
     const result: Record<FunnelStage, FunnelCandidate[]> = {
@@ -351,6 +341,11 @@ export function CandidatePipeline() {
             <>
               <span className="font-medium text-foreground">{totalCount}</span>{" "}
               {pluralizeCandidate(totalCount)}
+              {candidates?.nextCursor && (
+                <span className="ml-2 text-xs">
+                  (показаны первые {totalCount})
+                </span>
+              )}
             </>
           ) : null}
         </div>
@@ -380,9 +375,7 @@ export function CandidatePipeline() {
           </section>
           <DragOverlay>
             {(() => {
-              const candidate = (candidates?.items ?? []).find(
-                (c) => c.id === activeId,
-              );
+              const candidate = allCandidates.find((c) => c.id === activeId);
               return activeId && candidate ? (
                 <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
               ) : null;
