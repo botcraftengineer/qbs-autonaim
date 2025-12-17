@@ -19,6 +19,26 @@ interface ResponseDetailPageProps {
   params: Promise<{ workspaceSlug: string; id: string }>;
 }
 
+function mapConversationData(response: NonNullable<typeof response>) {
+  if (!response.conversation) return null;
+
+  return {
+    interviewScoring: response.conversation.interviewScoring
+      ? {
+          score: response.conversation.interviewScoring.score,
+          detailedScore: response.conversation.interviewScoring.detailedScore,
+          analysis:
+            response.conversation.interviewScoring.analysis ?? undefined,
+        }
+      : undefined,
+    messages: response.conversation.messages?.map((msg) => ({
+      ...msg,
+      voiceDuration: msg.voiceDuration ?? undefined,
+      voiceTranscription: msg.voiceTranscription ?? undefined,
+    })),
+  };
+}
+
 export default function ResponseDetailPage({
   params,
 }: ResponseDetailPageProps) {
@@ -119,33 +139,7 @@ export default function ResponseDetailPage({
                   }
                 />
                 <InterviewCard
-                  conversation={
-                    response.conversation
-                      ? {
-                          interviewScoring: response.conversation
-                            .interviewScoring
-                            ? {
-                                score:
-                                  response.conversation.interviewScoring.score,
-                                detailedScore:
-                                  response.conversation.interviewScoring
-                                    .detailedScore,
-                                analysis:
-                                  response.conversation.interviewScoring
-                                    .analysis ?? undefined,
-                              }
-                            : undefined,
-                          messages: response.conversation.messages?.map(
-                            (msg) => ({
-                              ...msg,
-                              voiceDuration: msg.voiceDuration ?? undefined,
-                              voiceTranscription:
-                                msg.voiceTranscription ?? undefined,
-                            }),
-                          ),
-                        }
-                      : null
-                  }
+                  conversation={mapConversationData(response)}
                   candidateName={response.candidateName}
                   workspaceName={response.vacancy?.workspace?.name}
                 />
