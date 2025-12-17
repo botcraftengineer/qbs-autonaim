@@ -5,6 +5,9 @@ import {
   RESPONSE_STATUS_LABELS,
 } from "@qbs-autonaim/db/schema";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Card,
@@ -18,10 +21,16 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Award,
+  Briefcase,
+  Calendar,
   Download,
   ExternalLink,
+  MessageSquare,
   Pause,
+  Phone,
   Play,
+  Send,
   User,
 } from "lucide-react";
 import Link from "next/link";
@@ -189,6 +198,31 @@ export default function ResponseDetailPage({
     );
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .slice(0, 2)
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
+
+  const getAvatarUrl = (name: string) => {
+    return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&backgroundColor=3b82f6,8b5cf6,ec4899,f59e0b,10b981`;
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600 dark:text-green-400";
+    if (score >= 60) return "text-yellow-600 dark:text-yellow-400";
+    return "text-red-600 dark:text-red-400";
+  };
+
+  const getScoreBadgeVariant = (score: number) => {
+    if (score >= 80) return "default";
+    if (score >= 60) return "secondary";
+    return "destructive";
+  };
+
   return (
     <>
       <SiteHeader
@@ -208,139 +242,190 @@ export default function ResponseDetailPage({
                 {response.conversation && (
                   <Link href={`/${workspaceSlug}/chat/${id}`}>
                     <Button variant="default" size="sm">
-                      💬 Открыть чат
+                      <MessageSquare className="mr-2 h-4 w-4" />
+                      Открыть чат
                     </Button>
                   </Link>
                 )}
               </div>
 
               <div className="space-y-6 md:space-y-8">
-                <Card className="shadow-sm">
-                  <CardHeader className="pb-4">
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                      <div className="space-y-1.5">
-                        <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
-                          <User className="h-5 w-5 shrink-0" />
-                          {response.candidateName || "Имя не указано"}
-                        </CardTitle>
-                        <CardDescription className="text-base">
-                          {response.vacancy?.title || "Вакансия"}
-                        </CardDescription>
+                <Card className="border-2 shadow-lg">
+                  <CardHeader className="pb-6">
+                    <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="flex gap-4">
+                        <Avatar className="h-16 w-16 border-2 border-primary/10 sm:h-20 sm:w-20">
+                          <AvatarImage
+                            src={getAvatarUrl(
+                              response.candidateName || "Кандидат",
+                            )}
+                            alt={response.candidateName || "Кандидат"}
+                          />
+                          <AvatarFallback className="bg-primary/10 text-lg font-semibold">
+                            {getInitials(response.candidateName || "Кандидат")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="space-y-2">
+                          <CardTitle className="text-2xl sm:text-3xl">
+                            {response.candidateName || "Имя не указано"}
+                          </CardTitle>
+                          <CardDescription className="flex items-center gap-2 text-base">
+                            <Briefcase className="h-4 w-4" />
+                            {response.vacancy?.title || "Вакансия"}
+                          </CardDescription>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="outline" className="gap-1">
+                              {RESPONSE_STATUS_LABELS[response.status]}
+                            </Badge>
+                            {response.hrSelectionStatus && (
+                              <Badge variant="secondary" className="gap-1">
+                                {
+                                  HR_SELECTION_STATUS_LABELS[
+                                    response.hrSelectionStatus
+                                  ]
+                                }
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       {response.screening?.detailedScore !== undefined && (
-                        <Badge
-                          className="self-start text-sm"
-                          variant={
-                            response.screening.detailedScore >= 80
-                              ? "default"
-                              : response.screening.detailedScore >= 60
-                                ? "secondary"
-                                : "outline"
-                          }
-                        >
-                          Оценка: {response.screening.detailedScore}
-                        </Badge>
+                        <div className="flex flex-col items-start gap-2 sm:items-end">
+                          <div className="flex items-center gap-2">
+                            <Award className="h-5 w-5 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">
+                              Общая оценка
+                            </span>
+                          </div>
+                          <div
+                            className={`text-4xl font-bold ${getScoreColor(response.screening.detailedScore)}`}
+                          >
+                            {response.screening.detailedScore}
+                            <span className="text-2xl text-muted-foreground">
+                              /100
+                            </span>
+                          </div>
+                        </div>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4 pt-0">
-                    {response.resumeUrl && (
-                      <div className="flex flex-wrap gap-2">
-                        <Link
-                          href={response.resumeUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button variant="outline" size="sm">
-                            <ExternalLink className="mr-2 h-4 w-4" />
-                            Открыть резюме
-                          </Button>
-                        </Link>
-                        {response.resumePdfUrl && (
-                          <Link
-                            href={response.resumePdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            download
-                          >
-                            <Button variant="outline" size="sm">
-                              <Download className="mr-2 h-4 w-4" />
-                              Скачать PDF
-                            </Button>
-                          </Link>
-                        )}
-                      </div>
-                    )}
-
+                  <CardContent className="space-y-6 pt-0">
                     <Separator />
 
-                    <div className="grid gap-3 text-sm sm:text-base">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-muted-foreground">Статус:</span>
-                        <Badge variant="outline">
-                          {RESPONSE_STATUS_LABELS[response.status]}
-                        </Badge>
-                      </div>
-                      {response.hrSelectionStatus && (
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="text-muted-foreground">
-                            Решение HR:
-                          </span>
-                          <Badge variant="outline">
-                            {
-                              HR_SELECTION_STATUS_LABELS[
-                                response.hrSelectionStatus
-                              ]
-                            }
-                          </Badge>
-                        </div>
-                      )}
-                      {response.createdAt && (
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="text-muted-foreground">
-                            Дата отклика:
-                          </span>
-                          <span>
-                            {new Date(response.createdAt).toLocaleDateString(
-                              "ru-RU",
-                            )}
-                          </span>
-                        </div>
-                      )}
+                    <div className="grid gap-4 sm:grid-cols-2">
                       {response.phone && (
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="text-muted-foreground">
-                            Телефон:
-                          </span>
-                          <span className="break-all">{response.phone}</span>
+                        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Phone className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground">
+                              Телефон
+                            </p>
+                            <p className="truncate font-medium">
+                              {response.phone}
+                            </p>
+                          </div>
                         </div>
                       )}
                       {response.telegramUsername && (
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                          <span className="text-muted-foreground">
-                            Telegram:
-                          </span>
-                          <span className="break-all">
-                            @{response.telegramUsername}
-                          </span>
+                        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Send className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground">
+                              Telegram
+                            </p>
+                            <p className="truncate font-medium">
+                              @{response.telegramUsername}
+                            </p>
+                          </div>
+                        </div>
+                      )}
+                      {response.createdAt && (
+                        <div className="flex items-center gap-3 rounded-lg border bg-muted/50 p-3">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                            <Calendar className="h-5 w-5 text-primary" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-muted-foreground">
+                              Дата отклика
+                            </p>
+                            <p className="truncate font-medium">
+                              {new Date(response.createdAt).toLocaleDateString(
+                                "ru-RU",
+                                {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                },
+                              )}
+                            </p>
+                          </div>
                         </div>
                       )}
                     </div>
+
+                    {response.resumeUrl && (
+                      <>
+                        <Separator />
+                        <div className="flex flex-wrap gap-2">
+                          <Link
+                            href={response.resumeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button variant="outline" size="sm">
+                              <ExternalLink className="mr-2 h-4 w-4" />
+                              Открыть резюме
+                            </Button>
+                          </Link>
+                          {response.resumePdfUrl && (
+                            <Link
+                              href={response.resumePdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                            >
+                              <Button variant="outline" size="sm">
+                                <Download className="mr-2 h-4 w-4" />
+                                Скачать PDF
+                              </Button>
+                            </Link>
+                          )}
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
 
                 {response.screening?.analysis && (
-                  <Card className="shadow-sm">
+                  <Card className="border-2 shadow-md">
                     <CardHeader className="pb-4">
-                      <CardTitle className="text-xl sm:text-2xl">
-                        Скрининг резюме
-                      </CardTitle>
-                      {response.screening.score && (
-                        <CardDescription className="text-base">
-                          Оценка: {response.screening.score}/5 • Детальная
-                          оценка: {response.screening.detailedScore}/100
-                        </CardDescription>
-                      )}
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1.5">
+                          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+                            <Award className="h-6 w-6 text-primary" />
+                            Скрининг резюме
+                          </CardTitle>
+                          {response.screening.score && (
+                            <CardDescription className="text-base">
+                              Оценка: {response.screening.score}/5
+                            </CardDescription>
+                          )}
+                        </div>
+                        {response.screening.detailedScore !== undefined && (
+                          <Badge
+                            variant={getScoreBadgeVariant(
+                              response.screening.detailedScore,
+                            )}
+                            className="text-base px-3 py-1"
+                          >
+                            {response.screening.detailedScore}/100
+                          </Badge>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent className="pt-0">
                       <SafeHtml
@@ -352,17 +437,36 @@ export default function ResponseDetailPage({
                 )}
 
                 {response.conversation?.interviewScoring && (
-                  <Card className="shadow-sm">
+                  <Card className="border-2 shadow-md">
                     <CardHeader className="pb-4">
-                      <CardTitle className="text-xl sm:text-2xl">
-                        Интервью в Telegram
-                      </CardTitle>
-                      <CardDescription className="text-base">
-                        Оценка: {response.conversation.interviewScoring.score}/5
-                        • Детальная оценка:{" "}
-                        {response.conversation.interviewScoring.detailedScore}
-                        /100
-                      </CardDescription>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="space-y-1.5">
+                          <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+                            <MessageSquare className="h-6 w-6 text-primary" />
+                            Интервью в Telegram
+                          </CardTitle>
+                          <CardDescription className="text-base">
+                            Оценка:{" "}
+                            {response.conversation.interviewScoring.score}/5
+                          </CardDescription>
+                        </div>
+                        {response.conversation.interviewScoring
+                          .detailedScore !== undefined && (
+                          <Badge
+                            variant={getScoreBadgeVariant(
+                              response.conversation.interviewScoring
+                                .detailedScore,
+                            )}
+                            className="text-base px-3 py-1"
+                          >
+                            {
+                              response.conversation.interviewScoring
+                                .detailedScore
+                            }
+                            /100
+                          </Badge>
+                        )}
+                      </div>
                     </CardHeader>
                     <CardContent className="pt-0">
                       {response.conversation.interviewScoring.analysis && (
@@ -394,57 +498,92 @@ export default function ResponseDetailPage({
                                         : response.vacancy?.workspace?.name ||
                                           "Бот";
 
+                                    const isCandidate =
+                                      message.sender === "CANDIDATE";
+
                                     return (
                                       <div
                                         key={message.id}
-                                        className={`rounded-lg p-3 sm:p-4 ${
-                                          message.sender === "CANDIDATE"
-                                            ? "bg-muted/50 ml-0 mr-4 sm:mr-8"
-                                            : "bg-primary/5 ml-4 mr-0 sm:ml-8"
+                                        className={`flex gap-3 ${
+                                          isCandidate
+                                            ? "flex-row"
+                                            : "flex-row-reverse"
                                         }`}
                                       >
-                                        <div className="mb-1 flex items-center justify-between gap-2">
-                                          <span className="text-xs font-medium text-muted-foreground sm:text-sm">
-                                            {senderName}
-                                          </span>
-                                          <span className="text-xs text-muted-foreground/70">
-                                            {new Date(
-                                              message.createdAt,
-                                            ).toLocaleString("ru-RU", {
-                                              day: "2-digit",
-                                              month: "2-digit",
-                                              hour: "2-digit",
-                                              minute: "2-digit",
-                                            })}
-                                          </span>
-                                        </div>
-                                        {message.contentType === "VOICE" ? (
-                                          <div className="space-y-2">
-                                            {"voiceUrl" in message &&
-                                            message.voiceUrl ? (
-                                              <VoicePlayer
-                                                url={message.voiceUrl}
-                                                duration={
-                                                  message.voiceDuration || ""
-                                                }
-                                              />
-                                            ) : null}
-                                            {message.voiceTranscription ? (
-                                              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                                                {message.voiceTranscription}
-                                              </p>
-                                            ) : !("voiceUrl" in message) ||
-                                              !message.voiceUrl ? (
-                                              <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
-                                                Аудиозапись недоступна
-                                              </p>
-                                            ) : null}
+                                        <Avatar className="h-8 w-8 shrink-0 border sm:h-10 sm:w-10">
+                                          <AvatarImage
+                                            src={getAvatarUrl(senderName)}
+                                            alt={senderName}
+                                          />
+                                          <AvatarFallback className="text-xs">
+                                            {getInitials(senderName)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div
+                                          className={`flex-1 space-y-1 ${
+                                            isCandidate
+                                              ? "mr-4 sm:mr-12"
+                                              : "ml-4 sm:ml-12"
+                                          }`}
+                                        >
+                                          <div
+                                            className={`flex items-center gap-2 ${
+                                              isCandidate
+                                                ? "flex-row"
+                                                : "flex-row-reverse"
+                                            }`}
+                                          >
+                                            <span className="text-xs font-semibold sm:text-sm">
+                                              {senderName}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground">
+                                              {new Date(
+                                                message.createdAt,
+                                              ).toLocaleString("ru-RU", {
+                                                day: "2-digit",
+                                                month: "2-digit",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                              })}
+                                            </span>
                                           </div>
-                                        ) : (
-                                          <p className="text-sm leading-relaxed sm:text-base">
-                                            {message.content}
-                                          </p>
-                                        )}
+                                          <div
+                                            className={`rounded-2xl border-2 p-3 sm:p-4 ${
+                                              isCandidate
+                                                ? "bg-muted/50 border-muted"
+                                                : "bg-primary/5 border-primary/20"
+                                            }`}
+                                          >
+                                            {message.contentType === "VOICE" ? (
+                                              <div className="space-y-2">
+                                                {"voiceUrl" in message &&
+                                                message.voiceUrl ? (
+                                                  <VoicePlayer
+                                                    url={message.voiceUrl}
+                                                    duration={
+                                                      message.voiceDuration ||
+                                                      ""
+                                                    }
+                                                  />
+                                                ) : null}
+                                                {message.voiceTranscription ? (
+                                                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                                    {message.voiceTranscription}
+                                                  </p>
+                                                ) : !("voiceUrl" in message) ||
+                                                  !message.voiceUrl ? (
+                                                  <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                                    Аудиозапись недоступна
+                                                  </p>
+                                                ) : null}
+                                              </div>
+                                            ) : (
+                                              <p className="text-sm leading-relaxed sm:text-base">
+                                                {message.content}
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
                                       </div>
                                     );
                                   },
@@ -458,9 +597,10 @@ export default function ResponseDetailPage({
                 )}
 
                 {response.experience && (
-                  <Card className="shadow-sm">
+                  <Card className="border-2 shadow-md">
                     <CardHeader className="pb-4">
-                      <CardTitle className="text-xl sm:text-2xl">
+                      <CardTitle className="flex items-center gap-2 text-xl sm:text-2xl">
+                        <Briefcase className="h-6 w-6 text-primary" />
                         Резюме
                       </CardTitle>
                     </CardHeader>
