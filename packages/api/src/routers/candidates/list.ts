@@ -231,6 +231,7 @@ export const list = protectedProcedure
         phone: contactPhone,
         github: github,
         telegram: telegram,
+        resumeUrl: r.resumeUrl,
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,
       };

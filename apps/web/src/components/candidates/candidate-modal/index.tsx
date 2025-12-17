@@ -31,6 +31,7 @@ import { ActivityTimeline } from "./activity-timeline";
 import { CandidateInfo } from "./candidate-info";
 import { ChatSection } from "./chat-section";
 import { CommentsSection } from "./comments-section";
+import { RejectDialog } from "./reject-dialog";
 import { SendOfferDialog } from "./send-offer-dialog";
 
 interface CandidateModalProps {
@@ -52,6 +53,7 @@ export function CandidateModal({
   );
   const [activeTab, setActiveTab] = useState("chat");
   const [showOfferDialog, setShowOfferDialog] = useState(false);
+  const [showRejectDialog, setShowRejectDialog] = useState(false);
 
   useEffect(() => {
     setSelectedStatus(candidate?.stage ?? "REVIEW");
@@ -66,10 +68,49 @@ export function CandidateModal({
       queryClient.invalidateQueries({
         queryKey: trpc.candidates.list.queryKey(),
       });
-      toast.success("Статус обновлен");
+      toast.success("Статус обновлён");
     },
     onError: () => {
       toast.error("Не удалось обновить статус");
+    },
+  });
+
+  const sendGreeting = useMutation({
+    ...trpc.candidates.sendGreeting.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
+      toast.success("Приветствие отправлено");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Не удалось отправить приветствие");
+    },
+  });
+
+  const inviteCandidate = useMutation({
+    ...trpc.candidates.inviteCandidate.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
+      toast.success("Кандидат приглашён");
+    },
+    onError: () => {
+      toast.error("Не удалось пригласить кандидата");
+    },
+  });
+
+  const refreshResume = useMutation({
+    ...trpc.candidates.refreshResume.mutationOptions(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
+      toast.success("Резюме обновлено");
+    },
+    onError: () => {
+      toast.error("Не удалось обновить резюме");
     },
   });
 
@@ -87,7 +128,7 @@ export function CandidateModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-max max-w-[min(90vw,120rem)] h-[90vh] p-0 gap-0 flex flex-col"
+        className="sm:max-w-max max-w-[min(90vw,120rem)] h-[90vh] p-0 gap-0 flex flex-col overscroll-contain"
         showCloseButton={false}
       >
         <DialogHeader className="px-6 py-4 border-b shrink-0">
@@ -147,12 +188,49 @@ export function CandidateModal({
 
             <CandidateInfo
               candidate={candidate}
+              isLoading={{
+                sendGreeting: sendGreeting.isPending,
+                invite: inviteCandidate.isPending,
+                refreshResume: refreshResume.isPending,
+              }}
               onAction={(action) => {
-                if (action === "send-offer") {
-                  setShowOfferDialog(true);
-                } else {
-                  console.log("Action:", action);
-                  toast.info(`Действие: ${action}`);
+                switch (action) {
+                  case "send-greeting":
+                    sendGreeting.mutate({
+                      candidateId: candidate.id,
+                      workspaceId,
+                    });
+                    break;
+                  case "send-offer":
+                    setShowOfferDialog(true);
+                    break;
+                  case "invite":
+                    inviteCandidate.mutate({
+                      candidateId: candidate.id,
+                      workspaceId,
+                    });
+                    break;
+                  case "rate":
+                    toast.info("Функция оценки в разработке");
+                    break;
+                  case "view-resume":
+                    if (candidate.resumeUrl) {
+                      window.open(candidate.resumeUrl, "_blank");
+                    } else {
+                      toast.error("Резюме недоступно");
+                    }
+                    break;
+                  case "refresh-resume":
+                    refreshResume.mutate({
+                      candidateId: candidate.id,
+                      workspaceId,
+                    });
+                    break;
+                  case "reject":
+                    setShowRejectDialog(true);
+                    break;
+                  default:
+                    console.log("Unknown action:", action);
                 }
               }}
             />
@@ -217,6 +295,13 @@ export function CandidateModal({
       <SendOfferDialog
         open={showOfferDialog}
         onOpenChange={setShowOfferDialog}
+        candidate={candidate}
+        workspaceId={workspaceId}
+      />
+
+      <RejectDialog
+        open={showRejectDialog}
+        onOpenChange={setShowRejectDialog}
         candidate={candidate}
         workspaceId={workspaceId}
       />
