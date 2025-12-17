@@ -17,6 +17,9 @@ const mapResponseToStage = (
   status: string,
   hrSelectionStatus: string | null,
 ): string => {
+  if (hrSelectionStatus === "OFFER") {
+    return "OFFER";
+  }
   if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
     return "HIRED";
   }
@@ -41,11 +44,13 @@ export const list = protectedProcedure
     z.object({
       workspaceId: workspaceIdSchema,
       vacancyId: z.string().optional(),
-      limit: z.number().int().min(1).max(100).default(50),
+      limit: z.number().int().min(1).max(200).default(100),
       cursor: uuidv7Schema.optional(),
       search: z.string().optional(),
       stages: z
-        .array(z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]))
+        .array(
+          z.enum(["NEW", "REVIEW", "INTERVIEW", "OFFER", "HIRED", "REJECTED"]),
+        )
         .optional(),
     }),
   )
@@ -107,6 +112,10 @@ export const list = protectedProcedure
     if (input.stages && input.stages.length > 0) {
       const stageConditions = [];
 
+      if (input.stages.includes("OFFER")) {
+        stageConditions.push(eq(vacancyResponse.hrSelectionStatus, "OFFER"));
+      }
+
       if (input.stages.includes("HIRED")) {
         stageConditions.push(
           inArray(vacancyResponse.hrSelectionStatus, ["INVITE", "RECOMMENDED"]),
@@ -158,6 +167,7 @@ export const list = protectedProcedure
       with: {
         screening: true,
         telegramInterviewScoring: true,
+        photoFile: true,
       },
     });
 
@@ -188,11 +198,14 @@ export const list = protectedProcedure
       const github = contacts?.github || contacts?.gitHub || null;
       const telegram = r.telegramUsername || contacts?.telegram || null;
 
+      // Возвращаем ID файла для получения через API
+      const avatarFileId = r.photoFile?.id ?? null;
+
       return {
         id: r.id,
         name: r.candidateName || "Без имени",
         position: vacancyData?.title || "Неизвестная должность",
-        avatar: null,
+        avatarFileId: avatarFileId,
         initials:
           r.candidateName
             ?.split(" ")

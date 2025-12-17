@@ -35,6 +35,7 @@ export const analytics = protectedProcedure
           NEW: 0,
           REVIEW: 0,
           INTERVIEW: 0,
+          OFFER: 0,
           HIRED: 0,
           REJECTED: 0,
         },
@@ -56,6 +57,7 @@ export const analytics = protectedProcedure
       INTERVIEW: responses.filter(
         (r) => r.status === "DIALOG_APPROVED" || r.status === "INTERVIEW_HH",
       ).length,
+      OFFER: responses.filter((r) => r.hrSelectionStatus === "OFFER").length,
       HIRED: responses.filter(
         (r) =>
           r.hrSelectionStatus === "INVITE" ||

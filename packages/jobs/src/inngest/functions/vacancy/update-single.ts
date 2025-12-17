@@ -78,7 +78,18 @@ export const updateSingleVacancyFunction = inngest.createFunction(
         if (browser) {
           try {
             const pages = await browser.pages();
-            await Promise.all(pages.map((page) => page.close()));
+            // Закрываем каждую страницу по отдельности, игнорируя ошибки
+            await Promise.all(
+              pages.map(async (page) => {
+                try {
+                  if (!page.isClosed()) {
+                    await page.close();
+                  }
+                } catch {
+                  // Игнорируем ошибки закрытия отдельных страниц
+                }
+              }),
+            );
             await browser.close();
             // Даем Windows время освободить файловые дескрипторы
             await new Promise((resolve) => setTimeout(resolve, 1000));

@@ -253,7 +253,7 @@ export async function parseResumeExperience(
     await page.goto(url, { waitUntil: "networkidle2", timeout: 30000 });
 
     const photoUrl = await page
-      .$eval('div[data-qa="resume-card-avatar"] img', (img) =>
+      .$eval('div[data-qa="resume-photo"] img', (img) =>
         img.getAttribute("src"),
       )
       .catch(() => null);

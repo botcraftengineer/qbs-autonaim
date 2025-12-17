@@ -16,6 +16,7 @@ import { parseResumeExperience } from "../../../parsers/hh/resume-parser";
 import { extractTelegramUsername } from "../../../services/messaging";
 import {
   updateResponseDetails,
+  uploadCandidatePhoto,
   uploadResumePdf,
 } from "../../../services/response";
 import { inngest } from "../../client";
@@ -204,6 +205,28 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           }
         }
 
+        let photoFileId: string | null = null;
+        if (experienceData.photoBuffer && experienceData.photoMimeType) {
+          console.log(
+            `📸 Загрузка фото кандидата в S3 (размер: ${experienceData.photoBuffer.length} байт, тип: ${experienceData.photoMimeType})`,
+          );
+          const uploadResult = await uploadCandidatePhoto(
+            experienceData.photoBuffer,
+            response.resumeId,
+            experienceData.photoMimeType,
+          );
+          if (uploadResult.success) {
+            photoFileId = uploadResult.data;
+            console.log(`✅ Фото загружено в S3, file ID: ${photoFileId}`);
+          } else {
+            console.log(`⚠️ Ошибка загрузки фото в S3: ${uploadResult.error}`);
+          }
+        } else {
+          console.log(
+            `⚠️ Фото не будет загружено: photoBuffer=${!!experienceData.photoBuffer}, photoMimeType=${!!experienceData.photoMimeType}`,
+          );
+        }
+
         const updateResult = await updateResponseDetails({
           vacancyId: response.vacancyId,
           resumeId: response.resumeId,
@@ -214,6 +237,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           phone: experienceData.phone,
           telegramUsername,
           resumePdfFileId,
+          photoFileId,
         });
 
         if (!updateResult.success) {
@@ -229,7 +253,18 @@ export const refreshSingleResumeFunction = inngest.createFunction(
         // Properly close browser to avoid resource locks on Windows
         try {
           const pages = await browser.pages();
-          await Promise.all(pages.map((page) => page.close()));
+          // Закрываем каждую страницу по отдельности, игнорируя ошибки
+          await Promise.all(
+            pages.map(async (page) => {
+              try {
+                if (!page.isClosed()) {
+                  await page.close();
+                }
+              } catch {
+                // Игнорируем ошибки закрытия отдельных страниц
+              }
+            }),
+          );
           await browser.close();
           // Give Windows time to release file handles
           await new Promise((resolve) => setTimeout(resolve, 1000));

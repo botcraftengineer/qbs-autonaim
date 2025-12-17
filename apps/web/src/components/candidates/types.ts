@@ -1,10 +1,16 @@
-export type FunnelStage = "NEW" | "REVIEW" | "INTERVIEW" | "HIRED" | "REJECTED";
+export type FunnelStage =
+  | "NEW"
+  | "REVIEW"
+  | "INTERVIEW"
+  | "OFFER"
+  | "HIRED"
+  | "REJECTED";
 
 export interface FunnelCandidate {
   id: string;
   name: string;
   position: string;
-  avatar: string | null;
+  avatarFileId: string | null;
   initials: string;
   experience: string;
   location: string;
@@ -50,6 +56,7 @@ export const STAGE_LABELS: Record<FunnelStage, string> = {
   NEW: "Новые",
   REVIEW: "На рассмотрении",
   INTERVIEW: "Собеседование",
+  OFFER: "Оффер",
   HIRED: "Наняты",
   REJECTED: "Отклонен",
 };
@@ -60,6 +67,8 @@ export const STAGE_COLORS: Record<FunnelStage, string> = {
     "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-400",
   INTERVIEW:
     "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400",
+  OFFER:
+    "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400",
   HIRED:
     "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400",
   REJECTED:

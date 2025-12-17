@@ -11,6 +11,7 @@ import {
   uploadResumePdf,
 } from "../../services/response";
 import { loadCookies, performLogin, saveCookies } from "./auth";
+import { closeBrowserSafely } from "./browser-utils";
 import { HH_CONFIG } from "./config";
 import { parseResumeExperience } from "./resume-parser";
 
@@ -217,21 +218,6 @@ export async function runEnricher(workspaceId: string) {
     console.error("❌ Критическая ошибка:", error);
     throw error;
   } finally {
-    // Properly close browser to avoid resource locks on Windows
-    try {
-      const pages = await browser.pages();
-      await Promise.all(pages.map((page) => page.close()));
-      await browser.close();
-      // Give Windows time to release file handles
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (closeError) {
-      console.warn("⚠️ Ошибка при закрытии браузера:", closeError);
-      // Force kill browser process if normal close fails
-      try {
-        browser.process()?.kill("SIGKILL");
-      } catch {
-        // Ignore if already closed
-      }
-    }
+    await closeBrowserSafely(browser);
   }
 }

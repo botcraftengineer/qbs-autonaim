@@ -3,6 +3,7 @@ import {
   navigateWithAuth,
   setupAuthenticatedBrowser,
 } from "./browser-setup";
+import { closeBrowserSafely } from "./browser-utils";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
 
@@ -60,6 +61,6 @@ export async function refreshVacancyResponses(
     console.error("❌ Error refreshing responses:", error);
     throw error;
   } finally {
-    await browser.close();
+    await closeBrowserSafely(browser);
   }
 }

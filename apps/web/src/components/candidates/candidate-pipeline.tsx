@@ -38,7 +38,7 @@ import {
   SlidersHorizontal,
   UserPlus,
 } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 import { CandidateKanbanCard } from "./candidate-kanban-card";
@@ -51,6 +51,7 @@ const STAGES: { id: FunnelStage; title: string; color: string }[] = [
   { id: "NEW", title: "Новые", color: "bg-blue-500" },
   { id: "REVIEW", title: "Рассмотрение", color: "bg-amber-500" },
   { id: "INTERVIEW", title: "Собеседование", color: "bg-purple-500" },
+  { id: "OFFER", title: "Оффер", color: "bg-indigo-500" },
   { id: "HIRED", title: "Наняты", color: "bg-emerald-500" },
   { id: "REJECTED", title: "Отказ", color: "bg-rose-500" },
 ];
@@ -72,7 +73,16 @@ export function CandidatePipeline() {
     useState<FunnelCandidate | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterStages, setFilterStages] = useState<FunnelStage[]>([]);
+
+  // Debounce search
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchText);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchText]);
 
   const trpc = useTRPC();
 
@@ -96,6 +106,9 @@ export function CandidatePipeline() {
   const listQueryOptions = trpc.candidates.list.queryOptions({
     workspaceId: workspaceId ?? "",
     vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+    search: debouncedSearch || undefined,
+    stages: filterStages.length > 0 ? filterStages : undefined,
+    limit: 100,
   });
   const listQueryKey = listQueryOptions.queryKey;
 
@@ -146,7 +159,7 @@ export function CandidatePipeline() {
     const candidateId = active.id as string;
     const newStage = over.id as FunnelStage;
 
-    const candidate = candidates?.items.find((c) => c.id === candidateId);
+    const candidate = allCandidates.find((c) => c.id === candidateId);
     if (!candidate || candidate.stage === newStage) return;
 
     updateStageMutation.mutate({
@@ -163,13 +176,13 @@ export function CandidatePipeline() {
     enabled: !!workspaceId,
   });
 
+  // Используем обычный query с увеличенным лимитом и фильтрацией на сервере
   const { data: candidates, isLoading } = useQuery({
-    ...trpc.candidates.list.queryOptions({
-      workspaceId: workspaceId ?? "",
-      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
-    }),
+    ...listQueryOptions,
     enabled: !!workspaceId,
   });
+
+  const allCandidates = useMemo(() => candidates?.items ?? [], [candidates]);
 
   const handleCardClick = useCallback((candidate: FunnelCandidate) => {
     setSelectedCandidate(candidate);
@@ -184,36 +197,15 @@ export function CandidatePipeline() {
     );
   };
 
-  // Client-side filtering
-  const filteredCandidates = useMemo(() => {
-    let items = candidates?.items ?? [];
-
-    // Filter by search text
-    if (searchText.trim()) {
-      const search = searchText.toLowerCase();
-      items = items.filter(
-        (c) =>
-          c.name.toLowerCase().includes(search) ||
-          c.position.toLowerCase().includes(search) ||
-          c.skills?.some((s: string) => s.toLowerCase().includes(search)),
-      );
-    }
-
-    // Filter by stages
-    if (filterStages.length > 0) {
-      items = items.filter((c) =>
-        filterStages.includes(c.stage as FunnelStage),
-      );
-    }
-
-    return items;
-  }, [candidates?.items, searchText, filterStages]);
+  // Фильтрация теперь на сервере, просто используем все кандидаты
+  const filteredCandidates = allCandidates;
 
   const candidatesByStage = useMemo(() => {
     const result: Record<FunnelStage, FunnelCandidate[]> = {
       NEW: [],
       REVIEW: [],
       INTERVIEW: [],
+      OFFER: [],
       HIRED: [],
       REJECTED: [],
     };
@@ -349,6 +341,11 @@ export function CandidatePipeline() {
             <>
               <span className="font-medium text-foreground">{totalCount}</span>{" "}
               {pluralizeCandidate(totalCount)}
+              {candidates?.nextCursor && (
+                <span className="ml-2 text-xs">
+                  (показаны первые {totalCount})
+                </span>
+              )}
             </>
           ) : null}
         </div>
@@ -361,7 +358,7 @@ export function CandidatePipeline() {
           onDragEnd={handleDragEnd}
         >
           <section
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6"
             aria-label="Канбан-доска кандидатов"
           >
             {STAGES.map((stage) => (
@@ -378,9 +375,7 @@ export function CandidatePipeline() {
           </section>
           <DragOverlay>
             {(() => {
-              const candidate = (candidates?.items ?? []).find(
-                (c) => c.id === activeId,
-              );
+              const candidate = allCandidates.find((c) => c.id === activeId);
               return activeId && candidate ? (
                 <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
               ) : null;

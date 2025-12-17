@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage, Badge } from "@qbs-autonaim/ui";
 import { MapPin } from "lucide-react";
+import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { MatchScoreCircle } from "./match-score-circle";
 import type { FunnelCandidate } from "./types";
 
@@ -11,6 +12,8 @@ interface CandidateCardProps {
 }
 
 export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
+  const avatarUrl = useAvatarUrl(candidate.avatarFileId);
+
   return (
     <button
       type="button"
@@ -20,10 +23,7 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
     >
       <div className="flex items-center gap-3">
         <Avatar className="h-10 w-10 border shrink-0">
-          <AvatarImage
-            src={candidate.avatar ?? undefined}
-            alt={candidate.name}
-          />
+          <AvatarImage src={avatarUrl ?? undefined} alt={candidate.name} />
           <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
             {candidate.initials}
           </AvatarFallback>

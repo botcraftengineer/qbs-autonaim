@@ -9,6 +9,7 @@ const stageToStatusMap = {
   NEW: { status: "NEW" as const, hrSelectionStatus: null },
   REVIEW: { status: "EVALUATED" as const, hrSelectionStatus: null },
   INTERVIEW: { status: "DIALOG_APPROVED" as const, hrSelectionStatus: null },
+  OFFER: { status: "COMPLETED" as const, hrSelectionStatus: "OFFER" as const },
   HIRED: { status: "COMPLETED" as const, hrSelectionStatus: "INVITE" as const },
   REJECTED: {
     status: "SKIPPED" as const,
@@ -21,7 +22,14 @@ export const updateStage = protectedProcedure
     z.object({
       candidateId: uuidv7Schema,
       workspaceId: workspaceIdSchema,
-      stage: z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]),
+      stage: z.enum([
+        "NEW",
+        "REVIEW",
+        "INTERVIEW",
+        "OFFER",
+        "HIRED",
+        "REJECTED",
+      ]),
     }),
   )
   .mutation(async ({ input, ctx }) => {

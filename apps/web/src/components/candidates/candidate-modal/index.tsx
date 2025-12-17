@@ -23,13 +23,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Activity, MessageSquare, StickyNote, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
-import type { FunnelCandidate } from "../types";
+import type { FunnelCandidate, FunnelStage } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
 import { CandidateInfo } from "./candidate-info";
 import { ChatSection } from "./chat-section";
 import { CommentsSection } from "./comments-section";
+import { SendOfferDialog } from "./send-offer-dialog";
 
 interface CandidateModalProps {
   candidate: FunnelCandidate | null;
@@ -44,10 +46,12 @@ export function CandidateModal({
   onOpenChange,
   workspaceId,
 }: CandidateModalProps) {
+  const avatarUrl = useAvatarUrl(candidate?.avatarFileId);
   const [selectedStatus, setSelectedStatus] = useState(
     candidate?.stage ?? "REVIEW",
   );
   const [activeTab, setActiveTab] = useState("chat");
+  const [showOfferDialog, setShowOfferDialog] = useState(false);
 
   useEffect(() => {
     setSelectedStatus(candidate?.stage ?? "REVIEW");
@@ -76,7 +80,7 @@ export function CandidateModal({
     updateStage.mutate({
       candidateId: candidate.id,
       workspaceId,
-      stage: stage as "NEW" | "REVIEW" | "INTERVIEW" | "HIRED" | "REJECTED",
+      stage: stage as FunnelStage,
     });
   };
 
@@ -91,7 +95,7 @@ export function CandidateModal({
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <Avatar className="h-10 w-10 border shrink-0">
                 <AvatarImage
-                  src={candidate.avatar ?? undefined}
+                  src={avatarUrl ?? undefined}
                   alt={candidate.name}
                 />
                 <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
@@ -134,6 +138,7 @@ export function CandidateModal({
                   <SelectItem value="NEW">Новые</SelectItem>
                   <SelectItem value="REVIEW">На рассмотрении</SelectItem>
                   <SelectItem value="INTERVIEW">Собеседование</SelectItem>
+                  <SelectItem value="OFFER">Оффер</SelectItem>
                   <SelectItem value="HIRED">Наняты</SelectItem>
                   <SelectItem value="REJECTED">Отклонен</SelectItem>
                 </SelectContent>
@@ -143,8 +148,12 @@ export function CandidateModal({
             <CandidateInfo
               candidate={candidate}
               onAction={(action) => {
-                console.log("Action:", action);
-                toast.info(`Действие: ${action}`);
+                if (action === "send-offer") {
+                  setShowOfferDialog(true);
+                } else {
+                  console.log("Action:", action);
+                  toast.info(`Действие: ${action}`);
+                }
               }}
             />
 
@@ -182,7 +191,6 @@ export function CandidateModal({
                   <ChatSection
                     candidateId={candidate.id}
                     candidateName={candidate.name}
-                    candidateAvatar={candidate.avatar}
                     workspaceId={workspaceId}
                   />
                 </TabsContent>
@@ -205,6 +213,13 @@ export function CandidateModal({
           </div>
         </div>
       </DialogContent>
+
+      <SendOfferDialog
+        open={showOfferDialog}
+        onOpenChange={setShowOfferDialog}
+        candidate={candidate}
+        workspaceId={workspaceId}
+      />
     </Dialog>
   );
 }

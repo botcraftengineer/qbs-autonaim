@@ -5,20 +5,30 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-const stageSchema = z.enum(["NEW", "REVIEW", "INTERVIEW", "HIRED", "REJECTED"]);
+const stageSchema = z.enum([
+  "NEW",
+  "REVIEW",
+  "INTERVIEW",
+  "HIRED",
+  "REJECTED",
+  "OFFER",
+]);
 
 type Stage = z.infer<typeof stageSchema>;
 
 const mapStageToResponse = (
   stage: Stage,
 ):
-  | { status: "NEW" | "EVALUATED" | "DIALOG_APPROVED" }
-  | { hrSelectionStatus: "RECOMMENDED" | "REJECTED" } => {
+  | { status: "NEW" | "EVALUATED" | "DIALOG_APPROVED" | "COMPLETED" }
+  | { hrSelectionStatus: "RECOMMENDED" | "REJECTED" | "OFFER" }
+  | { status: "COMPLETED"; hrSelectionStatus: "OFFER" } => {
   switch (stage) {
     case "HIRED":
       return { hrSelectionStatus: "RECOMMENDED" };
     case "REJECTED":
       return { hrSelectionStatus: "REJECTED" };
+    case "OFFER":
+      return { status: "COMPLETED", hrSelectionStatus: "OFFER" };
     case "INTERVIEW":
       return { status: "DIALOG_APPROVED" };
     case "REVIEW":

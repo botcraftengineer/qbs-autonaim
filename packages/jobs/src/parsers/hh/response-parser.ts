@@ -335,7 +335,6 @@ async function parseResponseDetails(
         response.url,
         response.name,
       );
-
       let resumePdfFileId: string | null = null;
       if (experienceData.pdfBuffer) {
         const uploadResult = await uploadResumePdf(
@@ -348,7 +347,11 @@ async function parseResponseDetails(
       }
 
       let photoFileId: string | null = null;
+
       if (experienceData.photoBuffer && experienceData.photoMimeType) {
+        console.log(
+          `📸 Загрузка фото кандидата в S3 (размер: ${experienceData.photoBuffer.length} байт, тип: ${experienceData.photoMimeType})`,
+        );
         const uploadResult = await uploadCandidatePhoto(
           experienceData.photoBuffer,
           response.resumeId,
@@ -356,7 +359,14 @@ async function parseResponseDetails(
         );
         if (uploadResult.success) {
           photoFileId = uploadResult.data;
+          console.log(`✅ Фото загружено в S3, file ID: ${photoFileId}`);
+        } else {
+          console.log(`⚠️ Ошибка загрузки фото в S3: ${uploadResult.error}`);
         }
+      } else {
+        console.log(
+          `⚠️ Фото не будет загружено: photoBuffer=${!!experienceData.photoBuffer}, photoMimeType=${!!experienceData.photoMimeType}`,
+        );
       }
 
       const updateResult = await updateResponseDetails({

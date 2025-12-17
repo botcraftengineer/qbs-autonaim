@@ -96,14 +96,20 @@ export async function getDownloadUrl(key: string): Promise<string> {
     Key: key,
   });
 
-  return getSignedUrl(getS3Client(), command, { expiresIn: 3600 }); // 1 hour
+  return getSignedUrl(getS3Client(), command, { expiresIn: 300 }); // 5 minutes
 }
 
 export function getFileUrl(fileKey: string): string {
   const s3Endpoint = env.AWS_S3_ENDPOINT;
+
   if (s3Endpoint) {
-    return `${s3Endpoint}/${BUCKET_NAME}/${fileKey}`;
+    // Для MinIO заменяем внутренний URL на публичный для браузера
+    // http://minio:9002 -> http://localhost:9002
+    const publicEndpoint = s3Endpoint.replace("minio:", "localhost:");
+    return `${publicEndpoint}/${BUCKET_NAME}/${fileKey}`;
   }
+
+  // Fallback на AWS S3
   return `https://${BUCKET_NAME}.s3.${env.AWS_REGION}.amazonaws.com/${fileKey}`;
 }
 
