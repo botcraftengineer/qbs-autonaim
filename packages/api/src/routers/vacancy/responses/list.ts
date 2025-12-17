@@ -218,6 +218,7 @@ export const list = protectedProcedure
         id: true,
         vacancyId: true,
         candidateName: true,
+        photoFileId: true,
         status: true,
         hrSelectionStatus: true,
         contacts: true,

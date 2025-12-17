@@ -6,6 +6,9 @@ import {
   RESPONSE_STATUS_LABELS,
 } from "@qbs-autonaim/db/schema";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Checkbox,
   TableCell,
@@ -18,6 +21,7 @@ import {
 import { Send, User } from "lucide-react";
 import Link from "next/link";
 import { ResponseActions } from "~/components/response";
+import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
 import { ScreenResponseButton } from "./screen-response-button";
@@ -38,6 +42,22 @@ export function ResponseRow({
   isSelected = false,
   onSelect,
 }: ResponseRowProps) {
+  const avatarUrl = useAvatarUrl(response.photoFileId);
+
+  // Генерируем инициалы из имени кандидата
+  const getInitials = (name: string | null) => {
+    if (!name) return null;
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) {
+      return parts[0]?.substring(0, 2).toUpperCase() ?? null;
+    }
+    return (
+      (parts[0]?.charAt(0) ?? "") + (parts[1]?.charAt(0) ?? "")
+    ).toUpperCase();
+  };
+
+  const initials = getInitials(response.candidateName);
+
   return (
     <TableRow>
       <TableCell>
@@ -52,9 +72,15 @@ export function ResponseRow({
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-            <User className="h-5 w-5 text-primary" />
-          </div>
+          <Avatar className="h-10 w-10 border shrink-0">
+            <AvatarImage
+              src={avatarUrl ?? undefined}
+              alt={response.candidateName || "Кандидат"}
+            />
+            <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+              {initials || <User className="h-5 w-5" />}
+            </AvatarFallback>
+          </Avatar>
           <div>
             <div className="font-medium flex items-center gap-2">
               <Link
