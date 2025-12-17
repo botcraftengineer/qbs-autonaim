@@ -1,7 +1,6 @@
 {
   "name": "@qbs-autonaim/jobs",
   "private": true,
-  "type": "module",
   "version": "0.1.0",
   "exports": {
     ".": {
