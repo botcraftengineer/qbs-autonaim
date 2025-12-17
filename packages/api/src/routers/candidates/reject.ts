@@ -9,7 +9,6 @@ export const rejectCandidate = protectedProcedure
     z.object({
       candidateId: z.string().uuid(),
       workspaceId: z.string(),
-      reason: z.string().optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {

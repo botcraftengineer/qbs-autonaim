@@ -30,6 +30,13 @@ export const refreshResume = protectedProcedure
       });
     }
 
+    if (!candidate.vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия для кандидата не найдена",
+      });
+    }
+
     if (candidate.vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
