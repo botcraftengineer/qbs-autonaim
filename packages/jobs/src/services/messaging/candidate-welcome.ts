@@ -5,10 +5,11 @@ import {
   responseScreening,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { generateText } from "@qbs-autonaim/lib/ai";
+import { generateText } from "@qbs-autonaim/lib";
+import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
-  buildCandidateWelcomePrompt,
   buildTelegramInvitePrompt,
+  EnhancedWelcomeAgent,
 } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { createLogger, err, type Result, tryCatch } from "../base";
@@ -57,33 +58,37 @@ export async function generateWelcomeMessage(
 
   const { response, screening, company } = dataResult.data;
 
-  const prompt = buildCandidateWelcomePrompt({
-    companyName: company?.name || "наша компания",
-    companyDescription: company?.description || undefined,
-    companyWebsite: company?.website || undefined,
-    vacancyTitle: response.vacancy?.title || null,
-    vacancyDescription: response.vacancy?.description
-      ? stripHtml(response.vacancy.description).result.substring(0, 200)
-      : undefined,
-    candidateName: response.candidateName,
-    screeningScore: screening?.score,
-    screeningAnalysis: screening?.analysis || undefined,
-  });
-
-  logger.info("Sending request to AI for welcome message generation");
+  logger.info("Generating welcome message with WelcomeAgent");
 
   const aiResult = await tryCatch(async () => {
-    const { text } = await generateText({
-      prompt,
-      generationName: "candidate-welcome",
-      entityId: responseId,
-      metadata: {
-        responseId,
-        vacancyId: response.vacancyId,
-        candidateName: response.candidateName,
+    const model = getAIModel();
+    const welcomeAgent = new EnhancedWelcomeAgent({ model });
+
+    const result = await welcomeAgent.execute(
+      {
+        companyName: company?.name || "наша компания",
+        companyDescription: company?.description || undefined,
+        companyWebsite: company?.website || undefined,
+        vacancyTitle: response.vacancy?.title || undefined,
+        vacancyDescription: response.vacancy?.description
+          ? stripHtml(response.vacancy.description).result
+          : undefined,
+        candidateName: response.candidateName || undefined,
+        screeningScore: screening?.score,
+        screeningAnalysis: screening?.analysis || undefined,
       },
-    });
-    return text;
+      {
+        conversationHistory: [],
+        candidateName: response.candidateName || undefined,
+        vacancyTitle: response.vacancy?.title || undefined,
+      },
+    );
+
+    if (!result.success || !result.data) {
+      throw new Error(result.error || "Failed to generate welcome message");
+    }
+
+    return result.data.message;
   }, "AI request failed");
 
   if (!aiResult.success) {
