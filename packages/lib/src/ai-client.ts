@@ -15,8 +15,22 @@ const langfuse = new Langfuse({
   baseUrl: process.env.LANGFUSE_BASE_URL,
 });
 
-const DEFAULT_MODEL_OPENAI = "gpt-4o-mini";
+const DEFAULT_MODEL_OPENAI = "gpt-5.2-chat-latest";
 const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
+
+/**
+ * Определить фактически используемый провайдер с учётом fallback
+ */
+function getActualProvider(): "openai" | "deepseek" {
+  const provider = env.AI_PROVIDER;
+  if (provider === "openai" && !env.OPENAI_API_KEY && env.DEEPSEEK_API_KEY) {
+    return "deepseek";
+  }
+  if (provider === "deepseek" && !env.DEEPSEEK_API_KEY && env.OPENAI_API_KEY) {
+    return "openai";
+  }
+  return provider;
+}
 
 /**
  * Получить модель AI на основе конфигурации окружения с fallback
@@ -130,17 +144,32 @@ export async function generateText(
       statusMessage: error instanceof Error ? error.message : String(error),
     });
 
-    // Retry с fallback моделью если основная модель OpenAI
-    if (env.AI_PROVIDER === "openai" && env.DEEPSEEK_API_KEY) {
+    // Retry с fallback моделью
+    const actualProvider = getActualProvider();
+    const canFallback =
+      (actualProvider === "openai" && env.DEEPSEEK_API_KEY) ||
+      (actualProvider === "deepseek" && env.OPENAI_API_KEY);
+
+    if (canFallback) {
+      const fallbackProvider =
+        actualProvider === "openai" ? "deepseek" : "openai";
+      const fallbackModel =
+        fallbackProvider === "deepseek"
+          ? deepseek(DEFAULT_MODEL_DEEPSEEK)
+          : openai(DEFAULT_MODEL_OPENAI);
+      const fallbackModelName =
+        fallbackProvider === "deepseek"
+          ? DEFAULT_MODEL_DEEPSEEK
+          : DEFAULT_MODEL_OPENAI;
+
       console.warn(
-        "Ошибка OpenAI, повторная попытка с DeepSeek:",
+        `Ошибка ${actualProvider}, повторная попытка с ${fallbackProvider}:`,
         error instanceof Error ? error.message : String(error),
       );
 
-      const fallbackModel = deepseek(DEFAULT_MODEL_DEEPSEEK);
       const fallbackGeneration = trace.generation({
         name: `${generationName}-fallback`,
-        model: DEFAULT_MODEL_DEEPSEEK,
+        model: fallbackModelName,
         input: prompt,
         metadata: { ...metadata, fallback: true },
       });
@@ -239,17 +268,32 @@ export async function generateObject<T extends z.ZodType>(
       statusMessage: error instanceof Error ? error.message : String(error),
     });
 
-    // Retry с fallback моделью если основная модель OpenAI
-    if (env.AI_PROVIDER === "openai" && env.DEEPSEEK_API_KEY) {
+    // Retry с fallback моделью
+    const actualProvider = getActualProvider();
+    const canFallback =
+      (actualProvider === "openai" && env.DEEPSEEK_API_KEY) ||
+      (actualProvider === "deepseek" && env.OPENAI_API_KEY);
+
+    if (canFallback) {
+      const fallbackProvider =
+        actualProvider === "openai" ? "deepseek" : "openai";
+      const fallbackModel =
+        fallbackProvider === "deepseek"
+          ? deepseek(DEFAULT_MODEL_DEEPSEEK)
+          : openai(DEFAULT_MODEL_OPENAI);
+      const fallbackModelName =
+        fallbackProvider === "deepseek"
+          ? DEFAULT_MODEL_DEEPSEEK
+          : DEFAULT_MODEL_OPENAI;
+
       console.warn(
-        "Ошибка OpenAI, повторная попытка с DeepSeek:",
+        `Ошибка ${actualProvider}, повторная попытка с ${fallbackProvider}:`,
         error instanceof Error ? error.message : String(error),
       );
 
-      const fallbackModel = deepseek(DEFAULT_MODEL_DEEPSEEK);
       const fallbackGeneration = trace.generation({
         name: `${generationName}-fallback`,
-        model: DEFAULT_MODEL_DEEPSEEK,
+        model: fallbackModelName,
         input: prompt,
         metadata: { ...metadata, fallback: true },
       });
