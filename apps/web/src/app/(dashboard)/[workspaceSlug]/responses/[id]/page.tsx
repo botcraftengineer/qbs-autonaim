@@ -19,7 +19,7 @@ interface ResponseDetailPageProps {
   params: Promise<{ workspaceSlug: string; id: string }>;
 }
 
-function mapConversationData(response: NonNullable<typeof response>) {
+function mapConversationData(response: any) {
   if (!response.conversation) return null;
 
   return {
@@ -31,7 +31,7 @@ function mapConversationData(response: NonNullable<typeof response>) {
             response.conversation.interviewScoring.analysis ?? undefined,
         }
       : undefined,
-    messages: response.conversation.messages?.map((msg) => ({
+    messages: response.conversation.messages?.map((msg: any) => ({
       ...msg,
       voiceDuration: msg.voiceDuration ?? undefined,
       voiceTranscription: msg.voiceTranscription ?? undefined,

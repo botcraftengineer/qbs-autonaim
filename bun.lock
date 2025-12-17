@@ -204,6 +204,7 @@
         "ai": "^6.0.0-beta.159",
         "effect": "^3.19.12",
         "langfuse": "3.38.6",
+        "sharp": "^0.34.5",
         "zod": "4.2.1",
       },
       "devDependencies": {
