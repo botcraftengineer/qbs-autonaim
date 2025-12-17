@@ -8,6 +8,7 @@ import {
   workspaceRepository,
 } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -167,6 +168,7 @@ export const list = protectedProcedure
       with: {
         screening: true,
         telegramInterviewScoring: true,
+        photoFile: true,
       },
     });
 
@@ -197,11 +199,14 @@ export const list = protectedProcedure
       const github = contacts?.github || contacts?.gitHub || null;
       const telegram = r.telegramUsername || contacts?.telegram || null;
 
+      // Получаем URL фото из S3, если оно есть
+      const avatarUrl = r.photoFile?.key ? getFileUrl(r.photoFile.key) : null;
+
       return {
         id: r.id,
         name: r.candidateName || "Без имени",
         position: vacancyData?.title || "Неизвестная должность",
-        avatar: null,
+        avatar: avatarUrl,
         initials:
           r.candidateName
             ?.split(" ")
