@@ -29,6 +29,7 @@ export interface FunnelCandidate {
   phone: string | null;
   github: string | null;
   telegram: string | null;
+  resumeUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

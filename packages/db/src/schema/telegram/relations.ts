@@ -30,6 +30,7 @@ export const telegramMessageRelations = relations(
     file: one(file, {
       fields: [telegramMessage.fileId],
       references: [file.id],
+      relationName: "file",
     }),
   }),
 );

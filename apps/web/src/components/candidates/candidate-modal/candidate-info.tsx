@@ -8,6 +8,7 @@ import {
   DollarSign,
   FileText,
   Github,
+  Loader2,
   Mail,
   MapPin,
   Phone,
@@ -22,9 +23,18 @@ import type { FunnelCandidate } from "../types";
 interface CandidateInfoProps {
   candidate: FunnelCandidate;
   onAction?: (action: string) => void;
+  isLoading?: {
+    sendGreeting?: boolean;
+    invite?: boolean;
+    refreshResume?: boolean;
+  };
 }
 
-export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
+export function CandidateInfo({
+  candidate,
+  onAction,
+  isLoading = {},
+}: CandidateInfoProps) {
   const getAvailabilityColor = () => {
     if (candidate.availability === "IMMEDIATE")
       return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-400 dark:border-emerald-800";
@@ -155,8 +165,14 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("send-greeting")}
+          disabled={isLoading.sendGreeting}
+          aria-label="Отправить приветственное сообщение кандидату"
         >
-          <Send className="h-4 w-4" />
+          {isLoading.sendGreeting ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
           Отправить приветствие
         </Button>
         <Button
@@ -164,6 +180,7 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("send-offer")}
+          aria-label="Отправить оффер кандидату"
         >
           <Send className="h-4 w-4" />
           Отправить оффер
@@ -173,8 +190,14 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("invite")}
+          disabled={isLoading.invite}
+          aria-label="Пригласить кандидата на собеседование"
         >
-          <CheckCircle className="h-4 w-4" />
+          {isLoading.invite ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <CheckCircle className="h-4 w-4" />
+          )}
           Пригласить
         </Button>
         <Button
@@ -182,6 +205,7 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("rate")}
+          aria-label="Оценить кандидата"
         >
           <Star className="h-4 w-4" />
           Оценить
@@ -191,6 +215,7 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("view-resume")}
+          aria-label="Открыть резюме кандидата"
         >
           <FileText className="h-4 w-4" />
           Резюме
@@ -200,8 +225,14 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("refresh-resume")}
+          disabled={isLoading.refreshResume}
+          aria-label="Обновить резюме кандидата"
         >
-          <RefreshCw className="h-4 w-4" />
+          {isLoading.refreshResume ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
           Обновить резюме
         </Button>
         <Button
@@ -209,6 +240,7 @@ export function CandidateInfo({ candidate, onAction }: CandidateInfoProps) {
           size="sm"
           className="gap-2 ml-auto text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
           onClick={() => onAction?.("reject")}
+          aria-label="Отклонить кандидата"
         >
           <XCircle className="h-4 w-4" />
           Отклонить
