@@ -3,6 +3,7 @@ import {
   navigateWithAuth,
   setupAuthenticatedBrowser,
 } from "./browser-setup";
+import { closeBrowserSafely } from "./browser-utils";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
 
@@ -60,28 +61,6 @@ export async function refreshVacancyResponses(
     console.error("❌ Error refreshing responses:", error);
     throw error;
   } finally {
-    try {
-      const pages = await browser.pages();
-      // Закрываем каждую страницу по отдельности, игнорируя ошибки
-      await Promise.all(
-        pages.map(async (page) => {
-          try {
-            if (!page.isClosed()) {
-              await page.close();
-            }
-          } catch {
-            // Игнорируем ошибки закрытия отдельных страниц
-          }
-        }),
-      );
-      await browser.close();
-    } catch (closeError) {
-      console.warn("⚠️ Ошибка при закрытии браузера:", closeError);
-      try {
-        browser.process()?.kill("SIGKILL");
-      } catch {
-        // Игнорируем если процесс уже закрыт
-      }
-    }
+    await closeBrowserSafely(browser);
   }
 }

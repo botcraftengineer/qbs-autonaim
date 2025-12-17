@@ -1,6 +1,7 @@
 import { getIntegrationCredentials } from "@qbs-autonaim/db";
 import puppeteer from "puppeteer";
 import { checkAndPerformLogin, loadCookies } from "./auth";
+import { closeBrowserSafely } from "./browser-utils";
 import { HH_CONFIG } from "./config";
 import { parseResponses } from "./response-parser";
 import { parseVacancies } from "./vacancy-parser";
@@ -68,31 +69,7 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
     console.error("❌ Ошибка при парсинге:", error);
     throw error;
   } finally {
-    // Properly close browser to avoid resource locks on Windows
-    try {
-      const pages = await browser.pages();
-      // Закрываем каждую страницу по отдельности, игнорируя ошибки
-      await Promise.all(
-        pages.map(async (page) => {
-          try {
-            if (!page.isClosed()) {
-              await page.close();
-            }
-          } catch {
-            // Игнорируем ошибки закрытия отдельных страниц
-          }
-        }),
-      );
-      await browser.close();
-      // Give Windows time to release file handles
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (closeError) {
-      console.warn("⚠️ Ошибка при закрытии браузера:", closeError);
-      // Force kill browser process if normal close fails
-      try {
-        browser.process()?.kill("SIGKILL");
-      } catch {
-        // Ignore if already closed
+    await closeBrowserSafely(browser);
       }
     }
   }

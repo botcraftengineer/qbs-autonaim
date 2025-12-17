@@ -335,7 +335,6 @@ async function parseResponseDetails(
         response.url,
         response.name,
       );
-      console.log(experienceData);
       let resumePdfFileId: string | null = null;
       if (experienceData.pdfBuffer) {
         const uploadResult = await uploadResumePdf(

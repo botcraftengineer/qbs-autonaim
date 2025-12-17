@@ -1,4 +1,5 @@
 import puppeteer from "puppeteer";
+import { closeBrowserSafely } from "./browser-utils";
 import { HH_CONFIG } from "./config";
 import { humanBrowse, humanDelay } from "./human-behavior";
 
@@ -37,28 +38,6 @@ export async function parseVacancyDescription(url: string): Promise<string> {
     console.error("⚠️ Не удалось получить описание вакансии:", error);
     return "";
   } finally {
-    try {
-      const pages = await browser.pages();
-      // Закрываем каждую страницу по отдельности, игнорируя ошибки
-      await Promise.all(
-        pages.map(async (page) => {
-          try {
-            if (!page.isClosed()) {
-              await page.close();
-            }
-          } catch {
-            // Игнорируем ошибки закрытия отдельных страниц
-          }
-        }),
-      );
-      await browser.close();
-    } catch (closeError) {
-      console.warn("⚠️ Ошибка при закрытии браузера:", closeError);
-      try {
-        browser.process()?.kill("SIGKILL");
-      } catch {
-        // Игнорируем если процесс уже закрыт
-      }
-    }
+    await closeBrowserSafely(browser);
   }
 }
