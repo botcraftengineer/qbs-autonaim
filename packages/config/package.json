@@ -28,7 +28,7 @@
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
-    "tsdown": "0.18.0",
+    "tsdown": "0.18.1",
     "typescript": "5.9.3"
   }
 }
