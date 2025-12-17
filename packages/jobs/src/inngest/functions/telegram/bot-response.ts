@@ -68,6 +68,22 @@ export async function generateAndSendBotResponse(params: {
     },
   });
 
+  // Проверяем SKIP - если AI решил не отвечать
+  const trimmedResponse = aiResponse.trim();
+  const shouldSkip =
+    trimmedResponse === "[SKIP]" ||
+    trimmedResponse.toLowerCase() === "skip" ||
+    trimmedResponse === "";
+
+  if (shouldSkip) {
+    console.log("⏭️ Пропускаем отправку сообщения (AI вернул SKIP)", {
+      conversationId,
+      stage,
+      messageText: messageText.substring(0, 50),
+    });
+    return null;
+  }
+
   const [botMsg] = await db
     .insert(telegramMessage)
     .values({
