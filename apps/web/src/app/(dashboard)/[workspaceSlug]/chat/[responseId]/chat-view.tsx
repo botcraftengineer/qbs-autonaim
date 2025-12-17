@@ -1,5 +1,6 @@
 "use client";
 
+import { useInngestSubscription } from "@inngest/realtime/hooks";
 import {
   Button,
   Sheet,
@@ -11,7 +12,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Info } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchTelegramMessagesToken } from "~/actions/realtime";
 import { ChatError } from "~/components/chat/chat-error";
 import { ChatHeader } from "~/components/chat/chat-header";
 import { ChatInput } from "~/components/chat/chat-input";
@@ -33,14 +35,13 @@ export function ChatView({ conversationId }: { conversationId: string }) {
   const [toastId, setToastId] = useState<string | number | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const conversationQueryOptions =
-    trpc.telegram.conversation.getById.queryOptions({
+  const { data: currentConversation } = useQuery({
+    ...trpc.telegram.conversation.getById.queryOptions({
       id: conversationId,
       workspaceId: workspaceId ?? "",
-    });
-  const { data: currentConversation } = useQuery({
-    ...conversationQueryOptions,
+    }),
     enabled: Boolean(workspaceId),
+    staleTime: 30000,
   });
 
   const metadata = currentConversation?.metadata
@@ -48,30 +49,22 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     : null;
   const candidateResponseId = metadata?.responseId;
 
-  const responseQueryOptions = trpc.vacancy.responses.get.queryOptions({
-    id: candidateResponseId ?? "",
-    workspaceId: workspaceId ?? "",
-  });
   const { data: responseData } = useQuery({
-    ...responseQueryOptions,
+    ...trpc.vacancy.responses.get.queryOptions({
+      id: candidateResponseId ?? "",
+      workspaceId: workspaceId ?? "",
+    }),
     enabled: Boolean(candidateResponseId) && Boolean(workspaceId),
+    staleTime: 60000,
   });
 
-  const companyQueryOptions = trpc.company.get.queryOptions({
-    workspaceId: workspaceId ?? "",
-  });
   const { data: companyData } = useQuery({
-    ...companyQueryOptions,
+    ...trpc.company.get.queryOptions({
+      workspaceId: workspaceId ?? "",
+    }),
     enabled: Boolean(workspaceId),
+    staleTime: 300000,
   });
-
-  // Debug: проверка данных telegramInterviewScoring
-  if (responseData?.telegramInterviewScoring) {
-    console.log(
-      "Telegram Interview Scoring:",
-      responseData.telegramInterviewScoring,
-    );
-  }
 
   const {
     data: messages = [],
@@ -83,8 +76,26 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       workspaceId: workspaceId ?? "",
     }),
     enabled: Boolean(conversationId) && Boolean(workspaceId),
-    refetchInterval: 3000,
   });
+
+  const subscription = useInngestSubscription({
+    refreshToken: () => fetchTelegramMessagesToken(conversationId),
+    enabled: Boolean(conversationId),
+  });
+
+  useEffect(() => {
+    if (subscription.latestData?.kind === "data") {
+      queryClient.invalidateQueries({
+        queryKey: [
+          ["telegram", "messages", "getByConversationId"],
+          { input: { conversationId }, type: "query" },
+        ],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [["telegram", "conversation", "getAll"]],
+      });
+    }
+  }, [subscription.latestData, conversationId, queryClient]);
 
   const sendMessageMutationOptions = trpc.telegram.send.send.mutationOptions({
     onSuccess: () => {

@@ -8,7 +8,7 @@ import {
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -50,27 +50,40 @@ export const getConversationRouter = {
             : eq(vacancy.workspaceId, input.workspaceId),
         );
 
-      const conversationsWithMessages = await Promise.all(
-        conversations.map(async (conv) => {
-          const messages = await ctx.db.query.telegramMessage.findMany({
-            where: eq(
-              telegramMessage.conversationId,
-              conv.telegram_conversations.id,
-            ),
-            orderBy: [desc(telegramMessage.createdAt)],
-            limit: 1,
-          });
+      if (conversations.length === 0) {
+        return [];
+      }
 
-          return {
-            ...conv.telegram_conversations,
-            messages,
-            response: {
-              ...conv.vacancy_responses,
-              vacancy: conv.vacancies,
-            },
-          };
-        }),
+      const conversationIds = conversations.map(
+        (c) => c.telegram_conversations.id,
       );
+
+      const allMessages = await ctx.db
+        .select()
+        .from(telegramMessage)
+        .where(inArray(telegramMessage.conversationId, conversationIds))
+        .orderBy(desc(telegramMessage.createdAt));
+
+      const messagesByConversation = new Map<string, (typeof allMessages)[0]>();
+      for (const msg of allMessages) {
+        if (!messagesByConversation.has(msg.conversationId)) {
+          messagesByConversation.set(msg.conversationId, msg);
+        }
+      }
+
+      const conversationsWithMessages = conversations.map((conv) => {
+        const lastMessage = messagesByConversation.get(
+          conv.telegram_conversations.id,
+        );
+        return {
+          ...conv.telegram_conversations,
+          messages: lastMessage ? [lastMessage] : [],
+          response: {
+            ...conv.vacancy_responses,
+            vacancy: conv.vacancies,
+          },
+        };
+      });
 
       conversationsWithMessages.sort((a, b) => {
         const aLastMessage = a.messages[0];

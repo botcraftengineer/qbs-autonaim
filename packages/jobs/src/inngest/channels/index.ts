@@ -8,4 +8,5 @@ export {
   refreshVacancyResponsesChannel,
   screenAllResponsesChannel,
   screenNewResponsesChannel,
+  telegramMessagesChannel,
 } from "./client";

@@ -1,7 +1,7 @@
 import { ScrollArea } from "@qbs-autonaim/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { ChatMessage } from "./chat-message";
 
 interface Message {
@@ -44,17 +44,20 @@ export function ChatMessages({
     }
   }, [messages.length]);
 
-  // Группируем сообщения по датам
-  const groupedMessages = messages.reduce(
-    (groups, message) => {
-      const date = format(message.createdAt, "d MMMM yyyy", { locale: ru });
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(message);
-      return groups;
-    },
-    {} as Record<string, Message[]>,
+  const groupedMessages = useMemo(
+    () =>
+      messages.reduce(
+        (groups, message) => {
+          const date = format(message.createdAt, "d MMMM yyyy", { locale: ru });
+          if (!groups[date]) {
+            groups[date] = [];
+          }
+          groups[date].push(message);
+          return groups;
+        },
+        {} as Record<string, Message[]>,
+      ),
+    [messages],
   );
 
   return (
