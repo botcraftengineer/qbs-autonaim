@@ -23,7 +23,7 @@
   },
   "license": "MIT",
   "scripts": {
-    "build": "tsdown",
+    "build": "tsc",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "bun with-env bun run --watch src/inngest/server.ts",
     "inngest": "bun run inngest-cli@latest dev -u http://localhost:8000/api/inngest",
