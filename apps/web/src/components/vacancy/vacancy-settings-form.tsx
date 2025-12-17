@@ -304,8 +304,9 @@ export function VacancySettingsForm({
                     />
                   </FormControl>
                   <FormDescription>
-                    Организационные вопросы, которые бот будет задавать после
-                    основного интервью. Каждый вопрос с новой строки.
+                    Организационные вопросы, которые бот будет задавать в начале
+                    интервью (график работы, зарплата, сроки начала и т.д.).
+                    Каждый вопрос с новой строки.
                   </FormDescription>
                   <FormMessage />
                   <div className="text-muted-foreground text-xs">

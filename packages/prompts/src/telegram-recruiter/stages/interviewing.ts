@@ -92,6 +92,7 @@ export function buildInterviewingPrompt(
     conversationHistory = [],
     customBotInstructions,
     customInterviewQuestions,
+    customOrganizationalQuestions,
     maxVoiceMessages = DEFAULT_MAX_VOICE_MESSAGES,
     screeningScore,
     screeningAnalysis,
@@ -109,6 +110,12 @@ export function buildInterviewingPrompt(
   const hasEnoughVoices = voiceMessagesCount >= maxVoiceMessages;
   const hasFirstVoice = voiceMessagesCount >= 1;
 
+  // Организационные вопросы - кастомные или по умолчанию
+  const defaultOrgQuestions = `график работы, зарплата, сроки начала, релокация`;
+  const organizationalQuestions = customOrganizationalQuestions
+    ? sanitizeUserInput(customOrganizationalQuestions)
+    : defaultOrgQuestions;
+
   let voiceTaskText = "";
   if (!hasFirstVoice) {
     // Еще не было голосовых - просим первое (организационные вопросы)
@@ -117,7 +124,7 @@ export function buildInterviewingPrompt(
 Фокус: ОРГАНИЗАЦИОННЫЕ МОМЕНТЫ
 
 - Попроси записать голосовое с организационными вопросами
-- Выбери и задай 2-4 релевантных вопроса: график работы, зарплата, сроки начала, релокация
+- Выбери и задай 2-4 релевантных вопроса из списка: ${organizationalQuestions}
 - Объясни, что так быстрее познакомиться
 - Если кандидат не хочет записывать голосовое - принимай текстовые ответы`;
   } else if (hasFirstVoice && !hasEnoughVoices) {
