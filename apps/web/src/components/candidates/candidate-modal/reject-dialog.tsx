@@ -2,7 +2,6 @@
 
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -55,7 +54,6 @@ export function RejectDialog({
     rejectMutation.mutate({
       candidateId: candidate.id,
       workspaceId,
-      reason: reason.trim() || undefined,
     });
   };
 
