@@ -133,6 +133,10 @@ export async function updateResponseDetails(
   response: SaveResponseData,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
+    logger.info(
+      `Updating response details for ${response.candidateName}, photoFileId: ${response.photoFileId}`,
+    );
+
     await db
       .update(vacancyResponse)
       .set({
@@ -145,7 +149,9 @@ export async function updateResponseDetails(
       })
       .where(eq(vacancyResponse.resumeId, response.resumeId));
 
-    logger.info(`Detailed info updated: ${response.candidateName}`);
+    logger.info(
+      `Detailed info updated: ${response.candidateName}, photoFileId saved: ${response.photoFileId}`,
+    );
   }, `Failed to update details for ${response.candidateName}`);
 }
 
@@ -207,6 +213,10 @@ export async function uploadCandidatePhoto(
   mimeType: string,
 ): Promise<Result<string | null>> {
   return tryCatch(async () => {
+    logger.info(
+      `Starting photo upload for resume ${resumeId}, size: ${photoBuffer.length} bytes, type: ${mimeType}`,
+    );
+
     const ALLOWED_MIME_TYPES: Record<string, string> = {
       "image/jpeg": "jpg",
       "image/png": "png",
@@ -232,6 +242,8 @@ export async function uploadCandidatePhoto(
       throw new Error("Invalid file type");
     }
 
+    logger.info(`Photo validation passed, uploading to S3...`);
+
     // Sanitize resumeId (allow only alphanumerics, hyphen, underscore)
     const sanitizedResumeId = resumeId.replace(/[^a-zA-Z0-9_-]/g, "");
     if (!sanitizedResumeId) {
@@ -240,13 +252,17 @@ export async function uploadCandidatePhoto(
     }
 
     const fileName = `photo_${sanitizedResumeId}.${extension}`;
+
+    logger.info(`Uploading file to S3: ${fileName}`);
     const key = await uploadFile(
       photoBuffer,
       fileName,
       normalizedMimeType,
       "candidate-photos",
     );
+    logger.info(`File uploaded to S3 with key: ${key}`);
 
+    logger.info(`Saving file record to database...`);
     const [fileRecord] = await db
       .insert(file)
       .values({
@@ -258,7 +274,9 @@ export async function uploadCandidatePhoto(
       })
       .returning();
 
-    logger.info(`Candidate photo uploaded to S3: ${key}`);
+    logger.info(
+      `Candidate photo uploaded to S3: ${key}, file ID: ${fileRecord?.id}`,
+    );
     return fileRecord?.id ?? null;
   }, "Failed to upload photo");
 }

@@ -17,7 +17,6 @@ import { useTRPC } from "~/trpc/react";
 interface ChatSectionProps {
   candidateId: string;
   candidateName: string;
-  candidateAvatar?: string | null;
   workspaceId: string;
 }
 

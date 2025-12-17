@@ -61,6 +61,19 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
         await saveCookies("hh", cookies, workspaceId);
         // Закрываем браузер и ждём завершения процесса
         try {
+          const pages = await browser.pages();
+          // Закрываем каждую страницу по отдельности, игнорируя ошибки
+          await Promise.all(
+            pages.map(async (page) => {
+              try {
+                if (!page.isClosed()) {
+                  await page.close();
+                }
+              } catch {
+                // Игнорируем ошибки закрытия отдельных страниц
+              }
+            }),
+          );
           await browser.close();
         } catch {
           // Игнорируем ошибки при закрытии
@@ -79,6 +92,19 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
       } catch (error) {
         if (browser) {
           try {
+            const pages = await browser.pages();
+            // Закрываем каждую страницу по отдельности, игнорируя ошибки
+            await Promise.all(
+              pages.map(async (page) => {
+                try {
+                  if (!page.isClosed()) {
+                    await page.close();
+                  }
+                } catch {
+                  // Игнорируем ошибки закрытия отдельных страниц
+                }
+              }),
+            );
             await browser.close();
           } catch {
             // Игнорируем ошибки при закрытии

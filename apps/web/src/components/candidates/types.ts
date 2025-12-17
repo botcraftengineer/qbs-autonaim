@@ -10,7 +10,7 @@ export interface FunnelCandidate {
   id: string;
   name: string;
   position: string;
-  avatar: string | null;
+  avatarFileId: string | null;
   initials: string;
   experience: string;
   location: string;

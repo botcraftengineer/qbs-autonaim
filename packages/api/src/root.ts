@@ -1,5 +1,6 @@
 import { candidatesRouter } from "./routers/candidates";
 import { companyRouter } from "./routers/company";
+import { filesRouter } from "./routers/files";
 import { funnelRouter } from "./routers/funnel";
 import { integrationRouter } from "./routers/integration";
 import { telegramRouter } from "./routers/telegram";
@@ -17,6 +18,7 @@ export const appRouter = createTRPCRouter({
   workspace: workspaceRouter,
   funnel: funnelRouter,
   candidates: candidatesRouter,
+  files: filesRouter,
 });
 
 // export type definition of API

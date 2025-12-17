@@ -60,6 +60,28 @@ export async function refreshVacancyResponses(
     console.error("❌ Error refreshing responses:", error);
     throw error;
   } finally {
-    await browser.close();
+    try {
+      const pages = await browser.pages();
+      // Закрываем каждую страницу по отдельности, игнорируя ошибки
+      await Promise.all(
+        pages.map(async (page) => {
+          try {
+            if (!page.isClosed()) {
+              await page.close();
+            }
+          } catch {
+            // Игнорируем ошибки закрытия отдельных страниц
+          }
+        }),
+      );
+      await browser.close();
+    } catch (closeError) {
+      console.warn("⚠️ Ошибка при закрытии браузера:", closeError);
+      try {
+        browser.process()?.kill("SIGKILL");
+      } catch {
+        // Игнорируем если процесс уже закрыт
+      }
+    }
   }
 }

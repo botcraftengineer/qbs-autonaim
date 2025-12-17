@@ -23,6 +23,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Activity, MessageSquare, StickyNote, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
 import type { FunnelCandidate, FunnelStage } from "../types";
@@ -45,6 +46,7 @@ export function CandidateModal({
   onOpenChange,
   workspaceId,
 }: CandidateModalProps) {
+  const avatarUrl = useAvatarUrl(candidate?.avatarFileId);
   const [selectedStatus, setSelectedStatus] = useState(
     candidate?.stage ?? "REVIEW",
   );
@@ -93,7 +95,7 @@ export function CandidateModal({
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <Avatar className="h-10 w-10 border shrink-0">
                 <AvatarImage
-                  src={candidate.avatar ?? undefined}
+                  src={avatarUrl ?? undefined}
                   alt={candidate.name}
                 />
                 <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
@@ -189,7 +191,6 @@ export function CandidateModal({
                   <ChatSection
                     candidateId={candidate.id}
                     candidateName={candidate.name}
-                    candidateAvatar={candidate.avatar}
                     workspaceId={workspaceId}
                   />
                 </TabsContent>

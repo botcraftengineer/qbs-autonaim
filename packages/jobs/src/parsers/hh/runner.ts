@@ -71,7 +71,18 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
     // Properly close browser to avoid resource locks on Windows
     try {
       const pages = await browser.pages();
-      await Promise.all(pages.map((page) => page.close()));
+      // Закрываем каждую страницу по отдельности, игнорируя ошибки
+      await Promise.all(
+        pages.map(async (page) => {
+          try {
+            if (!page.isClosed()) {
+              await page.close();
+            }
+          } catch {
+            // Игнорируем ошибки закрытия отдельных страниц
+          }
+        }),
+      );
       await browser.close();
       // Give Windows time to release file handles
       await new Promise((resolve) => setTimeout(resolve, 1000));

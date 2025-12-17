@@ -22,8 +22,103 @@ import {
   Users,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import type { FunnelCandidate, FunnelStage } from "./types";
 import { STAGE_COLORS, STAGE_LABELS } from "./types";
+
+function CandidateRow({
+  candidate,
+  onRowClick,
+}: {
+  candidate: FunnelCandidate;
+  onRowClick: (candidate: FunnelCandidate) => void;
+}) {
+  const avatarUrl = useAvatarUrl(candidate.avatarFileId);
+
+  const getStageText = (stage: string) =>
+    STAGE_LABELS[stage as FunnelStage] ?? stage;
+  const getStageColor = (stage: string) =>
+    STAGE_COLORS[stage as FunnelStage] ?? "";
+
+  return (
+    <TableRow
+      className="cursor-pointer hover:bg-muted/50 transition-colors"
+      onClick={() => onRowClick(candidate)}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onRowClick(candidate);
+        }
+      }}
+      aria-label={`Открыть профиль ${candidate.name}`}
+    >
+      <TableCell>
+        <div className="flex items-center gap-3">
+          <Avatar className="h-10 w-10 border">
+            <AvatarImage src={avatarUrl ?? undefined} alt={candidate.name} />
+            <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
+              {candidate.initials}
+            </AvatarFallback>
+          </Avatar>
+          <p className="font-medium truncate">{candidate.name}</p>
+        </div>
+      </TableCell>
+      <TableCell>
+        <span className="text-sm">{candidate.vacancyName}</span>
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5">
+          <Star
+            className={cn(
+              "h-4 w-4",
+              candidate.matchScore >= 70
+                ? "fill-amber-400 text-amber-400"
+                : candidate.matchScore >= 40
+                  ? "fill-amber-300 text-amber-300"
+                  : "text-muted-foreground",
+            )}
+            aria-hidden="true"
+          />
+          <span
+            className={cn(
+              "font-semibold tabular-nums",
+              candidate.matchScore >= 70
+                ? "text-emerald-600 dark:text-emerald-400"
+                : candidate.matchScore >= 40
+                  ? "text-amber-600 dark:text-amber-400"
+                  : "text-muted-foreground",
+            )}
+          >
+            {candidate.matchScore}%
+          </span>
+        </div>
+      </TableCell>
+      <TableCell className="font-medium tabular-nums text-sm">
+        {candidate.salaryExpectation}
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
+          <Calendar className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+          <span className="tabular-nums">
+            {new Date(candidate.createdAt).toLocaleDateString("ru-RU", {
+              day: "numeric",
+              month: "short",
+            })}
+          </span>
+        </div>
+      </TableCell>
+      <TableCell>
+        <Badge
+          variant="outline"
+          className={cn("text-xs", getStageColor(candidate.stage))}
+        >
+          {getStageText(candidate.stage)}
+        </Badge>
+      </TableCell>
+    </TableRow>
+  );
+}
 
 type SortField =
   | "name"
@@ -47,11 +142,6 @@ export function CandidatesTable({
 }: CandidatesTableProps) {
   const [sortField, setSortField] = useState<SortField>("createdAt");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
-
-  const getStageText = (stage: string) =>
-    STAGE_LABELS[stage as FunnelStage] ?? stage;
-  const getStageColor = (stage: string) =>
-    STAGE_COLORS[stage as FunnelStage] ?? "";
 
   const sortedCandidates = useMemo(() => {
     return [...candidates].sort((a, b) => {
@@ -220,89 +310,11 @@ export function CandidatesTable({
         </TableHeader>
         <TableBody>
           {sortedCandidates.map((candidate) => (
-            <TableRow
+            <CandidateRow
               key={candidate.id}
-              className="cursor-pointer hover:bg-muted/50 transition-colors"
-              onClick={() => onRowClick(candidate)}
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onRowClick(candidate);
-                }
-              }}
-              aria-label={`Открыть профиль ${candidate.name}`}
-            >
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10 border">
-                    <AvatarImage
-                      src={candidate.avatar ?? undefined}
-                      alt={candidate.name}
-                    />
-                    <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-                      {candidate.initials}
-                    </AvatarFallback>
-                  </Avatar>
-                  <p className="font-medium truncate">{candidate.name}</p>
-                </div>
-              </TableCell>
-              <TableCell>
-                <span className="text-sm">{candidate.vacancyName}</span>
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1.5">
-                  <Star
-                    className={cn(
-                      "h-4 w-4",
-                      candidate.matchScore >= 70
-                        ? "fill-amber-400 text-amber-400"
-                        : candidate.matchScore >= 40
-                          ? "fill-amber-300 text-amber-300"
-                          : "text-muted-foreground",
-                    )}
-                    aria-hidden="true"
-                  />
-                  <span
-                    className={cn(
-                      "font-semibold tabular-nums",
-                      candidate.matchScore >= 70
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : candidate.matchScore >= 40
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-muted-foreground",
-                    )}
-                  >
-                    {candidate.matchScore}%
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell className="font-medium tabular-nums text-sm">
-                {candidate.salaryExpectation}
-              </TableCell>
-              <TableCell>
-                <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                  <Calendar
-                    className="h-3.5 w-3.5 shrink-0"
-                    aria-hidden="true"
-                  />
-                  <span className="tabular-nums">
-                    {new Date(candidate.createdAt).toLocaleDateString("ru-RU", {
-                      day: "numeric",
-                      month: "short",
-                    })}
-                  </span>
-                </div>
-              </TableCell>
-              <TableCell>
-                <Badge
-                  variant="outline"
-                  className={cn("text-xs", getStageColor(candidate.stage))}
-                >
-                  {getStageText(candidate.stage)}
-                </Badge>
-              </TableCell>
-            </TableRow>
+              candidate={candidate}
+              onRowClick={onRowClick}
+            />
           ))}
         </TableBody>
       </Table>
