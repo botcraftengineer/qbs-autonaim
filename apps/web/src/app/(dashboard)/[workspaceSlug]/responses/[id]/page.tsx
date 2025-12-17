@@ -107,9 +107,45 @@ export default function ResponseDetailPage({
 
               <div className="space-y-6 md:space-y-8">
                 <ResponseHeader response={response} />
-                <ScreeningCard screening={response.screening} />
+                <ScreeningCard
+                  screening={
+                    response.screening
+                      ? {
+                          score: response.screening.score,
+                          detailedScore: response.screening.detailedScore,
+                          analysis: response.screening.analysis ?? undefined,
+                        }
+                      : null
+                  }
+                />
                 <InterviewCard
-                  conversation={response.conversation}
+                  conversation={
+                    response.conversation
+                      ? {
+                          interviewScoring: response.conversation
+                            .interviewScoring
+                            ? {
+                                score:
+                                  response.conversation.interviewScoring.score,
+                                detailedScore:
+                                  response.conversation.interviewScoring
+                                    .detailedScore,
+                                analysis:
+                                  response.conversation.interviewScoring
+                                    .analysis ?? undefined,
+                              }
+                            : undefined,
+                          messages: response.conversation.messages?.map(
+                            (msg) => ({
+                              ...msg,
+                              voiceDuration: msg.voiceDuration ?? undefined,
+                              voiceTranscription:
+                                msg.voiceTranscription ?? undefined,
+                            }),
+                          ),
+                        }
+                      : null
+                  }
                   candidateName={response.candidateName}
                   workspaceName={response.vacancy?.workspace?.name}
                 />

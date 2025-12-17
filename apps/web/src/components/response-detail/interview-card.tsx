@@ -17,7 +17,7 @@ import { VoicePlayer } from "./voice-player";
 
 interface Message {
   id: string;
-  sender: "CANDIDATE" | "BOT";
+  sender: "CANDIDATE" | "BOT" | "ADMIN";
   contentType: "TEXT" | "VOICE";
   content: string;
   voiceUrl?: string;

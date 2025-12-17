@@ -54,7 +54,6 @@ export function RejectDialog({
     rejectMutation.mutate({
       candidateId: candidate.id,
       workspaceId,
-      reason: reason.trim() || undefined,
     });
   };
 
