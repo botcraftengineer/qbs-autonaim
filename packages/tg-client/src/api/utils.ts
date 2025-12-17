@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { ZodSchema } from "zod";
+import type { ZodType } from "zod";
 
 export function normalizePhone(phone: string): string {
   return phone.trim().replace(/\s+/g, "");
@@ -13,7 +13,7 @@ export function cleanUsername(username: string): string {
   return username.startsWith("@") ? username.slice(1) : username;
 }
 
-export function validateRequest<T>(c: Context, schema: ZodSchema<T>) {
+export function validateRequest<T>(c: Context, schema: ZodType<T>) {
   return async () => {
     const body = await c.req.json();
     const result = schema.safeParse(body);
