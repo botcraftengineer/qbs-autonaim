@@ -72,15 +72,7 @@ export async function handlePinIdentification(params: {
         interviewData,
       });
 
-      await inngest.send({
-        name: "telegram/interview.analyze",
-        data: {
-          conversationId: identification.conversationId,
-          transcription: trimmedText,
-        },
-      });
-
-      return { identified: true };
+       return { identified: true };
     }
 
     return { identified: false, invalidPin: true };
