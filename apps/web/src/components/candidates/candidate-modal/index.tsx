@@ -14,7 +14,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Activity, MessageSquare, StickyNote, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ import {
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
-import type { FunnelCandidate } from "../types";
+import type { FunnelCandidate, FunnelCandidateDetail } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
 import { CandidateInfo } from "./candidate-info";
 import { ChatSection } from "./chat-section";
@@ -46,20 +46,37 @@ export function CandidateModal({
   onOpenChange,
   workspaceId,
 }: CandidateModalProps) {
-  const avatarUrl = useAvatarUrl(candidate?.avatarFileId);
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  const { data: candidateDetail, isLoading: isLoadingDetail, error: candidateDetailError } = useQuery({
+    ...trpc.candidates.getById.queryOptions({
+      workspaceId,
+      candidateId: candidate?.id ?? "",
+    }),
+    enabled: open && !!candidate?.id,
+  });
+
+  useEffect(() => {
+    if (candidateDetailError) {
+      console.error("Ошибка загрузки данных кандидата:", candidateDetailError);
+      toast.error("Не удалось загрузить данные кандидата");
+    }
+  }, [candidateDetailError]);
+
+  const fullCandidate: FunnelCandidateDetail | FunnelCandidate | null = candidateDetail ?? candidate;
+  const avatarUrl = useAvatarUrl(fullCandidate?.avatarFileId);
   const [selectedStatus, setSelectedStatus] = useState(
-    candidate?.stage ?? "REVIEW",
+    fullCandidate?.stage ?? "REVIEW",
   );
   const [activeTab, setActiveTab] = useState("chat");
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
 
   useEffect(() => {
-    setSelectedStatus(candidate?.stage ?? "REVIEW");
-  }, [candidate?.stage]);
+    setSelectedStatus(fullCandidate?.stage ?? "REVIEW");
+  }, [fullCandidate?.stage]);
 
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const [isSendingGreeting, setIsSendingGreeting] = useState(false);
   const [isRefreshingResume, setIsRefreshingResume] = useState(false);
 
@@ -69,6 +86,11 @@ export function CandidateModal({
       queryClient.invalidateQueries({
         queryKey: trpc.candidates.list.queryKey(),
       });
+      if (fullCandidate) {
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+        });
+      }
       toast.success("Кандидат приглашён");
     },
     onError: () => {
@@ -77,7 +99,7 @@ export function CandidateModal({
   });
 
   const handleSendGreeting = async () => {
-    if (!candidate?.telegram && !candidate?.phone) {
+    if (!fullCandidate?.telegram && !fullCandidate?.phone) {
       toast.error(
         "У кандидата не указаны ни Telegram username, ни номер телефона",
       );
@@ -87,19 +109,22 @@ export function CandidateModal({
     setIsSendingGreeting(true);
     try {
       const result = await triggerSendWelcome(
-        candidate.id,
-        candidate.telegram,
-        candidate.phone,
+        fullCandidate.id,
+        fullCandidate.telegram,
+        fullCandidate.phone,
       );
       if (!result.success) {
         toast.error("Не удалось отправить приветствие");
         return;
       }
       toast.success(
-        `Приветствие отправлено ${candidate.name ? candidate.name : candidate.telegram ? `@${candidate.telegram}` : candidate.phone}`,
+        `Приветствие отправлено ${fullCandidate.name ? fullCandidate.name : fullCandidate.telegram ? `@${fullCandidate.telegram}` : fullCandidate.phone}`,
       );
       queryClient.invalidateQueries({
         queryKey: trpc.candidates.list.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
       });
     } catch (error) {
       console.error("Ошибка отправки приветствия:", error);
@@ -110,11 +135,11 @@ export function CandidateModal({
   };
 
   const handleRefreshResume = async () => {
-    if (!candidate) return;
+    if (!fullCandidate) return;
 
     setIsRefreshingResume(true);
     try {
-      const result = await triggerRefreshSingleResume(candidate.id);
+      const result = await triggerRefreshSingleResume(fullCandidate.id);
       if (!result.success) {
         toast.error("Не удалось обновить резюме");
         return;
@@ -122,6 +147,9 @@ export function CandidateModal({
       toast.success("Обновление резюме запущено");
       queryClient.invalidateQueries({
         queryKey: trpc.candidates.list.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
       });
     } catch (error) {
       console.error("Ошибка обновления резюме:", error);
@@ -131,7 +159,7 @@ export function CandidateModal({
     }
   };
 
-  if (!candidate) return null;
+  if (!candidate || !fullCandidate) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,24 +173,24 @@ export function CandidateModal({
               <Avatar className="h-10 w-10 border shrink-0">
                 <AvatarImage
                   src={avatarUrl ?? undefined}
-                  alt={candidate.name}
+                  alt={fullCandidate.name}
                 />
                 <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
-                  {candidate.initials}
+                  {fullCandidate.initials}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
                 <DialogTitle className="text-lg font-semibold truncate">
-                  {candidate.name}
+                  {fullCandidate.name}
                 </DialogTitle>
                 <p className="text-sm text-muted-foreground truncate">
-                  {candidate.position}
+                  {fullCandidate.position}
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <MatchScoreCircle score={candidate.matchScore} size="md" />
+              <MatchScoreCircle score={fullCandidate.matchScore} size="md" />
               <Button
                 variant="ghost"
                 size="icon"
@@ -189,48 +217,64 @@ export function CandidateModal({
               </span>
             </div>
 
-            <CandidateInfo
-              candidate={candidate}
-              isLoading={{
-                sendGreeting: isSendingGreeting,
-                invite: inviteCandidateMutation.isPending,
-                refreshResume: isRefreshingResume,
-              }}
-              onAction={(action) => {
-                switch (action) {
-                  case "send-greeting":
-                    void handleSendGreeting();
-                    break;
-                  case "send-offer":
-                    setShowOfferDialog(true);
-                    break;
-                  case "invite":
-                    inviteCandidateMutation.mutate({
-                      candidateId: candidate.id,
-                      workspaceId,
-                    });
-                    break;
-                  case "rate":
-                    toast.info("Функция оценки в разработке");
-                    break;
-                  case "view-resume":
-                    if (candidate.resumeUrl) {
-                      window.open(candidate.resumeUrl, "_blank");
-                    } else {
-                      toast.error("Резюме недоступно");
-                    }
-                    break;
-                  case "refresh-resume":
-                    void handleRefreshResume();
-                    break;
-                  case "reject":
-                    setShowRejectDialog(true);
-                    break;
-                  default:
-                    console.log("Unknown action:", action);
-                }
-              }}
-            />
+            {isLoadingDetail ? (
+              <div className="space-y-4">
+                <div className="h-32 bg-muted animate-pulse rounded-lg" />
+                <div className="h-24 bg-muted animate-pulse rounded-lg" />
+              </div>
+            ) : candidateDetailError ? (
+              <div className="space-y-4 text-center py-8">
+                <p className="text-muted-foreground">Не удалось загрузить полные данные кандидата</p>
+              </div>
+            ) : candidateDetail ? (
+              <CandidateInfo
+                candidate={candidateDetail}
+                isLoading={{
+                  sendGreeting: isSendingGreeting,
+                  invite: inviteCandidateMutation.isPending,
+                  refreshResume: isRefreshingResume,
+                }}
+                onAction={(action) => {
+                  switch (action) {
+                    case "send-greeting":
+                      void handleSendGreeting();
+                      break;
+                    case "send-offer":
+                      setShowOfferDialog(true);
+                      break;
+                    case "invite":
+                      inviteCandidateMutation.mutate({
+                        candidateId: fullCandidate.id,
+                        workspaceId,
+                      });
+                      break;
+                    case "rate":
+                      toast.info("Функция оценки в разработке");
+                      break;
+                    case "view-resume":
+                      if (candidateDetail.resumeUrl) {
+                        window.open(candidateDetail.resumeUrl, "_blank");
+                      } else {
+                        toast.error("Резюме недоступно");
+                      }
+                      break;
+                    case "refresh-resume":
+                      void handleRefreshResume();
+                      break;
+                    case "reject":
+                      setShowRejectDialog(true);
+                      break;
+                    default:
+                      console.log("Unknown action:", action);
+                  }
+                }}
+              />
+            ) : (
+              <div className="space-y-4">
+                <div className="h-32 bg-muted animate-pulse rounded-lg" />
+                <div className="h-24 bg-muted animate-pulse rounded-lg" />
+              </div>
+            )}
 
             <div className="border-t pt-6">
               <Tabs
@@ -264,22 +308,22 @@ export function CandidateModal({
 
                 <TabsContent value="chat" className="m-0 min-h-[400px]">
                   <ChatSection
-                    candidateId={candidate.id}
-                    candidateName={candidate.name}
+                    candidateId={fullCandidate.id}
+                    candidateName={fullCandidate.name}
                     workspaceId={workspaceId}
                   />
                 </TabsContent>
 
                 <TabsContent value="comments" className="m-0 min-h-[400px]">
                   <CommentsSection
-                    candidateId={candidate.id}
+                    candidateId={fullCandidate.id}
                     workspaceId={workspaceId}
                   />
                 </TabsContent>
 
                 <TabsContent value="activity" className="m-0 min-h-[400px]">
                   <ActivityTimeline
-                    candidateId={candidate.id}
+                    candidateId={fullCandidate.id}
                     workspaceId={workspaceId}
                   />
                 </TabsContent>
@@ -292,14 +336,14 @@ export function CandidateModal({
       <SendOfferDialog
         open={showOfferDialog}
         onOpenChange={setShowOfferDialog}
-        candidate={candidate}
+        candidate={fullCandidate}
         workspaceId={workspaceId}
       />
 
       <RejectDialog
         open={showRejectDialog}
         onOpenChange={setShowRejectDialog}
-        candidate={candidate}
+        candidate={fullCandidate}
         workspaceId={workspaceId}
       />
     </Dialog>

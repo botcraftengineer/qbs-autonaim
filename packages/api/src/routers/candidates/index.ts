@@ -1,5 +1,6 @@
 import { createTRPCRouter } from "../../trpc";
 import { addComment } from "./add-comment";
+import { getById } from "./get-by-id";
 import { inviteCandidate } from "./invite";
 import { list } from "./list";
 import { listActivities } from "./list-activities";
@@ -14,6 +15,7 @@ import { updateStage } from "./update-stage";
 
 export const candidatesRouter = createTRPCRouter({
   list,
+  getById,
   updateStage,
   updateSalaryExpectations,
   listActivities,
