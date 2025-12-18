@@ -9,11 +9,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Tabs,
   TabsContent,
   TabsList,
@@ -30,7 +25,7 @@ import {
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
-import type { FunnelCandidate, FunnelStage } from "../types";
+import type { FunnelCandidate } from "../types";
 import { ActivityTimeline } from "./activity-timeline";
 import { CandidateInfo } from "./candidate-info";
 import { ChatSection } from "./chat-section";
@@ -67,19 +62,6 @@ export function CandidateModal({
   const queryClient = useQueryClient();
   const [isSendingGreeting, setIsSendingGreeting] = useState(false);
   const [isRefreshingResume, setIsRefreshingResume] = useState(false);
-
-  const updateStage = useMutation({
-    ...trpc.candidates.updateStage.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.list.queryKey(),
-      });
-      toast.success("Статус обновлён");
-    },
-    onError: () => {
-      toast.error("Не удалось обновить статус");
-    },
-  });
 
   const inviteCandidateMutation = useMutation({
     ...trpc.candidates.inviteCandidate.mutationOptions(),
@@ -151,15 +133,6 @@ export function CandidateModal({
 
   if (!candidate) return null;
 
-  const handleStatusChange = (stage: string) => {
-    setSelectedStatus(stage);
-    updateStage.mutate({
-      candidateId: candidate.id,
-      workspaceId,
-      stage: stage as FunnelStage,
-    });
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -206,19 +179,14 @@ export function CandidateModal({
           <div className="p-6 space-y-6">
             <div className="flex items-center gap-3">
               <span className="text-sm font-medium">Статус:</span>
-              <Select value={selectedStatus} onValueChange={handleStatusChange}>
-                <SelectTrigger className="w-[180px] h-8">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="NEW">Новые</SelectItem>
-                  <SelectItem value="REVIEW">На рассмотрении</SelectItem>
-                  <SelectItem value="INTERVIEW">Собеседование</SelectItem>
-                  <SelectItem value="OFFER">Оффер</SelectItem>
-                  <SelectItem value="HIRED">Наняты</SelectItem>
-                  <SelectItem value="REJECTED">Отклонен</SelectItem>
-                </SelectContent>
-              </Select>
+              <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-muted">
+                {selectedStatus === "NEW" && "Новые"}
+                {selectedStatus === "REVIEW" && "На рассмотрении"}
+                {selectedStatus === "INTERVIEW" && "Собеседование"}
+                {selectedStatus === "OFFER" && "Оффер"}
+                {selectedStatus === "HIRED" && "Наняты"}
+                {selectedStatus === "REJECTED" && "Отклонен"}
+              </span>
             </div>
 
             <CandidateInfo
