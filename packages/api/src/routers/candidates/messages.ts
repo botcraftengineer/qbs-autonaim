@@ -4,6 +4,7 @@ import {
   conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -43,19 +44,45 @@ export const listMessages = protectedProcedure
       where: eq(conversationMessage.conversationId, conv.id),
       orderBy: desc(conversationMessage.createdAt),
       limit: 100,
+      with: {
+        file: true,
+      },
     });
 
-    return messages.reverse().map((msg) => ({
-      id: msg.id,
-      content: msg.content,
-      sender: msg.sender === "CANDIDATE" ? "candidate" : "recruiter",
-      senderName:
-        msg.sender === "CANDIDATE"
-          ? conv.candidateName || "Кандидат"
-          : "Рекрутер",
-      senderAvatar: null,
-      timestamp: msg.createdAt,
-    }));
+    return Promise.all(
+      messages.reverse().map(async (msg) => {
+        const isVoice = msg.contentType === "VOICE";
+        let voiceUrl: string | undefined;
+
+        if (isVoice && msg.file?.key) {
+          try {
+            voiceUrl = await getDownloadUrl(msg.file.key);
+          } catch (error) {
+            console.error("Failed to generate presigned URL:", error);
+          }
+        }
+
+        return {
+          id: msg.id,
+          content: isVoice
+            ? msg.voiceTranscription || "Голосовое сообщение"
+            : msg.content,
+          sender: msg.sender === "CANDIDATE" ? "candidate" : "recruiter",
+          senderName:
+            msg.sender === "CANDIDATE"
+              ? conv.candidateName || "Кандидат"
+              : "Рекрутер",
+          senderAvatar: null,
+          timestamp: msg.createdAt,
+          type: isVoice ? ("voice" as const) : ("text" as const),
+          voiceUrl,
+          voiceTranscription: msg.voiceTranscription || undefined,
+          voiceDuration: msg.voiceDuration
+            ? Number.parseInt(msg.voiceDuration, 10)
+            : undefined,
+        };
+      }),
+    );
   });
 
 export const sendMessage = protectedProcedure

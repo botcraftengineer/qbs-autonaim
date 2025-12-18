@@ -60,6 +60,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
       });
       setMessageText("");
       textareaRef.current?.focus();
+      toast.success("Сообщение отправлено");
     },
     onError: () => {
       toast.error("Не удалось отправить сообщение");
