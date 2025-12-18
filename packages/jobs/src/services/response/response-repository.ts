@@ -1,7 +1,7 @@
 import { and, eq, isNull, or } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { file, vacancyResponse } from "@qbs-autonaim/db/schema";
-import { uploadFile } from "@qbs-autonaim/lib";
+import { logResponseEvent, uploadFile } from "@qbs-autonaim/lib";
 import type { SaveResponseData } from "../../parsers/types";
 import {
   createLogger,
@@ -97,7 +97,7 @@ export async function saveBasicResponse(
   respondedAt?: Date,
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
-    const result = await db
+    const [inserted] = await db
       .insert(vacancyResponse)
       .values({
         vacancyId,
@@ -112,11 +112,18 @@ export async function saveBasicResponse(
       })
       .onConflictDoNothing({
         target: [vacancyResponse.vacancyId, vacancyResponse.resumeId],
-      });
+      })
+      .returning({ id: vacancyResponse.id });
 
-    const isNew = (result.rowCount ?? 0) > 0;
+    const isNew = !!inserted;
 
     if (isNew) {
+      await logResponseEvent({
+        db,
+        responseId: inserted.id,
+        eventType: "CREATED",
+        newValue: { candidateName, vacancyId },
+      });
       logger.info(`Basic info saved: ${candidateName}`);
     } else {
       logger.info(`Skip: ${candidateName} (already in database)`);
@@ -137,6 +144,10 @@ export async function updateResponseDetails(
       `Updating response details for ${response.candidateName}, photoFileId: ${response.photoFileId}`,
     );
 
+    const current = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.resumeId, response.resumeId),
+    });
+
     await db
       .update(vacancyResponse)
       .set({
@@ -148,6 +159,47 @@ export async function updateResponseDetails(
         photoFileId: response.photoFileId,
       })
       .where(eq(vacancyResponse.resumeId, response.resumeId));
+
+    if (current) {
+      if (response.telegramUsername && !current.telegramUsername) {
+        await logResponseEvent({
+          db,
+          responseId: current.id,
+          eventType: "TELEGRAM_USERNAME_ADDED",
+          newValue: response.telegramUsername,
+        });
+      }
+      if (response.phone && !current.phone) {
+        await logResponseEvent({
+          db,
+          responseId: current.id,
+          eventType: "PHONE_ADDED",
+          newValue: response.phone,
+        });
+      }
+      if (response.photoFileId && !current.photoFileId) {
+        await logResponseEvent({
+          db,
+          responseId: current.id,
+          eventType: "PHOTO_ADDED",
+        });
+      }
+      if (response.resumePdfFileId && !current.resumePdfFileId) {
+        await logResponseEvent({
+          db,
+          responseId: current.id,
+          eventType: "RESUME_UPDATED",
+        });
+      }
+      if (response.contacts && !current.contacts) {
+        await logResponseEvent({
+          db,
+          responseId: current.id,
+          eventType: "CONTACT_INFO_UPDATED",
+          newValue: response.contacts,
+        });
+      }
+    }
 
     logger.info(
       `Detailed info updated: ${response.candidateName}, photoFileId saved: ${response.photoFileId}`,
@@ -163,10 +215,22 @@ export async function updateResponseStatus(
   status: ResponseStatus,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
+    const current = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, responseId),
+    });
+
     await db
       .update(vacancyResponse)
       .set({ status })
       .where(eq(vacancyResponse.id, responseId));
+
+    await logResponseEvent({
+      db,
+      responseId,
+      eventType: "STATUS_CHANGED",
+      oldValue: current?.status,
+      newValue: status,
+    });
 
     logger.info(`Status updated to ${status}`, { responseId });
   }, `Failed to update response status ${responseId}`);

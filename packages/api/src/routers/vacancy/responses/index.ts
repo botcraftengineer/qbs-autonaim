@@ -2,6 +2,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 
 import { getCount } from "./count";
 import { getById } from "./get";
+import { getHistory } from "./history";
 import { list } from "./list";
 import { listAll } from "./list-all";
 import { listRecent } from "./list-recent";
@@ -16,6 +17,7 @@ export const responsesRouter = {
   listTop,
   get: getById,
   count: getCount,
+  history: getHistory,
   sendWelcome,
   sendByUsername,
 } satisfies TRPCRouterRecord;

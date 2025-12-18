@@ -1,4 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
+import { RESPONSE_STATUS } from "@qbs-autonaim/db/schema";
 import { conversationMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
@@ -74,7 +75,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
     if (isIdentified && conv.response) {
       const responseStatus = conv.response.status;
       const isInterviewRelated =
-        responseStatus === "INTERVIEW_HH" || responseStatus === "COMPLETED";
+        responseStatus === RESPONSE_STATUS.INTERVIEW_HH || responseStatus === RESPONSE_STATUS.COMPLETED;
 
       if (!isInterviewRelated) {
         console.log("⏭️ Кандидат идентифицирован, но статус не связан с интервью, пропускаем", {

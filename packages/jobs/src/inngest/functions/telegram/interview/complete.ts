@@ -8,7 +8,7 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { getAIModel } from "@qbs-autonaim/lib/ai";
+import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
 import {
   InterviewCompletionAgent,
   SalaryExtractionAgent,
@@ -199,12 +199,24 @@ export const completeInterviewFunction = inngest.createFunction(
         const trimmedSalary = result.data.salaryExpectations.trim();
 
         if (trimmedSalary) {
+          const current = await db.query.vacancyResponse.findFirst({
+            where: eq(vacancyResponse.id, responseId),
+          });
+          
           await db
             .update(vacancyResponse)
             .set({
               salaryExpectations: trimmedSalary,
             })
             .where(eq(vacancyResponse.id, responseId));
+
+          await logResponseEvent({
+            db,
+            responseId,
+            eventType: "SALARY_UPDATED",
+            oldValue: current?.salaryExpectations,
+            newValue: trimmedSalary,
+          });
 
           console.log("✅ Зарплатные ожидания сохранены", {
             salaryExpectations: trimmedSalary,
