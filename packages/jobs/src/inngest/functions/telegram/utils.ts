@@ -1,6 +1,10 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { conversationMessage, vacancyResponse } from "@qbs-autonaim/db/schema";
+import {
+  companySettings,
+  conversationMessage,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import type { BotSettings } from "./types";
 
 export function extractPinCode(text: string): string | null {
@@ -78,4 +82,30 @@ export async function findConversationByChatId(chatId: string) {
       },
     },
   });
+}
+
+/**
+ * Создает или возвращает временный ID для неидентифицированного пользователя
+ * Используется для хранения сообщений до идентификации по пин-коду
+ *
+ * ВАЖНО: Возвращает chatId как временный ID, так как conversation
+ * требует обязательный responseId, который мы не можем создать без вакансии.
+ * Сообщения будут храниться с этим временным ID до идентификации.
+ */
+export async function createOrUpdateTempConversation(
+  chatId: string,
+  username?: string,
+  firstName?: string,
+): Promise<{ id: string } | null> {
+  try {
+    // Используем chatId как временный ID для неидентифицированных разговоров
+    // Это позволяет сохранять сообщения до идентификации пользователя
+    return { id: `temp_${chatId}` };
+  } catch (error) {
+    console.error("Ошибка создания временного ID:", {
+      chatId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return null;
+  }
 }
