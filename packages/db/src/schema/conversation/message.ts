@@ -24,6 +24,8 @@ export const messageContentTypeEnum = pgEnum("message_content_type", [
   "VOICE",
 ]);
 
+export const messageChannelEnum = pgEnum("message_channel", ["TELEGRAM", "HH"]);
+
 export const conversationMessage = pgTable("conversation_messages", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
   conversationId: uuid("conversation_id")
@@ -31,6 +33,7 @@ export const conversationMessage = pgTable("conversation_messages", {
     .references(() => conversation.id, { onDelete: "cascade" }),
   sender: messageSenderEnum("sender").notNull(),
   contentType: messageContentTypeEnum("content_type").default("TEXT").notNull(),
+  channel: messageChannelEnum("channel").default("TELEGRAM").notNull(),
   content: text("content").notNull(),
   fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
   voiceDuration: varchar("voice_duration", { length: 20 }),
@@ -43,6 +46,7 @@ export const CreateMessageSchema = createInsertSchema(conversationMessage, {
   conversationId: uuidv7Schema,
   sender: z.enum(["CANDIDATE", "BOT", "ADMIN"]),
   contentType: z.enum(["TEXT", "VOICE"]).default("TEXT"),
+  channel: z.enum(["TELEGRAM", "HH"]).default("TELEGRAM"),
   content: z.string(),
   fileId: uuidv7Schema.optional(),
   voiceDuration: z.string().max(20).optional(),

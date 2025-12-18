@@ -1,8 +1,8 @@
 import {
-  CreateTelegramMessageSchema,
+  CreateMessageSchema,
+  conversation,
   conversationMessage,
   eq,
-  telegramConversation,
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { inngest } from "@qbs-autonaim/jobs/client";
@@ -14,7 +14,7 @@ import { protectedProcedure } from "../../trpc";
 export const sendMessageRouter = {
   send: protectedProcedure
     .input(
-      CreateconversationMessageSchema.extend({
+      CreateMessageSchema.extend({
         sender: z.literal("ADMIN"),
       }),
     )
@@ -28,7 +28,7 @@ export const sendMessageRouter = {
           content: input.content,
           fileId: input.fileId,
           voiceDuration: input.voiceDuration,
-          conversationMessageId: input.conversationMessageId,
+          externalMessageId: input.externalMessageId,
         })
         .returning();
 
@@ -38,15 +38,15 @@ export const sendMessageRouter = {
 
       const conversationData = await ctx.db
         .select({
-          id: telegramConversation.id,
+          id: conversation.id,
           chatId: vacancyResponse.chatId,
         })
-        .from(telegramConversation)
+        .from(conversation)
         .innerJoin(
           vacancyResponse,
-          eq(telegramConversation.responseId, vacancyResponse.id),
+          eq(conversation.responseId, vacancyResponse.id),
         )
-        .where(eq(telegramConversation.id, input.conversationId))
+        .where(eq(conversation.id, input.conversationId))
         .limit(1);
 
       if (!conversationData[0] || !conversationData[0].chatId) {
@@ -89,15 +89,15 @@ export const sendMessageRouter = {
 
       const conversationData = await ctx.db
         .select({
-          id: telegramConversation.id,
+          id: conversation.id,
           chatId: vacancyResponse.chatId,
         })
-        .from(telegramConversation)
+        .from(conversation)
         .innerJoin(
           vacancyResponse,
-          eq(telegramConversation.responseId, vacancyResponse.id),
+          eq(conversation.responseId, vacancyResponse.id),
         )
-        .where(eq(telegramConversation.id, input.conversationId))
+        .where(eq(conversation.id, input.conversationId))
         .limit(1);
 
       if (!conversationData[0] || !conversationData[0].chatId) {

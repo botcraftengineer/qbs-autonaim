@@ -44,9 +44,11 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     staleTime: 30000,
   });
 
-  const metadata = currentConversation?.metadata
-    ? JSON.parse(currentConversation.metadata)
-    : null;
+  const metadata =
+    currentConversation?.metadata &&
+    typeof currentConversation.metadata === "string"
+      ? JSON.parse(currentConversation.metadata)
+      : null;
   const candidateResponseId = metadata?.responseId;
 
   const { data: responseData } = useQuery({
@@ -194,9 +196,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                   candidateName={
                     currentConversation.candidateName ?? "Кандидат"
                   }
-                  candidateEmail={
-                    currentConversation.response?.chatId ?? undefined
-                  }
+                  candidateEmail={responseData?.chatId ?? undefined}
                 />
               </div>
 
@@ -212,8 +212,8 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full sm:w-96 p-0">
                   <ChatSidebar
-                    candidateName={currentConversation.candidateName}
-                    chatId={currentConversation.response?.chatId ?? ""}
+                    candidateName={currentConversation.candidateName ?? null}
+                    chatId={responseData?.chatId ?? ""}
                     responseData={responseData}
                   />
                 </SheetContent>
@@ -225,7 +225,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
         <div className="flex-1 min-h-0 bg-muted/30">
           <ChatMessages
             messages={messages}
-            candidateName={currentConversation.candidateName}
+            candidateName={currentConversation.candidateName ?? null}
             companyName={companyData?.name ?? workspace?.name ?? ""}
             onTranscribe={handleTranscribe}
             transcribingMessageId={transcribingMessageId}
@@ -239,8 +239,8 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
       <div className="hidden lg:block">
         <ChatSidebar
-          candidateName={currentConversation.candidateName}
-          chatId={currentConversation.response?.chatId ?? ""}
+          candidateName={currentConversation.candidateName ?? null}
+          chatId={responseData?.chatId ?? ""}
           responseData={responseData}
         />
       </div>

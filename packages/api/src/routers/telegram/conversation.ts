@@ -1,6 +1,6 @@
 import {
+  conversation,
   conversationMessage,
-  telegramConversation,
   vacancy,
   vacancyResponse,
   workspaceRepository,
@@ -35,10 +35,10 @@ export const getConversationRouter = {
 
       const conversations = await ctx.db
         .select()
-        .from(telegramConversation)
+        .from(conversation)
         .innerJoin(
           vacancyResponse,
-          eq(telegramConversation.responseId, vacancyResponse.id),
+          eq(conversation.responseId, vacancyResponse.id),
         )
         .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
         .where(
@@ -112,8 +112,8 @@ export const getConversationRouter = {
         });
       }
 
-      const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.id, input.id),
+      const conv = await ctx.db.query.conversation.findFirst({
+        where: eq(conversation.id, input.id),
         with: {
           response: {
             with: {
@@ -123,18 +123,18 @@ export const getConversationRouter = {
         },
       });
 
-      if (!conversation) {
+      if (!conv) {
         return null;
       }
 
-      if (conversation.response?.vacancy?.workspaceId !== input.workspaceId) {
+      if (conv.response?.vacancy?.workspaceId !== input.workspaceId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Нет доступа к этой беседе",
         });
       }
 
-      return conversation;
+      return conv;
     }),
 
   getByResponseId: protectedProcedure
@@ -168,11 +168,11 @@ export const getConversationRouter = {
         });
       }
 
-      const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.responseId, input.responseId),
+      const conv = await ctx.db.query.conversation.findFirst({
+        where: eq(conversation.responseId, input.responseId),
       });
 
-      return conversation;
+      return conv;
     }),
 
   getByUsername: protectedProcedure
@@ -190,8 +190,8 @@ export const getConversationRouter = {
         });
       }
 
-      const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.username, input.username),
+      const conv = await ctx.db.query.conversation.findFirst({
+        where: eq(conversation.username, input.username),
         with: {
           response: {
             with: {
@@ -201,17 +201,17 @@ export const getConversationRouter = {
         },
       });
 
-      if (!conversation) {
+      if (!conv) {
         return null;
       }
 
-      if (conversation.response?.vacancy?.workspaceId !== input.workspaceId) {
+      if (conv.response?.vacancy?.workspaceId !== input.workspaceId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Нет доступа к этой беседе",
         });
       }
 
-      return conversation;
+      return conv;
     }),
 } satisfies TRPCRouterRecord;

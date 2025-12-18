@@ -99,7 +99,7 @@ export const sendMessage = protectedProcedure
     }
 
     // Найти или создать conversation
-    const conv = await ctx.db.query.conversation.findFirst({
+    let conv = await ctx.db.query.conversation.findFirst({
       where: eq(conversation.responseId, input.candidateId),
     });
 
@@ -114,10 +114,10 @@ export const sendMessage = protectedProcedure
         })
         .returning();
 
-      conversation = newConversation;
+      conv = newConversation;
     }
 
-    if (!conversation) {
+    if (!conv) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Не удалось создать conversation",
@@ -126,7 +126,7 @@ export const sendMessage = protectedProcedure
 
     // Создать сообщение
     await ctx.db.insert(conversationMessage).values({
-      conversationId: conversation.id,
+      conversationId: conv.id,
       sender: "ADMIN",
       contentType: "TEXT",
       content: input.content,

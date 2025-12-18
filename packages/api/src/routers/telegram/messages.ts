@@ -1,6 +1,6 @@
 import {
+  conversation,
   conversationMessage,
-  telegramConversation,
   vacancy,
   vacancyResponse,
   workspaceRepository,
@@ -33,8 +33,8 @@ export const getMessagesRouter = {
         });
       }
 
-      const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.id, input.conversationId),
+      const conv = await ctx.db.query.conversation.findFirst({
+        where: eq(conversation.id, input.conversationId),
         with: {
           response: {
             with: {
@@ -44,14 +44,14 @@ export const getMessagesRouter = {
         },
       });
 
-      if (!conversation) {
+      if (!conv) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Беседа не найдена",
         });
       }
 
-      if (conversation.response?.vacancy?.workspaceId !== input.workspaceId) {
+      if (conv.response?.vacancy?.workspaceId !== input.workspaceId) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Нет доступа к этой беседе",
@@ -112,18 +112,18 @@ export const getMessagesRouter = {
       const messages = await ctx.db
         .select({
           message: conversationMessage,
-          conversation: telegramConversation,
+          conversation: conversation,
           response: vacancyResponse,
           vacancy: vacancy,
         })
         .from(conversationMessage)
         .innerJoin(
-          telegramConversation,
-          eq(conversationMessage.conversationId, telegramConversation.id),
+          conversation,
+          eq(conversationMessage.conversationId, conversation.id),
         )
         .innerJoin(
           vacancyResponse,
-          eq(telegramConversation.responseId, vacancyResponse.id),
+          eq(conversation.responseId, vacancyResponse.id),
         )
         .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
         .where(eq(vacancy.workspaceId, input.workspaceId))

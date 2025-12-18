@@ -1,5 +1,5 @@
 import { eq, workspaceRepository } from "@qbs-autonaim/db";
-import { telegramConversation, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { conversation, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -66,7 +66,7 @@ export const sendWelcome = protectedProcedure
       : username;
 
     await ctx.db
-      .insert(telegramConversation)
+      .insert(conversation)
       .values({
         responseId,
         candidateName: response.candidateName,
@@ -78,7 +78,7 @@ export const sendWelcome = protectedProcedure
         }),
       })
       .onConflictDoUpdate({
-        target: telegramConversation.responseId,
+        target: conversation.responseId,
         set: {
           candidateName: response.candidateName,
           username: cleanUsername,
