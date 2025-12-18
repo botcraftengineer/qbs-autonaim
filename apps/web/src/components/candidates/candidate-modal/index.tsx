@@ -50,12 +50,17 @@ export function CandidateModal({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
+  const [isSendingGreeting, setIsSendingGreeting] = useState(false);
+  const [isRefreshingResume, setIsRefreshingResume] = useState(false);
+  const [isRating, setIsRating] = useState(false);
+
   const { data: candidateDetail, isLoading: isLoadingDetail, error: candidateDetailError } = useQuery({
     ...trpc.candidates.getById.queryOptions({
       workspaceId,
       candidateId: candidate?.id ?? "",
     }),
     enabled: open && !!candidate?.id,
+    refetchInterval: isRating ? 1000 : false,
   });
 
   useEffect(() => {
@@ -78,9 +83,11 @@ export function CandidateModal({
     setSelectedStatus(fullCandidate?.stage ?? "REVIEW");
   }, [fullCandidate?.stage]);
 
-  const [isSendingGreeting, setIsSendingGreeting] = useState(false);
-  const [isRefreshingResume, setIsRefreshingResume] = useState(false);
-  const [isRating, setIsRating] = useState(false);
+  useEffect(() => {
+    if (isRating && candidateDetail?.matchScore !== undefined && candidateDetail.matchScore > 0) {
+      setIsRating(false);
+    }
+  }, [isRating, candidateDetail?.matchScore]);
 
   const inviteCandidateMutation = useMutation({
     ...trpc.candidates.inviteCandidate.mutationOptions(),
@@ -169,21 +176,19 @@ export function CandidateModal({
       const result = await triggerScreenResponse(fullCandidate.id);
       if (!result.success) {
         toast.error("Не удалось запустить оценку");
+        setIsRating(false);
         return;
       }
       toast.success("Оценка кандидата запущена");
-      setTimeout(() => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.candidates.list.queryKey(),
-        });
-        queryClient.invalidateQueries({
-          queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
-        });
-      }, 2000);
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+      });
     } catch (error) {
       console.error("Ошибка запуска оценки:", error);
       toast.error("Ошибка запуска оценки");
-    } finally {
       setIsRating(false);
     }
   };
