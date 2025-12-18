@@ -22,6 +22,13 @@
       "when": 1766051572541,
       "tag": "0002_rapid_medusa",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1766064754864,
+      "tag": "0003_sudden_the_stranger",
+      "breakpoints": true
     }
   ]
 }
