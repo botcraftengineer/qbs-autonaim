@@ -1,8 +1,9 @@
 import {
+  conversation,
+  conversationMessagesage,
   eq,
-  telegramConversation,
-  telegramMessage,
   telegramSession,
+  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
@@ -32,9 +33,17 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       });
 
       try {
-        // Получаем conversation
-        const conversation = await db.query.telegramConversation.findFirst({
-          where: eq(telegramConversation.chatId, chatId),
+        // Получаем conversation через chatId в response
+        const conv = await db.query.conversation.findFirst({
+          where: (fields, { inArray }) => {
+            return inArray(
+              fields.responseId,
+              db
+                .select({ id: vacancyResponse.id })
+                .from(vacancyResponse)
+                .where(eq(vacancyResponse.chatId, chatId)),
+            );
+          },
           with: {
             response: {
               with: {
@@ -44,11 +53,11 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           },
         });
 
-        if (!conversation?.response?.vacancy?.workspaceId) {
+        if (!conv?.response?.vacancy?.workspaceId) {
           throw new Error("Не удалось определить workspace для сообщения");
         }
 
-        const workspaceId = conversation.response.vacancy.workspaceId;
+        const workspaceId = conv.response.vacancy.workspaceId;
 
         // Получаем активную сессию для workspace
         const session = await db.query.telegramSession.findFirst({
@@ -66,9 +75,9 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         let username: string | undefined;
 
         // 1. Проверяем metadata
-        if (conversation.metadata) {
+        if (conv.metadata) {
           try {
-            const metadata = JSON.parse(conversation.metadata);
+            const metadata = JSON.parse(conv.metadata);
             username = metadata.username;
           } catch (e) {
             console.warn("Не удалось распарсить metadata", e);
@@ -76,13 +85,13 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         }
 
         // 2. Проверяем vacancy_response.telegramUsername
-        if (!username && conversation.response?.telegramUsername) {
-          username = conversation.response.telegramUsername;
+        if (!username && conv.response?.telegramUsername) {
+          username = conv.response.telegramUsername;
         }
 
         // 3. Проверяем conversation.username
-        if (!username && conversation.username) {
-          username = conversation.username;
+        if (!username && conv.username) {
+          username = conv.username;
         }
 
         // Отправляем сообщение через SDK
@@ -110,7 +119,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           });
         }
 
-        const telegramMessageId = result.messageId;
+        const conversationMessagesageId = result.messageId;
 
         // Обновляем lastUsedAt для сессии
         await db
@@ -121,11 +130,11 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         console.log("✅ Сообщение отправлено в Telegram", {
           messageId,
           chatId,
-          telegramMessageId,
+          conversationMessagesageId,
           sessionId: session.id,
         });
 
-        return { telegramMessageId };
+        return { conversationMessagesageId };
       } catch (error) {
         console.error("❌ Ошибка отправки сообщения в Telegram", {
           messageId,
@@ -136,26 +145,28 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       }
     });
 
-    // Обновляем запись в базе данных с telegramMessageId
-    await step.run("update-message-record", async () => {
-      await db
-        .update(telegramMessage)
-        .set({
-          telegramMessageId: result.telegramMessageId,
-        })
-        .where(eq(telegramMessage.id, messageId));
+    // Обновляем запись в базе данных с conversationMessagesageId (если messageId передан)
+    if (messageId) {
+      await step.run("update-message-record", async () => {
+        await db
+          .update(conversationMessagesage)
+          .set({
+            conversationMessagesageId: resconversationMessagenMessageId,
+          })
+          .where(eq(conversationMessagesage.id, messageId));
 
-      console.log("✅ Обновлена запись сообщения в БД", {
-        messageId,
-        telegramMessageId: result.telegramMessageId,
+        console.log("✅ Обновлена запись сообщения в БД", {
+          messageId,
+          conversationMessagesageId: resconversationMessagenMessageId,
+        });
       });
-    });
+    }
 
     return {
       success: true,
       messageId,
       chatId,
-      telegramMessageId: result.telegramMessageId,
+      conversationMessagesageId: resconversationMessagenMessageId,
     };
   },
 );

@@ -21,7 +21,7 @@ export const telegramConversationRelations = relations(
   }),
 );
 
-export const telegramMessageRelations = relations(
+export const conversationMessageRelations = relations(
   conversationMessage,
   ({ one }) => ({
     conversation: one(conversation, {

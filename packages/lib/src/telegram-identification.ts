@@ -7,9 +7,9 @@ import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   type companySettings,
+  conversation,
   conversationMessage,
   type responseScreening,
-  telegramConversation,
   type vacancy,
   vacancyResponse,
   type workspace,
@@ -25,7 +25,6 @@ interface IdentificationResult {
 }
 
 interface ConversationData {
-  chatId: string;
   responseId: string;
   candidateName?: string;
   username?: string;
@@ -76,7 +75,6 @@ export async function identifyByPinCode(
 
     // Создаем или обновляем conversation
     const conversationData: ConversationData = {
-      chatId,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       username,
@@ -152,7 +150,6 @@ export async function identifyByVacancy(
 
     // Создаем или обновляем conversation
     const conversationData: ConversationData = {
-      chatId,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       username,
@@ -198,23 +195,22 @@ async function createOrUpdateConversation(
     questionAnswers: [],
   };
 
-  // Проверяем, есть ли уже conversation для этого chatId
-  const existing = await db.query.telegramConversation.findFirst({
-    where: eq(telegramConversation.chatId, data.chatId),
+  // Проверяем, есть ли уже conversation для этого responseId
+  const existing = await db.query.conversation.findFirst({
+    where: eq(conversation.responseId, data.responseId),
   });
 
   if (existing) {
     // Обновляем существующую conversation
     const [updated] = await db
-      .update(telegramConversation)
+      .update(conversation)
       .set({
-        responseId: data.responseId,
         candidateName: data.candidateName,
         username: data.username,
         status: "ACTIVE",
         metadata: JSON.stringify(metadata),
       })
-      .where(eq(telegramConversation.id, existing.id))
+      .where(eq(conversation.id, existing.id))
       .returning();
 
     if (!updated) {
@@ -226,9 +222,8 @@ async function createOrUpdateConversation(
 
   // Создаем новую conversation
   const [created] = await db
-    .insert(telegramConversation)
+    .insert(conversation)
     .values({
-      chatId: data.chatId,
       responseId: data.responseId,
       candidateName: data.candidateName,
       username: data.username,
@@ -252,19 +247,17 @@ export async function saveMessage(
   sender: "CANDIDATE" | "BOT",
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
-  telegramMessageId?: string,
-  channel: "TELEGRAM" | "HH" = "TELEGRAM",
+  conversationMessageId?: string,
 ): Promise<string | null> {
   try {
     const [message] = await db
       .insert(conversationMessage)
       .values({
         conversationId,
-        channel,
         sender,
         contentType,
         content,
-        externalMessageId: telegramMessageId,
+        conversationMessageId,
       })
       .returning();
 

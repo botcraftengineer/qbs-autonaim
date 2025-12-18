@@ -104,48 +104,268 @@ export function CandidatePipeline() {
   );
 
   const queryClient = useQueryClient();
-  const listQueryOptions = trpc.candidates.list.queryOptions({
-    workspaceId: workspaceId ?? "",
-    vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
-    search: debouncedSearch || undefined,
-    stages: filterStages.length > 0 ? filterStages : undefined,
-    limit: 100,
+
+  // Состояние для пагинации каждой колонки
+  const [stageLimits, setStageLimits] = useState<Record<FunnelStage, number>>(
+    () => {
+      const initial: Record<FunnelStage, number> = {} as Record<
+        FunnelStage,
+        number
+      >;
+      STAGES.forEach((stage) => {
+        initial[stage.id] = 5;
+      });
+      return initial;
+    },
+  );
+
+  // Загружаем данные для каждой колонки отдельно
+  const screeningDoneQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["SCREENING_DONE"],
+      limit: stageLimits.SCREENING_DONE,
+    }),
+    enabled: !!workspaceId,
   });
-  const listQueryKey = listQueryOptions.queryKey;
+
+  const chatInterviewQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["CHAT_INTERVIEW"],
+      limit: stageLimits.CHAT_INTERVIEW,
+    }),
+    enabled: !!workspaceId,
+  });
+
+  const offerSentQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["OFFER_SENT"],
+      limit: stageLimits.OFFER_SENT,
+    }),
+    enabled: !!workspaceId,
+  });
+
+  const securityPassedQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["SECURITY_PASSED"],
+      limit: stageLimits.SECURITY_PASSED,
+    }),
+    enabled: !!workspaceId,
+  });
+
+  const contractSentQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["CONTRACT_SENT"],
+      limit: stageLimits.CONTRACT_SENT,
+    }),
+    enabled: !!workspaceId,
+  });
+
+  const onboardingQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["ONBOARDING"],
+      limit: stageLimits.ONBOARDING,
+    }),
+    enabled: !!workspaceId,
+  });
+
+  const rejectedQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["REJECTED"],
+      limit: stageLimits.REJECTED,
+    }),
+    enabled: !!workspaceId,
+  });
+
+  const stageQueries = [
+    {
+      stage: "SCREENING_DONE" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["SCREENING_DONE"],
+        limit: stageLimits.SCREENING_DONE,
+      }).queryKey,
+      query: screeningDoneQuery,
+    },
+    {
+      stage: "CHAT_INTERVIEW" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["CHAT_INTERVIEW"],
+        limit: stageLimits.CHAT_INTERVIEW,
+      }).queryKey,
+      query: chatInterviewQuery,
+    },
+    {
+      stage: "OFFER_SENT" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["OFFER_SENT"],
+        limit: stageLimits.OFFER_SENT,
+      }).queryKey,
+      query: offerSentQuery,
+    },
+    {
+      stage: "SECURITY_PASSED" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["SECURITY_PASSED"],
+        limit: stageLimits.SECURITY_PASSED,
+      }).queryKey,
+      query: securityPassedQuery,
+    },
+    {
+      stage: "CONTRACT_SENT" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["CONTRACT_SENT"],
+        limit: stageLimits.CONTRACT_SENT,
+      }).queryKey,
+      query: contractSentQuery,
+    },
+    {
+      stage: "ONBOARDING" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["ONBOARDING"],
+        limit: stageLimits.ONBOARDING,
+      }).queryKey,
+      query: onboardingQuery,
+    },
+    {
+      stage: "REJECTED" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["REJECTED"],
+        limit: stageLimits.REJECTED,
+      }).queryKey,
+      query: rejectedQuery,
+    },
+  ];
 
   const updateStageMutation = useMutation(
     trpc.candidates.updateStage.mutationOptions({
       onMutate: async (newStageData) => {
-        await queryClient.cancelQueries({ queryKey: listQueryKey });
-        const previousData = queryClient.getQueryData(
-          listQueryKey,
-        ) as typeof candidates;
+        // Отменяем все запросы для колонок
+        await Promise.all(
+          stageQueries.map((sq) =>
+            queryClient.cancelQueries({ queryKey: sq.queryKey }),
+          ),
+        );
 
-        if (previousData) {
-          queryClient.setQueryData(listQueryKey, (old: typeof candidates) => {
+        const previousData: Record<string, unknown> = {};
+
+        // Сохраняем предыдущие данные для всех колонок
+        stageQueries.forEach((sq) => {
+          const data = queryClient.getQueryData(sq.queryKey);
+          if (data) {
+            previousData[sq.stage] = data;
+          }
+        });
+
+        // Оптимистично обновляем данные
+        const oldStage = stageQueries.find((sq) => {
+          const data = sq.query.data;
+          return data?.items.some((c) => c.id === newStageData.candidateId);
+        });
+
+        if (oldStage) {
+          // Удаляем из старой колонки
+          queryClient.setQueryData(oldStage.queryKey, (old: any) => {
             if (!old) return old;
             return {
               ...old,
-              items: old.items.map((c) =>
-                c.id === newStageData.candidateId
-                  ? { ...c, stage: newStageData.stage }
-                  : c,
+              items: old.items.filter(
+                (c: FunnelCandidate) => c.id !== newStageData.candidateId,
               ),
             };
           });
+
+          // Добавляем в новую колонку
+          const newStageQuery = stageQueries.find(
+            (sq) => sq.stage === newStageData.stage,
+          );
+          if (newStageQuery) {
+            const candidate = oldStage.query.data?.items.find(
+              (c) => c.id === newStageData.candidateId,
+            );
+            if (candidate) {
+              queryClient.setQueryData(newStageQuery.queryKey, (old: any) => {
+                if (!old) return old;
+                return {
+                  ...old,
+                  items: [
+                    { ...candidate, stage: newStageData.stage },
+                    ...old.items,
+                  ],
+                };
+              });
+            }
+          }
         }
+
         return { previousData };
       },
       onError: (_err, _newStageData, context) => {
         if (context?.previousData) {
-          queryClient.setQueryData(listQueryKey, context.previousData);
+          // Восстанавливаем предыдущие данные
+          Object.entries(context.previousData).forEach(([stage, data]) => {
+            const sq = stageQueries.find((q) => q.stage === stage);
+            if (sq) {
+              queryClient.setQueryData(sq.queryKey, data as any);
+            }
+          });
         }
       },
       onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: listQueryKey });
+        // Инвалидируем все запросы колонок
+        stageQueries.forEach((sq) => {
+          queryClient.invalidateQueries({ queryKey: sq.queryKey });
+        });
       },
     }),
   );
+
+  const loadMoreForStage = useCallback((stage: FunnelStage) => {
+    setStageLimits((prev) => ({
+      ...prev,
+      [stage]: prev[stage] + 5,
+    }));
+  }, []);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -160,7 +380,13 @@ export function CandidatePipeline() {
     const candidateId = active.id as string;
     const newStage = over.id as FunnelStage;
 
-    const candidate = allCandidates.find((c) => c.id === candidateId);
+    // Находим кандидата в любой из колонок
+    let candidate: FunnelCandidate | undefined;
+    for (const sq of stageQueries) {
+      candidate = sq.query.data?.items.find((c) => c.id === candidateId);
+      if (candidate) break;
+    }
+
     if (!candidate || candidate.stage === newStage) return;
 
     updateStageMutation.mutate({
@@ -177,13 +403,18 @@ export function CandidatePipeline() {
     enabled: !!workspaceId,
   });
 
-  // Используем обычный query с увеличенным лимитом и фильтрацией на сервере
-  const { data: candidates, isLoading } = useQuery({
-    ...listQueryOptions,
-    enabled: !!workspaceId,
-  });
+  // Собираем всех кандидатов из всех колонок для DragOverlay и поиска
+  const allCandidates = useMemo(() => {
+    const all: FunnelCandidate[] = [];
+    stageQueries.forEach((sq) => {
+      if (sq.query.data?.items) {
+        all.push(...sq.query.data.items);
+      }
+    });
+    return all;
+  }, [stageQueries]);
 
-  const allCandidates = useMemo(() => candidates?.items ?? [], [candidates]);
+  const isLoading = stageQueries.some((sq) => sq.query.isLoading);
 
   const handleCardClick = useCallback((candidate: FunnelCandidate) => {
     setSelectedCandidate(candidate);
@@ -198,29 +429,43 @@ export function CandidatePipeline() {
     );
   };
 
-  // Фильтрация теперь на сервере, просто используем все кандидаты
+  // Для таблицы используем все загруженные кандидаты
   const filteredCandidates = allCandidates;
 
+  // Для канбана используем данные из отдельных запросов
   const candidatesByStage = useMemo(() => {
-    const result: Record<FunnelStage, FunnelCandidate[]> = {
-      SCREENING_DONE: [],
-      CHAT_INTERVIEW: [],
-      OFFER_SENT: [],
-      SECURITY_PASSED: [],
-      CONTRACT_SENT: [],
-      ONBOARDING: [],
-      REJECTED: [],
+    const result: Record<
+      FunnelStage,
+      { items: FunnelCandidate[]; hasMore: boolean; total: number }
+    > = {
+      SCREENING_DONE: { items: [], hasMore: false, total: 0 },
+      CHAT_INTERVIEW: { items: [], hasMore: false, total: 0 },
+      OFFER_SENT: { items: [], hasMore: false, total: 0 },
+      SECURITY_PASSED: { items: [], hasMore: false, total: 0 },
+      CONTRACT_SENT: { items: [], hasMore: false, total: 0 },
+      ONBOARDING: { items: [], hasMore: false, total: 0 },
+      REJECTED: { items: [], hasMore: false, total: 0 },
     };
-    for (const c of filteredCandidates) {
-      const stage = c.stage as FunnelStage;
-      if (result[stage]) {
-        result[stage].push(c);
-      }
-    }
-    return result;
-  }, [filteredCandidates]);
 
-  const totalCount = filteredCandidates.length;
+    stageQueries.forEach((sq) => {
+      if (sq.query.data) {
+        result[sq.stage] = {
+          items: sq.query.data.items,
+          hasMore: !!sq.query.data.nextCursor,
+          total: sq.query.data.total ?? sq.query.data.items.length,
+        };
+      }
+    });
+
+    return result;
+  }, [stageQueries]);
+
+  const totalCount = useMemo(() => {
+    return Object.values(candidatesByStage).reduce(
+      (sum, stage) => sum + stage.total,
+      0,
+    );
+  }, [candidatesByStage]);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -343,11 +588,6 @@ export function CandidatePipeline() {
             <>
               <span className="font-medium text-foreground">{totalCount}</span>{" "}
               {pluralizeCandidate(totalCount)}
-              {candidates?.nextCursor && (
-                <span className="ml-2 text-xs">
-                  (показаны первые {totalCount})
-                </span>
-              )}
             </>
           ) : null}
         </div>
@@ -359,22 +599,34 @@ export function CandidatePipeline() {
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <section
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-4"
-            aria-label="Канбан-доска кандидатов"
-          >
-            {STAGES.map((stage) => (
-              <CandidateKanbanColumn
-                key={stage.id}
-                id={stage.id}
-                title={stage.title}
-                color={stage.color}
-                candidates={candidatesByStage[stage.id]}
-                onCardClick={handleCardClick}
-                isLoading={isLoading}
-              />
-            ))}
-          </section>
+          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:-mx-5 px-3 sm:px-4 md:px-5">
+            <section
+              className="flex gap-3 md:gap-4 min-w-max"
+              aria-label="Канбан-доска кандидатов"
+            >
+              {STAGES.map((stage) => {
+                const stageData = candidatesByStage[stage.id];
+                const stageQuery = stageQueries.find(
+                  (sq) => sq.stage === stage.id,
+                );
+                return (
+                  <CandidateKanbanColumn
+                    key={stage.id}
+                    id={stage.id}
+                    title={stage.title}
+                    color={stage.color}
+                    candidates={stageData.items}
+                    total={stageData.total}
+                    hasMore={stageData.hasMore}
+                    onCardClick={handleCardClick}
+                    onLoadMore={() => loadMoreForStage(stage.id)}
+                    isLoading={stageQuery?.query.isLoading ?? false}
+                    isLoadingMore={stageQuery?.query.isFetching ?? false}
+                  />
+                );
+              })}
+            </section>
+          </div>
           <DragOverlay>
             {(() => {
               const candidate = allCandidates.find((c) => c.id === activeId);

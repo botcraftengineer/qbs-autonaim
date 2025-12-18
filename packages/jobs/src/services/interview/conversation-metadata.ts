@@ -4,7 +4,7 @@
 
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { telegramConversation } from "@qbs-autonaim/db/schema";
+import { conversation } from "@qbs-autonaim/db/schema";
 import { createLogger } from "../base";
 
 const logger = createLogger("ConversationMetadata");
@@ -34,15 +34,15 @@ export async function getConversationMetadata(
   conversationId: string,
 ): Promise<ConversationMetadata> {
   try {
-    const conversation = await db.query.telegramConversation.findFirst({
-      where: eq(telegramConversation.id, conversationId),
+    const conv = await db.query.conversation.findFirst({
+      where: eq(conversation.id, conversationId),
     });
 
-    if (!conversation?.metadata) {
+    if (!conv?.metadata) {
       return {};
     }
 
-    return JSON.parse(conversation.metadata) as ConversationMetadata;
+    return JSON.parse(conv.metadata) as ConversationMetadata;
   } catch (error) {
     logger.error("Error getting conversation metadata", {
       error,
@@ -64,9 +64,9 @@ export async function updateConversationMetadata(
     const updated = { ...current, ...updates };
 
     await db
-      .update(telegramConversation)
+      .update(conversation)
       .set({ metadata: JSON.stringify(updated) })
-      .where(eq(telegramConversation.id, conversationId));
+      .where(eq(conversation.id, conversationId));
 
     return true;
   } catch (error) {

@@ -10,8 +10,12 @@ interface CandidateKanbanColumnProps {
   title: string;
   color: string;
   candidates: FunnelCandidate[];
+  total: number;
+  hasMore: boolean;
   onCardClick: (candidate: FunnelCandidate) => void;
+  onLoadMore: () => void;
   isLoading?: boolean;
+  isLoadingMore?: boolean;
 }
 
 export function CandidateKanbanColumn({
@@ -19,21 +23,25 @@ export function CandidateKanbanColumn({
   title,
   color,
   candidates,
+  total,
+  hasMore,
   onCardClick,
+  onLoadMore,
   isLoading,
+  isLoadingMore,
 }: CandidateKanbanColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
   });
 
   return (
-    <fieldset className="flex flex-col min-w-0 border-0 p-0 m-0">
+    <fieldset className="flex flex-col w-[320px] shrink-0 border-0 p-0 m-0">
       <legend className="sr-only">{`Колонка ${title}`}</legend>
       <div className="flex items-center gap-2 mb-3 px-1">
         <div className={cn("w-2 h-2 rounded-full shrink-0", color)} />
         <h3 className="text-sm font-semibold truncate">{title}</h3>
         <span className="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-full tabular-nums ml-auto shrink-0">
-          {candidates.length}
+          {total}
         </span>
       </div>
 
@@ -62,13 +70,28 @@ export function CandidateKanbanColumn({
             <p className="text-sm">Нет кандидатов</p>
           </div>
         ) : (
-          candidates.map((candidate) => (
-            <CandidateKanbanItem
-              key={candidate.id}
-              candidate={candidate}
-              onClick={onCardClick}
-            />
-          ))
+          <>
+            {candidates.map((candidate) => (
+              <CandidateKanbanItem
+                key={candidate.id}
+                candidate={candidate}
+                onClick={onCardClick}
+              />
+            ))}
+            {hasMore && (
+              <button
+                onClick={onLoadMore}
+                disabled={isLoadingMore}
+                className="w-full py-2.5 px-3 text-sm font-medium text-muted-foreground hover:text-foreground bg-background hover:bg-muted border border-dashed rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                type="button"
+                aria-label={`Загрузить ещё кандидатов для ${title}`}
+              >
+                {isLoadingMore
+                  ? "Загрузка…"
+                  : `Загрузить ещё (${total - candidates.length})`}
+              </button>
+            )}
+          </>
         )}
       </div>
     </fieldset>

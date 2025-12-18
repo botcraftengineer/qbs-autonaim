@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
-import { telegramMessage } from "@qbs-autonaim/db/schema";
+import { conversationMessage } from "@qbs-autonaim/db/schema";
 import { findDuplicateMessage } from "../../utils";
 
 export async function saveUnidentifiedMessage(params: {
@@ -14,12 +14,12 @@ export async function saveUnidentifiedMessage(params: {
     const isDuplicate = await findDuplicateMessage(conversationId, messageId);
 
     if (!isDuplicate) {
-      await db.insert(telegramMessage).values({
+      await db.insert(conversationMessage).values({
         conversationId,
         sender: "CANDIDATE",
         contentType,
         content,
-        telegramMessageId: messageId,
+        conversationMessageId: messageId,
       });
     }
   } catch (error) {

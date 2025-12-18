@@ -1,6 +1,6 @@
 import {
+  conversationMessage,
   telegramConversation,
-  telegramMessage,
   vacancy,
   vacancyResponse,
   workspaceRepository,
@@ -58,9 +58,9 @@ export const getConversationRouter = {
 
       const allMessages = await ctx.db
         .select()
-        .from(telegramMessage)
-        .where(inArray(telegramMessage.conversationId, conversationIds))
-        .orderBy(desc(telegramMessage.createdAt));
+        .from(conversationMessage)
+        .where(inArray(conversationMessage.conversationId, conversationIds))
+        .orderBy(desc(conversationMessage.createdAt));
 
       const messagesByConversation = new Map<string, (typeof allMessages)[0]>();
       for (const msg of allMessages) {

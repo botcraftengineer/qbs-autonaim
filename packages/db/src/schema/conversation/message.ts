@@ -35,7 +35,7 @@ export const conversationMessage = pgTable("conversation_messages", {
   fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
   voiceDuration: varchar("voice_duration", { length: 20 }),
   voiceTranscription: text("voice_transcription"),
-  telegramMessageId: varchar("telegram_message_id", { length: 100 }),
+  externalMessageId: varchar("external_message_id", { length: 100 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -47,12 +47,8 @@ export const CreateMessageSchema = createInsertSchema(conversationMessage, {
   fileId: uuidv7Schema.optional(),
   voiceDuration: z.string().max(20).optional(),
   voiceTranscription: z.string().optional(),
-  telegramMessageId: z.string().max(100).optional(),
+  externalMessageId: z.string().max(100).optional(),
 }).omit({
   id: true,
   createdAt: true,
 });
-
-// Экспортируем также старое имя для обратной совместимости
-export const telegramMessage = conversationMessage;
-export const CreateTelegramMessageSchema = CreateMessageSchema;

@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage, Badge } from "@qbs-autonaim/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@qbs-autonaim/ui";
 import { Mail, Phone } from "lucide-react";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { MatchScoreCircle } from "./match-score-circle";
@@ -36,34 +36,13 @@ export function CandidateKanbanCard({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm leading-tight truncate">
+            <h4 className="font-semibold text-sm leading-tight break-words">
               {candidate.name}
             </h4>
-            <p className="text-xs text-muted-foreground mt-0.5 truncate">
+            <p className="text-xs text-muted-foreground mt-0.5 break-words">
               {candidate.position}
             </p>
           </div>
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          {candidate.skills.slice(0, 3).map((skill) => (
-            <Badge
-              key={skill}
-              variant="secondary"
-              className="text-[10px] font-medium px-1.5 py-0 h-5 truncate max-w-[70px]"
-            >
-              {skill}
-            </Badge>
-          ))}
-          {candidate.skills.length > 3 && (
-            <Badge
-              variant="outline"
-              className="text-[10px] font-medium px-1.5 py-0 h-5"
-              title={candidate.skills.slice(3).join(", ")}
-            >
-              +{candidate.skills.length - 3}
-            </Badge>
-          )}
         </div>
       </button>
 

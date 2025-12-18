@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage, Badge } from "@qbs-autonaim/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "@qbs-autonaim/ui";
 import { MapPin } from "lucide-react";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { MatchScoreCircle } from "./match-score-circle";
@@ -37,21 +37,19 @@ export function CandidateCard({ candidate, onClick }: CandidateCardProps) {
         <MatchScoreCircle score={candidate.matchScore} size="sm" />
       </div>
 
-      <div className="flex items-center justify-between mt-3 pt-2 border-t">
-        <div className="flex items-center gap-1 text-xs text-muted-foreground">
-          <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
-        </div>
-        <div className="flex flex-wrap gap-1">
-          {candidate.skills.slice(0, 2).map((skill) => (
-            <Badge
-              key={skill}
-              variant="secondary"
-              className="text-[10px] px-1.5 py-0 h-5"
-            >
-              {skill}
-            </Badge>
-          ))}
-        </div>
+      <div className="flex items-center gap-2 mt-3 pt-2 border-t text-xs text-muted-foreground">
+        {candidate.location && (
+          <div className="flex items-center gap-1">
+            <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+            <span className="truncate">{candidate.location}</span>
+          </div>
+        )}
+        {candidate.experience && (
+          <>
+            {candidate.location && <span>•</span>}
+            <span>{candidate.experience}</span>
+          </>
+        )}
       </div>
     </button>
   );

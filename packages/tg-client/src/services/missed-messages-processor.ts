@@ -18,8 +18,8 @@ import type { TelegramClient } from "@mtcute/bun";
 import { desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversation,
   conversationMessage,
-  telegramConversation,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
@@ -119,22 +119,19 @@ export async function processMissedMessages(
 
   const conversations = await db
     .select({
-      id: telegramConversation.id,
-      responseId: telegramConversation.responseId,
-      candidateName: telegramConversation.candidateName,
-      username: telegramConversation.username,
-      status: telegramConversation.status,
-      metadata: telegramConversation.metadata,
-      createdAt: telegramConversation.createdAt,
-      updatedAt: telegramConversation.updatedAt,
+      id: conversation.id,
+      responseId: conversation.responseId,
+      candidateName: conversation.candidateName,
+      username: conversation.username,
+      status: conversation.status,
+      metadata: conversation.metadata,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt,
       chatId: vacancyResponse.chatId,
     })
-    .from(telegramConversation)
-    .innerJoin(
-      vacancyResponse,
-      eq(telegramConversation.responseId, vacancyResponse.id),
-    )
-    .where(eq(telegramConversation.status, "ACTIVE"));
+    .from(conversation)
+    .innerJoin(vacancyResponse, eq(conversation.responseId, vacancyResponse.id))
+    .where(eq(conversation.status, "ACTIVE"));
 
   if (conversations.length === 0) {
     console.log("ℹ️ Нет активных бесед для проверки");

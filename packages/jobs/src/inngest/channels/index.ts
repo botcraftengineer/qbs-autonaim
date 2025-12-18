@@ -3,10 +3,10 @@
  */
 
 export {
+  conversationMessagesChannel,
   parseMissingContactsChannel,
   parseNewResumesChannel,
   refreshVacancyResponsesChannel,
   screenAllResponsesChannel,
   screenNewResponsesChannel,
-  telegramMessagesChannel,
 } from "./client";

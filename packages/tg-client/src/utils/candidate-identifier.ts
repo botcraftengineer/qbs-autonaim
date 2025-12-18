@@ -2,7 +2,7 @@ import type { Message } from "@mtcute/core";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  telegramConversation,
+  conversation,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -52,10 +52,9 @@ export async function identifyCandidate(
 
       if (responseByUsername) {
         // Проверяем существующую беседу по responseId
-        const existingConversation =
-          await db.query.telegramConversation.findFirst({
-            where: eq(telegramConversation.responseId, responseByUsername.id),
-          });
+        const existingConversation = await db.query.conversation.findFirst({
+          where: eq(conversation.responseId, responseByUsername.id),
+        });
 
         if (existingConversation) {
           return {
@@ -67,8 +66,8 @@ export async function identifyCandidate(
         }
 
         // Создаем новую беседу
-        const [conversation] = await db
-          .insert(telegramConversation)
+        const [conv] = await db
+          .insert(conversation)
           .values({
             responseId: responseByUsername.id,
             candidateName: responseByUsername.candidateName || undefined,
@@ -116,10 +115,9 @@ export async function identifyCandidate(
 
       if (responseByPhone) {
         // Проверяем существующую беседу по responseId
-        const existingConversation =
-          await db.query.telegramConversation.findFirst({
-            where: eq(telegramConversation.responseId, responseByPhone.id),
-          });
+        const existingConversation = await db.query.conversation.findFirst({
+          where: eq(conversation.responseId, responseByPhone.id),
+        });
 
         if (existingConversation) {
           return {
@@ -131,8 +129,8 @@ export async function identifyCandidate(
         }
 
         // Создаем новую беседу
-        const [conversation] = await db
-          .insert(telegramConversation)
+        const [conv] = await db
+          .insert(conversation)
           .values({
             responseId: responseByPhone.id,
             candidateName: responseByPhone.candidateName || undefined,
@@ -148,7 +146,7 @@ export async function identifyCandidate(
         return {
           identified: true,
           responseId: responseByPhone.id,
-          conversationId: conversation?.id,
+          conversationId: conv?.id,
           method: "phone",
         };
       }

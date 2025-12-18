@@ -12,8 +12,8 @@ import {
   workspaceRepository,
 } from "@qbs-autonaim/db";
 import {
+  conversationMessage,
   responseScreening,
-  telegramMessage,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -266,12 +266,12 @@ export const list = protectedProcedure
     if (conversationIds.length > 0) {
       const messageCounts = await ctx.db
         .select({
-          conversationId: telegramMessage.conversationId,
+          conversationId: conversationMessage.conversationId,
           count: sql<number>`count(*)::int`,
         })
-        .from(telegramMessage)
-        .where(inArray(telegramMessage.conversationId, conversationIds))
-        .groupBy(telegramMessage.conversationId);
+        .from(conversationMessage)
+        .where(inArray(conversationMessage.conversationId, conversationIds))
+        .groupBy(conversationMessage.conversationId);
 
       messageCountsMap = new Map(
         messageCounts.map((mc) => [mc.conversationId, mc.count]),

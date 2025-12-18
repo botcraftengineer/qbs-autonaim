@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { telegramConversation } from "@qbs-autonaim/db/schema";
-import { telegramMessagesChannel } from "../../channels/client";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { conversationMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
   handleIdentifiedMedia,
@@ -38,16 +38,23 @@ export const processIncomingMessageFunction = inngest.createFunction(
     });
 
     // Проверяем идентификацию
-    const conversation = await step.run("check-conversation", async () => {
-      const [conv] = await db
-        .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.chatId, chatId))
-        .limit(1);
-      return conv;
+    const conv = await step.run("check-conversation", async () => {
+      const result = await db.query.conversation.findFirst({
+        where: (fields, { eq, inArray }) => {
+          // Ищем conversation через response.chatId
+          return inArray(
+            fields.responseId,
+            db
+              .select({ id: vacancyResponse.id })
+              .from(vacancyResponse)
+              .where(eq(vacancyResponse.chatId, chatId)),
+          );
+        },
+      });
+      return result;
     });
 
-    const isIdentified = conversation?.responseId != null;
+    const isIdentified = conv?.responseId != null;
 
     // Обработка неидентифицированных сообщений
     if (!isIdentified) {
@@ -73,7 +80,6 @@ export const processIncomingMessageFunction = inngest.createFunction(
           return await handleUnidentifiedMedia({
             chatId,
             messageId: messageData.id.toString(),
-            username,
             firstName,
             workspaceId,
             botSettings,
@@ -87,34 +93,31 @@ export const processIncomingMessageFunction = inngest.createFunction(
     // Обработка идентифицированных сообщений
     if (messageData.text) {
       const isDuplicate = await step.run("check-duplicate-text", async () => {
-        return await findDuplicateMessage(
-          conversation.id,
-          messageData.id.toString(),
-        );
+        return await findDuplicateMessage(conv.id, messageData.id.toString());
       });
 
       if (isDuplicate) {
         console.log("⏭️ Сообщение уже обработано, пропускаем", {
-          conversationId: conversation.id,
-          telegramMessageId: messageData.id.toString(),
+          conversationId: conv.id,
+          conversationMessageId: messageData.id.toString(),
         });
         return { skipped: true, reason: "duplicate message" };
       }
 
       await step.run("handle-identified-text", async () => {
         await handleIdentifiedText({
-          conversationId: conversation.id,
+          conversationId: conv.id,
           text: messageData.text || "",
           messageId: messageData.id.toString(),
-          responseId: conversation.responseId,
-          status: conversation.status,
-          metadata: conversation.metadata,
+          responseId: conv.responseId,
+          status: conv.status,
+          metadata: conv.metadata,
         });
       });
 
       await publish(
-        telegramMessagesChannel(conversation.id).message({
-          conversationId: conversation.id,
+        conversationMessagesChannel(conv.id).message({
+          conversationId: conv.id,
           messageId: messageData.id.toString(),
         }),
       );
@@ -127,10 +130,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const isDuplicate = await step.run(
         `check-duplicate-${mediaType}`,
         async () => {
-          return await findDuplicateMessage(
-            conversation.id,
-            messageData.id.toString(),
-          );
+          return await findDuplicateMessage(conv.id, messageData.id.toString());
         },
       );
 
@@ -138,8 +138,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
         console.log(
           `⏭️ ${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение уже обработано, пропускаем`,
           {
-            conversationId: conversation.id,
-            telegramMessageId: messageData.id.toString(),
+            conversationId: conv.id,
+            conversationMessageId: messageData.id.toString(),
           },
         );
         return { skipped: true, reason: `duplicate ${mediaType} message` };
@@ -147,7 +147,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
       await step.run(`handle-${mediaType}`, async () => {
         await handleIdentifiedMedia({
-          conversationId: conversation.id,
+          conversationId: conv.id,
           chatId,
           messageId: messageData.id,
           messageIdStr: messageData.id.toString(),
@@ -157,8 +157,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
       });
 
       await publish(
-        telegramMessagesChannel(conversation.id).message({
-          conversationId: conversation.id,
+        conversationMessagesChannel(conv.id).message({
+          conversationId: conv.id,
           messageId: messageData.id.toString(),
         }),
       );

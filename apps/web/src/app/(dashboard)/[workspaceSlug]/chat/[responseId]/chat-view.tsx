@@ -194,7 +194,9 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                   candidateName={
                     currentConversation.candidateName ?? "Кандидат"
                   }
-                  candidateEmail={currentConversation.chatId}
+                  candidateEmail={
+                    currentConversation.response?.chatId ?? undefined
+                  }
                 />
               </div>
 
@@ -211,7 +213,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                 <SheetContent side="right" className="w-full sm:w-96 p-0">
                   <ChatSidebar
                     candidateName={currentConversation.candidateName}
-                    chatId={currentConversation.chatId}
+                    chatId={currentConversation.response?.chatId ?? ""}
                     responseData={responseData}
                   />
                 </SheetContent>
@@ -238,7 +240,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       <div className="hidden lg:block">
         <ChatSidebar
           candidateName={currentConversation.candidateName}
-          chatId={currentConversation.chatId}
+          chatId={currentConversation.response?.chatId ?? ""}
           responseData={responseData}
         />
       </div>

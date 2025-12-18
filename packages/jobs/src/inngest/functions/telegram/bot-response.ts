@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
-import { telegramMessage } from "@qbs-autonaim/db/schema";
+import { conversationMessage } from "@qbs-autonaim/db/schema";
 import type { getInterviewStartData } from "@qbs-autonaim/lib";
 import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
@@ -85,7 +85,7 @@ export async function generateAndSendBotResponse(params: {
   }
 
   const [botMsg] = await db
-    .insert(telegramMessage)
+    .insert(conversationMessage)
     .values({
       conversationId,
       sender: "BOT",

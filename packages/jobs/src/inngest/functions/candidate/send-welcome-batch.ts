@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversation,
   conversationMessage,
-  telegramConversation,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -214,48 +214,64 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Сохраняем беседу если получили chatId
             if (sendResult.chatId) {
-              const [conversation] = await db
-                .insert(telegramConversation)
-                .values({
-                  chatId: sendResult.chatId,
-                  responseId: response.id,
-                  candidateName: response.candidateName,
-                  username: response.telegramUsername || undefined,
-                  status: "ACTIVE",
-                  metadata: JSON.stringify({
-                    responseId: response.id,
-                    vacancyId: response.vacancyId,
-                    username: response.telegramUsername,
-                    interviewStarted: true,
-                    questionAnswers: [],
-                  }),
-                })
-                .onConflictDoUpdate({
-                  target: telegramConversation.chatId,
-                  set: {
+              const chatId = sendResult.chatId;
+
+              // Проверяем, есть ли уже conversation для этого response
+              const existing = await db.query.conversation.findFirst({
+                where: eq(conversation.responseId, response.id),
+              });
+
+              const metadata = JSON.stringify({
+                responseId: response.id,
+                vacancyId: response.vacancyId,
+                username: response.telegramUsername,
+                interviewStarted: true,
+                questionAnswers: [],
+              });
+
+              let conv: typeof conversation.$inferSelect | undefined;
+              if (existing) {
+                // Обновляем существующую conversation
+                const [updated] = await db
+                  .update(conversation)
+                  .set({
+                    candidateName: response.candidateName,
+                    username: response.telegramUsername || undefined,
+                    status: "ACTIVE",
+                    metadata,
+                  })
+                  .where(eq(conversation.id, existing.id))
+                  .returning();
+                conv = updated;
+              } else {
+                // Создаем новую conversation
+                const [created] = await db
+                  .insert(conversation)
+                  .values({
                     responseId: response.id,
                     candidateName: response.candidateName,
                     username: response.telegramUsername || undefined,
                     status: "ACTIVE",
-                    metadata: JSON.stringify({
-                      responseId: response.id,
-                      vacancyId: response.vacancyId,
-                      username: response.telegramUsername,
-                      interviewStarted: true,
-                      questionAnswers: [],
-                    }),
-                  },
-                })
-                .returning();
+                    metadata,
+                  })
+                  .returning();
+                conv = created;
+              }
+
+              // Обновляем chatId в response
+              await db
+                .update(vacancyResponse)
+                .set({ chatId })
+                .where(eq(vacancyResponse.id, response.id));
 
               // Сохраняем приветственное сообщение в историю
-              if (conversation) {
+              if (conv) {
                 await db.insert(conversationMessage).values({
-                  conversationId: conversation.id,
-                  channel: "TELEGRAM",
+                  conversationId: conv.id,
                   sender: "BOT",
                   contentType: "TEXT",
                   content: actualSentMessage,
+                  conversationMessageId: sendResult.messageId,
                 });
               }
             }

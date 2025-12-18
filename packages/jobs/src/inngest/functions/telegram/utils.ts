@@ -2,8 +2,9 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   companySettings,
-  telegramConversation,
-  telegramMessage,
+  conversation,
+  conversationMessagesage,
+  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { BotSettings } from "./types";
 
@@ -14,13 +15,13 @@ export function extractPinCode(text: string): string | null {
 
 export async function findDuplicateMessage(
   conversationId: string,
-  telegramMessageId: string,
+  conversationMessagesageId: string,
 ): Promise<boolean> {
-  const existingMessage = await db.query.telegramMessage.findFirst({
+  const existingMessage = await db.query.conversationMessagesage.findFirst({
     where: (messages, { and, eq }) =>
       and(
         eq(messages.conversationId, conversationId),
-        eq(messages.telegramMessageId, telegramMessageId),
+        eq(messages.conversationMessagesageconversationMessagenMessageId),
       ),
   });
   return !!existingMessage;
@@ -53,44 +54,33 @@ export async function getCompanyBotSettings(
 }
 
 export async function getConversationHistory(conversationId: string) {
-  return await db.query.telegramMessage.findMany({
-    where: eq(telegramMessage.conversationId, conversationId),
+  return await db.query.conversationMessagesage.findMany({
+    where: eq(conversationMessagesage.conversationId, conversationId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
     limit: 10,
   });
 }
 
-export async function createOrUpdateTempConversation(
-  chatId: string,
-  username?: string,
-  firstName?: string,
-) {
-  const updateSet: Record<string, string | undefined> = {};
-  if (username !== undefined) updateSet.username = username;
-  if (firstName !== undefined) updateSet.candidateName = firstName;
-  // Всегда обновляем metadata при конфликте для сохранения awaitingPin
-  updateSet.metadata = JSON.stringify({
-    identifiedBy: "none",
-    awaitingPin: true,
+/**
+ * Находит conversation по chatId через связь с vacancyResponse
+ */
+export async function findConversationByChatId(chatId: string) {
+  return await db.query.conversation.findFirst({
+    where: (fields, { inArray }) => {
+      return inArray(
+        fields.responseId,
+        db
+          .select({ id: vacancyResponse.id })
+          .from(vacancyResponse)
+          .where(eq(vacancyResponse.chatId, chatId)),
+      );
+    },
+    with: {
+      response: {
+        with: {
+          vacancy: true,
+        },
+      },
+    },
   });
-
-  const [conv] = await db
-    .insert(telegramConversation)
-    .values({
-      chatId,
-      candidateName: firstName,
-      username,
-      status: "ACTIVE",
-      metadata: JSON.stringify({
-        identifiedBy: "none",
-        awaitingPin: true,
-      }),
-    })
-    .onConflictDoUpdate({
-      target: telegramConversation.chatId,
-      set: updateSet,
-    })
-    .returning();
-
-  return conv;
 }

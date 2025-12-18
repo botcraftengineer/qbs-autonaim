@@ -1,10 +1,10 @@
 import {
   and,
+  conversation,
+  conversationMessage,
   desc,
   eq,
-  telegramConversation,
   telegramInterviewScoring,
-  telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
@@ -43,8 +43,8 @@ export const analyzeInterviewFunction = inngest.createFunction(
       // Получаем последний вопрос из истории сообщений
       const [conv] = await db
         .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.id, conversationId))
+        .from(conversation)
+        .where(eq(conversation.id, conversationId))
         .limit(1);
 
       if (!conv) {
@@ -54,14 +54,14 @@ export const analyzeInterviewFunction = inngest.createFunction(
       // Получаем последнее сообщение от бота (это текущий вопрос)
       const lastBotMessages = await db
         .select()
-        .from(telegramMessage)
+        .from(conversationMessage)
         .where(
           and(
-            eq(telegramMessage.conversationId, conversationId),
-            eq(telegramMessage.sender, "BOT"),
+            eq(conversationMessage.conversationId, conversationId),
+            eq(conversationMessage.sender, "BOT"),
           ),
         )
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(1);
 
       const lastBotMessage = lastBotMessages[0];
@@ -189,14 +189,14 @@ export const sendNextQuestionFunction = inngest.createFunction(
       // Получаем последний вопрос от бота
       const lastBotMessages = await db
         .select()
-        .from(telegramMessage)
+        .from(conversationMessage)
         .where(
           and(
-            eq(telegramMessage.conversationId, conversationId),
-            eq(telegramMessage.sender, "BOT"),
+            eq(conversationMessage.conversationId, conversationId),
+            eq(conversationMessage.sender, "BOT"),
           ),
         )
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -207,20 +207,29 @@ export const sendNextQuestionFunction = inngest.createFunction(
     const chatId = await step.run("get-chat-id", async () => {
       const [conv] = await db
         .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.id, conversationId))
+        .from(conversation)
+        .where(eq(conversation.id, conversationId))
         .limit(1);
 
       if (!conv) {
         throw new Error("Conversation не найден");
       }
 
-      console.log("📱 Получен chatId для отправки вопроса", {
-        conversationId,
-        chatId: conv.chatId,
+      // Получаем chatId через response
+      const response = await db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, conv.responseId),
       });
 
-      return conv.chatId;
+      if (!response?.chatId) {
+        throw new Error("ChatId не найден в response");
+      }
+
+      console.log("📱 Получен chatId для отправки вопроса", {
+        conversationId,
+        chatId: response.chatId,
+      });
+
+      return response.chatId;
     });
 
     const delay = await step.run("calculate-delay", () => {
@@ -242,7 +251,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
 
     await step.run("send-message", async () => {
       const [newMessage] = await db
-        .insert(telegramMessage)
+        .insert(conversationMessage)
         .values({
           conversationId,
           sender: "BOT",
@@ -311,14 +320,14 @@ export const completeInterviewFunction = inngest.createFunction(
       // Получаем последний вопрос от бота
       const lastBotMessages = await db
         .select()
-        .from(telegramMessage)
+        .from(conversationMessage)
         .where(
           and(
-            eq(telegramMessage.conversationId, conversationId),
-            eq(telegramMessage.sender, "BOT"),
+            eq(conversationMessage.conversationId, conversationId),
+            eq(conversationMessage.sender, "BOT"),
           ),
         )
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -335,14 +344,14 @@ export const completeInterviewFunction = inngest.createFunction(
         // Получаем последний вопрос от бота
         const lastBotMessages = await db
           .select()
-          .from(telegramMessage)
+          .from(conversationMessage)
           .where(
             and(
-              eq(telegramMessage.conversationId, conversationId),
-              eq(telegramMessage.sender, "BOT"),
+              eq(conversationMessage.conversationId, conversationId),
+              eq(conversationMessage.sender, "BOT"),
             ),
           )
-          .orderBy(desc(telegramMessage.createdAt))
+          .orderBy(desc(conversationMessage.createdAt))
           .limit(1);
 
         const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -418,8 +427,8 @@ export const completeInterviewFunction = inngest.createFunction(
         console.log("💰 Извлечение зарплатных ожиданий");
 
         // Получаем историю диалога
-        const conversation = await db.query.telegramConversation.findFirst({
-          where: eq(telegramConversation.id, conversationId),
+        const conv = await db.query.conversation.findFirst({
+          where: eq(conversation.id, conversationId),
           with: {
             messages: {
               orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -427,12 +436,12 @@ export const completeInterviewFunction = inngest.createFunction(
           },
         });
 
-        if (!conversation?.messages) {
+        if (!conv?.messages) {
           console.log("⚠️ История диалога не найдена");
           return;
         }
 
-        const conversationHistory = conversation.messages.map((msg) => ({
+        const conversationHistory = conv.messages.map((msg) => ({
           sender: msg.sender,
           content: msg.content,
         }));
@@ -469,28 +478,35 @@ export const completeInterviewFunction = inngest.createFunction(
     }
 
     const chatId = await step.run("get-chat-id", async () => {
-      const [conv] = await db
-        .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.id, conversationId))
-        .limit(1);
+      const conv = await db.query.conversation.findFirst({
+        where: eq(conversation.id, conversationId),
+      });
 
       if (!conv) {
         throw new Error("Conversation не найден");
       }
 
-      console.log("📱 Получен chatId для финального сообщения", {
-        conversationId,
-        chatId: conv.chatId,
+      // Получаем chatId через response
+      const response = await db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, conv.responseId),
       });
 
-      return conv.chatId;
+      if (!response?.chatId) {
+        throw new Error("ChatId не найден в response");
+      }
+
+      console.log("📱 Получен chatId для финального сообщения", {
+        conversationId,
+        chatId: response.chatId,
+      });
+
+      return response.chatId;
     });
 
     await step.run("send-final-message", async () => {
       // Получаем данные для персонализации финального сообщения
-      const conversation = await db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.id, conversationId),
+      const conv = await db.query.conversation.findFirst({
+        where: eq(conversation.id, conversationId),
         with: {
           messages: {
             orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -503,9 +519,9 @@ export const completeInterviewFunction = inngest.createFunction(
       let score: number | undefined;
       let detailedScore: number | undefined;
 
-      if (conversation?.responseId) {
+      if (conv?.responseId) {
         const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, conversation.responseId),
+          where: eq(vacancyResponse.id, conv.responseId),
           with: { vacancy: true },
         });
         candidateName = response?.candidateName ?? undefined;
@@ -521,7 +537,7 @@ export const completeInterviewFunction = inngest.createFunction(
 
       // Формируем историю диалога
       const conversationHistory =
-        conversation?.messages.map((msg) => ({
+        conv?.messages.map((msg) => ({
           sender: msg.sender,
           content: msg.content,
           contentType: msg.contentType,
@@ -548,7 +564,7 @@ export const completeInterviewFunction = inngest.createFunction(
       });
 
       const [newMessage] = await db
-        .insert(telegramMessage)
+        .insert(conversationMessage)
         .values({
           conversationId,
           sender: "BOT",
