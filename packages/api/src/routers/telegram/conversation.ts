@@ -179,8 +179,8 @@ export const getConversationRouter = {
       return conversation;
     }),
 
-  getByChatId: protectedProcedure
-    .input(z.object({ chatId: z.string(), workspaceId: workspaceIdSchema }))
+  getByUsername: protectedProcedure
+    .input(z.object({ username: z.string(), workspaceId: workspaceIdSchema }))
     .query(async ({ input, ctx }) => {
       const access = await workspaceRepository.checkAccess(
         input.workspaceId,
@@ -195,7 +195,7 @@ export const getConversationRouter = {
       }
 
       const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.chatId, input.chatId),
+        where: eq(telegramConversation.username, input.username),
         with: {
           response: {
             with: {

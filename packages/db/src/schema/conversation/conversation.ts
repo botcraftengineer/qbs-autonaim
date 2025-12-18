@@ -21,10 +21,12 @@ export const conversationStatusEnum = pgEnum("conversation_status", [
 
 export const conversation = pgTable("conversations", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  chatId: varchar("chat_id", { length: 100 }).notNull().unique(),
-  responseId: uuid("response_id").references(() => vacancyResponse.id, {
-    onDelete: "cascade",
-  }),
+  responseId: uuid("response_id")
+    .notNull()
+    .unique()
+    .references(() => vacancyResponse.id, {
+      onDelete: "cascade",
+    }),
   candidateName: varchar("candidate_name", { length: 500 }),
   username: varchar("username", { length: 100 }),
   status: conversationStatusEnum("status").default("ACTIVE").notNull(),
@@ -39,8 +41,7 @@ export const conversation = pgTable("conversations", {
 });
 
 export const CreateConversationSchema = createInsertSchema(conversation, {
-  chatId: z.string().max(100),
-  responseId: uuidv7Schema.optional(),
+  responseId: uuidv7Schema,
   candidateName: z.string().max(500).optional(),
   username: z.string().max(100).optional(),
   status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),

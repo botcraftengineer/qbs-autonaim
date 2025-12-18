@@ -1,16 +1,14 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file/file";
 import { telegramInterviewScoring } from "../telegram/interview-scoring";
-import { telegramMessage } from "../telegram/message";
 import { vacancyResponse } from "../vacancy/response";
 import { conversation } from "./conversation";
-import { conversationMessage } from "./message";
+import { message } from "./message";
 
 export const conversationRelations = relations(
   conversation,
   ({ many, one }) => ({
-    messages: many(conversationMessage),
-    telegramMessages: many(telegramMessage),
+    messages: many(message),
     interviewScoring: one(telegramInterviewScoring, {
       fields: [conversation.id],
       references: [telegramInterviewScoring.conversationId],
@@ -22,17 +20,14 @@ export const conversationRelations = relations(
   }),
 );
 
-export const conversationMessageRelations = relations(
-  conversationMessage,
-  ({ one }) => ({
-    conversation: one(conversation, {
-      fields: [conversationMessage.conversationId],
-      references: [conversation.id],
-    }),
-    file: one(file, {
-      fields: [conversationMessage.fileId],
-      references: [file.id],
-      relationName: "file",
-    }),
+export const messageRelations = relations(message, ({ one }) => ({
+  conversation: one(conversation, {
+    fields: [message.conversationId],
+    references: [conversation.id],
   }),
-);
+  file: one(file, {
+    fields: [message.fileId],
+    references: [file.id],
+    relationName: "file",
+  }),
+}));

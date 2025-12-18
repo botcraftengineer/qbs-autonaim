@@ -11,35 +11,19 @@ interface IdentificationResult {
   identified: boolean;
   responseId?: string;
   conversationId?: string;
-  method?: "chatId" | "username" | "phone" | "pinCode";
+  method?: "username" | "phone" | "pinCode";
 }
 
 /**
  * Идентифицировать кандидата по различным параметрам
+ * Теперь используем username как основной идентификатор для Telegram
  */
 export async function identifyCandidate(
   message: Message,
   workspaceId: string,
 ): Promise<IdentificationResult> {
-  const chatId = message.chat.id.toString();
-
   try {
-    // 1. Проверка по существующей беседе (chatId)
-    const existingConversation = await db.query.telegramConversation.findFirst({
-      where: eq(telegramConversation.chatId, chatId),
-    });
-
-    // Беседа считается идентифицированной только если есть responseId
-    if (existingConversation?.responseId) {
-      return {
-        identified: true,
-        responseId: existingConversation.responseId,
-        conversationId: existingConversation.id,
-        method: "chatId",
-      };
-    }
-
-    // 2. Получение username отправителя
+    // 1. Получение username отправителя
     const sender = message.sender;
     let username: string | undefined;
 
@@ -47,7 +31,7 @@ export async function identifyCandidate(
       username = sender.username;
     }
 
-    // 3. Поиск по username в vacancy_response с проверкой workspaceId
+    // 2. Поиск по username в vacancy_response с проверкой workspaceId
     if (username) {
       const responseByUsername = await db
         .select({
@@ -67,11 +51,25 @@ export async function identifyCandidate(
         .then((rows) => rows[0]);
 
       if (responseByUsername) {
-        // Создаем новую беседу или обновляем существующую
+        // Проверяем существующую беседу по responseId
+        const existingConversation =
+          await db.query.telegramConversation.findFirst({
+            where: eq(telegramConversation.responseId, responseByUsername.id),
+          });
+
+        if (existingConversation) {
+          return {
+            identified: true,
+            responseId: responseByUsername.id,
+            conversationId: existingConversation.id,
+            method: "username",
+          };
+        }
+
+        // Создаем новую беседу
         const [conversation] = await db
           .insert(telegramConversation)
           .values({
-            chatId,
             responseId: responseByUsername.id,
             candidateName: responseByUsername.candidateName || undefined,
             username,
@@ -80,19 +78,6 @@ export async function identifyCandidate(
               identifiedBy: "username",
               username,
             }),
-          })
-          .onConflictDoUpdate({
-            target: telegramConversation.chatId,
-            set: {
-              responseId: responseByUsername.id,
-              candidateName: responseByUsername.candidateName || undefined,
-              username,
-              status: "ACTIVE",
-              metadata: JSON.stringify({
-                identifiedBy: "username",
-                username,
-              }),
-            },
           })
           .returning();
 
@@ -105,8 +90,7 @@ export async function identifyCandidate(
       }
     }
 
-    // 4. Поиск по номеру телефона (если доступен)
-    // Telegram не всегда предоставляет номер телефона, но можно попробовать
+    // 3. Поиск по номеру телефона (если доступен)
     const phone =
       sender && "phone" in sender && typeof sender.phone === "string"
         ? sender.phone
@@ -131,10 +115,25 @@ export async function identifyCandidate(
         .then((rows) => rows[0]);
 
       if (responseByPhone) {
+        // Проверяем существующую беседу по responseId
+        const existingConversation =
+          await db.query.telegramConversation.findFirst({
+            where: eq(telegramConversation.responseId, responseByPhone.id),
+          });
+
+        if (existingConversation) {
+          return {
+            identified: true,
+            responseId: responseByPhone.id,
+            conversationId: existingConversation.id,
+            method: "phone",
+          };
+        }
+
+        // Создаем новую беседу
         const [conversation] = await db
           .insert(telegramConversation)
           .values({
-            chatId,
             responseId: responseByPhone.id,
             candidateName: responseByPhone.candidateName || undefined,
             username,
@@ -143,19 +142,6 @@ export async function identifyCandidate(
               identifiedBy: "phone",
               phone,
             }),
-          })
-          .onConflictDoUpdate({
-            target: telegramConversation.chatId,
-            set: {
-              responseId: responseByPhone.id,
-              candidateName: responseByPhone.candidateName || undefined,
-              username,
-              status: "ACTIVE",
-              metadata: JSON.stringify({
-                identifiedBy: "phone",
-                phone,
-              }),
-            },
           })
           .returning();
 

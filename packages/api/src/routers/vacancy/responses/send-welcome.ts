@@ -10,12 +10,12 @@ export const sendWelcome = protectedProcedure
   .input(
     z.object({
       responseId: z.string(),
-      chatId: z.string(),
+      username: z.string(),
       workspaceId: workspaceIdSchema,
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    const { responseId, chatId, workspaceId } = input;
+    const { responseId, username, workspaceId } = input;
 
     // Проверка доступа к рабочему пространству
     const access = await workspaceRepository.checkAccess(
@@ -60,14 +60,17 @@ export const sendWelcome = protectedProcedure
       });
     }
 
-    // Создаем или обновляем запись в telegram_conversations
+    // Создаем или обновляем запись в conversations
+    const cleanUsername = username.startsWith("@")
+      ? username.substring(1)
+      : username;
+
     await ctx.db
       .insert(telegramConversation)
       .values({
-        chatId,
         responseId,
         candidateName: response.candidateName,
-        username: chatId.startsWith("@") ? chatId.substring(1) : undefined,
+        username: cleanUsername,
         status: "ACTIVE",
         metadata: JSON.stringify({
           responseId,
@@ -75,11 +78,10 @@ export const sendWelcome = protectedProcedure
         }),
       })
       .onConflictDoUpdate({
-        target: telegramConversation.chatId,
+        target: telegramConversation.responseId,
         set: {
-          responseId,
           candidateName: response.candidateName,
-          username: chatId.startsWith("@") ? chatId.substring(1) : undefined,
+          username: cleanUsername,
           status: "ACTIVE",
           metadata: JSON.stringify({
             responseId,
@@ -93,7 +95,7 @@ export const sendWelcome = protectedProcedure
       name: "candidate/welcome",
       data: {
         responseId,
-        username: chatId,
+        username: cleanUsername,
       },
     });
 
