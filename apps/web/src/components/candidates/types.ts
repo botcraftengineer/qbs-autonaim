@@ -1,7 +1,6 @@
 export type FunnelStage =
   | "SCREENING_DONE"
   | "CHAT_INTERVIEW"
-  | "TRANSCRIPT_READY"
   | "OFFER_SENT"
   | "SECURITY_PASSED"
   | "CONTRACT_SENT"
@@ -58,7 +57,6 @@ export interface FunnelActivity {
 export const STAGE_LABELS: Record<FunnelStage, string> = {
   SCREENING_DONE: "Скрининг выполнен",
   CHAT_INTERVIEW: "Чат Интервью",
-  TRANSCRIPT_READY: "Расшифровка готова",
   OFFER_SENT: "Оффер отправлен",
   SECURITY_PASSED: "СБ пройдена",
   CONTRACT_SENT: "Договор отправлен",
@@ -71,8 +69,6 @@ export const STAGE_COLORS: Record<FunnelStage, string> = {
     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400",
   CHAT_INTERVIEW:
     "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-400",
-  TRANSCRIPT_READY:
-    "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-950 dark:text-purple-400",
   OFFER_SENT:
     "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400",
   SECURITY_PASSED:
