@@ -2,8 +2,8 @@
  * Базовый агент с интеграцией AI SDK
  */
 
+import { generateText } from "@qbs-autonaim/lib/ai";
 import type { LanguageModel } from "ai";
-import { generateText } from "ai";
 import { BaseAgent } from "./base-agent";
 import type { AgentType } from "./types";
 
@@ -44,8 +44,8 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
     const result = await generateText({
       model: this.model,
       prompt,
-      maxOutputTokens: this.maxTokens,
       ...(tools && { tools }),
+      generationName: `${this.name}-generation`,
     });
 
     return result.text;

@@ -219,6 +219,7 @@
       "name": "@qbs-autonaim/prompts",
       "version": "0.1.0",
       "dependencies": {
+        "@qbs-autonaim/lib": "workspace:*",
         "string-strip-html": "^13.5.0",
         "zod": "4.2.1",
       },

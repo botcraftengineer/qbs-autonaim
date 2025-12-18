@@ -19,6 +19,8 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
+    "@qbs-autonaim/lib": "workspace:*",
+
     "string-strip-html": "^13.5.0",
     "zod": "4.2.1"
   },
