@@ -16,12 +16,12 @@ import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
-import type { FunnelCandidate } from "../types";
+import type { FunnelCandidate, FunnelCandidateDetail } from "../types";
 
 interface RejectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  candidate: FunnelCandidate;
+  candidate: FunnelCandidate | FunnelCandidateDetail | null;
   workspaceId: string;
 }
 
@@ -51,11 +51,14 @@ export function RejectDialog({
   });
 
   const handleReject = () => {
+    if (!candidate) return;
     rejectMutation.mutate({
       candidateId: candidate.id,
       workspaceId,
     });
   };
+
+  if (!candidate) return null;
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>

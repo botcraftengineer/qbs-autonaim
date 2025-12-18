@@ -20,12 +20,12 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { useTRPC } from "~/trpc/react";
-import type { FunnelCandidate } from "../types";
+import type { FunnelCandidate, FunnelCandidateDetail } from "../types";
 
 interface SendOfferDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  candidate: FunnelCandidate;
+  candidate: FunnelCandidate | FunnelCandidateDetail | null;
   workspaceId: string;
 }
 
@@ -88,7 +88,7 @@ export function SendOfferDialog({
   } = useForm<OfferFormData>({
     resolver: zodResolver(offerFormSchema),
     defaultValues: {
-      position: candidate.position,
+      position: candidate?.position ?? "",
       salary: "",
       startDate: "",
       benefits: "",
@@ -98,7 +98,7 @@ export function SendOfferDialog({
 
   // Сбрасываем форму при открытии диалога
   useEffect(() => {
-    if (open) {
+    if (open && candidate) {
       reset({
         position: candidate.position,
         salary: "",
@@ -107,7 +107,7 @@ export function SendOfferDialog({
         message: "",
       });
     }
-  }, [open, candidate.position, reset]);
+  }, [open, candidate, reset]);
 
   // Фокусируемся на первой ошибке при валидации
   useEffect(() => {
@@ -132,6 +132,7 @@ export function SendOfferDialog({
   });
 
   const onSubmit = (data: OfferFormData) => {
+    if (!candidate) return;
     sendOfferMutation.mutate({
       workspaceId,
       candidateId: candidate.id,
@@ -144,6 +145,8 @@ export function SendOfferDialog({
       },
     });
   };
+
+  if (!candidate) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

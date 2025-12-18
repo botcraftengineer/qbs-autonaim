@@ -49,7 +49,7 @@ export function CandidateModal({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const { data: candidateDetail, isLoading: isLoadingDetail } = useQuery({
+  const { data: candidateDetail, isLoading: isLoadingDetail, error: candidateDetailError } = useQuery({
     ...trpc.candidates.getById.queryOptions({
       workspaceId,
       candidateId: candidate?.id ?? "",
@@ -57,7 +57,14 @@ export function CandidateModal({
     enabled: open && !!candidate?.id,
   });
 
-  const fullCandidate = candidateDetail ?? candidate;
+  useEffect(() => {
+    if (candidateDetailError) {
+      console.error("Ошибка загрузки данных кандидата:", candidateDetailError);
+      toast.error("Не удалось загрузить данные кандидата");
+    }
+  }, [candidateDetailError]);
+
+  const fullCandidate: FunnelCandidateDetail | FunnelCandidate | null = candidateDetail ?? candidate;
   const avatarUrl = useAvatarUrl(fullCandidate?.avatarFileId);
   const [selectedStatus, setSelectedStatus] = useState(
     fullCandidate?.stage ?? "REVIEW",
@@ -215,9 +222,13 @@ export function CandidateModal({
                 <div className="h-32 bg-muted animate-pulse rounded-lg" />
                 <div className="h-24 bg-muted animate-pulse rounded-lg" />
               </div>
-            ) : (
+            ) : candidateDetailError ? (
+              <div className="space-y-4 text-center py-8">
+                <p className="text-muted-foreground">Не удалось загрузить полные данные кандидата</p>
+              </div>
+            ) : candidateDetail ? (
               <CandidateInfo
-                candidate={fullCandidate as FunnelCandidateDetail}
+                candidate={candidateDetail}
                 isLoading={{
                   sendGreeting: isSendingGreeting,
                   invite: inviteCandidateMutation.isPending,
@@ -241,8 +252,8 @@ export function CandidateModal({
                       toast.info("Функция оценки в разработке");
                       break;
                     case "view-resume":
-                      if ("resumeUrl" in fullCandidate && fullCandidate.resumeUrl && typeof fullCandidate.resumeUrl === "string") {
-                        window.open(fullCandidate.resumeUrl, "_blank");
+                      if (candidateDetail.resumeUrl) {
+                        window.open(candidateDetail.resumeUrl, "_blank");
                       } else {
                         toast.error("Резюме недоступно");
                       }
@@ -258,6 +269,11 @@ export function CandidateModal({
                   }
                 }}
               />
+            ) : (
+              <div className="space-y-4">
+                <div className="h-32 bg-muted animate-pulse rounded-lg" />
+                <div className="h-24 bg-muted animate-pulse rounded-lg" />
+              </div>
             )}
 
             <div className="border-t pt-6">
