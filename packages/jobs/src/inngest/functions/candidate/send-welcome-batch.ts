@@ -258,12 +258,6 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 conv = created;
               }
 
-              // Обновляем chatId в response
-              await db
-                .update(vacancyResponse)
-                .set({ chatId })
-                .where(eq(vacancyResponse.id, response.id));
-
               // Сохраняем приветственное сообщение в историю
               if (conv) {
                 await db.insert(conversationMessage).values({
