@@ -190,7 +190,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         });
 
         // Откладываем обработку - ждем еще сообщений
-        await step.sleep("wait-for-more-messages", "2m");
+        await step.sleep("wait-for-more-messages", "15s");
 
         // Повторно проверяем после ожидания
         const recheckGroup = await step.run(
@@ -321,7 +321,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         });
 
         // Откладываем обработку
-        await step.sleep("wait-for-more-voice-messages", "2m");
+        await step.sleep("wait-for-more-voice-messages", "15s");
 
         // Повторно проверяем
         const recheckGroup = await step.run(
