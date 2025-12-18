@@ -2,6 +2,7 @@
  * Агент для извлечения зарплатных ожиданий из истории диалога
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -13,10 +14,14 @@ export interface SalaryExtractionInput {
   }>;
 }
 
-export interface SalaryExtractionOutput {
-  salaryExpectations: string;
-  confidence: number;
-}
+const salaryExtractionOutputSchema = z.object({
+  salaryExpectations: z.string(),
+  confidence: z.number().min(0).max(1),
+});
+
+export type SalaryExtractionOutput = z.infer<
+  typeof salaryExtractionOutputSchema
+>;
 
 export class SalaryExtractionAgent extends AIPoweredAgent<
   SalaryExtractionInput,
@@ -81,7 +86,16 @@ ${candidateMessages}
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed = this.parseJSONResponse<SalaryExtractionOutput>(aiResponse);
+      const expectedFormat = `{
+  "salaryExpectations": "string",
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        salaryExtractionOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

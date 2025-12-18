@@ -3,6 +3,7 @@
  * Анализирует все вопросы и ответы, выставляет оценку
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -11,12 +12,16 @@ export interface InterviewScoringInput {
   previousQA: Array<{ question: string; answer: string }>;
 }
 
-export interface InterviewScoringOutput {
-  score: number;
-  detailedScore: number;
-  analysis: string;
-  confidence: number;
-}
+const interviewScoringOutputSchema = z.object({
+  score: z.number().min(0).max(5),
+  detailedScore: z.number().min(0).max(100),
+  analysis: z.string(),
+  confidence: z.number().min(0).max(1),
+});
+
+export type InterviewScoringOutput = z.infer<
+  typeof interviewScoringOutputSchema
+>;
 
 export class InterviewScoringAgent extends AIPoweredAgent<
   InterviewScoringInput,
@@ -91,7 +96,18 @@ ${input.previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   О
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed = this.parseJSONResponse<InterviewScoringOutput>(aiResponse);
+      const expectedFormat = `{
+  "score": number (0-5),
+  "detailedScore": number (0-100),
+  "analysis": "string (HTML format)",
+  "confidence": number (0.0-1.0)
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        interviewScoringOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

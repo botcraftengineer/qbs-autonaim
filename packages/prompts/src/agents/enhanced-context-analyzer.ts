@@ -2,6 +2,7 @@
  * Улучшенный агент анализа контекста с AI SDK
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -11,20 +12,25 @@ export interface EnhancedContextAnalysisInput {
   previousMessages?: Array<{ sender: string; content: string }>;
 }
 
-export interface EnhancedContextAnalysisOutput {
-  messageType:
-    | "QUESTION"
-    | "ANSWER"
-    | "ACKNOWLEDGMENT"
-    | "POSTPONE_REQUEST"
-    | "REFUSAL"
-    | "UNCLEAR";
-  intent: string;
-  requiresResponse: boolean;
-  sentiment: "POSITIVE" | "NEUTRAL" | "NEGATIVE";
-  topics: string[];
-  confidence: number;
-}
+const enhancedContextAnalysisOutputSchema = z.object({
+  messageType: z.enum([
+    "QUESTION",
+    "ANSWER",
+    "ACKNOWLEDGMENT",
+    "POSTPONE_REQUEST",
+    "REFUSAL",
+    "UNCLEAR",
+  ]),
+  intent: z.string(),
+  requiresResponse: z.boolean(),
+  sentiment: z.enum(["POSITIVE", "NEUTRAL", "NEGATIVE"]),
+  topics: z.array(z.string()),
+  confidence: z.number().min(0).max(1),
+});
+
+export type EnhancedContextAnalysisOutput = z.infer<
+  typeof enhancedContextAnalysisOutputSchema
+>;
 
 export class EnhancedContextAnalyzerAgent extends AIPoweredAgent<
   EnhancedContextAnalysisInput,
@@ -94,8 +100,22 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
 
       // Реальный AI-вызов
       const aiResponse = await this.generateAIResponse(prompt);
-      const parsed =
-        this.parseJSONResponse<EnhancedContextAnalysisOutput>(aiResponse);
+      
+      // Используем метод с автоматическим исправлением JSON
+      const expectedFormat = `{
+  "messageType": "QUESTION" | "ANSWER" | "ACKNOWLEDGMENT" | "POSTPONE_REQUEST" | "REFUSAL" | "UNCLEAR",
+  "intent": "string",
+  "requiresResponse": boolean,
+  "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
+  "topics": ["string"],
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        enhancedContextAnalysisOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

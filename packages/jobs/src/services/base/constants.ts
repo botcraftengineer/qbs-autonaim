@@ -13,7 +13,7 @@ export const INTERVIEW = {
   /** Резервная детальная оценка по умолчанию (шкала 0-100) */
   DEFAULT_FALLBACK_DETAILED_SCORE: 50,
   /** Резервный вопрос по умолчанию при сбое парсинга AI */
-  DEFAULT_FALLBACK_QUESTION: "Расскажите подробнее о своем опыте",
+  DEFAULT_FALLBACK_QUESTION: "",
 } as const;
 
 export const SCREENING = {

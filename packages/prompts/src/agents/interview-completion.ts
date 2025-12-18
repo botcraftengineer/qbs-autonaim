@@ -2,6 +2,7 @@
  * Агент для генерации финального сообщения после завершения интервью
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -12,10 +13,14 @@ export interface InterviewCompletionInput {
   detailedScore?: number;
 }
 
-export interface InterviewCompletionOutput {
-  finalMessage: string;
-  confidence: number;
-}
+const interviewCompletionOutputSchema = z.object({
+  finalMessage: z.string(),
+  confidence: z.number().min(0).max(1),
+});
+
+export type InterviewCompletionOutput = z.infer<
+  typeof interviewCompletionOutputSchema
+>;
 
 export class InterviewCompletionAgent extends AIPoweredAgent<
   InterviewCompletionInput,
@@ -125,8 +130,16 @@ ${vacancyText}
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed =
-        this.parseJSONResponse<InterviewCompletionOutput>(aiResponse);
+      const expectedFormat = `{
+  "finalMessage": "string",
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        interviewCompletionOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

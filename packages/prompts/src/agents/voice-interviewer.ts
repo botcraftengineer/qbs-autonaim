@@ -3,6 +3,7 @@
  * Специализируется на анализе голосовых ответов и генерации следующих вопросов
  */
 
+import { z } from "zod";
 import { wrapUserContent } from "../utils/sanitize";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
@@ -17,13 +18,17 @@ export interface VoiceInterviewerInput {
   customInterviewQuestions?: string | null;
 }
 
-export interface VoiceInterviewerOutput {
-  analysis: string;
-  shouldContinue: boolean;
-  reason?: string;
-  nextQuestion?: string;
-  confidence: number;
-}
+const voiceInterviewerOutputSchema = z.object({
+  analysis: z.string(),
+  shouldContinue: z.boolean(),
+  reason: z.string().optional(),
+  nextQuestion: z.string().optional(),
+  confidence: z.number().min(0).max(1).optional(),
+});
+
+export type VoiceInterviewerOutput = z.infer<
+  typeof voiceInterviewerOutputSchema
+>;
 
 export class VoiceInterviewerAgent extends AIPoweredAgent<
   VoiceInterviewerInput,
@@ -204,10 +209,19 @@ ${input.currentAnswer}
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed =
-        this.parseJSONResponse<Omit<VoiceInterviewerOutput, "confidence">>(
-          aiResponse,
-        );
+      const expectedFormat = `{
+  "analysis": "string (HTML format)",
+  "shouldContinue": boolean,
+  "reason": "string (optional)",
+  "nextQuestion": "string (optional)",
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        voiceInterviewerOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };
@@ -215,7 +229,7 @@ ${input.currentAnswer}
 
       const result: VoiceInterviewerOutput = {
         ...parsed,
-        confidence: 0.9,
+        confidence: parsed.confidence ?? 0.9,
       };
 
       // Дополнительная проверка лимита

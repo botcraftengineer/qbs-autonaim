@@ -2,6 +2,7 @@
  * Улучшенный агент интервьюера с AI SDK
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { getConversationContext, getVoiceMessagesInfo } from "./tools";
@@ -15,15 +16,22 @@ export interface EnhancedInterviewerInput {
   customQuestions?: string | null;
 }
 
-export interface EnhancedInterviewerOutput {
-  response: string;
-  shouldRequestVoice: boolean;
-  questionType?: "ORGANIZATIONAL" | "PROFESSIONAL" | "CLARIFICATION";
-  shouldContinue: boolean;
-  confidence: number;
+const enhancedInterviewerOutputSchema = z.object({
+  response: z.string(),
+  shouldRequestVoice: z.boolean(),
+  questionType: z
+    .enum(["ORGANIZATIONAL", "PROFESSIONAL", "CLARIFICATION"])
+    .optional(),
+  shouldContinue: z.boolean(),
+  confidence: z.number().min(0).max(1),
+});
+
+export type EnhancedInterviewerOutput = z.infer<
+  typeof enhancedInterviewerOutputSchema
+> & {
   detectedTopics: string[];
   sentiment: string;
-}
+};
 
 export class EnhancedInterviewerAgent extends AIPoweredAgent<
   EnhancedInterviewerInput,
@@ -116,10 +124,19 @@ ${context.conversationHistory
         getConversationContext,
       });
 
-      const parsed =
-        this.parseJSONResponse<
-          Omit<EnhancedInterviewerOutput, "detectedTopics" | "sentiment">
-        >(aiResponse);
+      const expectedFormat = `{
+  "response": "string",
+  "shouldRequestVoice": boolean,
+  "questionType": "ORGANIZATIONAL" | "PROFESSIONAL" | "CLARIFICATION" | null,
+  "shouldContinue": boolean,
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        enhancedInterviewerOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

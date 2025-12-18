@@ -2,6 +2,7 @@
  * Улучшенный агент детектора эскалации с AI SDK
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import type { AgentResult, BaseAgentContext } from "./types";
@@ -13,12 +14,16 @@ export interface EnhancedEscalationInput {
   conversationLength: number;
 }
 
-export interface EnhancedEscalationOutput {
-  shouldEscalate: boolean;
-  reason?: string;
-  urgency: "LOW" | "MEDIUM" | "HIGH";
-  suggestedAction?: string;
-}
+const enhancedEscalationOutputSchema = z.object({
+  shouldEscalate: z.boolean(),
+  reason: z.string().optional(),
+  urgency: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  suggestedAction: z.string().optional(),
+});
+
+export type EnhancedEscalationOutput = z.infer<
+  typeof enhancedEscalationOutputSchema
+>;
 
 export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
   EnhancedEscalationInput,
@@ -61,10 +66,12 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
 ФОРМАТ ОТВЕТА (JSON):
 {
   "shouldEscalate": true/false,
-  "reason": "причина эскалации",
+  "reason": "причина эскалации (опционально)",
   "urgency": "LOW" | "MEDIUM" | "HIGH",
-  "suggestedAction": "рекомендуемое действие"
-}`;
+  "suggestedAction": "рекомендуемое действие (опционально)"
+}
+
+Поля "reason" и "suggestedAction" можно опустить, если эскалация не требуется.`;
   }
 
   async execute(
@@ -93,8 +100,19 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
 
       // Реальный AI-вызов для более сложных случаев
       const aiResponse = await this.generateAIResponse(prompt);
-      const parsed =
-        this.parseJSONResponse<EnhancedEscalationOutput>(aiResponse);
+      
+      const expectedFormat = `{
+  "shouldEscalate": boolean,
+  "reason": "string (optional)",
+  "urgency": "LOW" | "MEDIUM" | "HIGH",
+  "suggestedAction": "string (optional)"
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        enhancedEscalationOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };
