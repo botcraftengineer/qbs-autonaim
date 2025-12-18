@@ -1,0 +1,177 @@
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "~/trpc/react";
+import type { FunnelStage } from "../types";
+
+interface UseStageQueriesParams {
+  workspaceId: string | null | undefined;
+  selectedVacancy: string;
+  debouncedSearch: string;
+  stageLimits: Record<FunnelStage, number>;
+}
+
+export function useStageQueries({
+  workspaceId,
+  selectedVacancy,
+  debouncedSearch,
+  stageLimits,
+}: UseStageQueriesParams) {
+  const trpc = useTRPC();
+  const enabled = !!workspaceId;
+
+  const screeningDoneQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["SCREENING_DONE"],
+      limit: stageLimits.SCREENING_DONE,
+    }),
+    enabled,
+  });
+
+  const chatInterviewQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["CHAT_INTERVIEW"],
+      limit: stageLimits.CHAT_INTERVIEW,
+    }),
+    enabled,
+  });
+
+  const offerSentQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["OFFER_SENT"],
+      limit: stageLimits.OFFER_SENT,
+    }),
+    enabled,
+  });
+
+  const securityPassedQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["SECURITY_PASSED"],
+      limit: stageLimits.SECURITY_PASSED,
+    }),
+    enabled,
+  });
+
+  const contractSentQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["CONTRACT_SENT"],
+      limit: stageLimits.CONTRACT_SENT,
+    }),
+    enabled,
+  });
+
+  const onboardingQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["ONBOARDING"],
+      limit: stageLimits.ONBOARDING,
+    }),
+    enabled,
+  });
+
+  const rejectedQuery = useQuery({
+    ...trpc.candidates.list.queryOptions({
+      workspaceId: workspaceId ?? "",
+      vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+      search: debouncedSearch || undefined,
+      stages: ["REJECTED"],
+      limit: stageLimits.REJECTED,
+    }),
+    enabled,
+  });
+
+  return [
+    {
+      stage: "SCREENING_DONE" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["SCREENING_DONE"],
+        limit: stageLimits.SCREENING_DONE,
+      }).queryKey,
+      query: screeningDoneQuery,
+    },
+    {
+      stage: "CHAT_INTERVIEW" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["CHAT_INTERVIEW"],
+        limit: stageLimits.CHAT_INTERVIEW,
+      }).queryKey,
+      query: chatInterviewQuery,
+    },
+    {
+      stage: "OFFER_SENT" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["OFFER_SENT"],
+        limit: stageLimits.OFFER_SENT,
+      }).queryKey,
+      query: offerSentQuery,
+    },
+    {
+      stage: "SECURITY_PASSED" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["SECURITY_PASSED"],
+        limit: stageLimits.SECURITY_PASSED,
+      }).queryKey,
+      query: securityPassedQuery,
+    },
+    {
+      stage: "CONTRACT_SENT" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["CONTRACT_SENT"],
+        limit: stageLimits.CONTRACT_SENT,
+      }).queryKey,
+      query: contractSentQuery,
+    },
+    {
+      stage: "ONBOARDING" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["ONBOARDING"],
+        limit: stageLimits.ONBOARDING,
+      }).queryKey,
+      query: onboardingQuery,
+    },
+    {
+      stage: "REJECTED" as FunnelStage,
+      queryKey: trpc.candidates.list.queryOptions({
+        workspaceId: workspaceId ?? "",
+        vacancyId: selectedVacancy === "all" ? undefined : selectedVacancy,
+        search: debouncedSearch || undefined,
+        stages: ["REJECTED"],
+        limit: stageLimits.REJECTED,
+      }).queryKey,
+      query: rejectedQuery,
+    },
+  ];
+}
