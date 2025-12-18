@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   triggerRefreshSingleResume,
+  triggerScreenResponse,
   triggerSendWelcome,
 } from "~/actions/trigger";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
@@ -79,6 +80,7 @@ export function CandidateModal({
 
   const [isSendingGreeting, setIsSendingGreeting] = useState(false);
   const [isRefreshingResume, setIsRefreshingResume] = useState(false);
+  const [isRating, setIsRating] = useState(false);
 
   const inviteCandidateMutation = useMutation({
     ...trpc.candidates.inviteCandidate.mutationOptions(),
@@ -159,6 +161,33 @@ export function CandidateModal({
     }
   };
 
+  const handleRate = async () => {
+    if (!fullCandidate) return;
+
+    setIsRating(true);
+    try {
+      const result = await triggerScreenResponse(fullCandidate.id);
+      if (!result.success) {
+        toast.error("Не удалось запустить оценку");
+        return;
+      }
+      toast.success("Оценка кандидата запущена");
+      setTimeout(() => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.list.queryKey(),
+        });
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+        });
+      }, 2000);
+    } catch (error) {
+      console.error("Ошибка запуска оценки:", error);
+      toast.error("Ошибка запуска оценки");
+    } finally {
+      setIsRating(false);
+    }
+  };
+
   if (!candidate || !fullCandidate) return null;
 
   return (
@@ -233,6 +262,7 @@ export function CandidateModal({
                   sendGreeting: isSendingGreeting,
                   invite: inviteCandidateMutation.isPending,
                   refreshResume: isRefreshingResume,
+                  rate: isRating,
                 }}
                 onAction={(action) => {
                   switch (action) {
@@ -249,7 +279,7 @@ export function CandidateModal({
                       });
                       break;
                     case "rate":
-                      toast.info("Функция оценки в разработке");
+                      void handleRate();
                       break;
                     case "view-resume":
                       if (candidateDetail.resumeUrl) {

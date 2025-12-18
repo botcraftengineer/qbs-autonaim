@@ -14,7 +14,7 @@ import {
   Phone,
   RefreshCw,
   Send,
-  Star,
+  Sparkles,
   XCircle,
 } from "lucide-react";
 import { MatchScoreCircle } from "../match-score-circle";
@@ -27,6 +27,7 @@ interface CandidateInfoProps {
     sendGreeting?: boolean;
     invite?: boolean;
     refreshResume?: boolean;
+    rate?: boolean;
   };
 }
 
@@ -205,10 +206,15 @@ export function CandidateInfo({
           size="sm"
           className="gap-2"
           onClick={() => onAction?.("rate")}
+          disabled={isLoading.rate}
           aria-label="Оценить кандидата"
         >
-          <Star className="h-4 w-4" />
-          Оценить
+          {isLoading.rate ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
+          {isLoading.rate ? "Оценка…" : "Оценить"}
         </Button>
         <Button
           variant="outline"
