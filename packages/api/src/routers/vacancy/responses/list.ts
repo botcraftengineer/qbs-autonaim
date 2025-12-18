@@ -41,14 +41,7 @@ export const list = protectedProcedure
         .default("all"),
       statusFilter: z
         .array(
-          z.enum([
-            "NEW",
-            "EVALUATED",
-            "DIALOG_APPROVED",
-            "INTERVIEW_HH",
-            "COMPLETED",
-            "SKIPPED",
-          ]),
+          z.enum(["NEW", "EVALUATED", "INTERVIEW_HH", "COMPLETED", "SKIPPED"]),
         )
         .optional(),
       search: z.string().optional(),

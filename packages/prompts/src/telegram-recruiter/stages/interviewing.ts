@@ -45,7 +45,6 @@ function isCandidateVoiceMessage(msg: {
  * Соответствует значениям RESPONSE_STATUS из packages/db/src/schema/vacancy/response-status.ts:
  * - NEW: Только откликнулся, резюме не проанализировано
  * - EVALUATED: AI проанализировал резюме, выставлена оценка, предложен диалог
- * - DIALOG_APPROVED: Вопросы проверены и одобрены HR
  * - INTERVIEW_HH: Активный диалог с кандидатом через HH.ru
  * - COMPLETED: Кандидат ответил на все вопросы, есть вывод по нему
  * - SKIPPED: Кандидат не ответил в срок (24 часа)
@@ -57,8 +56,6 @@ function buildStatusText(status?: string): string {
       return "ℹ️ СТАТУС NEW: Кандидат только откликнулся, резюме ещё не проанализировано";
     case "EVALUATED":
       return "ℹ️ СТАТУС EVALUATED: AI проанализировал резюме, выставлена оценка";
-    case "DIALOG_APPROVED":
-      return "ℹ️ СТАТУС DIALOG_APPROVED: Диалог одобрен HR, можно общаться";
 
     // Активные статусы — идёт интервью
     case "INTERVIEW_HH":

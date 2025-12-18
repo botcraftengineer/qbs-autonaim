@@ -18,7 +18,6 @@ import { vacancy } from "./vacancy";
 export const responseStatusEnum = pgEnum("response_status", [
   "NEW",
   "EVALUATED",
-  "DIALOG_APPROVED",
   "INTERVIEW_HH",
   "COMPLETED",
   "SKIPPED",
@@ -91,14 +90,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   telegramPinCode: z.string().length(4).optional(),
   salaryExpectations: z.string().max(200).optional(),
   status: z
-    .enum([
-      "NEW",
-      "EVALUATED",
-      "DIALOG_APPROVED",
-      "INTERVIEW_HH",
-      "COMPLETED",
-      "SKIPPED",
-    ])
+    .enum(["NEW", "EVALUATED", "INTERVIEW_HH", "COMPLETED", "SKIPPED"])
     .default("NEW"),
   hrSelectionStatus: z
     .enum(["INVITE", "RECOMMENDED", "NOT_RECOMMENDED", "REJECTED", "OFFER"])
