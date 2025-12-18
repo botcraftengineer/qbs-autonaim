@@ -17,11 +17,12 @@ const mapResponseToStage = (
   status: string,
   hrSelectionStatus: string | null,
 ): string => {
-  if (hrSelectionStatus === "OFFER") {
-    return "OFFER";
-  }
+  // Маппинг на новые стадии воронки
   if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
-    return "HIRED";
+    return "ONBOARDING";
+  }
+  if (hrSelectionStatus === "OFFER") {
+    return "OFFER_SENT";
   }
   if (
     hrSelectionStatus === "REJECTED" ||
@@ -31,12 +32,12 @@ const mapResponseToStage = (
     return "REJECTED";
   }
   if (status === "DIALOG_APPROVED" || status === "INTERVIEW_HH") {
-    return "INTERVIEW";
+    return "TRANSCRIPT_READY";
   }
   if (status === "EVALUATED") {
-    return "REVIEW";
+    return "CHAT_INTERVIEW";
   }
-  return "NEW";
+  return "SCREENING_DONE";
 };
 
 export const list = protectedProcedure
@@ -49,7 +50,16 @@ export const list = protectedProcedure
       search: z.string().optional(),
       stages: z
         .array(
-          z.enum(["NEW", "REVIEW", "INTERVIEW", "OFFER", "HIRED", "REJECTED"]),
+          z.enum([
+            "SCREENING_DONE",
+            "CHAT_INTERVIEW",
+            "TRANSCRIPT_READY",
+            "OFFER_SENT",
+            "SECURITY_PASSED",
+            "CONTRACT_SENT",
+            "ONBOARDING",
+            "REJECTED",
+          ]),
         )
         .optional(),
     }),
@@ -112,14 +122,14 @@ export const list = protectedProcedure
     if (input.stages && input.stages.length > 0) {
       const stageConditions = [];
 
-      if (input.stages.includes("OFFER")) {
-        stageConditions.push(eq(vacancyResponse.hrSelectionStatus, "OFFER"));
-      }
-
-      if (input.stages.includes("HIRED")) {
+      if (input.stages.includes("ONBOARDING")) {
         stageConditions.push(
           inArray(vacancyResponse.hrSelectionStatus, ["INVITE", "RECOMMENDED"]),
         );
+      }
+
+      if (input.stages.includes("OFFER_SENT")) {
+        stageConditions.push(eq(vacancyResponse.hrSelectionStatus, "OFFER"));
       }
 
       if (input.stages.includes("REJECTED")) {
@@ -134,19 +144,22 @@ export const list = protectedProcedure
         );
       }
 
-      if (input.stages.includes("INTERVIEW")) {
+      if (input.stages.includes("TRANSCRIPT_READY")) {
         stageConditions.push(
           inArray(vacancyResponse.status, ["DIALOG_APPROVED", "INTERVIEW_HH"]),
         );
       }
 
-      if (input.stages.includes("REVIEW")) {
+      if (input.stages.includes("CHAT_INTERVIEW")) {
         stageConditions.push(eq(vacancyResponse.status, "EVALUATED"));
       }
 
-      if (input.stages.includes("NEW")) {
+      if (input.stages.includes("SCREENING_DONE")) {
         stageConditions.push(eq(vacancyResponse.status, "NEW"));
       }
+
+      // Пока нет данных для CONTRACT_SENT и SECURITY_PASSED
+      // Эти стадии будут добавлены позже при расширении схемы БД
 
       if (stageConditions.length > 0) {
         const stageCondition = or(...stageConditions);
