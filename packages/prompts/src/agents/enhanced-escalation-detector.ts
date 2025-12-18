@@ -66,10 +66,12 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
 ФОРМАТ ОТВЕТА (JSON):
 {
   "shouldEscalate": true/false,
-  "reason": "причина эскалации",
+  "reason": "причина эскалации (опционально)",
   "urgency": "LOW" | "MEDIUM" | "HIGH",
-  "suggestedAction": "рекомендуемое действие"
-}`;
+  "suggestedAction": "рекомендуемое действие (опционально)"
+}
+
+Поля "reason" и "suggestedAction" можно опустить, если эскалация не требуется.`;
   }
 
   async execute(
@@ -101,9 +103,9 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
       
       const expectedFormat = `{
   "shouldEscalate": boolean,
-  "reason": "string",
+  "reason": "string (optional)",
   "urgency": "LOW" | "MEDIUM" | "HIGH",
-  "suggestedAction": "string"
+  "suggestedAction": "string (optional)"
 }`;
 
       const parsed = await this.parseJSONResponseWithRetry(

@@ -23,13 +23,12 @@ const voiceInterviewerOutputSchema = z.object({
   shouldContinue: z.boolean(),
   reason: z.string().optional(),
   nextQuestion: z.string().optional(),
+  confidence: z.number().min(0).max(1).optional(),
 });
 
 export type VoiceInterviewerOutput = z.infer<
   typeof voiceInterviewerOutputSchema
-> & {
-  confidence: number;
-};
+>;
 
 export class VoiceInterviewerAgent extends AIPoweredAgent<
   VoiceInterviewerInput,
@@ -230,7 +229,7 @@ ${input.currentAnswer}
 
       const result: VoiceInterviewerOutput = {
         ...parsed,
-        confidence: 0.9,
+        confidence: parsed.confidence ?? 0.9,
       };
 
       // Дополнительная проверка лимита
