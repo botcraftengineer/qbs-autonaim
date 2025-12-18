@@ -206,7 +206,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
             userInfo?.username || env.TELEGRAM_BOT_USERNAME;
 
           if (telegramUsername && pinCodeResult.success) {
-            messageWithInvite = `${messageWithInvite}\n\n📱 Напиши мне в Telegram @${telegramUsername} и сообщи пин-код: ${pinCodeResult.data}`;
+            messageWithInvite = `${messageWithInvite}\n\n📱 Напишите мне в Telegram @${telegramUsername} и сообщите пин-код: ${pinCodeResult.data}`;
           }
 
           const hhResult = await sendHHChatMessage({
