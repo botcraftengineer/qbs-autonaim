@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversation,
   conversationMessage,
-  telegramConversation,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -217,8 +217,8 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
               const chatId = sendResult.chatId;
 
               // Проверяем, есть ли уже conversation для этого response
-              const existing = await db.query.telegramConversation.findFirst({
-                where: eq(telegramConversation.responseId, response.id),
+              const existing = await db.query.conversation.findFirst({
+                where: eq(conversation.responseId, response.id),
               });
 
               const metadata = JSON.stringify({
@@ -229,26 +229,24 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 questionAnswers: [],
               });
 
-              let conversation:
-                | typeof telegramConversation.$inferSelect
-                | undefined;
+              let conv: typeof conversation.$inferSelect | undefined;
               if (existing) {
                 // Обновляем существующую conversation
                 const [updated] = await db
-                  .update(telegramConversation)
+                  .update(conversation)
                   .set({
                     candidateName: response.candidateName,
                     username: response.telegramUsername || undefined,
                     status: "ACTIVE",
                     metadata,
                   })
-                  .where(eq(telegramConversation.id, existing.id))
+                  .where(eq(conversation.id, existing.id))
                   .returning();
-                conversation = updated;
+                conv = updated;
               } else {
                 // Создаем новую conversation
                 const [created] = await db
-                  .insert(telegramConversation)
+                  .insert(conversation)
                   .values({
                     responseId: response.id,
                     candidateName: response.candidateName,
@@ -257,7 +255,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                     metadata,
                   })
                   .returning();
-                conversation = created;
+                conv = created;
               }
 
               // Обновляем chatId в response
@@ -267,9 +265,9 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 .where(eq(vacancyResponse.id, response.id));
 
               // Сохраняем приветственное сообщение в историю
-              if (conversation) {
+              if (conv) {
                 await db.insert(conversationMessage).values({
-                  conversationId: conversation.id,
+                  conversationId: conv.id,
                   sender: "BOT",
                   contentType: "TEXT",
                   content: actualSentMessage,

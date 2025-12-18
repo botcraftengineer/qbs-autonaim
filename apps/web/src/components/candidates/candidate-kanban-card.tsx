@@ -44,16 +44,6 @@ export function CandidateKanbanCard({
             </p>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span>{candidate.experience}</span>
-          {candidate.location && (
-            <>
-              <span>•</span>
-              <span>{candidate.location}</span>
-            </>
-          )}
-        </div>
       </button>
 
       {/* Quick Actions - Visible on hover, absolute positioned to prevent layout shift */}

@@ -7,9 +7,9 @@ import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   type companySettings,
+  conversation,
   conversationMessage,
   type responseScreening,
-  telegramConversation,
   type vacancy,
   vacancyResponse,
   type workspace,
@@ -196,21 +196,21 @@ async function createOrUpdateConversation(
   };
 
   // Проверяем, есть ли уже conversation для этого responseId
-  const existing = await db.query.telegramConversation.findFirst({
-    where: eq(telegramConversation.responseId, data.responseId),
+  const existing = await db.query.conversation.findFirst({
+    where: eq(conversation.responseId, data.responseId),
   });
 
   if (existing) {
     // Обновляем существующую conversation
     const [updated] = await db
-      .update(telegramConversation)
+      .update(conversation)
       .set({
         candidateName: data.candidateName,
         username: data.username,
         status: "ACTIVE",
         metadata: JSON.stringify(metadata),
       })
-      .where(eq(telegramConversation.id, existing.id))
+      .where(eq(conversation.id, existing.id))
       .returning();
 
     if (!updated) {
@@ -222,7 +222,7 @@ async function createOrUpdateConversation(
 
   // Создаем новую conversation
   const [created] = await db
-    .insert(telegramConversation)
+    .insert(conversation)
     .values({
       responseId: data.responseId,
       candidateName: data.candidateName,

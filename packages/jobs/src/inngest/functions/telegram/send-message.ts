@@ -1,6 +1,6 @@
 import {
+  conversation,
   eq,
-  telegramConversation,
   telegramMessage,
   telegramSession,
   vacancyResponse,
@@ -34,7 +34,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
 
       try {
         // Получаем conversation через chatId в response
-        const conversation = await db.query.telegramConversation.findFirst({
+        const conv = await db.query.conversation.findFirst({
           where: (fields, { inArray }) => {
             return inArray(
               fields.responseId,
@@ -53,11 +53,11 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           },
         });
 
-        if (!conversation?.response?.vacancy?.workspaceId) {
+        if (!conv?.response?.vacancy?.workspaceId) {
           throw new Error("Не удалось определить workspace для сообщения");
         }
 
-        const workspaceId = conversation.response.vacancy.workspaceId;
+        const workspaceId = conv.response.vacancy.workspaceId;
 
         // Получаем активную сессию для workspace
         const session = await db.query.telegramSession.findFirst({
@@ -75,9 +75,9 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         let username: string | undefined;
 
         // 1. Проверяем metadata
-        if (conversation.metadata) {
+        if (conv.metadata) {
           try {
-            const metadata = JSON.parse(conversation.metadata);
+            const metadata = JSON.parse(conv.metadata);
             username = metadata.username;
           } catch (e) {
             console.warn("Не удалось распарсить metadata", e);
@@ -85,13 +85,13 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         }
 
         // 2. Проверяем vacancy_response.telegramUsername
-        if (!username && conversation.response?.telegramUsername) {
-          username = conversation.response.telegramUsername;
+        if (!username && conv.response?.telegramUsername) {
+          username = conv.response.telegramUsername;
         }
 
         // 3. Проверяем conversation.username
-        if (!username && conversation.username) {
-          username = conversation.username;
+        if (!username && conv.username) {
+          username = conv.username;
         }
 
         // Отправляем сообщение через SDK

@@ -38,8 +38,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
     });
 
     // Проверяем идентификацию
-    const conversation = await step.run("check-conversation", async () => {
-      const conv = await db.query.telegramConversation.findFirst({
+    const conv = await step.run("check-conversation", async () => {
+      const result = await db.query.conversation.findFirst({
         where: (fields, { eq, inArray }) => {
           // Ищем conversation через response.chatId
           return inArray(
@@ -51,10 +51,10 @@ export const processIncomingMessageFunction = inngest.createFunction(
           );
         },
       });
-      return conv;
+      return result;
     });
 
-    const isIdentified = conversation?.responseId != null;
+    const isIdentified = conv?.responseId != null;
 
     // Обработка неидентифицированных сообщений
     if (!isIdentified) {
@@ -93,15 +93,12 @@ export const processIncomingMessageFunction = inngest.createFunction(
     // Обработка идентифицированных сообщений
     if (messageData.text) {
       const isDuplicate = await step.run("check-duplicate-text", async () => {
-        return await findDuplicateMessage(
-          conversation.id,
-          messageData.id.toString(),
-        );
+        return await findDuplicateMessage(conv.id, messageData.id.toString());
       });
 
       if (isDuplicate) {
         console.log("⏭️ Сообщение уже обработано, пропускаем", {
-          conversationId: conversation.id,
+          conversationId: conv.id,
           telegramMessageId: messageData.id.toString(),
         });
         return { skipped: true, reason: "duplicate message" };
@@ -109,18 +106,18 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
       await step.run("handle-identified-text", async () => {
         await handleIdentifiedText({
-          conversationId: conversation.id,
+          conversationId: conv.id,
           text: messageData.text || "",
           messageId: messageData.id.toString(),
-          responseId: conversation.responseId,
-          status: conversation.status,
-          metadata: conversation.metadata,
+          responseId: conv.responseId,
+          status: conv.status,
+          metadata: conv.metadata,
         });
       });
 
       await publish(
-        telegramMessagesChannel(conversation.id).message({
-          conversationId: conversation.id,
+        telegramMessagesChannel(conv.id).message({
+          conversationId: conv.id,
           messageId: messageData.id.toString(),
         }),
       );
@@ -133,10 +130,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const isDuplicate = await step.run(
         `check-duplicate-${mediaType}`,
         async () => {
-          return await findDuplicateMessage(
-            conversation.id,
-            messageData.id.toString(),
-          );
+          return await findDuplicateMessage(conv.id, messageData.id.toString());
         },
       );
 
@@ -144,7 +138,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         console.log(
           `⏭️ ${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение уже обработано, пропускаем`,
           {
-            conversationId: conversation.id,
+            conversationId: conv.id,
             telegramMessageId: messageData.id.toString(),
           },
         );
@@ -153,7 +147,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
       await step.run(`handle-${mediaType}`, async () => {
         await handleIdentifiedMedia({
-          conversationId: conversation.id,
+          conversationId: conv.id,
           chatId,
           messageId: messageData.id,
           messageIdStr: messageData.id.toString(),
@@ -163,8 +157,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
       });
 
       await publish(
-        telegramMessagesChannel(conversation.id).message({
-          conversationId: conversation.id,
+        telegramMessagesChannel(conv.id).message({
+          conversationId: conv.id,
           messageId: messageData.id.toString(),
         }),
       );

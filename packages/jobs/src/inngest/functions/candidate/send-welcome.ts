@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversation,
   conversationMessage,
-  telegramConversation,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -253,8 +253,8 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       const chatId = result.chatId;
       await step.run("save-conversation", async () => {
         // Проверяем, есть ли уже conversation для этого response
-        const existing = await db.query.telegramConversation.findFirst({
-          where: eq(telegramConversation.responseId, responseId),
+        const existing = await db.query.conversation.findFirst({
+          where: eq(conversation.responseId, responseId),
         });
 
         const metadata = JSON.stringify({
@@ -269,17 +269,17 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         if (existing) {
           // Обновляем существующую conversation
           await db
-            .update(telegramConversation)
+            .update(conversation)
             .set({
               candidateName: response.candidateName,
               username: username || undefined,
               status: "ACTIVE",
               metadata,
             })
-            .where(eq(telegramConversation.id, existing.id));
+            .where(eq(conversation.id, existing.id));
         } else {
           // Создаем новую conversation
-          await db.insert(telegramConversation).values({
+          await db.insert(conversation).values({
             responseId,
             candidateName: response.candidateName,
             username: username || undefined,
@@ -294,24 +294,24 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           .set({ chatId })
           .where(eq(vacancyResponse.id, responseId));
 
-        const conversation = await db.query.telegramConversation.findFirst({
-          where: eq(telegramConversation.responseId, responseId),
+        const conv = await db.query.conversation.findFirst({
+          where: eq(conversation.responseId, responseId),
         });
 
-        if (!conversation) {
+        if (!conv) {
           throw new Error("Failed to create/update conversation");
         }
 
         // Сохраняем приветственное сообщение
         await db.insert(conversationMessage).values({
-          conversationId: conversation.id,
+          conversationId: conv.id,
           sender: "BOT",
           contentType: "TEXT",
           content: welcomeMessage,
           telegramMessageId: result.messageId,
         });
 
-        return conversation;
+        return conv;
       });
 
       // Обновляем welcomeSentAt только после успешной отправки

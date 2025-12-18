@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
-import { telegramConversation } from "@qbs-autonaim/db/schema";
+import { conversation } from "@qbs-autonaim/db/schema";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { saveUnidentifiedMessage } from "./save-message";
@@ -15,10 +15,10 @@ export async function handleUnidentifiedMedia(params: {
   const { chatId, messageId, username, firstName, workspaceId, botSettings } =
     params;
 
-  let tempConv: typeof telegramConversation.$inferSelect | undefined;
+  let tempConv: typeof conversation.$inferSelect | undefined;
   try {
     const result = await db
-      .insert(telegramConversation)
+      .insert(conversation)
       .values({
         chatId,
         candidateName: firstName,

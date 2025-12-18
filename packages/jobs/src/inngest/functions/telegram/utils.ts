@@ -2,7 +2,7 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   companySettings,
-  telegramConversation,
+  conversation,
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -65,7 +65,7 @@ export async function getConversationHistory(conversationId: string) {
  * Находит conversation по chatId через связь с vacancyResponse
  */
 export async function findConversationByChatId(chatId: string) {
-  return await db.query.telegramConversation.findFirst({
+  return await db.query.conversation.findFirst({
     where: (fields, { inArray }) => {
       return inArray(
         fields.responseId,

@@ -1,6 +1,6 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { telegramConversation } from "@qbs-autonaim/db/schema";
+import { conversation } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
 import {
   buildInterviewQuestionPrompt,
@@ -165,8 +165,8 @@ export async function getInterviewContext(
   currentTranscription: string,
   currentQuestion: string,
 ): Promise<InterviewContext | null> {
-  const conversation = await db.query.telegramConversation.findFirst({
-    where: eq(telegramConversation.id, conversationId),
+  const conv = await db.query.conversation.findFirst({
+    where: eq(conversation.id, conversationId),
     with: {
       messages: {
         orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -179,32 +179,32 @@ export async function getInterviewContext(
     },
   });
 
-  if (!conversation) {
+  if (!conv) {
     return null;
   }
 
-  const metadata = parseMetadata(conversation.metadata);
+  const metadata = parseMetadata(conv.metadata);
   const questionAnswers = metadata.questionAnswers ?? [];
 
   // Формируем историю диалога
-  const conversationHistory = conversation.messages.map((msg) => ({
+  const conversationHistory = conv.messages.map((msg) => ({
     sender: msg.sender,
     content: msg.content,
     contentType: msg.contentType,
   }));
 
   return {
-    conversationId: conversation.id,
-    candidateName: conversation.candidateName,
-    vacancyTitle: conversation.response?.vacancy?.title || null,
-    vacancyDescription: conversation.response?.vacancy?.description
-      ? stripHtml(conversation.response.vacancy.description).result
+    conversationId: conv.id,
+    candidateName: conv.candidateName,
+    vacancyTitle: conv.response?.vacancy?.title || null,
+    vacancyDescription: conv.response?.vacancy?.description
+      ? stripHtml(conv.response.vacancy.description).result
       : null,
     currentAnswer: currentTranscription,
     currentQuestion,
     previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
-    responseId: conversation.responseId || null,
+    responseId: conv.responseId || null,
     conversationHistory,
   };
 }
@@ -217,26 +217,26 @@ export async function saveQuestionAnswer(
   question: string,
   answer: string,
 ) {
-  const [conversation] = await db
+  const [conv] = await db
     .select()
-    .from(telegramConversation)
-    .where(eq(telegramConversation.id, conversationId))
+    .from(conversation)
+    .where(eq(conversation.id, conversationId))
     .limit(1);
 
-  if (!conversation) {
+  if (!conv) {
     throw new Error(`Conversation ${conversationId} not found`);
   }
 
-  const metadata = parseMetadata(conversation.metadata);
+  const metadata = parseMetadata(conv.metadata);
   const questionAnswers = metadata.questionAnswers ?? [];
 
   questionAnswers.push({ question, answer });
   metadata.questionAnswers = questionAnswers;
 
   await db
-    .update(telegramConversation)
+    .update(conversation)
     .set({ metadata: JSON.stringify(metadata) })
-    .where(eq(telegramConversation.id, conversationId));
+    .where(eq(conversation.id, conversationId));
 }
 
 /**

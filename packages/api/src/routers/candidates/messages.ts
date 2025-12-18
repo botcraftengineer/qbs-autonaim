@@ -1,6 +1,6 @@
 import { desc, eq, workspaceRepository } from "@qbs-autonaim/db";
 import {
-  telegramConversation,
+  conversation,
   telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -30,8 +30,8 @@ export const listMessages = protectedProcedure
     }
 
     // Найти conversation для этого кандидата
-    const conversation = await ctx.db.query.telegramConversation.findFirst({
-      where: eq(telegramConversation.responseId, input.candidateId),
+    const conv = await ctx.db.query.conversation.findFirst({
+      where: eq(conversation.responseId, input.candidateId),
     });
 
     if (!conversation) {
