@@ -134,7 +134,7 @@ export const getConversationRouter = {
         });
       }
 
-      return conversation;
+      return conv;
     }),
 
   getByResponseId: protectedProcedure
@@ -212,6 +212,6 @@ export const getConversationRouter = {
         });
       }
 
-      return conversation;
+      return conv;
     }),
 } satisfies TRPCRouterRecord;
