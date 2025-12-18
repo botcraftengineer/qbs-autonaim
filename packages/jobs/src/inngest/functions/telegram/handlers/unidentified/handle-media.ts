@@ -1,8 +1,4 @@
-import { db } from "@qbs-autonaim/db/client";
-import { conversation } from "@qbs-autonaim/db/schema";
-import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
-import { saveUnidentifiedMessage } from "./save-message";
 
 export async function handleUnidentifiedMedia(params: {
   chatId: string;
@@ -12,8 +8,7 @@ export async function handleUnidentifiedMedia(params: {
   workspaceId: string;
   botSettings: BotSettings;
 }) {
-  const { chatId, messageId, username, firstName, workspaceId, botSettings } =
-    params;
+  const { chatId, messageId, username, firstName } = params;
 
   // Для неидентифицированных пользователей не создаем conversation,
   // так как нет responseId. Просто логируем и возвращаем результат.

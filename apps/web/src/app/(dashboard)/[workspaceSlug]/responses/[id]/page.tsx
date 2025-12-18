@@ -19,43 +19,6 @@ interface ResponseDetailPageProps {
   params: Promise<{ workspaceSlug: string; id: string }>;
 }
 
-interface ConversationMessage {
-  voiceDuration?: number | null;
-  voiceTranscription?: string | null;
-  [key: string]: unknown;
-}
-
-interface ResponseWithConversation {
-  conversation?: {
-    interviewScoring?: {
-      score: number;
-      detailedScore: Record<string, number>;
-      analysis?: string | null;
-    } | null;
-    messages?: ConversationMessage[];
-  } | null;
-}
-
-function mapConversationData(response: ResponseWithConversation) {
-  if (!response.conversation) return null;
-
-  return {
-    interviewScoring: response.conversation.interviewScoring
-      ? {
-          score: response.conversation.interviewScoring.score,
-          detailedScore: response.conversation.interviewScoring.detailedScore,
-          analysis:
-            response.conversation.interviewScoring.analysis ?? undefined,
-        }
-      : undefined,
-    messages: response.conversation.messages?.map((msg) => ({
-      ...msg,
-      voiceDuration: msg.voiceDuration ?? undefined,
-      voiceTranscription: msg.voiceTranscription ?? undefined,
-    })),
-  };
-}
-
 export default function ResponseDetailPage({
   params,
 }: ResponseDetailPageProps) {
@@ -144,19 +107,9 @@ export default function ResponseDetailPage({
 
               <div className="space-y-6 md:space-y-8">
                 <ResponseHeader response={response} />
-                <ScreeningCard
-                  screening={
-                    response.screening
-                      ? {
-                          score: response.screening.score,
-                          detailedScore: response.screening.detailedScore,
-                          analysis: response.screening.analysis ?? undefined,
-                        }
-                      : null
-                  }
-                />
+                <ScreeningCard screening={response.screening} />
                 <InterviewCard
-                  conversation={mapConversationData(response)}
+                  conversation={response.conversation ?? null}
                   candidateName={response.candidateName}
                   workspaceName={response.vacancy?.workspace?.name}
                 />

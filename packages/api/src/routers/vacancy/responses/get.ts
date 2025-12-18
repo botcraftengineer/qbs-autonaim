@@ -65,15 +65,21 @@ export const getById = protectedProcedure
       resumePdfUrl = await getDownloadUrl(response.resumePdfFile.key);
     }
 
-    // Get voice file URLs for messages
+    // Get voice file URLs for messages and map null to undefined
     const messagesWithUrls = response.conversation?.messages
       ? await Promise.all(
           response.conversation.messages.map(async (message) => {
+            const baseMessage = {
+              ...message,
+              voiceDuration: message.voiceDuration ?? undefined,
+              voiceTranscription: message.voiceTranscription ?? undefined,
+            };
+
             if (message.file) {
               const voiceUrl = await getDownloadUrl(message.file.key);
-              return { ...message, voiceUrl };
+              return { ...baseMessage, voiceUrl };
             }
-            return message;
+            return baseMessage;
           }),
         )
       : undefined;
@@ -86,7 +92,7 @@ export const getById = protectedProcedure
             ...response.screening,
             analysis: response.screening.analysis
               ? sanitizeHtml(response.screening.analysis)
-              : null,
+              : undefined,
           }
         : null,
       telegramInterviewScoring: response.telegramInterviewScoring
@@ -94,13 +100,23 @@ export const getById = protectedProcedure
             ...response.telegramInterviewScoring,
             analysis: response.telegramInterviewScoring.analysis
               ? sanitizeHtml(response.telegramInterviewScoring.analysis)
-              : null,
+              : undefined,
           }
         : null,
       conversation: response.conversation
         ? {
             ...response.conversation,
             messages: messagesWithUrls,
+            interviewScoring: response.conversation.interviewScoring
+              ? {
+                  score: response.conversation.interviewScoring.score,
+                  detailedScore:
+                    response.conversation.interviewScoring.detailedScore,
+                  analysis:
+                    response.conversation.interviewScoring.analysis ??
+                    undefined,
+                }
+              : undefined,
           }
         : undefined,
     };

@@ -1,5 +1,4 @@
 import { db } from "@qbs-autonaim/db/client";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { conversationMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
@@ -38,19 +37,35 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     // Проверяем идентификацию
     const conv = await step.run("check-conversation", async () => {
-      const result = await db.query.conversation.findFirst({
-        where: (fields, { eq, inArray }) => {
-          // Ищем conversation через response.chatId
-          return inArray(
-            fields.responseId,
-            db
-              .select({ id: vacancyResponse.id })
-              .from(vacancyResponse)
-              .where(eq(vacancyResponse.chatId, chatId)),
-          );
+      // Сначала пробуем найти по username
+      if (username) {
+        const byUsername = await db.query.conversation.findFirst({
+          where: (fields, { eq }) => eq(fields.username, username),
+          with: {
+            response: true,
+          },
+        });
+        if (byUsername) return byUsername;
+      }
+
+      // Если не нашли по username, ищем по metadata.senderId (Telegram chat ID)
+      const allConversations = await db.query.conversation.findMany({
+        where: (fields, { eq }) => eq(fields.status, "ACTIVE"),
+        with: {
+          response: true,
         },
       });
-      return result;
+
+      const byMetadata = allConversations.find((c) => {
+        try {
+          const metadata = c.metadata ? JSON.parse(c.metadata) : null;
+          return metadata?.senderId === chatId.toString();
+        } catch {
+          return false;
+        }
+      });
+
+      return byMetadata || null;
     });
 
     const isIdentified = conv?.responseId != null;
