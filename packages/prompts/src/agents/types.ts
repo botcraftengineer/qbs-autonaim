@@ -14,6 +14,7 @@ export interface BaseAgentContext {
   }>;
   candidateName?: string;
   vacancyTitle?: string;
+  vacancyDescription?: string;
   vacancyRequirements?: string;
   resumeData?: {
     experience?: string;
