@@ -6,7 +6,7 @@ export {
   analyzeInterviewFunction,
   completeInterviewFunction,
   sendNextQuestionFunction,
-} from "./interview/analyze";
+} from "./interview";
 export { notifyTelegramAuthErrorFunction } from "./notify-auth-error";
 export { processIncomingMessageFunction } from "./process-incoming-message";
 export { sendTelegramMessageFunction } from "./send-message";
