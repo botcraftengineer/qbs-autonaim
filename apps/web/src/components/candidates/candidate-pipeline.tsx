@@ -468,9 +468,10 @@ export function CandidatePipeline() {
   }, [candidatesByStage]);
 
   return (
-    <div className="space-y-4 md:space-y-6">
-      <div className="flex flex-col gap-3 p-3 sm:p-4 md:p-5 bg-card rounded-lg border shadow-sm">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="flex-shrink-0 mx-4 md:mx-6 lg:mx-8 mb-4 md:mb-6">
+        <div className="flex flex-col gap-3 p-3 sm:p-4 md:p-5 bg-card rounded-lg border shadow-sm">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-3 flex-1">
             <Select value={selectedVacancy} onValueChange={setSelectedVacancy}>
               <SelectTrigger className="w-full sm:w-[240px] md:w-[280px] h-10 gap-2 bg-background">
@@ -566,83 +567,89 @@ export function CandidatePipeline() {
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        <Tabs
-          value={activeView}
-          onValueChange={(v) => setActiveView(v as "board" | "table")}
-        >
-          <TabsList className="h-10">
-            <TabsTrigger value="board" className="gap-2 px-3 sm:px-4">
-              <LayoutGrid className="h-4 w-4" />
-              <span className="hidden sm:inline">Доска</span>
-            </TabsTrigger>
-            <TabsTrigger value="table" className="gap-2 px-3 sm:px-4">
-              <List className="h-4 w-4" />
-              <span className="hidden sm:inline">Таблица</span>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="flex-shrink-0 mx-4 md:mx-6 lg:mx-8 mb-4 md:mb-6">
+        <div className="flex items-center justify-between gap-4">
+          <Tabs
+            value={activeView}
+            onValueChange={(v) => setActiveView(v as "board" | "table")}
+          >
+            <TabsList className="h-10">
+              <TabsTrigger value="board" className="gap-2 px-3 sm:px-4">
+                <LayoutGrid className="h-4 w-4" />
+                <span className="hidden sm:inline">Доска</span>
+              </TabsTrigger>
+              <TabsTrigger value="table" className="gap-2 px-3 sm:px-4">
+                <List className="h-4 w-4" />
+                <span className="hidden sm:inline">Таблица</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
-        <div className="text-sm text-muted-foreground tabular-nums">
-          {totalCount > 0 ? (
-            <>
-              <span className="font-medium text-foreground">{totalCount}</span>{" "}
-              {pluralizeCandidate(totalCount)}
-            </>
-          ) : null}
+          <div className="text-sm text-muted-foreground tabular-nums">
+            {totalCount > 0 ? (
+              <>
+                <span className="font-medium text-foreground">{totalCount}</span>{" "}
+                {pluralizeCandidate(totalCount)}
+              </>
+            ) : null}
+          </div>
         </div>
       </div>
 
-      {activeView === "board" ? (
-        <DndContext
-          sensors={sensors}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="overflow-x-auto -mx-3 sm:-mx-4 md:-mx-5 px-3 sm:px-4 md:px-5">
-            <section
-              className="flex gap-3 md:gap-4 min-w-max"
-              aria-label="Канбан-доска кандидатов"
-            >
-              {STAGES.map((stage) => {
-                const stageData = candidatesByStage[stage.id];
-                const stageQuery = stageQueries.find(
-                  (sq) => sq.stage === stage.id,
-                );
-                return (
-                  <CandidateKanbanColumn
-                    key={stage.id}
-                    id={stage.id}
-                    title={stage.title}
-                    color={stage.color}
-                    candidates={stageData.items}
-                    total={stageData.total}
-                    hasMore={stageData.hasMore}
-                    onCardClick={handleCardClick}
-                    onLoadMore={() => loadMoreForStage(stage.id)}
-                    isLoading={stageQuery?.query.isLoading ?? false}
-                    isLoadingMore={stageQuery?.query.isFetching ?? false}
-                  />
-                );
-              })}
-            </section>
+      <div className="flex-1 overflow-hidden">
+        {activeView === "board" ? (
+          <DndContext
+            sensors={sensors}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+          >
+            <div className="h-full overflow-x-auto px-4 md:px-6 lg:px-8">
+              <section
+                className="flex gap-3 md:gap-4 min-w-max h-full pb-4"
+                aria-label="Канбан-доска кандидатов"
+              >
+                {STAGES.map((stage) => {
+                  const stageData = candidatesByStage[stage.id];
+                  const stageQuery = stageQueries.find(
+                    (sq) => sq.stage === stage.id,
+                  );
+                  return (
+                    <CandidateKanbanColumn
+                      key={stage.id}
+                      id={stage.id}
+                      title={stage.title}
+                      color={stage.color}
+                      candidates={stageData.items}
+                      total={stageData.total}
+                      hasMore={stageData.hasMore}
+                      onCardClick={handleCardClick}
+                      onLoadMore={() => loadMoreForStage(stage.id)}
+                      isLoading={stageQuery?.query.isLoading ?? false}
+                      isLoadingMore={stageQuery?.query.isFetching ?? false}
+                    />
+                  );
+                })}
+              </section>
+            </div>
+            <DragOverlay>
+              {(() => {
+                const candidate = allCandidates.find((c) => c.id === activeId);
+                return activeId && candidate ? (
+                  <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
+                ) : null;
+              })()}
+            </DragOverlay>
+          </DndContext>
+        ) : (
+          <div className="h-full overflow-auto px-4 md:px-6 lg:px-8">
+            <CandidatesTable
+              candidates={filteredCandidates}
+              onRowClick={handleCardClick}
+              isLoading={isLoading}
+            />
           </div>
-          <DragOverlay>
-            {(() => {
-              const candidate = allCandidates.find((c) => c.id === activeId);
-              return activeId && candidate ? (
-                <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
-              ) : null;
-            })()}
-          </DragOverlay>
-        </DndContext>
-      ) : (
-        <CandidatesTable
-          candidates={filteredCandidates}
-          onRowClick={handleCardClick}
-          isLoading={isLoading}
-        />
-      )}
+        )}
+      </div>
 
       <CandidateModal
         candidate={selectedCandidate}
