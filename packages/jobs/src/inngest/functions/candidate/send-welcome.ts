@@ -104,23 +104,25 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           messageId: string;
           chatId: string;
           senderId?: string;
+          channel: "TELEGRAM" | "HH";
+          sentMessage: string;
         } | null = null;
 
         // Пытаемся отправить по username, если он есть
         if (username) {
           console.log(`📨 Попытка отправки по username: @${username}`);
           try {
-            sendResult = await tgClientSDK.sendMessageByUsername({
+            const tgResult = await tgClientSDK.sendMessageByUsername({
               workspaceId,
               username,
               text: welcomeMessage,
             });
 
-            if (sendResult) {
+            if (tgResult) {
               console.log("✅ Сообщение отправлено по username", {
                 responseId,
                 username,
-                chatId: sendResult.chatId,
+                chatId: tgResult.chatId,
               });
 
               // Обновляем lastUsedAt
@@ -129,6 +131,11 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 .set({ lastUsedAt: new Date() })
                 .where(eq(telegramSession.id, session.id));
 
+              sendResult = {
+                ...tgResult,
+                channel: "TELEGRAM",
+                sentMessage: welcomeMessage,
+              };
               return sendResult;
             }
           } catch (error) {
@@ -142,18 +149,18 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         if (phone) {
           console.log(`📞 Попытка отправки по номеру телефона: ${phone}`);
           try {
-            sendResult = await tgClientSDK.sendMessageByPhone({
+            const tgResult = await tgClientSDK.sendMessageByPhone({
               workspaceId,
               phone,
               text: welcomeMessage,
               firstName: response.candidateName || undefined,
             });
 
-            if (sendResult) {
+            if (tgResult) {
               console.log("✅ Сообщение отправлено по номеру телефона", {
                 responseId,
                 phone,
-                chatId: sendResult.chatId,
+                chatId: tgResult.chatId,
               });
 
               // Обновляем lastUsedAt
@@ -162,6 +169,11 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
                 .set({ lastUsedAt: new Date() })
                 .where(eq(telegramSession.id, session.id));
 
+              sendResult = {
+                ...tgResult,
+                channel: "TELEGRAM",
+                sentMessage: welcomeMessage,
+              };
               return sendResult;
             }
           } catch (error) {
@@ -214,12 +226,14 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               })
               .where(eq(vacancyResponse.id, responseId));
 
-            return {
+            sendResult = {
               success: true,
               messageId: "",
               chatId: response.chatId || "",
-              method: "hh",
+              channel: "HH",
+              sentMessage: messageWithInvite,
             };
+            return sendResult;
           }
 
           console.error(
@@ -302,13 +316,14 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           throw new Error("Failed to create/update conversation");
         }
 
-        // Сохраняем приветственное сообщение
+        // Сохраняем приветственное сообщение с правильным каналом и текстом
         await db.insert(conversationMessage).values({
           conversationId: conv.id,
           sender: "BOT",
           contentType: "TEXT",
-          content: welcomeMessage,
-          conversationMessagesageId: result.messageId,
+          channel: result.channel,
+          content: result.sentMessage,
+          externalMessageId: result.messageId,
         });
 
         return conv;
