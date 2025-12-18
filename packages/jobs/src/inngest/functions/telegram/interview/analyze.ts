@@ -8,10 +8,10 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { generateText } from "@qbs-autonaim/lib/ai";
+import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
-  buildInterviewCompletionPrompt,
-  buildSalaryExtractionPrompt,
+  InterviewCompletionAgent,
+  SalaryExtractionAgent,
 } from "@qbs-autonaim/prompts";
 import {
   analyzeAndGenerateNextQuestion,
@@ -441,24 +441,37 @@ export const completeInterviewFunction = inngest.createFunction(
           return;
         }
 
-        const conversationHistory = conv.messages.map((msg) => ({
-          sender: msg.sender,
-          content: msg.content,
-        }));
+        const conversationHistory = conv.messages
+          .filter((msg) => msg.sender !== "ADMIN")
+          .map((msg) => ({
+            sender: msg.sender as "CANDIDATE" | "BOT",
+            content: msg.content,
+          }));
 
-        const prompt = buildSalaryExtractionPrompt(conversationHistory);
+        // Создаем агента для извлечения зарплатных ожиданий
+        const model = getAIModel();
+        const agent = new SalaryExtractionAgent({ model });
 
-        const { text: salaryExpectations } = await generateText({
-          prompt,
-          generationName: "salary-extraction",
-          entityId: conversationId,
-          metadata: {
-            conversationId,
-            responseId,
+        // Выполняем агента
+        const result = await agent.execute(
+          { conversationHistory },
+          {
+            candidateName: undefined,
+            vacancyTitle: undefined,
+            vacancyDescription: undefined,
+            conversationHistory,
           },
-        });
+        );
 
-        const trimmedSalary = salaryExpectations.trim();
+        if (!result.success || !result.data) {
+          console.error("Salary extraction agent failed", {
+            error: result.error,
+            conversationId,
+          });
+          return;
+        }
+
+        const trimmedSalary = result.data.salaryExpectations.trim();
 
         if (trimmedSalary) {
           await db
@@ -535,33 +548,54 @@ export const completeInterviewFunction = inngest.createFunction(
         detailedScore = scoring?.detailedScore ?? undefined;
       }
 
-      // Формируем историю диалога
+      // Формируем историю диалога, фильтруем сообщения от админа
       const conversationHistory =
-        conv?.messages.map((msg) => ({
-          sender: msg.sender,
-          content: msg.content,
-          contentType: msg.contentType,
-        })) ?? [];
+        conv?.messages
+          .filter((msg) => msg.sender !== "ADMIN")
+          .map((msg) => ({
+            sender: msg.sender as "CANDIDATE" | "BOT",
+            content: msg.content,
+            contentType: msg.contentType,
+          })) ?? [];
 
-      // Генерируем финальное сообщение через AI
-      const prompt = buildInterviewCompletionPrompt({
+      // Создаем агента для генерации финального сообщения
+      const model = getAIModel();
+      const agent = new InterviewCompletionAgent({ model });
+
+      // Формируем контекст для агента
+      const agentContext = {
         candidateName,
         vacancyTitle,
-        questionCount: questionNumber,
-        score,
-        detailedScore,
+        vacancyDescription: undefined,
         conversationHistory,
-      });
+      };
 
-      const { text: finalMessage } = await generateText({
-        prompt,
-        generationName: "interview-completion",
-        entityId: conversationId,
-        metadata: {
-          conversationId,
-          questionNumber,
+      // Выполняем агента
+      const result = await agent.execute(
+        {
+          questionCount: questionNumber,
+          score,
+          detailedScore,
         },
-      });
+        agentContext,
+      );
+
+      // Определяем финальное сообщение
+      let finalMessage: string;
+
+      // Обработка ошибки
+      if (!result.success || !result.data) {
+        console.error("Interview completion agent failed", {
+          error: result.error,
+          conversationId,
+        });
+
+        // Fallback сообщение
+        finalMessage =
+          "Спасибо за беседу! Обработаю информацию и вернусь с обратной связью.";
+      } else {
+        finalMessage = result.data.finalMessage;
+      }
 
       const [newMessage] = await db
         .insert(conversationMessage)

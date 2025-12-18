@@ -2,7 +2,7 @@
  * Утилита для конвертации legacy контекста в новый формат
  */
 
-import type { TelegramRecruiterContext } from "../../telegram-recruiter";
+import type { TelegramRecruiterContext } from "../../telegram-recruiter/types";
 import type { BaseAgentContext, WorkflowState } from "../types";
 
 /**
