@@ -1,10 +1,10 @@
 import {
   and,
   conversation,
+  conversationMessage,
   desc,
   eq,
   telegramInterviewScoring,
-  telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
@@ -54,14 +54,14 @@ export const analyzeInterviewFunction = inngest.createFunction(
       // Получаем последнее сообщение от бота (это текущий вопрос)
       const lastBotMessages = await db
         .select()
-        .from(telegramMessage)
+        .from(conversationMessage)
         .where(
           and(
-            eq(telegramMessage.conversationId, conversationId),
-            eq(telegramMessage.sender, "BOT"),
+            eq(conversationMessage.conversationId, conversationId),
+            eq(conversationMessage.sender, "BOT"),
           ),
         )
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(1);
 
       const lastBotMessage = lastBotMessages[0];
@@ -189,14 +189,14 @@ export const sendNextQuestionFunction = inngest.createFunction(
       // Получаем последний вопрос от бота
       const lastBotMessages = await db
         .select()
-        .from(telegramMessage)
+        .from(conversationMessage)
         .where(
           and(
-            eq(telegramMessage.conversationId, conversationId),
-            eq(telegramMessage.sender, "BOT"),
+            eq(conversationMessage.conversationId, conversationId),
+            eq(conversationMessage.sender, "BOT"),
           ),
         )
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -251,7 +251,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
 
     await step.run("send-message", async () => {
       const [newMessage] = await db
-        .insert(telegramMessage)
+        .insert(conversationMessage)
         .values({
           conversationId,
           sender: "BOT",
@@ -320,14 +320,14 @@ export const completeInterviewFunction = inngest.createFunction(
       // Получаем последний вопрос от бота
       const lastBotMessages = await db
         .select()
-        .from(telegramMessage)
+        .from(conversationMessage)
         .where(
           and(
-            eq(telegramMessage.conversationId, conversationId),
-            eq(telegramMessage.sender, "BOT"),
+            eq(conversationMessage.conversationId, conversationId),
+            eq(conversationMessage.sender, "BOT"),
           ),
         )
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -344,14 +344,14 @@ export const completeInterviewFunction = inngest.createFunction(
         // Получаем последний вопрос от бота
         const lastBotMessages = await db
           .select()
-          .from(telegramMessage)
+          .from(conversationMessage)
           .where(
             and(
-              eq(telegramMessage.conversationId, conversationId),
-              eq(telegramMessage.sender, "BOT"),
+              eq(conversationMessage.conversationId, conversationId),
+              eq(conversationMessage.sender, "BOT"),
             ),
           )
-          .orderBy(desc(telegramMessage.createdAt))
+          .orderBy(desc(conversationMessage.createdAt))
           .limit(1);
 
         const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -564,7 +564,7 @@ export const completeInterviewFunction = inngest.createFunction(
       });
 
       const [newMessage] = await db
-        .insert(telegramMessage)
+        .insert(conversationMessage)
         .values({
           conversationId,
           sender: "BOT",

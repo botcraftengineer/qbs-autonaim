@@ -1,7 +1,7 @@
 // Реэкспорт из новой схемы для обратной совместимости
 export {
   CreateMessageSchema as CreateTelegramMessageSchema,
-  conversationMessage as telegramMessage,
+  conversationMessage,
   messageContentTypeEnum,
   messageSenderEnum,
 } from "../conversation/message";

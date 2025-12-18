@@ -4,7 +4,7 @@ import { z } from "zod";
  * Telegram-related event schemas
  */
 
-export const telegramMessageSendDataSchema = z.object({
+export const conversationMessageSendDataSchema = z.object({
   messageId: z.string().min(1, "Message ID is required").optional(),
   chatId: z.string().min(1, "Chat ID is required"),
   content: z.string().min(1, "Content is required"),
@@ -50,7 +50,7 @@ export const telegramUnidentifiedMessageSendDataSchema = z.object({
   workspaceId: z.string().min(1, "Workspace ID is required"),
 });
 
-export const telegramMessageReceivedDataSchema = z.object({
+export const conversationMessageReceivedDataSchema = z.object({
   workspaceId: z.string().min(1, "Workspace ID is required"),
   messageData: z
     .object({
@@ -83,7 +83,7 @@ export const telegramMessageReceivedDataSchema = z.object({
  * Type inference
  */
 export type TelegramMessageSendPayload = z.infer<
-  typeof telegramMessageSendDataSchema
+  typeof conversationMessageSendDataSchema
 >;
 export type VoiceTranscriptionPayload = z.infer<
   typeof voiceTranscriptionDataSchema
@@ -104,5 +104,5 @@ export type TelegramUnidentifiedMessageSendPayload = z.infer<
   typeof telegramUnidentifiedMessageSendDataSchema
 >;
 export type TelegramMessageReceivedPayload = z.infer<
-  typeof telegramMessageReceivedDataSchema
+  typeof conversationMessageReceivedDataSchema
 >;

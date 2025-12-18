@@ -308,7 +308,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           sender: "BOT",
           contentType: "TEXT",
           content: welcomeMessage,
-          telegramMessageId: result.messageId,
+          conversationMessagesageId: result.messageId,
         });
 
         return conv;

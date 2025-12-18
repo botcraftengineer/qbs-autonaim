@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
-import { telegramMessagesChannel } from "../../channels/client";
+import { conversationMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
   handleIdentifiedMedia,
@@ -99,7 +99,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       if (isDuplicate) {
         console.log("⏭️ Сообщение уже обработано, пропускаем", {
           conversationId: conv.id,
-          telegramMessageId: messageData.id.toString(),
+          conversationMessageId: messageData.id.toString(),
         });
         return { skipped: true, reason: "duplicate message" };
       }
@@ -116,7 +116,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       });
 
       await publish(
-        telegramMessagesChannel(conv.id).message({
+        conversationMessagesChannel(conv.id).message({
           conversationId: conv.id,
           messageId: messageData.id.toString(),
         }),
@@ -139,7 +139,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           `⏭️ ${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение уже обработано, пропускаем`,
           {
             conversationId: conv.id,
-            telegramMessageId: messageData.id.toString(),
+            conversationMessageId: messageData.id.toString(),
           },
         );
         return { skipped: true, reason: `duplicate ${mediaType} message` };
@@ -157,7 +157,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       });
 
       await publish(
-        telegramMessagesChannel(conv.id).message({
+        conversationMessagesChannel(conv.id).message({
           conversationId: conv.id,
           messageId: messageData.id.toString(),
         }),

@@ -1,4 +1,4 @@
-import { eq, file, telegramMessage } from "@qbs-autonaim/db";
+import { conversationMessage, eq, file } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
 import { transcribeAudio } from "../../../services/media";
@@ -84,11 +84,11 @@ export const transcribeVoiceFunction = inngest.createFunction(
     if (transcription) {
       await step.run("update-message-transcription", async () => {
         await db
-          .update(telegramMessage)
+          .update(conversationMessage)
           .set({
             voiceTranscription: transcription,
           })
-          .where(eq(telegramMessage.id, messageId));
+          .where(eq(conversationMessage.id, messageId));
 
         console.log("✅ Обновлена транскрипция в БД", {
           messageId,
@@ -100,8 +100,8 @@ export const transcribeVoiceFunction = inngest.createFunction(
       await step.run("trigger-interview-analysis", async () => {
         const [message] = await db
           .select()
-          .from(telegramMessage)
-          .where(eq(telegramMessage.id, messageId))
+          .from(conversationMessage)
+          .where(eq(conversationMessage.id, messageId))
           .limit(1);
 
         if (!message) {

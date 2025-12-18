@@ -143,7 +143,7 @@ export const parseMissingContactsChannel = channel(
 /**
  * Канал для отслеживания новых сообщений в Telegram чате
  */
-export const telegramMessagesChannel = channel(
+export const conversationMessagesChannel = channel(
   (conversationId: string) => `telegram-messages-${conversationId}`,
 ).addTopic(
   topic("message").schema(

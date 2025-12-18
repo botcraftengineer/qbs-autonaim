@@ -247,7 +247,7 @@ export async function saveMessage(
   sender: "CANDIDATE" | "BOT",
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
-  telegramMessageId?: string,
+  conversationMessageId?: string,
 ): Promise<string | null> {
   try {
     const [message] = await db
@@ -257,7 +257,7 @@ export async function saveMessage(
         sender,
         contentType,
         content,
-        telegramMessageId,
+        conversationMessageId,
       })
       .returning();
 

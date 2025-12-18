@@ -1,8 +1,8 @@
 import {
   CreateTelegramMessageSchema,
+  conversationMessage,
   eq,
   telegramConversation,
-  telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { inngest } from "@qbs-autonaim/jobs/client";
@@ -14,13 +14,13 @@ import { protectedProcedure } from "../../trpc";
 export const sendMessageRouter = {
   send: protectedProcedure
     .input(
-      CreateTelegramMessageSchema.extend({
+      CreateconversationMessageSchema.extend({
         sender: z.literal("ADMIN"),
       }),
     )
     .mutation(async ({ input, ctx }) => {
       const [message] = await ctx.db
-        .insert(telegramMessage)
+        .insert(conversationMessage)
         .values({
           conversationId: input.conversationId,
           sender: input.sender,
@@ -28,7 +28,7 @@ export const sendMessageRouter = {
           content: input.content,
           fileId: input.fileId,
           voiceDuration: input.voiceDuration,
-          telegramMessageId: input.telegramMessageId,
+          conversationMessageId: input.conversationMessageId,
         })
         .returning();
 
@@ -74,7 +74,7 @@ export const sendMessageRouter = {
     )
     .mutation(async ({ input, ctx }) => {
       const [message] = await ctx.db
-        .insert(telegramMessage)
+        .insert(conversationMessage)
         .values({
           conversationId: input.conversationId,
           sender: "ADMIN",

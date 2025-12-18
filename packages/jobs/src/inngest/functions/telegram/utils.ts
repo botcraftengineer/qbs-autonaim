@@ -3,7 +3,7 @@ import { db } from "@qbs-autonaim/db/client";
 import {
   companySettings,
   conversation,
-  telegramMessage,
+  conversationMessagesage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { BotSettings } from "./types";
@@ -15,13 +15,13 @@ export function extractPinCode(text: string): string | null {
 
 export async function findDuplicateMessage(
   conversationId: string,
-  telegramMessageId: string,
+  conversationMessagesageId: string,
 ): Promise<boolean> {
-  const existingMessage = await db.query.telegramMessage.findFirst({
+  const existingMessage = await db.query.conversationMessagesage.findFirst({
     where: (messages, { and, eq }) =>
       and(
         eq(messages.conversationId, conversationId),
-        eq(messages.telegramMessageId, telegramMessageId),
+        eq(messages.conversationMessagesageconversationMessagenMessageId),
       ),
   });
   return !!existingMessage;
@@ -54,8 +54,8 @@ export async function getCompanyBotSettings(
 }
 
 export async function getConversationHistory(conversationId: string) {
-  return await db.query.telegramMessage.findMany({
-    where: eq(telegramMessage.conversationId, conversationId),
+  return await db.query.conversationMessagesage.findMany({
+    where: eq(conversationMessagesage.conversationId, conversationId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
     limit: 10,
   });

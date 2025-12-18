@@ -1,6 +1,6 @@
 import {
+  conversationMessage,
   telegramConversation,
-  telegramMessage,
   vacancy,
   vacancyResponse,
   workspaceRepository,
@@ -58,9 +58,9 @@ export const getMessagesRouter = {
         });
       }
 
-      const messages = await ctx.db.query.telegramMessage.findMany({
-        where: eq(telegramMessage.conversationId, input.conversationId),
-        orderBy: [telegramMessage.createdAt],
+      const messages = await ctx.db.query.conversationMessage.findMany({
+        where: eq(conversationMessage.conversationId, input.conversationId),
+        orderBy: [conversationMessage.createdAt],
         with: {
           file: true,
         },
@@ -111,15 +111,15 @@ export const getMessagesRouter = {
 
       const messages = await ctx.db
         .select({
-          message: telegramMessage,
+          message: conversationMessage,
           conversation: telegramConversation,
           response: vacancyResponse,
           vacancy: vacancy,
         })
-        .from(telegramMessage)
+        .from(conversationMessage)
         .innerJoin(
           telegramConversation,
-          eq(telegramMessage.conversationId, telegramConversation.id),
+          eq(conversationMessage.conversationId, telegramConversation.id),
         )
         .innerJoin(
           vacancyResponse,
@@ -127,7 +127,7 @@ export const getMessagesRouter = {
         )
         .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
         .where(eq(vacancy.workspaceId, input.workspaceId))
-        .orderBy(desc(telegramMessage.createdAt))
+        .orderBy(desc(conversationMessage.createdAt))
         .limit(input.limit);
 
       return messages.map((row) => ({

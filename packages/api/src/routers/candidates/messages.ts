@@ -1,7 +1,7 @@
 import { desc, eq, workspaceRepository } from "@qbs-autonaim/db";
 import {
   conversation,
-  telegramMessage,
+  conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -34,14 +34,14 @@ export const listMessages = protectedProcedure
       where: eq(conversation.responseId, input.candidateId),
     });
 
-    if (!conversation) {
+    if (!conv) {
       return [];
     }
 
     // Получить сообщения
-    const messages = await ctx.db.query.telegramMessage.findMany({
-      where: eq(telegramMessage.conversationId, conversation.id),
-      orderBy: desc(telegramMessage.createdAt),
+    const messages = await ctx.db.query.conversationMessage.findMany({
+      where: eq(conversationMessage.conversationId, conv.id),
+      orderBy: desc(conversationMessage.createdAt),
       limit: 100,
     });
 
@@ -51,7 +51,7 @@ export const listMessages = protectedProcedure
       sender: msg.sender === "CANDIDATE" ? "candidate" : "recruiter",
       senderName:
         msg.sender === "CANDIDATE"
-          ? conversation.candidateName || "Кандидат"
+          ? conv.candidateName || "Кандидат"
           : "Рекрутер",
       senderAvatar: null,
       timestamp: msg.createdAt,
@@ -99,14 +99,14 @@ export const sendMessage = protectedProcedure
     }
 
     // Найти или создать conversation
-    let conversation = await ctx.db.query.telegramConversation.findFirst({
-      where: eq(telegramConversation.responseId, input.candidateId),
+    const conv = await ctx.db.query.conversation.findFirst({
+      where: eq(conversation.responseId, input.candidateId),
     });
 
-    if (!conversation) {
+    if (!conv) {
       // Создать новый conversation если его нет
       const [newConversation] = await ctx.db
-        .insert(telegramConversation)
+        .insert(conversation)
         .values({
           responseId: input.candidateId,
           candidateName: response.candidateName || "Кандидат",
@@ -125,7 +125,7 @@ export const sendMessage = protectedProcedure
     }
 
     // Создать сообщение
-    await ctx.db.insert(telegramMessage).values({
+    await ctx.db.insert(conversationMessage).values({
       conversationId: conversation.id,
       sender: "ADMIN",
       contentType: "TEXT",

@@ -1,7 +1,7 @@
 import {
   conversation,
+  conversationMessagesage,
   eq,
-  telegramMessage,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db";
@@ -119,7 +119,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           });
         }
 
-        const telegramMessageId = result.messageId;
+        const conversationMessagesageId = result.messageId;
 
         // Обновляем lastUsedAt для сессии
         await db
@@ -130,11 +130,11 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         console.log("✅ Сообщение отправлено в Telegram", {
           messageId,
           chatId,
-          telegramMessageId,
+          conversationMessagesageId,
           sessionId: session.id,
         });
 
-        return { telegramMessageId };
+        return { conversationMessagesageId };
       } catch (error) {
         console.error("❌ Ошибка отправки сообщения в Telegram", {
           messageId,
@@ -145,19 +145,19 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       }
     });
 
-    // Обновляем запись в базе данных с telegramMessageId (если messageId передан)
+    // Обновляем запись в базе данных с conversationMessagesageId (если messageId передан)
     if (messageId) {
       await step.run("update-message-record", async () => {
         await db
-          .update(telegramMessage)
+          .update(conversationMessagesage)
           .set({
-            telegramMessageId: result.telegramMessageId,
+            conversationMessagesageId: resconversationMessagenMessageId,
           })
-          .where(eq(telegramMessage.id, messageId));
+          .where(eq(conversationMessagesage.id, messageId));
 
         console.log("✅ Обновлена запись сообщения в БД", {
           messageId,
-          telegramMessageId: result.telegramMessageId,
+          conversationMessagesageId: resconversationMessagenMessageId,
         });
       });
     }
@@ -166,7 +166,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       success: true,
       messageId,
       chatId,
-      telegramMessageId: result.telegramMessageId,
+      conversationMessagesageId: resconversationMessagenMessageId,
     };
   },
 );

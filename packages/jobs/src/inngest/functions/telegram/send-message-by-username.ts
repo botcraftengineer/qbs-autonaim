@@ -60,24 +60,24 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
           .set({ lastUsedAt: new Date() })
           .where(eq(telegramSession.id, session.id));
 
-        // Обновляем telegramMessageId в БД, если messageId не пустой
+        // Обновляем conversationMessageId в БД, если messageId не пустой
         if (messageId) {
           await db
             .update(conversationMessage)
-            .set({ telegramMessageId: result.messageId })
+            .set({ conversationMessageId: result.messageId })
             .where(eq(conversationMessage.id, messageId));
         }
 
         console.log("✅ Сообщение отправлено по username", {
           username,
-          telegramMessageId: result.messageId,
+          conversationMessageId: result.messageId,
           sessionId: session.id,
           dbMessageId: messageId,
         });
 
         return {
           success: true,
-          telegramMessageId: result.messageId,
+          conversationMessageId: result.messageId,
           chatId: result.chatId,
         };
       } catch (error) {
@@ -92,7 +92,7 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
     return {
       success: true,
       username,
-      telegramMessageId: result.telegramMessageId,
+      conversationMessageId: result.conversationMessageId,
       chatId: result.chatId,
     };
   },
