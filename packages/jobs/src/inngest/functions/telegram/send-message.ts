@@ -1,6 +1,5 @@
 import {
-  conversation,
-  conversationMessagesage,
+  conversationMessage,
   eq,
   telegramSession,
   vacancyResponse,
@@ -119,7 +118,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           });
         }
 
-        const conversationMessagesageId = result.messageId;
+        const externalMessageId = result.messageId;
 
         // Обновляем lastUsedAt для сессии
         await db
@@ -130,11 +129,11 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         console.log("✅ Сообщение отправлено в Telegram", {
           messageId,
           chatId,
-          conversationMessagesageId,
+          externalMessageId,
           sessionId: session.id,
         });
 
-        return { conversationMessagesageId };
+        return { externalMessageId };
       } catch (error) {
         console.error("❌ Ошибка отправки сообщения в Telegram", {
           messageId,
@@ -145,19 +144,21 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       }
     });
 
-    // Обновляем запись в базе данных с conversationMessagesageId (если messageId передан)
+    // Обновляем запись в базе данных с externalMessageId (если messageId передан)
+    const resultExternalMessageId = result.externalMessageId;
+
     if (messageId) {
       await step.run("update-message-record", async () => {
         await db
-          .update(conversationMessagesage)
+          .update(conversationMessage)
           .set({
-            conversationMessagesageId: resconversationMessagenMessageId,
+            externalMessageId: resultExternalMessageId,
           })
-          .where(eq(conversationMessagesage.id, messageId));
+          .where(eq(conversationMessage.id, messageId));
 
         console.log("✅ Обновлена запись сообщения в БД", {
           messageId,
-          conversationMessagesageId: resconversationMessagenMessageId,
+          externalMessageId: resultExternalMessageId,
         });
       });
     }
@@ -166,7 +167,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       success: true,
       messageId,
       chatId,
-      conversationMessagesageId: resconversationMessagenMessageId,
+      externalMessageId: resultExternalMessageId,
     };
   },
 );

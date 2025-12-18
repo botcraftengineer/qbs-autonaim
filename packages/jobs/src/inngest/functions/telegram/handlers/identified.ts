@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
-import { conversationMessagesage } from "@qbs-autonaim/db/schema";
+import { conversationMessage } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../../client";
 import type { ConversationMetadata } from "../types";
@@ -16,13 +16,13 @@ export async function handleIdentifiedText(params: {
     params;
 
   const [savedMessage] = await db
-    .insert(conversationMessagesage)
+    .insert(conversationMessage)
     .values({
       conversationId,
       sender: "CANDIDATE",
       contentType: "TEXT",
       content: text,
-      conversationMessagesageId: messageId,
+      externalMessageId: messageId,
     })
     .returning();
 
@@ -86,7 +86,7 @@ export async function handleIdentifiedMedia(params: {
   });
 
   const [savedMessage] = await db
-    .insert(conversationMessagesage)
+    .insert(conversationMessage)
     .values({
       conversationId,
       sender: "CANDIDATE",
@@ -94,7 +94,7 @@ export async function handleIdentifiedMedia(params: {
       content: `${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение`,
       fileId: downloadData.fileId,
       voiceDuration: downloadData.duration.toString(),
-      conversationMessagesageId: messageIdStr,
+      externalMessageId: messageIdStr,
     })
     .returning();
 

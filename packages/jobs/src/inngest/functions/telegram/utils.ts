@@ -1,11 +1,6 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import {
-  companySettings,
-  conversation,
-  conversationMessagesage,
-  vacancyResponse,
-} from "@qbs-autonaim/db/schema";
+import { conversationMessage, vacancyResponse } from "@qbs-autonaim/db/schema";
 import type { BotSettings } from "./types";
 
 export function extractPinCode(text: string): string | null {
@@ -15,13 +10,13 @@ export function extractPinCode(text: string): string | null {
 
 export async function findDuplicateMessage(
   conversationId: string,
-  conversationMessagesageId: string,
+  externalMessageId: string,
 ): Promise<boolean> {
-  const existingMessage = await db.query.conversationMessagesage.findFirst({
+  const existingMessage = await db.query.conversationMessage.findFirst({
     where: (messages, { and, eq }) =>
       and(
         eq(messages.conversationId, conversationId),
-        eq(messages.conversationMessagesageconversationMessagenMessageId),
+        eq(messages.externalMessageId, externalMessageId),
       ),
   });
   return !!existingMessage;
@@ -54,8 +49,8 @@ export async function getCompanyBotSettings(
 }
 
 export async function getConversationHistory(conversationId: string) {
-  return await db.query.conversationMessagesage.findMany({
-    where: eq(conversationMessagesage.conversationId, conversationId),
+  return await db.query.conversationMessage.findMany({
+    where: eq(conversationMessage.conversationId, conversationId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
     limit: 10,
   });

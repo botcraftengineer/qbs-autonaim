@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
-import { conversationMessagesage } from "@qbs-autonaim/db/schema";
+import { conversationMessage } from "@qbs-autonaim/db/schema";
 import {
   getInterviewStartData,
   identifyByPinCode,
@@ -127,12 +127,12 @@ async function handleInvalidPin(params: {
     const isDuplicate = await findDuplicateMessage(tempConvId, messageId);
 
     if (!isDuplicate) {
-      await db.insert(conversationMessagesage).values({
+      await db.insert(conversationMessage).values({
         conversationId: tempConvId,
         sender: "CANDIDATE",
         contentType: "TEXT",
         content: trimmedText,
-        conversationMessagesageId: messageId,
+        externalMessageId: messageId,
       });
     }
 
