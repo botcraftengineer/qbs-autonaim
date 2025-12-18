@@ -48,6 +48,11 @@ export { EscalationDetectorAgent } from "./escalation-detector";
 export type { EvaluatorInput, EvaluatorOutput } from "./evaluator";
 export { EvaluatorAgent } from "./evaluator";
 export type {
+  InterviewCompletionInput,
+  InterviewCompletionOutput,
+} from "./interview-completion";
+export { InterviewCompletionAgent } from "./interview-completion";
+export type {
   InterviewScoringInput,
   InterviewScoringOutput,
 } from "./interview-scoring";
@@ -61,6 +66,11 @@ export type {
   OrchestratorOutput,
 } from "./orchestrator";
 export { InterviewOrchestrator } from "./orchestrator";
+export type {
+  SalaryExtractionInput,
+  SalaryExtractionOutput,
+} from "./salary-extraction";
+export { SalaryExtractionAgent } from "./salary-extraction";
 // Инструменты
 export {
   getConversationContext,

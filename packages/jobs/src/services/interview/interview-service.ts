@@ -39,9 +39,9 @@ interface InterviewContext {
   questionNumber: number;
   responseId: string | null;
   conversationHistory?: Array<{
-    sender: string;
+    sender: "CANDIDATE" | "BOT";
     content: string;
-    contentType?: string;
+    contentType?: "TEXT" | "VOICE";
   }>;
 }
 
@@ -101,9 +101,9 @@ export async function analyzeAndGenerateNextQuestion(
 
   // Формируем контекст для агента
   const agentContext = {
-    candidateName,
-    vacancyTitle,
-    vacancyDescription,
+    candidateName: candidateName ?? undefined,
+    vacancyTitle: vacancyTitle ?? undefined,
+    vacancyDescription: vacancyDescription ?? undefined,
     conversationHistory: context.conversationHistory || [],
   };
 
@@ -172,12 +172,16 @@ export async function getInterviewContext(
   const metadata = parseMetadata(conv.metadata);
   const questionAnswers = metadata.questionAnswers ?? [];
 
-  // Формируем историю диалога
-  const conversationHistory = conv.messages.map((msg) => ({
-    sender: msg.sender,
-    content: msg.content,
-    contentType: msg.contentType,
-  }));
+  // Формируем историю диалога с правильными типами
+  const conversationHistory = conv.messages
+    .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
+    .map((msg) => ({
+      sender: msg.sender as "CANDIDATE" | "BOT",
+      content: msg.content,
+      contentType: (msg.contentType === "TEXT" || msg.contentType === "VOICE"
+        ? msg.contentType
+        : undefined) as "TEXT" | "VOICE" | undefined,
+    }));
 
   return {
     conversationId: conv.id,
@@ -240,9 +244,9 @@ export async function createInterviewScoring(
 
   // Формируем контекст для агента
   const agentContext = {
-    candidateName,
-    vacancyTitle,
-    vacancyDescription,
+    candidateName: candidateName ?? undefined,
+    vacancyTitle: vacancyTitle ?? undefined,
+    vacancyDescription: vacancyDescription ?? undefined,
     conversationHistory: [],
   };
 
