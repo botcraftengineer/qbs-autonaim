@@ -67,4 +67,53 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
       return null;
     }
   }
+
+  /**
+   * Парсинг JSON с автоматическим исправлением через AI при ошибке
+   */
+  protected async parseJSONResponseWithRetry<T>(
+    text: string,
+    expectedFormat: string,
+    maxRetries = 2,
+  ): Promise<T | null> {
+    // Первая попытка парсинга
+    const firstAttempt = this.parseJSONResponse<T>(text);
+    if (firstAttempt) {
+      return firstAttempt;
+    }
+
+    // Если не удалось, пробуем исправить через AI
+    let currentText = text;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const fixPrompt = `Ты получил невалидный JSON. Исправь его и верни ТОЛЬКО валидный JSON без дополнительного текста.
+
+НЕВАЛИДНЫЙ JSON:
+${currentText}
+
+ОЖИДАЕМЫЙ ФОРМАТ:
+${expectedFormat}
+
+ВАЖНО:
+- Верни ТОЛЬКО исправленный JSON
+- Не добавляй объяснений или комментариев
+- Убедись, что JSON валиден
+- Сохрани все поля из ожидаемого формата`;
+
+        const fixedResponse = await this.generateAIResponse(fixPrompt);
+        const parsed = this.parseJSONResponse<T>(fixedResponse);
+
+        if (parsed) {
+          console.log(`JSON исправлен на попытке ${attempt}`);
+          return parsed;
+        }
+
+        currentText = fixedResponse;
+      } catch (error) {
+        console.error(`Попытка исправления ${attempt} не удалась:`, error);
+      }
+    }
+
+    return null;
+  }
 }

@@ -91,7 +91,17 @@ ${input.previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   О
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed = this.parseJSONResponse<InterviewScoringOutput>(aiResponse);
+      const expectedFormat = `{
+  "score": number (0-5),
+  "detailedScore": number (0-100),
+  "analysis": "string (HTML format)",
+  "confidence": number (0.0-1.0)
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<InterviewScoringOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

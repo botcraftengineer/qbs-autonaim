@@ -109,7 +109,17 @@ ${customOrganizationalQuestions ? `ПОЛЬЗОВАТЕЛЬСКИЕ ОРГАНИ
     try {
       const prompt = this.buildPrompt(input, context);
       const aiResponse = await this.generateAIResponse(prompt, {});
-      const parsed = this.parseJSONResponse<EnhancedWelcomeOutput>(aiResponse);
+      
+      const expectedFormat = `{
+  "message": "string",
+  "organizationalQuestions": ["string"],
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<EnhancedWelcomeOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

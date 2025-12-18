@@ -94,8 +94,21 @@ ${historyText ? `КОНТЕКСТ ДИАЛОГА:\n${historyText}\n` : ""}
 
       // Реальный AI-вызов
       const aiResponse = await this.generateAIResponse(prompt);
-      const parsed =
-        this.parseJSONResponse<EnhancedContextAnalysisOutput>(aiResponse);
+      
+      // Используем метод с автоматическим исправлением JSON
+      const expectedFormat = `{
+  "messageType": "QUESTION" | "ANSWER" | "ACKNOWLEDGMENT" | "POSTPONE_REQUEST" | "REFUSAL" | "UNCLEAR",
+  "intent": "string",
+  "requiresResponse": boolean,
+  "sentiment": "POSITIVE" | "NEUTRAL" | "NEGATIVE",
+  "topics": ["string"],
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<EnhancedContextAnalysisOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

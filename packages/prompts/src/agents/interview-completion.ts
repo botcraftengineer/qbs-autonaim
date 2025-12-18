@@ -125,8 +125,15 @@ ${vacancyText}
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed =
-        this.parseJSONResponse<InterviewCompletionOutput>(aiResponse);
+      const expectedFormat = `{
+  "finalMessage": "string",
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<InterviewCompletionOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

@@ -81,7 +81,15 @@ ${candidateMessages}
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed = this.parseJSONResponse<SalaryExtractionOutput>(aiResponse);
+      const expectedFormat = `{
+  "salaryExpectations": "string",
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<SalaryExtractionOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

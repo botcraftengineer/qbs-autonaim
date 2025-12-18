@@ -204,10 +204,17 @@ ${input.currentAnswer}
 
       const aiResponse = await this.generateAIResponse(prompt);
 
-      const parsed =
-        this.parseJSONResponse<Omit<VoiceInterviewerOutput, "confidence">>(
-          aiResponse,
-        );
+      const expectedFormat = `{
+  "analysis": "string (HTML format)",
+  "shouldContinue": boolean,
+  "reason": "string (optional)",
+  "nextQuestion": "string (optional)",
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<
+        Omit<VoiceInterviewerOutput, "confidence">
+      >(aiResponse, expectedFormat);
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

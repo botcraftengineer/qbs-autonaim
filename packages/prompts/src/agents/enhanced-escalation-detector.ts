@@ -93,8 +93,18 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
 
       // Реальный AI-вызов для более сложных случаев
       const aiResponse = await this.generateAIResponse(prompt);
-      const parsed =
-        this.parseJSONResponse<EnhancedEscalationOutput>(aiResponse);
+      
+      const expectedFormat = `{
+  "shouldEscalate": boolean,
+  "reason": "string",
+  "urgency": "LOW" | "MEDIUM" | "HIGH",
+  "suggestedAction": "string"
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<EnhancedEscalationOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

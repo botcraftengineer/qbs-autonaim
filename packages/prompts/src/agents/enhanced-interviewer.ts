@@ -116,10 +116,17 @@ ${context.conversationHistory
         getConversationContext,
       });
 
-      const parsed =
-        this.parseJSONResponse<
-          Omit<EnhancedInterviewerOutput, "detectedTopics" | "sentiment">
-        >(aiResponse);
+      const expectedFormat = `{
+  "response": "string",
+  "shouldRequestVoice": boolean,
+  "questionType": "ORGANIZATIONAL" | "PROFESSIONAL" | "CLARIFICATION" | null,
+  "shouldContinue": boolean,
+  "confidence": number
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<
+        Omit<EnhancedInterviewerOutput, "detectedTopics" | "sentiment">
+      >(aiResponse, expectedFormat);
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };

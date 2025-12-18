@@ -92,8 +92,20 @@ ${input.answer}
 
       // Реальный AI-вызов
       const aiResponse = await this.generateAIResponse(prompt);
-      const parsed =
-        this.parseJSONResponse<EnhancedEvaluatorOutput>(aiResponse);
+      
+      const expectedFormat = `{
+  "score": number (0-5),
+  "detailedScore": number (0-100),
+  "analysis": "string (HTML format)",
+  "strengths": ["string"],
+  "weaknesses": ["string"],
+  "recommendation": "CONTINUE" | "COMPLETE" | "NEED_MORE_INFO"
+}`;
+
+      const parsed = await this.parseJSONResponseWithRetry<EnhancedEvaluatorOutput>(
+        aiResponse,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };
