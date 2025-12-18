@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Calendar,
@@ -13,6 +12,7 @@ import {
   Mail,
   Image,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/trpc/react";
 
 interface ActivityTimelineProps {
@@ -78,14 +78,16 @@ export function ActivityTimeline({
   workspaceId,
 }: ActivityTimelineProps) {
   const trpc = useTRPC();
-  // @ts-expect-error - новый роут, типы обновятся после перезапуска TS сервера
-  const historyQuery = trpc.vacancy.responses.history.useQuery({
+  
+  const historyQueryOptions = trpc.vacancy.responses.history.queryOptions({
     responseId: candidateId,
     workspaceId,
   });
   
-  const history = (historyQuery.data ?? []) as HistoryEvent[];
-  const isLoading = historyQuery.isLoading;
+  const { data, isPending } = useQuery(historyQueryOptions);
+  
+  const history = (data ?? []) as HistoryEvent[];
+  const isLoading = isPending;
 
   const getIcon = (type: string) =>
     ACTIVITY_ICONS[type as keyof typeof ACTIVITY_ICONS] ?? CheckCircle;
