@@ -3,7 +3,10 @@ import {
   vacancy,
   vacancyResponse,
   vacancyResponseComment,
+  workspaceRepository,
 } from "@qbs-autonaim/db";
+import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
 import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -11,11 +14,23 @@ import { protectedProcedure } from "../../trpc";
 export const listComments = protectedProcedure
   .input(
     z.object({
-      workspaceId: z.string(),
-      candidateId: z.string(),
+      workspaceId: workspaceIdSchema,
+      candidateId: uuidv7Schema,
     }),
   )
   .query(async ({ input, ctx }) => {
+    const access = await workspaceRepository.checkAccess(
+      input.workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к workspace",
+      });
+    }
+
     const comments = await ctx.db
       .select({
         id: vacancyResponseComment.id,
