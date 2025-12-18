@@ -111,7 +111,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
     if (isIdentified && conv.response) {
       const responseStatus = conv.response.status;
       const isInterviewRelated =
-        responseStatus === RESPONSE_STATUS.INTERVIEW_HH || responseStatus === RESPONSE_STATUS.COMPLETED;
+        responseStatus === RESPONSE_STATUS.NEW || RESPONSE_STATUS.INTERVIEW_HH || responseStatus === RESPONSE_STATUS.COMPLETED;
 
       if (!isInterviewRelated) {
         console.log("⏭️ Кандидат идентифицирован, но статус не связан с интервью, пропускаем", {
