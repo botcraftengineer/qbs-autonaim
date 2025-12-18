@@ -35,6 +35,18 @@ export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
 }
 
+type ConversationWithChatId = {
+  id: string;
+  responseId: string;
+  candidateName: string | null;
+  username: string | null;
+  status: "ACTIVE" | "COMPLETED" | "CANCELLED";
+  metadata: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  chatId: string | null;
+};
+
 function buildMessageData(message: {
   id: number;
   chat: { id: { toString: () => string } };
@@ -106,8 +118,22 @@ export async function processMissedMessages(
   console.log("🔍 Проверка пропущенных сообщений...");
 
   const conversations = await db
-    .select()
+    .select({
+      id: telegramConversation.id,
+      responseId: telegramConversation.responseId,
+      candidateName: telegramConversation.candidateName,
+      username: telegramConversation.username,
+      status: telegramConversation.status,
+      metadata: telegramConversation.metadata,
+      createdAt: telegramConversation.createdAt,
+      updatedAt: telegramConversation.updatedAt,
+      chatId: vacancyResponse.chatId,
+    })
     .from(telegramConversation)
+    .innerJoin(
+      vacancyResponse,
+      eq(telegramConversation.responseId, vacancyResponse.id),
+    )
     .where(eq(telegramConversation.status, "ACTIVE"));
 
   if (conversations.length === 0) {
@@ -182,7 +208,7 @@ export async function processMissedMessages(
  * Обрабатывает пропущенные сообщения для одной беседы
  */
 async function processConversationMissedMessages(
-  conversation: typeof telegramConversation.$inferSelect,
+  conversation: ConversationWithChatId,
   getClient: (workspaceId: string) => TelegramClient | null,
 ): Promise<{ processed: number; errors: number }> {
   let processed = 0;
@@ -223,6 +249,11 @@ async function processConversationMissedMessages(
   }
 
   // Получаем историю из Telegram
+  if (!conversation.chatId) {
+    console.log(`⚠️ Отсутствует chatId для беседы ${conversation.id}`);
+    return { processed, errors };
+  }
+
   const chatIdNumber = Number.parseInt(conversation.chatId, 10);
   if (Number.isNaN(chatIdNumber)) {
     console.log(

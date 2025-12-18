@@ -43,6 +43,21 @@ async function migrateTelegramMessages() {
 
     console.log(`📊 Найдено ${count} сообщений для миграции`);
 
+    // Проверяем существование новой таблицы
+    const newTableExists = await db.execute(sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'messages'
+      );
+    `);
+
+    if (!newTableExists.rows[0]?.exists) {
+      console.log("❌ Таблица messages не найдена!");
+      console.log("ℹ️  Сначала выполните: bun run push");
+      process.exit(1);
+    }
+
     // Копируем данные из telegram_messages в messages
     await db.execute(sql`
       INSERT INTO messages (

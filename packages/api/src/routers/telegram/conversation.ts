@@ -54,9 +54,7 @@ export const getConversationRouter = {
         return [];
       }
 
-      const conversationIds = conversations.map(
-        (c) => c.telegram_conversations.id,
-      );
+      const conversationIds = conversations.map((c) => c.conversations.id);
 
       const allMessages = await ctx.db
         .select()
@@ -72,11 +70,9 @@ export const getConversationRouter = {
       }
 
       const conversationsWithMessages = conversations.map((conv) => {
-        const lastMessage = messagesByConversation.get(
-          conv.telegram_conversations.id,
-        );
+        const lastMessage = messagesByConversation.get(conv.conversations.id);
         return {
-          ...conv.telegram_conversations,
+          ...conv.conversations,
           messages: lastMessage ? [lastMessage] : [],
           response: {
             ...conv.vacancy_responses,

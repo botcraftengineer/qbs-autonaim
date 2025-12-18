@@ -3,6 +3,7 @@ import {
   eq,
   telegramConversation,
   telegramMessage,
+  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { uuidv7Schema } from "@qbs-autonaim/validators";
@@ -35,19 +36,28 @@ export const sendMessageRouter = {
         throw new Error("Failed to create message");
       }
 
-      const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.id, input.conversationId),
-      });
+      const conversationData = await ctx.db
+        .select({
+          id: telegramConversation.id,
+          chatId: vacancyResponse.chatId,
+        })
+        .from(telegramConversation)
+        .innerJoin(
+          vacancyResponse,
+          eq(telegramConversation.responseId, vacancyResponse.id),
+        )
+        .where(eq(telegramConversation.id, input.conversationId))
+        .limit(1);
 
-      if (!conversation) {
-        throw new Error("Conversation not found");
+      if (!conversationData[0] || !conversationData[0].chatId) {
+        throw new Error("Conversation or chatId not found");
       }
 
       await inngest.send({
         name: "telegram/message.send",
         data: {
           messageId: message.id,
-          chatId: conversation.chatId,
+          chatId: conversationData[0].chatId,
           content: message.content,
         },
       });
@@ -77,19 +87,28 @@ export const sendMessageRouter = {
         throw new Error("Failed to create message");
       }
 
-      const conversation = await ctx.db.query.telegramConversation.findFirst({
-        where: eq(telegramConversation.id, input.conversationId),
-      });
+      const conversationData = await ctx.db
+        .select({
+          id: telegramConversation.id,
+          chatId: vacancyResponse.chatId,
+        })
+        .from(telegramConversation)
+        .innerJoin(
+          vacancyResponse,
+          eq(telegramConversation.responseId, vacancyResponse.id),
+        )
+        .where(eq(telegramConversation.id, input.conversationId))
+        .limit(1);
 
-      if (!conversation) {
-        throw new Error("Conversation not found");
+      if (!conversationData[0] || !conversationData[0].chatId) {
+        throw new Error("Conversation or chatId not found");
       }
 
       await inngest.send({
         name: "telegram/message.send",
         data: {
           messageId: message.id,
-          chatId: conversation.chatId,
+          chatId: conversationData[0].chatId,
           content: message.content,
         },
       });

@@ -45,6 +45,21 @@ async function migrateTelegramConversations() {
 
     console.log(`📊 Найдено ${count} записей для миграции`);
 
+    // Проверяем существование новой таблицы
+    const newTableExists = await db.execute(sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'conversations'
+      );
+    `);
+
+    if (!newTableExists.rows[0]?.exists) {
+      console.log("❌ Таблица conversations не найдена!");
+      console.log("ℹ️  Сначала выполните: bun run push");
+      process.exit(1);
+    }
+
     // Копируем данные из telegram_conversations в conversations
     // Убираем chat_id, так как теперь используем только responseId и username
     await db.execute(sql`

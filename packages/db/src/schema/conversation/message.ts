@@ -24,7 +24,7 @@ export const messageContentTypeEnum = pgEnum("message_content_type", [
   "VOICE",
 ]);
 
-export const message = pgTable("messages", {
+export const conversationMessage = pgTable("conversation_messages", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
   conversationId: uuid("conversation_id")
     .notNull()
@@ -39,7 +39,7 @@ export const message = pgTable("messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const CreateMessageSchema = createInsertSchema(message, {
+export const CreateMessageSchema = createInsertSchema(conversationMessage, {
   conversationId: uuidv7Schema,
   sender: z.enum(["CANDIDATE", "BOT", "ADMIN"]),
   contentType: z.enum(["TEXT", "VOICE"]).default("TEXT"),
@@ -54,5 +54,5 @@ export const CreateMessageSchema = createInsertSchema(message, {
 });
 
 // Экспортируем также старое имя для обратной совместимости
-export const telegramMessage = message;
+export const telegramMessage = conversationMessage;
 export const CreateTelegramMessageSchema = CreateMessageSchema;

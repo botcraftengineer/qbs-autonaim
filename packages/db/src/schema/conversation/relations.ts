@@ -3,12 +3,12 @@ import { file } from "../file/file";
 import { telegramInterviewScoring } from "../telegram/interview-scoring";
 import { vacancyResponse } from "../vacancy/response";
 import { conversation } from "./conversation";
-import { message } from "./message";
+import { conversationMessage } from "./message";
 
 export const conversationRelations = relations(
   conversation,
   ({ many, one }) => ({
-    messages: many(message),
+    messages: many(conversationMessage),
     interviewScoring: one(telegramInterviewScoring, {
       fields: [conversation.id],
       references: [telegramInterviewScoring.conversationId],
@@ -20,13 +20,13 @@ export const conversationRelations = relations(
   }),
 );
 
-export const messageRelations = relations(message, ({ one }) => ({
+export const messageRelations = relations(conversationMessage, ({ one }) => ({
   conversation: one(conversation, {
-    fields: [message.conversationId],
+    fields: [conversationMessage.conversationId],
     references: [conversation.id],
   }),
   file: one(file, {
-    fields: [message.fileId],
+    fields: [conversationMessage.fileId],
     references: [file.id],
     relationName: "file",
   }),

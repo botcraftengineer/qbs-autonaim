@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { conversation } from "../conversation/conversation";
-import { message } from "../conversation/message";
+import { conversationMessage } from "../conversation/message";
 import { file } from "../file/file";
 import { vacancyResponse } from "../vacancy/response";
 import { telegramInterviewScoring } from "./interview-scoring";
@@ -9,7 +9,7 @@ import { telegramInterviewScoring } from "./interview-scoring";
 export const telegramConversationRelations = relations(
   conversation,
   ({ many, one }) => ({
-    messages: many(message),
+    messages: many(conversationMessage),
     interviewScoring: one(telegramInterviewScoring, {
       fields: [conversation.id],
       references: [telegramInterviewScoring.conversationId],
@@ -21,17 +21,20 @@ export const telegramConversationRelations = relations(
   }),
 );
 
-export const telegramMessageRelations = relations(message, ({ one }) => ({
-  conversation: one(conversation, {
-    fields: [message.conversationId],
-    references: [conversation.id],
+export const telegramMessageRelations = relations(
+  conversationMessage,
+  ({ one }) => ({
+    conversation: one(conversation, {
+      fields: [conversationMessage.conversationId],
+      references: [conversation.id],
+    }),
+    file: one(file, {
+      fields: [conversationMessage.fileId],
+      references: [file.id],
+      relationName: "file",
+    }),
   }),
-  file: one(file, {
-    fields: [message.fileId],
-    references: [file.id],
-    relationName: "file",
-  }),
-}));
+);
 
 export const telegramInterviewScoringRelations = relations(
   telegramInterviewScoring,

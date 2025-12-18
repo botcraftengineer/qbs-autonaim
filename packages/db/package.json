@@ -27,7 +27,8 @@
     "check": "biome check .",
     "push": "bun with-env drizzle-kit push",
     "studio": "bun with-env drizzle-kit studio",
-    "migrate": ""
+    "migrate:create": "bun with-env drizzle-kit generate",
+    "migrate": "bun with-env drizzle-kit migrate",
     "generate-key": "bun with-env bun src/scripts/generate-encryption-key.ts",
     "set-admin": "bun with-env bun src/scripts/set-admin-role.ts",
     "setup": "bun with-env bun src/scripts/setup-uuid-v7.ts",
@@ -35,6 +36,10 @@
     "migrate-company": "bun with-env bun src/scripts/migrate-company-settings.ts",
     "migrate-conversations": "bun with-env bun src/scripts/migrate-telegram-conversations.ts",
     "migrate-messages": "bun with-env bun src/scripts/migrate-telegram-messages.ts",
+    "migrate-all": "bun with-env bun src/scripts/migrate-all.ts",
+    "migrate-server": "bun with-env bun src/scripts/migrate-server.ts",
+    "migrate-server-dump": "bun with-env bun src/scripts/migrate-server-dump.ts",
+    "migrate-workspace": "bun with-env bun src/scripts/migrate-workspace.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "bun run --env-file ../../.env"
   },
@@ -54,6 +59,7 @@
     "@types/pg": "^8.16.0",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.8",
+    "postgres": "^3.4.7",
     "typescript": "5.9.3"
   }
 }
