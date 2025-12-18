@@ -1,20 +1,16 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
-import { generateText } from "@qbs-autonaim/lib/ai";
+import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
-  buildInterviewQuestionPrompt,
-  buildInterviewScoringPrompt,
+  InterviewScoringAgent,
+  VoiceInterviewerAgent,
 } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
-import type { z } from "zod";
-import {
-  type InterviewAnalysis,
-  type InterviewScoring,
-  interviewAnalysisSchema,
-  interviewScoringSchema,
+import type {
+  InterviewAnalysis,
+  InterviewScoring,
 } from "../../schemas/interview";
-import { extractJsonFromText } from "../../utils/json-extractor";
 import { createLogger, INTERVIEW } from "../base";
 
 const logger = createLogger("Interview");
@@ -66,27 +62,10 @@ function parseMetadata(metadataStr: string | null): ConversationMetadata {
 }
 
 /**
- * Parses AI response text and validates against Zod schema
- * Returns fallback value if parsing fails
+ * Создает AI модель для агентов
  */
-function parseAIResponse<T>(
-  text: string,
-  schema: z.ZodSchema<T>,
-  fallback: T,
-  errorContext: string,
-): T {
-  try {
-    const extracted = extractJsonFromText(text);
-
-    if (!extracted) {
-      throw new Error("JSON не найден в ответе");
-    }
-
-    return schema.parse(extracted);
-  } catch (error) {
-    logger.error(`Error parsing ${errorContext}`, { error, aiResponse: text });
-    return fallback;
-  }
+function createAgentModel() {
+  return getAIModel();
 }
 
 // ==================== MAIN FUNCTIONS ====================
@@ -116,44 +95,51 @@ export async function analyzeAndGenerateNextQuestion(
     };
   }
 
-  const prompt = buildInterviewQuestionPrompt({
+  // Создаем агента
+  const model = createAgentModel();
+  const agent = new VoiceInterviewerAgent({ model });
+
+  // Формируем контекст для агента
+  const agentContext = {
     candidateName,
     vacancyTitle,
     vacancyDescription,
-    currentAnswer,
-    currentQuestion,
-    previousQA,
-    questionNumber,
-    conversationHistory: context.conversationHistory,
-  });
-
-  const { text } = await generateText({
-    prompt,
-    generationName: "interview-next-question",
-    entityId: context.conversationId,
-    metadata: {
-      conversationId: context.conversationId,
-      questionNumber,
-    },
-  });
-
-  const fallback: InterviewAnalysis = {
-    analysis: "Failed to analyze response",
-    shouldContinue: questionNumber < INTERVIEW.MAX_QUESTIONS,
-    nextQuestion: INTERVIEW.DEFAULT_FALLBACK_QUESTION,
+    conversationHistory: context.conversationHistory || [],
   };
 
-  const result = parseAIResponse(
-    text,
-    interviewAnalysisSchema,
-    fallback,
-    "AI response",
+  // Выполняем агента
+  const result = await agent.execute(
+    {
+      currentAnswer,
+      currentQuestion,
+      previousQA,
+      questionNumber,
+      maxQuestions: INTERVIEW.MAX_QUESTIONS,
+      customInterviewQuestions: null,
+    },
+    agentContext,
   );
 
+  // Обработка ошибки
+  if (!result.success || !result.data) {
+    logger.error("Voice interviewer agent failed", {
+      error: result.error,
+      conversationId: context.conversationId,
+    });
+
+    return {
+      analysis: "Failed to analyze response",
+      shouldContinue: questionNumber < INTERVIEW.MAX_QUESTIONS,
+      nextQuestion: INTERVIEW.DEFAULT_FALLBACK_QUESTION,
+    };
+  }
+
+  // Возвращаем результат
   return {
-    ...result,
-    shouldContinue:
-      result.shouldContinue && questionNumber < INTERVIEW.MAX_QUESTIONS,
+    analysis: result.data.analysis,
+    shouldContinue: result.data.shouldContinue,
+    reason: result.data.reason,
+    nextQuestion: result.data.nextQuestion,
   };
 }
 
@@ -248,28 +234,44 @@ export async function createInterviewScoring(
   const { candidateName, vacancyTitle, vacancyDescription, previousQA } =
     context;
 
-  const prompt = buildInterviewScoringPrompt({
+  // Создаем агента
+  const model = createAgentModel();
+  const agent = new InterviewScoringAgent({ model });
+
+  // Формируем контекст для агента
+  const agentContext = {
     candidateName,
     vacancyTitle,
     vacancyDescription,
-    previousQA,
-  });
-
-  const { text } = await generateText({
-    prompt,
-    generationName: "interview-scoring",
-    entityId: context.conversationId,
-    metadata: {
-      conversationId: context.conversationId,
-      responseId: context.responseId,
-    },
-  });
-
-  const fallback: InterviewScoring = {
-    score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
-    detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
-    analysis: "Failed to analyze interview automatically",
+    conversationHistory: [],
   };
 
-  return parseAIResponse(text, interviewScoringSchema, fallback, "scoring");
+  // Выполняем агента
+  const result = await agent.execute(
+    {
+      previousQA,
+    },
+    agentContext,
+  );
+
+  // Обработка ошибки
+  if (!result.success || !result.data) {
+    logger.error("Interview scoring agent failed", {
+      error: result.error,
+      conversationId: context.conversationId,
+    });
+
+    return {
+      score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
+      detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
+      analysis: "Failed to analyze interview automatically",
+    };
+  }
+
+  // Возвращаем результат
+  return {
+    score: result.data.score,
+    detailedScore: result.data.detailedScore,
+    analysis: result.data.analysis,
+  };
 }

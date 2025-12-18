@@ -47,9 +47,13 @@ export type { EscalationInput, EscalationOutput } from "./escalation-detector";
 export { EscalationDetectorAgent } from "./escalation-detector";
 export type { EvaluatorInput, EvaluatorOutput } from "./evaluator";
 export { EvaluatorAgent } from "./evaluator";
+export type {
+  InterviewScoringInput,
+  InterviewScoringOutput,
+} from "./interview-scoring";
+export { InterviewScoringAgent } from "./interview-scoring";
 export type { InterviewerInput, InterviewerOutput } from "./interviewer";
 export { InterviewerAgent } from "./interviewer";
-
 // Оркестратор
 export type {
   OrchestratorConfig,
@@ -70,8 +74,12 @@ export type {
   BaseAgentContext,
   WorkflowState,
 } from "./types";
-
 export { convertLegacyContext } from "./utils/legacy-converter";
+export type {
+  VoiceInterviewerInput,
+  VoiceInterviewerOutput,
+} from "./voice-interviewer";
+export { VoiceInterviewerAgent } from "./voice-interviewer";
 export type { InterviewWorkflowConfig } from "./workflows/interview-workflow";
 // Workflow
 export { InterviewWorkflow } from "./workflows/interview-workflow";
