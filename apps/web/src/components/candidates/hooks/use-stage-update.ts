@@ -38,15 +38,26 @@ export function useStageUpdate(stageQueries: StageQuery[]) {
         });
 
         if (oldStage) {
-          queryClient.setQueryData(oldStage.queryKey, (old: any) => {
-            if (!old) return old;
-            return {
-              ...old,
-              items: old.items.filter(
-                (c: FunnelCandidate) => c.id !== newStageData.candidateId,
-              ),
-            };
-          });
+          queryClient.setQueryData(
+            oldStage.queryKey,
+            (
+              old:
+                | {
+                    items: FunnelCandidate[];
+                    nextCursor?: string;
+                    total?: number;
+                  }
+                | undefined,
+            ) => {
+              if (!old) return old;
+              return {
+                ...old,
+                items: old.items.filter(
+                  (c: FunnelCandidate) => c.id !== newStageData.candidateId,
+                ),
+              };
+            },
+          );
 
           const newStageQuery = stageQueries.find(
             (sq) => sq.stage === newStageData.stage,
@@ -56,16 +67,27 @@ export function useStageUpdate(stageQueries: StageQuery[]) {
               (c) => c.id === newStageData.candidateId,
             );
             if (candidate) {
-              queryClient.setQueryData(newStageQuery.queryKey, (old: any) => {
-                if (!old) return old;
-                return {
-                  ...old,
-                  items: [
-                    { ...candidate, stage: newStageData.stage },
-                    ...old.items,
-                  ],
-                };
-              });
+              queryClient.setQueryData(
+                newStageQuery.queryKey,
+                (
+                  old:
+                    | {
+                        items: FunnelCandidate[];
+                        nextCursor?: string;
+                        total?: number;
+                      }
+                    | undefined,
+                ) => {
+                  if (!old) return old;
+                  return {
+                    ...old,
+                    items: [
+                      { ...candidate, stage: newStageData.stage },
+                      ...old.items,
+                    ],
+                  };
+                },
+              );
             }
           }
         }
@@ -77,7 +99,7 @@ export function useStageUpdate(stageQueries: StageQuery[]) {
           Object.entries(context.previousData).forEach(([stage, data]) => {
             const sq = stageQueries.find((q) => q.stage === stage);
             if (sq) {
-              queryClient.setQueryData(sq.queryKey, data as any);
+              queryClient.setQueryData(sq.queryKey, data);
             }
           });
         }

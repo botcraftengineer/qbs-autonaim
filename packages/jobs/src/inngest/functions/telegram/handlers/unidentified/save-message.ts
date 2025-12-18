@@ -19,7 +19,7 @@ export async function saveUnidentifiedMessage(params: {
         sender: "CANDIDATE",
         contentType,
         content,
-        conversationMessageId: messageId,
+        externalMessageId: messageId,
       });
     }
   } catch (error) {

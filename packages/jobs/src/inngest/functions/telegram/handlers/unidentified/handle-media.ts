@@ -15,51 +15,17 @@ export async function handleUnidentifiedMedia(params: {
   const { chatId, messageId, username, firstName, workspaceId, botSettings } =
     params;
 
-  let tempConv: typeof conversation.$inferSelect | undefined;
-  try {
-    const result = await db
-      .insert(conversation)
-      .values({
-        chatId,
-        candidateName: firstName,
-        username,
-        status: "ACTIVE",
-        metadata: JSON.stringify({
-          identifiedBy: "none",
-          awaitingPin: true,
-        }),
-      })
-      .onConflictDoNothing()
-      .returning();
+  // Для неидентифицированных пользователей не создаем conversation,
+  // так как нет responseId. Просто логируем и возвращаем результат.
+  console.log("Получено медиа от неидентифицированного пользователя:", {
+    chatId,
+    messageId,
+    username,
+    firstName,
+  });
 
-    tempConv = result[0];
-  } catch (error) {
-    console.error("Failed to create temp conversation for media:", {
-      chatId,
-      messageId,
-      error: error instanceof Error ? error.message : String(error),
-    });
-    throw error;
-  }
-
-  if (tempConv) {
-    await saveUnidentifiedMessage({
-      conversationId: tempConv.id,
-      content: "Голосовое сообщение (кандидат не идентифицирован)",
-      messageId,
-      contentType: "VOICE",
-    });
-
-    await generateAndSendBotResponse({
-      conversationId: tempConv.id,
-      messageText: "[Голосовое сообщение]",
-      stage: "AWAITING_PIN",
-      botSettings,
-      username,
-      firstName,
-      workspaceId,
-    });
-  }
+  // TODO: Реализовать логику обработки медиа от неидентифицированных пользователей
+  // Возможно, нужно отправить сообщение с просьбой идентифицироваться
 
   return { processed: true, identified: false };
 }

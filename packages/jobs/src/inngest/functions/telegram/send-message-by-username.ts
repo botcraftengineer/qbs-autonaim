@@ -60,17 +60,17 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
           .set({ lastUsedAt: new Date() })
           .where(eq(telegramSession.id, session.id));
 
-        // Обновляем conversationMessageId в БД, если messageId не пустой
+        // Обновляем externalMessageId в БД, если messageId не пустой
         if (messageId) {
           await db
             .update(conversationMessage)
-            .set({ conversationMessageId: result.messageId })
+            .set({ externalMessageId: result.messageId })
             .where(eq(conversationMessage.id, messageId));
         }
 
         console.log("✅ Сообщение отправлено по username", {
           username,
-          conversationMessageId: result.messageId,
+          externalMessageId: result.messageId,
           sessionId: session.id,
           dbMessageId: messageId,
         });

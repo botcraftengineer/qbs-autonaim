@@ -271,7 +271,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   sender: "BOT",
                   contentType: "TEXT",
                   content: actualSentMessage,
-                  conversationMessageId: sendResult.messageId,
+                  externalMessageId: sendResult.messageId,
                 });
               }
             }

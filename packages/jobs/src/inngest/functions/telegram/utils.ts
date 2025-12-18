@@ -94,8 +94,8 @@ export async function findConversationByChatId(chatId: string) {
  */
 export async function createOrUpdateTempConversation(
   chatId: string,
-  username?: string,
-  firstName?: string,
+  _username?: string,
+  _firstName?: string,
 ): Promise<{ id: string } | null> {
   try {
     // Используем chatId как временный ID для неидентифицированных разговоров

@@ -247,7 +247,7 @@ export async function saveMessage(
   sender: "CANDIDATE" | "BOT",
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
-  conversationMessageId?: string,
+  externalMessageId?: string,
 ): Promise<string | null> {
   try {
     const [message] = await db
@@ -257,7 +257,7 @@ export async function saveMessage(
         sender,
         contentType,
         content,
-        conversationMessageId,
+        externalMessageId,
       })
       .returning();
 

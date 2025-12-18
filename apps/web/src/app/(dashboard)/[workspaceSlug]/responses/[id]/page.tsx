@@ -19,7 +19,24 @@ interface ResponseDetailPageProps {
   params: Promise<{ workspaceSlug: string; id: string }>;
 }
 
-function mapConversationData(response: any) {
+interface ConversationMessage {
+  voiceDuration?: number | null;
+  voiceTranscription?: string | null;
+  [key: string]: unknown;
+}
+
+interface ResponseWithConversation {
+  conversation?: {
+    interviewScoring?: {
+      score: number;
+      detailedScore: Record<string, number>;
+      analysis?: string | null;
+    } | null;
+    messages?: ConversationMessage[];
+  } | null;
+}
+
+function mapConversationData(response: ResponseWithConversation) {
   if (!response.conversation) return null;
 
   return {
@@ -31,7 +48,7 @@ function mapConversationData(response: any) {
             response.conversation.interviewScoring.analysis ?? undefined,
         }
       : undefined,
-    messages: response.conversation.messages?.map((msg: any) => ({
+    messages: response.conversation.messages?.map((msg) => ({
       ...msg,
       voiceDuration: msg.voiceDuration ?? undefined,
       voiceTranscription: msg.voiceTranscription ?? undefined,
