@@ -51,5 +51,3 @@ export const CreateConversationSchema = createInsertSchema(conversation, {
   createdAt: true,
   updatedAt: true,
 });
-
-// Удалены старые экспорты с префиксом telegram

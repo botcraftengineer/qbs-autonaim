@@ -83,7 +83,7 @@ export async function identifyCandidate(
         return {
           identified: true,
           responseId: responseByUsername.id,
-          conversationId: conversation?.id,
+          conversationId: conv?.id,
           method: "username",
         };
       }
