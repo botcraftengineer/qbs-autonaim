@@ -53,6 +53,12 @@ export async function getCompanyBotSettings(
 }
 
 export async function getConversationHistory(conversationId: string) {
+  // Для временных conversation ID возвращаем пустую историю
+  // Сообщения будут доступны после идентификации пользователя
+  if (conversationId.startsWith("temp_")) {
+    return [];
+  }
+
   return await db.query.conversationMessage.findMany({
     where: eq(conversationMessage.conversationId, conversationId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
