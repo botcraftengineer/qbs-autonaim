@@ -103,7 +103,7 @@ export async function generateAndSendBotResponse(params: {
       await inngest.send({
         name: "telegram/message.send.by-username",
         data: {
-          messageId: `temp_${Date.now()}`,
+          messageId: `temp_${crypto.randomUUID()}`,
           username,
           content: aiResponse,
           workspaceId,

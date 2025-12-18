@@ -56,41 +56,43 @@ export async function migrateTempMessages(
   realConversationId: string,
 ) {
   try {
-    // Получаем все временные сообщения
-    const tempMessages = await db
-      .select()
-      .from(tempConversationMessage)
-      .where(eq(tempConversationMessage.tempConversationId, tempConversationId))
-      .orderBy(tempConversationMessage.createdAt);
+    await db.transaction(async (tx) => {
+      // Получаем все временные сообщения
+      const tempMessages = await tx
+        .select()
+        .from(tempConversationMessage)
+        .where(eq(tempConversationMessage.tempConversationId, tempConversationId))
+        .orderBy(tempConversationMessage.createdAt);
 
-    if (tempMessages.length === 0) {
-      console.log("Нет временных сообщений для переноса", {
-        tempConversationId,
-      });
-      return;
-    }
+      if (tempMessages.length === 0) {
+        console.log("Нет временных сообщений для переноса", {
+          tempConversationId,
+        });
+        return;
+      }
 
-    // Переносим в основную таблицу
-    for (const msg of tempMessages) {
-      await db.insert(conversationMessage).values({
+      // Переносим в основную таблицу одним batch insert
+      const messagesToInsert = tempMessages.map((msg) => ({
         conversationId: realConversationId,
         sender: msg.sender as "CANDIDATE" | "BOT",
         contentType: msg.contentType as "TEXT" | "VOICE",
         content: msg.content,
         externalMessageId: msg.externalMessageId ?? undefined,
-        channel: "TELEGRAM",
+        channel: "TELEGRAM" as const,
+      }));
+
+      await tx.insert(conversationMessage).values(messagesToInsert);
+
+      // Удаляем временные сообщения
+      await tx
+        .delete(tempConversationMessage)
+        .where(eq(tempConversationMessage.tempConversationId, tempConversationId));
+
+      console.log("✅ Временные сообщения перенесены", {
+        tempConversationId,
+        realConversationId,
+        count: tempMessages.length,
       });
-    }
-
-    // Удаляем временные сообщения
-    await db
-      .delete(tempConversationMessage)
-      .where(eq(tempConversationMessage.tempConversationId, tempConversationId));
-
-    console.log("✅ Временные сообщения перенесены", {
-      tempConversationId,
-      realConversationId,
-      count: tempMessages.length,
     });
   } catch (error) {
     console.error("❌ Ошибка переноса временных сообщений:", {
@@ -98,6 +100,7 @@ export async function migrateTempMessages(
       realConversationId,
       error: error instanceof Error ? error.message : String(error),
     });
+    throw error; // Пробрасываем ошибку для retry handling
   }
 }
 
