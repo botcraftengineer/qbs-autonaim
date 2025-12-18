@@ -23,6 +23,16 @@ export const processIncomingMessageFunction = inngest.createFunction(
   async ({ event, step, publish }) => {
     const { workspaceId, messageData } = event.data as MessagePayload;
 
+    console.log("📨 Получено входящее сообщение", {
+      workspaceId,
+      messageId: messageData.id,
+      chatId: messageData.chatId,
+      isOutgoing: messageData.isOutgoing,
+      hasText: !!messageData.text,
+      mediaType: messageData.media?.type,
+      sender: messageData.sender?.username || messageData.sender?.firstName,
+    });
+
     if (messageData.isOutgoing) {
       return { skipped: true, reason: "outgoing message" };
     }
@@ -46,7 +56,13 @@ export const processIncomingMessageFunction = inngest.createFunction(
             response: true,
           },
         });
-        if (byUsername) return byUsername;
+        if (byUsername) {
+          console.log("✅ Conversation найден по username", {
+            conversationId: byUsername.id,
+            username,
+          });
+          return byUsername;
+        }
       }
 
       // Если не нашли по username, ищем по metadata.senderId (Telegram chat ID)
@@ -66,10 +82,30 @@ export const processIncomingMessageFunction = inngest.createFunction(
         }
       });
 
+      if (byMetadata) {
+        console.log("✅ Conversation найден по metadata.senderId", {
+          conversationId: byMetadata.id,
+          chatId,
+        });
+      } else {
+        console.log("❌ Conversation не найден", {
+          username,
+          chatId,
+          activeConversationsCount: allConversations.length,
+        });
+      }
+
       return byMetadata || null;
     });
 
     const isIdentified = conv?.responseId != null;
+
+    console.log("🔍 Результат проверки идентификации", {
+      isIdentified,
+      conversationId: conv?.id,
+      responseId: conv?.responseId,
+      status: conv?.status,
+    });
 
     // Проверяем статус response если кандидат идентифицирован
     if (isIdentified && conv.response) {
@@ -157,6 +193,13 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     const mediaType = messageData.media?.type;
     if (mediaType === "voice" || mediaType === "audio") {
+      console.log(`🎤 Обработка ${mediaType === "voice" ? "голосового" : "аудио"} сообщения`, {
+        conversationId: conv.id,
+        messageId: messageData.id.toString(),
+        chatId,
+        workspaceId,
+      });
+
       const isDuplicate = await step.run(
         `check-duplicate-${mediaType}`,
         async () => {
@@ -174,6 +217,11 @@ export const processIncomingMessageFunction = inngest.createFunction(
         );
         return { skipped: true, reason: `duplicate ${mediaType} message` };
       }
+
+      console.log(`✅ Сообщение не является дубликатом, начинаем обработку`, {
+        conversationId: conv.id,
+        messageId: messageData.id.toString(),
+      });
 
       await step.run(`handle-${mediaType}`, async () => {
         await handleIdentifiedMedia({

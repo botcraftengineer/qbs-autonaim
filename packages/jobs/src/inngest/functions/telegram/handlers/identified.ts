@@ -79,10 +79,23 @@ export async function handleIdentifiedMedia(params: {
     workspaceId,
   } = params;
 
+  console.log(`📥 Начинаем скачивание ${mediaType === "voice" ? "голосового" : "аудио"} файла`, {
+    conversationId,
+    chatId,
+    messageId,
+    workspaceId,
+  });
+
   const downloadData = await tgClientSDK.downloadFile({
     workspaceId,
     chatId: Number.parseInt(chatId, 10),
     messageId,
+  });
+
+  console.log(`✅ Файл успешно скачан`, {
+    conversationId,
+    fileId: downloadData.fileId,
+    duration: downloadData.duration,
   });
 
   const [savedMessage] = await db
@@ -98,13 +111,32 @@ export async function handleIdentifiedMedia(params: {
     })
     .returning();
 
+  console.log(`💾 Сообщение сохранено в БД`, {
+    conversationId,
+    messageId: savedMessage?.id,
+    fileId: downloadData.fileId,
+    externalMessageId: messageIdStr,
+  });
+
   if (savedMessage) {
+    console.log(`🚀 Отправка события транскрибации`, {
+      messageId: savedMessage.id,
+      fileId: downloadData.fileId,
+    });
+
     await inngest.send({
       name: "telegram/voice.transcribe",
       data: {
         messageId: savedMessage.id,
         fileId: downloadData.fileId,
       },
+    });
+
+    console.log(`✅ Событие транскрибации отправлено`);
+  } else {
+    console.error(`❌ Не удалось сохранить сообщение в БД`, {
+      conversationId,
+      externalMessageId: messageIdStr,
     });
   }
 }
