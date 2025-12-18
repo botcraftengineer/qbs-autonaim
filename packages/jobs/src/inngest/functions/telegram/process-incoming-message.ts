@@ -190,7 +190,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
         });
 
         // Откладываем обработку - ждем еще сообщений
-        await step.sleep("wait-for-more-messages", "15s");
+        // Для голосовых ждем дольше (65 сек), для текстовых меньше (20 сек)
+        const hasVoice = groupCheck.messages.some(m => m.contentType === "VOICE");
+        await step.sleep("wait-for-more-messages", hasVoice ? "65s" : "20s");
 
         // Повторно проверяем после ожидания
         const recheckGroup = await step.run(
@@ -320,8 +322,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
           reason: groupCheck.reason,
         });
 
-        // Откладываем обработку
-        await step.sleep("wait-for-more-voice-messages", "15s");
+        // Откладываем обработку голосовых (60 сек + запас)
+        await step.sleep("wait-for-more-voice-messages", "65s");
 
         // Повторно проверяем
         const recheckGroup = await step.run(
