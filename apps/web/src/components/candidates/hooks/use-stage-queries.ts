@@ -27,6 +27,7 @@ export function useStageQueries({
       limit: stageLimits.SCREENING_DONE,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   const chatInterviewQuery = useQuery({
@@ -38,6 +39,7 @@ export function useStageQueries({
       limit: stageLimits.CHAT_INTERVIEW,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   const offerSentQuery = useQuery({
@@ -49,6 +51,7 @@ export function useStageQueries({
       limit: stageLimits.OFFER_SENT,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   const securityPassedQuery = useQuery({
@@ -60,6 +63,7 @@ export function useStageQueries({
       limit: stageLimits.SECURITY_PASSED,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   const contractSentQuery = useQuery({
@@ -71,6 +75,7 @@ export function useStageQueries({
       limit: stageLimits.CONTRACT_SENT,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   const onboardingQuery = useQuery({
@@ -82,6 +87,7 @@ export function useStageQueries({
       limit: stageLimits.ONBOARDING,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   const rejectedQuery = useQuery({
@@ -93,6 +99,7 @@ export function useStageQueries({
       limit: stageLimits.REJECTED,
     }),
     enabled,
+    placeholderData: (previousData) => previousData,
   });
 
   return [
