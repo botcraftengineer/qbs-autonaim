@@ -7,6 +7,11 @@ import {
   CheckCircle,
   FileText,
   MessageSquare,
+  Phone,
+  User,
+  DollarSign,
+  Mail,
+  Image,
 } from "lucide-react";
 import { useTRPC } from "~/trpc/react";
 
@@ -16,38 +21,84 @@ interface ActivityTimelineProps {
 }
 
 const ACTIVITY_ICONS = {
-  STATUS_CHANGE: CheckCircle,
-  COMMENT: MessageSquare,
-  DOCUMENT: FileText,
-  INTERVIEW: Calendar,
-  APPLIED: ArrowRight,
+  STATUS_CHANGED: CheckCircle,
+  HR_STATUS_CHANGED: CheckCircle,
+  TELEGRAM_USERNAME_ADDED: MessageSquare,
+  CHAT_ID_ADDED: MessageSquare,
+  PHONE_ADDED: Phone,
+  RESUME_UPDATED: FileText,
+  PHOTO_ADDED: Image,
+  WELCOME_SENT: Mail,
+  COMMENT_ADDED: MessageSquare,
+  SALARY_UPDATED: DollarSign,
+  CONTACT_INFO_UPDATED: User,
+  CREATED: ArrowRight,
 } as const;
 
 const ACTIVITY_COLORS = {
-  STATUS_CHANGE: "text-emerald-600 bg-emerald-100 border-emerald-200",
-  COMMENT: "text-blue-600 bg-blue-100 border-blue-200",
-  DOCUMENT: "text-purple-600 bg-purple-100 border-purple-200",
-  INTERVIEW: "text-orange-600 bg-orange-100 border-orange-200",
-  APPLIED: "text-primary bg-primary/10 border-primary/20",
+  STATUS_CHANGED: "text-emerald-600 bg-emerald-100 border-emerald-200",
+  HR_STATUS_CHANGED: "text-emerald-600 bg-emerald-100 border-emerald-200",
+  TELEGRAM_USERNAME_ADDED: "text-blue-600 bg-blue-100 border-blue-200",
+  CHAT_ID_ADDED: "text-blue-600 bg-blue-100 border-blue-200",
+  PHONE_ADDED: "text-purple-600 bg-purple-100 border-purple-200",
+  RESUME_UPDATED: "text-orange-600 bg-orange-100 border-orange-200",
+  PHOTO_ADDED: "text-pink-600 bg-pink-100 border-pink-200",
+  WELCOME_SENT: "text-cyan-600 bg-cyan-100 border-cyan-200",
+  COMMENT_ADDED: "text-blue-600 bg-blue-100 border-blue-200",
+  SALARY_UPDATED: "text-green-600 bg-green-100 border-green-200",
+  CONTACT_INFO_UPDATED: "text-purple-600 bg-purple-100 border-purple-200",
+  CREATED: "text-primary bg-primary/10 border-primary/20",
 } as const;
+
+const EVENT_LABELS: Record<string, string> = {
+  STATUS_CHANGED: "Изменён статус",
+  HR_STATUS_CHANGED: "Изменён HR статус",
+  TELEGRAM_USERNAME_ADDED: "Добавлен Telegram",
+  CHAT_ID_ADDED: "Добавлен Chat ID",
+  PHONE_ADDED: "Добавлен телефон",
+  RESUME_UPDATED: "Обновлено резюме",
+  PHOTO_ADDED: "Добавлено фото",
+  WELCOME_SENT: "Отправлено приветствие",
+  COMMENT_ADDED: "Добавлен комментарий",
+  SALARY_UPDATED: "Обновлены зарплатные ожидания",
+  CONTACT_INFO_UPDATED: "Обновлены контакты",
+  CREATED: "Создан отклик",
+};
+
+type HistoryEvent = {
+  id: string;
+  eventType: keyof typeof ACTIVITY_ICONS;
+  oldValue: string | null;
+  newValue: string | null;
+  createdAt: Date;
+};
 
 export function ActivityTimeline({
   candidateId,
   workspaceId,
 }: ActivityTimelineProps) {
   const trpc = useTRPC();
-  const { data: activities = [], isLoading } = useQuery({
-    ...trpc.candidates.listActivities.queryOptions({
-      candidateId,
-      workspaceId,
-    }),
+  // @ts-expect-error - новый роут, типы обновятся после перезапуска TS сервера
+  const historyQuery = trpc.vacancy.responses.history.useQuery({
+    responseId: candidateId,
+    workspaceId,
   });
+  
+  const history = (historyQuery.data ?? []) as HistoryEvent[];
+  const isLoading = historyQuery.isLoading;
 
   const getIcon = (type: string) =>
     ACTIVITY_ICONS[type as keyof typeof ACTIVITY_ICONS] ?? CheckCircle;
   const getColor = (type: string) =>
     ACTIVITY_COLORS[type as keyof typeof ACTIVITY_COLORS] ??
     "text-primary bg-primary/10 border-primary/20";
+  
+  const formatValue = (value: unknown): string => {
+    if (value === null || value === undefined) return "—";
+    if (typeof value === "string") return value;
+    if (typeof value === "object") return JSON.stringify(value);
+    return String(value);
+  };
 
   if (isLoading) {
     return (
@@ -65,44 +116,58 @@ export function ActivityTimeline({
     );
   }
 
-  if (activities.length === 0) {
+  if (history.length === 0) {
     return (
       <div className="text-center py-12 text-muted-foreground">
         <Calendar className="h-12 w-12 mx-auto mb-3 opacity-20" />
-        <p className="text-sm">Нет активности</p>
+        <p className="text-sm">Нет истории</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-      {activities?.map((activity) => {
-        const Icon = getIcon(activity.type);
+      {history.map((event) => {
+        const Icon = getIcon(event.eventType);
+        const label = EVENT_LABELS[event.eventType] ?? event.eventType;
+        
         return (
           <div
-            key={activity.id}
+            key={event.id}
             className="flex items-start gap-3 p-3 bg-muted/50 rounded-lg border"
           >
             <div
-              className={`flex items-center justify-center w-8 h-8 rounded-full border ${getColor(activity.type)}`}
+              className={`flex items-center justify-center w-8 h-8 rounded-full border shrink-0 ${getColor(event.eventType)}`}
             >
               <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium">{activity.description}</p>
-              <div className="flex items-center gap-2 mt-1">
-                <p className="text-xs text-muted-foreground">
-                  {new Date(activity.createdAt).toLocaleString("ru")}
-                </p>
-                {activity.author && (
-                  <>
-                    <span className="text-xs text-muted-foreground">•</span>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.author}
-                    </p>
-                  </>
-                )}
-              </div>
+              <p className="text-sm font-medium">{label}</p>
+              {(event.oldValue || event.newValue) && (
+                <div className="mt-1 text-xs text-muted-foreground space-y-0.5">
+                  {event.oldValue && (
+                    <div className="flex items-center gap-1">
+                      <span className="opacity-60">Было:</span>
+                      <span className="font-mono">{String(formatValue(event.oldValue))}</span>
+                    </div>
+                  )}
+                  {event.newValue && (
+                    <div className="flex items-center gap-1">
+                      <span className="opacity-60">Стало:</span>
+                      <span className="font-mono">{String(formatValue(event.newValue))}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                {new Date(event.createdAt).toLocaleString("ru", {
+                  day: "2-digit",
+                  month: "2-digit",
+                  year: "numeric",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </p>
             </div>
           </div>
         );

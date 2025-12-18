@@ -7,6 +7,7 @@ import {
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { logResponseEvent } from "@qbs-autonaim/lib";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import {
   generateTelegramInvite,
@@ -335,6 +336,13 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           .update(vacancyResponse)
           .set({ welcomeSentAt: new Date() })
           .where(eq(vacancyResponse.id, responseId));
+        
+        await logResponseEvent({
+          db,
+          responseId,
+          eventType: "WELCOME_SENT",
+          metadata: { chatId: result.chatId },
+        });
       });
 
       return {

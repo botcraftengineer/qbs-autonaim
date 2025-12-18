@@ -4,6 +4,7 @@ import { telegramConversation } from "../telegram/conversation";
 import { telegramInterviewScoring } from "../telegram/interview-scoring";
 import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
+import { vacancyResponseHistory } from "./response-history";
 import { responseScreening } from "./screening";
 import { vacancy } from "./vacancy";
 
@@ -17,7 +18,7 @@ export const vacancyRelations = relations(vacancy, ({ one, many }) => ({
 
 export const vacancyResponseRelations = relations(
   vacancyResponse,
-  ({ one }) => ({
+  ({ one, many }) => ({
     vacancy: one(vacancy, {
       fields: [vacancyResponse.vacancyId],
       references: [vacancy.id],
@@ -44,5 +45,6 @@ export const vacancyResponseRelations = relations(
       fields: [vacancyResponse.id],
       references: [telegramInterviewScoring.responseId],
     }),
+    history: many(vacancyResponseHistory),
   }),
 );
