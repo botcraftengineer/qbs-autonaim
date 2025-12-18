@@ -183,33 +183,70 @@ messages.post("/send-by-phone", async (c) => {
       return c.json({ error: "Phone must be in international format" }, 400);
     }
 
-    const importResult = await client.call({
-      _: "contacts.importContacts",
-      contacts: [
-        {
-          _: "inputPhoneContact",
-          clientId: Long.fromNumber(Date.now()),
-          phone: phone,
-          firstName: firstName || "Кандидат",
-          lastName: "",
-        },
-      ],
-    });
-
-    if (!importResult.users || importResult.users.length === 0) {
-      return c.json({ error: "User not found in Telegram" }, 404);
+    // Сначала пытаемся найти существующий контакт
+    let inputPeer:
+      | {
+          _: "inputPeerUser";
+          userId: number;
+          accessHash: InstanceType<typeof Long>;
+        }
+      | undefined;
+    try {
+      const contacts = await client.call({
+        _: "contacts.getContacts",
+        hash: Long.ZERO,
+      });
+      if (contacts._ === "contacts.contacts") {
+        const existingUser = contacts.users.find(
+          (u) => u._ === "user" && u.phone === phone.replace(/\D/g, ""),
+        );
+        if (existingUser && existingUser._ === "user") {
+          inputPeer = {
+            _: "inputPeerUser" as const,
+            userId: existingUser.id,
+            accessHash: existingUser.accessHash || Long.ZERO,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to check existing contacts:", err);
     }
 
-    const user = importResult.users[0];
-    if (!user || user._ !== "user") {
-      return c.json({ error: "Failed to get user data" }, 500);
+    // Если контакт не найден, импортируем (с задержкой для снижения риска PEER_FLOOD)
+    if (!inputPeer) {
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      const importResult = await client.call({
+        _: "contacts.importContacts",
+        contacts: [
+          {
+            _: "inputPhoneContact",
+            clientId: Long.fromNumber(Date.now()),
+            phone: phone,
+            firstName: firstName || "Кандидат",
+            lastName: "",
+          },
+        ],
+      });
+
+      if (!importResult.users || importResult.users.length === 0) {
+        return c.json({ error: "User not found in Telegram" }, 404);
+      }
+
+      const user = importResult.users[0];
+      if (!user || user._ !== "user") {
+        return c.json({ error: "Failed to get user data" }, 500);
+      }
+
+      inputPeer = {
+        _: "inputPeerUser" as const,
+        userId: user.id,
+        accessHash: user.accessHash || Long.ZERO,
+      };
     }
 
-    const inputPeer = {
-      _: "inputPeerUser" as const,
-      userId: user.id,
-      accessHash: user.accessHash || Long.ZERO,
-    };
+    // Задержка перед отправкой сообщения
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const messageResult = await withFloodWaitRetry(() =>
       client.sendText(inputPeer, text),
