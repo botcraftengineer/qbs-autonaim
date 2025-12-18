@@ -58,6 +58,7 @@ export const listMessages = protectedProcedure
 
         return {
           id: msg.id,
+          conversationId: conv.id,
           content: isVoice
             ? msg.voiceTranscription || "Голосовое сообщение"
             : msg.content,
