@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversationMessage,
   telegramConversation,
-  telegramMessage,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -293,15 +293,22 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         console.log(`✅ Сохранена беседа с chatId: ${chatId}`);
 
         // Сохраняем приветственное сообщение в историю
-        if (conversation) {
-          await db.insert(telegramMessage).values({
+        if (conversation && result.success) {
+          const channel =
+            "method" in result && result.method === "hh" ? "HH" : "TELEGRAM";
+
+          await db.insert(conversationMessage).values({
             conversationId: conversation.id,
+            channel,
             sender: "BOT",
             contentType: "TEXT",
             content: welcomeMessage,
+            externalMessageId: result.messageId || undefined,
           });
 
-          console.log(`✅ Приветственное сообщение сохранено в историю`);
+          console.log(
+            `✅ Приветственное сообщение сохранено в историю (${channel})`,
+          );
         }
       });
 

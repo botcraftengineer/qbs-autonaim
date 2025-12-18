@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversationMessage,
   telegramConversation,
-  telegramMessage,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -250,8 +250,9 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
               // Сохраняем приветственное сообщение в историю
               if (conversation) {
-                await db.insert(telegramMessage).values({
+                await db.insert(conversationMessage).values({
                   conversationId: conversation.id,
+                  channel: "TELEGRAM",
                   sender: "BOT",
                   contentType: "TEXT",
                   content: actualSentMessage,

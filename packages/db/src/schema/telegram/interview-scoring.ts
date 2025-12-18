@@ -3,8 +3,8 @@ import { sql } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { conversation } from "../conversation/conversation";
 import { vacancyResponse } from "../vacancy/response";
-import { telegramConversation } from "./conversation";
 
 /**
  * Таблица для результатов скоринга интервью в Telegram
@@ -14,7 +14,7 @@ export const telegramInterviewScoring = pgTable("telegram_interview_scorings", {
   conversationId: uuid("conversation_id")
     .notNull()
     .unique()
-    .references(() => telegramConversation.id, { onDelete: "cascade" }),
+    .references(() => conversation.id, { onDelete: "cascade" }),
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
     onDelete: "cascade",
   }),

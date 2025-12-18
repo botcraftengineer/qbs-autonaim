@@ -7,9 +7,9 @@ import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   type companySettings,
+  conversationMessage,
   type responseScreening,
   telegramConversation,
-  telegramMessage,
   type vacancy,
   vacancyResponse,
   type workspace,
@@ -253,16 +253,18 @@ export async function saveMessage(
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
   telegramMessageId?: string,
+  channel: "TELEGRAM" | "HH" = "TELEGRAM",
 ): Promise<string | null> {
   try {
     const [message] = await db
-      .insert(telegramMessage)
+      .insert(conversationMessage)
       .values({
         conversationId,
+        channel,
         sender,
         contentType,
         content,
-        telegramMessageId,
+        externalMessageId: telegramMessageId,
       })
       .returning();
 

@@ -18,8 +18,8 @@ import type { TelegramClient } from "@mtcute/bun";
 import { desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversationMessage,
   telegramConversation,
-  telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
@@ -191,9 +191,9 @@ async function processConversationMissedMessages(
   // Получаем последнее сообщение из БД
   const lastMessage = await db
     .select()
-    .from(telegramMessage)
-    .where(eq(telegramMessage.conversationId, conversation.id))
-    .orderBy(desc(telegramMessage.createdAt))
+    .from(conversationMessage)
+    .where(eq(conversationMessage.conversationId, conversation.id))
+    .orderBy(desc(conversationMessage.createdAt))
     .limit(1);
 
   const lastMessageDate = lastMessage[0]?.createdAt;

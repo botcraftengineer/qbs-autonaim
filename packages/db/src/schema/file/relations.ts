@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { conversationMessage } from "../conversation/message";
 import { telegramMessage } from "../telegram/message";
 import { vacancyResponse } from "../vacancy/response";
 import { file } from "./file";
@@ -11,6 +12,9 @@ export const fileRelations = relations(file, ({ many }) => ({
     relationName: "photoFile",
   }),
   telegramMessages: many(telegramMessage, {
+    relationName: "file",
+  }),
+  conversationMessages: many(conversationMessage, {
     relationName: "file",
   }),
 }));
