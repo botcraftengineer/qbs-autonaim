@@ -136,7 +136,7 @@ export function CandidateModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="sm:max-w-max max-w-[min(90vw,120rem)] h-[90vh] p-0 gap-0 flex flex-col overscroll-contain"
+        className="sm:max-w-4xl max-w-[90vw] h-[90vh] p-0 gap-0 flex flex-col overscroll-contain"
         showCloseButton={false}
       >
         <DialogHeader className="px-6 py-4 border-b shrink-0">
