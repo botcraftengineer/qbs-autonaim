@@ -53,10 +53,27 @@ export async function getCompanyBotSettings(
 }
 
 export async function getConversationHistory(conversationId: string) {
-  // Для временных conversation ID возвращаем пустую историю
-  // Сообщения будут доступны после идентификации пользователя
   if (conversationId.startsWith("temp_")) {
-    return [];
+    // Для временных conversation загружаем из временного хранилища
+    const { getTempMessageHistory } = await import(
+      "./handlers/unidentified/temp-message-storage"
+    );
+    const tempMessages = await getTempMessageHistory(conversationId);
+    
+    // Преобразуем в формат conversationMessage
+    return tempMessages.map((msg) => ({
+      id: msg.id,
+      conversationId: msg.tempConversationId,
+      sender: msg.sender as "CANDIDATE" | "BOT",
+      contentType: msg.contentType as "TEXT" | "VOICE",
+      channel: "TELEGRAM" as const,
+      content: msg.content,
+      fileId: null,
+      voiceDuration: null,
+      voiceTranscription: null,
+      externalMessageId: msg.externalMessageId,
+      createdAt: msg.createdAt,
+    }));
   }
 
   return await db.query.conversationMessage.findMany({

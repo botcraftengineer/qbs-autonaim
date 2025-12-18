@@ -1,5 +1,3 @@
-import { db } from "@qbs-autonaim/db/client";
-import { conversationMessage } from "@qbs-autonaim/db/schema";
 import {
   getInterviewStartData,
   identifyByPinCode,
@@ -8,7 +6,7 @@ import {
 import { inngest } from "../../../../client";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
-import { findDuplicateMessage } from "../../utils";
+import { migrateTempMessages } from "./temp-message-storage";
 
 export async function handlePinIdentification(params: {
   pinCode: string;
@@ -47,6 +45,10 @@ export async function handlePinIdentification(params: {
       identification.conversationId &&
       identification.responseId
     ) {
+      // Переносим временные сообщения в основную таблицу
+      await migrateTempMessages(tempConvId, identification.conversationId);
+
+      // Сохраняем текущее сообщение с пин-кодом
       await saveMessage(
         identification.conversationId,
         "CANDIDATE",
@@ -124,18 +126,8 @@ async function handleInvalidPin(params: {
   } = params;
 
   try {
-    const isDuplicate = await findDuplicateMessage(tempConvId, messageId);
-
-    if (!isDuplicate) {
-      await db.insert(conversationMessage).values({
-        conversationId: tempConvId,
-        sender: "CANDIDATE",
-        contentType: "TEXT",
-        content: trimmedText,
-        externalMessageId: messageId,
-      });
-    }
-
+    // Сообщение уже сохранено через saveUnidentifiedMessage
+    // Просто отправляем ответ бота
     await generateAndSendBotResponse({
       conversationId: tempConvId,
       messageText: trimmedText,

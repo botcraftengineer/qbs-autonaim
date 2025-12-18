@@ -36,6 +36,13 @@
       "when": 1766071635264,
       "tag": "0004_common_nekra",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1766087678314,
+      "tag": "0005_misty_franklin_storm",
+      "breakpoints": true
     }
   ]
 }

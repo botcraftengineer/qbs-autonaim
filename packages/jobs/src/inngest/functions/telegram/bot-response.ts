@@ -4,6 +4,7 @@ import type { getInterviewStartData } from "@qbs-autonaim/lib";
 import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
 import { inngest } from "../../client";
+import { saveTempMessage } from "./handlers/unidentified/temp-message-storage";
 import type { BotSettings, PromptStage } from "./types";
 import { getConversationHistory } from "./utils";
 
@@ -84,26 +85,54 @@ export async function generateAndSendBotResponse(params: {
     return null;
   }
 
-  const [botMsg] = await db
-    .insert(conversationMessage)
-    .values({
-      conversationId,
+  let botMsg = null;
+  
+  if (conversationId.startsWith("temp_")) {
+    // Сохраняем во временное хранилище
+    const chatId = conversationId.replace("temp_", "");
+    await saveTempMessage({
+      tempConversationId: conversationId,
+      chatId,
       sender: "BOT",
-      contentType: "TEXT",
       content: aiResponse,
-    })
-    .returning();
-
-  if (botMsg && username) {
-    await inngest.send({
-      name: "telegram/message.send.by-username",
-      data: {
-        messageId: botMsg.id,
-        username,
-        content: aiResponse,
-        workspaceId,
-      },
+      contentType: "TEXT",
     });
+
+    // Отправляем сообщение
+    if (username) {
+      await inngest.send({
+        name: "telegram/message.send.by-username",
+        data: {
+          messageId: `temp_${Date.now()}`,
+          username,
+          content: aiResponse,
+          workspaceId,
+        },
+      });
+    }
+  } else {
+    // Сохраняем в основную таблицу
+    [botMsg] = await db
+      .insert(conversationMessage)
+      .values({
+        conversationId,
+        sender: "BOT",
+        contentType: "TEXT",
+        content: aiResponse,
+      })
+      .returning();
+
+    if (botMsg && username) {
+      await inngest.send({
+        name: "telegram/message.send.by-username",
+        data: {
+          messageId: botMsg.id,
+          username,
+          content: aiResponse,
+          workspaceId,
+        },
+      });
+    }
   }
 
   return botMsg;

@@ -1,10 +1,10 @@
 /**
  * Механизм группировки сообщений от кандидата
  * 
- * Проблема: кандидат может отправить несколько голосовых/текстовых сообщений подряд,
+ * Проблема: кандидат может отправить несколько сообщений подряд (текст/голос в любом порядке),
  * а бот реагирует на каждое отдельно, создавая хаос.
  * 
- * Решение: ждем N секунд после последнего сообщения, собираем все в группу,
+ * Решение: ждем N секунд после последнего сообщения, собираем все в группу по времени,
  * затем обрабатываем как один ответ.
  */
 
@@ -31,15 +31,9 @@ interface MessageGroup {
 export async function shouldProcessMessageGroup(
   conversationId: string,
   currentMessageId: string,
-  messageType: "TEXT" | "VOICE" = "TEXT",
 ): Promise<MessageGroup> {
-  // Проверяем, включена ли группировка для этого типа сообщений
-  const isGroupingEnabled =
-    messageType === "TEXT"
-      ? MESSAGE_GROUPING_CONFIG.ENABLE_TEXT_GROUPING
-      : MESSAGE_GROUPING_CONFIG.ENABLE_VOICE_GROUPING;
-
-  if (!isGroupingEnabled) {
+  // Проверяем, включена ли группировка
+  if (!MESSAGE_GROUPING_CONFIG.ENABLE_GROUPING) {
     // Группировка отключена - обрабатываем сразу
     return {
       conversationId,
