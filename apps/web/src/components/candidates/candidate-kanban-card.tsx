@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@qbs-autonaim/ui";
-import { Mail, Phone } from "lucide-react";
+import { Mail, MessageCircle, Phone } from "lucide-react";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
 import { MatchScoreCircle } from "./match-score-circle";
 import type { FunnelCandidate } from "./types";
@@ -19,7 +19,16 @@ export function CandidateKanbanCard({
 
   return (
     <div className="bg-card border rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/30 flex flex-col group relative">
-      <div className="flex items-center justify-end gap-1 px-3 py-2 border-b">
+      <div className="flex items-center justify-between gap-2 px-3 py-2 border-b">
+        {candidate.messageCount !== undefined && candidate.messageCount > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <MessageCircle className="h-3.5 w-3.5" />
+            <span className="font-medium tabular-nums">{candidate.messageCount}</span>
+          </div>
+        )}
+        {(candidate.messageCount === undefined || candidate.messageCount === 0) && (
+          <div />
+        )}
         <MatchScoreCircle score={candidate.matchScore} size="sm" />
       </div>
 
