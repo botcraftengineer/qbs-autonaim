@@ -3,8 +3,8 @@ import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
+  InterviewOrchestrator,
   InterviewScoringAgent,
-  VoiceInterviewerAgent,
 } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import type {
@@ -26,6 +26,12 @@ interface QuestionAnswer {
 /** Typed metadata structure for conversation */
 interface ConversationMetadata {
   questionAnswers?: QuestionAnswer[];
+}
+
+/** Extended interview analysis with escalation support */
+interface ExtendedInterviewAnalysis extends InterviewAnalysis {
+  shouldEscalate?: boolean;
+  escalationReason?: string;
 }
 
 interface InterviewContext {
@@ -75,7 +81,7 @@ function createAgentModel() {
  */
 export async function analyzeAndGenerateNextQuestion(
   context: InterviewContext,
-): Promise<InterviewAnalysis> {
+): Promise<ExtendedInterviewAnalysis> {
   const {
     questionNumber,
     currentAnswer,
@@ -95,11 +101,11 @@ export async function analyzeAndGenerateNextQuestion(
     };
   }
 
-  // Создаем агента
+  // Создаем оркестратор
   const model = createAgentModel();
-  const agent = new VoiceInterviewerAgent({ model });
+  const orchestrator = new InterviewOrchestrator({ model });
 
-  // Формируем контекст для агента
+  // Формируем контекст для агентов
   const agentContext = {
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
@@ -107,8 +113,8 @@ export async function analyzeAndGenerateNextQuestion(
     conversationHistory: context.conversationHistory || [],
   };
 
-  // Выполняем агента
-  const result = await agent.execute(
+  // Выполняем оркестратор
+  const result = await orchestrator.execute(
     {
       currentAnswer,
       currentQuestion,
@@ -120,26 +126,37 @@ export async function analyzeAndGenerateNextQuestion(
     agentContext,
   );
 
-  // Обработка ошибки
-  if (!result.success || !result.data) {
-    logger.error("Voice interviewer agent failed", {
-      error: result.error,
+  // Логируем трассировку агентов
+  logger.info("Interview orchestrator trace", {
+    conversationId: context.conversationId,
+    trace: result.agentTrace.map((t: { agent: string; decision: string; timestamp: Date }) => ({
+      agent: t.agent,
+      decision: t.decision,
+    })),
+  });
+
+  // Проверка эскалации
+  if (result.shouldEscalate) {
+    logger.warn("Interview escalation triggered", {
       conversationId: context.conversationId,
+      reason: result.escalationReason,
     });
 
     return {
-      analysis: "Failed to analyze response",
-      shouldContinue: questionNumber < INTERVIEW.MAX_QUESTIONS,
-      nextQuestion: INTERVIEW.DEFAULT_FALLBACK_QUESTION,
+      analysis: result.analysis,
+      shouldContinue: false,
+      shouldEscalate: true,
+      escalationReason: result.escalationReason,
+      reason: result.reason,
     };
   }
 
   // Возвращаем результат
   return {
-    analysis: result.data.analysis,
-    shouldContinue: result.data.shouldContinue,
-    reason: result.data.reason,
-    nextQuestion: result.data.nextQuestion,
+    analysis: result.analysis,
+    shouldContinue: result.shouldContinue,
+    reason: result.reason,
+    nextQuestion: result.nextQuestion,
   };
 }
 

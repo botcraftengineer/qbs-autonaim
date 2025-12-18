@@ -8,9 +8,6 @@ import { generateText, getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   buildTelegramRecruiterPrompt,
   type ConversationStage,
-  convertLegacyContext,
-  // Мультиагентная система
-  InterviewOrchestrator,
   type TelegramRecruiterContext,
 } from "@qbs-autonaim/prompts";
 
@@ -74,69 +71,13 @@ export async function generateAIResponse(
 }
 
 /**
- * Генерация через мультиагентную систему
+ * Генерация через мультиагентную систему (deprecated)
+ * Fallback на legacy систему
  */
 async function generateWithMultiAgent(
   params: GenerateResponseParams,
 ): Promise<AIResponseResult> {
-  // Получаем AI модель из конфигурации
-  const model = getAIModel();
-
-  const orchestrator = new InterviewOrchestrator({
-    model,
-  });
-
-  const legacyContext: TelegramRecruiterContext = {
-    messageText: params.messageText,
-    stage: params.stage,
-    candidateName: params.candidateName,
-    vacancyTitle: params.vacancyTitle,
-    vacancyRequirements: params.vacancyRequirements,
-    responseStatus: params.responseStatus,
-    conversationHistory: params.conversationHistory || [],
-    resumeData: params.resumeData,
-    errorMessage: params.errorMessage,
-    customBotInstructions: params.customBotInstructions,
-    customInterviewQuestions: params.customInterviewQuestions,
-    failedPinAttempts: params.failedPinAttempts,
-    screeningScore: params.screeningScore,
-    screeningAnalysis: params.screeningAnalysis,
-    botName: params.botName,
-    botRole: params.botRole,
-  };
-
-  const { context, state } = convertLegacyContext(legacyContext);
-
-  try {
-    const result = await orchestrator.execute(
-      {
-        message: params.messageText,
-        currentState: state,
-        failedPinAttempts: params.failedPinAttempts,
-        customQuestions: params.customInterviewQuestions,
-      },
-      context,
-    );
-
-    // Эскалация
-    if (result.decision.action === "ESCALATE") {
-      return {
-        text: "Передаю ваш запрос коллеге. Он свяжется с вами в ближайшее время.",
-        shouldEscalate: true,
-        escalationReason: result.decision.reason,
-      };
-    }
-
-    // Пропуск ответа (благодарность и т.д.)
-    if (result.decision.action === "SKIP") {
-      return { text: "" };
-    }
-
-    return { text: result.response || "" };
-  } catch (error) {
-    console.error("Ошибка мультиагентной системы, fallback:", error);
-    return await generateWithLegacySystem(params);
-  }
+  return await generateWithLegacySystem(params);
 }
 
 /**

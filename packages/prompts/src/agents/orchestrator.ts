@@ -1,38 +1,37 @@
 /**
- * Оркестратор workflow интервью
- * Координирует работу всех агентов
+ * Оркестратор для голосовых интервью
+ * Координирует работу агентов: анализ контекста → проверка эскалации → генерация вопроса
  */
 
 import type { LanguageModel } from "ai";
 import { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
 import { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
-import {
-  EnhancedEvaluatorAgent,
-  type EnhancedEvaluatorOutput,
-} from "./enhanced-evaluator";
-import { EnhancedInterviewerAgent } from "./enhanced-interviewer";
+import { InterviewerAgent } from "./interviewer";
 import type {
-  AgentDecision,
   AgentResult,
   BaseAgentContext,
-  WorkflowState,
 } from "./types";
 
 export interface OrchestratorInput {
-  message: string;
-  currentState: WorkflowState;
-  failedPinAttempts?: number;
-  customQuestions?: string | null;
+  currentAnswer: string;
+  currentQuestion: string;
+  previousQA: Array<{ question: string; answer: string }>;
+  questionNumber: number;
+  maxQuestions: number;
+  customInterviewQuestions?: string | null;
 }
 
 export interface OrchestratorOutput {
-  response?: string;
-  decision: AgentDecision;
-  updatedState: WorkflowState;
+  analysis: string;
+  shouldContinue: boolean;
+  shouldEscalate?: boolean;
+  escalationReason?: string;
+  reason?: string;
+  nextQuestion?: string;
+  confidence?: number;
   agentTrace: Array<{
     agent: string;
-    input: unknown;
-    output: unknown;
+    decision: string;
     timestamp: Date;
   }>;
 }
@@ -40,21 +39,16 @@ export interface OrchestratorOutput {
 export interface OrchestratorConfig {
   model: LanguageModel;
   maxTokens?: number;
-  maxVoiceMessages?: number;
 }
 
 export class InterviewOrchestrator {
   private contextAnalyzer: EnhancedContextAnalyzerAgent;
   private escalationDetector: EnhancedEscalationDetectorAgent;
-  private interviewer: EnhancedInterviewerAgent;
-  private evaluator: EnhancedEvaluatorAgent;
+  private interviewer: InterviewerAgent;
   private config: OrchestratorConfig;
 
   constructor(config: OrchestratorConfig) {
-    this.config = {
-      ...config,
-      maxVoiceMessages: config.maxVoiceMessages ?? 2,
-    };
+    this.config = config;
 
     const agentConfig = {
       model: config.model,
@@ -63,8 +57,7 @@ export class InterviewOrchestrator {
 
     this.contextAnalyzer = new EnhancedContextAnalyzerAgent(agentConfig);
     this.escalationDetector = new EnhancedEscalationDetectorAgent(agentConfig);
-    this.interviewer = new EnhancedInterviewerAgent(agentConfig);
-    this.evaluator = new EnhancedEvaluatorAgent(agentConfig);
+    this.interviewer = new InterviewerAgent(agentConfig);
   }
 
   /**
@@ -75,13 +68,12 @@ export class InterviewOrchestrator {
     context: BaseAgentContext,
   ): Promise<OrchestratorOutput> {
     const agentTrace: OrchestratorOutput["agentTrace"] = [];
-    const startTime = new Date();
 
     try {
       // ШАГ 1: Анализ контекста сообщения
       const contextAnalysis = await this.contextAnalyzer.execute(
         {
-          message: input.message,
+          message: input.currentAnswer,
           previousMessages: context.conversationHistory.slice(-5),
         },
         context,
@@ -89,36 +81,22 @@ export class InterviewOrchestrator {
 
       agentTrace.push({
         agent: "ContextAnalyzer",
-        input: { message: input.message },
-        output: contextAnalysis.data,
+        decision: contextAnalysis.success
+          ? `requiresResponse: ${contextAnalysis.data?.requiresResponse}`
+          : "failed",
         timestamp: new Date(),
       });
 
-      // Проверяем успешность анализа контекста
-      if (!contextAnalysis.success || !contextAnalysis.data) {
-        return {
-          decision: {
-            action: "ESCALATE",
-            reason: "Context analysis failed",
-            confidence: 0.5,
-          },
-          updatedState: {
-            ...input.currentState,
-            currentStage: "ESCALATED",
-          },
-          agentTrace,
-        };
-      }
-
       // Если не требуется ответ (благодарность, "ок" и т.д.)
-      if (!contextAnalysis.data.requiresResponse) {
+      if (
+        contextAnalysis.success &&
+        contextAnalysis.data &&
+        !contextAnalysis.data.requiresResponse
+      ) {
         return {
-          decision: {
-            action: "SKIP",
-            reason: "No response needed - simple acknowledgment",
-            confidence: contextAnalysis.data.confidence,
-          },
-          updatedState: input.currentState,
+          analysis: "Простое подтверждение, ответ не требуется",
+          shouldContinue: false,
+          reason: "No response needed",
           agentTrace,
         };
       }
@@ -126,8 +104,7 @@ export class InterviewOrchestrator {
       // ШАГ 2: Проверка необходимости эскалации
       const escalationCheck = await this.escalationDetector.execute(
         {
-          message: input.message,
-          failedPinAttempts: input.failedPinAttempts,
+          message: input.currentAnswer,
           conversationLength: context.conversationHistory.length,
         },
         context,
@@ -135,118 +112,59 @@ export class InterviewOrchestrator {
 
       agentTrace.push({
         agent: "EscalationDetector",
-        input: { message: input.message },
-        output: escalationCheck.data,
+        decision: escalationCheck.success
+          ? `shouldEscalate: ${escalationCheck.data?.shouldEscalate}`
+          : "failed",
         timestamp: new Date(),
       });
 
-      if (escalationCheck.data?.shouldEscalate) {
+      // Если нужна эскалация
+      if (
+        escalationCheck.success &&
+        escalationCheck.data?.shouldEscalate
+      ) {
         return {
-          decision: {
-            action: "ESCALATE",
-            reason: escalationCheck.data.reason || "Escalation required",
-            confidence: 1.0,
-          },
-          updatedState: {
-            ...input.currentState,
-            currentStage: "ESCALATED",
-            escalationReason: escalationCheck.data.reason,
-          },
+          analysis: escalationCheck.data.suggestedAction || "Требуется эскалация к рекрутеру",
+          shouldContinue: false,
+          shouldEscalate: true,
+          escalationReason: escalationCheck.data.reason,
+          reason: escalationCheck.data.reason,
           agentTrace,
         };
       }
 
-      // ШАГ 3: Проведение интервью
-      const interviewResult = await this.interviewer.execute(
-        {
-          message: input.message,
-          voiceMessagesCount: input.currentState.voiceMessagesCount,
-          maxVoiceMessages: this.config.maxVoiceMessages ?? 2,
-          questionsAsked: input.currentState.questionsAsked,
-          customQuestions: input.customQuestions,
-        },
-        context,
-      );
+      // ШАГ 3: Генерация следующего вопроса
+      const interviewResult = await this.interviewer.execute(input, context);
 
       agentTrace.push({
         agent: "Interviewer",
-        input: { message: input.message },
-        output: interviewResult.data,
+        decision: interviewResult.success
+          ? `shouldContinue: ${interviewResult.data?.shouldContinue}`
+          : "failed",
         timestamp: new Date(),
       });
 
       if (!interviewResult.success || !interviewResult.data) {
-        throw new Error("Interview agent failed");
+        throw new Error("Interviewer agent failed");
       }
 
-      // Обновляем состояние
-      const updatedState: WorkflowState = {
-        ...input.currentState,
-        questionsAsked: input.currentState.questionsAsked + 1,
-        shouldContinue: interviewResult.data.shouldContinue,
-        metadata: {
-          ...input.currentState.metadata,
-          lastQuestionType: interviewResult.data.questionType,
-          processingTime: Date.now() - startTime.getTime(),
-        },
-      };
-
-      // Определяем действие
-      const action = interviewResult.data.shouldContinue
-        ? "CONTINUE"
-        : "COMPLETE";
-
       return {
-        response: interviewResult.data.response,
-        decision: {
-          action,
-          reason:
-            action === "COMPLETE"
-              ? "Interview completed"
-              : "Continue interview",
-          confidence: 0.9,
-        },
-        updatedState,
+        analysis: interviewResult.data.analysis,
+        shouldContinue: interviewResult.data.shouldContinue,
+        reason: interviewResult.data.reason,
+        nextQuestion: interviewResult.data.nextQuestion,
+        confidence: interviewResult.data.confidence,
         agentTrace,
       };
     } catch (error) {
       // Обработка ошибок
       return {
-        decision: {
-          action: "ESCALATE",
-          reason: `Error in workflow: ${error instanceof Error ? error.message : "Unknown"}`,
-          confidence: 1.0,
-        },
-        updatedState: {
-          ...input.currentState,
-          currentStage: "ESCALATED",
-        },
+        analysis: "Ошибка при обработке",
+        shouldContinue: false,
+        shouldEscalate: true,
+        escalationReason: `Error: ${error instanceof Error ? error.message : "Unknown"}`,
         agentTrace,
       };
     }
-  }
-
-  /**
-   * Оценка всего интервью
-   */
-  async evaluateInterview(
-    allQA: Array<{ question: string; answer: string }>,
-    context: BaseAgentContext,
-  ): Promise<Array<AgentResult<EnhancedEvaluatorOutput>>> {
-    const results: Array<AgentResult<EnhancedEvaluatorOutput>> = [];
-
-    for (const qa of allQA) {
-      const result = await this.evaluator.execute(
-        {
-          question: qa.question,
-          answer: qa.answer,
-          allQA,
-        },
-        context,
-      );
-      results.push(result);
-    }
-
-    return results;
   }
 }

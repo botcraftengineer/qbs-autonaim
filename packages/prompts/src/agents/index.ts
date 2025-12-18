@@ -11,13 +11,7 @@ export { BaseAgent } from "./base-agent";
 // Конфигурация
 export { AGENT_CONFIG, getAgentConfig } from "./config";
 
-// Базовые агенты (требуют AI модель для работы)
-export type {
-  ContextAnalysisInput,
-  ContextAnalysisOutput,
-} from "./context-analyzer";
-export { ContextAnalyzerAgent } from "./context-analyzer";
-// Улучшенные агенты с AI SDK (рекомендуется использовать)
+// Агенты с AI SDK
 export type {
   EnhancedContextAnalysisInput,
   EnhancedContextAnalysisOutput,
@@ -29,24 +23,10 @@ export type {
 } from "./enhanced-escalation-detector";
 export { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
 export type {
-  EnhancedEvaluatorInput,
-  EnhancedEvaluatorOutput,
-} from "./enhanced-evaluator";
-export { EnhancedEvaluatorAgent } from "./enhanced-evaluator";
-export type {
-  EnhancedInterviewerInput,
-  EnhancedInterviewerOutput,
-} from "./enhanced-interviewer";
-export { EnhancedInterviewerAgent } from "./enhanced-interviewer";
-export type {
   EnhancedWelcomeInput,
   EnhancedWelcomeOutput,
 } from "./enhanced-welcome";
 export { EnhancedWelcomeAgent } from "./enhanced-welcome";
-export type { EscalationInput, EscalationOutput } from "./escalation-detector";
-export { EscalationDetectorAgent } from "./escalation-detector";
-export type { EvaluatorInput, EvaluatorOutput } from "./evaluator";
-export { EvaluatorAgent } from "./evaluator";
 export type {
   InterviewCompletionInput,
   InterviewCompletionOutput,
@@ -85,11 +65,5 @@ export type {
   WorkflowState,
 } from "./types";
 export { convertLegacyContext } from "./utils/legacy-converter";
-export type {
-  VoiceInterviewerInput,
-  VoiceInterviewerOutput,
-} from "./voice-interviewer";
-export { VoiceInterviewerAgent } from "./voice-interviewer";
-export type { InterviewWorkflowConfig } from "./workflows/interview-workflow";
-// Workflow
-export { InterviewWorkflow } from "./workflows/interview-workflow";
+
+
