@@ -27,6 +27,11 @@
     letter-spacing: var(--tracking-normal);
   }
 
+  /* Блокируем скролл body на странице с канбаном */
+  body:has(.kanban-page) {
+    overflow-x: hidden;
+  }
+
   /* Resume styles - responsive and accessible */
   .resume {
     @apply space-y-4 leading-relaxed;
