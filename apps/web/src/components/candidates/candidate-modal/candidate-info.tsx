@@ -18,10 +18,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { MatchScoreCircle } from "../match-score-circle";
-import type { FunnelCandidate } from "../types";
+import type { FunnelCandidateDetail } from "../types";
 
 interface CandidateInfoProps {
-  candidate: FunnelCandidate;
+  candidate: FunnelCandidateDetail;
   onAction?: (action: string) => void;
   isLoading?: {
     sendGreeting?: boolean;

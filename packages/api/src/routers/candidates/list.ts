@@ -198,10 +198,17 @@ export const list = protectedProcedure
       orderBy: (responses, { desc }) => [desc(responses.id)],
       limit: input.limit + 1,
       with: {
-        screening: true,
-        telegramInterviewScoring: true,
-        photoFile: true,
+        screening: {
+          columns: { detailedScore: true },
+        },
+        telegramInterviewScoring: {
+          columns: { detailedScore: true },
+        },
+        photoFile: {
+          columns: { id: true },
+        },
         conversation: {
+          columns: { id: true },
           with: {
             messages: {
               columns: { id: true },
@@ -224,24 +231,15 @@ export const list = protectedProcedure
       const resumeScore = r.screening?.detailedScore;
       const interviewScore = r.telegramInterviewScoring?.detailedScore;
 
-      // Общий скор: если есть оба - среднее, иначе тот что есть
       const matchScore =
         resumeScore !== undefined && interviewScore !== undefined
           ? Math.round((resumeScore + interviewScore) / 2)
           : (resumeScore ?? interviewScore ?? 0);
 
       const contacts = r.contacts as Record<string, string> | null;
-      // Телефон берем только из top-level поля phone
-      const contactPhone = r.phone;
-      // Пробуем разные варианты ключей, так как структура может варьироваться
-      const email = contacts?.email || null;
-      const github = contacts?.github || contacts?.gitHub || null;
       const telegram = r.telegramUsername || contacts?.telegram || null;
-
-      // Возвращаем ID файла для получения через API
+      const email = contacts?.email || null;
       const avatarFileId = r.photoFile?.id ?? null;
-
-      // Подсчитываем количество сообщений
       const messageCount = r.conversation?.messages?.length ?? 0;
 
       return {
@@ -257,26 +255,12 @@ export const list = protectedProcedure
             .join("")
             .toUpperCase()
             .slice(0, 2) || "??",
-        experience: r.experience || "Не указан",
-        location: "Не указано",
         matchScore,
-        resumeScore,
-        interviewScore,
-        scoreAnalysis: r.telegramInterviewScoring?.analysis ?? undefined,
-        screeningAnalysis: r.screening?.analysis ?? undefined,
-        availability: "Не указано",
-        salaryExpectation: "Не указано",
         stage,
-        vacancyId: r.vacancyId,
-        vacancyName: vacancyData?.title || "Неизвестная вакансия",
         email: email,
-        phone: contactPhone,
-        github: github,
+        phone: r.phone,
         telegram: telegram,
-        resumeUrl: r.resumeUrl,
         messageCount,
-        createdAt: r.createdAt,
-        updatedAt: r.updatedAt,
       };
     });
 

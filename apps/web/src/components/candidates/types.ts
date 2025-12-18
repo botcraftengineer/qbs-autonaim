@@ -1,3 +1,5 @@
+import type { RouterOutputs } from "@qbs-autonaim/api";
+
 export type FunnelStage =
   | "SCREENING_DONE"
   | "CHAT_INTERVIEW"
@@ -7,33 +9,10 @@ export type FunnelStage =
   | "ONBOARDING"
   | "REJECTED";
 
-export interface FunnelCandidate {
-  id: string;
-  name: string;
-  position: string;
-  avatarFileId: string | null;
-  initials: string;
-  experience: string;
-  location: string;
-  matchScore: number;
-  resumeScore?: number;
-  interviewScore?: number;
-  scoreAnalysis?: string;
-  screeningAnalysis?: string;
-  availability: string;
-  salaryExpectation: string;
-  stage: string;
-  vacancyId: string;
-  vacancyName: string;
-  email: string | null;
-  phone: string | null;
-  github: string | null;
-  telegram: string | null;
-  resumeUrl: string | null;
-  messageCount?: number;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type FunnelCandidate =
+  RouterOutputs["candidates"]["list"]["items"][number];
+
+export type FunnelCandidateDetail = RouterOutputs["candidates"]["getById"];
 
 export interface FunnelComment {
   id: string;
