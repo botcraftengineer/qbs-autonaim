@@ -6,7 +6,7 @@ export const userWorkspaceRoleEnum = ["owner", "admin", "member"] as const;
 export type UserWorkspaceRole = (typeof userWorkspaceRoleEnum)[number];
 
 export const userWorkspace = pgTable(
-  "user_workspaces",
+  "workspace_members",
   {
     userId: text("user_id")
       .notNull()
