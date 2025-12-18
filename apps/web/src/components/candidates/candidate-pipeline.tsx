@@ -50,11 +50,6 @@ import type { FunnelCandidate, FunnelStage } from "./types";
 const STAGES: { id: FunnelStage; title: string; color: string }[] = [
   { id: "SCREENING_DONE", title: "Скрининг выполнен", color: "bg-blue-500" },
   { id: "CHAT_INTERVIEW", title: "Чат Интервью", color: "bg-cyan-500" },
-  {
-    id: "TRANSCRIPT_READY",
-    title: "Расшифровка готова",
-    color: "bg-purple-500",
-  },
   { id: "OFFER_SENT", title: "Оффер отправлен", color: "bg-indigo-500" },
   { id: "SECURITY_PASSED", title: "СБ пройдена", color: "bg-violet-500" },
   { id: "CONTRACT_SENT", title: "Договор отправлен", color: "bg-amber-500" },
@@ -210,7 +205,6 @@ export function CandidatePipeline() {
     const result: Record<FunnelStage, FunnelCandidate[]> = {
       SCREENING_DONE: [],
       CHAT_INTERVIEW: [],
-      TRANSCRIPT_READY: [],
       OFFER_SENT: [],
       SECURITY_PASSED: [],
       CONTRACT_SENT: [],
@@ -366,7 +360,7 @@ export function CandidatePipeline() {
           onDragEnd={handleDragEnd}
         >
           <section
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 md:gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-4"
             aria-label="Канбан-доска кандидатов"
           >
             {STAGES.map((stage) => (

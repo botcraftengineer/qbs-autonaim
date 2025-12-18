@@ -31,9 +31,6 @@ const mapResponseToStage = (
   ) {
     return "REJECTED";
   }
-  if (status === "DIALOG_APPROVED" || status === "INTERVIEW_HH") {
-    return "TRANSCRIPT_READY";
-  }
   if (status === "EVALUATED") {
     return "CHAT_INTERVIEW";
   }
@@ -53,7 +50,6 @@ export const list = protectedProcedure
           z.enum([
             "SCREENING_DONE",
             "CHAT_INTERVIEW",
-            "TRANSCRIPT_READY",
             "OFFER_SENT",
             "SECURITY_PASSED",
             "CONTRACT_SENT",
@@ -141,12 +137,6 @@ export const list = protectedProcedure
             ]),
             eq(vacancyResponse.status, "SKIPPED"),
           ),
-        );
-      }
-
-      if (input.stages.includes("TRANSCRIPT_READY")) {
-        stageConditions.push(
-          inArray(vacancyResponse.status, ["DIALOG_APPROVED", "INTERVIEW_HH"]),
         );
       }
 
