@@ -32,6 +32,7 @@ export const HR_SELECTION_STATUS = {
   RECOMMENDED: "RECOMMENDED",
   NOT_RECOMMENDED: "NOT_RECOMMENDED",
   REJECTED: "REJECTED",
+  OFFER: "OFFER",
   SECURITY_PASSED: "SECURITY_PASSED",
   OFFER_SENT: "OFFER_SENT",
   CONTRACT_SENT: "CONTRACT_SENT",
@@ -46,6 +47,7 @@ export const HR_SELECTION_STATUS_LABELS: Record<HrSelectionStatus, string> = {
   [HR_SELECTION_STATUS.RECOMMENDED]: "Рекомендовано",
   [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "Не рекомендовано",
   [HR_SELECTION_STATUS.REJECTED]: "Отклонено",
+  [HR_SELECTION_STATUS.OFFER]: "Оффер",
   [HR_SELECTION_STATUS.SECURITY_PASSED]: "СБ пройдена",
   [HR_SELECTION_STATUS.OFFER_SENT]: "Оффер отправлен",
   [HR_SELECTION_STATUS.CONTRACT_SENT]: "Договор отправлен",
@@ -60,6 +62,7 @@ export const HR_SELECTION_STATUS_DESCRIPTIONS: Record<
   [HR_SELECTION_STATUS.RECOMMENDED]: "Хороший кандидат, но есть вопросы",
   [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "Не подходит по критериям",
   [HR_SELECTION_STATUS.REJECTED]: "HR вручную отклонил",
+  [HR_SELECTION_STATUS.OFFER]: "Кандидату сделано предложение о работе",
   [HR_SELECTION_STATUS.SECURITY_PASSED]:
     "Кандидат прошел проверку службы безопасности",
   [HR_SELECTION_STATUS.OFFER_SENT]: "Кандидату отправлено предложение о работе",

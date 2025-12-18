@@ -18,10 +18,19 @@ const mapResponseToStage = (
   hrSelectionStatus: string | null,
 ): string => {
   // Маппинг на новые стадии воронки
-  if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
+  if (hrSelectionStatus === "ONBOARDING") {
     return "ONBOARDING";
   }
+  if (hrSelectionStatus === "CONTRACT_SENT") {
+    return "CONTRACT_SENT";
+  }
+  if (hrSelectionStatus === "SECURITY_PASSED") {
+    return "SECURITY_PASSED";
+  }
   if (hrSelectionStatus === "OFFER") {
+    return "OFFER_SENT";
+  }
+  if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
     return "OFFER_SENT";
   }
   if (
@@ -148,8 +157,17 @@ export const list = protectedProcedure
         stageConditions.push(eq(vacancyResponse.status, "NEW"));
       }
 
-      // Пока нет данных для CONTRACT_SENT и SECURITY_PASSED
-      // Эти стадии будут добавлены позже при расширении схемы БД
+      if (input.stages.includes("SECURITY_PASSED")) {
+        stageConditions.push(
+          eq(vacancyResponse.hrSelectionStatus, "SECURITY_PASSED"),
+        );
+      }
+
+      if (input.stages.includes("CONTRACT_SENT")) {
+        stageConditions.push(
+          eq(vacancyResponse.hrSelectionStatus, "CONTRACT_SENT"),
+        );
+      }
 
       if (stageConditions.length > 0) {
         const stageCondition = or(...stageConditions);
