@@ -14,15 +14,15 @@ const stageToStatusMap = {
   },
   SECURITY_PASSED: {
     status: "COMPLETED" as const,
-    hrSelectionStatus: "OFFER" as const,
+    hrSelectionStatus: "SECURITY_PASSED" as const,
   },
   CONTRACT_SENT: {
     status: "COMPLETED" as const,
-    hrSelectionStatus: "RECOMMENDED" as const,
+    hrSelectionStatus: "CONTRACT_SENT" as const,
   },
   ONBOARDING: {
     status: "COMPLETED" as const,
-    hrSelectionStatus: "INVITE" as const,
+    hrSelectionStatus: "ONBOARDING" as const,
   },
   REJECTED: {
     status: "SKIPPED" as const,
