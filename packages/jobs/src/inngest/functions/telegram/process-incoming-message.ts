@@ -10,6 +10,10 @@ import {
   handleUnidentifiedMedia,
   handleUnidentifiedText,
 } from "./handlers/unidentified";
+import {
+  formatMessageGroup,
+  shouldProcessMessageGroup,
+} from "./message-grouping";
 import type { MessagePayload } from "./types";
 import { findDuplicateMessage, getCompanyBotSettings } from "./utils";
 
@@ -170,10 +174,92 @@ export const processIncomingMessageFunction = inngest.createFunction(
         return { skipped: true, reason: "duplicate message" };
       }
 
+      // Проверяем группировку сообщений
+      const groupCheck = await step.run("check-message-grouping", async () => {
+        return await shouldProcessMessageGroup(
+          conv.id,
+          messageData.id.toString(),
+          "TEXT",
+        );
+      });
+
+      if (!groupCheck.shouldProcess) {
+        console.log("⏳ Ждем завершения группы сообщений", {
+          conversationId: conv.id,
+          messageId: messageData.id.toString(),
+          reason: groupCheck.reason,
+        });
+
+        // Откладываем обработку - ждем еще сообщений
+        await step.sleep("wait-for-more-messages", "2m");
+
+        // Повторно проверяем после ожидания
+        const recheckGroup = await step.run(
+          "recheck-message-grouping",
+          async () => {
+            return await shouldProcessMessageGroup(
+              conv.id,
+              messageData.id.toString(),
+              "TEXT",
+            );
+          },
+        );
+
+        if (!recheckGroup.shouldProcess) {
+          console.log("⏭️ Сообщение не последнее в группе, пропускаем", {
+            conversationId: conv.id,
+            messageId: messageData.id.toString(),
+            reason: recheckGroup.reason,
+          });
+          return { skipped: true, reason: "not last in group" };
+        }
+
+        // Обрабатываем группу
+        const groupedText = formatMessageGroup(recheckGroup.messages);
+        console.log("📦 Обрабатываем группу сообщений", {
+          conversationId: conv.id,
+          messagesCount: recheckGroup.messages.length,
+          groupedText: groupedText.substring(0, 100),
+        });
+
+        await step.run("handle-identified-text-group", async () => {
+          await handleIdentifiedText({
+            conversationId: conv.id,
+            text: groupedText,
+            messageId: messageData.id.toString(),
+            responseId: conv.responseId,
+            status: conv.status,
+            metadata: conv.metadata,
+          });
+        });
+
+        await publish(
+          conversationMessagesChannel(conv.id).message({
+            conversationId: conv.id,
+            messageId: messageData.id.toString(),
+          }),
+        );
+
+        return { processed: true, identified: true, grouped: true };
+      }
+
+      // Обрабатываем сразу (единственное сообщение или группа готова)
+      const textToProcess =
+        groupCheck.messages.length > 1
+          ? formatMessageGroup(groupCheck.messages)
+          : messageData.text || "";
+
+      console.log("✅ Обрабатываем сообщение", {
+        conversationId: conv.id,
+        messageId: messageData.id.toString(),
+        isGroup: groupCheck.messages.length > 1,
+        messagesCount: groupCheck.messages.length,
+      });
+
       await step.run("handle-identified-text", async () => {
         await handleIdentifiedText({
           conversationId: conv.id,
-          text: messageData.text || "",
+          text: textToProcess,
           messageId: messageData.id.toString(),
           responseId: conv.responseId,
           status: conv.status,
@@ -218,9 +304,60 @@ export const processIncomingMessageFunction = inngest.createFunction(
         return { skipped: true, reason: `duplicate ${mediaType} message` };
       }
 
-      console.log(`✅ Сообщение не является дубликатом, начинаем обработку`, {
+      // Проверяем группировку голосовых сообщений
+      const groupCheck = await step.run(
+        "check-voice-message-grouping",
+        async () => {
+          return await shouldProcessMessageGroup(
+            conv.id,
+            messageData.id.toString(),
+            "VOICE",
+          );
+        },
+      );
+
+      if (!groupCheck.shouldProcess) {
+        console.log("⏳ Ждем завершения группы голосовых сообщений", {
+          conversationId: conv.id,
+          messageId: messageData.id.toString(),
+          reason: groupCheck.reason,
+        });
+
+        // Откладываем обработку
+        await step.sleep("wait-for-more-voice-messages", "2m");
+
+        // Повторно проверяем
+        const recheckGroup = await step.run(
+          "recheck-voice-message-grouping",
+          async () => {
+            return await shouldProcessMessageGroup(
+              conv.id,
+              messageData.id.toString(),
+              "VOICE",
+            );
+          },
+        );
+
+        if (!recheckGroup.shouldProcess) {
+          console.log("⏭️ Голосовое не последнее в группе, пропускаем", {
+            conversationId: conv.id,
+            messageId: messageData.id.toString(),
+            reason: recheckGroup.reason,
+          });
+          return { skipped: true, reason: "not last voice in group" };
+        }
+
+        console.log("📦 Обрабатываем группу голосовых", {
+          conversationId: conv.id,
+          messagesCount: recheckGroup.messages.length,
+        });
+      }
+
+      console.log(`✅ Обрабатываем ${mediaType} сообщение`, {
         conversationId: conv.id,
         messageId: messageData.id.toString(),
+        isGroup: groupCheck.messages.length > 1,
+        messagesCount: groupCheck.messages.length,
       });
 
       await step.run(`handle-${mediaType}`, async () => {
