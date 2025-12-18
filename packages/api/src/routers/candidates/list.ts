@@ -1,5 +1,6 @@
 import {
   and,
+  count,
   eq,
   ilike,
   inArray,
@@ -7,7 +8,12 @@ import {
   or,
   workspaceRepository,
 } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import {
+  conversation,
+  conversationMessage,
+  vacancy,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -195,6 +201,13 @@ export const list = protectedProcedure
         screening: true,
         telegramInterviewScoring: true,
         photoFile: true,
+        conversation: {
+          with: {
+            messages: {
+              columns: { id: true },
+            },
+          },
+        },
       },
     });
 
@@ -228,6 +241,9 @@ export const list = protectedProcedure
       // Возвращаем ID файла для получения через API
       const avatarFileId = r.photoFile?.id ?? null;
 
+      // Подсчитываем количество сообщений
+      const messageCount = r.conversation?.messages?.length ?? 0;
+
       return {
         id: r.id,
         name: r.candidateName || "Без имени",
@@ -258,6 +274,7 @@ export const list = protectedProcedure
         github: github,
         telegram: telegram,
         resumeUrl: r.resumeUrl,
+        messageCount,
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,
       };

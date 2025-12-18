@@ -30,6 +30,7 @@ export interface FunnelCandidate {
   github: string | null;
   telegram: string | null;
   resumeUrl: string | null;
+  messageCount?: number;
   createdAt: Date;
   updatedAt: Date;
 }
