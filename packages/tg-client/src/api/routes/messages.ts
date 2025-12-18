@@ -9,6 +9,12 @@ import {
 } from "../schemas";
 import { cleanUsername, handleError } from "../utils";
 
+type LongType = InstanceType<typeof Long>;
+type InputPeer =
+  | { _: "inputPeerChannel"; channelId: number; accessHash: LongType }
+  | { _: "inputPeerChat"; chatId: number }
+  | { _: "inputPeerUser"; userId: number; accessHash: LongType };
+
 const messages = new Hono();
 
 messages.post("/send", async (c) => {
@@ -35,12 +41,6 @@ messages.post("/send", async (c) => {
 
     // chatId is a numeric ID - we need to construct InputPeer directly
     // because resolvePeer only works with usernames
-    type LongType = InstanceType<typeof Long>;
-    type InputPeer =
-      | { _: "inputPeerChannel"; channelId: number; accessHash: LongType }
-      | { _: "inputPeerChat"; chatId: number }
-      | { _: "inputPeerUser"; userId: number; accessHash: LongType };
-
     let peer: InputPeer | undefined;
 
     // Try to get chat/user info from Telegram
@@ -184,13 +184,7 @@ messages.post("/send-by-phone", async (c) => {
     }
 
     // Сначала пытаемся найти существующий контакт
-    let inputPeer:
-      | {
-          _: "inputPeerUser";
-          userId: number;
-          accessHash: InstanceType<typeof Long>;
-        }
-      | undefined;
+    let inputPeer: InputPeer | undefined;
     try {
       const contacts = await client.call({
         _: "contacts.getContacts",

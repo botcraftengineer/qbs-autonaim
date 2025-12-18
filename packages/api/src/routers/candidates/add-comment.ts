@@ -1,0 +1,68 @@
+import {
+  vacancy,
+  vacancyResponse,
+  vacancyResponseComment,
+} from "@qbs-autonaim/db";
+import { eq } from "drizzle-orm";
+import { z } from "zod";
+import { protectedProcedure } from "../../trpc";
+
+export const addComment = protectedProcedure
+  .input(
+    z.object({
+      workspaceId: z.string(),
+      candidateId: z.string(),
+      content: z.string().min(1),
+      isPrivate: z.boolean().default(true),
+    }),
+  )
+  .mutation(async ({ input, ctx }) => {
+    const [candidate] = await ctx.db
+      .select({
+        id: vacancyResponse.id,
+        vacancyId: vacancyResponse.vacancyId,
+      })
+      .from(vacancyResponse)
+      .where(eq(vacancyResponse.id, input.candidateId))
+      .limit(1);
+
+    if (!candidate) {
+      throw new Error("Candidate not found");
+    }
+
+    const [vacancyRecord] = await ctx.db
+      .select({
+        workspaceId: vacancy.workspaceId,
+      })
+      .from(vacancy)
+      .where(eq(vacancy.id, candidate.vacancyId))
+      .limit(1);
+
+    if (!vacancyRecord || vacancyRecord.workspaceId !== input.workspaceId) {
+      throw new Error("Candidate not found");
+    }
+
+    const [comment] = await ctx.db
+      .insert(vacancyResponseComment)
+      .values({
+        responseId: input.candidateId,
+        authorId: ctx.session.user.id,
+        content: input.content,
+        isPrivate: input.isPrivate,
+      })
+      .returning();
+
+    if (!comment) {
+      throw new Error("Failed to create comment");
+    }
+
+    return {
+      id: comment.id,
+      candidateId: comment.responseId,
+      content: comment.content,
+      isPrivate: comment.isPrivate,
+      createdAt: comment.createdAt,
+      author: ctx.session.user.name ?? "Unknown",
+      authorAvatar: ctx.session.user.image,
+    };
+  });
