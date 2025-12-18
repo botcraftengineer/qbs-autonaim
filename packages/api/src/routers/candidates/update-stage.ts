@@ -6,11 +6,28 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const stageToStatusMap = {
-  NEW: { status: "NEW" as const, hrSelectionStatus: null },
-  REVIEW: { status: "EVALUATED" as const, hrSelectionStatus: null },
-  INTERVIEW: { status: "DIALOG_APPROVED" as const, hrSelectionStatus: null },
-  OFFER: { status: "COMPLETED" as const, hrSelectionStatus: "OFFER" as const },
-  HIRED: { status: "COMPLETED" as const, hrSelectionStatus: "INVITE" as const },
+  SCREENING_DONE: { status: "NEW" as const, hrSelectionStatus: null },
+  CHAT_INTERVIEW: { status: "EVALUATED" as const, hrSelectionStatus: null },
+  TRANSCRIPT_READY: {
+    status: "DIALOG_APPROVED" as const,
+    hrSelectionStatus: null,
+  },
+  OFFER_SENT: {
+    status: "COMPLETED" as const,
+    hrSelectionStatus: "OFFER" as const,
+  },
+  SECURITY_PASSED: {
+    status: "COMPLETED" as const,
+    hrSelectionStatus: "OFFER" as const,
+  },
+  CONTRACT_SENT: {
+    status: "COMPLETED" as const,
+    hrSelectionStatus: "RECOMMENDED" as const,
+  },
+  ONBOARDING: {
+    status: "COMPLETED" as const,
+    hrSelectionStatus: "INVITE" as const,
+  },
   REJECTED: {
     status: "SKIPPED" as const,
     hrSelectionStatus: "REJECTED" as const,
@@ -23,11 +40,13 @@ export const updateStage = protectedProcedure
       candidateId: uuidv7Schema,
       workspaceId: workspaceIdSchema,
       stage: z.enum([
-        "NEW",
-        "REVIEW",
-        "INTERVIEW",
-        "OFFER",
-        "HIRED",
+        "SCREENING_DONE",
+        "CHAT_INTERVIEW",
+        "TRANSCRIPT_READY",
+        "OFFER_SENT",
+        "SECURITY_PASSED",
+        "CONTRACT_SENT",
+        "ONBOARDING",
         "REJECTED",
       ]),
     }),

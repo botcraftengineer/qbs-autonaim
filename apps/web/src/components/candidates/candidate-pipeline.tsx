@@ -48,12 +48,18 @@ import { CandidatesTable } from "./candidates-table";
 import type { FunnelCandidate, FunnelStage } from "./types";
 
 const STAGES: { id: FunnelStage; title: string; color: string }[] = [
-  { id: "NEW", title: "Новые", color: "bg-blue-500" },
-  { id: "REVIEW", title: "Рассмотрение", color: "bg-amber-500" },
-  { id: "INTERVIEW", title: "Собеседование", color: "bg-purple-500" },
-  { id: "OFFER", title: "Оффер", color: "bg-indigo-500" },
-  { id: "HIRED", title: "Наняты", color: "bg-emerald-500" },
-  { id: "REJECTED", title: "Отказ", color: "bg-rose-500" },
+  { id: "SCREENING_DONE", title: "Скрининг выполнен", color: "bg-blue-500" },
+  { id: "CHAT_INTERVIEW", title: "Чат Интервью", color: "bg-cyan-500" },
+  {
+    id: "TRANSCRIPT_READY",
+    title: "Расшифровка готова",
+    color: "bg-purple-500",
+  },
+  { id: "OFFER_SENT", title: "Оффер отправлен", color: "bg-indigo-500" },
+  { id: "SECURITY_PASSED", title: "СБ пройдена", color: "bg-violet-500" },
+  { id: "CONTRACT_SENT", title: "Договор отправлен", color: "bg-amber-500" },
+  { id: "ONBOARDING", title: "Онбординг", color: "bg-emerald-500" },
+  { id: "REJECTED", title: "Отказ/Не подходит", color: "bg-rose-500" },
 ];
 
 const pluralizeCandidate = (count: number): string => {
@@ -202,11 +208,13 @@ export function CandidatePipeline() {
 
   const candidatesByStage = useMemo(() => {
     const result: Record<FunnelStage, FunnelCandidate[]> = {
-      NEW: [],
-      REVIEW: [],
-      INTERVIEW: [],
-      OFFER: [],
-      HIRED: [],
+      SCREENING_DONE: [],
+      CHAT_INTERVIEW: [],
+      TRANSCRIPT_READY: [],
+      OFFER_SENT: [],
+      SECURITY_PASSED: [],
+      CONTRACT_SENT: [],
+      ONBOARDING: [],
       REJECTED: [],
     };
     for (const c of filteredCandidates) {
@@ -358,7 +366,7 @@ export function CandidatePipeline() {
           onDragEnd={handleDragEnd}
         >
           <section
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 md:gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-4 md:gap-6"
             aria-label="Канбан-доска кандидатов"
           >
             {STAGES.map((stage) => (
