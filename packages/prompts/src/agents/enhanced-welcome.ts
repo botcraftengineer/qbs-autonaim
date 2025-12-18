@@ -2,6 +2,7 @@
  * Агент для генерации приветственных сообщений
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -18,11 +19,15 @@ export interface EnhancedWelcomeInput {
   customOrganizationalQuestions?: string | null;
 }
 
-export interface EnhancedWelcomeOutput {
-  message: string;
-  organizationalQuestions: string[];
-  confidence: number;
-}
+const enhancedWelcomeOutputSchema = z.object({
+  message: z.string(),
+  organizationalQuestions: z.array(z.string()),
+  confidence: z.number().min(0).max(1),
+});
+
+export type EnhancedWelcomeOutput = z.infer<
+  typeof enhancedWelcomeOutputSchema
+>;
 
 export class EnhancedWelcomeAgent extends AIPoweredAgent<
   EnhancedWelcomeInput,
@@ -116,8 +121,9 @@ ${customOrganizationalQuestions ? `ПОЛЬЗОВАТЕЛЬСКИЕ ОРГАНИ
   "confidence": number
 }`;
 
-      const parsed = await this.parseJSONResponseWithRetry<EnhancedWelcomeOutput>(
+      const parsed = await this.parseJSONResponseWithRetry(
         aiResponse,
+        enhancedWelcomeOutputSchema,
         expectedFormat,
       );
 

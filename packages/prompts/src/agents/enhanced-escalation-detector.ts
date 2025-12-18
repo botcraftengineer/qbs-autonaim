@@ -2,6 +2,7 @@
  * Улучшенный агент детектора эскалации с AI SDK
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import type { AgentResult, BaseAgentContext } from "./types";
@@ -13,12 +14,16 @@ export interface EnhancedEscalationInput {
   conversationLength: number;
 }
 
-export interface EnhancedEscalationOutput {
-  shouldEscalate: boolean;
-  reason?: string;
-  urgency: "LOW" | "MEDIUM" | "HIGH";
-  suggestedAction?: string;
-}
+const enhancedEscalationOutputSchema = z.object({
+  shouldEscalate: z.boolean(),
+  reason: z.string().optional(),
+  urgency: z.enum(["LOW", "MEDIUM", "HIGH"]),
+  suggestedAction: z.string().optional(),
+});
+
+export type EnhancedEscalationOutput = z.infer<
+  typeof enhancedEscalationOutputSchema
+>;
 
 export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
   EnhancedEscalationInput,
@@ -101,8 +106,9 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
   "suggestedAction": "string"
 }`;
 
-      const parsed = await this.parseJSONResponseWithRetry<EnhancedEscalationOutput>(
+      const parsed = await this.parseJSONResponseWithRetry(
         aiResponse,
+        enhancedEscalationOutputSchema,
         expectedFormat,
       );
 

@@ -4,6 +4,7 @@
 
 import { generateText } from "@qbs-autonaim/lib/ai";
 import type { LanguageModel } from "ai";
+import type { ZodSchema } from "zod";
 import { BaseAgent } from "./base-agent";
 import type { AgentType } from "./types";
 
@@ -73,13 +74,18 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
    */
   protected async parseJSONResponseWithRetry<T>(
     text: string,
+    schema: ZodSchema<T>,
     expectedFormat: string,
     maxRetries = 2,
   ): Promise<T | null> {
     // Первая попытка парсинга
     const firstAttempt = this.parseJSONResponse<T>(text);
     if (firstAttempt) {
-      return firstAttempt;
+      const validation = schema.safeParse(firstAttempt);
+      if (validation.success) {
+        return validation.data;
+      }
+      console.error("Schema validation failed:", validation.error);
     }
 
     // Если не удалось, пробуем исправить через AI
@@ -104,8 +110,12 @@ ${expectedFormat}
         const parsed = this.parseJSONResponse<T>(fixedResponse);
 
         if (parsed) {
-          console.log(`JSON исправлен на попытке ${attempt}`);
-          return parsed;
+          const validation = schema.safeParse(parsed);
+          if (validation.success) {
+            console.log(`JSON исправлен на попытке ${attempt}`);
+            return validation.data;
+          }
+          console.error(`Попытка ${attempt}: схема не прошла валидацию`, validation.error);
         }
 
         currentText = fixedResponse;

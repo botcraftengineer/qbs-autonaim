@@ -2,6 +2,7 @@
  * Улучшенный агент оценки с AI SDK
  */
 
+import { z } from "zod";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -12,14 +13,18 @@ export interface EnhancedEvaluatorInput {
   allQA: Array<{ question: string; answer: string }>;
 }
 
-export interface EnhancedEvaluatorOutput {
-  score: number; // 0-5
-  detailedScore: number; // 0-100
-  analysis: string;
-  strengths: string[];
-  weaknesses: string[];
-  recommendation: "CONTINUE" | "COMPLETE" | "NEED_MORE_INFO";
-}
+const enhancedEvaluatorOutputSchema = z.object({
+  score: z.number().min(0).max(5),
+  detailedScore: z.number().min(0).max(100),
+  analysis: z.string(),
+  strengths: z.array(z.string()),
+  weaknesses: z.array(z.string()),
+  recommendation: z.enum(["CONTINUE", "COMPLETE", "NEED_MORE_INFO"]),
+});
+
+export type EnhancedEvaluatorOutput = z.infer<
+  typeof enhancedEvaluatorOutputSchema
+>;
 
 export class EnhancedEvaluatorAgent extends AIPoweredAgent<
   EnhancedEvaluatorInput,
@@ -102,8 +107,9 @@ ${input.answer}
   "recommendation": "CONTINUE" | "COMPLETE" | "NEED_MORE_INFO"
 }`;
 
-      const parsed = await this.parseJSONResponseWithRetry<EnhancedEvaluatorOutput>(
+      const parsed = await this.parseJSONResponseWithRetry(
         aiResponse,
+        enhancedEvaluatorOutputSchema,
         expectedFormat,
       );
 

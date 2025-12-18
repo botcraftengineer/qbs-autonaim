@@ -3,6 +3,7 @@
  * Специализируется на анализе голосовых ответов и генерации следующих вопросов
  */
 
+import { z } from "zod";
 import { wrapUserContent } from "../utils/sanitize";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
@@ -17,13 +18,18 @@ export interface VoiceInterviewerInput {
   customInterviewQuestions?: string | null;
 }
 
-export interface VoiceInterviewerOutput {
-  analysis: string;
-  shouldContinue: boolean;
-  reason?: string;
-  nextQuestion?: string;
+const voiceInterviewerOutputSchema = z.object({
+  analysis: z.string(),
+  shouldContinue: z.boolean(),
+  reason: z.string().optional(),
+  nextQuestion: z.string().optional(),
+});
+
+export type VoiceInterviewerOutput = z.infer<
+  typeof voiceInterviewerOutputSchema
+> & {
   confidence: number;
-}
+};
 
 export class VoiceInterviewerAgent extends AIPoweredAgent<
   VoiceInterviewerInput,
@@ -212,9 +218,11 @@ ${input.currentAnswer}
   "confidence": number
 }`;
 
-      const parsed = await this.parseJSONResponseWithRetry<
-        Omit<VoiceInterviewerOutput, "confidence">
-      >(aiResponse, expectedFormat);
+      const parsed = await this.parseJSONResponseWithRetry(
+        aiResponse,
+        voiceInterviewerOutputSchema,
+        expectedFormat,
+      );
 
       if (!parsed) {
         return { success: false, error: "Не удалось разобрать ответ AI" };
