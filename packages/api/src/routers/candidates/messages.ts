@@ -108,7 +108,6 @@ export const sendMessage = protectedProcedure
       const [newConversation] = await ctx.db
         .insert(telegramConversation)
         .values({
-          chatId: `manual-${input.candidateId}`,
           responseId: input.candidateId,
           candidateName: response.candidateName || "Кандидат",
           status: "ACTIVE",

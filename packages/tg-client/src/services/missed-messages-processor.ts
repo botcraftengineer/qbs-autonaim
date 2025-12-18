@@ -18,8 +18,8 @@ import type { TelegramClient } from "@mtcute/bun";
 import { desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  conversationMessage,
   telegramConversation,
-  telegramMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
@@ -34,6 +34,18 @@ import { triggerIncomingMessage } from "../utils/inngest";
 export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
 }
+
+type ConversationWithChatId = {
+  id: string;
+  responseId: string;
+  candidateName: string | null;
+  username: string | null;
+  status: "ACTIVE" | "COMPLETED" | "CANCELLED";
+  metadata: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  chatId: string | null;
+};
 
 function buildMessageData(message: {
   id: number;
@@ -106,8 +118,22 @@ export async function processMissedMessages(
   console.log("🔍 Проверка пропущенных сообщений...");
 
   const conversations = await db
-    .select()
+    .select({
+      id: telegramConversation.id,
+      responseId: telegramConversation.responseId,
+      candidateName: telegramConversation.candidateName,
+      username: telegramConversation.username,
+      status: telegramConversation.status,
+      metadata: telegramConversation.metadata,
+      createdAt: telegramConversation.createdAt,
+      updatedAt: telegramConversation.updatedAt,
+      chatId: vacancyResponse.chatId,
+    })
     .from(telegramConversation)
+    .innerJoin(
+      vacancyResponse,
+      eq(telegramConversation.responseId, vacancyResponse.id),
+    )
     .where(eq(telegramConversation.status, "ACTIVE"));
 
   if (conversations.length === 0) {
@@ -182,7 +208,7 @@ export async function processMissedMessages(
  * Обрабатывает пропущенные сообщения для одной беседы
  */
 async function processConversationMissedMessages(
-  conversation: typeof telegramConversation.$inferSelect,
+  conversation: ConversationWithChatId,
   getClient: (workspaceId: string) => TelegramClient | null,
 ): Promise<{ processed: number; errors: number }> {
   let processed = 0;
@@ -191,9 +217,9 @@ async function processConversationMissedMessages(
   // Получаем последнее сообщение из БД
   const lastMessage = await db
     .select()
-    .from(telegramMessage)
-    .where(eq(telegramMessage.conversationId, conversation.id))
-    .orderBy(desc(telegramMessage.createdAt))
+    .from(conversationMessage)
+    .where(eq(conversationMessage.conversationId, conversation.id))
+    .orderBy(desc(conversationMessage.createdAt))
     .limit(1);
 
   const lastMessageDate = lastMessage[0]?.createdAt;
@@ -223,6 +249,11 @@ async function processConversationMissedMessages(
   }
 
   // Получаем историю из Telegram
+  if (!conversation.chatId) {
+    console.log(`⚠️ Отсутствует chatId для беседы ${conversation.id}`);
+    return { processed, errors };
+  }
+
   const chatIdNumber = Number.parseInt(conversation.chatId, 10);
   if (Number.isNaN(chatIdNumber)) {
     console.log(

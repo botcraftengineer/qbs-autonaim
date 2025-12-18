@@ -44,7 +44,7 @@ export const getImageUrl = protectedProcedure
     // Получаем файл из БД с проверкой принадлежности к workspace
     // Файлы могут быть связаны через:
     // 1. vacancyResponse (resumePdfFileId, photoFileId) → vacancy → workspace
-    // 2. telegramMessage (fileId) → conversation → vacancyResponse → vacancy → workspace
+    // 2. conversationMessage (fileId) → conversation → vacancyResponse → vacancy → workspace
     const fileRecord = await ctx.db.query.file.findFirst({
       where: (files, { eq }) => eq(files.id, input.fileId),
       with: {
@@ -60,8 +60,8 @@ export const getImageUrl = protectedProcedure
             vacancy: true,
           },
         },
-        // Проверяем связь через telegramMessage
-        telegramMessages: {
+        // Проверяем связь через conversationMessage
+        conversationMessages: {
           with: {
             conversation: {
               with: {
@@ -92,7 +92,7 @@ export const getImageUrl = protectedProcedure
       fileRecord.vacancyResponsesAsPhoto.some(
         (response) => response.vacancy.workspaceId === input.workspaceId,
       ) ||
-      fileRecord.telegramMessages.some(
+      fileRecord.conversationMessages.some(
         (message) =>
           message.conversation?.response?.vacancy?.workspaceId ===
           input.workspaceId,

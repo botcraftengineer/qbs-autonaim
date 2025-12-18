@@ -1,5 +1,6 @@
 export * from "./auth";
 export * from "./company";
+export * from "./conversation";
 export * from "./file";
 export * from "./integration";
 export * from "./telegram";

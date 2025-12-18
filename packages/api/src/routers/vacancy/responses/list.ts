@@ -247,7 +247,6 @@ export const list = protectedProcedure
         conversation: {
           columns: {
             id: true,
-            chatId: true,
             candidateName: true,
             status: true,
             createdAt: true,

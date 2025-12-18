@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import { telegramMessage } from "../telegram/message";
+import { conversationMessage } from "../conversation/message";
 import { vacancyResponse } from "../vacancy/response";
 import { file } from "./file";
 
@@ -10,7 +10,7 @@ export const fileRelations = relations(file, ({ many }) => ({
   vacancyResponsesAsPhoto: many(vacancyResponse, {
     relationName: "photoFile",
   }),
-  telegramMessages: many(telegramMessage, {
+  conversationMessages: many(conversationMessage, {
     relationName: "file",
   }),
 }));

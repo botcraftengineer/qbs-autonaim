@@ -1,34 +1,35 @@
 import { relations } from "drizzle-orm";
+import { conversation } from "../conversation/conversation";
+import { conversationMessage } from "../conversation/message";
 import { file } from "../file/file";
 import { vacancyResponse } from "../vacancy/response";
-import { telegramConversation } from "./conversation";
 import { telegramInterviewScoring } from "./interview-scoring";
-import { telegramMessage } from "./message";
 
+// Реэкспорт relations из conversation для обратной совместимости
 export const telegramConversationRelations = relations(
-  telegramConversation,
+  conversation,
   ({ many, one }) => ({
-    messages: many(telegramMessage),
+    messages: many(conversationMessage),
     interviewScoring: one(telegramInterviewScoring, {
-      fields: [telegramConversation.id],
+      fields: [conversation.id],
       references: [telegramInterviewScoring.conversationId],
     }),
     response: one(vacancyResponse, {
-      fields: [telegramConversation.responseId],
+      fields: [conversation.responseId],
       references: [vacancyResponse.id],
     }),
   }),
 );
 
 export const telegramMessageRelations = relations(
-  telegramMessage,
+  conversationMessage,
   ({ one }) => ({
-    conversation: one(telegramConversation, {
-      fields: [telegramMessage.conversationId],
-      references: [telegramConversation.id],
+    conversation: one(conversation, {
+      fields: [conversationMessage.conversationId],
+      references: [conversation.id],
     }),
     file: one(file, {
-      fields: [telegramMessage.fileId],
+      fields: [conversationMessage.fileId],
       references: [file.id],
       relationName: "file",
     }),
@@ -38,9 +39,9 @@ export const telegramMessageRelations = relations(
 export const telegramInterviewScoringRelations = relations(
   telegramInterviewScoring,
   ({ one }) => ({
-    conversation: one(telegramConversation, {
+    conversation: one(conversation, {
       fields: [telegramInterviewScoring.conversationId],
-      references: [telegramConversation.id],
+      references: [conversation.id],
     }),
     response: one(vacancyResponse, {
       fields: [telegramInterviewScoring.responseId],
