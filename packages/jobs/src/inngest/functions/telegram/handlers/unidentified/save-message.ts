@@ -10,6 +10,16 @@ export async function saveUnidentifiedMessage(params: {
 }) {
   const { conversationId, content, messageId, contentType = "TEXT" } = params;
 
+  // Пропускаем сохранение для временных conversation ID
+  // Сообщения будут сохранены после идентификации пользователя
+  if (conversationId.startsWith("temp_")) {
+    console.log("Skipping message save for temporary conversation:", {
+      conversationId,
+      messageId,
+    });
+    return;
+  }
+
   try {
     const isDuplicate = await findDuplicateMessage(conversationId, messageId);
 
@@ -28,6 +38,5 @@ export async function saveUnidentifiedMessage(params: {
       messageId,
       error: error instanceof Error ? error.message : String(error),
     });
-    // Не бросаем ошибку, чтобы продолжить выполнение
   }
 }
