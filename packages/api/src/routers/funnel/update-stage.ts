@@ -19,7 +19,7 @@ type Stage = z.infer<typeof stageSchema>;
 const mapStageToResponse = (
   stage: Stage,
 ):
-  | { status: "NEW" | "EVALUATED" | "DIALOG_APPROVED" | "COMPLETED" }
+  | { status: "NEW" | "EVALUATED" | "INTERVIEW_HH" | "COMPLETED" }
   | { hrSelectionStatus: "RECOMMENDED" | "REJECTED" | "OFFER" }
   | { status: "COMPLETED"; hrSelectionStatus: "OFFER" } => {
   switch (stage) {
@@ -30,7 +30,7 @@ const mapStageToResponse = (
     case "OFFER":
       return { status: "COMPLETED", hrSelectionStatus: "OFFER" };
     case "INTERVIEW":
-      return { status: "DIALOG_APPROVED" };
+      return { status: "INTERVIEW_HH" };
     case "REVIEW":
       return { status: "EVALUATED" };
     case "NEW":

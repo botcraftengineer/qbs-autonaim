@@ -22,7 +22,7 @@ const mapResponseToStage = (
   ) {
     return "REJECTED";
   }
-  if (status === "DIALOG_APPROVED" || status === "INTERVIEW_HH") {
+  if (status === "INTERVIEW_HH") {
     return "INTERVIEW";
   }
   if (status === "EVALUATED") {

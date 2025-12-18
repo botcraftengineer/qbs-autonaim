@@ -54,9 +54,7 @@ export const analytics = protectedProcedure
     const byStage = {
       NEW: responses.filter((r) => r.status === "NEW").length,
       REVIEW: responses.filter((r) => r.status === "EVALUATED").length,
-      INTERVIEW: responses.filter(
-        (r) => r.status === "DIALOG_APPROVED" || r.status === "INTERVIEW_HH",
-      ).length,
+      INTERVIEW: responses.filter((r) => r.status === "INTERVIEW_HH").length,
       OFFER: responses.filter((r) => r.hrSelectionStatus === "OFFER").length,
       HIRED: responses.filter(
         (r) =>
