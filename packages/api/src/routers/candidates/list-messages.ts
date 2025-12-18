@@ -1,9 +1,5 @@
 import { desc, eq, workspaceRepository } from "@qbs-autonaim/db";
-import {
-  conversation,
-  conversationMessage,
-  vacancyResponse,
-} from "@qbs-autonaim/db/schema";
+import { conversation, conversationMessage } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -30,7 +26,6 @@ export const listMessages = protectedProcedure
       });
     }
 
-    // Найти conversation для этого кандидата
     const conv = await ctx.db.query.conversation.findFirst({
       where: eq(conversation.responseId, input.candidateId),
     });
@@ -39,7 +34,6 @@ export const listMessages = protectedProcedure
       return [];
     }
 
-    // Получить сообщения
     const messages = await ctx.db.query.conversationMessage.findMany({
       where: eq(conversationMessage.conversationId, conv.id),
       orderBy: desc(conversationMessage.createdAt),
@@ -64,6 +58,7 @@ export const listMessages = protectedProcedure
 
         return {
           id: msg.id,
+          conversationId: conv.id,
           content: isVoice
             ? msg.voiceTranscription || "Голосовое сообщение"
             : msg.content,
@@ -83,81 +78,4 @@ export const listMessages = protectedProcedure
         };
       }),
     );
-  });
-
-export const sendMessage = protectedProcedure
-  .input(
-    z.object({
-      candidateId: uuidv7Schema,
-      workspaceId: workspaceIdSchema,
-      content: z.string().min(1).max(5000),
-    }),
-  )
-  .mutation(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
-      input.workspaceId,
-      ctx.session.user.id,
-    );
-
-    if (!access) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Нет доступа к workspace",
-      });
-    }
-
-    // Проверить, что кандидат принадлежит workspace
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.candidateId),
-      with: {
-        vacancy: {
-          columns: {
-            workspaceId: true,
-          },
-        },
-      },
-    });
-
-    if (!response || response.vacancy.workspaceId !== input.workspaceId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Нет доступа к этому кандидату",
-      });
-    }
-
-    // Найти или создать conversation
-    let conv = await ctx.db.query.conversation.findFirst({
-      where: eq(conversation.responseId, input.candidateId),
-    });
-
-    if (!conv) {
-      // Создать новый conversation если его нет
-      const [newConversation] = await ctx.db
-        .insert(conversation)
-        .values({
-          responseId: input.candidateId,
-          candidateName: response.candidateName || "Кандидат",
-          status: "ACTIVE",
-        })
-        .returning();
-
-      conv = newConversation;
-    }
-
-    if (!conv) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Не удалось создать conversation",
-      });
-    }
-
-    // Создать сообщение
-    await ctx.db.insert(conversationMessage).values({
-      conversationId: conv.id,
-      sender: "ADMIN",
-      contentType: "TEXT",
-      content: input.content,
-    });
-
-    return { success: true };
   });

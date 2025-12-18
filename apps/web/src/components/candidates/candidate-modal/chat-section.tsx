@@ -37,36 +37,27 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
       candidateId,
       workspaceId,
     }),
-  }) as {
-    data: Array<{
-      id: string;
-      content: string;
-      sender: string;
-      senderName: string;
-      senderAvatar: string | null;
-      timestamp: Date;
-      type?: "text" | "voice";
-      voiceUrl?: string;
-      voiceTranscription?: string;
-      voiceDuration?: number;
-    }>;
-  };
-
-  const sendMessage = useMutation({
-    ...trpc.candidates.sendMessage.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.listMessages.queryKey(),
-      });
-      setMessageText("");
-      textareaRef.current?.focus();
-      toast.success("Сообщение отправлено");
-    },
-    onError: () => {
-      toast.error("Не удалось отправить сообщение");
-    },
   });
 
+  const conversationId = messages[0]?.conversationId as string | undefined;
+
+  const sendMessage = useMutation({
+    ...trpc.telegram.send.send.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.listMessages.queryKey(),
+        });
+        setMessageText("");
+        textareaRef.current?.focus();
+        toast.success("Сообщение отправлено");
+      },
+      onError: () => {
+        toast.error("Не удалось отправить сообщение");
+      },
+    }),
+  });
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to bottom on new messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -83,10 +74,11 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
   }, []);
 
   const handleSend = async () => {
-    if (!messageText.trim()) return;
+    if (!messageText.trim() || !conversationId) return;
     sendMessage.mutate({
-      candidateId,
-      workspaceId,
+      conversationId,
+      sender: "ADMIN",
+      contentType: "TEXT",
       content: messageText.trim(),
     });
   };
@@ -204,12 +196,14 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
                                   size="icon"
                                   variant="ghost"
                                   className="h-10 w-10 shrink-0 rounded-full hover:bg-background/80"
-                                  onClick={() =>
-                                    handlePlayAudio(
-                                      message.id,
-                                      message.voiceUrl!,
-                                    )
-                                  }
+                                  onClick={() => {
+                                    if (message.voiceUrl) {
+                                      handlePlayAudio(
+                                        message.id,
+                                        message.voiceUrl,
+                                      );
+                                    }
+                                  }}
                                   aria-label={
                                     playingAudio === message.id
                                       ? "Остановить"
@@ -226,7 +220,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
                                   <div className="h-8 flex items-center gap-1">
                                     {Array.from({ length: 20 }).map((_, i) => (
                                       <div
-                                        key={i}
+                                        key={`wave-${message.id}-${i}`}
                                         className="w-1 bg-primary/40 rounded-full"
                                         style={{
                                           height: `${Math.random() * 24 + 8}px`,
@@ -296,7 +290,9 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
             <Button
               size="icon"
               onClick={handleSend}
-              disabled={!messageText.trim() || sendMessage.isPending}
+              disabled={
+                !messageText.trim() || sendMessage.isPending || !conversationId
+              }
               aria-label="Отправить сообщение"
               className="h-[44px] w-[44px] shrink-0"
             >
