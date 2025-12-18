@@ -52,11 +52,48 @@ export async function getCompanyBotSettings(
   }
 }
 
+function isValidSender(value: unknown): value is "CANDIDATE" | "BOT" {
+  return value === "CANDIDATE" || value === "BOT";
+}
+
+function isValidContentType(value: unknown): value is "TEXT" | "VOICE" {
+  return value === "TEXT" || value === "VOICE";
+}
+
 export async function getConversationHistory(conversationId: string) {
-  // Для временных conversation ID возвращаем пустую историю
-  // Сообщения будут доступны после идентификации пользователя
   if (conversationId.startsWith("temp_")) {
-    return [];
+    // Для временных conversation загружаем из временного хранилища
+    const { getTempMessageHistory } = await import(
+      "./handlers/unidentified/temp-message-storage"
+    );
+    const tempMessages = await getTempMessageHistory(conversationId);
+    
+    // Преобразуем в формат conversationMessage с валидацией
+    return tempMessages
+      .filter((msg) => {
+        const isValid = isValidSender(msg.sender) && isValidContentType(msg.contentType);
+        if (!isValid) {
+          console.error("❌ Невалидное временное сообщение, пропускаем", {
+            id: msg.id,
+            sender: msg.sender,
+            contentType: msg.contentType,
+          });
+        }
+        return isValid;
+      })
+      .map((msg) => ({
+        id: msg.id,
+        conversationId: msg.tempConversationId,
+        sender: msg.sender as "CANDIDATE" | "BOT",
+        contentType: msg.contentType as "TEXT" | "VOICE",
+        channel: "TELEGRAM" as const,
+        content: msg.content,
+        fileId: null,
+        voiceDuration: null,
+        voiceTranscription: null,
+        externalMessageId: msg.externalMessageId,
+        createdAt: msg.createdAt,
+      }));
   }
 
   return await db.query.conversationMessage.findMany({
