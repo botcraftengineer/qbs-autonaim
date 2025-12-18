@@ -70,6 +70,21 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     const isIdentified = conv?.responseId != null;
 
+    // Проверяем статус response если кандидат идентифицирован
+    if (isIdentified && conv.response) {
+      const responseStatus = conv.response.status;
+      const isInterviewRelated =
+        responseStatus === "INTERVIEW_HH" || responseStatus === "COMPLETED";
+
+      if (!isInterviewRelated) {
+        console.log("⏭️ Кандидат идентифицирован, но статус не связан с интервью, пропускаем", {
+          conversationId: conv.id,
+          responseStatus,
+        });
+        return { skipped: true, reason: "status not interview-related" };
+      }
+    }
+
     // Обработка неидентифицированных сообщений
     if (!isIdentified) {
       if (messageData.text) {
