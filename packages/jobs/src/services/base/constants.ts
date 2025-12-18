@@ -7,13 +7,13 @@
 
 export const INTERVIEW = {
   /** Максимальное количество вопросов в интервью */
-  MAX_QUESTIONS: 4,
+  MAX_QUESTIONS: 2,
   /** Резервная оценка по умолчанию (шкала 1-5) */
   DEFAULT_FALLBACK_SCORE: 3,
   /** Резервная детальная оценка по умолчанию (шкала 0-100) */
   DEFAULT_FALLBACK_DETAILED_SCORE: 50,
   /** Резервный вопрос по умолчанию при сбое парсинга AI */
-  DEFAULT_FALLBACK_QUESTION: "Расскажи подробнее о своем опыте",
+  DEFAULT_FALLBACK_QUESTION: "Расскажите подробнее о своем опыте",
 } as const;
 
 export const SCREENING = {

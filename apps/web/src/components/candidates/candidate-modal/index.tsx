@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
   triggerRefreshSingleResume,
+  triggerScreenResponse,
   triggerSendWelcome,
 } from "~/actions/trigger";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
@@ -49,12 +50,17 @@ export function CandidateModal({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
+  const [isSendingGreeting, setIsSendingGreeting] = useState(false);
+  const [isRefreshingResume, setIsRefreshingResume] = useState(false);
+  const [isRating, setIsRating] = useState(false);
+
   const { data: candidateDetail, isLoading: isLoadingDetail, error: candidateDetailError } = useQuery({
     ...trpc.candidates.getById.queryOptions({
       workspaceId,
       candidateId: candidate?.id ?? "",
     }),
     enabled: open && !!candidate?.id,
+    refetchInterval: isRating ? 1000 : false,
   });
 
   useEffect(() => {
@@ -77,8 +83,11 @@ export function CandidateModal({
     setSelectedStatus(fullCandidate?.stage ?? "REVIEW");
   }, [fullCandidate?.stage]);
 
-  const [isSendingGreeting, setIsSendingGreeting] = useState(false);
-  const [isRefreshingResume, setIsRefreshingResume] = useState(false);
+  useEffect(() => {
+    if (isRating && candidateDetail?.matchScore !== undefined && candidateDetail.matchScore > 0) {
+      setIsRating(false);
+    }
+  }, [isRating, candidateDetail?.matchScore]);
 
   const inviteCandidateMutation = useMutation({
     ...trpc.candidates.inviteCandidate.mutationOptions(),
@@ -159,6 +168,31 @@ export function CandidateModal({
     }
   };
 
+  const handleRate = async () => {
+    if (!fullCandidate) return;
+
+    setIsRating(true);
+    try {
+      const result = await triggerScreenResponse(fullCandidate.id);
+      if (!result.success) {
+        toast.error("Не удалось запустить оценку");
+        setIsRating(false);
+        return;
+      }
+      toast.success("Оценка кандидата запущена");
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.list.queryKey(),
+      });
+      queryClient.invalidateQueries({
+        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+      });
+    } catch (error) {
+      console.error("Ошибка запуска оценки:", error);
+      toast.error("Ошибка запуска оценки");
+      setIsRating(false);
+    }
+  };
+
   if (!candidate || !fullCandidate) return null;
 
   return (
@@ -233,6 +267,7 @@ export function CandidateModal({
                   sendGreeting: isSendingGreeting,
                   invite: inviteCandidateMutation.isPending,
                   refreshResume: isRefreshingResume,
+                  rate: isRating,
                 }}
                 onAction={(action) => {
                   switch (action) {
@@ -249,7 +284,7 @@ export function CandidateModal({
                       });
                       break;
                     case "rate":
-                      toast.info("Функция оценки в разработке");
+                      void handleRate();
                       break;
                     case "view-resume":
                       if (candidateDetail.resumeUrl) {
