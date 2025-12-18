@@ -178,8 +178,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const groupCheck = await step.run("check-message-grouping", async () => {
         return await shouldProcessMessageGroup(
           conv.id,
-          messageData.id.toString(),
-          "TEXT",
+          messageData.id.toString()
         );
       });
 
@@ -199,8 +198,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           async () => {
             return await shouldProcessMessageGroup(
               conv.id,
-              messageData.id.toString(),
-              "TEXT",
+              messageData.id.toString()
             );
           },
         );
@@ -310,8 +308,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         async () => {
           return await shouldProcessMessageGroup(
             conv.id,
-            messageData.id.toString(),
-            "VOICE",
+            messageData.id.toString()
           );
         },
       );
@@ -332,8 +329,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           async () => {
             return await shouldProcessMessageGroup(
               conv.id,
-              messageData.id.toString(),
-              "VOICE",
+              messageData.id.toString()
             );
           },
         );

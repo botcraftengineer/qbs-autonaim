@@ -303,13 +303,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           });
         }
 
-        // Обновляем chatId в response
-        await db
-          .update(vacancyResponse)
-          .set({ chatId })
-          .where(eq(vacancyResponse.id, responseId));
-
-        const conv = await db.query.conversation.findFirst({
+           const conv = await db.query.conversation.findFirst({
           where: eq(conversation.responseId, responseId),
         });
 

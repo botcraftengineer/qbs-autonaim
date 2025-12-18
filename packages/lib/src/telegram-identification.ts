@@ -92,7 +92,6 @@ export async function identifyByPinCode(
     await db
       .update(vacancyResponse)
       .set({
-        chatId,
         telegramUsername: username || response.telegramUsername,
       })
       .where(eq(vacancyResponse.id, response.id));
@@ -182,12 +181,7 @@ export async function identifyByVacancy(
 
     const conversation = await createOrUpdateConversation(conversationData);
 
-    // Обновляем chatId в response
-    await db
-      .update(vacancyResponse)
-      .set({ chatId })
-      .where(eq(vacancyResponse.id, response.id));
-
+  
     return {
       success: true,
       conversationId: conversation.id,
