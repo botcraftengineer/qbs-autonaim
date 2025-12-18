@@ -215,12 +215,21 @@ export const sendNextQuestionFunction = inngest.createFunction(
         throw new Error("Conversation не найден");
       }
 
-      console.log("📱 Получен chatId для отправки вопроса", {
-        conversationId,
-        chatId: conv.chatId,
+      // Получаем chatId через response
+      const response = await db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, conv.responseId),
       });
 
-      return conv.chatId;
+      if (!response?.chatId) {
+        throw new Error("ChatId не найден в response");
+      }
+
+      console.log("📱 Получен chatId для отправки вопроса", {
+        conversationId,
+        chatId: response.chatId,
+      });
+
+      return response.chatId;
     });
 
     const delay = await step.run("calculate-delay", () => {
@@ -469,22 +478,29 @@ export const completeInterviewFunction = inngest.createFunction(
     }
 
     const chatId = await step.run("get-chat-id", async () => {
-      const [conv] = await db
-        .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.id, conversationId))
-        .limit(1);
+      const conv = await db.query.telegramConversation.findFirst({
+        where: eq(telegramConversation.id, conversationId),
+      });
 
       if (!conv) {
         throw new Error("Conversation не найден");
       }
 
-      console.log("📱 Получен chatId для финального сообщения", {
-        conversationId,
-        chatId: conv.chatId,
+      // Получаем chatId через response
+      const response = await db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, conv.responseId),
       });
 
-      return conv.chatId;
+      if (!response?.chatId) {
+        throw new Error("ChatId не найден в response");
+      }
+
+      console.log("📱 Получен chatId для финального сообщения", {
+        conversationId,
+        chatId: response.chatId,
+      });
+
+      return response.chatId;
     });
 
     await step.run("send-final-message", async () => {

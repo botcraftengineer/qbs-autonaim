@@ -3,6 +3,7 @@ import {
   telegramConversation,
   telegramMessage,
   telegramSession,
+  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
@@ -32,9 +33,17 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       });
 
       try {
-        // Получаем conversation
+        // Получаем conversation через chatId в response
         const conversation = await db.query.telegramConversation.findFirst({
-          where: eq(telegramConversation.chatId, chatId),
+          where: (fields, { inArray }) => {
+            return inArray(
+              fields.responseId,
+              db
+                .select({ id: vacancyResponse.id })
+                .from(vacancyResponse)
+                .where(eq(vacancyResponse.chatId, chatId)),
+            );
+          },
           with: {
             response: {
               with: {
@@ -136,20 +145,22 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       }
     });
 
-    // Обновляем запись в базе данных с telegramMessageId
-    await step.run("update-message-record", async () => {
-      await db
-        .update(telegramMessage)
-        .set({
-          telegramMessageId: result.telegramMessageId,
-        })
-        .where(eq(telegramMessage.id, messageId));
+    // Обновляем запись в базе данных с telegramMessageId (если messageId передан)
+    if (messageId) {
+      await step.run("update-message-record", async () => {
+        await db
+          .update(telegramMessage)
+          .set({
+            telegramMessageId: result.telegramMessageId,
+          })
+          .where(eq(telegramMessage.id, messageId));
 
-      console.log("✅ Обновлена запись сообщения в БД", {
-        messageId,
-        telegramMessageId: result.telegramMessageId,
+        console.log("✅ Обновлена запись сообщения в БД", {
+          messageId,
+          telegramMessageId: result.telegramMessageId,
+        });
       });
-    });
+    }
 
     return {
       success: true,

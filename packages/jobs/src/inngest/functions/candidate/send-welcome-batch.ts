@@ -214,48 +214,66 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Сохраняем беседу если получили chatId
             if (sendResult.chatId) {
-              const [conversation] = await db
-                .insert(telegramConversation)
-                .values({
-                  chatId: sendResult.chatId,
-                  responseId: response.id,
-                  candidateName: response.candidateName,
-                  username: response.telegramUsername || undefined,
-                  status: "ACTIVE",
-                  metadata: JSON.stringify({
-                    responseId: response.id,
-                    vacancyId: response.vacancyId,
-                    username: response.telegramUsername,
-                    interviewStarted: true,
-                    questionAnswers: [],
-                  }),
-                })
-                .onConflictDoUpdate({
-                  target: telegramConversation.chatId,
-                  set: {
+              const chatId = sendResult.chatId;
+
+              // Проверяем, есть ли уже conversation для этого response
+              const existing = await db.query.telegramConversation.findFirst({
+                where: eq(telegramConversation.responseId, response.id),
+              });
+
+              const metadata = JSON.stringify({
+                responseId: response.id,
+                vacancyId: response.vacancyId,
+                username: response.telegramUsername,
+                interviewStarted: true,
+                questionAnswers: [],
+              });
+
+              let conversation:
+                | typeof telegramConversation.$inferSelect
+                | undefined;
+              if (existing) {
+                // Обновляем существующую conversation
+                const [updated] = await db
+                  .update(telegramConversation)
+                  .set({
+                    candidateName: response.candidateName,
+                    username: response.telegramUsername || undefined,
+                    status: "ACTIVE",
+                    metadata,
+                  })
+                  .where(eq(telegramConversation.id, existing.id))
+                  .returning();
+                conversation = updated;
+              } else {
+                // Создаем новую conversation
+                const [created] = await db
+                  .insert(telegramConversation)
+                  .values({
                     responseId: response.id,
                     candidateName: response.candidateName,
                     username: response.telegramUsername || undefined,
                     status: "ACTIVE",
-                    metadata: JSON.stringify({
-                      responseId: response.id,
-                      vacancyId: response.vacancyId,
-                      username: response.telegramUsername,
-                      interviewStarted: true,
-                      questionAnswers: [],
-                    }),
-                  },
-                })
-                .returning();
+                    metadata,
+                  })
+                  .returning();
+                conversation = created;
+              }
+
+              // Обновляем chatId в response
+              await db
+                .update(vacancyResponse)
+                .set({ chatId })
+                .where(eq(vacancyResponse.id, response.id));
 
               // Сохраняем приветственное сообщение в историю
               if (conversation) {
                 await db.insert(conversationMessage).values({
                   conversationId: conversation.id,
-                  channel: "TELEGRAM",
                   sender: "BOT",
                   contentType: "TEXT",
                   content: actualSentMessage,
+                  telegramMessageId: sendResult.messageId,
                 });
               }
             }

@@ -163,6 +163,12 @@ export const list = protectedProcedure
       conditions.push(lt(vacancyResponse.id, input.cursor));
     }
 
+    // Подсчитываем общее количество для пагинации
+    const totalCount = await ctx.db.query.vacancyResponse.findMany({
+      where: and(...conditions),
+      columns: { id: true },
+    });
+
     const responses = await ctx.db.query.vacancyResponse.findMany({
       where: and(...conditions),
       orderBy: (responses, { desc }) => [desc(responses.id)],
@@ -219,7 +225,6 @@ export const list = protectedProcedure
             .slice(0, 2) || "??",
         experience: r.experience || "Не указан",
         location: "Не указано",
-        skills: [],
         matchScore,
         resumeScore,
         interviewScore,
@@ -243,5 +248,6 @@ export const list = protectedProcedure
     return {
       items,
       nextCursor,
+      total: totalCount.length,
     };
   });

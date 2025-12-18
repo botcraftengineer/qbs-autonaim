@@ -25,7 +25,6 @@ interface IdentificationResult {
 }
 
 interface ConversationData {
-  chatId: string;
   responseId: string;
   candidateName?: string;
   username?: string;
@@ -76,7 +75,6 @@ export async function identifyByPinCode(
 
     // Создаем или обновляем conversation
     const conversationData: ConversationData = {
-      chatId,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       username,
@@ -152,7 +150,6 @@ export async function identifyByVacancy(
 
     // Создаем или обновляем conversation
     const conversationData: ConversationData = {
-      chatId,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       username,
@@ -198,9 +195,9 @@ async function createOrUpdateConversation(
     questionAnswers: [],
   };
 
-  // Проверяем, есть ли уже conversation для этого chatId
+  // Проверяем, есть ли уже conversation для этого responseId
   const existing = await db.query.telegramConversation.findFirst({
-    where: eq(telegramConversation.chatId, data.chatId),
+    where: eq(telegramConversation.responseId, data.responseId),
   });
 
   if (existing) {
@@ -208,7 +205,6 @@ async function createOrUpdateConversation(
     const [updated] = await db
       .update(telegramConversation)
       .set({
-        responseId: data.responseId,
         candidateName: data.candidateName,
         username: data.username,
         status: "ACTIVE",
@@ -228,7 +224,6 @@ async function createOrUpdateConversation(
   const [created] = await db
     .insert(telegramConversation)
     .values({
-      chatId: data.chatId,
       responseId: data.responseId,
       candidateName: data.candidateName,
       username: data.username,
@@ -253,18 +248,16 @@ export async function saveMessage(
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
   telegramMessageId?: string,
-  channel: "TELEGRAM" | "HH" = "TELEGRAM",
 ): Promise<string | null> {
   try {
     const [message] = await db
       .insert(conversationMessage)
       .values({
         conversationId,
-        channel,
         sender,
         contentType,
         content,
-        externalMessageId: telegramMessageId,
+        telegramMessageId,
       })
       .returning();
 

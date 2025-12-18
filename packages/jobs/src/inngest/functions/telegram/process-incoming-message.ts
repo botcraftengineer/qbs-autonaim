@@ -1,6 +1,6 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { telegramConversation } from "@qbs-autonaim/db/schema";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { telegramMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
@@ -39,11 +39,18 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     // Проверяем идентификацию
     const conversation = await step.run("check-conversation", async () => {
-      const [conv] = await db
-        .select()
-        .from(telegramConversation)
-        .where(eq(telegramConversation.chatId, chatId))
-        .limit(1);
+      const conv = await db.query.telegramConversation.findFirst({
+        where: (fields, { eq, inArray }) => {
+          // Ищем conversation через response.chatId
+          return inArray(
+            fields.responseId,
+            db
+              .select({ id: vacancyResponse.id })
+              .from(vacancyResponse)
+              .where(eq(vacancyResponse.chatId, chatId)),
+          );
+        },
+      });
       return conv;
     });
 
@@ -73,7 +80,6 @@ export const processIncomingMessageFunction = inngest.createFunction(
           return await handleUnidentifiedMedia({
             chatId,
             messageId: messageData.id.toString(),
-            username,
             firstName,
             workspaceId,
             botSettings,

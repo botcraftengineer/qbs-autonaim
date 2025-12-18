@@ -5,7 +5,7 @@ import { z } from "zod";
  */
 
 export const telegramMessageSendDataSchema = z.object({
-  messageId: z.string().min(1, "Message ID is required"),
+  messageId: z.string().min(1, "Message ID is required").optional(),
   chatId: z.string().min(1, "Chat ID is required"),
   content: z.string().min(1, "Content is required"),
 });
