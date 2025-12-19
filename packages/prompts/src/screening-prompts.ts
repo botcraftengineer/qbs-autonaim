@@ -2,6 +2,8 @@
  * Промпты для скрининга откликов и резюме
  */
 
+import { extractFirstName } from "./utils/name-extractor";
+
 export interface VacancyRequirements {
   job_title: string;
   summary: string;
@@ -59,7 +61,7 @@ ${requirements.nice_to_have_skills.map((s) => `- ${s}`).join("\n")}
 Языки: ${requirements.languages.map((l) => `${l.language} (${l.level})`).join(", ")}
 
 РЕЗЮМЕ КАНДИДАТА:
-Имя: ${response.candidateName || "Не указано"}
+Имя: ${extractFirstName(response.candidateName)}
 
 Опыт работы:
 ${response.experience || "Не указан"}

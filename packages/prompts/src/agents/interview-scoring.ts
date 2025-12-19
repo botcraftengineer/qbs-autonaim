@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { extractFirstName } from "../utils/name-extractor";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
 import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
@@ -49,7 +50,7 @@ export class InterviewScoringAgent extends AIPoweredAgent<
   ): string {
     const { candidateName, vacancyTitle, vacancyDescription } = context;
 
-    const name = candidateName?.split(" ")[0] || "Кандидат";
+    const name = extractFirstName(candidateName || null);
 
     return `${this.systemPrompt}
 

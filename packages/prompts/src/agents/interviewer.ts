@@ -4,6 +4,7 @@
  */
 
 import { z } from "zod";
+import { extractFirstName } from "../utils/name-extractor";
 import { wrapUserContent } from "../utils/sanitize";
 import type { AIPoweredAgentConfig } from "./ai-powered-agent";
 import { AIPoweredAgent } from "./ai-powered-agent";
@@ -58,8 +59,8 @@ export class InterviewerAgent extends AIPoweredAgent<
   ): string {
     const { candidateName, vacancyTitle, vacancyDescription } = context;
 
-    // Извлекаем имя
-    const name = candidateName || "Кандидат";
+    // Извлекаем имя (не фамилию!)
+    const name = extractFirstName(candidateName || null);
 
     // История диалога
     const recentHistory = context.conversationHistory.slice(-10);
