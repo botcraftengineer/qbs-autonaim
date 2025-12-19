@@ -87,7 +87,7 @@ export function PipelineBoardView({
     >
       <div className="h-full overflow-x-auto px-4 md:px-6 lg:px-8">
         <section
-          className="flex gap-3 md:gap-4 min-w-max h-full pb-4"
+          className="flex gap-3 md:gap-4 min-w-max h-full pb-4 items-stretch"
           aria-label="Канбан-доска кандидатов"
         >
           {STAGES.map((stage) => {
