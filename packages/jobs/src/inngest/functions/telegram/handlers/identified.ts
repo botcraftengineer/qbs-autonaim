@@ -1,5 +1,10 @@
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { conversationMessage } from "@qbs-autonaim/db/schema";
+import {
+  conversationMessage,
+  RESPONSE_STATUS,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../../client";
 import type { ConversationMetadata } from "../types";
@@ -44,6 +49,9 @@ export async function handleIdentifiedText(params: {
       parsedMetadata.interviewStarted === true &&
       parsedMetadata.interviewCompleted !== true
     ) {
+      // Устанавливаем статус INTERVIEW_HH при первом сообщении
+      await updateStatusOnFirstMessage(conversationId, responseId);
+
       console.log("🚀 Запуск анализа интервью для текстового сообщения", {
         conversationId,
         messageId: savedMessage.id,
@@ -69,6 +77,7 @@ export async function handleIdentifiedMedia(params: {
   messageIdStr: string;
   mediaType: "voice" | "audio";
   workspaceId: string;
+  responseId?: string | null;
 }) {
   const {
     conversationId,
@@ -77,14 +86,18 @@ export async function handleIdentifiedMedia(params: {
     messageIdStr,
     mediaType,
     workspaceId,
+    // responseId используется в transcribe-voice.ts для установки статуса
   } = params;
 
-  console.log(`📥 Начинаем скачивание ${mediaType === "voice" ? "голосового" : "аудио"} файла`, {
-    conversationId,
-    chatId,
-    messageId,
-    workspaceId,
-  });
+  console.log(
+    `📥 Начинаем скачивание ${mediaType === "voice" ? "голосового" : "аудио"} файла`,
+    {
+      conversationId,
+      chatId,
+      messageId,
+      workspaceId,
+    },
+  );
 
   const downloadData = await tgClientSDK.downloadFile({
     workspaceId,
@@ -138,5 +151,43 @@ export async function handleIdentifiedMedia(params: {
       conversationId,
       externalMessageId: messageIdStr,
     });
+  }
+}
+
+async function updateStatusOnFirstMessage(
+  conversationId: string,
+  responseId: string,
+) {
+  // Проверяем, это ли первое сообщение от кандидата
+  const candidateMessagesCount = await db.query.conversationMessage.findMany({
+    where: (fields, { and, eq }) =>
+      and(
+        eq(fields.conversationId, conversationId),
+        eq(fields.sender, "CANDIDATE"),
+      ),
+  });
+
+  // Если это первое сообщение, устанавливаем статус INTERVIEW_HH
+  if (candidateMessagesCount.length === 1) {
+    const response = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, responseId),
+    });
+
+    if (
+      response &&
+      (response.status === RESPONSE_STATUS.NEW ||
+        response.status === RESPONSE_STATUS.EVALUATED)
+    ) {
+      await db
+        .update(vacancyResponse)
+        .set({ status: RESPONSE_STATUS.INTERVIEW_HH })
+        .where(eq(vacancyResponse.id, responseId));
+
+      console.log("✅ Статус изменен на INTERVIEW_HH (первое сообщение)", {
+        conversationId,
+        responseId,
+        previousStatus: response.status,
+      });
+    }
   }
 }

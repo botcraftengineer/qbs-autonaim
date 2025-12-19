@@ -98,15 +98,60 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
       // Запускаем анализ интервью в отдельной задаче
       await step.run("trigger-interview-analysis", async () => {
-        const [message] = await db
-          .select()
-          .from(conversationMessage)
-          .where(eq(conversationMessage.id, messageId))
-          .limit(1);
+        const message = await db.query.conversationMessage.findFirst({
+          where: eq(conversationMessage.id, messageId),
+          with: {
+            conversation: {
+              with: {
+                response: true,
+              },
+            },
+          },
+        });
 
         if (!message) {
           console.log("⏭️ Сообщение не найдено");
           return;
+        }
+
+        // Устанавливаем статус INTERVIEW_HH при первом голосовом сообщении
+        if (message.conversation?.responseId) {
+          const candidateMessagesCount =
+            await db.query.conversationMessage.findMany({
+              where: (fields, { and, eq }) =>
+                and(
+                  eq(fields.conversationId, message.conversationId),
+                  eq(fields.sender, "CANDIDATE"),
+                ),
+            });
+
+          // Если это первое сообщение от кандидата
+          if (candidateMessagesCount.length === 1) {
+            const response = message.conversation.response;
+
+            if (
+              response &&
+              (response.status === "NEW" || response.status === "EVALUATED")
+            ) {
+              const { vacancyResponse, RESPONSE_STATUS } = await import(
+                "@qbs-autonaim/db/schema"
+              );
+
+              await db
+                .update(vacancyResponse)
+                .set({ status: RESPONSE_STATUS.INTERVIEW_HH })
+                .where(eq(vacancyResponse.id, response.id));
+
+              console.log(
+                "✅ Статус изменен на INTERVIEW_HH (первое голосовое)",
+                {
+                  conversationId: message.conversationId,
+                  responseId: response.id,
+                  previousStatus: response.status,
+                },
+              );
+            }
+          }
         }
 
         console.log("🚀 Запуск анализа интервью", {
