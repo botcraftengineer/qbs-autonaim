@@ -7,7 +7,7 @@ import { protectedProcedure } from "../../trpc";
 
 const stageToStatusMap = {
   SCREENING_DONE: { status: "NEW" as const, hrSelectionStatus: null },
-  CHAT_INTERVIEW: { status: "EVALUATED" as const, hrSelectionStatus: null },
+  INTERVIEW: { status: "INTERVIEW_HH" as const, hrSelectionStatus: null },
   OFFER_SENT: {
     status: "COMPLETED" as const,
     hrSelectionStatus: "OFFER" as const,
@@ -37,7 +37,7 @@ export const updateStage = protectedProcedure
       workspaceId: workspaceIdSchema,
       stage: z.enum([
         "SCREENING_DONE",
-        "CHAT_INTERVIEW",
+        "INTERVIEW",
         "OFFER_SENT",
         "SECURITY_PASSED",
         "CONTRACT_SENT",

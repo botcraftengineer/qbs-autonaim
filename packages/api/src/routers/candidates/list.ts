@@ -44,7 +44,7 @@ const mapResponseToStage = (
   if (status === "EVALUATED") {
     return "SCREENING_DONE";
   }
-  return "CHAT_INTERVIEW";
+  return "INTERVIEW";
 };
 
 export const list = protectedProcedure
@@ -59,7 +59,7 @@ export const list = protectedProcedure
         .array(
           z.enum([
             "SCREENING_DONE",
-            "CHAT_INTERVIEW",
+            "INTERVIEW",
             "OFFER_SENT",
             "SECURITY_PASSED",
             "CONTRACT_SENT",
@@ -154,7 +154,7 @@ export const list = protectedProcedure
         stageConditions.push(eq(vacancyResponse.status, "EVALUATED"));
       }
 
-      if (input.stages.includes("CHAT_INTERVIEW")) {
+      if (input.stages.includes("INTERVIEW")) {
         stageConditions.push(eq(vacancyResponse.status, "NEW"));
       }
 

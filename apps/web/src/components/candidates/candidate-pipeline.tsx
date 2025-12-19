@@ -80,7 +80,7 @@ export function CandidatePipeline() {
       { items: FunnelCandidate[]; hasMore: boolean; total: number }
     > = {
       SCREENING_DONE: { items: [], hasMore: false, total: 0 },
-      CHAT_INTERVIEW: { items: [], hasMore: false, total: 0 },
+      INTERVIEW: { items: [], hasMore: false, total: 0 },
       OFFER_SENT: { items: [], hasMore: false, total: 0 },
       SECURITY_PASSED: { items: [], hasMore: false, total: 0 },
       CONTRACT_SENT: { items: [], hasMore: false, total: 0 },

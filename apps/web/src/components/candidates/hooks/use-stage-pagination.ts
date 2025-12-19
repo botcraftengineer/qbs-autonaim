@@ -3,7 +3,7 @@ import type { FunnelStage } from "../types";
 
 const STAGES: FunnelStage[] = [
   "SCREENING_DONE",
-  "CHAT_INTERVIEW",
+  "INTERVIEW",
   "OFFER_SENT",
   "SECURITY_PASSED",
   "CONTRACT_SENT",

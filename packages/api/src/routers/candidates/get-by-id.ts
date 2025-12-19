@@ -31,8 +31,8 @@ const mapResponseToStage = (
   ) {
     return "REJECTED";
   }
-  if (status === "EVALUATED") {
-    return "CHAT_INTERVIEW";
+  if (status === "INTERVIEW_HH") {
+    return "INTERVIEW";
   }
   return "SCREENING_DONE";
 };

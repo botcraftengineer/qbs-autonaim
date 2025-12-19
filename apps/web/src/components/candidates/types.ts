@@ -2,7 +2,7 @@ import type { RouterOutputs } from "@qbs-autonaim/api";
 
 export type FunnelStage =
   | "SCREENING_DONE"
-  | "CHAT_INTERVIEW"
+  | "INTERVIEW"
   | "OFFER_SENT"
   | "SECURITY_PASSED"
   | "CONTRACT_SENT"
@@ -35,7 +35,7 @@ export interface FunnelActivity {
 
 export const STAGE_LABELS: Record<FunnelStage, string> = {
   SCREENING_DONE: "Скрининг выполнен",
-  CHAT_INTERVIEW: "Чат Интервью",
+  INTERVIEW: "Чат Интервью",
   OFFER_SENT: "Оффер отправлен",
   SECURITY_PASSED: "СБ пройдена",
   CONTRACT_SENT: "Договор отправлен",
@@ -46,7 +46,7 @@ export const STAGE_LABELS: Record<FunnelStage, string> = {
 export const STAGE_COLORS: Record<FunnelStage, string> = {
   SCREENING_DONE:
     "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950 dark:text-blue-400",
-  CHAT_INTERVIEW:
+  INTERVIEW:
     "bg-cyan-50 text-cyan-700 border-cyan-200 dark:bg-cyan-950 dark:text-cyan-400",
   OFFER_SENT:
     "bg-indigo-50 text-indigo-700 border-indigo-200 dark:bg-indigo-950 dark:text-indigo-400",
