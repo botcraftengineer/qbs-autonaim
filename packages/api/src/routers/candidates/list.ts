@@ -8,12 +8,7 @@ import {
   or,
   workspaceRepository,
 } from "@qbs-autonaim/db";
-import {
-  conversation,
-  conversationMessage,
-  vacancy,
-  vacancyResponse,
-} from "@qbs-autonaim/db/schema";
+import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -135,7 +130,7 @@ export const list = protectedProcedure
 
       if (input.stages.includes("ONBOARDING")) {
         stageConditions.push(
-          inArray(vacancyResponse.hrSelectionStatus, ["INVITE", "RECOMMENDED"]),
+          eq(vacancyResponse.hrSelectionStatus, "ONBOARDING"),
         );
       }
 
