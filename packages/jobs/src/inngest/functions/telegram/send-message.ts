@@ -144,23 +144,37 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       }
     });
 
-    // Обновляем запись в базе данных с externalMessageId (если messageId передан)
+    // Обновляем запись в базе данных с externalMessageId
     const resultExternalMessageId = result.externalMessageId;
 
     if (messageId) {
-      await step.run("update-message-record", async () => {
-        await db
-          .update(conversationMessage)
-          .set({
-            externalMessageId: resultExternalMessageId,
-          })
-          .where(eq(conversationMessage.id, messageId));
+      // Проверка на формат UUID для messageId (ID записи в БД)
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          messageId,
+        );
 
-        console.log("✅ Обновлена запись сообщения в БД", {
+      if (isUuid) {
+        await step.run("update-message-record", async () => {
+          await db
+            .update(conversationMessage)
+            .set({
+              // externalMessageId от Telegram — это строка с числом (например, "12345")
+              externalMessageId: resultExternalMessageId,
+            })
+            .where(eq(conversationMessage.id, messageId));
+
+          console.log("✅ Обновлена запись сообщения в БД", {
+            messageId,
+            externalMessageId: resultExternalMessageId,
+          });
+        });
+      } else {
+        console.warn("⚠️ Пропущен апдейт: messageId не является валидным UUID", {
           messageId,
           externalMessageId: resultExternalMessageId,
         });
-      });
+      }
     }
 
     return {

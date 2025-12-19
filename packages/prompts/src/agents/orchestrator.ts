@@ -34,6 +34,7 @@ export interface OrchestratorOutput {
   reason?: string;
   nextQuestion?: string;
   confidence?: number;
+  waitingForCandidateResponse?: boolean;
   /**
    * Информация о пин-коде (если был обнаружен)
    */
@@ -221,6 +222,8 @@ export class InterviewOrchestrator {
         reason: interviewResult.data.reason,
         nextQuestion: interviewResult.data.nextQuestion,
         confidence: interviewResult.data.confidence,
+        waitingForCandidateResponse:
+          interviewResult.data.waitingForCandidateResponse,
         agentTrace,
       };
     } catch (error) {
