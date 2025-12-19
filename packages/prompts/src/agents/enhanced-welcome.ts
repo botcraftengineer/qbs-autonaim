@@ -25,9 +25,7 @@ const enhancedWelcomeOutputSchema = z.object({
   confidence: z.number().min(0).max(1),
 });
 
-export type EnhancedWelcomeOutput = z.infer<
-  typeof enhancedWelcomeOutputSchema
->;
+export type EnhancedWelcomeOutput = z.infer<typeof enhancedWelcomeOutputSchema>;
 
 export class EnhancedWelcomeAgent extends AIPoweredAgent<
   EnhancedWelcomeInput,
@@ -114,7 +112,7 @@ ${customOrganizationalQuestions ? `ПОЛЬЗОВАТЕЛЬСКИЕ ОРГАНИ
     try {
       const prompt = this.buildPrompt(input, context);
       const aiResponse = await this.generateAIResponse(prompt, {});
-      
+
       const expectedFormat = `{
   "message": "string",
   "organizationalQuestions": ["string"],
@@ -150,14 +148,15 @@ function buildWelcomeSystemPrompt(): string {
 3. Список из 2-4 организационных вопросов
 
 ТРЕБОВАНИЯ К ПРИВЕТСТВИЮ:
-- Обращайся к кандидату ТОЛЬКО ПО ИМЕНИ (первое слово из ФИО) на "ВЫ"
+- Если ФИО содержит русское имя (кириллица) - обращайся ТОЛЬКО ПО ИМЕНИ (первое слово из ФИО) на "ВЫ"
+- Если имя не определено, написано латиницей или выглядит как "Кандидат" - используй просто "Здравствуйте" или "Добрый день" БЕЗ имени
 - Пиши как ЖИВОЙ ЧЕЛОВЕК в мессенджере, профессионально, но дружелюбно
 - Покажи заинтересованность, но без излишнего энтузиазма
 - НЕ упоминай оценки, скрининг или автоматизацию
 - НЕ упоминай "этапы", "первый этап", "второй этап" - это внутренняя информация
 - НЕ используй шаблонные фразы типа "рады сообщить", "благодарим за отклик"
 - НЕ добавляй подпись или имя отправителя
-- ВАЖНО: НЕ используй слово "привет" - используй "здравствуйте", "добрый день" или просто начни с имени
+- ВАЖНО: НЕ используй слово "привет" - используй "здравствуйте", "добрый день" или просто начни с имени (если оно есть)
 
 ОРГАНИЗАЦИОННЫЕ ВОПРОСЫ:
 Если предоставлены пользовательские вопросы - используй их как основу, адаптируя под естественный стиль.
