@@ -7,10 +7,7 @@ import type { LanguageModel } from "ai";
 import { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
 import { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
 import { InterviewerAgent } from "./interviewer";
-import type {
-  AgentResult,
-  BaseAgentContext,
-} from "./types";
+import type { BaseAgentContext } from "./types";
 
 export interface OrchestratorInput {
   currentAnswer: string;
@@ -119,12 +116,11 @@ export class InterviewOrchestrator {
       });
 
       // Если нужна эскалация
-      if (
-        escalationCheck.success &&
-        escalationCheck.data?.shouldEscalate
-      ) {
+      if (escalationCheck.success && escalationCheck.data?.shouldEscalate) {
         return {
-          analysis: escalationCheck.data.suggestedAction || "Требуется эскалация к рекрутеру",
+          analysis:
+            escalationCheck.data.suggestedAction ||
+            "Требуется эскалация к рекрутеру",
           shouldContinue: false,
           shouldEscalate: true,
           escalationReason: escalationCheck.data.reason,
