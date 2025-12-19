@@ -33,6 +33,7 @@ import { ChatSection } from "./chat-section";
 import { CommentsSection } from "./comments-section";
 import { RejectDialog } from "./reject-dialog";
 import { SendOfferDialog } from "./send-offer-dialog";
+import { getStatusDisplay } from "./status-utils";
 
 interface CandidateModalProps {
   candidate: FunnelCandidate | null;
@@ -54,7 +55,11 @@ export function CandidateModal({
   const [isRefreshingResume, setIsRefreshingResume] = useState(false);
   const [isRating, setIsRating] = useState(false);
 
-  const { data: candidateDetail, isLoading: isLoadingDetail, error: candidateDetailError } = useQuery({
+  const {
+    data: candidateDetail,
+    isLoading: isLoadingDetail,
+    error: candidateDetailError,
+  } = useQuery({
     ...trpc.candidates.getById.queryOptions({
       workspaceId,
       candidateId: candidate?.id ?? "",
@@ -70,7 +75,8 @@ export function CandidateModal({
     }
   }, [candidateDetailError]);
 
-  const fullCandidate: FunnelCandidateDetail | FunnelCandidate | null = candidateDetail ?? candidate;
+  const fullCandidate: FunnelCandidateDetail | FunnelCandidate | null =
+    candidateDetail ?? candidate;
   const avatarUrl = useAvatarUrl(fullCandidate?.avatarFileId);
   const [selectedStatus, setSelectedStatus] = useState(
     fullCandidate?.stage ?? "REVIEW",
@@ -84,7 +90,11 @@ export function CandidateModal({
   }, [fullCandidate?.stage]);
 
   useEffect(() => {
-    if (isRating && candidateDetail?.matchScore !== undefined && candidateDetail.matchScore > 0) {
+    if (
+      isRating &&
+      candidateDetail?.matchScore !== undefined &&
+      candidateDetail.matchScore > 0
+    ) {
       setIsRating(false);
     }
   }, [isRating, candidateDetail?.matchScore]);
@@ -97,7 +107,10 @@ export function CandidateModal({
       });
       if (fullCandidate) {
         queryClient.invalidateQueries({
-          queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+          queryKey: trpc.candidates.getById.queryKey({
+            workspaceId,
+            candidateId: fullCandidate.id,
+          }),
         });
       }
       toast.success("Кандидат приглашён");
@@ -133,7 +146,10 @@ export function CandidateModal({
         queryKey: trpc.candidates.list.queryKey(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+        queryKey: trpc.candidates.getById.queryKey({
+          workspaceId,
+          candidateId: fullCandidate.id,
+        }),
       });
     } catch (error) {
       console.error("Ошибка отправки приветствия:", error);
@@ -158,7 +174,10 @@ export function CandidateModal({
         queryKey: trpc.candidates.list.queryKey(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+        queryKey: trpc.candidates.getById.queryKey({
+          workspaceId,
+          candidateId: fullCandidate.id,
+        }),
       });
     } catch (error) {
       console.error("Ошибка обновления резюме:", error);
@@ -184,7 +203,10 @@ export function CandidateModal({
         queryKey: trpc.candidates.list.queryKey(),
       });
       queryClient.invalidateQueries({
-        queryKey: trpc.candidates.getById.queryKey({ workspaceId, candidateId: fullCandidate.id }),
+        queryKey: trpc.candidates.getById.queryKey({
+          workspaceId,
+          candidateId: fullCandidate.id,
+        }),
       });
     } catch (error) {
       console.error("Ошибка запуска оценки:", error);
@@ -239,17 +261,23 @@ export function CandidateModal({
 
         <div className="flex-1 overflow-y-auto">
           <div className="p-6 space-y-6">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Статус:</span>
-              <span className="inline-flex items-center rounded-full px-3 py-1 text-sm font-medium bg-muted">
-                {selectedStatus === "NEW" && "Новые"}
-                {selectedStatus === "REVIEW" && "На рассмотрении"}
-                {selectedStatus === "INTERVIEW" && "Собеседование"}
-                {selectedStatus === "OFFER" && "Оффер"}
-                {selectedStatus === "HIRED" && "Наняты"}
-                {selectedStatus === "REJECTED" && "Отклонен"}
-              </span>
-            </div>
+            {(() => {
+              const statusDisplay = getStatusDisplay(
+                candidateDetail?.status ?? fullCandidate?.status,
+                candidateDetail?.hrSelectionStatus ??
+                  fullCandidate?.hrSelectionStatus,
+              );
+              return (
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium">Статус:</span>
+                  <span
+                    className={`inline-flex items-center rounded-full px-3 py-1 text-sm font-medium ${statusDisplay.color}`}
+                  >
+                    {statusDisplay.label}
+                  </span>
+                </div>
+              );
+            })()}
 
             {isLoadingDetail ? (
               <div className="space-y-4">
@@ -258,7 +286,9 @@ export function CandidateModal({
               </div>
             ) : candidateDetailError ? (
               <div className="space-y-4 text-center py-8">
-                <p className="text-muted-foreground">Не удалось загрузить полные данные кандидата</p>
+                <p className="text-muted-foreground">
+                  Не удалось загрузить полные данные кандидата
+                </p>
               </div>
             ) : candidateDetail ? (
               <CandidateInfo

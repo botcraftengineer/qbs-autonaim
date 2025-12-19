@@ -59,6 +59,7 @@ export const list = protectedProcedure
       with: {
         screening: true,
         telegramInterviewScoring: true,
+        photoFile: true,
       },
     });
 
@@ -77,6 +78,7 @@ export const list = protectedProcedure
         name: r.candidateName || "Без имени",
         position: vacancyData?.title || "Неизвестная должность",
         avatar: null,
+        avatarFileId: r.photoFile?.id ?? null,
         initials:
           r.candidateName
             ?.split(" ")
@@ -95,10 +97,13 @@ export const list = protectedProcedure
         availability: "Не указано",
         salaryExpectation: "Не указано",
         stage,
+        status: r.status,
+        hrSelectionStatus: r.hrSelectionStatus,
         vacancyId: r.vacancyId,
         vacancyName: vacancyData?.title || "Неизвестная вакансия",
         email: null,
         phone: r.phone,
+        telegram: r.telegramUsername,
         github: null,
         createdAt: r.createdAt,
         updatedAt: r.updatedAt,

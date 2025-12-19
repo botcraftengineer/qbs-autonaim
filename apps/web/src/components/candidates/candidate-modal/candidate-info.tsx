@@ -113,14 +113,7 @@ export function CandidateInfo({
       </div>
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">Результаты оценки</h3>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="flex items-center justify-center mb-2">
-              <MatchScoreCircle score={candidate.matchScore} size="md" />
-            </div>
-            <p className="text-xs text-muted-foreground">Общий скор</p>
-          </div>
-
+        <div className="grid grid-cols-2 gap-4">
           {candidate.resumeScore !== undefined && (
             <div className="p-4 bg-muted/50 rounded-lg text-center">
               <div className="flex items-center justify-center mb-2">

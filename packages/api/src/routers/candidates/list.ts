@@ -250,12 +250,21 @@ export const list = protectedProcedure
             .join("")
             .toUpperCase()
             .slice(0, 2) || "??",
+        experience: r.experience || "Не указан",
+        location: "Не указано",
         matchScore,
         stage,
+        status: r.status,
+        hrSelectionStatus: r.hrSelectionStatus,
+        vacancyId: r.vacancyId,
+        vacancyName: vacancyData?.title || "Неизвестная вакансия",
+        salaryExpectation: "Не указано",
         email: email,
         phone: r.phone,
         telegram: telegram,
         messageCount,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
       };
     });
 

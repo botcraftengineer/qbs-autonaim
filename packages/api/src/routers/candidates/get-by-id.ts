@@ -92,7 +92,10 @@ export const getById = protectedProcedure
       });
     }
 
-    const stage = mapResponseToStage(response.status, response.hrSelectionStatus);
+    const stage = mapResponseToStage(
+      response.status,
+      response.hrSelectionStatus,
+    );
 
     const resumeScore = response.screening?.detailedScore;
     const interviewScore = response.telegramInterviewScoring?.detailedScore;
@@ -134,6 +137,8 @@ export const getById = protectedProcedure
       availability: "Не указано",
       salaryExpectation: "Не указано",
       stage,
+      status: response.status,
+      hrSelectionStatus: response.hrSelectionStatus,
       vacancyId: response.vacancyId,
       vacancyName: vacancyData.title || "Неизвестная вакансия",
       email: email,
