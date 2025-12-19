@@ -377,6 +377,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           messageIdStr: messageData.id.toString(),
           mediaType,
           workspaceId,
+          responseId: conv.responseId,
         });
       });
 
