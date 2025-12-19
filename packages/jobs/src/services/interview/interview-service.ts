@@ -32,6 +32,7 @@ interface ConversationMetadata {
 interface ExtendedInterviewAnalysis extends InterviewAnalysis {
   shouldEscalate?: boolean;
   escalationReason?: string;
+  waitingForCandidateResponse?: boolean;
 }
 
 interface InterviewContext {
@@ -129,10 +130,12 @@ export async function analyzeAndGenerateNextQuestion(
   // Логируем трассировку агентов
   logger.info("Interview orchestrator trace", {
     conversationId: context.conversationId,
-    trace: result.agentTrace.map((t: { agent: string; decision: string; timestamp: Date }) => ({
-      agent: t.agent,
-      decision: t.decision,
-    })),
+    trace: result.agentTrace.map(
+      (t: { agent: string; decision: string; timestamp: Date }) => ({
+        agent: t.agent,
+        decision: t.decision,
+      }),
+    ),
   });
 
   // Проверка эскалации
@@ -157,6 +160,7 @@ export async function analyzeAndGenerateNextQuestion(
     shouldContinue: result.shouldContinue,
     reason: result.reason,
     nextQuestion: result.nextQuestion,
+    waitingForCandidateResponse: result.waitingForCandidateResponse,
   };
 }
 

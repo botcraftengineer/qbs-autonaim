@@ -25,6 +25,7 @@ const interviewerOutputSchema = z.object({
   reason: z.string().optional(),
   nextQuestion: z.string().optional(),
   confidence: z.number().min(0).max(1).optional(),
+  waitingForCandidateResponse: z.boolean().optional(),
 });
 
 export type InterviewerOutput = z.infer<typeof interviewerOutputSchema>;
@@ -144,9 +145,10 @@ ${input.currentAnswer}
 - Уточняет детали ("Это про вакансию X?", "Вы от компании Y?")
 
 В этих случаях:
-- shouldContinue: false
+- shouldContinue: true (ВАЖНО: продолжаем интервью, не завершаем!)
 - reason: "Candidate asked a question or requested to postpone"
 - nextQuestion: КОРОТКИЙ ответ на вопрос кандидата (1-2 предложения) БЕЗ новых вопросов
+- waitingForCandidateResponse: true (ждем ответа кандидата, не задаем новый вопрос сразу)
 
 Примеры правильных ответов:
 - "Да, это я, Дмитрий 🙂 Конечно, можем продолжить завтра в удобное для вас время"
@@ -174,7 +176,8 @@ ${input.currentAnswer}
   "shouldContinue": true или false,
   "reason": "причина завершения, если shouldContinue=false",
   "nextQuestion": "полный текст следующего сообщения кандидату, если shouldContinue=true",
-  "confidence": число от 0.0 до 1.0
+  "confidence": число от 0.0 до 1.0,
+  "waitingForCandidateResponse": true если ждем ответа кандидата (он задал вопрос или просит отложить), false или не указывай в остальных случаях
 }
 
 Пример хорошего вопроса:

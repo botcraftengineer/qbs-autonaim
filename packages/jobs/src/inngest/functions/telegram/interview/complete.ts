@@ -4,6 +4,7 @@ import {
   conversationMessage,
   desc,
   eq,
+  sql,
   telegramInterviewScoring,
   vacancyResponse,
 } from "@qbs-autonaim/db";
@@ -115,9 +116,9 @@ export const completeInterviewFunction = inngest.createFunction(
           .onConflictDoUpdate({
             target: telegramInterviewScoring.conversationId,
             set: {
-              score: scoring.score,
-              detailedScore: scoring.detailedScore,
-              analysis: scoring.analysis,
+              score: sql`excluded.score`,
+              detailedScore: sql`excluded.detailed_score`,
+              analysis: sql`excluded.analysis`,
             },
           });
 
@@ -202,7 +203,7 @@ export const completeInterviewFunction = inngest.createFunction(
           const current = await db.query.vacancyResponse.findFirst({
             where: eq(vacancyResponse.id, responseId),
           });
-          
+
           await db
             .update(vacancyResponse)
             .set({

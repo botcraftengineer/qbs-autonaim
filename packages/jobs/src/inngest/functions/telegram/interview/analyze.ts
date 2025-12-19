@@ -100,6 +100,8 @@ export const analyzeInterviewFunction = inngest.createFunction(
         },
       });
     } else if (result.nextQuestion) {
+      // Если есть вопрос но shouldContinue=false - это может быть ответ на вопрос кандидата
+      // В этом случае отправляем ответ, но НЕ завершаем интервью
       await step.sendEvent("send-next-question-event", {
         name: "telegram/interview.send-question",
         data: {
@@ -110,6 +112,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
         },
       });
     } else {
+      // Только если нет вопроса - завершаем интервью
       await step.sendEvent("complete-interview-event", {
         name: "telegram/interview.complete",
         data: {
