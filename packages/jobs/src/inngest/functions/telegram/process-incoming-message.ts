@@ -115,13 +115,19 @@ export const processIncomingMessageFunction = inngest.createFunction(
     if (isIdentified && conv.response) {
       const responseStatus = conv.response.status;
       const isInterviewRelated =
-        responseStatus === RESPONSE_STATUS.NEW || RESPONSE_STATUS.INTERVIEW_HH || responseStatus === RESPONSE_STATUS.COMPLETED;
+        responseStatus === RESPONSE_STATUS.EVALUATED ||
+        RESPONSE_STATUS.NEW ||
+        RESPONSE_STATUS.INTERVIEW_HH ||
+        responseStatus === RESPONSE_STATUS.COMPLETED;
 
       if (!isInterviewRelated) {
-        console.log("⏭️ Кандидат идентифицирован, но статус не связан с интервью, пропускаем", {
-          conversationId: conv.id,
-          responseStatus,
-        });
+        console.log(
+          "⏭️ Кандидат идентифицирован, но статус не связан с интервью, пропускаем",
+          {
+            conversationId: conv.id,
+            responseStatus,
+          },
+        );
         return { skipped: true, reason: "status not interview-related" };
       }
     }
@@ -178,7 +184,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const groupCheck = await step.run("check-message-grouping", async () => {
         return await shouldProcessMessageGroup(
           conv.id,
-          messageData.id.toString()
+          messageData.id.toString(),
         );
       });
 
@@ -191,7 +197,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
         // Откладываем обработку - ждем еще сообщений
         // Для голосовых ждем дольше (65 сек), для текстовых меньше (20 сек)
-        const hasVoice = groupCheck.messages.some(m => m.contentType === "VOICE");
+        const hasVoice = groupCheck.messages.some(
+          (m) => m.contentType === "VOICE",
+        );
         await step.sleep("wait-for-more-messages", hasVoice ? "65s" : "20s");
 
         // Повторно проверяем после ожидания
@@ -200,7 +208,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           async () => {
             return await shouldProcessMessageGroup(
               conv.id,
-              messageData.id.toString()
+              messageData.id.toString(),
             );
           },
         );
@@ -279,12 +287,15 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     const mediaType = messageData.media?.type;
     if (mediaType === "voice" || mediaType === "audio") {
-      console.log(`🎤 Обработка ${mediaType === "voice" ? "голосового" : "аудио"} сообщения`, {
-        conversationId: conv.id,
-        messageId: messageData.id.toString(),
-        chatId,
-        workspaceId,
-      });
+      console.log(
+        `🎤 Обработка ${mediaType === "voice" ? "голосового" : "аудио"} сообщения`,
+        {
+          conversationId: conv.id,
+          messageId: messageData.id.toString(),
+          chatId,
+          workspaceId,
+        },
+      );
 
       const isDuplicate = await step.run(
         `check-duplicate-${mediaType}`,
@@ -310,7 +321,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         async () => {
           return await shouldProcessMessageGroup(
             conv.id,
-            messageData.id.toString()
+            messageData.id.toString(),
           );
         },
       );
@@ -331,7 +342,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           async () => {
             return await shouldProcessMessageGroup(
               conv.id,
-              messageData.id.toString()
+              messageData.id.toString(),
             );
           },
         );
