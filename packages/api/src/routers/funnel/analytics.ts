@@ -2,6 +2,7 @@ import { eq, inArray } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+import { mapResponseToStage } from "./map-response-stage";
 
 export const analytics = protectedProcedure
   .input(
@@ -51,23 +52,23 @@ export const analytics = protectedProcedure
 
     const newThisWeek = responses.filter((r) => r.createdAt >= weekAgo).length;
 
+    // Используем единую функцию маппинга для подсчета
     const byStage = {
-      NEW: responses.filter((r) => r.status === "NEW").length,
-      REVIEW: responses.filter((r) => r.status === "EVALUATED").length,
-      INTERVIEW: responses.filter((r) => r.status === "INTERVIEW_HH").length,
-      OFFER: responses.filter((r) => r.hrSelectionStatus === "OFFER").length,
-      HIRED: responses.filter(
-        (r) =>
-          r.hrSelectionStatus === "INVITE" ||
-          r.hrSelectionStatus === "RECOMMENDED",
-      ).length,
-      REJECTED: responses.filter(
-        (r) =>
-          r.hrSelectionStatus === "REJECTED" ||
-          r.hrSelectionStatus === "NOT_RECOMMENDED" ||
-          r.status === "SKIPPED",
-      ).length,
+      NEW: 0,
+      REVIEW: 0,
+      INTERVIEW: 0,
+      OFFER: 0,
+      HIRED: 0,
+      REJECTED: 0,
     };
+
+    for (const response of responses) {
+      const stage = mapResponseToStage(
+        response.status,
+        response.hrSelectionStatus,
+      );
+      byStage[stage as keyof typeof byStage]++;
+    }
 
     const hired = byStage.HIRED;
     const total = responses.length;

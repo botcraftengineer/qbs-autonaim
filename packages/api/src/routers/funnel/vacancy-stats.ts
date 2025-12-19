@@ -3,6 +3,7 @@ import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+import { mapResponseToStage } from "./map-response-stage";
 
 export const vacancyStats = protectedProcedure
   .input(
@@ -53,13 +54,12 @@ export const vacancyStats = protectedProcedure
       const vacancyData = vacancies.find((v) => v.id === response.vacancyId);
       const vacancyName = vacancyData?.title ?? "Неизвестная вакансия";
 
-      const isHired =
-        response.hrSelectionStatus === "INVITE" ||
-        response.hrSelectionStatus === "RECOMMENDED";
-      const isRejected =
-        response.hrSelectionStatus === "REJECTED" ||
-        response.hrSelectionStatus === "NOT_RECOMMENDED" ||
-        response.status === "SKIPPED";
+      const stage = mapResponseToStage(
+        response.status,
+        response.hrSelectionStatus,
+      );
+      const isHired = stage === "HIRED";
+      const isRejected = stage === "REJECTED";
 
       const existing = statsByVacancy.get(response.vacancyId);
 

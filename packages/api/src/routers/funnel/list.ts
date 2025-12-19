@@ -4,32 +4,7 @@ import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-
-const mapResponseToStage = (
-  status: string,
-  hrSelectionStatus: string | null,
-): string => {
-  if (hrSelectionStatus === "OFFER") {
-    return "OFFER";
-  }
-  if (hrSelectionStatus === "INVITE" || hrSelectionStatus === "RECOMMENDED") {
-    return "HIRED";
-  }
-  if (
-    hrSelectionStatus === "REJECTED" ||
-    hrSelectionStatus === "NOT_RECOMMENDED" ||
-    status === "SKIPPED"
-  ) {
-    return "REJECTED";
-  }
-  if (status === "INTERVIEW_HH") {
-    return "INTERVIEW";
-  }
-  if (status === "EVALUATED") {
-    return "REVIEW";
-  }
-  return "NEW";
-};
+import { mapResponseToStage } from "./map-response-stage";
 
 export const list = protectedProcedure
   .input(
