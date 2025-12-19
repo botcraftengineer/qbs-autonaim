@@ -20,3 +20,7 @@ export {
   getInterviewContext,
   saveQuestionAnswer,
 } from "./interview-service";
+export {
+  createPinCodeValidator,
+  validatePinCodeSimple,
+} from "./validate-pin-wrapper";

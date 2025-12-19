@@ -16,6 +16,14 @@ export interface OrchestratorInput {
   questionNumber: number;
   maxQuestions: number;
   customInterviewQuestions?: string | null;
+  /**
+   * Функция для проверки пин-кода (опционально)
+   * Если передана, оркестратор автоматически проверит пин-код при его обнаружении
+   */
+  validatePinCode?: (pinCode: string) => Promise<{
+    valid: boolean;
+    error?: string;
+  }>;
 }
 
 export interface OrchestratorOutput {
@@ -26,6 +34,14 @@ export interface OrchestratorOutput {
   reason?: string;
   nextQuestion?: string;
   confidence?: number;
+  /**
+   * Информация о пин-коде (если был обнаружен)
+   */
+  pinCodeDetected?: {
+    pinCode: string;
+    valid: boolean;
+    error?: string;
+  };
   agentTrace: Array<{
     agent: string;
     decision: string;
@@ -79,10 +95,65 @@ export class InterviewOrchestrator {
       agentTrace.push({
         agent: "ContextAnalyzer",
         decision: contextAnalysis.success
-          ? `requiresResponse: ${contextAnalysis.data?.requiresResponse}`
+          ? `messageType: ${contextAnalysis.data?.messageType}, requiresResponse: ${contextAnalysis.data?.requiresResponse}`
           : "failed",
         timestamp: new Date(),
       });
+
+      // ШАГ 1.1: Обработка пин-кода (если обнаружен)
+      if (
+        contextAnalysis.success &&
+        contextAnalysis.data?.messageType === "PIN_CODE" &&
+        contextAnalysis.data.extractedData?.pinCode
+      ) {
+        const pinCode = contextAnalysis.data.extractedData.pinCode;
+
+        agentTrace.push({
+          agent: "PinCodeDetector",
+          decision: `Обнаружен пин-код: ${pinCode}`,
+          timestamp: new Date(),
+        });
+
+        // Если передана функция валидации, проверяем пин-код
+        if (input.validatePinCode) {
+          const validation = await input.validatePinCode(pinCode);
+
+          agentTrace.push({
+            agent: "PinCodeValidator",
+            decision: validation.valid
+              ? "Пин-код валидный"
+              : `Пин-код невалидный: ${validation.error}`,
+            timestamp: new Date(),
+          });
+
+          return {
+            analysis: validation.valid
+              ? "Пин-код успешно проверен, можно начинать интервью"
+              : `Неверный пин-код: ${validation.error || "Код не найден в базе"}`,
+            shouldContinue: validation.valid,
+            reason: validation.valid ? "PIN_VALIDATED" : "INVALID_PIN",
+            pinCodeDetected: {
+              pinCode,
+              valid: validation.valid,
+              error: validation.error,
+            },
+            agentTrace,
+          };
+        }
+
+        // Если функция валидации не передана, просто информируем о пин-коде
+        return {
+          analysis: "Обнаружен пин-код, но валидация не настроена",
+          shouldContinue: false,
+          reason: "PIN_DETECTED_NO_VALIDATOR",
+          pinCodeDetected: {
+            pinCode,
+            valid: false,
+            error: "Валидация не настроена",
+          },
+          agentTrace,
+        };
+      }
 
       // Если не требуется ответ (благодарность, "ок" и т.д.)
       if (

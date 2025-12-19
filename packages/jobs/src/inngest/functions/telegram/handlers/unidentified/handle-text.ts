@@ -1,3 +1,5 @@
+import { getAIModel } from "@qbs-autonaim/lib/ai";
+import { EnhancedContextAnalyzerAgent } from "@qbs-autonaim/prompts";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { createOrUpdateTempConversation, extractPinCode } from "../../utils";
@@ -7,13 +9,16 @@ import { saveUnidentifiedMessage } from "./save-message";
 /**
  * Обрабатывает текстовые сообщения от неидентифицированных пользователей
  *
- * ЛОГИКА ВАЛИДАЦИИ ПИНА:
- * 1. При каждом сообщении проверяем, есть ли в нем 4-значный код
- * 2. Если код найден:
+ * ЛОГИКА ВАЛИДАЦИИ ПИНА (улучшенная с AI):
+ * 1. Используем EnhancedContextAnalyzerAgent для анализа сообщения
+ * 2. Агент определяет тип сообщения (PIN_CODE, GREETING, QUESTION и т.д.)
+ * 3. Если обнаружен PIN_CODE:
+ *    - Извлекаем пин-код из extractedData
  *    - Проверяем его валидность через identifyByPinCode
  *    - Если валидный → идентифицируем кандидата и переходим к PIN_RECEIVED (начало интервью)
  *    - Если невалидный → отправляем INVALID_PIN (просим попробовать еще раз)
- * 3. Если кода нет → отправляем AWAITING_PIN (просим прислать код)
+ * 4. Если GREETING → отправляем приветствие с просьбой прислать пин-код
+ * 5. Если другой тип → отправляем AWAITING_PIN (просим прислать код)
  *
  * ВАЖНО: При каждой новой попытке ввода пина система заново проверяет его валидность,
  * поэтому после неудачной попытки кандидат может сразу прислать правильный код.
@@ -38,8 +43,8 @@ export async function handleUnidentifiedText(params: {
   } = params;
 
   const trimmedText = text.trim();
-  const pinCode = extractPinCode(trimmedText);
 
+  // Создаем временную conversation
   const tempConv = await createOrUpdateTempConversation(
     chatId,
     username,
@@ -54,9 +59,133 @@ export async function handleUnidentifiedText(params: {
     throw new Error("Failed to create temp conversation");
   }
 
+  let pinCode: string | null = null;
+
+  // Используем AI-агент для анализа сообщения
+  try {
+    const model = getAIModel();
+    const contextAnalyzer = new EnhancedContextAnalyzerAgent({
+      model,
+      maxTokens: 500,
+    });
+
+    const analysisResult = await contextAnalyzer.execute(
+      {
+        message: trimmedText,
+      },
+      {
+        conversationHistory: [],
+      },
+    );
+
+    if (analysisResult.success && analysisResult.data) {
+      const { messageType, extractedData } = analysisResult.data;
+
+      console.log("🤖 AI анализ сообщения", {
+        messageType,
+        extractedData,
+        chatId,
+        fastPath: analysisResult.metadata?.fastPath,
+      });
+
+      // Обработка пин-кода
+      if (messageType === "PIN_CODE" && extractedData?.pinCode) {
+        pinCode = extractedData.pinCode;
+
+        console.log("🔑 AI обнаружил пин-код, проверяем валидность", {
+          pinCode,
+          chatId,
+          tempConvId: tempConv.id,
+        });
+
+        const result = await handlePinIdentification({
+          pinCode,
+          chatId,
+          workspaceId,
+          username,
+          firstName,
+          trimmedText,
+          messageId,
+          botSettings,
+          tempConvId: tempConv.id,
+        });
+
+        if (result.identified) {
+          console.log("✅ Пин-код валидный, кандидат идентифицирован", {
+            pinCode,
+            chatId,
+          });
+          return result;
+        }
+
+        // Пин-код невалидный
+        console.log("❌ Пин-код невалидный, отправляем INVALID_PIN", {
+          pinCode,
+          chatId,
+        });
+
+        await saveUnidentifiedMessage({
+          conversationId: tempConv.id,
+          content: trimmedText,
+          messageId,
+        });
+
+        await generateAndSendBotResponse({
+          conversationId: tempConv.id,
+          messageText: trimmedText,
+          stage: "INVALID_PIN",
+          botSettings,
+          username,
+          firstName,
+          workspaceId,
+        });
+
+        return { identified: false, invalidPin: true };
+      }
+
+      // Обработка приветствия
+      if (messageType === "GREETING") {
+        console.log(
+          "👋 Обнаружено приветствие, отправляем приветствие с просьбой пин-кода",
+          {
+            chatId,
+          },
+        );
+
+        await saveUnidentifiedMessage({
+          conversationId: tempConv.id,
+          content: trimmedText,
+          messageId,
+        });
+
+        await generateAndSendBotResponse({
+          conversationId: tempConv.id,
+          messageText: trimmedText,
+          stage: "AWAITING_PIN",
+          botSettings,
+          username,
+          firstName,
+          workspaceId,
+        });
+
+        return { identified: false, awaitingPin: true, greeting: true };
+      }
+    }
+  } catch (error) {
+    console.error("❌ Ошибка AI анализа, используем fallback", {
+      error,
+      chatId,
+    });
+  }
+
+  // Fallback: используем старый метод извлечения пин-кода (если AI не нашел)
+  if (!pinCode) {
+    pinCode = extractPinCode(trimmedText);
+  }
+
   // Если в сообщении есть 4-значный код - проверяем его
   if (pinCode) {
-    console.log("🔑 Обнаружен пин-код, проверяем валидность", {
+    console.log("🔑 Обнаружен пин-код (fallback), проверяем валидность", {
       pinCode,
       chatId,
       tempConvId: tempConv.id,
