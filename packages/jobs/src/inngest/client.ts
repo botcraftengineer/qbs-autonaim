@@ -1,6 +1,7 @@
 import { realtimeMiddleware } from "@inngest/realtime/middleware";
 import { EventSchemas, Inngest } from "inngest";
 import {
+  candidateOfferSendDataSchema,
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
   collectChatIdsDataSchema,
@@ -46,6 +47,7 @@ export const inngest = new Inngest({
     "vacancy/chat-ids.collect": collectChatIdsDataSchema,
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
+    "candidate/offer.send": candidateOfferSendDataSchema,
     "telegram/message.received": conversationMessageReceivedDataSchema,
     "telegram/message.send": conversationMessageSendDataSchema,
     "telegram/message.send.by-username":

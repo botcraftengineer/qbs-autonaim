@@ -18,6 +18,7 @@ export * from "./vacancy";
 import {
   sendCandidateWelcomeBatchFunction,
   sendCandidateWelcomeFunction,
+  sendOfferFunction,
 } from "./candidate";
 
 import { verifyHHCredentialsFunction } from "./integration";
@@ -68,6 +69,7 @@ export const inngestFunctions = [
   // Candidate
   sendCandidateWelcomeBatchFunction,
   sendCandidateWelcomeFunction,
+  sendOfferFunction,
   // Integration
   verifyHHCredentialsFunction,
   // Telegram
