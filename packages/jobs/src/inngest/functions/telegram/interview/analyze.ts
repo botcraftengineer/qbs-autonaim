@@ -90,6 +90,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
     });
 
     if (result.shouldContinue && result.nextQuestion) {
+      // Обычный флоу: продолжаем интервью с новым вопросом
       await step.sendEvent("send-next-question-event", {
         name: "telegram/interview.send-question",
         data: {
@@ -100,8 +101,9 @@ export const analyzeInterviewFunction = inngest.createFunction(
         },
       });
     } else if (result.nextQuestion) {
-      // Если есть вопрос но shouldContinue=false - это может быть ответ на вопрос кандидата
-      // В этом случае отправляем ответ, но НЕ завершаем интервью
+      // Есть ответ кандидату, но shouldContinue=false
+      // Это может быть ответ на вопрос кандидата или подтверждение переноса
+      // Отправляем ответ и НЕ завершаем интервью - ждем следующего сообщения
       await step.sendEvent("send-next-question-event", {
         name: "telegram/interview.send-question",
         data: {
@@ -111,8 +113,16 @@ export const analyzeInterviewFunction = inngest.createFunction(
           questionNumber: context.questionNumber,
         },
       });
+
+      console.log(
+        "ℹ️ Отправлен ответ кандидату, ожидаем его следующего сообщения",
+        {
+          conversationId: context.conversationId,
+          reason: result.reason,
+        },
+      );
     } else {
-      // Только если нет вопроса - завершаем интервью
+      // Нет вопроса и не нужно продолжать - завершаем интервью
       await step.sendEvent("complete-interview-event", {
         name: "telegram/interview.complete",
         data: {
