@@ -14,8 +14,8 @@ export interface InterviewScoringInput {
 }
 
 const interviewScoringOutputSchema = z.object({
-  score: z.number().min(0).max(5),
-  detailedScore: z.number().min(0).max(100),
+  score: z.number().int().min(0).max(5),
+  detailedScore: z.number().int().min(0).max(100),
   analysis: z.string(),
   confidence: z.number().min(0).max(1),
 });
@@ -73,8 +73,8 @@ ${input.previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   О
 
 ФОРМАТ ОТВЕТА - ВЕРНИ ТОЛЬКО ВАЛИДНЫЙ JSON:
 {
-  "score": число от 0 до 5 (где 0 - совсем не подходит, 5 - отлично подходит),
-  "detailedScore": число от 0 до 100,
+  "score": целое число от 0 до 5 (где 0 - совсем не подходит, 5 - отлично подходит),
+  "detailedScore": целое число от 0 до 100,
   "analysis": "подробный анализ кандидата на основе интервью, 3-5 предложений в формате HTML. Используй теги: <p> для абзацев, <strong> для выделения ключевых моментов, <ul>/<li> для списков сильных/слабых сторон, <br> для переносов строк",
   "confidence": число от 0.0 до 1.0
 }
@@ -114,13 +114,20 @@ ${input.previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   О
         return { success: false, error: "Не удалось разобрать ответ AI" };
       }
 
-      // Валидация диапазонов
+      // Валидация диапазонов и округление до целых чисел
       if (parsed.score < 0 || parsed.score > 5) {
-        parsed.score = Math.max(0, Math.min(5, parsed.score));
+        parsed.score = Math.max(0, Math.min(5, Math.round(parsed.score)));
+      } else {
+        parsed.score = Math.round(parsed.score);
       }
 
       if (parsed.detailedScore < 0 || parsed.detailedScore > 100) {
-        parsed.detailedScore = Math.max(0, Math.min(100, parsed.detailedScore));
+        parsed.detailedScore = Math.max(
+          0,
+          Math.min(100, Math.round(parsed.detailedScore)),
+        );
+      } else {
+        parsed.detailedScore = Math.round(parsed.detailedScore);
       }
 
       if (parsed.confidence < 0 || parsed.confidence > 1) {
