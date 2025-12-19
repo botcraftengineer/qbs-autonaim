@@ -34,7 +34,11 @@ export const processIncomingMessageFunction = inngest.createFunction(
       isOutgoing: messageData.isOutgoing,
       hasText: !!messageData.text,
       mediaType: messageData.media?.type,
-      sender: messageData.sender?.username || messageData.sender?.firstName,
+      sender: {
+        type: messageData.sender?.type,
+        username: messageData.sender?.username,
+        firstName: messageData.sender?.firstName,
+      },
     });
 
     if (messageData.isOutgoing) {

@@ -127,6 +127,18 @@ export async function createBotInstance(
       // Помечаем сообщение прочитанным
       await markRead(client, msg.chat.id);
 
+      // Отладка: логируем sender
+      if (msg.sender) {
+        console.log("🔍 Sender debug:", {
+          type: msg.sender.type,
+          hasUsername: "username" in msg.sender,
+          username: "username" in msg.sender ? msg.sender.username : "N/A",
+          hasFirstName: "firstName" in msg.sender,
+          firstName: "firstName" in msg.sender ? msg.sender.firstName : "N/A",
+          keys: Object.keys(msg.sender),
+        });
+      }
+
       // Конструируем данные сообщения с проверкой типов
       const messageDataRaw: MessageData = {
         id: msg.id,
