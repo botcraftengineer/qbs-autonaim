@@ -1,13 +1,10 @@
 import { eq, workspaceRepository } from "@qbs-autonaim/db";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-// TODO: Сохранить offerDetails в базу данных
-// Требуется добавить новую таблицу или поле в схему для хранения деталей оффера
-// (position, salary, startDate, benefits, message)
-// После добавления схемы - использовать input.offerDetails для сохранения данных
 export const sendOffer = protectedProcedure
   .input(
     z.object({
@@ -56,21 +53,40 @@ export const sendOffer = protectedProcedure
       });
     }
 
-    // TODO: Сохранить offerDetails в базу данных когда будет готова схема
-    // Временно логируем данные для отладки
-    console.log("Offer details to be persisted:", {
-      candidateId: input.candidateId,
+    // Сохраняем детали оффера в поле contacts как временное решение
+    const currentContacts =
+      (response.contacts as Record<string, unknown>) || {};
+    const updatedContacts = {
+      ...currentContacts,
       offerDetails: input.offerDetails,
-    });
+      offerSentAt: new Date().toISOString(),
+    };
 
+    // Обновляем статус и сохраняем детали оффера
     await ctx.db
       .update(vacancyResponse)
       .set({
         hrSelectionStatus: "OFFER",
         status: "COMPLETED",
+        contacts: updatedContacts,
         updatedAt: new Date(),
       })
       .where(eq(vacancyResponse.id, input.candidateId));
+
+    // Отправляем событие в Inngest для асинхронной отправки сообщения в Telegram
+    try {
+      await inngest.send({
+        name: "candidate/offer.send",
+        data: {
+          responseId: input.candidateId,
+          workspaceId: input.workspaceId,
+          offerDetails: input.offerDetails,
+        },
+      });
+    } catch (error) {
+      console.error("Не удалось отправить событие отправки оффера:", error);
+      // Не бросаем ошибку, так как статус уже обновлен
+    }
 
     return {
       success: true,

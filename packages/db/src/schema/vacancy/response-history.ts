@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { jsonb, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -15,6 +22,7 @@ export const responseEventTypeEnum = pgEnum("response_event_type", [
   "RESUME_UPDATED",
   "PHOTO_ADDED",
   "WELCOME_SENT",
+  "OFFER_SENT",
   "COMMENT_ADDED",
   "SALARY_UPDATED",
   "CONTACT_INFO_UPDATED",
@@ -49,6 +57,7 @@ export const CreateVacancyResponseHistorySchema = createInsertSchema(
       "RESUME_UPDATED",
       "PHOTO_ADDED",
       "WELCOME_SENT",
+      "OFFER_SENT",
       "COMMENT_ADDED",
       "SALARY_UPDATED",
       "CONTACT_INFO_UPDATED",
