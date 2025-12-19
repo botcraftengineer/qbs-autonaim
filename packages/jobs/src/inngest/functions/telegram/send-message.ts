@@ -23,7 +23,8 @@ export const sendTelegramMessageFunction = inngest.createFunction(
 
     // Задержка 3-5 минут для имитации живого человека
     const delayMinutes = Math.floor(Math.random() * 3) + 3; // 3-5 минут
-    await step.sleep("human-delay", `${delayMinutes}m`);
+    console.log(delayMinutes);
+    //await step.sleep("human-delay", `${delayMinutes}m`);
 
     const result = await step.run("send-telegram-message", async () => {
       console.log("📤 Отправка сообщения в Telegram", {
