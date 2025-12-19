@@ -78,16 +78,9 @@ export function CandidateModal({
   const fullCandidate: FunnelCandidateDetail | FunnelCandidate | null =
     candidateDetail ?? candidate;
   const avatarUrl = useAvatarUrl(fullCandidate?.avatarFileId);
-  const [selectedStatus, setSelectedStatus] = useState(
-    fullCandidate?.stage ?? "REVIEW",
-  );
   const [activeTab, setActiveTab] = useState("chat");
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
-
-  useEffect(() => {
-    setSelectedStatus(fullCandidate?.stage ?? "REVIEW");
-  }, [fullCandidate?.stage]);
 
   useEffect(() => {
     if (

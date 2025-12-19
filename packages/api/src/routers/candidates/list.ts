@@ -42,9 +42,9 @@ const mapResponseToStage = (
     return "REJECTED";
   }
   if (status === "EVALUATED") {
-    return "CHAT_INTERVIEW";
+    return "SCREENING_DONE";
   }
-  return "SCREENING_DONE";
+  return "CHAT_INTERVIEW";
 };
 
 export const list = protectedProcedure
@@ -150,11 +150,11 @@ export const list = protectedProcedure
         );
       }
 
-      if (input.stages.includes("CHAT_INTERVIEW")) {
+      if (input.stages.includes("SCREENING_DONE")) {
         stageConditions.push(eq(vacancyResponse.status, "EVALUATED"));
       }
 
-      if (input.stages.includes("SCREENING_DONE")) {
+      if (input.stages.includes("CHAT_INTERVIEW")) {
         stageConditions.push(eq(vacancyResponse.status, "NEW"));
       }
 
