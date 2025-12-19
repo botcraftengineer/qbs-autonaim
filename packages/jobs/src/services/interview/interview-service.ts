@@ -93,15 +93,6 @@ export async function analyzeAndGenerateNextQuestion(
     vacancyDescription,
   } = context;
 
-  // Check question limit
-  if (questionNumber >= INTERVIEW.MAX_QUESTIONS) {
-    return {
-      analysis: "Reached maximum questions",
-      shouldContinue: false,
-      reason: "Question limit reached",
-    };
-  }
-
   // Создаем оркестратор
   const model = createAgentModel();
   const orchestrator = new InterviewOrchestrator({ model });
@@ -121,7 +112,6 @@ export async function analyzeAndGenerateNextQuestion(
       currentQuestion,
       previousQA,
       questionNumber,
-      maxQuestions: INTERVIEW.MAX_QUESTIONS,
       customInterviewQuestions: null,
     },
     agentContext,

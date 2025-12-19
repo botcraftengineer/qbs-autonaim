@@ -15,7 +15,6 @@ export interface InterviewerInput {
   currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
-  maxQuestions: number;
   customInterviewQuestions?: string | null;
 }
 
@@ -46,8 +45,6 @@ export class InterviewerAgent extends AIPoweredAgent<
   protected validate(input: InterviewerInput): boolean {
     if (!input.currentAnswer || !input.currentQuestion) return false;
     if (!Number.isFinite(input.questionNumber) || input.questionNumber < 0)
-      return false;
-    if (!Number.isFinite(input.maxQuestions) || input.maxQuestions < 0)
       return false;
     if (!Array.isArray(input.previousQA)) return false;
 
@@ -101,7 +98,6 @@ ${historyText ? `ИСТОРИЯ ДИАЛОГА (для контекста):\n${h
 - Вакансия: ${vacancyTitle || "не указана"}
 ${vacancyDescription ? `- Описание вакансии: ${vacancyDescription}` : ""}
 - Текущий вопрос: ${input.questionNumber}
-- Максимум вопросов: ${input.maxQuestions}
 
 ТЕКУЩИЙ ЗАДАННЫЙ ВОПРОС:
 ${input.currentQuestion}
@@ -113,8 +109,12 @@ ${input.currentAnswer}
 
 ТВОЯ ЗАДАЧА:
 1. Проанализируй ответ кандидата
-2. Оцени, стоит ли задавать следующий вопрос (если кандидат уже все рассказал подробно, можно завершить интервью раньше)
-3. Если да — сформулируй следующий вопрос
+2. Оцени, стоит ли задавать следующий вопрос:
+   - Если кандидат уже подробно рассказал о своем опыте, навыках, мотивации и ожиданиях — можно завершить интервью
+   - Если остались важные вопросы для оценки кандидата — продолжай
+   - Обычно достаточно 3-5 вопросов для полноценного интервью
+   - ТЫ САМ решаешь, когда собрано достаточно информации
+3. Если решил продолжить — сформулируй следующий вопрос
 
 ⚠️ КРИТИЧЕСКИ ВАЖНО - ПРОВЕРЬ ИСТОРИЮ ПЕРЕД ОТВЕТОМ:
 
@@ -194,19 +194,6 @@ ${input.currentAnswer}
       return { success: false, error: "Некорректные входные данные" };
     }
 
-    // Проверка лимита вопросов
-    if (input.questionNumber >= input.maxQuestions) {
-      return {
-        success: true,
-        data: {
-          analysis: "Достигнут максимум вопросов",
-          shouldContinue: false,
-          reason: "Question limit reached",
-          confidence: 1.0,
-        },
-      };
-    }
-
     try {
       const prompt = this.buildPrompt(input, context);
 
@@ -234,12 +221,6 @@ ${input.currentAnswer}
         ...parsed,
         confidence: parsed.confidence ?? 0.9,
       };
-
-      // Дополнительная проверка лимита
-      if (result.shouldContinue && input.questionNumber >= input.maxQuestions) {
-        result.shouldContinue = false;
-        result.reason = "Question limit reached";
-      }
 
       return { success: true, data: result, metadata: { prompt } };
     } catch (error) {

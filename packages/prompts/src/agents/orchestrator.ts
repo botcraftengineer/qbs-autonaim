@@ -14,7 +14,6 @@ export interface OrchestratorInput {
   currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
-  maxQuestions: number;
   customInterviewQuestions?: string | null;
   /**
    * Функция для проверки пин-кода (опционально)
@@ -59,11 +58,8 @@ export class InterviewOrchestrator {
   private contextAnalyzer: EnhancedContextAnalyzerAgent;
   private escalationDetector: EnhancedEscalationDetectorAgent;
   private interviewer: InterviewerAgent;
-  private config: OrchestratorConfig;
 
   constructor(config: OrchestratorConfig) {
-    this.config = config;
-
     const agentConfig = {
       model: config.model,
       maxTokens: config.maxTokens,
