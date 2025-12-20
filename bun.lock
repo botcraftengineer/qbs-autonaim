@@ -12,8 +12,8 @@
         "typescript": "5.9.3",
       },
     },
-    "apps/web": {
-      "name": "@qbs-autonaim/web",
+    "apps/app": {
+      "name": "@qbs-autonaim/app",
       "dependencies": {
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/modifiers": "^9.0.0",
@@ -1011,6 +1011,8 @@
 
     "@qbs-autonaim/api": ["@qbs-autonaim/api@workspace:packages/api"],
 
+    "@qbs-autonaim/app": ["@qbs-autonaim/app@workspace:apps/app"],
+
     "@qbs-autonaim/auth": ["@qbs-autonaim/auth@workspace:packages/auth"],
 
     "@qbs-autonaim/config": ["@qbs-autonaim/config@workspace:packages/config"],
@@ -1036,8 +1038,6 @@
     "@qbs-autonaim/ui": ["@qbs-autonaim/ui@workspace:packages/ui"],
 
     "@qbs-autonaim/validators": ["@qbs-autonaim/validators@workspace:packages/validators"],
-
-    "@qbs-autonaim/web": ["@qbs-autonaim/web@workspace:apps/web"],
 
     "@quansync/fs": ["@quansync/fs@1.0.0", "", { "dependencies": { "quansync": "^1.0.0" } }, "sha512-4TJ3DFtlf1L5LDMaM6CanJ/0lckGNtJcMjQ1NAV6zDmA0tEHKZtxNKin8EgPaVX1YzljbxckyT2tJrpQKAtngQ=="],
 

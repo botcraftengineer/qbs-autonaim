@@ -1,9 +1,9 @@
-name: Deploy Web Prod
+name: Deploy app Prod
 on:
   push:
     branches: [main]
     paths:
-      - 'apps/web/**'
+      - 'apps/app/**'
 jobs:
   # Deploy to EKS
   deploy:
@@ -25,10 +25,10 @@ jobs:
       - name: Build, tag, and push image
         env:
           CR_REGISTRY: crpb8701utioog2loisu
-          CR_REPOSITORY: web
+          CR_REPOSITORY: app
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          docker build -f apps/web/Dockerfile -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest .
+          docker build -f apps/app/Dockerfile -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest .
           docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
           docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest
       - name: Deploy To Cluster
@@ -36,7 +36,7 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
           CR_REGISTRY: crpb8701utioog2loisu
-          CR_REPOSITORY: web
+          CR_REPOSITORY: app
           IMAGE_TAG: ${{ github.sha }}
         with:
           args: set image deployment/$CR_REPOSITORY $CR_REPOSITORY=cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
@@ -45,4 +45,4 @@ jobs:
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
         with:
-          args: rollout status deployment/web
+          args: rollout status deployment/app

@@ -54,12 +54,12 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=8000
-  web:
+  app:
     restart: always
     build:
       context: .
-      dockerfile: apps/web/Dockerfile
-    container_name: web
+      dockerfile: apps/app/Dockerfile
+    container_name: app
     ports:
       - 3000:3000
     env_file:
