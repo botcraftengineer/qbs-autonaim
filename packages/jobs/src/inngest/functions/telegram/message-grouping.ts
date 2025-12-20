@@ -159,12 +159,32 @@ export async function shouldProcessMessageGroup(
     };
   }
 
+  // Все проверки времени пройдены
+  // Дополнительная проверка: есть ли голосовые БЕЗ транскрипции в группе?
+  // Если есть - нужно ждать пока они будут транскрибированы
+  const voiceMessagesWithoutTranscription = messagesAfterBot.filter(
+    (m) => m.contentType === "VOICE" && !m.voiceTranscription,
+  );
+
+  if (voiceMessagesWithoutTranscription.length > 0) {
+    // Есть голосовые без транскрипции - ждём их обработки
+    return {
+      conversationId,
+      messages: [],
+      shouldProcess: false,
+      reason: `waiting for voice transcription (${voiceMessagesWithoutTranscription.length} pending)`,
+    };
+  }
+
   // Все проверки пройдены - собираем ВСЮ группу после последнего ответа бота
+  // Для голосовых используем транскрипцию вместо placeholder-контента
   const groupMessages = messagesAfterBot
     .reverse() // Сортируем по возрастанию (от старых к новым)
     .map((m) => ({
       id: m.externalMessageId || m.id,
-      content: m.content,
+      content: m.contentType === "VOICE" && m.voiceTranscription 
+        ? m.voiceTranscription 
+        : m.content,
       contentType: m.contentType as "TEXT" | "VOICE",
       createdAt: m.createdAt,
     }));

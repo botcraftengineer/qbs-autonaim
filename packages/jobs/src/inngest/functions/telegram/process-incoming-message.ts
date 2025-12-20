@@ -4,7 +4,8 @@ import { conversationMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
   handleIdentifiedMedia,
-  handleIdentifiedText,
+  saveIdentifiedText,
+  triggerTextAnalysis,
 } from "./handlers/identified";
 import {
   handleUnidentifiedMedia,
@@ -183,7 +184,24 @@ export const processIncomingMessageFunction = inngest.createFunction(
         return { skipped: true, reason: "duplicate message" };
       }
 
-      // Проверяем группировку сообщений
+      // 1. Сначала СОХРАНЯЕМ сообщение в БД
+      await step.run("save-text-message", async () => {
+        await saveIdentifiedText({
+          conversationId: conv.id,
+          text: messageData.text || "",
+          messageId: messageData.id.toString(),
+        });
+      });
+
+      // Публикуем событие о новом сообщении
+      await publish(
+        conversationMessagesChannel(conv.id).message({
+          conversationId: conv.id,
+          messageId: messageData.id.toString(),
+        }),
+      );
+
+      // 2. Проверяем группировку сообщений (теперь сообщение уже в БД)
       const groupCheck = await step.run("check-message-grouping", async () => {
         return await shouldProcessMessageGroup(
           conv.id,
@@ -200,10 +218,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
         // Откладываем обработку - ждем еще сообщений
         // Для голосовых ждем дольше (65 сек), для текстовых меньше (20 сек)
-        const hasVoice = groupCheck.messages.some(
-          (m) => m.contentType === "VOICE",
-        );
-        await step.sleep("wait-for-more-messages", hasVoice ? "65s" : "20s");
+        // Также ждём, если есть голосовые без транскрипции
+        const isWaitingForVoice = groupCheck.reason?.includes("voice");
+        await step.sleep("wait-for-more-messages", isWaitingForVoice ? "65s" : "20s");
 
         // Повторно проверяем после ожидания
         const recheckGroup = await step.run(
@@ -217,15 +234,15 @@ export const processIncomingMessageFunction = inngest.createFunction(
         );
 
         if (!recheckGroup.shouldProcess) {
-          console.log("⏭️ Сообщение не последнее в группе, пропускаем", {
+          console.log("⏭️ Сообщение не последнее в группе или ждём транскрипции, пропускаем", {
             conversationId: conv.id,
             messageId: messageData.id.toString(),
             reason: recheckGroup.reason,
           });
-          return { skipped: true, reason: "not last in group" };
+          return { skipped: true, reason: recheckGroup.reason || "not last in group" };
         }
 
-        // Обрабатываем группу
+        // 3. Обрабатываем группу - отправляем на анализ
         const groupedText = formatMessageGroup(recheckGroup.messages);
         console.log("📦 Обрабатываем группу сообщений", {
           conversationId: conv.id,
@@ -233,28 +250,20 @@ export const processIncomingMessageFunction = inngest.createFunction(
           groupedText: groupedText.substring(0, 100),
         });
 
-        await step.run("handle-identified-text-group", async () => {
-          await handleIdentifiedText({
+        await step.run("trigger-text-analysis-group", async () => {
+          await triggerTextAnalysis({
             conversationId: conv.id,
             text: groupedText,
-            messageId: messageData.id.toString(),
             responseId: conv.responseId,
             status: conv.status,
             metadata: conv.metadata,
           });
         });
 
-        await publish(
-          conversationMessagesChannel(conv.id).message({
-            conversationId: conv.id,
-            messageId: messageData.id.toString(),
-          }),
-        );
-
         return { processed: true, identified: true, grouped: true };
       }
 
-      // Обрабатываем сразу (единственное сообщение или группа готова)
+      // Группа готова или единственное сообщение - обрабатываем сразу
       const textToProcess =
         groupCheck.messages.length > 1
           ? formatMessageGroup(groupCheck.messages)
@@ -267,23 +276,15 @@ export const processIncomingMessageFunction = inngest.createFunction(
         messagesCount: groupCheck.messages.length,
       });
 
-      await step.run("handle-identified-text", async () => {
-        await handleIdentifiedText({
+      await step.run("trigger-text-analysis", async () => {
+        await triggerTextAnalysis({
           conversationId: conv.id,
           text: textToProcess,
-          messageId: messageData.id.toString(),
           responseId: conv.responseId,
           status: conv.status,
           metadata: conv.metadata,
         });
       });
-
-      await publish(
-        conversationMessagesChannel(conv.id).message({
-          conversationId: conv.id,
-          messageId: messageData.id.toString(),
-        }),
-      );
 
       return { processed: true, identified: true };
     }

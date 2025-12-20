@@ -9,16 +9,16 @@ import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../../client";
 import type { ConversationMetadata } from "../types";
 
-export async function handleIdentifiedText(params: {
+/**
+ * Сохраняет текстовое сообщение в БД
+ * НЕ отправляет на анализ — это делает process-incoming-message после проверки группировки
+ */
+export async function saveIdentifiedText(params: {
   conversationId: string;
   text: string;
   messageId: string;
-  responseId: string | null;
-  status: string;
-  metadata: string | null;
 }) {
-  const { conversationId, text, messageId, responseId, status, metadata } =
-    params;
+  const { conversationId, text, messageId } = params;
 
   const [savedMessage] = await db
     .insert(conversationMessage)
@@ -31,43 +31,90 @@ export async function handleIdentifiedText(params: {
     })
     .returning();
 
-  if (responseId && status === "ACTIVE" && savedMessage) {
-    let parsedMetadata: ConversationMetadata = {};
+  console.log("💾 Текстовое сообщение сохранено в БД", {
+    conversationId,
+    messageId: savedMessage?.id,
+    externalMessageId: messageId,
+  });
 
-    if (metadata) {
-      try {
-        parsedMetadata = JSON.parse(metadata) as ConversationMetadata;
-      } catch (error) {
-        console.error("❌ Ошибка парсинга metadata, используем пустой объект", {
-          conversationId,
-          error,
-        });
-      }
-    }
+  return savedMessage;
+}
 
-    if (
-      parsedMetadata.interviewStarted === true &&
-      parsedMetadata.interviewCompleted !== true
-    ) {
-      // Устанавливаем статус INTERVIEW_HH при первом сообщении
-      await updateStatusOnFirstMessage(conversationId, responseId);
+/**
+ * Отправляет событие анализа интервью для сгруппированных сообщений
+ */
+export async function triggerTextAnalysis(params: {
+  conversationId: string;
+  text: string;
+  responseId: string | null;
+  status: string;
+  metadata: string | null;
+}) {
+  const { conversationId, text, responseId, status, metadata } = params;
 
-      console.log("🚀 Запуск анализа интервью для текстового сообщения", {
+  if (!responseId || status !== "ACTIVE") {
+    console.log("⏭️ Пропускаем анализ: не активный response", {
+      conversationId,
+      responseId,
+      status,
+    });
+    return;
+  }
+
+  let parsedMetadata: ConversationMetadata = {};
+
+  if (metadata) {
+    try {
+      parsedMetadata = JSON.parse(metadata) as ConversationMetadata;
+    } catch (error) {
+      console.error("❌ Ошибка парсинга metadata, используем пустой объект", {
         conversationId,
-        messageId: savedMessage.id,
+        error,
       });
-
-      await inngest.send({
-        name: "telegram/interview.analyze",
-        data: {
-          conversationId,
-          transcription: text,
-        },
-      });
-
-      console.log("✅ Событие анализа интервью отправлено");
     }
   }
+
+  if (
+    parsedMetadata.interviewStarted === true &&
+    parsedMetadata.interviewCompleted !== true
+  ) {
+    // Устанавливаем статус INTERVIEW_HH при первом сообщении
+    await updateStatusOnFirstMessage(conversationId, responseId);
+
+    console.log("🚀 Запуск анализа интервью для группы сообщений", {
+      conversationId,
+      textLength: text.length,
+    });
+
+    await inngest.send({
+      name: "telegram/interview.analyze",
+      data: {
+        conversationId,
+        transcription: text,
+      },
+    });
+
+    console.log("✅ Событие анализа интервью отправлено");
+  }
+}
+
+/**
+ * @deprecated Используйте saveIdentifiedText + triggerTextAnalysis
+ * Оставлено для обратной совместимости
+ */
+export async function handleIdentifiedText(params: {
+  conversationId: string;
+  text: string;
+  messageId: string;
+  responseId: string | null;
+  status: string;
+  metadata: string | null;
+}) {
+  const { conversationId, text, messageId, responseId, status, metadata } =
+    params;
+
+  await saveIdentifiedText({ conversationId, text, messageId });
+  await triggerTextAnalysis({ conversationId, text, responseId, status, metadata });
 }
 
 export async function handleIdentifiedMedia(params: {

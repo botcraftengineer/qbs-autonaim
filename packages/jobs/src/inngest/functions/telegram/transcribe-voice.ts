@@ -174,56 +174,16 @@ export const transcribeVoiceFunction = inngest.createFunction(
           return; // Не отправляем событие - другое сообщение запустит анализ
         }
 
-        // Это последнее сообщение в группе - собираем все транскрипции
-        console.log("📦 Группа голосовых готова к обработке", {
+        // Это последнее сообщение в группе - все готово к обработке
+        // groupCheck.messages уже содержит транскрипции для голосовых
+        console.log("📦 Группа сообщений готова к обработке", {
           conversationId: message.conversationId,
           messagesCount: groupCheck.messages.length,
           reason: groupCheck.reason,
         });
 
-        // Собираем транскрипции всех голосовых в группе
-        let combinedTranscription = transcription;
-        
-        if (groupCheck.messages.length > 1) {
-          // Получаем транскрипции всех голосовых в группе
-          const voiceMessages = groupCheck.messages.filter(
-            (m) => m.contentType === "VOICE",
-          );
-          
-          // Загружаем полные данные с транскрипциями
-          const fullMessages = await db.query.conversationMessage.findMany({
-            where: (fields, { and, eq, inArray }) =>
-              and(
-                eq(fields.conversationId, message.conversationId),
-                eq(fields.sender, "CANDIDATE"),
-              ),
-            orderBy: (messages, { asc }) => [asc(messages.createdAt)],
-          });
-
-          // Собираем все сообщения группы с их содержимым
-          const groupMessagesWithContent = groupCheck.messages.map((gm) => {
-            const fullMsg = fullMessages.find(
-              (fm) => fm.externalMessageId === gm.id || fm.id === gm.id,
-            );
-            return {
-              ...gm,
-              // Для голосовых используем транскрипцию, для текстовых - content
-              content:
-                gm.contentType === "VOICE"
-                  ? fullMsg?.voiceTranscription || gm.content
-                  : gm.content,
-            };
-          });
-
-          combinedTranscription = formatMessageGroup(groupMessagesWithContent);
-          
-          console.log("📝 Объединённые транскрипции группы", {
-            conversationId: message.conversationId,
-            totalMessages: groupCheck.messages.length,
-            voiceMessages: voiceMessages.length,
-            transcriptionPreview: combinedTranscription.substring(0, 200),
-          });
-        }
+        // Форматируем группу сообщений (текст + голосовые с транскрипциями)
+        const combinedTranscription = formatMessageGroup(groupCheck.messages);
 
         console.log("🚀 Запуск анализа интервью", {
           conversationId: message.conversationId,
