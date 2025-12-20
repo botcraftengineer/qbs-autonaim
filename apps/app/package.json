@@ -1,5 +1,5 @@
 {
-  "name": "@qbs-autonaim/web",
+  "name": "@qbs-autonaim/app",
   "private": true,
   "type": "module",
   "scripts": {
