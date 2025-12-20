@@ -3,6 +3,11 @@ import { db } from "@qbs-autonaim/db/client";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
 import { transcribeAudio } from "../../../services/media";
 import { inngest } from "../../client";
+import {
+  formatMessageGroup,
+  shouldProcessMessageGroup,
+} from "./message-grouping";
+import { MESSAGE_GROUPING_CONFIG } from "./message-grouping.config";
 
 /**
  * Inngest функция для транскрибации голосовых сообщений
@@ -96,8 +101,8 @@ export const transcribeVoiceFunction = inngest.createFunction(
         });
       });
 
-      // Запускаем анализ интервью в отдельной задаче
-      await step.run("trigger-interview-analysis", async () => {
+      // Запускаем анализ интервью после проверки группировки
+      await step.run("check-voice-grouping", async () => {
         const message = await db.query.conversationMessage.findFirst({
           where: eq(conversationMessage.id, messageId),
           with: {
@@ -154,6 +159,72 @@ export const transcribeVoiceFunction = inngest.createFunction(
           }
         }
 
+        // Проверяем, является ли это последнее сообщение в группе
+        const groupCheck = await shouldProcessMessageGroup(
+          message.conversationId,
+          message.externalMessageId || "",
+        );
+
+        if (!groupCheck.shouldProcess) {
+          console.log("⏳ Голосовое не последнее в группе, ждём остальных", {
+            conversationId: message.conversationId,
+            messageId,
+            reason: groupCheck.reason,
+          });
+          return; // Не отправляем событие - другое сообщение запустит анализ
+        }
+
+        // Это последнее сообщение в группе - собираем все транскрипции
+        console.log("📦 Группа голосовых готова к обработке", {
+          conversationId: message.conversationId,
+          messagesCount: groupCheck.messages.length,
+          reason: groupCheck.reason,
+        });
+
+        // Собираем транскрипции всех голосовых в группе
+        let combinedTranscription = transcription;
+        
+        if (groupCheck.messages.length > 1) {
+          // Получаем транскрипции всех голосовых в группе
+          const voiceMessages = groupCheck.messages.filter(
+            (m) => m.contentType === "VOICE",
+          );
+          
+          // Загружаем полные данные с транскрипциями
+          const fullMessages = await db.query.conversationMessage.findMany({
+            where: (fields, { and, eq, inArray }) =>
+              and(
+                eq(fields.conversationId, message.conversationId),
+                eq(fields.sender, "CANDIDATE"),
+              ),
+            orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+          });
+
+          // Собираем все сообщения группы с их содержимым
+          const groupMessagesWithContent = groupCheck.messages.map((gm) => {
+            const fullMsg = fullMessages.find(
+              (fm) => fm.externalMessageId === gm.id || fm.id === gm.id,
+            );
+            return {
+              ...gm,
+              // Для голосовых используем транскрипцию, для текстовых - content
+              content:
+                gm.contentType === "VOICE"
+                  ? fullMsg?.voiceTranscription || gm.content
+                  : gm.content,
+            };
+          });
+
+          combinedTranscription = formatMessageGroup(groupMessagesWithContent);
+          
+          console.log("📝 Объединённые транскрипции группы", {
+            conversationId: message.conversationId,
+            totalMessages: groupCheck.messages.length,
+            voiceMessages: voiceMessages.length,
+            transcriptionPreview: combinedTranscription.substring(0, 200),
+          });
+        }
+
         console.log("🚀 Запуск анализа интервью", {
           conversationId: message.conversationId,
           messageId,
@@ -164,7 +235,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
           name: "telegram/interview.analyze",
           data: {
             conversationId: message.conversationId,
-            transcription,
+            transcription: combinedTranscription,
           },
         });
 

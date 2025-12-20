@@ -318,58 +318,11 @@ export const processIncomingMessageFunction = inngest.createFunction(
         return { skipped: true, reason: `duplicate ${mediaType} message` };
       }
 
-      // Проверяем группировку голосовых сообщений
-      const groupCheck = await step.run(
-        "check-voice-message-grouping",
-        async () => {
-          return await shouldProcessMessageGroup(
-            conv.id,
-            messageData.id.toString(),
-          );
-        },
-      );
-
-      if (!groupCheck.shouldProcess) {
-        console.log("⏳ Ждем завершения группы голосовых сообщений", {
-          conversationId: conv.id,
-          messageId: messageData.id.toString(),
-          reason: groupCheck.reason,
-        });
-
-        // Откладываем обработку голосовых (60 сек + запас)
-        await step.sleep("wait-for-more-voice-messages", "65s");
-
-        // Повторно проверяем
-        const recheckGroup = await step.run(
-          "recheck-voice-message-grouping",
-          async () => {
-            return await shouldProcessMessageGroup(
-              conv.id,
-              messageData.id.toString(),
-            );
-          },
-        );
-
-        if (!recheckGroup.shouldProcess) {
-          console.log("⏭️ Голосовое не последнее в группе, пропускаем", {
-            conversationId: conv.id,
-            messageId: messageData.id.toString(),
-            reason: recheckGroup.reason,
-          });
-          return { skipped: true, reason: "not last voice in group" };
-        }
-
-        console.log("📦 Обрабатываем группу голосовых", {
-          conversationId: conv.id,
-          messagesCount: recheckGroup.messages.length,
-        });
-      }
-
-      console.log(`✅ Обрабатываем ${mediaType} сообщение`, {
+      // Голосовые сразу отправляем на транскрибацию
+      // Группировка проверяется в transcribe-voice.ts после получения транскрипции
+      console.log(`✅ Отправляем ${mediaType} на транскрибацию`, {
         conversationId: conv.id,
         messageId: messageData.id.toString(),
-        isGroup: groupCheck.messages.length > 1,
-        messagesCount: groupCheck.messages.length,
       });
 
       await step.run(`handle-${mediaType}`, async () => {
