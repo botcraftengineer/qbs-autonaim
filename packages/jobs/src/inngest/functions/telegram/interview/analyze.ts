@@ -100,7 +100,11 @@ export const analyzeInterviewFunction = inngest.createFunction(
           questionNumber: context.questionNumber,
         },
       });
-    } else if (result.nextQuestion) {
+    } else if (
+      result.nextQuestion &&
+      result.nextQuestion !== "[SKIP]" &&
+      result.nextQuestion.trim().length > 0
+    ) {
       // Есть ответ кандидату, но shouldContinue=false
       // Это может быть ответ на вопрос кандидата или подтверждение переноса
       // Отправляем ответ и НЕ завершаем интервью - ждем следующего сообщения
@@ -122,17 +126,30 @@ export const analyzeInterviewFunction = inngest.createFunction(
         },
       );
     } else {
-      // Нет вопроса и не нужно продолжать - завершаем интервью
-      await step.sendEvent("complete-interview-event", {
-        name: "telegram/interview.complete",
-        data: {
+      // Нет вопроса и не нужно продолжать
+      // Проверяем причину - если это простое "спасибо/ок", то НЕ завершаем интервью
+      // Используем явное булево поле из ответа AI — это надёжнее, чем парсить строку reason
+      const isSimpleAcknowledgment = result.isSimpleAcknowledgment === true;
+
+      if (isSimpleAcknowledgment) {
+        console.log("⏸️ Получено простое подтверждение, интервью не завершается", {
           conversationId: context.conversationId,
-          transcription,
-          reason: result.reason ?? undefined,
-          questionNumber: context.questionNumber,
-          responseId: context.responseId ?? undefined,
-        },
-      });
+          reason: result.reason,
+        });
+        // Просто выходим, ничего не делая. Статус остается прежним (INTERVIEW_HH или какой был).
+      } else {
+        // Если это осознанное завершение интервью (собрано достаточно данных)
+        await step.sendEvent("complete-interview-event", {
+          name: "telegram/interview.complete",
+          data: {
+            conversationId: context.conversationId,
+            transcription,
+            reason: result.reason ?? undefined,
+            questionNumber: context.questionNumber,
+            responseId: context.responseId ?? undefined,
+          },
+        });
+      }
     }
 
     return {

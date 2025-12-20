@@ -33,6 +33,7 @@ interface ExtendedInterviewAnalysis extends InterviewAnalysis {
   shouldEscalate?: boolean;
   escalationReason?: string;
   waitingForCandidateResponse?: boolean;
+  isSimpleAcknowledgment?: boolean;
 }
 
 interface InterviewContext {
@@ -151,6 +152,7 @@ export async function analyzeAndGenerateNextQuestion(
     reason: result.reason,
     nextQuestion: result.nextQuestion,
     waitingForCandidateResponse: result.waitingForCandidateResponse,
+    isSimpleAcknowledgment: result.isSimpleAcknowledgment,
   };
 }
 

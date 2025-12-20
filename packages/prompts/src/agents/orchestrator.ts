@@ -34,6 +34,7 @@ export interface OrchestratorOutput {
   nextQuestion?: string;
   confidence?: number;
   waitingForCandidateResponse?: boolean;
+  isSimpleAcknowledgment?: boolean;
   /**
    * Информация о пин-коде (если был обнаружен)
    */
@@ -162,6 +163,7 @@ export class InterviewOrchestrator {
           analysis: "Простое подтверждение, ответ не требуется",
           shouldContinue: false,
           reason: "No response needed",
+          isSimpleAcknowledgment: true,
           agentTrace,
         };
       }
@@ -220,6 +222,7 @@ export class InterviewOrchestrator {
         confidence: interviewResult.data.confidence,
         waitingForCandidateResponse:
           interviewResult.data.waitingForCandidateResponse,
+        isSimpleAcknowledgment: interviewResult.data.isSimpleAcknowledgment,
         agentTrace,
       };
     } catch (error) {
