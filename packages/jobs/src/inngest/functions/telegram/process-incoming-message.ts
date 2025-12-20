@@ -121,8 +121,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const isInterviewRelated =
         responseStatus === RESPONSE_STATUS.EVALUATED ||
         responseStatus === RESPONSE_STATUS.NEW ||
-        responseStatus === RESPONSE_STATUS.INTERVIEW_HH ||
-        responseStatus === RESPONSE_STATUS.COMPLETED;
+        responseStatus === RESPONSE_STATUS.INTERVIEW_HH;
 
       if (!isInterviewRelated) {
         console.log(
