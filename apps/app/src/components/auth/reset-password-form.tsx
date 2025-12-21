@@ -60,10 +60,16 @@ export function ResetPasswordForm({
 
     setLoading(true);
     try {
-      await authClient.resetPassword({
+      const { error } = await authClient.resetPassword({
         newPassword: data.password,
         token,
       });
+      
+      if (error) {
+        toast.error(error.message ?? "Не удалось сбросить пароль. Возможно, ссылка устарела.");
+        return;
+      }
+      
       toast.success("Пароль успешно сброшен!");
       router.push("/auth/login");
     } catch (error) {

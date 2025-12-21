@@ -93,10 +93,16 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
     if (!email || countdown > 0) return;
     setResending(true);
     try {
-      await authClient.emailOtp.sendVerificationOtp({
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
         email,
         type: "sign-in",
       });
+      
+      if (error) {
+        toast.error(error.message ?? "Не удалось отправить код. Попробуйте снова.");
+        return;
+      }
+      
       toast.success("Код отправлен! Проверьте вашу почту.");
       setCountdown(60); // 60 second cooldown
     } catch (error) {

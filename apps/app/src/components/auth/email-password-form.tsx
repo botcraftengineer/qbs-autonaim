@@ -53,17 +53,29 @@ export function EmailPasswordForm({
     setLoading(true);
     try {
       if (mode === "signup") {
-        await authClient.signUp.email({
+        const { data: signUpData, error } = await authClient.signUp.email({
           email: data.email,
           password: data.password,
           name: data.email.split("@")[0] ?? "User",
         });
+        
+        if (error) {
+          toast.error(error.message ?? "Не удалось создать аккаунт. Попробуйте снова.");
+          return;
+        }
+        
         toast.success("Аккаунт успешно создан!");
       } else {
-        await authClient.signIn.email({
+        const { data: signInData, error } = await authClient.signIn.email({
           email: data.email,
           password: data.password,
         });
+        
+        if (error) {
+          toast.error(error.message ?? "Неверный email или пароль.");
+          return;
+        }
+        
         toast.success("Вход выполнен успешно!");
       }
       router.push("/");

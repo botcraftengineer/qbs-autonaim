@@ -1,4 +1,4 @@
-import { APP_CONFIG, env } from "@qbs-autonaim/config";
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Body,
   Button,
@@ -17,7 +17,7 @@ import {
 import { emailTailwindConfig } from "../tailwind";
 
 export default function ResetPasswordEmail({
-  resetLink = `${env.APP_URL}/auth/reset-password?token=abc123`,
+  resetLink = `${APP_CONFIG.url}/auth/reset-password?token=abc123`,
 }: {
   resetLink?: string;
 }) {
@@ -30,7 +30,7 @@ export default function ResetPasswordEmail({
           <Container className="mx-auto my-[40px] w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
               Сброс пароля для{" "}
-              <Link href={env.APP_URL} className="text-black">
+              <Link href={APP_CONFIG.url} className="text-black">
                 <strong>{APP_CONFIG.name}</strong>
               </Link>
             </Heading>

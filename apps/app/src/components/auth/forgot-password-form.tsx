@@ -45,10 +45,16 @@ export function ForgotPasswordForm({
   const onSubmit = async (data: ForgotPasswordFormData) => {
     setLoading(true);
     try {
-      await authClient.forgetPassword({
+      const { error } = await authClient.requestPasswordReset({
         email: data.email,
         redirectTo: "/auth/reset-password",
       });
+      
+      if (error) {
+        toast.error(error.message ?? "Не удалось отправить ссылку. Попробуйте снова.");
+        return;
+      }
+      
       setSent(true);
       toast.success("Ссылка для сброса пароля отправлена! Проверьте email.");
     } catch (error) {
@@ -75,7 +81,7 @@ export function ForgotPasswordForm({
               действительна в течение 1 часа.
             </p>
             <Button asChild className="w-full" variant="outline">
-              <Link href="/auth/login">Вернуться ко входу</Link>
+              <Link href="/auth/signin">Вернуться ко входу</Link>
             </Button>
           </div>
         </CardContent>
@@ -117,7 +123,7 @@ export function ForgotPasswordForm({
               {loading ? "Отправка…" : "Отправить ссылку"}
             </Button>
             <Button asChild className="w-full" variant="outline">
-              <Link href="/auth/login">Вернуться ко входу</Link>
+              <Link href="/auth/signin">Вернуться ко входу</Link>
             </Button>
           </form>
         </Form>
