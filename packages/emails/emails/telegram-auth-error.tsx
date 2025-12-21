@@ -1,4 +1,4 @@
-import { env } from "@qbs-autonaim/config";
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Body,
   Button,
@@ -28,8 +28,8 @@ export default function TelegramAuthErrorEmail({
   workspaceName = "Workspace",
   phone = "+7 XXX XXX-XX-XX",
   errorType = "AUTH_KEY_UNREGISTERED",
-  reauthorizeLink = `${env.APP_URL}/settings/telegram`,
-}: TelegramAuthErrorEmailProps): JSX.Element {
+  reauthorizeLink = `${APP_CONFIG.url}/settings/telegram`,
+}: TelegramAuthErrorEmailProps) {
   const errorDescriptions: Record<string, string> = {
     AUTH_KEY_UNREGISTERED:
       "Ключ авторизации был аннулирован. Возможно, вы завершили сессию с другого устройства или Telegram отозвал доступ.",
@@ -118,8 +118,8 @@ export default function TelegramAuthErrorEmail({
 
             <Text className="text-[12px] leading-[24px] text-[#666666]">
               Это автоматическое уведомление от{" "}
-              <Link href={env.APP_URL} className="text-[#666666]">
-                {env.APP_NAME}
+              <Link href={APP_CONFIG.url} className="text-[#666666]">
+                {APP_CONFIG.name}
               </Link>
               . Если вам нужна помощь, обратитесь в службу поддержки.
             </Text>

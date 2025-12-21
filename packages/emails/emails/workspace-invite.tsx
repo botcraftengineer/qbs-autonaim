@@ -1,4 +1,4 @@
-import { env } from "@qbs-autonaim/config";
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Body,
   Button,
@@ -28,9 +28,9 @@ export default function WorkspaceInviteEmail({
   workspaceName = "Workspace",
   workspaceLogo,
   inviterName = "Пользователь",
-  inviteLink = `${env.APP_URL}/invite/token`,
+  inviteLink = `${APP_CONFIG.url}/invite/token`,
   role = "участника",
-}: WorkspaceInviteEmailProps): JSX.Element {
+}: WorkspaceInviteEmailProps) {
   const roleNames: Record<string, string> = {
     owner: "владельца",
     admin: "администратора",
@@ -60,8 +60,8 @@ export default function WorkspaceInviteEmail({
 
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
               Приглашение в{" "}
-              <Link href={env.APP_URL} className="text-black">
-                <strong>{env.APP_NAME}</strong>
+              <Link href={APP_CONFIG.url} className="text-black">
+                <strong>{APP_CONFIG.name}</strong>
               </Link>
             </Heading>
 

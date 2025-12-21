@@ -1,6 +1,12 @@
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import { GalleryVerticalEnd } from "lucide-react";
-
+import type { Metadata } from "next";
 import { OTPForm } from "~/components/auth";
+
+export const metadata: Metadata = {
+  title: "Подтверждение кода",
+  description: "Введите код подтверждения",
+};
 
 export default function OTPPage() {
   return (
@@ -8,9 +14,9 @@ export default function OTPPage() {
       <div className="flex w-full max-w-xs flex-col gap-6">
         <a href="/" className="flex items-center gap-2 self-center font-medium">
           <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
-            <GalleryVerticalEnd className="size-4" aria-label="Company logo" />
+            <GalleryVerticalEnd className="size-4" aria-label="Логотип компании" />
           </div>
-          QBS Автонайм
+          {APP_CONFIG.name}
         </a>
         <OTPForm />
       </div>

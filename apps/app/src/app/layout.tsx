@@ -1,3 +1,4 @@
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import { cn, ThemeProvider, Toaster } from "@qbs-autonaim/ui";
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
@@ -19,8 +20,8 @@ export const metadata: Metadata = {
     title: "QBS Автонайм - Автоматизация работы с вакансиями HH.ru",
     description:
       "Платформа для автоматизации рекрутинга на HH.ru. Автоматический парсинг вакансий, откликов кандидатов и управление процессом найма.",
-    url: "https://qbs-autonaim.vercel.app",
-    siteName: "QBS Автонайм",
+    url: APP_CONFIG.url,
+    siteName: APP_CONFIG.name,
   },
 };
 

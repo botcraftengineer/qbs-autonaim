@@ -1,6 +1,7 @@
 import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Body,
+  Button,
   Container,
   Head,
   Heading,
@@ -8,30 +9,27 @@ import {
   Html,
   Link,
   Preview,
+  Section,
   Tailwind,
   Text,
 } from "@react-email/components";
 
 import { emailTailwindConfig } from "../tailwind";
 
-export default function OtpSignInEmail({
-  otp = "123456",
-  isSignUp = false,
+export default function ResetPasswordEmail({
+  resetLink = `${APP_CONFIG.url}/auth/reset-password?token=abc123`,
 }: {
-  otp: string;
-  isSignUp?: boolean;
+  resetLink?: string;
 }) {
-  const action = isSignUp ? "Регистрация" : "Вход";
-
   return (
     <Html>
       <Head />
-      <Preview>{`Ваш код подтверждения для ${action === "Вход" ? "входа" : "регистрации"} - ${APP_CONFIG.name}`}</Preview>
+      <Preview>Сброс пароля - {APP_CONFIG.name}</Preview>
       <Tailwind config={emailTailwindConfig}>
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-[40px] w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
-              {action} в{" "}
+              Сброс пароля для{" "}
               <Link href={APP_CONFIG.url} className="text-black">
                 <strong>{APP_CONFIG.name}</strong>
               </Link>
@@ -40,19 +38,32 @@ export default function OtpSignInEmail({
               Здравствуйте,
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
-              Ваш одноразовый пароль (OTP) для{" "}
-              {action === "Вход" ? "входа" : "регистрации"}:
+              Мы получили запрос на сброс вашего пароля. Нажмите кнопку ниже,
+              чтобы создать новый пароль:
             </Text>
-            <Text className="my-[20px] text-center text-[24px] font-bold">
-              {otp}
+            <Section className="my-[32px] text-center">
+              <Button
+                className="rounded bg-[#000000] px-[20px] py-[12px] text-center text-[14px] font-semibold text-white no-underline"
+                href={resetLink}
+              >
+                Сбросить пароль
+              </Button>
+            </Section>
+            <Text className="text-[14px] leading-[24px] text-black">
+              Или скопируйте и вставьте этот URL в ваш браузер:
+            </Text>
+            <Link
+              href={resetLink}
+              className="text-[14px] text-blue-600 no-underline"
+            >
+              {resetLink}
+            </Link>
+            <Text className="text-[14px] leading-[24px] text-black">
+              Эта ссылка истечет через 1 час по соображениям безопасности.
             </Text>
             <Text className="text-[14px] leading-[24px] text-black">
-              Пожалуйста, используйте этот код для завершения процесса{" "}
-              {action === "Вход" ? "входа" : "регистрации"}. Код действителен в
-              течение 10 минут.
-            </Text>
-            <Text className="text-[14px] leading-[24px] text-black">
-              Если вы не запрашивали этот код, просто проигнорируйте это письмо.
+              Если вы не запрашивали сброс пароля, пожалуйста, проигнорируйте
+              это письмо или свяжитесь с поддержкой, если у вас есть вопросы.
             </Text>
             <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
             <Text className="text-[12px] leading-[24px] text-[#666666]">

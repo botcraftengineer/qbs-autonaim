@@ -44,7 +44,13 @@ export default function AccountSettingsPage() {
   const handleUpdateName = async () => {
     setIsUpdatingName(true);
     try {
-      await authClient.updateUser({ name });
+      const { error } = await authClient.updateUser({ name });
+      
+      if (error) {
+        toast.error(error.message ?? "Не удалось сохранить изменения");
+        return;
+      }
+      
       toast.success("Изменения сохранены");
       await queryClient.invalidateQueries(trpc.user.pathFilter());
     } catch {
@@ -57,7 +63,13 @@ export default function AccountSettingsPage() {
   const handleUpdateAvatar = async () => {
     setIsUpdatingAvatar(true);
     try {
-      await authClient.updateUser({ image: avatar });
+      const { error } = await authClient.updateUser({ image: avatar });
+      
+      if (error) {
+        toast.error(error.message ?? "Не удалось сохранить изменения");
+        return;
+      }
+      
       toast.success("Изменения сохранены");
       await queryClient.invalidateQueries(trpc.user.pathFilter());
     } catch {

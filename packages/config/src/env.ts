@@ -42,6 +42,7 @@ export const env: Prettify<{
   APP_URL: string;
   APP_NAME: string;
   NEXT_PUBLIC_APP_URL: string;
+  NEXT_PUBLIC_APP_NAME: string;
 }> = createEnv({
   server: {
     // Node environment
@@ -108,6 +109,7 @@ export const env: Prettify<{
       .url()
       .optional()
       .default("https://qbs-autonaim.vercel.app"),
+    NEXT_PUBLIC_APP_NAME: z.string().optional().default("QBS Автонайм"),
   },
   clientPrefix: "NEXT_PUBLIC_",
   runtimeEnv: {
@@ -149,6 +151,7 @@ export const env: Prettify<{
     APP_URL: process.env.APP_URL,
     APP_NAME: process.env.APP_NAME,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   },
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",
