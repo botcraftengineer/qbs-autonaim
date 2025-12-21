@@ -132,11 +132,14 @@ export const analyzeInterviewFunction = inngest.createFunction(
       const isSimpleAcknowledgment = result.isSimpleAcknowledgment === true;
 
       if (isSimpleAcknowledgment) {
-        console.log("⏸️ Получено простое подтверждение, интервью не завершается", {
-          conversationId: context.conversationId,
-          reason: result.reason,
-        });
-        // Просто выходим, ничего не делая. Статус остается прежним (INTERVIEW_HH или какой был).
+        console.log(
+          "⏸️ Получено простое подтверждение, интервью не завершается",
+          {
+            conversationId: context.conversationId,
+            reason: result.reason,
+          },
+        );
+        // Просто выходим, ничего не делая. Статус остается прежним (INTERVIEW или какой был).
       } else {
         // Если это осознанное завершение интервью (собрано достаточно данных)
         await step.sendEvent("complete-interview-event", {

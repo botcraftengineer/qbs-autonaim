@@ -10,7 +10,7 @@ export type SortDirection = "asc" | "desc";
 export const STATUS_ORDER = {
   NEW: 1,
   EVALUATED: 2,
-  INTERVIEW_HH: 3,
+  INTERVIEW: 3,
   COMPLETED: 4,
   SKIPPED: 5,
 } as const;

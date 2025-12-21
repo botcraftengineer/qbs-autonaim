@@ -154,7 +154,7 @@ export const list = protectedProcedure
       }
 
       if (input.stages.includes("INTERVIEW")) {
-        stageConditions.push(eq(vacancyResponse.status, "INTERVIEW_HH"));
+        stageConditions.push(eq(vacancyResponse.status, "INTERVIEW"));
       }
 
       if (input.stages.includes("SECURITY_PASSED")) {

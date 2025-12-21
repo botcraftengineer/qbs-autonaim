@@ -122,7 +122,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const isInterviewRelated =
         responseStatus === RESPONSE_STATUS.EVALUATED ||
         responseStatus === RESPONSE_STATUS.NEW ||
-        responseStatus === RESPONSE_STATUS.INTERVIEW_HH;
+        responseStatus === RESPONSE_STATUS.INTERVIEW;
 
       if (!isInterviewRelated) {
         console.log(
@@ -220,7 +220,10 @@ export const processIncomingMessageFunction = inngest.createFunction(
         // Для голосовых ждем дольше (65 сек), для текстовых меньше (20 сек)
         // Также ждём, если есть голосовые без транскрипции
         const isWaitingForVoice = groupCheck.reason?.includes("voice");
-        await step.sleep("wait-for-more-messages", isWaitingForVoice ? "65s" : "20s");
+        await step.sleep(
+          "wait-for-more-messages",
+          isWaitingForVoice ? "65s" : "20s",
+        );
 
         // Повторно проверяем после ожидания
         const recheckGroup = await step.run(
@@ -234,12 +237,18 @@ export const processIncomingMessageFunction = inngest.createFunction(
         );
 
         if (!recheckGroup.shouldProcess) {
-          console.log("⏭️ Сообщение не последнее в группе или ждём транскрипции, пропускаем", {
-            conversationId: conv.id,
-            messageId: messageData.id.toString(),
-            reason: recheckGroup.reason,
-          });
-          return { skipped: true, reason: recheckGroup.reason || "not last in group" };
+          console.log(
+            "⏭️ Сообщение не последнее в группе или ждём транскрипции, пропускаем",
+            {
+              conversationId: conv.id,
+              messageId: messageData.id.toString(),
+              reason: recheckGroup.reason,
+            },
+          );
+          return {
+            skipped: true,
+            reason: recheckGroup.reason || "not last in group",
+          };
         }
 
         // 3. Обрабатываем группу - отправляем на анализ

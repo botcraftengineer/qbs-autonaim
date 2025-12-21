@@ -91,7 +91,7 @@ export const getStatusDisplay = (
         color:
           "bg-cyan-50 text-cyan-700 border border-cyan-200 dark:bg-cyan-950 dark:text-cyan-400",
       };
-    case "INTERVIEW_HH":
+    case "INTERVIEW":
       return {
         label: "Собеседование",
         color:

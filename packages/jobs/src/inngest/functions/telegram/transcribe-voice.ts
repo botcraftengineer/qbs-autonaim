@@ -119,7 +119,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
           return;
         }
 
-        // Устанавливаем статус INTERVIEW_HH при первом голосовом сообщении
+        // Устанавливаем статус INTERVIEW при первом голосовом сообщении
         if (message.conversation?.responseId) {
           const candidateMessagesCount =
             await db.query.conversationMessage.findMany({
@@ -144,17 +144,14 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
               await db
                 .update(vacancyResponse)
-                .set({ status: RESPONSE_STATUS.INTERVIEW_HH })
+                .set({ status: RESPONSE_STATUS.INTERVIEW })
                 .where(eq(vacancyResponse.id, response.id));
 
-              console.log(
-                "✅ Статус изменен на INTERVIEW_HH (первое голосовое)",
-                {
-                  conversationId: message.conversationId,
-                  responseId: response.id,
-                  previousStatus: response.status,
-                },
-              );
+              console.log("✅ Статус изменен на INTERVIEW (первое голосовое)", {
+                conversationId: message.conversationId,
+                responseId: response.id,
+                previousStatus: response.status,
+              });
             }
           }
         }

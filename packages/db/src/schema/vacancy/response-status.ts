@@ -1,7 +1,7 @@
 export const RESPONSE_STATUS = {
   NEW: "NEW",
   EVALUATED: "EVALUATED",
-  INTERVIEW_HH: "INTERVIEW_HH",
+  INTERVIEW: "INTERVIEW",
   COMPLETED: "COMPLETED",
   SKIPPED: "SKIPPED",
 } as const;
@@ -12,7 +12,7 @@ export type ResponseStatus =
 export const RESPONSE_STATUS_LABELS: Record<ResponseStatus, string> = {
   [RESPONSE_STATUS.NEW]: "Новый",
   [RESPONSE_STATUS.EVALUATED]: "Оценено",
-  [RESPONSE_STATUS.INTERVIEW_HH]: "Собеседование HH.ru",
+  [RESPONSE_STATUS.INTERVIEW]: "Собеседование HH.ru",
   [RESPONSE_STATUS.COMPLETED]: "Завершено",
   [RESPONSE_STATUS.SKIPPED]: "Пропущено",
 };
@@ -21,7 +21,7 @@ export const RESPONSE_STATUS_DESCRIPTIONS: Record<ResponseStatus, string> = {
   [RESPONSE_STATUS.NEW]: "Только откликнулся, резюме не проанализировано",
   [RESPONSE_STATUS.EVALUATED]:
     "AI проанализировал резюме, выставлена оценка, предложен диалог",
-  [RESPONSE_STATUS.INTERVIEW_HH]: "Активный диалог с кандидатом через HH.ru",
+  [RESPONSE_STATUS.INTERVIEW]: "Активный диалог с кандидатом через HH.ru",
   [RESPONSE_STATUS.COMPLETED]:
     "Кандидат ответил на все вопросы, есть вывод по нему",
   [RESPONSE_STATUS.SKIPPED]: "Кандидат не ответил в срок (24 часа)",

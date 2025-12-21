@@ -78,7 +78,7 @@ export async function triggerTextAnalysis(params: {
     parsedMetadata.interviewStarted === true &&
     parsedMetadata.interviewCompleted !== true
   ) {
-    // Устанавливаем статус INTERVIEW_HH при первом сообщении
+    // Устанавливаем статус INTERVIEW при первом сообщении
     await updateStatusOnFirstMessage(conversationId, responseId);
 
     console.log("🚀 Запуск анализа интервью для группы сообщений", {
@@ -114,7 +114,13 @@ export async function handleIdentifiedText(params: {
     params;
 
   await saveIdentifiedText({ conversationId, text, messageId });
-  await triggerTextAnalysis({ conversationId, text, responseId, status, metadata });
+  await triggerTextAnalysis({
+    conversationId,
+    text,
+    responseId,
+    status,
+    metadata,
+  });
 }
 
 export async function handleIdentifiedMedia(params: {
@@ -214,7 +220,7 @@ async function updateStatusOnFirstMessage(
       ),
   });
 
-  // Если это первое сообщение, устанавливаем статус INTERVIEW_HH
+  // Если это первое сообщение, устанавливаем статус INTERVIEW
   if (candidateMessagesCount.length === 1) {
     const response = await db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, responseId),
@@ -227,10 +233,10 @@ async function updateStatusOnFirstMessage(
     ) {
       await db
         .update(vacancyResponse)
-        .set({ status: RESPONSE_STATUS.INTERVIEW_HH })
+        .set({ status: RESPONSE_STATUS.INTERVIEW })
         .where(eq(vacancyResponse.id, responseId));
 
-      console.log("✅ Статус изменен на INTERVIEW_HH (первое сообщение)", {
+      console.log("✅ Статус изменен на INTERVIEW (первое сообщение)", {
         conversationId,
         responseId,
         previousStatus: response.status,

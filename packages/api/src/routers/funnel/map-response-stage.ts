@@ -10,7 +10,7 @@
  * Стадии воронки:
  * - NEW: Новый кандидат (status = "NEW")
  * - REVIEW: На рассмотрении (status = "EVALUATED")
- * - INTERVIEW: Собеседование (status = "INTERVIEW_HH")
+ * - INTERVIEW: Собеседование (status = "INTERVIEW")
  * - OFFER: Оффер (hrSelectionStatus = "OFFER")
  * - HIRED: Наняты (hrSelectionStatus = "INVITE" | "RECOMMENDED" | "SECURITY_PASSED" | "CONTRACT_SENT" | "ONBOARDING")
  * - REJECTED: Отклонены (hrSelectionStatus = "REJECTED" | "NOT_RECOMMENDED" или status = "SKIPPED" | "COMPLETED")
@@ -48,7 +48,7 @@ export const mapResponseToStage = (
   if (status === "SKIPPED" || status === "COMPLETED") {
     return "REJECTED";
   }
-  if (status === "INTERVIEW_HH") {
+  if (status === "INTERVIEW") {
     return "INTERVIEW";
   }
   if (status === "EVALUATED") {

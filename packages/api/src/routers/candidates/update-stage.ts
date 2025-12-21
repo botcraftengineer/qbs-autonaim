@@ -7,7 +7,7 @@ import { protectedProcedure } from "../../trpc";
 
 const stageToStatusMap = {
   SCREENING_DONE: { status: "NEW" as const, hrSelectionStatus: null },
-  INTERVIEW: { status: "INTERVIEW_HH" as const, hrSelectionStatus: null },
+  INTERVIEW: { status: "INTERVIEW" as const, hrSelectionStatus: null },
   OFFER_SENT: {
     status: "COMPLETED" as const,
     hrSelectionStatus: "OFFER" as const,
