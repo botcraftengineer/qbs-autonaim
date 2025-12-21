@@ -13,3 +13,5 @@ export const authClient = createAuthClient({
   basePath: "/api/auth",
   plugins: [emailOTPClient(), customSessionClient<typeof auth>()],
 });
+
+export const { signIn, signUp, signOut, useSession } = authClient;

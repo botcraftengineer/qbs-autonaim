@@ -1,4 +1,4 @@
-import { env } from "@qbs-autonaim/config";
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Body,
   Container,
@@ -20,20 +20,20 @@ export default function OtpSignInEmail({
 }: {
   otp: string;
   isSignUp?: boolean;
-}): JSX.Element {
+}) {
   const action = isSignUp ? "Регистрация" : "Вход";
 
   return (
     <Html>
       <Head />
-      <Preview>{`Ваш код подтверждения для ${action === "Вход" ? "входа" : "регистрации"} - QBS Автонайм`}</Preview>
+      <Preview>{`Ваш код подтверждения для ${action === "Вход" ? "входа" : "регистрации"} - ${APP_CONFIG.name}`}</Preview>
       <Tailwind config={emailTailwindConfig}>
         <Body className="mx-auto my-auto bg-white font-sans">
           <Container className="mx-auto my-[40px] w-[465px] rounded border border-solid border-[#eaeaea] p-[20px]">
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-black">
               {action} в{" "}
-              <Link href={env.APP_URL} className="text-black">
-                <strong>QBS Автонайм</strong>
+              <Link href={APP_CONFIG.url} className="text-black">
+                <strong>{APP_CONFIG.name}</strong>
               </Link>
             </Heading>
             <Text className="text-[14px] leading-[24px] text-black">
@@ -56,7 +56,7 @@ export default function OtpSignInEmail({
             </Text>
             <Hr className="mx-0 my-[26px] w-full border border-solid border-[#eaeaea]" />
             <Text className="text-[12px] leading-[24px] text-[#666666]">
-              Это автоматическое сообщение от QBS Автонайм. Пожалуйста, не
+              Это автоматическое сообщение от {APP_CONFIG.name}. Пожалуйста, не
               отвечайте на это письмо.
             </Text>
           </Container>

@@ -61,10 +61,14 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
   const onSubmit = async (data: OTPFormData) => {
     setLoading(true);
     try {
-      await authClient.signIn.emailOtp({
+      const { error } = await authClient.signIn.emailOtp({
         email,
         otp: data.otp,
       });
+      if (error) {
+        toast.error(error.message || "Неверный код. Попробуйте снова.");
+        return;
+      }
       toast.success("Успешно подтверждено!");
 
       // Проверяем наличие redirect URL и всегда удаляем его
@@ -142,7 +146,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
               )}
             />
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Проверка..." : "Подтвердить"}
+              {loading ? "Проверка…" : "Подтвердить"}
             </Button>
             <FormDescription className="text-center">
               Не получили код?{" "}
@@ -153,7 +157,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
                 className="text-primary underline-offset-4 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
               >
                 {resending
-                  ? "Отправка..."
+                  ? "Отправка…"
                   : countdown > 0
                     ? `Отправить повторно (${countdown}с)`
                     : "Отправить повторно"}
