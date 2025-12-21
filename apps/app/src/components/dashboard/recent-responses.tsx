@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -85,7 +86,7 @@ export function RecentResponses({ workspaceSlug }: { workspaceSlug: string }) {
           {recentResponses?.map((response) => (
             <Link
               key={response.id}
-              href={`/${workspaceSlug}/responses/${response.id}`}
+              href={paths.workspace.responses(workspaceSlug, response.id)}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">

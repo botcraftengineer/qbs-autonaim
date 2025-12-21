@@ -19,6 +19,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import { type OTPFormData, otpFormSchema } from "@qbs-autonaim/validators";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -47,7 +48,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       setEmail(storedEmail);
     } else {
       // Redirect back to login if no email found
-      router.push("/auth/signin");
+      router.push(paths.auth.signin);
     }
   }, [router]);
 
@@ -79,7 +80,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       if (redirectUrl && isValidInternalPath(redirectUrl)) {
         router.push(redirectUrl);
       } else {
-        router.push("/");
+        router.push(paths.dashboard.root);
       }
     } catch (error) {
       console.error(error);

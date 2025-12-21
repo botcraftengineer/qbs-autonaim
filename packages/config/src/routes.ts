@@ -1,7 +1,11 @@
 const ROOTS = {
   DASHBOARD: "/",
   AUTH: "/auth",
-  SETTINGS: "/settings",
+  ACCOUNT: "/account",
+  ONBOARDING: "/onboarding",
+  INVITATIONS: "/invitations",
+  INVITE: "/invite",
+  ACCESS_DENIED: "/access-denied",
 } as const;
 
 export const paths = {
@@ -10,17 +14,37 @@ export const paths = {
   },
   auth: {
     root: ROOTS.AUTH,
-    login: `${ROOTS.AUTH}/login`,
+    signin: `${ROOTS.AUTH}/signin`,
     signup: `${ROOTS.AUTH}/signup`,
     otp: `${ROOTS.AUTH}/otp`,
     forgotPassword: `${ROOTS.AUTH}/forgot-password`,
     resetPassword: `${ROOTS.AUTH}/reset-password`,
   },
-  settings: {
-    root: ROOTS.SETTINGS,
-    profile: `${ROOTS.SETTINGS}/profile`,
-    appearance: `${ROOTS.SETTINGS}/appearance`,
-    notifications: `${ROOTS.SETTINGS}/notifications`,
-    display: `${ROOTS.SETTINGS}/display`,
+  account: {
+    root: ROOTS.ACCOUNT,
+    settings: `${ROOTS.ACCOUNT}/settings`,
   },
+  workspace: {
+    root: (slug: string) => `/${slug}`,
+    candidates: (slug: string) => `/${slug}/candidates`,
+    chat: (slug: string, candidateId?: string) =>
+      candidateId ? `/${slug}/chat/${candidateId}` : `/${slug}/chat`,
+    funnel: (slug: string) => `/${slug}/funnel`,
+    responses: (slug: string, responseId?: string) =>
+      responseId ? `/${slug}/responses/${responseId}` : `/${slug}/responses`,
+    vacancies: (slug: string, vacancyId?: string) =>
+      vacancyId ? `/${slug}/vacancies/${vacancyId}` : `/${slug}/vacancies`,
+    settings: {
+      root: (slug: string) => `/${slug}/settings`,
+      members: (slug: string) => `/${slug}/settings/members`,
+    },
+  },
+  onboarding: {
+    root: ROOTS.ONBOARDING,
+  },
+  invitations: {
+    root: ROOTS.INVITATIONS,
+    accept: (token: string) => `${ROOTS.INVITE}/${token}`,
+  },
+  accessDenied: ROOTS.ACCESS_DENIED,
 } as const;

@@ -15,6 +15,7 @@ import {
   FormMessage,
   Input,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState } from "react";
@@ -47,7 +48,7 @@ export function ForgotPasswordForm({
     try {
       const { error } = await authClient.requestPasswordReset({
         email: data.email,
-        redirectTo: "/auth/reset-password",
+        redirectTo: paths.auth.resetPassword,
       });
       
       if (error) {
@@ -81,7 +82,7 @@ export function ForgotPasswordForm({
               действительна в течение 1 часа.
             </p>
             <Button asChild className="w-full" variant="outline">
-              <Link href="/auth/signin">Вернуться ко входу</Link>
+              <Link href={paths.auth.signin}>Вернуться ко входу</Link>
             </Button>
           </div>
         </CardContent>
@@ -123,7 +124,7 @@ export function ForgotPasswordForm({
               {loading ? "Отправка…" : "Отправить ссылку"}
             </Button>
             <Button asChild className="w-full" variant="outline">
-              <Link href="/auth/signin">Вернуться ко входу</Link>
+              <Link href={paths.auth.signin}>Вернуться ко входу</Link>
             </Button>
           </form>
         </Form>

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { env as baseEnv } from "@qbs-autonaim/config";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -68,7 +69,7 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
       onSuccess: (workspace) => {
         setOpen(false);
         form.reset();
-        router.push(`/${workspace.slug}`);
+        router.push(paths.workspace.root(workspace.slug));
         router.refresh();
       },
       onError: (error) => {
