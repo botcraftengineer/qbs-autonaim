@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect } from "react";
 import { authClient } from "~/auth/client";
@@ -17,7 +18,7 @@ interface UserRoleGuardProps {
 export function UserRoleGuard({
   children,
   allowedRoles,
-  redirectTo = "/access-denied",
+  redirectTo = paths.accessDenied,
 }: UserRoleGuardProps) {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();

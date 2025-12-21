@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import { useQuery } from "@tanstack/react-query";
 import { Briefcase, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -69,7 +70,7 @@ export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
               Нет активных вакансий
             </p>
             <Link
-              href={`/${workspaceSlug}/vacancies`}
+              href={paths.workspace.vacancies(workspaceSlug)}
               className="text-sm text-primary hover:underline"
             >
               Перейти к вакансиям
@@ -91,7 +92,7 @@ export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
           {vacancies?.map((vacancy) => (
             <Link
               key={vacancy.id}
-              href={`/${workspaceSlug}/vacancies/${vacancy.id}`}
+              href={paths.workspace.vacancies(workspaceSlug, vacancy.id)}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">

@@ -15,6 +15,7 @@ import {
   FormMessage,
   PasswordInput,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -71,7 +72,7 @@ export function ResetPasswordForm({
       }
       
       toast.success("Пароль успешно сброшен!");
-      router.push("/auth/login");
+      router.push(paths.auth.signin);
     } catch (error) {
       console.error(error);
       toast.error("Не удалось сбросить пароль. Возможно, ссылка устарела.");
@@ -91,7 +92,7 @@ export function ResetPasswordForm({
         </CardHeader>
         <CardContent>
           <Button asChild className="w-full">
-            <Link href="/auth/forgot-password">Запросить новую ссылку</Link>
+            <Link href={paths.auth.forgotPassword}>Запросить новую ссылку</Link>
           </Button>
         </CardContent>
       </Card>

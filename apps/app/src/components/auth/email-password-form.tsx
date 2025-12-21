@@ -16,6 +16,7 @@ import {
   Input,
   PasswordInput,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -78,7 +79,7 @@ export function EmailPasswordForm({
         
         toast.success("Вход выполнен успешно!");
       }
-      router.push("/");
+      router.push(paths.dashboard.root);
     } catch (error) {
       console.error(error);
       toast.error(
@@ -147,7 +148,7 @@ export function EmailPasswordForm({
             {mode === "signin" && (
               <div className="text-right">
                 <Link
-                  href="/auth/forgot-password"
+                  href={paths.auth.forgotPassword}
                   className="text-sm text-primary underline-offset-4 hover:underline"
                 >
                   Забыли пароль?

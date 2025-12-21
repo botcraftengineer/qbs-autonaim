@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import {
   IconBriefcase,
   IconPlus,
@@ -56,7 +57,7 @@ export function WorkspaceSwitcher({
   const handleWorkspaceChange = (workspace: WorkspaceWithRole) => {
     setActiveWorkspace(workspace);
     onWorkspaceChange?.(workspace.id);
-    router.push(`/${workspace.slug}`);
+    router.push(paths.workspace.root(workspace.slug));
   };
 
   const getRoleLabel = (role: string) => {
@@ -137,7 +138,7 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
-                    router.push(`/${activeWorkspace.slug}/settings`)
+                    router.push(paths.workspace.settings.root(activeWorkspace.slug))
                   }
                 >
                   <IconSettings className="size-4" />
@@ -146,7 +147,7 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
-                    router.push(`/${activeWorkspace.slug}/settings/members`)
+                    router.push(paths.workspace.settings.members(activeWorkspace.slug))
                   }
                 >
                   <IconUserPlus className="size-4" />

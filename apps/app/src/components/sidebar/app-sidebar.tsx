@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import {
   IconDashboard,
   IconFileDescription,
@@ -30,34 +31,34 @@ const getNavData = (workspaceSlug?: string) => ({
   navMain: [
     {
       title: "Панель управления",
-      url: workspaceSlug ? `/${workspaceSlug}` : "/",
+      url: workspaceSlug ? paths.workspace.root(workspaceSlug) : paths.dashboard.root,
       icon: IconDashboard,
     },
     {
       title: "Вакансии",
-      url: workspaceSlug ? `/${workspaceSlug}/vacancies` : "/vacancies",
+      url: workspaceSlug ? paths.workspace.vacancies(workspaceSlug) : "/vacancies",
       icon: IconFileDescription,
     },
     {
       title: "Кандидаты",
-      url: workspaceSlug ? `/${workspaceSlug}/candidates` : "/candidates",
+      url: workspaceSlug ? paths.workspace.candidates(workspaceSlug) : "/candidates",
       icon: IconUsersGroup,
     },
     {
       title: "Воронка найма",
-      url: workspaceSlug ? `/${workspaceSlug}/funnel` : "/funnel",
+      url: workspaceSlug ? paths.workspace.funnel(workspaceSlug) : "/funnel",
       icon: IconInnerShadowTop,
     },
     {
       title: "Чаты",
-      url: workspaceSlug ? `/${workspaceSlug}/chat` : "/chat",
+      url: workspaceSlug ? paths.workspace.chat(workspaceSlug) : "/chat",
       icon: IconMessage,
     },
   ],
   navSecondary: [
     {
       title: "Настройки",
-      url: workspaceSlug ? `/${workspaceSlug}/settings` : "/settings",
+      url: workspaceSlug ? paths.workspace.settings.root(workspaceSlug) : "/settings",
       icon: IconSettings,
     },
   ],
@@ -99,7 +100,7 @@ export function AppSidebar({
               asChild
               className="data-[slot=sidebar-menu-button]:p-1.5!"
             >
-              <Link href={activeWorkspace ? `/${activeWorkspace.slug}` : "/"}>
+              <Link href={activeWorkspace ? paths.workspace.root(activeWorkspace.slug) : paths.dashboard.root}>
                 <IconInnerShadowTop className="size-5!" />
                 <span className="text-base font-semibold">QBS Автонайм</span>
               </Link>

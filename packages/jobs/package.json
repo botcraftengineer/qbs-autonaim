@@ -62,7 +62,7 @@
     "@types/node": "25.0.3",
     "cross-env": "10.1.0",
     "inngest-cli": "1.15.1",
-    "tsdown": "0.18.1",
+    "tsdown": "0.18.2",
     "typescript": "5.9.3"
   }
 }

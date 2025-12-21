@@ -16,6 +16,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
 import {
   IconDotsVertical,
   IconLogout,
@@ -62,7 +63,7 @@ export function NavUser({
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("/auth/signin"); // redirect to login page
+          router.push(paths.auth.signin);
         },
       },
     });
@@ -117,7 +118,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link href="/account/settings">
+                <Link href={paths.account.settings}>
                   <IconUserCircle />
                   Аккаунт
                 </Link>
