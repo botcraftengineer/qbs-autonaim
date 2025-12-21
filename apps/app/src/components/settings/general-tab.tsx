@@ -19,7 +19,6 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
 import { useTRPC } from "~/trpc/react";
-import { DeleteAccountDialog } from "./delete-account-dialog";
 
 interface GeneralTabProps {
   user: {
@@ -36,7 +35,6 @@ export function GeneralTab({ user }: GeneralTabProps) {
 
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [isUpdatingName, setIsUpdatingName] = useState(false);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);

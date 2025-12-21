@@ -68,6 +68,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       });
       if (error) {
         toast.error(error.message || "Неверный код. Попробуйте снова.");
+        form.reset();
         return;
       }
       toast.success("Успешно подтверждено!");
@@ -85,6 +86,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
     } catch (error) {
       console.error(error);
       toast.error("Неверный код. Попробуйте снова.");
+      form.reset();
     } finally {
       setLoading(false);
     }
@@ -134,7 +136,17 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
                     Код подтверждения
                   </FormLabel>
                   <FormControl>
-                    <InputOTP maxLength={6} id="otp" {...field}>
+                    <InputOTP 
+                      maxLength={6} 
+                      id="otp" 
+                      {...field}
+                      onChange={(value) => {
+                        field.onChange(value);
+                        if (value.length === 6) {
+                          form.handleSubmit(onSubmit)();
+                        }
+                      }}
+                    >
                       <InputOTPGroup className="gap-2.5 *:data-[slot=input-otp-slot]:rounded-md *:data-[slot=input-otp-slot]:border">
                         <InputOTPSlot index={0} />
                         <InputOTPSlot index={1} />
