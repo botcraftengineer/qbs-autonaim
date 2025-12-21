@@ -15,6 +15,8 @@ interface VacancyDbData {
   workspaceId: string;
   title: string;
   url?: string;
+  source: string;
+  externalId?: string;
   views: number;
   responses: number;
   newResponses: number;
@@ -38,6 +40,8 @@ function mapVacancyData(
     workspaceId,
     title: vacancyData.title,
     url: vacancyData.url || undefined,
+    source: vacancyData.source,
+    externalId: vacancyData.externalId,
     views: Number.parseInt(vacancyData.views, 10) || 0,
     responses: Number.parseInt(vacancyData.responses, 10) || 0,
     newResponses: Number.parseInt(vacancyData.newResponses, 10) || 0,
