@@ -2,10 +2,10 @@
 
 import { Skeleton } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { GeneralTab } from "~/components/settings/general-tab";
+import { SecurityTab } from "~/components/settings/security-tab";
 import { useTRPC } from "~/trpc/react";
 
-export default function AccountSettingsPage() {
+export default function SecuritySettingsPage() {
   const trpc = useTRPC();
   const { data: user, isLoading } = useQuery(trpc.user.me.queryOptions());
 
@@ -13,5 +13,5 @@ export default function AccountSettingsPage() {
     return <Skeleton className="h-[400px] w-full" />;
   }
 
-  return <GeneralTab user={user} />;
+  return <SecurityTab user={user} />;
 }
