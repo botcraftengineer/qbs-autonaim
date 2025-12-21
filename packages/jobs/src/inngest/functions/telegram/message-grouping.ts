@@ -14,6 +14,8 @@ import { and, desc, eq, gte } from "drizzle-orm";
 import { MESSAGE_GROUPING_CONFIG } from "./message-grouping.config";
 
 const GROUPING_WINDOW_MINUTES = 10;
+// Буфер для запроса сообщений - чтобы не потерять сообщения при задержке обработки
+const QUERY_BUFFER_MINUTES = 5;
 
 interface MessageGroup {
   conversationId: string;
@@ -49,9 +51,11 @@ export async function shouldProcessMessageGroup(
 
   const now = new Date();
   const groupingWindowMs = GROUPING_WINDOW_MINUTES * 60 * 1000;
-  const windowStartTime = new Date(now.getTime() - groupingWindowMs);
+  // Запрашиваем с буфером, чтобы не потерять сообщения при задержке обработки
+  const queryWindowMs = (GROUPING_WINDOW_MINUTES + QUERY_BUFFER_MINUTES) * 60 * 1000;
+  const windowStartTime = new Date(now.getTime() - queryWindowMs);
 
-  // Получаем все сообщения кандидата за последние 10 минут
+  // Получаем все сообщения кандидата за последние 10+5 минут (с буфером)
   const recentMessages = await db.query.conversationMessage.findMany({
     where: and(
       eq(conversationMessage.conversationId, conversationId),
