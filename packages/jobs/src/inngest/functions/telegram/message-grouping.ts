@@ -4,14 +4,16 @@
  * Проблема: кандидат может отправить несколько сообщений подряд (текст/голос в любом порядке),
  * а бот реагирует на каждое отдельно, создавая хаос.
  * 
- * Решение: Группируем все сообщения кандидата с момента последнего ответа бота.
- * Ждем N секунд после последнего сообщения кандидата, затем обрабатываем всю группу.
+ * Решение: Собираем все сообщения кандидата в течение 10 минут.
+ * Ждем 10 минут после последнего сообщения кандидата, затем обрабатываем всю группу.
  */
 
 import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, gte } from "drizzle-orm";
 import { MESSAGE_GROUPING_CONFIG } from "./message-grouping.config";
+
+const GROUPING_WINDOW_MINUTES = 10;
 
 interface MessageGroup {
   conversationId: string;
@@ -28,8 +30,8 @@ interface MessageGroup {
 /**
  * Проверяет, нужно ли ждать еще сообщений или можно обрабатывать группу
  * 
- * Умная группировка: собираем все сообщения кандидата с момента последнего ответа бота
- * Учитывает контекст интервью - если кандидат отвечает на вопрос, ждем дольше
+ * Простая группировка: собираем все сообщения кандидата за последние 10 минут
+ * Ждем 10 минут после последнего сообщения, затем обрабатываем всю группу
  */
 export async function shouldProcessMessageGroup(
   conversationId: string,
@@ -46,44 +48,30 @@ export async function shouldProcessMessageGroup(
   }
 
   const now = new Date();
+  const groupingWindowMs = GROUPING_WINDOW_MINUTES * 60 * 1000;
+  const windowStartTime = new Date(now.getTime() - groupingWindowMs);
 
-  // Получаем последнее сообщение от бота
-  const lastBotMessage = await db.query.conversationMessage.findFirst({
-    where: and(
-      eq(conversationMessage.conversationId, conversationId),
-      eq(conversationMessage.sender, "BOT"),
-    ),
-    orderBy: [desc(conversationMessage.createdAt)],
-  });
-
-  // Определяем начало группировки: либо после последнего ответа бота, либо начало диалога
-  const groupingStartTime = lastBotMessage?.createdAt || new Date(0);
-
-  // Получаем все сообщения кандидата после последнего ответа бота
-  const candidateMessages = await db.query.conversationMessage.findMany({
+  // Получаем все сообщения кандидата за последние 10 минут
+  const recentMessages = await db.query.conversationMessage.findMany({
     where: and(
       eq(conversationMessage.conversationId, conversationId),
       eq(conversationMessage.sender, "CANDIDATE"),
+      gte(conversationMessage.createdAt, windowStartTime),
     ),
     orderBy: [desc(conversationMessage.createdAt)],
   });
 
-  // Фильтруем только сообщения после последнего ответа бота
-  const messagesAfterBot = candidateMessages.filter(
-    (m) => m.createdAt > groupingStartTime,
-  );
-
-  if (messagesAfterBot.length === 0) {
+  if (recentMessages.length === 0) {
     return {
       conversationId,
       messages: [],
       shouldProcess: true,
-      reason: "no messages after bot response",
+      reason: "no recent messages",
     };
   }
 
   // Находим текущее сообщение
-  const currentMessage = messagesAfterBot.find(
+  const currentMessage = recentMessages.find(
     (m) => m.externalMessageId === currentMessageId,
   );
 
@@ -96,13 +84,13 @@ export async function shouldProcessMessageGroup(
     };
   }
 
-  // Проверяем, есть ли сообщения ПОСЛЕ текущего (более новые)
-  const newerMessages = messagesAfterBot.filter(
+  // Проверяем, есть ли более новые сообщения
+  const newerMessages = recentMessages.filter(
     (m) => m.createdAt > currentMessage.createdAt,
   );
 
   if (newerMessages.length > 0) {
-    // Есть более новые сообщения - текущее уже не последнее, пропускаем
+    // Есть более новые сообщения - текущее не последнее, пропускаем
     return {
       conversationId,
       messages: [],
@@ -111,32 +99,21 @@ export async function shouldProcessMessageGroup(
     };
   }
 
-  // Текущее сообщение - последнее. Проверяем, прошло ли достаточно времени
-  const timeSinceLastMessage =
-    now.getTime() - currentMessage.createdAt.getTime();
-  
-  // Определяем нужное время ожидания на основе типа сообщений
-  // Если есть голосовые - ждем дольше (кандидат может записывать несколько частей)
-  const hasVoiceMessages = messagesAfterBot.some(m => m.contentType === "VOICE");
-  const requiredDelay = hasVoiceMessages 
-    ? MESSAGE_GROUPING_CONFIG.DEBOUNCE_DELAY_VOICE 
-    : MESSAGE_GROUPING_CONFIG.DEBOUNCE_DELAY_TEXT;
-  
-  const hasWaitedEnough = timeSinceLastMessage >= requiredDelay * 1000;
+  // Текущее сообщение - последнее. Проверяем, прошло ли 10 минут
+  const timeSinceLastMessage = now.getTime() - currentMessage.createdAt.getTime();
+  const hasWaitedEnough = timeSinceLastMessage >= groupingWindowMs;
 
   if (!hasWaitedEnough) {
-    // Еще не прошло достаточно времени - ждем
+    const minutesWaited = Math.round(timeSinceLastMessage / 60000);
     return {
       conversationId,
       messages: [],
       shouldProcess: false,
-      reason: `waiting for debounce (${Math.round(timeSinceLastMessage / 1000)}s / ${requiredDelay}s)${hasVoiceMessages ? " [voice]" : " [text]"}`,
+      reason: `waiting for ${GROUPING_WINDOW_MINUTES} minutes (${minutesWaited}/${GROUPING_WINDOW_MINUTES} min)`,
     };
   }
 
-  // Прошло достаточно времени после последнего сообщения
-  // Финальная проверка: убедимся что это действительно последнее сообщение
-  // (могли прийти новые пока мы ждали)
+  // Финальная проверка: убедимся что не пришло новое сообщение пока мы ждали
   const finalCheck = await db.query.conversationMessage.findFirst({
     where: and(
       eq(conversationMessage.conversationId, conversationId),
@@ -150,7 +127,6 @@ export async function shouldProcessMessageGroup(
     finalCheck.externalMessageId !== currentMessageId &&
     finalCheck.createdAt > currentMessage.createdAt
   ) {
-    // Пришло новое сообщение - текущее уже не последнее
     return {
       conversationId,
       messages: [],
@@ -159,15 +135,12 @@ export async function shouldProcessMessageGroup(
     };
   }
 
-  // Все проверки времени пройдены
-  // Дополнительная проверка: есть ли голосовые БЕЗ транскрипции в группе?
-  // Если есть - нужно ждать пока они будут транскрибированы
-  const voiceMessagesWithoutTranscription = messagesAfterBot.filter(
+  // Проверяем голосовые без транскрипции
+  const voiceMessagesWithoutTranscription = recentMessages.filter(
     (m) => m.contentType === "VOICE" && !m.voiceTranscription,
   );
 
   if (voiceMessagesWithoutTranscription.length > 0) {
-    // Есть голосовые без транскрипции - ждём их обработки
     return {
       conversationId,
       messages: [],
@@ -176,10 +149,9 @@ export async function shouldProcessMessageGroup(
     };
   }
 
-  // Все проверки пройдены - собираем ВСЮ группу после последнего ответа бота
-  // Для голосовых используем транскрипцию вместо placeholder-контента
-  const groupMessages = messagesAfterBot
-    .reverse() // Сортируем по возрастанию (от старых к новым)
+  // Собираем все сообщения за последние 10 минут
+  const groupMessages = recentMessages
+    .reverse() // От старых к новым
     .map((m) => ({
       id: m.externalMessageId || m.id,
       content: m.contentType === "VOICE" && m.voiceTranscription 
@@ -193,7 +165,7 @@ export async function shouldProcessMessageGroup(
     conversationId,
     messages: groupMessages,
     shouldProcess: true,
-    reason: `group ready (${groupMessages.length} messages since last bot response)`,
+    reason: `group ready (${groupMessages.length} messages in ${GROUPING_WINDOW_MINUTES} min window)`,
   };
 }
 
