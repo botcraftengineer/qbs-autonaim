@@ -1,5 +1,7 @@
 export interface VacancyData {
-  id: string;
+  id: string; // Внутренний ID (может совпадать с externalId для HH)
+  externalId?: string;
+  source: "hh" | "avito" | "superjob";
   title: string;
   url: string | null;
   views: string;

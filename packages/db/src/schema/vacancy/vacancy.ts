@@ -50,6 +50,11 @@ export const vacancy = pgTable(
     description: text("description"),
     requirements: jsonb("requirements").$type<VacancyRequirements>(),
 
+    // Источник вакансии (hh, avito, superjob)
+    source: text("source").notNull().default("hh"),
+    // ID вакансии на внешней платформе
+    externalId: varchar("external_id", { length: 100 }),
+
     // Кастомные настройки для бота
     customBotInstructions: text("custom_bot_instructions"),
     customScreeningPrompt: text("custom_screening_prompt"),
@@ -74,6 +79,8 @@ export const CreateVacancySchema = createInsertSchema(vacancy, {
   id: z.string().max(50),
   title: z.string().max(500),
   url: z.string().optional(),
+  source: z.enum(["hh", "avito", "superjob"]).default("hh"),
+  externalId: z.string().max(100).optional(),
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),
   customInterviewQuestions: z.string().max(5000).optional(),
