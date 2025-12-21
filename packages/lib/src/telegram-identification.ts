@@ -88,7 +88,7 @@ export async function identifyByPinCode(
     // Обновляем chatId и username в response
     const hadChatId = !!response.chatId;
     const hadUsername = !!response.telegramUsername;
-    
+
     await db
       .update(vacancyResponse)
       .set({
@@ -97,7 +97,7 @@ export async function identifyByPinCode(
       .where(eq(vacancyResponse.id, response.id));
 
     const { logResponseEvent } = await import("./vacancy-response-history");
-    
+
     if (!hadChatId) {
       await logResponseEvent({
         db,
@@ -106,7 +106,7 @@ export async function identifyByPinCode(
         newValue: chatId,
       });
     }
-    
+
     if (username && !hadUsername) {
       await logResponseEvent({
         db,
@@ -137,7 +137,7 @@ export async function identifyByPinCode(
  */
 export async function identifyByVacancy(
   vacancyId: string,
-  chatId: string,
+  _chatId: string,
   workspaceId: string,
   username: string,
   firstName?: string,
@@ -181,7 +181,6 @@ export async function identifyByVacancy(
 
     const conversation = await createOrUpdateConversation(conversationData);
 
-  
     return {
       success: true,
       conversationId: conversation.id,

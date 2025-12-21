@@ -4,7 +4,7 @@
  * Использует новую архитектуру с специализированными агентами
  */
 
-import { generateText, getAIModel } from "@qbs-autonaim/lib/ai";
+import { generateText } from "@qbs-autonaim/lib/ai";
 import {
   buildTelegramRecruiterPrompt,
   type ConversationStage,

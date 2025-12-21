@@ -95,17 +95,10 @@ export function buildInterviewingPrompt(
     screeningAnalysis,
   } = context;
 
-  const greetingInstruction = alreadyGreeted
-    ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРОВАЙСЯ СНОВА!\n"
-    : "";
-
   // Подсчитываем количество голосовых сообщений от кандидата
   const voiceMessagesCount = conversationHistory.filter(
     isCandidateVoiceMessage,
   ).length;
-
-  const hasEnoughVoices = voiceMessagesCount >= maxVoiceMessages;
-  const hasFirstVoice = voiceMessagesCount >= 1;
 
   // Организационные вопросы
   const defaultOrgQuestions = `график работы, зарплата, сроки начала, релокация`;

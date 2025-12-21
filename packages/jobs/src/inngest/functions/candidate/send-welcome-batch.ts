@@ -214,8 +214,6 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Сохраняем беседу если получили chatId
             if (sendResult.chatId) {
-              const chatId = sendResult.chatId;
-
               // Проверяем, есть ли уже conversation для этого response
               const existing = await db.query.conversation.findFirst({
                 where: eq(conversation.responseId, response.id),

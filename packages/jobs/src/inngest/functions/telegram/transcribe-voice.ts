@@ -7,7 +7,6 @@ import {
   formatMessageGroup,
   shouldProcessMessageGroup,
 } from "./message-grouping";
-import { MESSAGE_GROUPING_CONFIG } from "./message-grouping.config";
 
 /**
  * Inngest функция для транскрибации голосовых сообщений
