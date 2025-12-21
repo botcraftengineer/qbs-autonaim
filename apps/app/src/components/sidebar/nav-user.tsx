@@ -120,7 +120,7 @@ export function NavUser({
               <DropdownMenuItem asChild>
                 <Link href={paths.account.settings}>
                   <IconUserCircle />
-                  Аккаунт
+                  Настройки аккаунта
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>

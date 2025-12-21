@@ -54,7 +54,7 @@ export function EmailPasswordForm({
     setLoading(true);
     try {
       if (mode === "signup") {
-        const { data: signUpData, error } = await authClient.signUp.email({
+        const { error } = await authClient.signUp.email({
           email: data.email,
           password: data.password,
           name: data.email.split("@")[0] ?? "User",
@@ -67,7 +67,7 @@ export function EmailPasswordForm({
         
         toast.success("Аккаунт успешно создан!");
       } else {
-        const { data: signInData, error } = await authClient.signIn.email({
+        const { error } = await authClient.signIn.email({
           email: data.email,
           password: data.password,
         });
