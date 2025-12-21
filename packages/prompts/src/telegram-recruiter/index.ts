@@ -175,11 +175,7 @@ export function buildTelegramRecruiterPromptWithMeta(
       );
       break;
     case "INTERVIEWING":
-      stageInstructions = buildInterviewingPrompt(
-        context,
-        historyText,
-        alreadyGreeted,
-      );
+      stageInstructions = buildInterviewingPrompt(context, historyText);
       break;
     case "ESCALATED":
       stageInstructions = buildEscalatedPrompt(historyText);

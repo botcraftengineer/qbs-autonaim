@@ -15,9 +15,6 @@ const MessageContentType = {
 
 const VOICE_MESSAGE_FALLBACK_TEXT = "Голосовое сообщение";
 
-/** Максимум голосовых по умолчанию */
-const DEFAULT_MAX_VOICE_MESSAGES = 2;
-
 /**
  * Проверяет, является ли сообщение голосовым от кандидата
  */
@@ -79,7 +76,6 @@ function buildStatusText(status?: string): string {
 export function buildInterviewingPrompt(
   context: TelegramRecruiterContext,
   historyText: string,
-  alreadyGreeted = false,
 ): string {
   const {
     vacancyTitle,
@@ -90,7 +86,6 @@ export function buildInterviewingPrompt(
     customBotInstructions,
     customInterviewQuestions,
     customOrganizationalQuestions,
-    maxVoiceMessages = DEFAULT_MAX_VOICE_MESSAGES,
     screeningScore,
     screeningAnalysis,
   } = context;
