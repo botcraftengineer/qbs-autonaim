@@ -4,7 +4,7 @@
 
 import { generateText } from "@qbs-autonaim/lib/ai";
 import type { LanguageModel } from "ai";
-import type { ZodSchema } from "zod";
+import type { ZodType } from "zod";
 import { BaseAgent } from "./base-agent";
 import type { AgentType } from "./types";
 
@@ -74,7 +74,7 @@ export abstract class AIPoweredAgent<TInput, TOutput> extends BaseAgent<
    */
   protected async parseJSONResponseWithRetry<T>(
     text: string,
-    schema: ZodSchema<T>,
+    schema: ZodType<T>,
     expectedFormat: string,
     maxRetries = 2,
   ): Promise<T | null> {
