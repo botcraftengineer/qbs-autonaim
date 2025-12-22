@@ -18,7 +18,7 @@ import {
 /**
  * Менеджер для управления несколькими ботами
  */
-class BotManager {
+export class BotManager {
   private bots: Map<string, BotInstance> = new Map();
   private isRunning = false;
 
