@@ -85,6 +85,13 @@
       "when": 1766408295062,
       "tag": "0011_huge_gladiator",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1766414030449,
+      "tag": "0012_chubby_ben_grimm",
+      "breakpoints": true
     }
   ]
 }
