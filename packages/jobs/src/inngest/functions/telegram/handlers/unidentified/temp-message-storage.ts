@@ -71,7 +71,21 @@ export async function flushTempMessageBuffer(
       return;
     }
 
-    const chatId = tempConversationId.replace("temp_", "");
+    // Validate and extract chatId from tempConversationId
+    if (!tempConversationId.startsWith("temp_")) {
+      throw new Error(
+        `Invalid tempConversationId format: expected "temp_" prefix, got "${tempConversationId}"`,
+      );
+    }
+
+    const chatId = tempConversationId.slice(5); // Remove "temp_" prefix (5 characters)
+
+    // Validate chatId format (should be numeric or UUID-like)
+    if (!chatId || !/^[\w-]+$/.test(chatId)) {
+      throw new Error(
+        `Invalid chatId extracted from tempConversationId: "${chatId}"`,
+      );
+    }
 
     await db.transaction(async (tx) => {
       const messagesToInsert = bufferedMessages.map(

@@ -64,6 +64,42 @@ class BotManager {
   }
 
   /**
+   * Запустить только новые сессии (не останавливая существующие)
+   */
+  async startNewSessions(): Promise<{ started: number; failed: number }> {
+    console.log("🔍 Проверка новых Telegram сессий...");
+
+    const sessions = await getActiveSessions();
+    const newSessions = sessions.filter(
+      (session) => !this.bots.has(session.workspaceId),
+    );
+
+    if (newSessions.length === 0) {
+      console.log("✅ Новых сессий не найдено");
+      return { started: 0, failed: 0 };
+    }
+
+    console.log(`🆕 Найдено ${newSessions.length} новых сессий`);
+
+    const startPromises = newSessions.map((session) => this.startBot(session));
+    const results = await Promise.allSettled(startPromises);
+
+    const started = results.filter((r) => r.status === "fulfilled").length;
+    const failed = results.filter((r) => r.status === "rejected").length;
+
+    console.log(`✅ Запущено: ${started}, ❌ Ошибок: ${failed}`);
+
+    if (started > 0) {
+      console.log("🔍 Запуск обработки пропущенных сообщений...");
+      this.processMissedMessages().catch((error) => {
+        console.error("❌ Ошибка обработки пропущенных сообщений:", error);
+      });
+    }
+
+    return { started, failed };
+  }
+
+  /**
    * Обработка ошибки авторизации
    */
   private async handleAuthError(
