@@ -25,7 +25,7 @@ interface ScreeningResult {
   score: number;
   detailedScore: number;
   analysis: string;
-  resumeLanguage?: string;
+  resumeLanguage: string;
 }
 
 /**
@@ -148,12 +148,12 @@ export async function screenResponse(
       .update(vacancyResponse)
       .set({ 
         status: RESPONSE_STATUS.EVALUATED,
-        resumeLanguage: result.resumeLanguage || "en",
+        resumeLanguage: result.resumeLanguage,
       })
       .where(eq(vacancyResponse.id, responseId));
 
     logger.info(
-      `Screening result saved: score ${result.score}/5 (${result.detailedScore}/100), language: ${result.resumeLanguage || "en"}`,
+      `Screening result saved: score ${result.score}/5 (${result.detailedScore}/100), language: ${result.resumeLanguage}`,
     );
 
     return result;
