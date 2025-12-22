@@ -1,5 +1,5 @@
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { EnhancedContextAnalyzerAgent } from "@qbs-autonaim/prompts";
+import { ContextAnalyzerAgent } from "@qbs-autonaim/prompts";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { createOrUpdateTempConversation, extractPinCode } from "../../utils";
@@ -64,14 +64,14 @@ export async function handleUnidentifiedText(params: {
   // Используем AI-агент для анализа сообщения
   try {
     const model = getAIModel();
-    const contextAnalyzer = new EnhancedContextAnalyzerAgent({
+    const contextAnalyzer = new ContextAnalyzerAgent({
       model,
-      maxTokens: 500,
     });
 
     const analysisResult = await contextAnalyzer.execute(
       {
         message: trimmedText,
+        previousMessages: [],
       },
       {
         conversationHistory: [],
@@ -85,7 +85,6 @@ export async function handleUnidentifiedText(params: {
         messageType,
         extractedData,
         chatId,
-        fastPath: analysisResult.metadata?.fastPath,
       });
 
       // Обработка пин-кода

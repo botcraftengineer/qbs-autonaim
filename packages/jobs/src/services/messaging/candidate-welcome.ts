@@ -7,10 +7,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import {
-  buildTelegramInvitePrompt,
-  EnhancedWelcomeAgent,
-} from "@qbs-autonaim/prompts";
+import { buildTelegramInvitePrompt, WelcomeAgent } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { createLogger, err, type Result, tryCatch } from "../base";
 
@@ -56,27 +53,20 @@ export async function generateWelcomeMessage(
     return err(dataResult.error);
   }
 
-  const { response, screening, company } = dataResult.data;
+  const { response, company } = dataResult.data;
 
   logger.info("Generating welcome message with WelcomeAgent");
 
   const aiResult = await tryCatch(async () => {
     const model = getAIModel();
-    const welcomeAgent = new EnhancedWelcomeAgent({ model });
+    const welcomeAgent = new WelcomeAgent({ model });
 
     const result = await welcomeAgent.execute(
       {
         companyName: company?.name || "наша компания",
-        companyDescription: company?.description || undefined,
-        companyWebsite: company?.website || undefined,
         vacancyTitle: response.vacancy?.title || undefined,
-        vacancyDescription: response.vacancy?.description
-          ? stripHtml(response.vacancy.description).result
-          : undefined,
         candidateName: response.candidateName || undefined,
-        screeningScore: screening?.score,
-        screeningAnalysis: screening?.analysis || undefined,
-        resumeLanguage: response.resumeLanguage || "en",
+        customWelcomeMessage: company?.description || undefined,
       },
       {
         conversationHistory: [],
@@ -89,7 +79,7 @@ export async function generateWelcomeMessage(
       throw new Error(result.error || "Failed to generate welcome message");
     }
 
-    return result.data.message;
+    return result.data.welcomeMessage;
   }, "AI request failed");
 
   if (!aiResult.success) {

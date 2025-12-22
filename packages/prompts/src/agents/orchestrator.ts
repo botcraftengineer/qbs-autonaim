@@ -1,11 +1,11 @@
 /**
  * Оркестратор для голосовых интервью
- * Координирует работу агентов: анализ контекста → проверка эскалации → генерация вопроса
+ * Использует Orchestrator-Worker pattern из AI SDK workflows
  */
 
 import type { LanguageModel } from "ai";
-import { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
-import { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
+import { EscalationDetectorAgent } from "./escalation-detector";
+import type { InterviewerInput } from "./interviewer";
 import { InterviewerAgent } from "./interviewer";
 import type { BaseAgentContext } from "./types";
 
@@ -15,15 +15,7 @@ export interface OrchestratorInput {
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
   customInterviewQuestions?: string | null;
-  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
-  /**
-   * Функция для проверки пин-кода (опционально)
-   * Если передана, оркестратор автоматически проверит пин-код при его обнаружении
-   */
-  validatePinCode?: (pinCode: string) => Promise<{
-    valid: boolean;
-    error?: string;
-  }>;
+  resumeLanguage?: string;
 }
 
 export interface OrchestratorOutput {
@@ -36,14 +28,6 @@ export interface OrchestratorOutput {
   confidence?: number;
   waitingForCandidateResponse?: boolean;
   isSimpleAcknowledgment?: boolean;
-  /**
-   * Информация о пин-коде (если был обнаружен)
-   */
-  pinCodeDetected?: {
-    pinCode: string;
-    valid: boolean;
-    error?: string;
-  };
   agentTrace: Array<{
     agent: string;
     decision: string;
@@ -53,27 +37,32 @@ export interface OrchestratorOutput {
 
 export interface OrchestratorConfig {
   model: LanguageModel;
-  maxTokens?: number;
+  maxSteps?: number;
 }
 
+/**
+ * Orchestrator-Worker pattern:
+ * - Orchestrator координирует выполнение
+ * - Workers (EscalationDetector, Interviewer) выполняют специализированные задачи
+ */
 export class InterviewOrchestrator {
-  private contextAnalyzer: EnhancedContextAnalyzerAgent;
-  private escalationDetector: EnhancedEscalationDetectorAgent;
+  private escalationDetector: EscalationDetectorAgent;
   private interviewer: InterviewerAgent;
 
   constructor(config: OrchestratorConfig) {
     const agentConfig = {
       model: config.model,
-      maxTokens: config.maxTokens,
+      maxSteps: config.maxSteps || 10,
     };
 
-    this.contextAnalyzer = new EnhancedContextAnalyzerAgent(agentConfig);
-    this.escalationDetector = new EnhancedEscalationDetectorAgent(agentConfig);
+    this.escalationDetector = new EscalationDetectorAgent(agentConfig);
     this.interviewer = new InterviewerAgent(agentConfig);
   }
 
   /**
-   * Главный метод выполнения workflow
+   * Sequential Processing pattern:
+   * 1. Проверка эскалации
+   * 2. Генерация следующего вопроса
    */
   async execute(
     input: OrchestratorInput,
@@ -82,94 +71,7 @@ export class InterviewOrchestrator {
     const agentTrace: OrchestratorOutput["agentTrace"] = [];
 
     try {
-      // ШАГ 1: Анализ контекста сообщения
-      const contextAnalysis = await this.contextAnalyzer.execute(
-        {
-          message: input.currentAnswer,
-          previousMessages: context.conversationHistory.slice(-5),
-        },
-        context,
-      );
-
-      agentTrace.push({
-        agent: "ContextAnalyzer",
-        decision: contextAnalysis.success
-          ? `messageType: ${contextAnalysis.data?.messageType}, requiresResponse: ${contextAnalysis.data?.requiresResponse}`
-          : "failed",
-        timestamp: new Date(),
-      });
-
-      // ШАГ 1.1: Обработка пин-кода (если обнаружен)
-      if (
-        contextAnalysis.success &&
-        contextAnalysis.data?.messageType === "PIN_CODE" &&
-        contextAnalysis.data.extractedData?.pinCode
-      ) {
-        const pinCode = contextAnalysis.data.extractedData.pinCode;
-
-        agentTrace.push({
-          agent: "PinCodeDetector",
-          decision: `Обнаружен пин-код: ${pinCode}`,
-          timestamp: new Date(),
-        });
-
-        // Если передана функция валидации, проверяем пин-код
-        if (input.validatePinCode) {
-          const validation = await input.validatePinCode(pinCode);
-
-          agentTrace.push({
-            agent: "PinCodeValidator",
-            decision: validation.valid
-              ? "Пин-код валидный"
-              : `Пин-код невалидный: ${validation.error}`,
-            timestamp: new Date(),
-          });
-
-          return {
-            analysis: validation.valid
-              ? "Пин-код успешно проверен, можно начинать интервью"
-              : `Неверный пин-код: ${validation.error || "Код не найден в базе"}`,
-            shouldContinue: validation.valid,
-            reason: validation.valid ? "PIN_VALIDATED" : "INVALID_PIN",
-            pinCodeDetected: {
-              pinCode,
-              valid: validation.valid,
-              error: validation.error,
-            },
-            agentTrace,
-          };
-        }
-
-        // Если функция валидации не передана, просто информируем о пин-коде
-        return {
-          analysis: "Обнаружен пин-код, но валидация не настроена",
-          shouldContinue: false,
-          reason: "PIN_DETECTED_NO_VALIDATOR",
-          pinCodeDetected: {
-            pinCode,
-            valid: false,
-            error: "Валидация не настроена",
-          },
-          agentTrace,
-        };
-      }
-
-      // Если не требуется ответ (благодарность, "ок" и т.д.)
-      if (
-        contextAnalysis.success &&
-        contextAnalysis.data &&
-        !contextAnalysis.data.requiresResponse
-      ) {
-        return {
-          analysis: "Простое подтверждение, ответ не требуется",
-          shouldContinue: false,
-          reason: "No response needed",
-          isSimpleAcknowledgment: true,
-          agentTrace,
-        };
-      }
-
-      // ШАГ 2: Проверка необходимости эскалации
+      // ШАГ 1: Проверка необходимости эскалации
       const escalationCheck = await this.escalationDetector.execute(
         {
           message: input.currentAnswer,
@@ -186,7 +88,6 @@ export class InterviewOrchestrator {
         timestamp: new Date(),
       });
 
-      // Если нужна эскалация
       if (escalationCheck.success && escalationCheck.data?.shouldEscalate) {
         return {
           analysis:
@@ -200,8 +101,20 @@ export class InterviewOrchestrator {
         };
       }
 
-      // ШАГ 3: Генерация следующего вопроса
-      const interviewResult = await this.interviewer.execute(input, context);
+      // ШАГ 2: Генерация следующего вопроса
+      const interviewerInput: InterviewerInput = {
+        currentAnswer: input.currentAnswer,
+        currentQuestion: input.currentQuestion,
+        previousQA: input.previousQA,
+        questionNumber: input.questionNumber,
+        customInterviewQuestions: input.customInterviewQuestions,
+        resumeLanguage: input.resumeLanguage,
+      };
+
+      const interviewResult = await this.interviewer.execute(
+        interviewerInput,
+        context,
+      );
 
       agentTrace.push({
         agent: "Interviewer",
@@ -227,7 +140,6 @@ export class InterviewOrchestrator {
         agentTrace,
       };
     } catch (error) {
-      // Обработка ошибок
       return {
         analysis: "Ошибка при обработке",
         shouldContinue: false,

@@ -1,18 +1,17 @@
 /**
- * Агент для генерации финального сообщения после завершения интервью
+ * Агент для генерации финального сообщения
  */
 
 import { z } from "zod";
 import { extractFirstName } from "../utils/name-extractor";
-import type { AIPoweredAgentConfig } from "./ai-powered-agent";
-import { AIPoweredAgent } from "./ai-powered-agent";
-import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
+import { type AgentConfig, BaseAgent } from "./base-agent";
+import { AgentType, type BaseAgentContext } from "./types";
 
 export interface InterviewCompletionInput {
   questionCount: number;
   score?: number;
   detailedScore?: number;
-  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
+  resumeLanguage?: string;
 }
 
 const interviewCompletionOutputSchema = z.object({
@@ -24,15 +23,35 @@ export type InterviewCompletionOutput = z.infer<
   typeof interviewCompletionOutputSchema
 >;
 
-export class InterviewCompletionAgent extends AIPoweredAgent<
+export class InterviewCompletionAgent extends BaseAgent<
   InterviewCompletionInput,
   InterviewCompletionOutput
 > {
-  constructor(config: AIPoweredAgentConfig) {
+  constructor(config: AgentConfig) {
+    const instructions = `Ты — рекрутер, который только что закончил предварительное интервью с кандидатом в Telegram.
+
+ПРАВИЛА:
+- Поблагодари за уделённое время
+- Сообщи, что скоро свяжешься с результатами
+- Пиши естественно, как живой человек
+- НЕ используй слово "Привет"
+- Обращайся на "вы"
+- Не используй шаблонные фразы типа "с уважением", "рады были познакомиться"
+- НЕ упоминай оценки или баллы
+- Максимум 1 эмодзи, если уместно
+- ⚠️ КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО говорить "передам работодателю", "передам руководству"
+- Говори от первого лица: "я изучу", "я свяжусь", "я рассмотрю"
+
+ПРИМЕРЫ ХОРОШИХ СООБЩЕНИЙ:
+- "Отлично, спасибо за ответы! 🙏 Изучу всё и свяжусь с вами в ближайшее время."
+- "Спасибо за беседу! Обработаю информацию и вернусь с обратной связью."
+- "Благодарю за время! Скоро вернусь с результатами."`;
+
     super(
       "InterviewCompletion",
       AgentType.EVALUATOR,
-      "Ты — рекрутер, который только что закончил предварительное интервью с кандидатом в Telegram.",
+      instructions,
+      interviewCompletionOutputSchema,
       config,
     );
   }
@@ -40,7 +59,6 @@ export class InterviewCompletionAgent extends AIPoweredAgent<
   protected validate(input: InterviewCompletionInput): boolean {
     if (!Number.isFinite(input.questionCount) || input.questionCount < 0)
       return false;
-
     return true;
   }
 
@@ -51,7 +69,6 @@ export class InterviewCompletionAgent extends AIPoweredAgent<
     const { candidateName, vacancyTitle, conversationHistory } = context;
     const { resumeLanguage = "en" } = input;
 
-    // Инструкция по адаптации к языку
     const languageInstruction = `\n\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
 - Изначальный язык резюме: "${resumeLanguage}"
 - ВАЖНО: Посмотри на ИСТОРИЮ ДИАЛОГА ниже и определи, на каком языке общался кандидат
@@ -72,7 +89,6 @@ export class InterviewCompletionAgent extends AIPoweredAgent<
         ? `\nОценка интервью: ${input.score}/5${input.detailedScore !== undefined ? ` (${input.detailedScore}/100)` : ""}`
         : "";
 
-    // Формируем историю диалога для контекста
     const recentHistory = conversationHistory.slice(-10);
     const historyText =
       recentHistory.length > 0
@@ -84,7 +100,7 @@ export class InterviewCompletionAgent extends AIPoweredAgent<
             .join("\n")
         : "";
 
-    return `${this.systemPrompt}${languageInstruction}
+    return `${languageInstruction}
 
 ${historyText ? `ИСТОРИЯ ДИАЛОГА (последние сообщения для контекста):\n${historyText}\n` : ""}
 
@@ -93,80 +109,10 @@ ${candidateNameText}
 ${vacancyText}
 Количество вопросов: ${input.questionCount}${scoreText}
 
-ТВОЯ ЗАДАЧА:
 Напиши короткое финальное сообщение кандидату (1-2 предложения).
 
-ПРАВИЛА:
-- Поблагодари за уделённое время
-- Сообщи, что скоро свяжешься с результатами
-- Пиши естественно, как живой человек
-- НЕ используй слово "Привет"
-- Обращайся на "вы"
-- Не используй шаблонные фразы типа "с уважением", "рады были познакомиться"
-- НЕ упоминай оценки или баллы
-- Максимум 1 эмодзи, если уместно
-- ⚠️ КАТЕГОРИЧЕСКИ ЗАПРЕЩЕНО говорить "передам работодателю", "передам руководству"
-- Говори от первого лица: "я изучу", "я свяжусь", "я рассмотрю"
-
-ПРИМЕРЫ ХОРОШИХ СООБЩЕНИЙ:
-- "Отлично, спасибо за ответы! 🙏 Изучу всё и свяжусь с вами в ближайшее время."
-- "Спасибо за беседу! Обработаю информацию и вернусь с обратной связью."
-- "Благодарю за время! Скоро вернусь с результатами."
-
-ПРИМЕРЫ ПЛОХИХ СООБЩЕНИЙ (НЕ ИСПОЛЬЗУЙ):
-- ❌ "Передам работодателю"
-- ❌ "Передам руководству"
-- ❌ "Передам в компанию"
-- ❌ "Отправлю на рассмотрение"
-
-ФОРМАТ ОТВЕТА - ВЕРНИ ТОЛЬКО ВАЛИДНЫЙ JSON:
-{
-  "finalMessage": "текст финального сообщения",
-  "confidence": число от 0.0 до 1.0
-}
-
-ВАЖНО: Верни ТОЛЬКО JSON, без дополнительного текста до или после.`;
-  }
-
-  async execute(
-    input: InterviewCompletionInput,
-    context: BaseAgentContext,
-  ): Promise<AgentResult<InterviewCompletionOutput>> {
-    if (!this.validate(input)) {
-      return { success: false, error: "Некорректные входные данные" };
-    }
-
-    try {
-      const prompt = this.buildPrompt(input, context);
-
-      const aiResponse = await this.generateAIResponse(prompt);
-
-      const expectedFormat = `{
-  "finalMessage": "string",
-  "confidence": number
-}`;
-
-      const parsed = await this.parseJSONResponseWithRetry(
-        aiResponse,
-        interviewCompletionOutputSchema,
-        expectedFormat,
-      );
-
-      if (!parsed) {
-        return { success: false, error: "Не удалось разобрать ответ AI" };
-      }
-
-      // Валидация confidence
-      if (parsed.confidence < 0 || parsed.confidence > 1) {
-        parsed.confidence = Math.max(0, Math.min(1, parsed.confidence));
-      }
-
-      return { success: true, data: parsed, metadata: { prompt } };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Неизвестная ошибка",
-      };
-    }
+Верни JSON с полями:
+- finalMessage: текст финального сообщения
+- confidence: число от 0.0 до 1.0`;
   }
 }
