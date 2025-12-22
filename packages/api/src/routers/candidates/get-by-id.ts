@@ -135,7 +135,7 @@ export const getById = protectedProcedure
       scoreAnalysis: response.telegramInterviewScoring?.analysis ?? undefined,
       screeningAnalysis: response.screening?.analysis ?? undefined,
       availability: "Не указано",
-      salaryExpectation: "Не указано",
+      salaryExpectation: response.salaryExpectations || "Не указано",
       stage,
       status: response.status,
       hrSelectionStatus: response.hrSelectionStatus,
