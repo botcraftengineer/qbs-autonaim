@@ -190,7 +190,9 @@ export async function getInterviewContext(
     .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
     .map((msg) => ({
       sender: msg.sender as "CANDIDATE" | "BOT",
-      content: msg.content,
+      content: msg.contentType === "VOICE" && msg.voiceTranscription 
+        ? msg.voiceTranscription 
+        : msg.content,
       contentType: (msg.contentType === "TEXT" || msg.contentType === "VOICE"
         ? msg.contentType
         : undefined) as "TEXT" | "VOICE" | undefined,

@@ -95,11 +95,19 @@ export async function getConversationHistory(conversationId: string) {
       }));
   }
 
-  return await db.query.conversationMessage.findMany({
+  const messages = await db.query.conversationMessage.findMany({
     where: eq(conversationMessage.conversationId, conversationId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
     limit: 10,
   });
+
+  // Для голосовых сообщений используем транскрибацию вместо "Голосовое сообщение"
+  return messages.map((msg) => ({
+    ...msg,
+    content: msg.contentType === "VOICE" && msg.voiceTranscription 
+      ? msg.voiceTranscription 
+      : msg.content,
+  }));
 }
 
 /**

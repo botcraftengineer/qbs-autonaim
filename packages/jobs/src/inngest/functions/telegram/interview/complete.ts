@@ -173,7 +173,9 @@ export const completeInterviewFunction = inngest.createFunction(
           .filter((msg) => msg.sender !== "ADMIN")
           .map((msg) => ({
             sender: msg.sender as "CANDIDATE" | "BOT",
-            content: msg.content,
+            content: msg.contentType === "VOICE" && msg.voiceTranscription 
+              ? msg.voiceTranscription 
+              : msg.content,
           }));
 
         const model = getAIModel();
@@ -288,7 +290,9 @@ export const completeInterviewFunction = inngest.createFunction(
           .filter((msg) => msg.sender !== "ADMIN")
           .map((msg) => ({
             sender: msg.sender as "CANDIDATE" | "BOT",
-            content: msg.content,
+            content: msg.contentType === "VOICE" && msg.voiceTranscription 
+              ? msg.voiceTranscription 
+              : msg.content,
             contentType: msg.contentType,
           })) ?? [];
 
