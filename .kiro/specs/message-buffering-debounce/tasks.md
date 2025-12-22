@@ -121,18 +121,20 @@
   - Спросить пользователя если возникли вопросы
 
 - [ ] 5. Интеграция с Telegram handler
-  - [ ] 5.1 Создать helper функцию для определения interview step
+  - [x] 5.1 Создать helper функцию для определения interview step
     - Реализовать `getCurrentInterviewStep(conversationId)`
     - Использовать существующую функцию `getQuestionCount`
     - Создать файл `packages/tg-client/src/utils/interview-helpers.ts`
     - _Requirements: 7.2_
   
-  - [ ] 5.2 Модифицировать обработчик входящих сообщений
-    - Найти текущий message handler
-    - Добавить вызов `messageBufferService.addMessage()`
-    - Добавить отправку события `interview/message.buffered` в Inngest
-    - Добавить получение questionContext из metadata
-    - Обновить файл в `packages/tg-client/src/handlers/`
+  - [x] 5.2 Модифицировать обработчик входящих сообщений
+    - ✅ Создан `packages/tg-client/src/handlers/message-handler.ts` с функцией `handleIncomingMessage()`
+    - ✅ Добавлен вызов `messageBufferService.addMessage()` с получением questionContext из metadata
+    - ✅ Добавлена отправка события `interview/message.buffered` в Inngest
+    - ✅ Добавлена интеграция в `packages/jobs/src/inngest/functions/telegram/process-incoming-message.ts`
+    - ✅ Добавлены экспорты в `packages/jobs/src/index.ts` и `packages/jobs/package.json`
+    - ✅ Добавлены экспорты в `packages/tg-client/src/index.ts` и `packages/tg-client/package.json`
+    - ✅ Feature flag `INTERVIEW_BUFFER_ENABLED` уже добавлен в `packages/config/src/env.ts`
     - _Requirements: 7.1, 7.2, 7.3_
   
   - [ ] 5.3 Создать обработчик typing событий
@@ -142,11 +144,11 @@
     - Создать файл `packages/tg-client/src/handlers/typing-handler.ts`
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
   
-  - [ ] 5.4 Добавить feature flag для буферизации
-    - Добавить `INTERVIEW_BUFFER_ENABLED` в env config
-    - Добавить условную логику в message handler
-    - Fallback на старую логику если флаг выключен
-    - Обновить `packages/config/src/env.ts`
+  - [x] 5.4 Добавить feature flag для буферизации
+    - ✅ Добавлен `INTERVIEW_BUFFER_ENABLED` в env config (уже был добавлен ранее)
+    - ✅ Добавлена условная логика в message handler
+    - ✅ Реализован fallback на старую логику если флаг выключен
+    - ✅ Обновлен `packages/config/src/env.ts`
     - _Requirements: 7.1, 7.3_
 
 - [ ] 6. Обработка ошибок и edge cases
@@ -175,10 +177,11 @@
     - _Requirements: 8.2_
 
 - [ ] 7. Конфигурация и мониторинг
-  - [ ] 7.1 Добавить environment variables
-    - Добавить `INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT`
-    - Добавить `INTERVIEW_TYPING_DEBOUNCE_TIMEOUT`
-    - Добавить `INTERVIEW_BUFFER_MAX_SIZE`
+  - [-] 7.1 Добавить environment variables
+    - ✅ Добавлен `INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT` (уже был добавлен ранее)
+    - ✅ Добавлен `INTERVIEW_TYPING_DEBOUNCE_TIMEOUT` (уже был добавлен ранее)
+    - ✅ Добавлен `INTERVIEW_BUFFER_ENABLED` (уже был добавлен ранее)
+    - [ ] Добавить `INTERVIEW_BUFFER_MAX_SIZE`
     - Обновить `packages/config/src/env.ts`
     - _Requirements: 6.1, 6.2_
   

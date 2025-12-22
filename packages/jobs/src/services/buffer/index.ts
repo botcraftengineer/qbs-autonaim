@@ -5,12 +5,12 @@
  * для работы с буферизацией сообщений в интервью.
  */
 
-// Экспорт типов и интерфейсов
+// Экспорт типов из shared пакета
 export type {
   BufferedMessage,
   BufferValue,
   MessageBufferService,
-} from "./types";
+} from "@qbs-autonaim/shared";
 
 // Экспорт класса реализации
 export { PostgresMessageBufferService } from "./postgres-buffer-service";

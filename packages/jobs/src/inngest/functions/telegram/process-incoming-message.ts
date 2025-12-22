@@ -1,5 +1,7 @@
 import { db } from "@qbs-autonaim/db/client";
 import { RESPONSE_STATUS } from "@qbs-autonaim/db/schema";
+import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
+import { handleIncomingMessage } from "@qbs-autonaim/tg-client/handlers/message-handler";
 import { conversationMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
@@ -183,6 +185,42 @@ export const processIncomingMessageFunction = inngest.createFunction(
         });
         return { skipped: true, reason: "duplicate message" };
       }
+
+      // Попытка буферизации сообщения (если включена)
+      const bufferResult = await step.run("try-buffer-message", async () => {
+        try {
+          return await handleIncomingMessage({
+            messageData,
+            workspaceId,
+            conversationId: conv.id,
+            userId: chatId, // используем chatId как userId
+            bufferService: messageBufferService,
+          });
+        } catch (error) {
+          console.error("❌ Ошибка буферизации сообщения:", error);
+          return { buffered: false, reason: "buffer error" };
+        }
+      });
+
+      // Если сообщение буферизовано, пропускаем стандартную обработку
+      if (bufferResult.buffered) {
+        console.log("✅ Сообщение буферизовано, стандартная обработка пропущена", {
+          conversationId: conv.id,
+          messageId: messageData.id.toString(),
+          interviewStep: bufferResult.interviewStep,
+        });
+        return { 
+          processed: true, 
+          identified: true, 
+          buffered: true,
+          interviewStep: bufferResult.interviewStep,
+        };
+      }
+
+      console.log("ℹ️ Буферизация не применена, используем стандартную обработку", {
+        conversationId: conv.id,
+        reason: bufferResult.reason,
+      });
 
       // 1. Сначала СОХРАНЯЕМ сообщение в БД
       await step.run("save-text-message", async () => {

@@ -2,81 +2,19 @@
  * Сервис для работы с метаданными conversation
  */
 
-import { eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
-import { conversation } from "@qbs-autonaim/db/schema";
+import type { ConversationMetadata } from "@qbs-autonaim/shared";
+import {
+  getConversationMetadata,
+  getQuestionCount,
+  updateConversationMetadata,
+} from "@qbs-autonaim/shared";
 import { createLogger } from "../base";
 
 const logger = createLogger("ConversationMetadata");
 
-interface QuestionAnswer {
-  question: string;
-  answer: string;
-  timestamp?: string;
-}
-
-interface ConversationMetadata {
-  identifiedBy?: "pin_code" | "vacancy_search" | "username" | "none";
-  pinCode?: string;
-  searchQuery?: string;
-  awaitingPin?: boolean;
-  interviewStarted?: boolean;
-  questionAnswers?: QuestionAnswer[];
-  lastQuestionAsked?: string;
-  interviewCompleted?: boolean;
-  completedAt?: string;
-}
-
-/**
- * Получает метаданные conversation
- */
-export async function getConversationMetadata(
-  conversationId: string,
-): Promise<ConversationMetadata> {
-  try {
-    const conv = await db.query.conversation.findFirst({
-      where: eq(conversation.id, conversationId),
-    });
-
-    if (!conv?.metadata) {
-      return {};
-    }
-
-    return JSON.parse(conv.metadata) as ConversationMetadata;
-  } catch (error) {
-    logger.error("Error getting conversation metadata", {
-      error,
-      conversationId,
-    });
-    return {};
-  }
-}
-
-/**
- * Обновляет метаданные conversation
- */
-export async function updateConversationMetadata(
-  conversationId: string,
-  updates: Partial<ConversationMetadata>,
-): Promise<boolean> {
-  try {
-    const current = await getConversationMetadata(conversationId);
-    const updated = { ...current, ...updates };
-
-    await db
-      .update(conversation)
-      .set({ metadata: JSON.stringify(updated) })
-      .where(eq(conversation.id, conversationId));
-
-    return true;
-  } catch (error) {
-    logger.error("Error updating conversation metadata", {
-      error,
-      conversationId,
-    });
-    return false;
-  }
-}
+// Re-export функций из shared для обратной совместимости
+export { getConversationMetadata, getQuestionCount, updateConversationMetadata };
+export type { ConversationMetadata };
 
 /**
  * Добавляет вопрос-ответ в историю интервью
@@ -144,14 +82,4 @@ export async function isInterviewCompleted(
 ): Promise<boolean> {
   const metadata = await getConversationMetadata(conversationId);
   return metadata.interviewCompleted === true;
-}
-
-/**
- * Получает количество заданных вопросов
- */
-export async function getQuestionCount(
-  conversationId: string,
-): Promise<number> {
-  const metadata = await getConversationMetadata(conversationId);
-  return metadata.questionAnswers?.length || 0;
 }

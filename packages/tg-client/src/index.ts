@@ -8,3 +8,5 @@ export {
   sendMessageByPhone,
   sendMessageByUsername,
 } from "./user-client";
+export { handleIncomingMessage } from "./handlers/message-handler";
+export { getCurrentInterviewStep } from "./utils/interview-helpers";

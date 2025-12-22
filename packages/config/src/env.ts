@@ -45,6 +45,7 @@ export const env: Prettify<{
   NEXT_PUBLIC_APP_NAME: string;
   INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT: number;
   INTERVIEW_TYPING_DEBOUNCE_TIMEOUT: number;
+  INTERVIEW_BUFFER_ENABLED: boolean;
 }> = createEnv({
   server: {
     // Node environment
@@ -117,6 +118,11 @@ export const env: Prettify<{
       .optional()
       .default("5")
       .transform(Number),
+    INTERVIEW_BUFFER_ENABLED: z
+      .string()
+      .optional()
+      .default("false")
+      .transform((val) => val === "true"),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z
@@ -168,6 +174,7 @@ export const env: Prettify<{
       process.env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT,
     INTERVIEW_TYPING_DEBOUNCE_TIMEOUT:
       process.env.INTERVIEW_TYPING_DEBOUNCE_TIMEOUT,
+    INTERVIEW_BUFFER_ENABLED: process.env.INTERVIEW_BUFFER_ENABLED,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   },

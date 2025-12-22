@@ -5,16 +5,16 @@
  * Буферы изолированы по interviewStep внутри каждого conversation.
  */
 
-import { createLogger } from "../base";
-import {
-  getConversationMetadata,
-  updateConversationMetadata,
-} from "../interview/conversation-metadata";
 import type {
   BufferedMessage,
   BufferValue,
   MessageBufferService,
-} from "./types";
+} from "@qbs-autonaim/shared";
+import {
+  getConversationMetadata,
+  updateConversationMetadata,
+} from "@qbs-autonaim/shared";
+import { createLogger } from "../base";
 
 const logger = createLogger("PostgresMessageBufferService");
 
