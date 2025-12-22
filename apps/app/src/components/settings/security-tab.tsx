@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   Button,
   Card,
@@ -20,18 +21,7 @@ import { useTRPC } from "~/trpc/react";
 import { DeleteAccountDialog } from "./delete-account-dialog";
 
 interface SecurityTabProps {
-  user:
-    | {
-        id: string;
-        name: string | null;
-        email: string;
-        image: string | null;
-        accounts?: Array<{
-          id: string;
-          providerId: string;
-        }>;
-      }
-    | undefined;
+  user: RouterOutputs["user"]["me"];
 }
 
 export function SecurityTab({ user }: SecurityTabProps) {

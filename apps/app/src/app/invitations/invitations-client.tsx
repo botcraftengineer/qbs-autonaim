@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   Avatar,
   AvatarFallback,
@@ -19,19 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 
-type Invite = {
-  id: string;
-  workspaceId: string;
-  token: string;
-  role: string;
-  expiresAt: Date;
-  workspace: {
-    id: string;
-    name: string;
-    slug: string;
-    logo: string | null;
-  };
-};
+type Invite = RouterOutputs["workspace"]["invites"]["list"][number];
 
 export function InvitationsClient({ invites }: { invites: Invite[] }) {
   const router = useRouter();
