@@ -14,18 +14,27 @@ export async function saveUnidentifiedMessage(params: {
   if (conversationId.startsWith("temp_")) {
     const chatId = conversationId.replace("temp_", "");
 
-    await tempMessageBufferService.addMessage({
-      tempConversationId: conversationId,
-      chatId,
-      message: {
-        id: messageId,
-        content,
-        contentType,
-        sender: "CANDIDATE",
-        timestamp: new Date(),
-        externalMessageId: messageId,
-      },
-    });
+    try {
+      await tempMessageBufferService.addMessage({
+        tempConversationId: conversationId,
+        chatId,
+        message: {
+          id: messageId,
+          content,
+          contentType,
+          sender: "CANDIDATE",
+          timestamp: new Date(),
+          externalMessageId: messageId,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to save temporary message:", {
+        conversationId,
+        chatId,
+        messageId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
     return;
   }
 

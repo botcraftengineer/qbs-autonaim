@@ -1,5 +1,6 @@
 import { db } from "@qbs-autonaim/db/client";
 import {
+  bufferedTempMessage,
   conversationMessage,
   tempConversationMessage,
 } from "@qbs-autonaim/db/schema";
@@ -85,9 +86,12 @@ export async function flushTempMessageBuffer(
       );
 
       await tx.insert(tempConversationMessage).values(messagesToInsert);
-    });
 
-    await tempMessageBufferService.clearBuffer({ tempConversationId });
+      // Clear buffer within the same transaction to ensure atomicity
+      await tx
+        .delete(bufferedTempMessage)
+        .where(eq(bufferedTempMessage.tempConversationId, tempConversationId));
+    });
 
     console.log(
       "✅ Буферизованные сообщения перенесены в temp_conversation_messages",
