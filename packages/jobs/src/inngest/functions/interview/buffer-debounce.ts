@@ -1,4 +1,5 @@
 import { env } from "@qbs-autonaim/config";
+import { randomUUID } from "node:crypto";
 import { messageBufferService } from "../../../services/buffer";
 import { inngest } from "../../client";
 
@@ -58,8 +59,8 @@ export const bufferDebounceFunction = inngest.createFunction(
       return { skipped: true, reason: "Буфер уже обработан" };
     }
 
-    // Генерация flushId для идемпотентности
-    const flushId = `${userId}-${conversationId}-${interviewStep}-${Date.now()}`;
+    // Генерация flushId для идемпотентности (collision-resistant UUID)
+    const flushId = randomUUID();
 
     // Отправка события flush
     await step.sendEvent("trigger-flush", {

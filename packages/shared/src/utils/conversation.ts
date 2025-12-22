@@ -5,7 +5,54 @@
 import { eq, sql } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
+import { z } from "zod";
 import type { ConversationMetadata } from "../types/conversation";
+
+/**
+ * Zod схема для валидации ConversationMetadata
+ */
+const QuestionAnswerSchema = z.object({
+  question: z.string(),
+  answer: z.string(),
+  timestamp: z.string().optional(),
+});
+
+const ConversationMetadataSchema = z.object({
+  identifiedBy: z
+    .enum(["pin_code", "vacancy_search", "username", "none"])
+    .optional(),
+  pinCode: z.string().optional(),
+  searchQuery: z.string().optional(),
+  awaitingPin: z.boolean().optional(),
+  interviewStarted: z.boolean().optional(),
+  questionAnswers: z.array(QuestionAnswerSchema).optional(),
+  lastQuestionAsked: z.string().optional(),
+  interviewCompleted: z.boolean().optional(),
+  completedAt: z.string().optional(),
+});
+
+/**
+ * Безопасно парсит JSON метаданные с валидацией
+ * 
+ * @param jsonString - JSON строка для парсинга
+ * @returns Валидированные метаданные или пустой объект при ошибке
+ * @throws Error если JSON невалиден или не соответствует схеме
+ */
+function safeParseMetadata(jsonString: string): ConversationMetadata {
+  try {
+    const parsed = JSON.parse(jsonString);
+    const validated = ConversationMetadataSchema.parse(parsed);
+    return validated;
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.issues
+        .map((issue) => `${issue.path.join(".")}: ${issue.message}`)
+        .join(", ");
+      throw new Error(`Invalid metadata schema: ${errorMessages}`);
+    }
+    throw new Error(`Failed to parse metadata JSON: ${error}`);
+  }
+}
 
 /**
  * Получает метаданные conversation
@@ -25,7 +72,17 @@ export async function getConversationMetadata(
       return {};
     }
 
-    return JSON.parse(conv.metadata) as ConversationMetadata;
+    try {
+      return safeParseMetadata(conv.metadata);
+    } catch (error) {
+      console.error("Failed to parse conversation metadata", {
+        error,
+        conversationId,
+        rawMetadata: conv.metadata,
+      });
+      // Возвращаем пустой объект при невалидных данных
+      return {};
+    }
   } catch (error) {
     console.error("Error getting conversation metadata", {
       error,
@@ -62,10 +119,24 @@ async function updateWithOptimisticLock(
         return false;
       }
 
-      // Парсим и мержим метаданные
-      const currentMetadata = current.metadata
-        ? (JSON.parse(current.metadata) as ConversationMetadata)
-        : {};
+      // Безопасно парсим и валидируем метаданные
+      let currentMetadata: ConversationMetadata = {};
+      if (current.metadata) {
+        try {
+          currentMetadata = safeParseMetadata(current.metadata);
+        } catch (error) {
+          console.error("Failed to parse conversation metadata", {
+            conversationId,
+            error,
+            rawMetadata: current.metadata,
+          });
+          // Прерываем транзакцию при невалидных данных
+          throw new Error(
+            `Cannot update conversation with malformed metadata: ${error}`,
+          );
+        }
+      }
+
       const updatedMetadata = { ...currentMetadata, ...updates };
 
       // Обновляем с проверкой версии (оптимистичная блокировка)
