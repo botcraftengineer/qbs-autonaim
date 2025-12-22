@@ -1,17 +1,17 @@
 /**
  * PostgreSQL-based реализация сервиса буферизации сообщений
  * 
- * Использует отдельную таблицу message_buffers для хранения буферов.
- * Буферы изолированы по conversationId и interviewStep.
+ * Использует отдельную таблицу buffered_messages для хранения сообщений.
+ * Каждое сообщение в отдельной строке для предотвращения затирания.
  */
 
 import type {
   BufferedMessage,
   MessageBufferService,
 } from "@qbs-autonaim/shared";
-import { and, eq } from "@qbs-autonaim/db";
+import { and, asc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { messageBuffer } from "@qbs-autonaim/db/schema";
+import { bufferedMessage } from "@qbs-autonaim/db/schema";
 import { createLogger } from "../base";
 
 const logger = createLogger("PostgresMessageBufferService");
@@ -19,15 +19,15 @@ const logger = createLogger("PostgresMessageBufferService");
 /**
  * PostgreSQL-based реализация MessageBufferService
  * 
- * Хранит буферы сообщений в отдельной таблице message_buffers.
- * Каждый буфер изолирован по conversationId и interviewStep.
+ * Хранит каждое сообщение в отдельной строке таблицы buffered_messages.
+ * Предотвращает затирание сообщений при конкурентных операциях.
  */
 export class PostgresMessageBufferService implements MessageBufferService {
   /**
    * Добавить сообщение в буфер
    * 
-   * Валидирует сообщение (отклоняет пустые), инициализирует буфер если нужно,
-   * и добавляет сообщение в массив для соответствующего interviewStep.
+   * Валидирует сообщение (отклоняет пустые) и добавляет его как отдельную строку.
+   * Каждое сообщение независимо, что предотвращает затирание при конкурентных операциях.
    */
   async addMessage(params: {
     userId: string;
@@ -45,52 +45,21 @@ export class PostgresMessageBufferService implements MessageBufferService {
     }
 
     try {
-      await db.transaction(async (tx) => {
-        // Ищем существующий буфер
-        const existing = await tx.query.messageBuffer.findFirst({
-          where: and(
-            eq(messageBuffer.conversationId, params.conversationId),
-            eq(messageBuffer.interviewStep, params.interviewStep),
-          ),
-        });
+      await db.insert(bufferedMessage).values({
+        messageId: params.message.id,
+        conversationId: params.conversationId,
+        userId: params.userId,
+        interviewStep: params.interviewStep,
+        content: params.message.content,
+        contentType: params.message.contentType,
+        questionContext: params.message.questionContext,
+        timestamp: params.message.timestamp,
+      });
 
-        const now = Date.now();
-
-        if (existing) {
-          // Обновляем существующий буфер
-          const messages = [...existing.messages, params.message];
-
-          await tx
-            .update(messageBuffer)
-            .set({
-              messages,
-              lastUpdatedAt: now,
-            })
-            .where(eq(messageBuffer.id, existing.id));
-
-          logger.debug("Message added to existing buffer", {
-            conversationId: params.conversationId,
-            interviewStep: params.interviewStep,
-            messageId: params.message.id,
-            bufferSize: messages.length,
-          });
-        } else {
-          // Создаем новый буфер
-          await tx.insert(messageBuffer).values({
-            conversationId: params.conversationId,
-            userId: params.userId,
-            interviewStep: params.interviewStep,
-            messages: [params.message],
-            createdAt: now,
-            lastUpdatedAt: now,
-          });
-
-          logger.debug("Message added to new buffer", {
-            conversationId: params.conversationId,
-            interviewStep: params.interviewStep,
-            messageId: params.message.id,
-          });
-        }
+      logger.debug("Message added to buffer", {
+        conversationId: params.conversationId,
+        interviewStep: params.interviewStep,
+        messageId: params.message.id,
       });
     } catch (error) {
       logger.error("Error adding message to buffer", {
@@ -105,8 +74,8 @@ export class PostgresMessageBufferService implements MessageBufferService {
   /**
    * Получить все сообщения из буфера
    * 
-   * Возвращает массив сообщений для указанного interviewStep.
-   * Если буфер не существует, возвращает пустой массив.
+   * Возвращает массив сообщений для указанного interviewStep,
+   * отсортированных по timestamp.
    */
   async getMessages(params: {
     userId: string;
@@ -114,22 +83,29 @@ export class PostgresMessageBufferService implements MessageBufferService {
     interviewStep: number;
   }): Promise<BufferedMessage[]> {
     try {
-      const buffer = await db.query.messageBuffer.findFirst({
+      const messages = await db.query.bufferedMessage.findMany({
         where: and(
-          eq(messageBuffer.conversationId, params.conversationId),
-          eq(messageBuffer.interviewStep, params.interviewStep),
+          eq(bufferedMessage.conversationId, params.conversationId),
+          eq(bufferedMessage.interviewStep, params.interviewStep),
         ),
+        orderBy: [asc(bufferedMessage.timestamp)],
       });
 
-      const messages = buffer?.messages || [];
+      const result = messages.map((msg) => ({
+        id: msg.messageId,
+        content: msg.content,
+        contentType: msg.contentType as "TEXT" | "VOICE",
+        timestamp: msg.timestamp,
+        questionContext: msg.questionContext || undefined,
+      }));
 
       logger.debug("Retrieved messages from buffer", {
         conversationId: params.conversationId,
         interviewStep: params.interviewStep,
-        messageCount: messages.length,
+        messageCount: result.length,
       });
 
-      return messages;
+      return result;
     } catch (error) {
       logger.error("Error getting messages from buffer", {
         error,
@@ -143,7 +119,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
   /**
    * Очистить буфер для конкретного шага интервью
    * 
-   * Удаляет буфер для указанного interviewStep.
+   * Удаляет все сообщения для указанного interviewStep.
    */
   async clearBuffer(params: {
     userId: string;
@@ -152,11 +128,11 @@ export class PostgresMessageBufferService implements MessageBufferService {
   }): Promise<void> {
     try {
       await db
-        .delete(messageBuffer)
+        .delete(bufferedMessage)
         .where(
           and(
-            eq(messageBuffer.conversationId, params.conversationId),
-            eq(messageBuffer.interviewStep, params.interviewStep),
+            eq(bufferedMessage.conversationId, params.conversationId),
+            eq(bufferedMessage.interviewStep, params.interviewStep),
           ),
         );
 
@@ -177,7 +153,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
   /**
    * Проверить существование буфера
    * 
-   * Возвращает true если буфер существует и содержит сообщения.
+   * Возвращает true если существует хотя бы одно сообщение для указанного interviewStep.
    */
   async hasBuffer(params: {
     userId: string;
@@ -185,18 +161,14 @@ export class PostgresMessageBufferService implements MessageBufferService {
     interviewStep: number;
   }): Promise<boolean> {
     try {
-      const buffer = await db.query.messageBuffer.findFirst({
+      const message = await db.query.bufferedMessage.findFirst({
         where: and(
-          eq(messageBuffer.conversationId, params.conversationId),
-          eq(messageBuffer.interviewStep, params.interviewStep),
+          eq(bufferedMessage.conversationId, params.conversationId),
+          eq(bufferedMessage.interviewStep, params.interviewStep),
         ),
       });
 
-      const hasBuffer =
-        buffer !== undefined &&
-        buffer !== null &&
-        Array.isArray(buffer.messages) &&
-        buffer.messages.length > 0;
+      const hasBuffer = message !== undefined && message !== null;
 
       logger.debug("Checked buffer existence", {
         conversationId: params.conversationId,
