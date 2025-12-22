@@ -9,27 +9,6 @@ import { z } from "zod";
 import type { ConversationMetadata } from "../types/conversation";
 
 /**
- * Zod схема для валидации BufferedMessage
- */
-const BufferedMessageSchema = z.object({
-  id: z.string(),
-  content: z.string(),
-  contentType: z.enum(["TEXT", "VOICE"]),
-  timestamp: z.number(),
-  questionContext: z.string().optional(),
-});
-
-/**
- * Zod схема для валидации BufferValue
- */
-const BufferValueSchema = z.object({
-  messages: z.array(BufferedMessageSchema),
-  createdAt: z.number(),
-  lastUpdatedAt: z.number(),
-  flushId: z.string().optional(),
-});
-
-/**
  * Zod схема для валидации ConversationMetadata
  */
 const QuestionAnswerSchema = z.object({
@@ -50,7 +29,6 @@ const ConversationMetadataSchema = z.object({
   lastQuestionAsked: z.string().optional(),
   interviewCompleted: z.boolean().optional(),
   completedAt: z.string().optional(),
-  messageBuffer: z.record(z.string(), BufferValueSchema).optional(),
 }).passthrough(); // Разрешаем дополнительные поля для обратной совместимости
 
 /**
