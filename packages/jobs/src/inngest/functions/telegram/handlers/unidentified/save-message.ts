@@ -1,7 +1,7 @@
 import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
+import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { findDuplicateMessage } from "../../utils";
-import { saveTempMessage } from "./temp-message-storage";
 
 export async function saveUnidentifiedMessage(params: {
   conversationId: string;
@@ -12,15 +12,19 @@ export async function saveUnidentifiedMessage(params: {
   const { conversationId, content, messageId, contentType = "TEXT" } = params;
 
   if (conversationId.startsWith("temp_")) {
-    // Сохраняем во временное хранилище
     const chatId = conversationId.replace("temp_", "");
-    await saveTempMessage({
+
+    await tempMessageBufferService.addMessage({
       tempConversationId: conversationId,
       chatId,
-      sender: "CANDIDATE",
-      content,
-      contentType,
-      externalMessageId: messageId,
+      message: {
+        id: messageId,
+        content,
+        contentType,
+        sender: "CANDIDATE",
+        timestamp: new Date(),
+        externalMessageId: messageId,
+      },
     });
     return;
   }

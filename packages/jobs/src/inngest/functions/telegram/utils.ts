@@ -5,6 +5,10 @@ import {
   conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import {
+  type BufferedTempMessageData,
+  tempMessageBufferService,
+} from "~/services/buffer/temp-message-buffer-service";
 import { getTempMessageHistory } from "./handlers/unidentified/temp-message-storage";
 import type { BotSettings } from "./types";
 
@@ -63,11 +67,44 @@ function isValidContentType(value: unknown): value is "TEXT" | "VOICE" {
 
 export async function getConversationHistory(conversationId: string) {
   if (conversationId.startsWith("temp_")) {
-    // Для временных conversation загружаем из временного хранилища
+    const bufferedMessages = await tempMessageBufferService.getMessages({
+      tempConversationId: conversationId,
+    });
+
     const tempMessages = await getTempMessageHistory(conversationId);
 
-    // Преобразуем в формат conversationMessage с валидацией
-    return tempMessages
+    const allMessages = [
+      ...tempMessages.map((msg) => ({
+        id: msg.id,
+        conversationId: msg.tempConversationId,
+        sender: msg.sender as "CANDIDATE" | "BOT",
+        contentType: msg.contentType as "TEXT" | "VOICE",
+        channel: "TELEGRAM" as const,
+        content: msg.content,
+        fileId: null,
+        voiceDuration: null,
+        voiceTranscription: null,
+        externalMessageId: msg.externalMessageId,
+        createdAt: msg.createdAt,
+        timestamp: msg.createdAt,
+      })),
+      ...bufferedMessages.map((msg: BufferedTempMessageData) => ({
+        id: msg.id,
+        conversationId,
+        sender: msg.sender,
+        contentType: msg.contentType,
+        channel: "TELEGRAM" as const,
+        content: msg.content,
+        fileId: null,
+        voiceDuration: null,
+        voiceTranscription: null,
+        externalMessageId: msg.externalMessageId,
+        createdAt: msg.timestamp,
+        timestamp: msg.timestamp,
+      })),
+    ];
+
+    return allMessages
       .filter((msg) => {
         const isValid =
           isValidSender(msg.sender) && isValidContentType(msg.contentType);
@@ -80,19 +117,7 @@ export async function getConversationHistory(conversationId: string) {
         }
         return isValid;
       })
-      .map((msg) => ({
-        id: msg.id,
-        conversationId: msg.tempConversationId,
-        sender: msg.sender as "CANDIDATE" | "BOT",
-        contentType: msg.contentType as "TEXT" | "VOICE",
-        channel: "TELEGRAM" as const,
-        content: msg.content,
-        fileId: null,
-        voiceDuration: null,
-        voiceTranscription: null,
-        externalMessageId: msg.externalMessageId,
-        createdAt: msg.createdAt,
-      }));
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 
   const messages = await db.query.conversationMessage.findMany({
@@ -104,9 +129,10 @@ export async function getConversationHistory(conversationId: string) {
   // Для голосовых сообщений используем транскрибацию вместо "Голосовое сообщение"
   return messages.map((msg) => ({
     ...msg,
-    content: msg.contentType === "VOICE" && msg.voiceTranscription 
-      ? msg.voiceTranscription 
-      : msg.content,
+    content:
+      msg.contentType === "VOICE" && msg.voiceTranscription
+        ? msg.voiceTranscription
+        : msg.content,
   }));
 }
 
