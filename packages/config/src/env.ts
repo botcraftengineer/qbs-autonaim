@@ -111,12 +111,12 @@ export const env: Prettify<{
     INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT: z
       .string()
       .optional()
-      .default("10")
+      .default("120")
       .transform(Number),
     INTERVIEW_TYPING_DEBOUNCE_TIMEOUT: z
       .string()
       .optional()
-      .default("5")
+      .default("30")
       .transform(Number),
     INTERVIEW_BUFFER_ENABLED: z
       .string()
