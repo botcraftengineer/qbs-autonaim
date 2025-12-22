@@ -188,13 +188,11 @@ export class PostgresMessageBufferService implements MessageBufferService {
         params.conversationId,
       );
 
-      if (!rawMetadata) {
-        logger.debug("Conversation metadata not found, returning empty array", {
-          conversationId: params.conversationId,
-          interviewStep: params.interviewStep,
-        });
-        return [];
-      }
+const rawMetadata = await getConversationMetadata(
+  params.conversationId,
+);
+
+const metadata = rawMetadata as ExtendedConversationMetadata;
 
       const metadata = rawMetadata as ExtendedConversationMetadata;
 
