@@ -13,5 +13,9 @@ export default function AccountSettingsPage() {
     return <Skeleton className="h-[400px] w-full" />;
   }
 
+  if (!user) {
+    return null;
+  }
+
   return <GeneralTab user={user} />;
 }

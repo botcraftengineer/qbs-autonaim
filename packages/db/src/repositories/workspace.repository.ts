@@ -151,6 +151,9 @@ export class WorkspaceRepository {
           eq(invite.workspaceId, workspaceId),
           gt(invite.expiresAt, new Date()),
         ),
+      with: {
+        workspace: true,
+      },
     });
   }
 

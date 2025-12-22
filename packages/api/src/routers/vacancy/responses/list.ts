@@ -215,6 +215,7 @@ export const list = protectedProcedure
         status: true,
         hrSelectionStatus: true,
         contacts: true,
+        experience: true,
         resumeUrl: true,
         telegramUsername: true,
         phone: true,

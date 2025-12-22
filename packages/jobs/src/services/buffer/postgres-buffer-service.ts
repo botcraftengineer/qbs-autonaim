@@ -236,12 +236,6 @@ export class PostgresMessageBufferService implements MessageBufferService {
         params.conversationId,
       );
 
-const rawMetadata = await getConversationMetadata(
-  params.conversationId,
-);
-
-const metadata = rawMetadata as ExtendedConversationMetadata;
-
       const metadata = rawMetadata as ExtendedConversationMetadata;
 
       const messages =
