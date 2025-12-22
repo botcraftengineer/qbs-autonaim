@@ -15,7 +15,7 @@ export class SessionWatcher {
 
   constructor(
     private botManager: BotManager,
-    private checkIntervalMs = 60000, // 10 секунд
+    private checkIntervalMs = 60000, // 60 секунд
   ) {}
 
   /**
