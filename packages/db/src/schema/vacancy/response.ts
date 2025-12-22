@@ -52,7 +52,7 @@ export const vacancyResponse = pgTable(
     experience: text("experience"),
     contacts: jsonb("contacts"),
     phone: varchar("phone", { length: 50 }),
-    resumeLanguage: varchar("resume_language", { length: 10 }).default("en"),
+    resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
     telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
