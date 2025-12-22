@@ -33,6 +33,11 @@ export type {
 } from "./interview-completion";
 export { InterviewCompletionAgent } from "./interview-completion";
 export type {
+  InterviewContentFilterInput,
+  InterviewContentFilterOutput,
+} from "./interview-content-filter";
+export { InterviewContentFilterAgent } from "./interview-content-filter";
+export type {
   InterviewScoringInput,
   InterviewScoringOutput,
 } from "./interview-scoring";
