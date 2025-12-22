@@ -71,7 +71,21 @@ export async function flushTempMessageBuffer(
       return;
     }
 
-    const chatId = tempConversationId.replace("temp_", "");
+    // Validate and extract chatId from tempConversationId
+    if (!tempConversationId.startsWith("temp_")) {
+      throw new Error(
+        `Invalid tempConversationId format: expected "temp_" prefix, got "${tempConversationId}"`,
+      );
+    }
+
+    const chatId = tempConversationId.slice(5); // Remove "temp_" prefix (5 characters)
+
+    // Валидация числового chatId (Telegram ID)
+    if (!chatId || !/^-?\d+$/.test(chatId)) {
+      throw new Error(
+        `Невалидный chatId извлечён из tempConversationId: "${chatId}"`,
+      );
+    }
 
     await db.transaction(async (tx) => {
       const messagesToInsert = bufferedMessages.map(

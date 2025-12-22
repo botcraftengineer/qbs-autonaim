@@ -5,6 +5,7 @@ import { botManager } from "../bot-manager";
 import auth from "./routes/auth";
 import files from "./routes/files";
 import messages from "./routes/messages";
+import sessions from "./routes/sessions";
 
 export const customLogger = (message: unknown) => {
   console.log(message);
@@ -17,7 +18,12 @@ app.use("*", cors());
 app.use(logger(customLogger));
 
 app.get("/health", (c) => {
-  return c.json({ status: "ok", service: "tg-client" });
+  const botsCount = botManager.getBotsCount();
+  return c.json({
+    status: "ok",
+    service: "tg-client",
+    activeSessions: botsCount,
+  });
 });
 
 app.get("/bots/status", (c) => {
@@ -34,5 +40,6 @@ app.get("/bots/status", (c) => {
 app.route("/auth", auth);
 app.route("/messages", messages);
 app.route("/files", files);
+app.route("/sessions", sessions);
 
 export default app;

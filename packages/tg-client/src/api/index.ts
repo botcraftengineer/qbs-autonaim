@@ -1,8 +1,12 @@
 import { botManager } from "../bot-manager";
+import { SessionWatcher } from "../services/session-watcher";
 import app from "./server";
 
 const port = Number.parseInt(process.env.TG_CLIENT_PORT || "8001", 10);
 let isShuttingDown = false;
+
+// Создаем watcher для автоматического запуска новых сессий
+const sessionWatcher = new SessionWatcher(botManager);
 
 console.log(`🚀 Запуск Telegram Client API на порту ${port}`);
 
@@ -14,11 +18,12 @@ async function shutdown(signal: string) {
   }
 
   isShuttingDown = true;
-  console.log(`\n🛑 Получен сигнал ${signal}, останавливаем ботов...`);
+  console.log(`\n🛑 Получен сигнал ${signal}, останавливаем сервисы...`);
 
   try {
+    sessionWatcher.stop();
     await botManager.stopAll();
-    console.log("✅ Все боты остановлены");
+    console.log("✅ Все сервисы остановлены");
     process.exit(0);
   } catch (error) {
     console.error("❌ Ошибка при остановке:", error);
@@ -29,7 +34,7 @@ async function shutdown(signal: string) {
 // Запускаем ботов при старте API (они нужны для обработки запросов)
 botManager
   .startAll()
-  .then(() => {
+  .then(async () => {
     const count = botManager.getBotsCount();
     console.log(`✅ Telegram боты запущены: ${count} шт.`);
 
@@ -39,6 +44,9 @@ botManager
         `  📱 Workspace: ${bot.workspaceId}, User: @${bot.username || bot.userId}`,
       );
     }
+
+    // Запускаем watcher для автоматического подхвата новых сессий
+    await sessionWatcher.start();
 
     // Обработка graceful shutdown
     process.on("SIGINT", () => shutdown("SIGINT"));
