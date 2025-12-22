@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import { Button } from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
@@ -7,18 +8,7 @@ import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 
 interface InviteAcceptClientProps {
-  invite: {
-    id: string;
-    workspaceId: string;
-    role: "owner" | "admin" | "member";
-    expiresAt: Date;
-    workspace: {
-      id: string;
-      name: string;
-      slug: string;
-      logo: string | null;
-    };
-  };
+  invite: RouterOutputs["workspace"]["invites"]["list"][number];
   token: string;
 }
 

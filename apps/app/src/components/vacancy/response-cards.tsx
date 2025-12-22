@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
@@ -21,12 +22,11 @@ import {
 } from "@qbs-autonaim/ui";
 import { Send, User } from "lucide-react";
 import { ResponseActions } from "~/components/response";
-import type { VacancyResponse } from "~/types/vacancy";
 import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
 
 interface ResponseCardsProps {
-  responses: VacancyResponse[];
+  responses: RouterOutputs["vacancy"]["responses"]["list"]["responses"];
   workspaceSlug: string;
 }
 

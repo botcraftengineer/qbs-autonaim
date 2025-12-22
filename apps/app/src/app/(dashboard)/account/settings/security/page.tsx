@@ -13,5 +13,9 @@ export default function SecuritySettingsPage() {
     return <Skeleton className="h-[400px] w-full" />;
   }
 
+  if (!user) {
+    return null;
+  }
+
   return <SecurityTab user={user} />;
 }

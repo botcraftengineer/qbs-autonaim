@@ -12,14 +12,47 @@ import type {
 } from "@qbs-autonaim/shared";
 import {
   getConversationMetadata,
-  updateConversationMetadata,
 } from "@qbs-autonaim/shared";
 import { eq, sql } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
 import { createLogger } from "../base";
+import { z } from "zod";
 
 const logger = createLogger("PostgresMessageBufferService");
+
+/**
+ * Zod схема для валидации BufferedMessage
+ */
+const BufferedMessageSchema = z.object({
+  id: z.string(),
+  content: z.string(),
+  contentType: z.enum(["TEXT", "VOICE"]),
+  timestamp: z.number(),
+  questionContext: z.string().optional(),
+});
+
+/**
+ * Zod схема для валидации BufferValue
+ */
+const BufferValueSchema = z.object({
+  messages: z.array(BufferedMessageSchema),
+  createdAt: z.number(),
+  lastUpdatedAt: z.number(),
+  flushId: z.string().optional(),
+});
+
+/**
+ * Zod схема для валидации MessageBuffer
+ */
+const MessageBufferSchema = z.record(z.number(), BufferValueSchema);
+
+/**
+ * Zod схема для валидации ExtendedConversationMetadata
+ */
+const ExtendedConversationMetadataSchema = z.object({
+  messageBuffer: MessageBufferSchema.optional(),
+}).passthrough(); // Разрешаем дополнительные поля из базовой ConversationMetadata
 
 /**
  * Расширение ConversationMetadata для поддержки буферизации
@@ -83,10 +116,25 @@ export class PostgresMessageBufferService implements MessageBufferService {
             );
           }
 
-          // Парсим метаданные
-          const metadata = current.metadata
-            ? (JSON.parse(current.metadata) as ExtendedConversationMetadata)
-            : ({} as ExtendedConversationMetadata);
+          // Парсим метаданные с валидацией через Zod
+          let metadata: ExtendedConversationMetadata;
+          if (current.metadata) {
+            const parseResult = ExtendedConversationMetadataSchema.safeParse(
+              JSON.parse(current.metadata)
+            );
+            
+            if (parseResult.success) {
+              metadata = parseResult.data;
+            } else {
+              logger.error("Failed to validate metadata, using empty object", {
+                conversationId: params.conversationId,
+                errors: parseResult.error.issues,
+              });
+              metadata = {};
+            }
+          } else {
+            metadata = {};
+          }
 
           // Инициализация messageBuffer если не существует
           if (!metadata.messageBuffer) {
@@ -152,7 +200,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
         if (attempt < maxRetries) {
           // Экспоненциальная задержка перед повтором
           await new Promise((resolve) =>
-            setTimeout(resolve, Math.pow(2, attempt) * 10),
+            setTimeout(resolve, 2 ** attempt * 10),
           );
         }
       } catch (error) {
@@ -222,47 +270,127 @@ export class PostgresMessageBufferService implements MessageBufferService {
    * Очистить буфер для конкретного шага интервью
    * 
    * Удаляет буфер для указанного interviewStep из metadata.
+   * Использует транзакцию с оптимистической блокировкой для защиты от race conditions.
    */
   async clearBuffer(params: {
     userId: string;
     conversationId: string;
     interviewStep: number;
   }): Promise<void> {
-    try {
-      const rawMetadata = await getConversationMetadata(
-        params.conversationId,
-      );
+    const maxRetries = 3;
+    let attempt = 0;
 
-      if (!rawMetadata) {
-        logger.debug("Conversation metadata not found, nothing to clear", {
+    while (attempt < maxRetries) {
+      try {
+        const success = await db.transaction(async (tx) => {
+          // Читаем текущие метаданные и версию внутри транзакции
+          const current = await tx.query.conversation.findFirst({
+            where: eq(conversation.id, params.conversationId),
+            columns: {
+              metadata: true,
+              metadataVersion: true,
+            },
+          });
+
+          if (!current) {
+            logger.debug("Conversation not found, nothing to clear", {
+              conversationId: params.conversationId,
+              interviewStep: params.interviewStep,
+            });
+            return true; // Нечего удалять, считаем успехом
+          }
+
+          // Парсим метаданные с валидацией через Zod
+          let metadata: ExtendedConversationMetadata;
+          if (current.metadata) {
+            const parseResult = ExtendedConversationMetadataSchema.safeParse(
+              JSON.parse(current.metadata)
+            );
+            
+            if (parseResult.success) {
+              metadata = parseResult.data;
+            } else {
+              logger.error("Failed to validate metadata, using empty object", {
+                conversationId: params.conversationId,
+                errors: parseResult.error.issues,
+              });
+              metadata = {};
+            }
+          } else {
+            metadata = {};
+          }
+
+          // Проверяем существование буфера для удаления
+          if (!metadata.messageBuffer?.[params.interviewStep]) {
+            logger.debug("Buffer not found, nothing to clear", {
+              conversationId: params.conversationId,
+              interviewStep: params.interviewStep,
+            });
+            return true; // Нечего удалять, считаем успехом
+          }
+
+          // Удаляем буфер для указанного interviewStep
+          delete metadata.messageBuffer[params.interviewStep];
+
+          // Обновляем с проверкой версии (оптимистичная блокировка)
+          const result = await tx
+            .update(conversation)
+            .set({
+              metadata: JSON.stringify(metadata),
+              metadataVersion: sql`${conversation.metadataVersion} + 1`,
+            })
+            .where(
+              sql`${conversation.id} = ${params.conversationId} AND ${conversation.metadataVersion} = ${current.metadataVersion}`,
+            )
+            .returning({ updatedId: conversation.id });
+
+          // Если ничего не обновилось, значит была конкуренция
+          if (result.length === 0) {
+            logger.debug("Optimistic lock conflict, will retry", {
+              conversationId: params.conversationId,
+              interviewStep: params.interviewStep,
+              attempt: attempt + 1,
+              expectedVersion: current.metadataVersion,
+            });
+            return false;
+          }
+
+          logger.debug("Buffer cleared", {
+            conversationId: params.conversationId,
+            interviewStep: params.interviewStep,
+            attempt: attempt + 1,
+          });
+
+          return true;
+        });
+
+        if (success) {
+          return;
+        }
+
+        // Конфликт версии, повторяем попытку
+        attempt++;
+        if (attempt < maxRetries) {
+          // Экспоненциальная задержка перед повтором
+          await new Promise((resolve) =>
+            setTimeout(resolve, 2 ** attempt * 10),
+          );
+        }
+      } catch (error) {
+        logger.error("Error clearing buffer", {
+          error,
           conversationId: params.conversationId,
           interviewStep: params.interviewStep,
+          attempt: attempt + 1,
         });
-        return;
+        throw error;
       }
-
-      const metadata = rawMetadata as ExtendedConversationMetadata;
-
-      if (metadata.messageBuffer?.[params.interviewStep]) {
-        delete metadata.messageBuffer[params.interviewStep];
-        await updateConversationMetadata(
-          params.conversationId,
-          metadata as Record<string, unknown>,
-        );
-
-        logger.debug("Buffer cleared", {
-          conversationId: params.conversationId,
-          interviewStep: params.interviewStep,
-        });
-      }
-    } catch (error) {
-      logger.error("Error clearing buffer", {
-        error,
-        conversationId: params.conversationId,
-        interviewStep: params.interviewStep,
-      });
-      throw error;
     }
+
+    // Если все попытки исчерпаны
+    throw new Error(
+      `Failed to clear buffer after ${maxRetries} attempts due to concurrent modifications`,
+    );
   }
 
   /**
