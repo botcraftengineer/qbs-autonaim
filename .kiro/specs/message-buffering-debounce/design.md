@@ -124,6 +124,18 @@ interface BufferFlushEvent {
 
 ```typescript
 /**
+ * Генерация безопасного ключа debounce без коллизий
+ * Использует JSON.stringify для детерминированного и безопасного кодирования
+ */
+function generateDebounceKey(
+  userId: string,
+  conversationId: string,
+  interviewStep: number
+): string {
+  return JSON.stringify([userId, conversationId, interviewStep]);
+}
+
+/**
  * Функция debounce для буфера сообщений
  * Запускается при каждом новом сообщении
  * Ждет N секунд без активности перед flush
@@ -132,7 +144,8 @@ const bufferDebounceFunction = inngest.createFunction(
   {
     id: "interview-buffer-debounce",
     debounce: {
-      key: "event.data.userId + event.data.conversationId + event.data.interviewStep",
+      // Безопасный ключ без коллизий
+      key: "JSON.stringify([event.data.userId, event.data.conversationId, event.data.interviewStep])",
       period: "10s", // конфигурируемый параметр
     },
   },
@@ -151,6 +164,14 @@ const bufferDebounceFunction = inngest.createFunction(
       return { skipped: true, reason: "Buffer already flushed" };
     }
 
+    // Генерация безопасного flushId
+    const flushId = JSON.stringify([
+      event.data.userId,
+      event.data.conversationId,
+      event.data.interviewStep,
+      Date.now()
+    ]);
+
     // Отправка события flush
     await step.run("trigger-flush", async () => {
       await inngest.send({
@@ -159,7 +180,7 @@ const bufferDebounceFunction = inngest.createFunction(
           userId: event.data.userId,
           conversationId: event.data.conversationId,
           interviewStep: event.data.interviewStep,
-          flushId: generateFlushId(event.data),
+          flushId,
           messageCount: 0, // будет заполнено в flush функции
         },
       });
@@ -181,7 +202,8 @@ const typingActivityFunction = inngest.createFunction(
   {
     id: "interview-typing-activity",
     debounce: {
-      key: "event.data.userId + event.data.conversationId + event.data.interviewStep",
+      // Используем тот же безопасный формат ключа
+      key: "JSON.stringify([event.data.userId, event.data.conversationId, event.data.interviewStep])",
       period: "5s", // меньше чем основной debounce
     },
   },
@@ -567,6 +589,12 @@ interface FlushLog {
 
 **Validates: Requirements 8.5**
 
+### Property 11: Collision-Free Key Generation
+
+*For any* two different combinations of (userId, conversationId, interviewStep), the generated debounce key SHALL be unique, even when individual components contain delimiter characters like '-'.
+
+**Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.6**
+
 ## Error Handling
 
 ### 1. KV Storage Failures
@@ -797,6 +825,99 @@ fc.assert(
 
       const retrieved = await buffer.getMessages(params);
       expect(retrieved).toHaveLength(0);
+    }
+  ),
+  { numRuns: 100 }
+);
+```
+
+**Property Test 5: Collision-Free Key Generation**
+
+```typescript
+// Feature: message-buffering-debounce, Property 11: Collision-Free Key Generation
+fc.assert(
+  fc.property(
+    fc.tuple(
+      // Первая комбинация параметров
+      fc.record({
+        userId: fc.string({ minLength: 1, maxLength: 50 }),
+        conversationId: fc.string({ minLength: 1, maxLength: 50 }),
+        interviewStep: fc.integer({ min: 1, max: 100 }),
+      }),
+      // Вторая комбинация параметров (гарантированно отличается)
+      fc.record({
+        userId: fc.string({ minLength: 1, maxLength: 50 }),
+        conversationId: fc.string({ minLength: 1, maxLength: 50 }),
+        interviewStep: fc.integer({ min: 1, max: 100 }),
+      })
+    ).filter(([params1, params2]) => {
+      // Убеждаемся что параметры действительно разные
+      return params1.userId !== params2.userId ||
+             params1.conversationId !== params2.conversationId ||
+             params1.interviewStep !== params2.interviewStep;
+    }),
+    ([params1, params2]) => {
+      // Генерация ключей используя безопасный метод
+      const key1 = JSON.stringify([
+        params1.userId,
+        params1.conversationId,
+        params1.interviewStep
+      ]);
+      const key2 = JSON.stringify([
+        params2.userId,
+        params2.conversationId,
+        params2.interviewStep
+      ]);
+
+      // Ключи должны быть разными
+      expect(key1).not.toBe(key2);
+      
+      // Проверка детерминированности: повторная генерация дает тот же результат
+      const key1Repeat = JSON.stringify([
+        params1.userId,
+        params1.conversationId,
+        params1.interviewStep
+      ]);
+      expect(key1).toBe(key1Repeat);
+    }
+  ),
+  { numRuns: 100 }
+);
+```
+
+**Property Test 6: Key Generation with Delimiter Characters**
+
+```typescript
+// Feature: message-buffering-debounce, Property 11: Collision-Free Key Generation (edge case)
+fc.assert(
+  fc.property(
+    fc.constantFrom(
+      // Случаи которые могут вызвать коллизии при простой конкатенации
+      { userId: "user-1", conversationId: "conv", interviewStep: 1 },
+      { userId: "user", conversationId: "1-conv", interviewStep: 1 },
+      { userId: "user-1-conv", conversationId: "1", interviewStep: 1 },
+      { userId: "a-b", conversationId: "c-d", interviewStep: 1 },
+      { userId: "a", conversationId: "b-c-d", interviewStep: 1 },
+    ),
+    (params) => {
+      // Генерация ключа безопасным методом
+      const safeKey = JSON.stringify([
+        params.userId,
+        params.conversationId,
+        params.interviewStep
+      ]);
+      
+      // Генерация ключа небезопасным методом (старый способ)
+      const unsafeKey = `${params.userId}-${params.conversationId}-${params.interviewStep}`;
+      
+      // Безопасный ключ должен быть валидным JSON
+      expect(() => JSON.parse(safeKey)).not.toThrow();
+      
+      // Парсинг должен вернуть исходные значения
+      const parsed = JSON.parse(safeKey);
+      expect(parsed[0]).toBe(params.userId);
+      expect(parsed[1]).toBe(params.conversationId);
+      expect(parsed[2]).toBe(params.interviewStep);
     }
   ),
   { numRuns: 100 }

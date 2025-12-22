@@ -120,6 +120,36 @@
   - Проверить что функции корректно регистрируются в Inngest
   - Спросить пользователя если возникли вопросы
 
+- [ ] 4.5. Исправление безопасности ключей debounce
+  - [ ] 4.5.1 Обновить генерацию debounce ключа в Buffer Debounce Function
+    - Заменить конкатенацию через '-' на `JSON.stringify([userId, conversationId, interviewStep])`
+    - Обновить файл `packages/jobs/src/inngest/functions/interview/buffer-debounce.ts`
+    - Обновить строку 14: заменить `key: "event.data.userId + '-' + event.data.conversationId + '-' + event.data.interviewStep"` на безопасный вариант
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+  
+  - [ ] 4.5.2 Обновить генерацию flushId в Buffer Debounce Function
+    - Заменить конкатенацию через '-' на `JSON.stringify([userId, conversationId, interviewStep, Date.now()])`
+    - Обновить файл `packages/jobs/src/inngest/functions/interview/buffer-debounce.ts`
+    - Обновить строку 62: заменить `const flushId = \`${userId}-${conversationId}-${interviewStep}-${Date.now()}\`` на безопасный вариант
+    - _Requirements: 9.5, 9.6_
+  
+  - [ ] 4.5.3 Обновить генерацию debounce ключа в Typing Activity Handler
+    - Заменить конкатенацию через '-' на `JSON.stringify([userId, conversationId, interviewStep])`
+    - Обновить файл `packages/jobs/src/inngest/functions/interview/typing-activity.ts`
+    - Использовать тот же безопасный формат что и в buffer-debounce
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+  
+  - [ ]* 4.5.4 Написать property test для безопасности ключей
+    - **Property 11: Collision-Free Key Generation**
+    - **Validates: Requirements 9.1, 9.2, 9.3, 9.4, 9.5, 9.6**
+    - Генерировать разные комбинации параметров с разделителями
+    - Проверить уникальность ключей
+    - Проверить детерминированность
+    - Проверить корректность парсинга
+    - Минимум 100 итераций
+    - Создать файл `packages/jobs/src/inngest/functions/interview/key-generation.test.ts`
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6_
+
 - [ ] 5. Интеграция с Telegram handler
   - [x] 5.1 Создать helper функцию для определения interview step
     - Реализовать `getCurrentInterviewStep(conversationId)`
@@ -136,6 +166,24 @@
     - ✅ Добавлены экспорты в `packages/tg-client/src/index.ts` и `packages/tg-client/package.json`
     - ✅ Feature flag `INTERVIEW_BUFFER_ENABLED` уже добавлен в `packages/config/src/env.ts`
     - _Requirements: 7.1, 7.2, 7.3_
+  
+  - [ ] 5.2.1 Исправить экспорты message-handler в package.json
+    - Обновить `packages/tg-client/package.json` строки 14-17
+    - Изменить `"types"` с `"./src/handlers/message-handler.ts"` на `"./dist/handlers/message-handler.d.mts"`
+    - Изменить `"default"` с `"./src/handlers/message-handler.ts"` на `"./dist/handlers/message-handler.mjs"`
+    - Убедиться что build script компилирует message-handler в dist
+    - Проверить что tsconfig/outDir настроен корректно
+    - Проверить что файлы `dist/handlers/message-handler.mjs` и `dist/handlers/message-handler.d.mts` создаются при сборке
+    - _Requirements: 7.1, 7.3_
+  
+  - [ ] 5.2.2 Добавить таймаут и валидацию для HTTP-запроса к Inngest
+    - Обновить `packages/tg-client/src/handlers/message-handler.ts` строки 157-172
+    - Создать AbortController для установки таймаута (5-10 секунд)
+    - Обернуть fetch в try-catch для обработки сетевых ошибок
+    - После await fetch проверить response.ok или response.status
+    - Логировать или выбрасывать описательную ошибку если ответ не успешный
+    - Убедиться что сбои не игнорируются молча
+    - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5, 10.6, 10.7_
   
   - [ ] 5.3 Создать обработчик typing событий
     - Подписаться на mtproto typing события

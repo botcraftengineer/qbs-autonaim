@@ -121,7 +121,7 @@ export const env: Prettify<{
     INTERVIEW_BUFFER_ENABLED: z
       .string()
       .optional()
-      .default("false")
+      .default("true")
       .transform((val) => val === "true"),
   },
   client: {

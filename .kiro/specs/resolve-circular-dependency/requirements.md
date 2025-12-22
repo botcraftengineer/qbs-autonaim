@@ -2,111 +2,69 @@
 
 ## Introduction
 
-Устранение циклической зависимости между пакетами `@qbs-autonaim/jobs` и `@qbs-autonaim/tg-client` для обеспечения корректной сборки и поддерживаемости проекта.
+Исправление race condition в функции обновления метаданных разговора. Текущая реализация использует паттерн read-modify-write без транзакции, что приводит к потере обновлений при конкурентном доступе.
 
 ## Glossary
 
-- **Circular_Dependency**: Циклическая зависимость между двумя или более пакетами, когда пакет A зависит от пакета B, а пакет B зависит от пакета A
-- **TG_Client**: Пакет `@qbs-autonaim/tg-client` - низкоуровневый клиент для работы с Telegram API
-- **Jobs**: Пакет `@qbs-autonaim/jobs` - пакет с бизнес-логикой и фоновыми задачами
-- **Shared_Package**: Новый пакет `@qbs-autonaim/shared` для общих типов и утилит
-- **Message_Handler**: Обработчик входящих сообщений из Telegram
-- **Buffer_Service**: Сервис буферизации сообщений для debounce
+- **Race Condition**: Ситуация, когда два или более процесса пытаются изменить общие данные одновременно, что приводит к непредсказуемым результатам
+- **Transaction**: Атомарная операция базы данных, которая либо выполняется полностью, либо откатывается полностью
+- **Optimistic Locking**: Стратегия контроля конкурентного доступа, при которой проверяется версия данных перед обновлением
+- **Pessimistic Locking**: Стратегия контроля конкурентного доступа с использованием блокировок (SELECT FOR UPDATE)
+- **Conversation Metadata**: JSON-поле в таблице conversation, содержащее дополнительные данные о разговоре
 
 ## Requirements
 
-### Requirement 1: Создание общего пакета
+### Requirement 1
 
-**User Story:** Как разработчик, я хочу иметь общий пакет для типов и утилит, чтобы избежать циклических зависимостей между пакетами.
-
-#### Acceptance Criteria
-
-1. THE System SHALL create a new package `@qbs-autonaim/shared`
-2. THE Shared_Package SHALL export common types used by both TG_Client and Jobs
-3. THE Shared_Package SHALL export utility functions used by both TG_Client and Jobs
-4. THE Shared_Package SHALL NOT depend on TG_Client or Jobs
-5. THE Shared_Package SHALL have proper TypeScript configuration and build setup
-
-### Requirement 2: Перемещение типов в общий пакет
-
-**User Story:** Как разработчик, я хочу переместить общие типы в отдельный пакет, чтобы оба пакета могли их использовать без циклических зависимостей.
+**User Story:** Как разработчик, я хочу безопасно обновлять метаданные разговора при конкурентном доступе, чтобы не терять данные при одновременных обновлениях.
 
 #### Acceptance Criteria
 
-1. WHEN type `messageBufferService` is needed, THE System SHALL import it from Shared_Package
-2. THE Shared_Package SHALL export `MessageBufferService` type interface
-3. THE Shared_Package SHALL export `ConversationMetadata` type
-4. THE Shared_Package SHALL export `MessageData` type
-5. THE System SHALL remove type imports between TG_Client and Jobs
+1. WHEN два процесса одновременно обновляют метаданные разговора, THE System SHALL сохранить оба обновления без потери данных
+2. WHEN обновление метаданных происходит, THE System SHALL использовать транзакцию базы данных для атомарности операции
+3. WHEN происходит конфликт версий при оптимистичной блокировке, THE System SHALL повторить попытку обновления
+4. THE System SHALL выполнять merge существующих метаданных с новыми данными внутри транзакции
 
-### Requirement 3: Перемещение утилит в общий пакет
+### Requirement 2
 
-**User Story:** Как разработчик, я хочу переместить общие утилиты в отдельный пакет, чтобы избежать дублирования кода и циклических зависимостей.
-
-#### Acceptance Criteria
-
-1. WHEN `getQuestionCount` is needed, THE System SHALL import it from Shared_Package
-2. WHEN `getConversationMetadata` is needed, THE System SHALL import it from Shared_Package
-3. THE Shared_Package SHALL export `getQuestionCount` function
-4. THE Shared_Package SHALL export `getConversationMetadata` function
-5. THE System SHALL remove utility imports between TG_Client and Jobs
-
-### Requirement 4: Рефакторинг Message_Handler
-
-**User Story:** Как разработчик, я хочу переместить обработчик сообщений в правильный пакет, чтобы соблюдать архитектурные принципы.
+**User Story:** Как разработчик, я хочу выбрать между оптимистичной и пессимистичной блокировкой, чтобы оптимизировать производительность для разных сценариев использования.
 
 #### Acceptance Criteria
 
-1. WHEN incoming message is received, THE Jobs SHALL handle message processing
-2. THE TG_Client SHALL only handle Telegram API communication
-3. THE Message_Handler SHALL be moved from TG_Client to Jobs
-4. THE TG_Client SHALL export only SDK and low-level handlers
-5. THE Jobs SHALL import TG_Client SDK for sending messages
+1. THE System SHALL поддерживать оптимистичную блокировку с использованием поля версии
+2. THE System SHALL поддерживать пессимистичную блокировку с использованием SELECT FOR UPDATE
+3. WHEN используется оптимистичная блокировка, THE System SHALL автоматически повторять попытку при конфликте версий
+4. WHEN используется пессимистичная блокировка, THE System SHALL блокировать строку на время транзакции
 
-### Requirement 5: Обновление зависимостей пакетов
+### Requirement 3
 
-**User Story:** Как разработчик, я хочу обновить зависимости пакетов, чтобы устранить циклическую зависимость.
-
-#### Acceptance Criteria
-
-1. THE TG_Client SHALL NOT depend on Jobs
-2. THE Jobs SHALL depend on TG_Client for SDK only
-3. THE TG_Client SHALL depend on Shared_Package
-4. THE Jobs SHALL depend on Shared_Package
-5. WHEN building packages, THE System SHALL NOT report circular dependency errors
-
-### Requirement 6: Сохранение функциональности
-
-**User Story:** Как пользователь системы, я хочу, чтобы все функции работали как прежде, чтобы рефакторинг не сломал существующую функциональность.
+**User Story:** Как разработчик, я хочу иметь обратную совместимость с существующим кодом, чтобы не ломать текущую функциональность.
 
 #### Acceptance Criteria
 
-1. WHEN message is received, THE System SHALL process it correctly
-2. WHEN message is sent, THE System SHALL send it via Telegram
-3. THE System SHALL maintain all existing interview logic
-4. THE System SHALL maintain all existing buffer logic
-5. THE System SHALL pass all existing tests
+1. THE System SHALL сохранить существующую сигнатуру функции updateConversationMetadata
+2. THE System SHALL возвращать boolean результат операции (true/false)
+3. WHEN обновление не удается после всех попыток, THE System SHALL возвращать false
+4. THE System SHALL логировать ошибки с достаточной информацией для отладки
 
-### Requirement 7: Обновление импортов
+### Requirement 4
 
-**User Story:** Как разработчик, я хочу обновить все импорты в проекте, чтобы они указывали на правильные пакеты.
-
-#### Acceptance Criteria
-
-1. WHEN importing types, THE System SHALL import from Shared_Package
-2. WHEN importing utilities, THE System SHALL import from Shared_Package
-3. WHEN importing TG SDK, THE System SHALL import from TG_Client
-4. WHEN importing message handler, THE System SHALL import from Jobs
-5. THE System SHALL have no broken imports after refactoring
-
-### Requirement 8: Документация изменений
-
-**User Story:** Как разработчик, я хочу иметь документацию по новой архитектуре, чтобы понимать структуру зависимостей.
+**User Story:** Как разработчик, я хочу настраивать количество повторных попыток, чтобы контролировать поведение при конфликтах.
 
 #### Acceptance Criteria
 
-1. THE System SHALL document new package structure
-2. THE System SHALL document dependency graph
-3. THE System SHALL document migration guide
-4. THE System SHALL update README files in affected packages
-5. THE System SHALL document exported APIs from Shared_Package
+1. THE System SHALL поддерживать конфигурируемое количество повторных попыток
+2. WHEN достигнуто максимальное количество попыток, THE System SHALL возвращать false
+3. THE System SHALL использовать разумное значение по умолчанию (например, 3 попытки)
+4. WHEN происходит повторная попытка, THE System SHALL логировать информацию о конфликте
+
+### Requirement 5
+
+**User Story:** Как разработчик, я хочу минимизировать изменения в схеме базы данных, чтобы упростить миграцию.
+
+#### Acceptance Criteria
+
+1. IF используется оптимистичная блокировка, THEN THE System SHALL добавить поле metadata_version в таблицу conversation
+2. THE System SHALL автоматически инициализировать metadata_version значением 1 для существующих записей
+3. THE System SHALL инкрементировать metadata_version при каждом успешном обновлении
+4. WHEN используется пессимистичная блокировка, THE System SHALL не требовать изменений схемы

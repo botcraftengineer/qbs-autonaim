@@ -1,6 +1,7 @@
 import { uuidv7Schema } from "@qbs-autonaim/validators";
 import { sql } from "drizzle-orm";
 import {
+  integer,
   pgEnum,
   pgTable,
   text,
@@ -31,6 +32,7 @@ export const conversation = pgTable("conversations", {
   username: varchar("username", { length: 100 }),
   status: conversationStatusEnum("status").default("ACTIVE").notNull(),
   metadata: text("metadata"),
+  metadataVersion: integer("metadata_version").default(1).notNull(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
