@@ -1,5 +1,6 @@
 export { botManager } from "./bot-manager";
 export { clearClientCache, getClient, removeClient } from "./client";
+export { handleIncomingMessage } from "./handlers/message-handler";
 export { TgClientError, TgClientSDK, tgClientSDK } from "./sdk";
 export { ExportableStorage } from "./storage";
 export {
@@ -8,5 +9,4 @@ export {
   sendMessageByPhone,
   sendMessageByUsername,
 } from "./user-client";
-export { handleIncomingMessage } from "./handlers/message-handler";
 export { getCurrentInterviewStep } from "./utils/interview-helpers";
