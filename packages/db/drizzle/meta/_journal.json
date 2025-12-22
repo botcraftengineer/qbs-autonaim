@@ -71,6 +71,13 @@
       "when": 1766406968574,
       "tag": "0009_third_meggan",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1766407146194,
+      "tag": "0010_glossy_skaar",
+      "breakpoints": true
     }
   ]
 }

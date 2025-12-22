@@ -2,7 +2,7 @@
  * Утилиты для работы с метаданными conversation
  */
 
-import { eq, sql } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
@@ -93,124 +93,66 @@ export async function getConversationMetadata(
 }
 
 /**
- * Обновляет метаданные conversation с использованием оптимистичной блокировки
+ * Обновляет метаданные conversation
  * 
  * @param conversationId - ID разговора
  * @param updates - Частичные обновления метаданных
- * @returns Promise с true если обновление успешно, false в противном случае
- */
-async function updateWithOptimisticLock(
-  conversationId: string,
-  updates: Partial<ConversationMetadata>,
-): Promise<boolean> {
-  try {
-    return await db.transaction(async (tx) => {
-      // Читаем текущие метаданные и версию внутри транзакции
-      const current = await tx.query.conversation.findFirst({
-        where: eq(conversation.id, conversationId),
-        columns: {
-          metadata: true,
-          metadataVersion: true,
-        },
-      });
-
-      if (!current) {
-        console.error("Conversation not found", { conversationId });
-        return false;
-      }
-
-      // Безопасно парсим и валидируем метаданные
-      let currentMetadata: ConversationMetadata = {};
-      if (current.metadata) {
-        try {
-          currentMetadata = safeParseMetadata(current.metadata);
-        } catch (error) {
-          console.error("Failed to parse conversation metadata", {
-            conversationId,
-            error,
-            rawMetadata: current.metadata,
-          });
-          // Прерываем транзакцию при невалидных данных
-          throw new Error(
-            `Cannot update conversation with malformed metadata: ${error}`,
-          );
-        }
-      }
-
-      const updatedMetadata = { ...currentMetadata, ...updates };
-
-      // Обновляем с проверкой версии (оптимистичная блокировка)
-      const result = await tx
-        .update(conversation)
-        .set({
-          metadata: JSON.stringify(updatedMetadata),
-          metadataVersion: sql`${conversation.metadataVersion} + 1`,
-        })
-        .where(
-          sql`${conversation.id} = ${conversationId} AND ${conversation.metadataVersion} = ${current.metadataVersion}`,
-        )
-        .returning({ updatedId: conversation.id });
-
-      // Если ничего не обновилось, значит была конкуренция
-      if (result.length === 0) {
-        console.warn("Optimistic lock conflict detected", {
-          conversationId,
-          expectedVersion: current.metadataVersion,
-        });
-        return false;
-      }
-
-      return true;
-    });
-  } catch (error) {
-    console.error("Error in updateWithOptimisticLock", {
-      error,
-      conversationId,
-    });
-    return false;
-  }
-}
-
-/**
- * Обновляет метаданные conversation с автоматическими повторными попытками
- * 
- * @param conversationId - ID разговора
- * @param updates - Частичные обновления метаданных
- * @param options - Опции обновления
- * @param options.maxRetries - Максимальное количество попыток (по умолчанию 3)
  * @returns Promise с true если обновление успешно, false в противном случае
  */
 export async function updateConversationMetadata(
   conversationId: string,
   updates: Partial<ConversationMetadata>,
-  options?: { maxRetries?: number },
 ): Promise<boolean> {
-  const maxRetries = options?.maxRetries ?? 3;
+  try {
+    // Читаем текущие метаданные
+    const current = await db.query.conversation.findFirst({
+      where: eq(conversation.id, conversationId),
+      columns: {
+        metadata: true,
+      },
+    });
 
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const success = await updateWithOptimisticLock(conversationId, updates);
-
-    if (success) {
-      return true;
+    if (!current) {
+      console.error("Conversation not found", { conversationId });
+      return false;
     }
 
-    // Если это не последняя попытка, логируем и пробуем снова
-    if (attempt < maxRetries) {
-      console.info("Retrying metadata update", {
-        conversationId,
-        attempt,
-        maxRetries,
-      });
-      // Небольшая задержка перед повторной попыткой
-      await new Promise((resolve) => setTimeout(resolve, 10 * attempt));
+    // Безопасно парсим и валидируем метаданные
+    let currentMetadata: ConversationMetadata = {};
+    if (current.metadata) {
+      try {
+        currentMetadata = safeParseMetadata(current.metadata);
+      } catch (error) {
+        console.error("Failed to parse conversation metadata", {
+          conversationId,
+          error,
+          rawMetadata: current.metadata,
+        });
+        // Прерываем при невалидных данных
+        throw new Error(
+          `Cannot update conversation with malformed metadata: ${error}`,
+        );
+      }
     }
+
+    const updatedMetadata = { ...currentMetadata, ...updates };
+
+    // Обновляем метаданные
+    await db
+      .update(conversation)
+      .set({
+        metadata: JSON.stringify(updatedMetadata),
+      })
+      .where(eq(conversation.id, conversationId));
+
+    return true;
+  } catch (error) {
+    console.error("Error in updateConversationMetadata", {
+      error,
+      conversationId,
+    });
+    return false;
   }
-
-  console.error("Failed to update conversation metadata after all retries", {
-    conversationId,
-    maxRetries,
-  });
-  return false;
 }
 
 /**
