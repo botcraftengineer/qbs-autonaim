@@ -158,6 +158,8 @@ messages.post("/send-by-username", async (c) => {
 });
 
 messages.post("/send-by-phone", async (c) => {
+  let userIdToDelete: number | undefined;
+
   try {
     const body = await c.req.json();
     const result = sendMessageByPhoneSchema.safeParse(body);
@@ -232,6 +234,8 @@ messages.post("/send-by-phone", async (c) => {
         return c.json({ error: "Failed to get user data" }, 500);
       }
 
+      userIdToDelete = user.id;
+
       inputPeer = {
         _: "inputPeerUser" as const,
         userId: user.id,
@@ -254,6 +258,30 @@ messages.post("/send-by-phone", async (c) => {
     });
   } catch (error) {
     return c.json({ error: handleError(error, "Failed to send message") }, 500);
+  } finally {
+    // Удаляем импортированный контакт после операции
+    if (userIdToDelete) {
+      try {
+        const client = botManager.getClient(
+          (await c.req.json()).workspaceId,
+        );
+        if (client) {
+          await client.call({
+            _: "contacts.deleteContacts",
+            id: [
+              {
+                _: "inputUser",
+                userId: userIdToDelete,
+                accessHash: Long.ZERO,
+              },
+            ],
+          });
+          console.log(`🗑️ Контакт ${userIdToDelete} удален`);
+        }
+      } catch (deleteError) {
+        console.warn("⚠️ Не удалось удалить контакт:", deleteError);
+      }
+    }
   }
 });
 

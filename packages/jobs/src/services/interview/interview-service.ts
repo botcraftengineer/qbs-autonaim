@@ -220,26 +220,27 @@ export async function saveQuestionAnswer(
   question: string,
   answer: string,
 ) {
-  const [conv] = await db
-    .select()
-    .from(conversation)
-    .where(eq(conversation.id, conversationId))
-    .limit(1);
+  const { updateConversationMetadata, getConversationMetadata } = await import(
+    "@qbs-autonaim/shared"
+  );
 
-  if (!conv) {
-    throw new Error(`Conversation ${conversationId} not found`);
-  }
-
-  const metadata = parseMetadata(conv.metadata);
+  // Получаем текущие метаданные
+  const metadata = await getConversationMetadata(conversationId);
   const questionAnswers = metadata.questionAnswers ?? [];
 
+  // Добавляем новую пару вопрос-ответ
   questionAnswers.push({ question, answer });
-  metadata.questionAnswers = questionAnswers;
 
-  await db
-    .update(conversation)
-    .set({ metadata: JSON.stringify(metadata) })
-    .where(eq(conversation.id, conversationId));
+  // Обновляем метаданные с использованием оптимистической блокировки
+  const success = await updateConversationMetadata(conversationId, {
+    questionAnswers,
+  });
+
+  if (!success) {
+    throw new Error(
+      `Failed to save question-answer for conversation ${conversationId} after multiple retries`,
+    );
+  }
 }
 
 /**

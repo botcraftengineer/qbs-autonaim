@@ -65,9 +65,45 @@ export const sendWelcome = protectedProcedure
       ? username.substring(1)
       : username;
 
-    await ctx.db
-      .insert(conversation)
-      .values({
+    // Проверяем существующую conversation
+    const existingConv = await ctx.db.query.conversation.findFirst({
+      where: eq(conversation.responseId, responseId),
+    });
+
+    if (existingConv) {
+      // Парсим существующие метаданные
+      let existingMetadata: Record<string, unknown> = {};
+      if (existingConv.metadata) {
+        try {
+          existingMetadata = JSON.parse(existingConv.metadata);
+        } catch (error) {
+          console.error("Failed to parse existing metadata", {
+            conversationId: existingConv.id,
+            error,
+          });
+        }
+      }
+
+      // Объединяем с новыми данными
+      const updatedMetadata = {
+        ...existingMetadata,
+        responseId,
+        vacancyId: response.vacancyId,
+      };
+
+      // Обновляем существующую conversation
+      await ctx.db
+        .update(conversation)
+        .set({
+          candidateName: response.candidateName,
+          username: cleanUsername,
+          status: "ACTIVE",
+          metadata: JSON.stringify(updatedMetadata),
+        })
+        .where(eq(conversation.id, existingConv.id));
+    } else {
+      // Создаем новую conversation
+      await ctx.db.insert(conversation).values({
         responseId,
         candidateName: response.candidateName,
         username: cleanUsername,
@@ -76,19 +112,8 @@ export const sendWelcome = protectedProcedure
           responseId,
           vacancyId: response.vacancyId,
         }),
-      })
-      .onConflictDoUpdate({
-        target: conversation.responseId,
-        set: {
-          candidateName: response.candidateName,
-          username: cleanUsername,
-          status: "ACTIVE",
-          metadata: JSON.stringify({
-            responseId,
-            vacancyId: response.vacancyId,
-          }),
-        },
       });
+    }
 
     // Отправляем событие через Inngest клиент
     await inngest.send({

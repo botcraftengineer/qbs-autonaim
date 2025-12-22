@@ -202,20 +202,36 @@ export async function identifyByVacancy(
 async function createOrUpdateConversation(
   data: ConversationData,
 ): Promise<{ id: string }> {
-  const metadata = {
-    identifiedBy: data.identifiedBy,
-    ...(data.pinCode && { pinCode: data.pinCode }),
-    ...(data.searchQuery && { searchQuery: data.searchQuery }),
-    interviewStarted: true,
-    questionAnswers: [],
-  };
-
   // Проверяем, есть ли уже conversation для этого responseId
   const existing = await db.query.conversation.findFirst({
     where: eq(conversation.responseId, data.responseId),
   });
 
   if (existing) {
+    // Парсим существующие метаданные
+    let existingMetadata: Record<string, unknown> = {};
+    if (existing.metadata) {
+      try {
+        existingMetadata = JSON.parse(existing.metadata);
+      } catch (error) {
+        console.error("Failed to parse existing metadata", {
+          conversationId: existing.id,
+          error,
+        });
+      }
+    }
+
+    // Объединяем с новыми данными, сохраняя существующие поля
+    const updatedMetadata = {
+      ...existingMetadata,
+      identifiedBy: data.identifiedBy,
+      ...(data.pinCode && { pinCode: data.pinCode }),
+      ...(data.searchQuery && { searchQuery: data.searchQuery }),
+      interviewStarted: true,
+      // Сохраняем существующие questionAnswers если они есть
+      questionAnswers: existingMetadata.questionAnswers || [],
+    };
+
     // Обновляем существующую conversation
     const [updated] = await db
       .update(conversation)
@@ -223,7 +239,7 @@ async function createOrUpdateConversation(
         candidateName: data.candidateName,
         username: data.username,
         status: "ACTIVE",
-        metadata: JSON.stringify(metadata),
+        metadata: JSON.stringify(updatedMetadata),
       })
       .where(eq(conversation.id, existing.id))
       .returning();
@@ -235,7 +251,15 @@ async function createOrUpdateConversation(
     return updated;
   }
 
-  // Создаем новую conversation
+  // Создаем новую conversation с начальными метаданными
+  const newMetadata = {
+    identifiedBy: data.identifiedBy,
+    ...(data.pinCode && { pinCode: data.pinCode }),
+    ...(data.searchQuery && { searchQuery: data.searchQuery }),
+    interviewStarted: true,
+    questionAnswers: [],
+  };
+
   const [created] = await db
     .insert(conversation)
     .values({
@@ -243,7 +267,7 @@ async function createOrUpdateConversation(
       candidateName: data.candidateName,
       username: data.username,
       status: "ACTIVE",
-      metadata: JSON.stringify(metadata),
+      metadata: JSON.stringify(newMetadata),
     })
     .returning();
 

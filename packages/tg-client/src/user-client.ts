@@ -45,6 +45,8 @@ export async function sendMessageByPhone(
   text: string,
   firstName?: string,
 ): Promise<{ success: boolean; message: string; chatId?: string }> {
+  let userId: number | undefined;
+
   try {
     // Очищаем номер телефона от лишних символов
     const cleanPhone = phone.replace(/[^\d+]/g, "");
@@ -93,10 +95,11 @@ export async function sendMessageByPhone(
       };
     }
 
-    console.log(`✅ Контакт импортирован: ${user.id}`);
+    userId = user.id;
+    console.log(`✅ Контакт импортирован: ${userId}`);
 
     // Отправляем сообщение
-    const result = await client.sendText(user.id, text);
+    const result = await client.sendText(userId, text);
 
     return {
       success: true,
@@ -109,6 +112,26 @@ export async function sendMessageByPhone(
       success: false,
       message: error instanceof Error ? error.message : "Неизвестная ошибка",
     };
+  } finally {
+    // Удаляем контакт после операции, чтобы не тратить лимиты
+    if (userId) {
+      try {
+        await client.call({
+          _: "contacts.deleteContacts",
+          id: [
+            {
+              _: "inputUser",
+              userId,
+              accessHash: Long.ZERO,
+            },
+          ],
+        });
+        console.log(`🗑️ Контакт ${userId} удален`);
+      } catch (deleteError) {
+        console.warn("⚠️ Не удалось удалить контакт:", deleteError);
+        // Не прерываем выполнение, если удаление не удалось
+      }
+    }
   }
 }
 

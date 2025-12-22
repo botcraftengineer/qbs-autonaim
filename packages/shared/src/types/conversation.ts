@@ -2,6 +2,8 @@
  * Типы для работы с метаданными conversation
  */
 
+import type { BufferValue } from "./buffer";
+
 /**
  * Представляет пару вопрос-ответ в интервью
  */
@@ -48,4 +50,9 @@ export interface ConversationMetadata {
   
   /** Время завершения интервью (ISO string) */
   completedAt?: string;
+
+  /** Буферы сообщений по шагам интервью */
+  messageBuffer?: {
+    [interviewStep: number]: BufferValue;
+  };
 }

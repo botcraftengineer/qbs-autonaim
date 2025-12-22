@@ -272,16 +272,31 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           where: eq(conversation.responseId, responseId),
         });
 
-        const metadata = JSON.stringify({
-          responseId,
-          vacancyId: response.vacancyId,
-          username,
-          senderId: result && "senderId" in result ? result.senderId : chatId,
-          interviewStarted: true,
-          questionAnswers: [],
-        });
-
         if (existing) {
+          // Парсим существующие метаданные
+          let existingMetadata: Record<string, unknown> = {};
+          if (existing.metadata) {
+            try {
+              existingMetadata = JSON.parse(existing.metadata);
+            } catch (error) {
+              console.error("Failed to parse existing metadata", {
+                conversationId: existing.id,
+                error,
+              });
+            }
+          }
+
+          // Объединяем с новыми данными
+          const updatedMetadata = {
+            ...existingMetadata,
+            responseId,
+            vacancyId: response.vacancyId,
+            username,
+            senderId: result && "senderId" in result ? result.senderId : chatId,
+            interviewStarted: true,
+            questionAnswers: existingMetadata.questionAnswers || [],
+          };
+
           // Обновляем существующую conversation
           await db
             .update(conversation)
@@ -289,17 +304,26 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               candidateName: response.candidateName,
               username: username || undefined,
               status: "ACTIVE",
-              metadata,
+              metadata: JSON.stringify(updatedMetadata),
             })
             .where(eq(conversation.id, existing.id));
         } else {
           // Создаем новую conversation
+          const newMetadata = {
+            responseId,
+            vacancyId: response.vacancyId,
+            username,
+            senderId: result && "senderId" in result ? result.senderId : chatId,
+            interviewStarted: true,
+            questionAnswers: [],
+          };
+
           await db.insert(conversation).values({
             responseId,
             candidateName: response.candidateName,
             username: username || undefined,
             status: "ACTIVE",
-            metadata,
+            metadata: JSON.stringify(newMetadata),
           });
         }
 
