@@ -4,6 +4,7 @@
  */
 
 import type { LanguageModel } from "ai";
+import type { Langfuse } from "langfuse";
 import { EscalationDetectorAgent } from "./escalation-detector";
 import type { InterviewerInput } from "./interviewer";
 import { InterviewerAgent } from "./interviewer";
@@ -38,6 +39,7 @@ export interface OrchestratorOutput {
 export interface OrchestratorConfig {
   model: LanguageModel;
   maxSteps?: number;
+  langfuse?: Langfuse;
 }
 
 /**
@@ -46,17 +48,14 @@ export interface OrchestratorConfig {
  * - Workers (EscalationDetector, Interviewer) выполняют специализированные задачи
  */
 export class InterviewOrchestrator {
-  private escalationDetector: EscalationDetectorAgent;
-  private interviewer: InterviewerAgent;
+  private model: LanguageModel;
+  private maxSteps: number;
+  private langfuse?: Langfuse;
 
   constructor(config: OrchestratorConfig) {
-    const agentConfig = {
-      model: config.model,
-      maxSteps: config.maxSteps || 10,
-    };
-
-    this.escalationDetector = new EscalationDetectorAgent(agentConfig);
-    this.interviewer = new InterviewerAgent(agentConfig);
+    this.model = config.model;
+    this.maxSteps = config.maxSteps || 10;
+    this.langfuse = config.langfuse;
   }
 
   /**
@@ -70,9 +69,41 @@ export class InterviewOrchestrator {
   ): Promise<OrchestratorOutput> {
     const agentTrace: OrchestratorOutput["agentTrace"] = [];
 
+    const trace = this.langfuse?.trace({
+      name: "interview-orchestrator",
+      userId: context.candidateId,
+      metadata: {
+        conversationId: context.conversationId,
+        questionNumber: input.questionNumber,
+        vacancyTitle: context.vacancyTitle,
+      },
+      input: {
+        currentAnswer: input.currentAnswer,
+        currentQuestion: input.currentQuestion,
+        questionNumber: input.questionNumber,
+      },
+    });
+
+    const traceId = trace?.id;
+
+    // Создаем агентов с traceId для каждого вызова
+    const escalationDetector = new EscalationDetectorAgent({
+      model: this.model,
+      maxSteps: this.maxSteps,
+      langfuse: this.langfuse,
+      traceId,
+    });
+
+    const interviewer = new InterviewerAgent({
+      model: this.model,
+      maxSteps: this.maxSteps,
+      langfuse: this.langfuse,
+      traceId,
+    });
+
     try {
       // ШАГ 1: Проверка необходимости эскалации
-      const escalationCheck = await this.escalationDetector.execute(
+      const escalationCheck = await escalationDetector.execute(
         {
           message: input.currentAnswer,
           conversationLength: context.conversationHistory.length,
@@ -89,7 +120,7 @@ export class InterviewOrchestrator {
       });
 
       if (escalationCheck.success && escalationCheck.data?.shouldEscalate) {
-        return {
+        const output = {
           analysis:
             escalationCheck.data.suggestedAction ||
             "Требуется эскалация к рекрутеру",
@@ -99,6 +130,17 @@ export class InterviewOrchestrator {
           reason: escalationCheck.data.reason,
           agentTrace,
         };
+
+        trace?.update({
+          output,
+          metadata: {
+            escalated: true,
+          },
+        });
+
+        await this.langfuse?.flushAsync();
+
+        return output;
       }
 
       // ШАГ 2: Генерация следующего вопроса
@@ -111,7 +153,7 @@ export class InterviewOrchestrator {
         resumeLanguage: input.resumeLanguage,
       };
 
-      const interviewResult = await this.interviewer.execute(
+      const interviewResult = await interviewer.execute(
         interviewerInput,
         context,
       );
@@ -128,7 +170,7 @@ export class InterviewOrchestrator {
         throw new Error("Interviewer agent failed");
       }
 
-      return {
+      const output = {
         analysis: interviewResult.data.analysis,
         shouldContinue: interviewResult.data.shouldContinue,
         reason: interviewResult.data.reason,
@@ -139,14 +181,37 @@ export class InterviewOrchestrator {
         isSimpleAcknowledgment: interviewResult.data.isSimpleAcknowledgment,
         agentTrace,
       };
+
+      trace?.update({
+        output,
+        metadata: {
+          escalated: false,
+          shouldContinue: interviewResult.data.shouldContinue,
+        },
+      });
+
+      await this.langfuse?.flushAsync();
+
+      return output;
     } catch (error) {
-      return {
+      const output = {
         analysis: "Ошибка при обработке",
         shouldContinue: false,
         shouldEscalate: true,
         escalationReason: `Error: ${error instanceof Error ? error.message : "Unknown"}`,
         agentTrace,
       };
+
+      trace?.update({
+        output,
+        metadata: {
+          error: true,
+        },
+      });
+
+      await this.langfuse?.flushAsync();
+
+      return output;
     }
   }
 }

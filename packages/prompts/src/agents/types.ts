@@ -6,6 +6,8 @@
  * Базовый контекст для всех агентов
  */
 export interface BaseAgentContext {
+  candidateId?: string;
+  conversationId?: string;
   conversationHistory: Array<{
     sender: "CANDIDATE" | "BOT";
     content: string;

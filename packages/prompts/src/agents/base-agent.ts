@@ -4,12 +4,15 @@
 
 import type { LanguageModel } from "ai";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
+import type { Langfuse } from "langfuse";
 import type { ZodType } from "zod";
 import type { AgentType } from "./types";
 
 export interface AgentConfig {
   model: LanguageModel;
   maxSteps?: number;
+  langfuse?: Langfuse;
+  traceId?: string;
 }
 
 /**
@@ -19,6 +22,8 @@ export abstract class BaseAgent<TInput, TOutput> {
   protected readonly name: string;
   protected readonly type: AgentType;
   protected readonly agent: ToolLoopAgent;
+  protected readonly langfuse?: Langfuse;
+  protected readonly traceId?: string;
 
   constructor(
     name: string,
@@ -29,6 +34,8 @@ export abstract class BaseAgent<TInput, TOutput> {
   ) {
     this.name = name;
     this.type = type;
+    this.langfuse = config.langfuse;
+    this.traceId = config.traceId;
 
     this.agent = new ToolLoopAgent({
       model: config.model,
@@ -51,18 +58,45 @@ export abstract class BaseAgent<TInput, TOutput> {
       return { success: false, error: "Некорректные входные данные" };
     }
 
+    const span = this.langfuse?.span({
+      traceId: this.traceId,
+      name: this.name,
+      input,
+      metadata: {
+        agentType: this.type,
+      },
+    });
+
     try {
       const prompt = this.buildPrompt(input, context);
       const result = await this.agent.generate({ prompt });
+
+      span?.end({
+        output: result.output,
+        metadata: {
+          success: true,
+        },
+      });
 
       return {
         success: true,
         data: result.output as TOutput,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Неизвестная ошибка";
+
+      span?.end({
+        output: { error: errorMessage },
+        metadata: {
+          success: false,
+          error: errorMessage,
+        },
+      });
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Неизвестная ошибка",
+        error: errorMessage,
       };
     }
   }

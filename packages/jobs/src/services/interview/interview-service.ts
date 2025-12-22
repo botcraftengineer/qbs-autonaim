@@ -6,6 +6,7 @@ import {
   InterviewOrchestrator,
   InterviewScoringAgent,
 } from "@qbs-autonaim/prompts";
+import { Langfuse } from "langfuse";
 import { stripHtml } from "string-strip-html";
 import type {
   InterviewAnalysis,
@@ -14,6 +15,12 @@ import type {
 import { createLogger, INTERVIEW } from "../base";
 
 const logger = createLogger("Interview");
+
+const langfuse = new Langfuse({
+  secretKey: process.env.LANGFUSE_SECRET_KEY,
+  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
+  baseUrl: process.env.LANGFUSE_BASE_URL,
+});
 
 // ==================== TYPES ====================
 
@@ -97,10 +104,12 @@ export async function analyzeAndGenerateNextQuestion(
 
   // Создаем оркестратор
   const model = createAgentModel();
-  const orchestrator = new InterviewOrchestrator({ model });
+  const orchestrator = new InterviewOrchestrator({ model, langfuse });
 
   // Формируем контекст для агентов
   const agentContext = {
+    candidateId: context.conversationId,
+    conversationId: context.conversationId,
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
@@ -192,9 +201,10 @@ export async function getInterviewContext(
     .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
     .map((msg) => ({
       sender: msg.sender as "CANDIDATE" | "BOT",
-      content: msg.contentType === "VOICE" && msg.voiceTranscription 
-        ? msg.voiceTranscription 
-        : msg.content,
+      content:
+        msg.contentType === "VOICE" && msg.voiceTranscription
+          ? msg.voiceTranscription
+          : msg.content,
       contentType: (msg.contentType === "TEXT" || msg.contentType === "VOICE"
         ? msg.contentType
         : undefined) as "TEXT" | "VOICE" | undefined,
