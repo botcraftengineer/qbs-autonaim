@@ -21,7 +21,7 @@ export interface BotInstance {
   username?: string;
   phone: string;
   storage: ExportableStorage;
-  cacheSaveInterval?: NodeJS.Timeout;
+  cacheSaveInterval?: ReturnType<typeof setInterval>;
 }
 
 export interface BotInstanceConfig {

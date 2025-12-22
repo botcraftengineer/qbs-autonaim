@@ -7,9 +7,11 @@ import type { BotManager } from "../bot-manager";
  * Сервис для отслеживания новых сессий в БД
  */
 export class SessionWatcher {
-  private intervalId: Timer | null = null;
+  private intervalId: ReturnType<typeof setInterval> | null = null;
   private knownSessions = new Set<string>();
   private isRunning = false;
+  private consecutiveErrors = 0;
+  private readonly maxConsecutiveErrors = 5;
 
   constructor(
     private botManager: BotManager,
@@ -73,44 +75,62 @@ export class SessionWatcher {
    * Проверить наличие новых сессий
    */
   private async checkNewSessions(): Promise<void> {
-    const sessions = await db
-      .select()
-      .from(telegramSession)
-      .where(eq(telegramSession.isActive, true));
+    try {
+      const sessions = await db
+        .select()
+        .from(telegramSession)
+        .where(eq(telegramSession.isActive, true));
 
-    const newSessions = sessions.filter((s) => !this.knownSessions.has(s.id));
+      // Успешный запрос — сбрасываем счётчик ошибок
+      this.consecutiveErrors = 0;
 
-    if (newSessions.length === 0) {
-      return;
-    }
+      const newSessions = sessions.filter((s) => !this.knownSessions.has(s.id));
 
-    console.log(`🆕 Обнаружено ${newSessions.length} новых сессий`);
+      if (newSessions.length === 0) {
+        return;
+      }
 
-    for (const session of newSessions) {
-      try {
-        // Проверяем, не запущена ли уже сессия для этого workspace
-        if (this.botManager.isRunningForWorkspace(session.workspaceId)) {
+      console.log(`🆕 Обнаружено ${newSessions.length} новых сессий`);
+
+      for (const session of newSessions) {
+        try {
+          // Проверяем, не запущена ли уже сессия для этого workspace
+          if (this.botManager.isRunningForWorkspace(session.workspaceId)) {
+            console.log(
+              `⚠️ Сессия для workspace ${session.workspaceId} уже запущена`,
+            );
+            this.knownSessions.add(session.id);
+            continue;
+          }
+
           console.log(
-            `⚠️ Сессия для workspace ${session.workspaceId} уже запущена`,
+            `🚀 Запуск новой сессии для workspace ${session.workspaceId}...`,
           );
+          await this.botManager.restartBot(session.workspaceId);
+
           this.knownSessions.add(session.id);
-          continue;
+          console.log(
+            `✅ Сессия для workspace ${session.workspaceId} успешно запущена`,
+          );
+        } catch (error) {
+          console.error(
+            `❌ Ошибка запуска сессии ${session.id}:`,
+            error instanceof Error ? error.message : error,
+          );
         }
+      }
+    } catch (error) {
+      this.consecutiveErrors++;
+      console.error(
+        `❌ Ошибка запроса к БД (попытка ${this.consecutiveErrors}/${this.maxConsecutiveErrors}):`,
+        error instanceof Error ? error.message : error,
+      );
 
-        console.log(
-          `🚀 Запуск новой сессии для workspace ${session.workspaceId}...`,
-        );
-        await this.botManager.restartBot(session.workspaceId);
-
-        this.knownSessions.add(session.id);
-        console.log(
-          `✅ Сессия для workspace ${session.workspaceId} успешно запущена`,
-        );
-      } catch (error) {
+      if (this.consecutiveErrors >= this.maxConsecutiveErrors) {
         console.error(
-          `❌ Ошибка запуска сессии ${session.id}:`,
-          error instanceof Error ? error.message : error,
+          `🛑 Достигнут лимит ошибок (${this.maxConsecutiveErrors}), остановка SessionWatcher`,
         );
+        this.stop();
       }
     }
   }

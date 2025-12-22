@@ -80,10 +80,10 @@ export async function flushTempMessageBuffer(
 
     const chatId = tempConversationId.slice(5); // Remove "temp_" prefix (5 characters)
 
-    // Validate chatId format (should be numeric or UUID-like)
-    if (!chatId || !/^[\w-]+$/.test(chatId)) {
+    // Валидация числового chatId (Telegram ID)
+    if (!chatId || !/^-?\d+$/.test(chatId)) {
       throw new Error(
-        `Invalid chatId extracted from tempConversationId: "${chatId}"`,
+        `Невалидный chatId извлечён из tempConversationId: "${chatId}"`,
       );
     }
 

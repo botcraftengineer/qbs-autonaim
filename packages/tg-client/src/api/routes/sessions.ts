@@ -1,14 +1,32 @@
 import { Hono } from "hono";
+import { z } from "zod";
 import { botManager } from "../../bot-manager";
 
 const app = new Hono();
+
+const workspaceIdSchema = z.object({
+  workspaceId: z.string().min(1, "workspaceId не может быть пустым"),
+});
 
 /**
  * Запустить новую сессию для workspace
  * POST /sessions/start/:workspaceId
  */
 app.post("/start/:workspaceId", async (c) => {
-  const { workspaceId } = c.req.param();
+  const validation = workspaceIdSchema.safeParse(c.req.param());
+
+  if (!validation.success) {
+    return c.json(
+      {
+        success: false,
+        message: "Невалидный workspaceId",
+        errors: validation.error.issues,
+      },
+      400,
+    );
+  }
+
+  const { workspaceId } = validation.data;
 
   try {
     if (botManager.isRunningForWorkspace(workspaceId)) {
@@ -44,7 +62,20 @@ app.post("/start/:workspaceId", async (c) => {
  * POST /sessions/restart/:workspaceId
  */
 app.post("/restart/:workspaceId", async (c) => {
-  const { workspaceId } = c.req.param();
+  const validation = workspaceIdSchema.safeParse(c.req.param());
+
+  if (!validation.success) {
+    return c.json(
+      {
+        success: false,
+        message: "Невалидный workspaceId",
+        errors: validation.error.issues,
+      },
+      400,
+    );
+  }
+
+  const { workspaceId } = validation.data;
 
   try {
     await botManager.restartBot(workspaceId);
@@ -89,7 +120,20 @@ app.get("/status", (c) => {
  * GET /sessions/status/:workspaceId
  */
 app.get("/status/:workspaceId", (c) => {
-  const { workspaceId } = c.req.param();
+  const validation = workspaceIdSchema.safeParse(c.req.param());
+
+  if (!validation.success) {
+    return c.json(
+      {
+        success: false,
+        message: "Невалидный workspaceId",
+        errors: validation.error.issues,
+      },
+      400,
+    );
+  }
+
+  const { workspaceId } = validation.data;
   const isRunning = botManager.isRunningForWorkspace(workspaceId);
 
   if (!isRunning) {
