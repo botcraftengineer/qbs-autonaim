@@ -43,6 +43,9 @@ export const env: Prettify<{
   APP_NAME: string;
   NEXT_PUBLIC_APP_URL: string;
   NEXT_PUBLIC_APP_NAME: string;
+  INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT: number;
+  INTERVIEW_TYPING_DEBOUNCE_TIMEOUT: number;
+  INTERVIEW_BUFFER_ENABLED: boolean;
 }> = createEnv({
   server: {
     // Node environment
@@ -103,6 +106,23 @@ export const env: Prettify<{
     // App URL
     APP_URL: z.url().optional().default("https://qbs-autonaim.vercel.app"),
     APP_NAME: z.string().optional().default("QBS Автонайм"),
+
+    // Interview Buffer Configuration
+    INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT: z
+      .string()
+      .optional()
+      .default("10")
+      .transform(Number),
+    INTERVIEW_TYPING_DEBOUNCE_TIMEOUT: z
+      .string()
+      .optional()
+      .default("5")
+      .transform(Number),
+    INTERVIEW_BUFFER_ENABLED: z
+      .string()
+      .optional()
+      .default("true")
+      .transform((val) => val === "true"),
   },
   client: {
     NEXT_PUBLIC_APP_URL: z
@@ -150,6 +170,11 @@ export const env: Prettify<{
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,
     APP_URL: process.env.APP_URL,
     APP_NAME: process.env.APP_NAME,
+    INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT:
+      process.env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT,
+    INTERVIEW_TYPING_DEBOUNCE_TIMEOUT:
+      process.env.INTERVIEW_TYPING_DEBOUNCE_TIMEOUT,
+    INTERVIEW_BUFFER_ENABLED: process.env.INTERVIEW_BUFFER_ENABLED,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
   },

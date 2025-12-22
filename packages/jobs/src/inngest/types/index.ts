@@ -1,7 +1,8 @@
 /**
- * Centralized export for all Inngest event types and schemas
+ * Централизованный экспорт всех типов и схем событий Inngest
  */
 
+export * from "./buffer.types";
 export * from "./candidate.types";
 export * from "./integration";
 export * from "./response.types";

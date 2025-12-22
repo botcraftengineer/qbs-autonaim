@@ -18,6 +18,9 @@
     },
     "./lib/ai-client": {
       "default": "./src/lib/ai-client.ts"
+    },
+    "./services/buffer": {
+      "default": "./src/services/buffer/index.ts"
     }
   },
   "license": "MIT",
@@ -42,6 +45,7 @@
     "@qbs-autonaim/emails": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/prompts": "workspace:*",
+    "@qbs-autonaim/shared": "workspace:*",
     "@qbs-autonaim/tg-client": "workspace:*",
     "@t3-oss/env-core": "0.13.10",
     "ai": "6.0.0-beta.166",

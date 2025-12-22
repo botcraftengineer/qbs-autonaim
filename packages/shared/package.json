@@ -1,0 +1,35 @@
+{
+  "name": "@qbs-autonaim/shared",
+  "version": "0.1.0",
+  "private": true,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./src/index.ts"
+    },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./src/types/index.ts"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "default": "./src/utils/index.ts"
+    }
+  },
+  "license": "MIT",
+  "scripts": {
+    "build": "tsdown",
+    "clean": "git clean -xdf .cache .turbo dist node_modules",
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+  },
+  "dependencies": {
+    "@qbs-autonaim/db": "workspace:*",
+    "zod": "4.2.1"
+  },
+  "devDependencies": {
+    "@qbs-autonaim/tsconfig": "workspace:*",
+    "@types/node": "25.0.3",
+    "tsdown": "0.18.2",
+    "typescript": "5.9.3"
+  }
+}

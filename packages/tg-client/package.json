@@ -10,6 +10,10 @@
     "./sdk": {
       "types": "./dist/sdk/client.d.mts",
       "default": "./dist/sdk/client.mjs"
+    },
+    "./handlers/message-handler": {
+      "types": "./src/handlers/message-handler.ts",
+      "default": "./src/handlers/message-handler.ts"
     }
   },
   "license": "MIT",
@@ -28,6 +32,7 @@
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/prompts": "workspace:*",
+    "@qbs-autonaim/shared": "workspace:*",
     "file-type": "21.1.1",
     "hono": "4.11.1",
     "mime-types": "^3.0.2",
