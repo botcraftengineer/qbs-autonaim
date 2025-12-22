@@ -1,6 +1,7 @@
 import { realtimeMiddleware } from "@inngest/realtime/middleware";
 import { EventSchemas, Inngest } from "inngest";
 import {
+  bufferFlushDataSchema,
   candidateOfferSendDataSchema,
   candidateWelcomeBatchDataSchema,
   candidateWelcomeDataSchema,
@@ -10,6 +11,7 @@ import {
   interviewAnalysisDataSchema,
   interviewCompleteDataSchema,
   interviewSendQuestionDataSchema,
+  messageBufferedDataSchema,
   parseMissingContactsDataSchema,
   parseNewResumesDataSchema,
   refreshSingleResumeDataSchema,
@@ -19,6 +21,7 @@ import {
   screenResponsesBatchDataSchema,
   telegramAuthErrorDataSchema,
   telegramUnidentifiedMessageSendDataSchema,
+  typingActivityDataSchema,
   vacancyRequirementsExtractDataSchema,
   vacancyResponsesRefreshDataSchema,
   vacancyUpdateActiveDataSchema,
@@ -27,7 +30,7 @@ import {
   voiceTranscriptionDataSchema,
 } from "./types";
 
-// Create Inngest client with Zod schemas for type-safe events
+// Создание Inngest клиента с Zod схемами для типобезопасных событий
 export const inngest = new Inngest({
   id: "qbs-autonaim",
   name: "QBS Автонайм Jobs",
@@ -58,5 +61,8 @@ export const inngest = new Inngest({
     "telegram/interview.complete": interviewCompleteDataSchema,
     "telegram/auth.error": telegramAuthErrorDataSchema,
     "integration/verify-hh-credentials": verifyHHCredentialsDataSchema,
+    "interview/message.buffered": messageBufferedDataSchema,
+    "interview/typing.activity": typingActivityDataSchema,
+    "interview/buffer.flush": bufferFlushDataSchema,
   }),
 });
