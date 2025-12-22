@@ -4,12 +4,20 @@
 export function buildAwaitingPinPrompt(
   historyText: string,
   alreadyGreeted = false,
+  resumeLanguage = "en",
 ): string {
+  // Инструкция по адаптации к языку
+  const languageInstruction = `\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- Если есть ИСТОРИЯ ДИАЛОГА ниже - анализируй язык сообщений кандидата
+- Отвечай на том языке, на котором пишет кандидат
+- Если истории нет - начни на языке резюме`;
+
   const greetingInstruction = alreadyGreeted
     ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРОВАЙСЯ СНОВА!\n"
     : "";
 
-  return `
+  return `${languageInstruction}
 ⚠️ ЭТАП 1: ОЖИДАНИЕ PIN-КОДА
 Кандидат еще не идентифицирован. Ты не можешь начать интервью без идентификации.
 

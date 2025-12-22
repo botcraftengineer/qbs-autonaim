@@ -20,6 +20,7 @@ export interface BaseAgentContext {
     experience?: string;
     coverLetter?: string;
     phone?: string;
+    language?: string; // Язык резюме: "ru", "en", и т.д.
   };
   customBotInstructions?: string | null;
   customInterviewQuestions?: string | null;

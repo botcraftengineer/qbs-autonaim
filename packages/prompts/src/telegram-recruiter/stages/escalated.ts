@@ -1,8 +1,14 @@
 /**
  * Промпт для этапа эскалации к другому сотруднику
  */
-export function buildEscalatedPrompt(historyText = ""): string {
-  return `
+export function buildEscalatedPrompt(historyText = "", resumeLanguage = "en"): string {
+  // Инструкция по адаптации к языку
+  const languageInstruction = `\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- Анализируй ИСТОРИЮ ДИАЛОГА ниже и определи язык сообщений кандидата
+- Отвечай на том языке, на котором пишет кандидат`;
+
+  return `${languageInstruction}
 ⚠️ ЭТАП: ПЕРЕДАЧА КОЛЛЕГЕ
 Этот диалог нужно передать другому специалисту.
 

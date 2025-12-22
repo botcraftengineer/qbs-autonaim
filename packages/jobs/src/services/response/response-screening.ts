@@ -25,6 +25,7 @@ interface ScreeningResult {
   score: number;
   detailedScore: number;
   analysis: string;
+  resumeLanguage?: string;
 }
 
 /**
@@ -142,13 +143,17 @@ export async function screenResponse(
       });
     }
 
+    // Обновляем статус и язык резюме
     await db
       .update(vacancyResponse)
-      .set({ status: RESPONSE_STATUS.EVALUATED })
+      .set({ 
+        status: RESPONSE_STATUS.EVALUATED,
+        resumeLanguage: result.resumeLanguage || "en",
+      })
       .where(eq(vacancyResponse.id, responseId));
 
     logger.info(
-      `Screening result saved: score ${result.score}/5 (${result.detailedScore}/100)`,
+      `Screening result saved: score ${result.score}/5 (${result.detailedScore}/100), language: ${result.resumeLanguage || "en"}`,
     );
 
     return result;

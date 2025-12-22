@@ -46,6 +46,7 @@ interface InterviewContext {
   previousQA: QuestionAnswer[];
   questionNumber: number;
   responseId: string | null;
+  resumeLanguage?: string | null;
   conversationHistory?: Array<{
     sender: "CANDIDATE" | "BOT";
     content: string;
@@ -114,6 +115,7 @@ export async function analyzeAndGenerateNextQuestion(
       previousQA,
       questionNumber,
       customInterviewQuestions: null,
+      resumeLanguage: context.resumeLanguage || "en",
     },
     agentContext,
   );
@@ -210,6 +212,7 @@ export async function getInterviewContext(
     previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conv.responseId || null,
+    resumeLanguage: conv.response?.resumeLanguage || "en",
     conversationHistory,
   };
 }

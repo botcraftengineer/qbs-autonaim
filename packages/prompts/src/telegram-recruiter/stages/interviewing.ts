@@ -90,6 +90,14 @@ export function buildInterviewingPrompt(
     screeningAnalysis,
   } = context;
 
+  // Определяем язык общения на основе языка резюме
+  const resumeLanguage = resumeData?.language || "en";
+  const languageInstruction = `\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- ВАЖНО: Анализируй ИСТОРИЮ ДИАЛОГА ниже и определи язык сообщений кандидата
+- Если кандидат отвечает на другом языке - переключись на его язык
+- Всегда адаптируйся к языку последних сообщений кандидата`;
+
   // Подсчитываем количество голосовых сообщений от кандидата
   const voiceMessagesCount = conversationHistory.filter(
     isCandidateVoiceMessage,
@@ -137,7 +145,7 @@ export function buildInterviewingPrompt(
       )
     : "";
 
-  return `
+  return `${languageInstruction}
 ⚠️ ЭТАП 3: ПРОВЕДЕНИЕ ИНТЕРВЬЮ
 Кандидат идентифицирован. Проводи полноценное интервью.${customInstructionsText}${customQuestionsText}
 

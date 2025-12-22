@@ -15,6 +15,7 @@ export interface OrchestratorInput {
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
   customInterviewQuestions?: string | null;
+  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
   /**
    * Функция для проверки пин-кода (опционально)
    * Если передана, оркестратор автоматически проверит пин-код при его обнаружении
