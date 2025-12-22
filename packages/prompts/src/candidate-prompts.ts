@@ -11,6 +11,7 @@ export interface WelcomeMessageContext {
   candidateName: string | null;
   screeningScore?: number;
   screeningAnalysis?: string;
+  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
 }
 
 /**
@@ -28,9 +29,13 @@ export function buildTelegramInvitePrompt(
     candidateName,
     screeningScore,
     screeningAnalysis,
+    resumeLanguage = "en",
   } = context;
 
-  return `Ты — живой рекрутер компании "${companyName}". Напиши короткое персонализированное сообщение кандидату с приглашением продолжить общение в Telegram.
+  // Инструкция по адаптации к языку
+  const languageInstruction = `\n\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: Кандидат указал язык "${resumeLanguage}" в резюме. Пиши приглашение на этом языке.`;
+
+  return `Ты — живой рекрутер компании "${companyName}". Напиши короткое персонализированное сообщение кандидату с приглашением продолжить общение в Telegram.${languageInstruction}
 
 ИНФОРМАЦИЯ О КОМПАНИИ:
 Название: ${companyName}${

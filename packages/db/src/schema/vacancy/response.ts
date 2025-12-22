@@ -52,6 +52,7 @@ export const vacancyResponse = pgTable(
     experience: text("experience"),
     contacts: jsonb("contacts"),
     phone: varchar("phone", { length: 50 }),
+    resumeLanguage: varchar("resume_language", { length: 10 }).default("en"),
     telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
@@ -92,6 +93,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   coverLetter: z.string().optional(),
   telegramPinCode: z.string().length(4).optional(),
   salaryExpectations: z.string().max(200).optional(),
+  resumeLanguage: z.string().max(10).default("en").optional(),
   status: z
     .enum(["NEW", "EVALUATED", "INTERVIEW", "COMPLETED", "SKIPPED"])
     .default("NEW"),

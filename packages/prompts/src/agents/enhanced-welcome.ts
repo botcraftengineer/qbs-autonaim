@@ -17,6 +17,7 @@ export interface EnhancedWelcomeInput {
   screeningScore?: number;
   screeningAnalysis?: string;
   customOrganizationalQuestions?: string | null;
+  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
 }
 
 const enhancedWelcomeOutputSchema = z.object({
@@ -58,6 +59,7 @@ export class EnhancedWelcomeAgent extends AIPoweredAgent<
       screeningScore,
       screeningAnalysis,
       customOrganizationalQuestions,
+      resumeLanguage = "en",
     } = input;
 
     const interestLevel = screeningScore
@@ -68,7 +70,10 @@ export class EnhancedWelcomeAgent extends AIPoweredAgent<
           : "базовый"
       : undefined;
 
-    return `${this.systemPrompt}
+    // Инструкция по адаптации к языку
+    const languageInstruction = `\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: Кандидат указал язык "${resumeLanguage}" в резюме. Начни общение на этом языке. В дальнейшем анализируй сообщения кандидата и адаптируйся к языку, на котором он отвечает.`;
+
+    return `${this.systemPrompt}${languageInstruction}
 
 ИНФОРМАЦИЯ О КОМПАНИИ:
 Название: ${companyName}

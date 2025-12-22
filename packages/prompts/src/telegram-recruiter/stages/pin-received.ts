@@ -19,6 +19,14 @@ export function buildPinReceivedPrompt(
     screeningAnalysis,
   } = context;
 
+  // Определяем язык общения на основе языка резюме
+  const resumeLanguage = resumeData?.language || "en";
+  const languageInstruction = `\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- Если есть ИСТОРИЯ ДИАЛОГА ниже - анализируй язык сообщений кандидата
+- Отвечай на том языке, на котором пишет кандидат
+- Если истории нет - начни на языке резюме`;
+
   const greetingInstruction = alreadyGreeted
     ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРОВАЙСЯ СНОВА!\n"
     : "";
@@ -54,7 +62,7 @@ export function buildPinReceivedPrompt(
 ${sanitizeUserInput(customOrganizationalQuestions)}`
     : defaultOrgQuestions;
 
-  return `
+  return `${languageInstruction}
 ⚠️ ЭТАП 2: PIN-КОД ПОЛУЧЕН — НАЧАЛО ИНТЕРВЬЮ
 Кандидат только что отправил PIN-код и идентифицирован. Начинаем интервью.
 

@@ -12,6 +12,7 @@ export interface InterviewCompletionInput {
   questionCount: number;
   score?: number;
   detailedScore?: number;
+  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
 }
 
 const interviewCompletionOutputSchema = z.object({
@@ -48,6 +49,13 @@ export class InterviewCompletionAgent extends AIPoweredAgent<
     context: BaseAgentContext,
   ): string {
     const { candidateName, vacancyTitle, conversationHistory } = context;
+    const { resumeLanguage = "en" } = input;
+
+    // Инструкция по адаптации к языку
+    const languageInstruction = `\n\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- ВАЖНО: Посмотри на ИСТОРИЮ ДИАЛОГА ниже и определи, на каком языке общался кандидат
+- Пиши финальное сообщение на том языке, на котором кандидат отвечал в последних сообщениях`;
 
     const name = extractFirstName(candidateName || null);
     const candidateNameText =
@@ -76,7 +84,7 @@ export class InterviewCompletionAgent extends AIPoweredAgent<
             .join("\n")
         : "";
 
-    return `${this.systemPrompt}
+    return `${this.systemPrompt}${languageInstruction}
 
 ${historyText ? `ИСТОРИЯ ДИАЛОГА (последние сообщения для контекста):\n${historyText}\n` : ""}
 

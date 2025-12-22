@@ -16,6 +16,7 @@ export interface InterviewerInput {
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
   customInterviewQuestions?: string | null;
+  resumeLanguage?: string; // Язык резюме: "ru", "en", и т.д.
 }
 
 const interviewerOutputSchema = z.object({
@@ -57,6 +58,14 @@ export class InterviewerAgent extends AIPoweredAgent<
     context: BaseAgentContext,
   ): string {
     const { candidateName, vacancyTitle, vacancyDescription } = context;
+    const { resumeLanguage = "en" } = input;
+
+    // Инструкция по адаптации к языку
+    const languageInstruction = `\n\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- ВАЖНО: Анализируй ИСТОРИЮ ДИАЛОГА ниже и определи, на каком языке отвечает кандидат
+- Если кандидат отвечает на другом языке - переключись на его язык
+- Всегда адаптируйся к языку последних сообщений кандидата`;
 
     // Извлекаем имя (не фамилию!)
     const name = extractFirstName(candidateName || null);
@@ -88,7 +97,7 @@ export class InterviewerAgent extends AIPoweredAgent<
         ? `ПРЕДЫДУЩИЕ ВОПРОСЫ И ОТВЕТЫ:\n${input.previousQA.map((qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   Ответ: ${qa.answer}`).join("\n\n")}`
         : "";
 
-    return `${this.systemPrompt}
+    return `${this.systemPrompt}${languageInstruction}
 
 ВАЖНО: Ты должен вести себя как ЖИВОЙ ЧЕЛОВЕК, а не бот. Пиши естественно, по-человечески, как в обычной переписке.${customQuestionsText}
 

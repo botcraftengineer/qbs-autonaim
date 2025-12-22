@@ -269,6 +269,7 @@ export const completeInterviewFunction = inngest.createFunction(
       let vacancyTitle: string | undefined;
       let score: number | undefined;
       let detailedScore: number | undefined;
+      let resumeLanguage: string | undefined;
 
       if (conv?.responseId) {
         const response = await db.query.vacancyResponse.findFirst({
@@ -277,6 +278,7 @@ export const completeInterviewFunction = inngest.createFunction(
         });
         candidateName = response?.candidateName ?? undefined;
         vacancyTitle = response?.vacancy?.title ?? undefined;
+        resumeLanguage = response?.resumeLanguage ?? "en";
 
         const scoring = await db.query.telegramInterviewScoring.findFirst({
           where: eq(telegramInterviewScoring.conversationId, conversationId),
@@ -311,6 +313,7 @@ export const completeInterviewFunction = inngest.createFunction(
           questionCount: questionNumber,
           score,
           detailedScore,
+          resumeLanguage: resumeLanguage || "en",
         },
         agentContext,
       );

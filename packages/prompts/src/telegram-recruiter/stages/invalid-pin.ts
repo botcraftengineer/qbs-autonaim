@@ -4,12 +4,19 @@
 export function buildInvalidPinPrompt(
   historyText: string,
   alreadyGreeted = false,
+  resumeLanguage = "en",
 ): string {
+  // Инструкция по адаптации к языку
+  const languageInstruction = `\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
+- Изначальный язык резюме: "${resumeLanguage}"
+- Анализируй ИСТОРИЮ ДИАЛОГА ниже и определи язык сообщений кандидата
+- Отвечай на том языке, на котором пишет кандидат`;
+
   const greetingInstruction = alreadyGreeted
     ? "- ⚠️ ТЫ УЖЕ ЗДОРОВАЛСЯ - НЕ ЗДОРОВАЙСЯ СНОВА!\n"
     : "";
 
-  return `
+  return `${languageInstruction}
 ⚠️ ОШИБКА: НЕВЕРНЫЙ PIN-КОД
 Кандидат ввел неправильный 4-значный код.
 

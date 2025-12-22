@@ -25,6 +25,7 @@ export interface TelegramRecruiterContext {
     experience?: string;
     coverLetter?: string;
     phone?: string;
+    language?: string; // Язык резюме: "ru", "en", и т.д.
   };
   errorMessage?: string;
   customBotInstructions?: string | null; // Кастомные инструкции для бота

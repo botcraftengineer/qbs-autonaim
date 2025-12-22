@@ -76,6 +76,7 @@ export async function generateWelcomeMessage(
         candidateName: response.candidateName || undefined,
         screeningScore: screening?.score,
         screeningAnalysis: screening?.analysis || undefined,
+        resumeLanguage: response.resumeLanguage || "en",
       },
       {
         conversationHistory: [],
@@ -160,6 +161,7 @@ export async function generateTelegramInviteMessage(
     candidateName: response.candidateName,
     screeningScore: screening?.score,
     screeningAnalysis: screening?.analysis || undefined,
+    resumeLanguage: response.resumeLanguage || "en",
   });
 
   logger.info("Sending request to AI for invite message generation");

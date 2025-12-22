@@ -159,13 +159,14 @@ export function buildTelegramRecruiterPromptWithMeta(
   const alreadyGreeted = hasGreetedBefore(conversationHistory);
 
   let stageInstructions = "";
+  const resumeLanguage = context.resumeData?.language || "ru";
 
   switch (stage) {
     case "AWAITING_PIN":
-      stageInstructions = buildAwaitingPinPrompt(historyText, alreadyGreeted);
+      stageInstructions = buildAwaitingPinPrompt(historyText, alreadyGreeted, resumeLanguage);
       break;
     case "INVALID_PIN":
-      stageInstructions = buildInvalidPinPrompt(historyText, alreadyGreeted);
+      stageInstructions = buildInvalidPinPrompt(historyText, alreadyGreeted, resumeLanguage);
       break;
     case "PIN_RECEIVED":
       stageInstructions = buildPinReceivedPrompt(
@@ -178,7 +179,7 @@ export function buildTelegramRecruiterPromptWithMeta(
       stageInstructions = buildInterviewingPrompt(context, historyText);
       break;
     case "ESCALATED":
-      stageInstructions = buildEscalatedPrompt(historyText);
+      stageInstructions = buildEscalatedPrompt(historyText, resumeLanguage);
       break;
   }
 
