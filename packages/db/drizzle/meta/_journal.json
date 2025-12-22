@@ -78,6 +78,13 @@
       "when": 1766407146194,
       "tag": "0010_glossy_skaar",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1766408295062,
+      "tag": "0011_huge_gladiator",
+      "breakpoints": true
     }
   ]
 }
