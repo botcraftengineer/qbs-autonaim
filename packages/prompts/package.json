@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "@qbs-autonaim/lib": "workspace:*",
-    "ai": "^6.0.0-beta.166",
+    "ai": "^6.0.0-beta.167",
     "string-strip-html": "^13.5.0",
     "zod": "4.2.1"
   },
