@@ -202,9 +202,26 @@ export const processIncomingMessageFunction = inngest.createFunction(
         }
       });
 
+      // 1. ВСЕГДА сохраняем сообщение в БД (независимо от буферизации)
+      await step.run("save-text-message", async () => {
+        await saveIdentifiedText({
+          conversationId: conv.id,
+          text: messageData.text || "",
+          messageId: messageData.id.toString(),
+        });
+      });
+
+      // Публикуем событие о новом сообщении
+      await publish(
+        conversationMessagesChannel(conv.id).message({
+          conversationId: conv.id,
+          messageId: messageData.id.toString(),
+        }),
+      );
+
       // Если сообщение буферизовано, пропускаем стандартную обработку
       if (bufferResult.buffered) {
-        console.log("✅ Сообщение буферизовано, стандартная обработка пропущена", {
+        console.log("✅ Сообщение сохранено и буферизовано, стандартная обработка пропущена", {
           conversationId: conv.id,
           messageId: messageData.id.toString(),
           interviewStep: bufferResult.interviewStep,
@@ -222,24 +239,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         reason: bufferResult.reason,
       });
 
-      // 1. Сначала СОХРАНЯЕМ сообщение в БД
-      await step.run("save-text-message", async () => {
-        await saveIdentifiedText({
-          conversationId: conv.id,
-          text: messageData.text || "",
-          messageId: messageData.id.toString(),
-        });
-      });
-
-      // Публикуем событие о новом сообщении
-      await publish(
-        conversationMessagesChannel(conv.id).message({
-          conversationId: conv.id,
-          messageId: messageData.id.toString(),
-        }),
-      );
-
-      // 2. Проверяем группировку сообщений (теперь сообщение уже в БД)
+      // 2. Проверяем группировку сообщений (сообщение уже в БД)
       const groupCheck = await step.run("check-message-grouping", async () => {
         return await shouldProcessMessageGroup(
           conv.id,
