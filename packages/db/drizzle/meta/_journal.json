@@ -57,6 +57,13 @@
       "when": 1766314745062,
       "tag": "0007_steady_fantastic_four",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1766404110926,
+      "tag": "0008_new_mach_iv",
+      "breakpoints": true
     }
   ]
 }
