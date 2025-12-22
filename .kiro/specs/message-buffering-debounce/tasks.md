@@ -26,8 +26,8 @@
     - Создать файл `packages/jobs/src/services/buffer/types.ts`
     - _Requirements: 1.1, 1.2, 1.3_
 
-- [ ] 2. Реализация Message Buffer Service
-  - [ ] 2.1 Создать PostgresMessageBufferService класс
+- [x] 2. Реализация Message Buffer Service
+  - [x] 2.1 Создать PostgresMessageBufferService класс
     - Реализовать метод `addMessage()` с использованием `getConversationMetadata` и `updateConversationMetadata`
     - Реализовать метод `getMessages()`
     - Реализовать метод `clearBuffer()`
@@ -63,7 +63,7 @@
     - Минимум 100 итераций
     - _Requirements: 1.4, 1.5_
   
-  - [ ] 2.5 Создать экспорты для buffer service
+  - [x] 2.5 Создать экспорты для buffer service
     - Экспортировать `MessageBufferService` interface
     - Экспортировать `PostgresMessageBufferService` класс
     - Создать singleton instance
