@@ -70,8 +70,8 @@
     - Создать файл `packages/jobs/src/services/buffer/index.ts`
     - _Requirements: 1.1, 1.5_
 
-- [ ] 3. Реализация Inngest функций
-  - [ ] 3.1 Создать Buffer Debounce Function
+- [x] 3. Реализация Inngest функций
+  - [x] 3.1 Создать Buffer Debounce Function
     - Реализовать функцию с debounce механизмом
     - Настроить debounce key на основе userId + conversationId + interviewStep
     - Настроить period из environment variable
@@ -80,7 +80,7 @@
     - Создать файл `packages/jobs/src/inngest/functions/interview/buffer-debounce.ts`
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
   
-  - [ ] 3.2 Создать Typing Activity Handler Function
+  - [x] 3.2 Создать Typing Activity Handler Function
     - Реализовать функцию с коротким debounce
     - Настроить debounce key аналогично buffer debounce
     - Настроить period меньше основного debounce
@@ -88,7 +88,7 @@
     - Создать файл `packages/jobs/src/inngest/functions/interview/typing-activity.ts`
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
   
-  - [ ] 3.3 Создать Buffer Flush Function
+  - [x] 3.3 Создать Buffer Flush Function
     - Реализовать функцию с idempotency на основе flushId
     - Добавить step для получения сообщений из буфера
     - Добавить step для агрегации сообщений
@@ -109,7 +109,7 @@
     - Минимум 100 итераций
     - _Requirements: 5.1, 5.2_
   
-  - [ ] 3.5 Добавить функции в inngestFunctions массив
+  - [x] 3.5 Добавить функции в inngestFunctions массив
     - Импортировать все три функции
     - Добавить в массив экспорта
     - Обновить файл `packages/jobs/src/inngest/functions/index.ts`

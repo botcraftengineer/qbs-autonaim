@@ -8,6 +8,9 @@ export * from "./candidate";
 // Integration functions
 export * from "./integration";
 
+// Interview functions
+export * from "./interview";
+
 // Response functions
 export * from "./response";
 // Telegram functions
@@ -22,6 +25,12 @@ import {
 } from "./candidate";
 
 import { verifyHHCredentialsFunction } from "./integration";
+
+import {
+  bufferDebounceFunction,
+  bufferFlushFunction,
+  typingActivityFunction,
+} from "./interview";
 
 import {
   parseMissingContactsFunction,
@@ -72,6 +81,10 @@ export const inngestFunctions = [
   sendOfferFunction,
   // Integration
   verifyHHCredentialsFunction,
+  // Interview
+  bufferDebounceFunction,
+  bufferFlushFunction,
+  typingActivityFunction,
   // Telegram
   analyzeInterviewFunction,
   completeInterviewFunction,
