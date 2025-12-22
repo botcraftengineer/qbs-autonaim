@@ -35,7 +35,7 @@ const ConversationMetadataSchema = z.object({
  * Безопасно парсит JSON метаданные с валидацией
  * 
  * @param jsonString - JSON строка для парсинга
- * @returns Валидированные метаданные или пустой объект при ошибке
+ * @returns Валидированные метаданные
  * @throws Error если JSON невалиден или не соответствует схеме
  */
 function safeParseMetadata(jsonString: string): ConversationMetadata {
