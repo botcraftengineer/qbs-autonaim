@@ -1,11 +1,10 @@
 /**
- * Агент для извлечения зарплатных ожиданий из истории диалога
+ * Агент для извлечения зарплатных ожиданий
  */
 
 import { z } from "zod";
-import type { AIPoweredAgentConfig } from "./ai-powered-agent";
-import { AIPoweredAgent } from "./ai-powered-agent";
-import { type AgentResult, AgentType, type BaseAgentContext } from "./types";
+import { type AgentConfig, BaseAgent } from "./base-agent";
+import { AgentType, type BaseAgentContext } from "./types";
 
 export interface SalaryExtractionInput {
   conversationHistory: Array<{
@@ -23,15 +22,28 @@ export type SalaryExtractionOutput = z.infer<
   typeof salaryExtractionOutputSchema
 >;
 
-export class SalaryExtractionAgent extends AIPoweredAgent<
+export class SalaryExtractionAgent extends BaseAgent<
   SalaryExtractionInput,
   SalaryExtractionOutput
 > {
-  constructor(config: AIPoweredAgentConfig) {
+  constructor(config: AgentConfig) {
+    const instructions = `Ты — эксперт по анализу диалогов для извлечения зарплатных ожиданий кандидата.
+
+ЗАДАЧА:
+Проанализируй историю диалога и извлеки зарплатные ожидания кандидата.
+
+ПРАВИЛА:
+- Ищи упоминания зарплаты, оклада, компенсации
+- Извлекай конкретные цифры и валюту
+- Если кандидат указал диапазон - сохрани его
+- Если зарплата не упоминалась - верни пустую строку
+- Форматируй как: "50000-70000 руб" или "2000 USD" или "договорная"`;
+
     super(
       "SalaryExtraction",
-      AgentType.EVALUATOR,
-      "Ты — аналитик, который извлекает зарплатные ожидания из диалога с кандидатом.",
+      AgentType.CONTEXT_ANALYZER,
+      instructions,
+      salaryExtractionOutputSchema,
       config,
     );
   }
@@ -44,74 +56,20 @@ export class SalaryExtractionAgent extends AIPoweredAgent<
     input: SalaryExtractionInput,
     _context: BaseAgentContext,
   ): string {
-    const candidateMessages = input.conversationHistory
-      .filter((msg) => msg.sender === "CANDIDATE")
-      .map((msg) => msg.content)
+    const historyText = input.conversationHistory
+      .map((msg) => {
+        const sender = msg.sender === "CANDIDATE" ? "Кандидат" : "Бот";
+        return `${sender}: ${msg.content}`;
+      })
       .join("\n");
 
-    return `${this.systemPrompt}
+    return `ИСТОРИЯ ДИАЛОГА:
+${historyText}
 
-СООБЩЕНИЯ КАНДИДАТА:
-${candidateMessages}
+Извлеки зарплатные ожидания кандидата из диалога.
 
-ЗАДАЧА:
-Найди упоминания зарплатных ожиданий и верни их в кратком виде.
-
-ПРАВИЛА:
-- Если зарплата упоминалась: верни только цифры и валюту (например: "150000 руб", "100-120к", "от 80000")
-- Если зарплата НЕ упоминалась: верни пустую строку
-- Не добавляй пояснений
-- Не придумывай данные
-- Верни только то, что явно сказал кандидат
-
-ФОРМАТ ОТВЕТА - ВЕРНИ ТОЛЬКО ВАЛИДНЫЙ JSON:
-{
-  "salaryExpectations": "строка с зарплатными ожиданиями или пустая строка",
-  "confidence": число от 0.0 до 1.0
-}
-
-ВАЖНО: Верни ТОЛЬКО JSON, без дополнительного текста до или после.`;
-  }
-
-  async execute(
-    input: SalaryExtractionInput,
-    context: BaseAgentContext,
-  ): Promise<AgentResult<SalaryExtractionOutput>> {
-    if (!this.validate(input)) {
-      return { success: false, error: "Некорректные входные данные" };
-    }
-
-    try {
-      const prompt = this.buildPrompt(input, context);
-
-      const aiResponse = await this.generateAIResponse(prompt);
-
-      const expectedFormat = `{
-  "salaryExpectations": "string",
-  "confidence": number
-}`;
-
-      const parsed = await this.parseJSONResponseWithRetry(
-        aiResponse,
-        salaryExtractionOutputSchema,
-        expectedFormat,
-      );
-
-      if (!parsed) {
-        return { success: false, error: "Не удалось разобрать ответ AI" };
-      }
-
-      // Валидация confidence
-      if (parsed.confidence < 0 || parsed.confidence > 1) {
-        parsed.confidence = Math.max(0, Math.min(1, parsed.confidence));
-      }
-
-      return { success: true, data: parsed, metadata: { prompt } };
-    } catch (error) {
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Неизвестная ошибка",
-      };
-    }
+Верни JSON с полями:
+- salaryExpectations: строка с зарплатными ожиданиями (пустая строка если не упоминалось)
+- confidence: число от 0.0 до 1.0 (уверенность в извлечении)`;
   }
 }

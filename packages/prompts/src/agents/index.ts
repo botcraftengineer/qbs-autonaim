@@ -1,67 +1,54 @@
 /**
- * Мультиагентная система для интервью
- *
- * Экспорт всех агентов, типов и workflow
+ * AI SDK 6 Agents
  */
 
-export type { AIPoweredAgentConfig } from "./ai-powered-agent";
-export { AIPoweredAgent } from "./ai-powered-agent";
-// Базовые классы
-export { BaseAgent } from "./base-agent";
-// Конфигурация
+// Base
+export { type AgentConfig, BaseAgent } from "./base-agent";
+
+// Config
 export { AGENT_CONFIG, getAgentConfig } from "./config";
 
-// Агенты с AI SDK
-export type {
-  EnhancedContextAnalysisInput,
-  EnhancedContextAnalysisOutput,
-} from "./enhanced-context-analyzer";
-export { EnhancedContextAnalyzerAgent } from "./enhanced-context-analyzer";
-export type {
-  EnhancedEscalationInput,
-  EnhancedEscalationOutput,
-} from "./enhanced-escalation-detector";
-export { EnhancedEscalationDetectorAgent } from "./enhanced-escalation-detector";
-export type {
-  EnhancedWelcomeInput,
-  EnhancedWelcomeOutput,
-} from "./enhanced-welcome";
-export { EnhancedWelcomeAgent } from "./enhanced-welcome";
-export type {
-  InterviewCompletionInput,
-  InterviewCompletionOutput,
-} from "./interview-completion";
-export { InterviewCompletionAgent } from "./interview-completion";
-export type {
-  InterviewContentFilterInput,
-  InterviewContentFilterOutput,
-} from "./interview-content-filter";
-export { InterviewContentFilterAgent } from "./interview-content-filter";
-export type {
-  InterviewScoringInput,
-  InterviewScoringOutput,
-} from "./interview-scoring";
-export { InterviewScoringAgent } from "./interview-scoring";
-export type { InterviewerInput, InterviewerOutput } from "./interviewer";
-export { InterviewerAgent } from "./interviewer";
-// Оркестратор
-export type {
-  OrchestratorConfig,
-  OrchestratorInput,
-  OrchestratorOutput,
-} from "./orchestrator";
-export { InterviewOrchestrator } from "./orchestrator";
-export type {
-  SalaryExtractionInput,
-  SalaryExtractionOutput,
-} from "./salary-extraction";
-export { SalaryExtractionAgent } from "./salary-extraction";
-// Инструменты
+// Agents
 export {
-  getConversationContext,
-  getVoiceMessagesInfo,
-} from "./tools";
-// Типы
+  ContextAnalyzerAgent,
+  type ContextAnalyzerInput,
+  type ContextAnalyzerOutput,
+} from "./context-analyzer";
+export {
+  EscalationDetectorAgent,
+  type EscalationDetectorInput,
+  type EscalationDetectorOutput,
+} from "./escalation-detector";
+export {
+  InterviewCompletionAgent,
+  type InterviewCompletionInput,
+  type InterviewCompletionOutput,
+} from "./interview-completion";
+export {
+  InterviewScoringAgent,
+  type InterviewScoringInput,
+  type InterviewScoringOutput,
+} from "./interview-scoring";
+export {
+  InterviewerAgent,
+  type InterviewerInput,
+  type InterviewerOutput,
+} from "./interviewer";
+// Orchestrator
+export {
+  InterviewOrchestrator,
+  type OrchestratorConfig,
+  type OrchestratorInput,
+  type OrchestratorOutput,
+} from "./orchestrator";
+export {
+  SalaryExtractionAgent,
+  type SalaryExtractionInput,
+  type SalaryExtractionOutput,
+} from "./salary-extraction";
+// Tools
+export { getConversationContext, getVoiceMessagesInfo } from "./tools";
+// Types
 export type {
   AgentDecision,
   AgentResult,
@@ -69,4 +56,8 @@ export type {
   BaseAgentContext,
   WorkflowState,
 } from "./types";
-export { convertLegacyContext } from "./utils/legacy-converter";
+export {
+  WelcomeAgent,
+  type WelcomeInput,
+  type WelcomeOutput,
+} from "./welcome";
