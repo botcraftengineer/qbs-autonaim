@@ -102,11 +102,11 @@ export async function handleIncomingMessage(
     content = messageData.text;
     contentType = "TEXT";
   } else if (messageData.media?.type === "voice" || messageData.media?.type === "audio") {
-    // Для голосовых сообщений контент будет добавлен после транскрипции
-    // Пока пропускаем, транскрипция будет обработана отдельно
+    // Голосовые сообщения буферизуются после транскрипции в transcribe-voice.ts
+    // Здесь пропускаем, так как контент (транскрипция) еще не готов
     return {
       buffered: false,
-      reason: "voice message - will be buffered after transcription",
+      reason: "voice message - buffering happens after transcription in transcribe-voice.ts",
     };
   } else {
     return {

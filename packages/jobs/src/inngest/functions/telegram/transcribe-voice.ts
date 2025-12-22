@@ -101,7 +101,110 @@ export const transcribeVoiceFunction = inngest.createFunction(
         });
       });
 
-      // Запускаем анализ интервью после проверки группировки
+      // Попытка буферизации после транскрипции
+      await step.run("try-buffer-voice-message", async () => {
+        const message = await db.query.conversationMessage.findFirst({
+          where: eq(conversationMessage.id, messageId),
+          with: {
+            conversation: {
+              with: {
+                response: true,
+              },
+            },
+          },
+        });
+
+        if (!message?.conversation) {
+          console.log("⏭️ Сообщение или conversation не найдены");
+          return;
+        }
+
+        // Пытаемся буферизовать голосовое сообщение с транскрипцией
+        try {
+          const { env } = await import("@qbs-autonaim/config");
+          const { messageBufferService } = await import("../../../services/buffer");
+          const { getCurrentInterviewStep } = await import("@qbs-autonaim/tg-client");
+          const { getConversationMetadata } = await import("@qbs-autonaim/shared");
+
+          const bufferEnabled = env.INTERVIEW_BUFFER_ENABLED ?? false;
+
+          if (!bufferEnabled) {
+            console.log("ℹ️ Буферизация отключена для голосовых");
+            return;
+          }
+
+          const conversationId = message.conversationId;
+          const interviewStep = await getCurrentInterviewStep(conversationId);
+
+          // Получаем контекст вопроса
+          let questionContext: string | undefined;
+          try {
+            const metadata = await getConversationMetadata(conversationId);
+            questionContext = metadata.lastQuestionAsked;
+          } catch (error) {
+            console.error("❌ Ошибка получения questionContext:", error);
+          }
+
+          // Добавляем в буфер
+          await messageBufferService.addMessage({
+            userId: message.conversation.metadata 
+              ? JSON.parse(message.conversation.metadata).senderId 
+              : conversationId,
+            conversationId,
+            interviewStep,
+            message: {
+              id: messageId,
+              content: transcription,
+              contentType: "VOICE",
+              timestamp: Date.now(),
+              questionContext,
+            },
+          });
+
+          console.log("✅ Голосовое сообщение добавлено в буфер", {
+            conversationId,
+            interviewStep,
+            messageId,
+            transcriptionLength: transcription.length,
+          });
+
+          // Отправляем событие в Inngest для debounce
+          if (env.INNGEST_EVENT_KEY) {
+            await fetch(`${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name: "interview/message.buffered",
+                data: {
+                  userId: message.conversation.metadata 
+                    ? JSON.parse(message.conversation.metadata).senderId 
+                    : conversationId,
+                  conversationId,
+                  interviewStep,
+                  messageId,
+                  timestamp: Date.now(),
+                },
+              }),
+            });
+
+            console.log("✅ Событие interview/message.buffered отправлено для голосового", {
+              conversationId,
+              interviewStep,
+              messageId,
+            });
+
+            // Если буферизация успешна, выходим - не запускаем стандартную обработку
+            return;
+          }
+        } catch (error) {
+          console.error("❌ Ошибка буферизации голосового сообщения:", error);
+          // Продолжаем стандартную обработку при ошибке
+        }
+      });
+
+      // Запускаем анализ интервью после проверки группировки (если буферизация не сработала)
       await step.run("check-voice-grouping", async () => {
         const message = await db.query.conversationMessage.findFirst({
           where: eq(conversationMessage.id, messageId),
