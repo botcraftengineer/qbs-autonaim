@@ -61,7 +61,9 @@ export async function migrateTempMessages(
       const tempMessages = await tx
         .select()
         .from(tempConversationMessage)
-        .where(eq(tempConversationMessage.tempConversationId, tempConversationId))
+        .where(
+          eq(tempConversationMessage.tempConversationId, tempConversationId),
+        )
         .orderBy(tempConversationMessage.createdAt);
 
       if (tempMessages.length === 0) {
@@ -86,7 +88,9 @@ export async function migrateTempMessages(
       // Удаляем временные сообщения
       await tx
         .delete(tempConversationMessage)
-        .where(eq(tempConversationMessage.tempConversationId, tempConversationId));
+        .where(
+          eq(tempConversationMessage.tempConversationId, tempConversationId),
+        );
 
       console.log("✅ Временные сообщения перенесены", {
         tempConversationId,

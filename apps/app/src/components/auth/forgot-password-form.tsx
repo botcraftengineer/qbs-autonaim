@@ -1,5 +1,7 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -15,8 +17,6 @@ import {
   FormMessage,
   Input,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -50,12 +50,14 @@ export function ForgotPasswordForm({
         email: data.email,
         redirectTo: paths.auth.resetPassword,
       });
-      
+
       if (error) {
-        toast.error(error.message ?? "Не удалось отправить ссылку. Попробуйте снова.");
+        toast.error(
+          error.message ?? "Не удалось отправить ссылку. Попробуйте снова.",
+        );
         return;
       }
-      
+
       setSent(true);
       toast.success("Ссылка для сброса пароля отправлена! Проверьте email.");
     } catch (error) {

@@ -1,4 +1,6 @@
+import { env } from "@qbs-autonaim/config";
 import { workspaceRepository } from "@qbs-autonaim/db";
+import { WorkspaceInviteEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
 import { addUserToWorkspaceSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -59,10 +61,7 @@ export const addMember = protectedProcedure
     const workspace = await workspaceRepository.findById(input.workspaceId);
 
     if (workspace) {
-      const { env } = await import("@qbs-autonaim/config");
       const inviteLink = `${env.APP_URL}/invite/${invite.token}`;
-
-      const { WorkspaceInviteEmail } = await import("@qbs-autonaim/emails");
 
       await sendEmail({
         to: [input.email],

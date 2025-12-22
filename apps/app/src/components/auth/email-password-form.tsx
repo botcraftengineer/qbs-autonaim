@@ -1,5 +1,7 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -16,8 +18,6 @@ import {
   Input,
   PasswordInput,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -59,24 +59,26 @@ export function EmailPasswordForm({
           password: data.password,
           name: data.email.split("@")[0] ?? "User",
         });
-        
+
         if (error) {
-          toast.error(error.message ?? "Не удалось создать аккаунт. Попробуйте снова.");
+          toast.error(
+            error.message ?? "Не удалось создать аккаунт. Попробуйте снова.",
+          );
           return;
         }
-        
+
         toast.success("Аккаунт успешно создан!");
       } else {
         const { error } = await authClient.signIn.email({
           email: data.email,
           password: data.password,
         });
-        
+
         if (error) {
           toast.error(error.message ?? "Неверный email или пароль.");
           return;
         }
-        
+
         toast.success("Вход выполнен успешно!");
       }
       router.push(paths.dashboard.root);

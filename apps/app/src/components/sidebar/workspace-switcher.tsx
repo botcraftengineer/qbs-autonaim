@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +14,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
 import {
   IconBriefcase,
   IconPlus,
@@ -138,7 +138,9 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
-                    router.push(paths.workspace.settings.root(activeWorkspace.slug))
+                    router.push(
+                      paths.workspace.settings.root(activeWorkspace.slug),
+                    )
                   }
                 >
                   <IconSettings className="size-4" />
@@ -147,7 +149,9 @@ export function WorkspaceSwitcher({
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
-                    router.push(paths.workspace.settings.members(activeWorkspace.slug))
+                    router.push(
+                      paths.workspace.settings.members(activeWorkspace.slug),
+                    )
                   }
                 >
                   <IconUserPlus className="size-4" />

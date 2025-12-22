@@ -86,7 +86,7 @@ export async function generateAndSendBotResponse(params: {
   }
 
   let botMsg = null;
-  
+
   if (conversationId.startsWith("temp_")) {
     // Сохраняем во временное хранилище
     const chatId = conversationId.replace("temp_", "");

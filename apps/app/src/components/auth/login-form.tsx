@@ -48,12 +48,14 @@ export function LoginForm({
         email: data.email,
         type: "sign-in",
       });
-      
+
       if (error) {
-        toast.error(error.message ?? "Не удалось отправить код. Попробуйте снова.");
+        toast.error(
+          error.message ?? "Не удалось отправить код. Попробуйте снова.",
+        );
         return;
       }
-      
+
       // Сохраняем email и redirect URL в localStorage
       localStorage.setItem("otp_email", data.email);
       // Валидируем redirect URL перед сохранением

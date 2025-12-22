@@ -150,9 +150,7 @@ export function SecurityTab({ user }: SecurityTabProps) {
               onClick={handleCreatePassword}
               disabled={isSendingResetLink}
             >
-              {isSendingResetLink
-                ? "Отправка…"
-                : "Создать пароль аккаунта"}
+              {isSendingResetLink ? "Отправка…" : "Создать пароль аккаунта"}
             </Button>
           </CardFooter>
         ) : (

@@ -1,5 +1,6 @@
 import { conversationMessage, eq, file } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { RESPONSE_STATUS, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
 import { transcribeAudio } from "../../../services/media";
 import { inngest } from "../../client";
@@ -137,10 +138,6 @@ export const transcribeVoiceFunction = inngest.createFunction(
               response &&
               (response.status === "NEW" || response.status === "EVALUATED")
             ) {
-              const { vacancyResponse, RESPONSE_STATUS } = await import(
-                "@qbs-autonaim/db/schema"
-              );
-
               await db
                 .update(vacancyResponse)
                 .set({ status: RESPONSE_STATUS.INTERVIEW })

@@ -1,12 +1,17 @@
 import { desc, eq, workspaceRepository } from "@qbs-autonaim/db";
-import { vacancyResponse, vacancyResponseHistory } from "@qbs-autonaim/db/schema";
+import {
+  vacancyResponse,
+  vacancyResponseHistory,
+} from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const getHistory = protectedProcedure
-  .input(z.object({ responseId: z.string().uuid(), workspaceId: workspaceIdSchema }))
+  .input(
+    z.object({ responseId: z.string().uuid(), workspaceId: workspaceIdSchema }),
+  )
   .query(async ({ ctx, input }) => {
     const access = await workspaceRepository.checkAccess(
       input.workspaceId,

@@ -28,8 +28,9 @@ export const tempMessageContentTypeEnum = pgEnum("temp_message_content_type", [
 export const tempConversationMessage = pgTable("temp_conversation_messages", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
   // Временный ID формата temp_{chatId}
-  tempConversationId: varchar("temp_conversation_id", { length: 100 })
-    .notNull(),
+  tempConversationId: varchar("temp_conversation_id", {
+    length: 100,
+  }).notNull(),
   chatId: varchar("chat_id", { length: 100 }).notNull(),
   sender: tempMessageSenderEnum("sender").notNull(),
   contentType: tempMessageContentTypeEnum("content_type")

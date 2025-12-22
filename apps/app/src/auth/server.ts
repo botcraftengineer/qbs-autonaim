@@ -2,10 +2,7 @@ import "server-only";
 
 import { initAuth } from "@qbs-autonaim/auth";
 import { env } from "@qbs-autonaim/config";
-import {
-  OtpSignInEmail,
-  ResetPasswordEmail,
-} from "@qbs-autonaim/emails";
+import { OtpSignInEmail, ResetPasswordEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";

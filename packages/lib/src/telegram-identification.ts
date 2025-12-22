@@ -14,6 +14,7 @@ import {
   vacancyResponse,
   type workspace,
 } from "@qbs-autonaim/db/schema";
+import { logResponseEvent } from "./vacancy-response-history";
 
 interface IdentificationResult {
   success: boolean;
@@ -95,8 +96,6 @@ export async function identifyByPinCode(
         telegramUsername: username || response.telegramUsername,
       })
       .where(eq(vacancyResponse.id, response.id));
-
-    const { logResponseEvent } = await import("./vacancy-response-history");
 
     if (!hadChatId) {
       await logResponseEvent({

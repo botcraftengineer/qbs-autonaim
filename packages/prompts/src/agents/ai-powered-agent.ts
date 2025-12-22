@@ -115,7 +115,10 @@ ${expectedFormat}
             console.log(`JSON исправлен на попытке ${attempt}`);
             return validation.data;
           }
-          console.error(`Попытка ${attempt}: схема не прошла валидацию`, validation.error);
+          console.error(
+            `Попытка ${attempt}: схема не прошла валидацию`,
+            validation.error,
+          );
         }
 
         currentText = fixedResponse;

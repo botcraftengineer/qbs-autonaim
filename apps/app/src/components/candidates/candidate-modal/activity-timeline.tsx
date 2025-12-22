@@ -1,18 +1,18 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Calendar,
   CheckCircle,
+  DollarSign,
   FileText,
+  Image,
+  Mail,
   MessageSquare,
   Phone,
   User,
-  DollarSign,
-  Mail,
-  Image,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
 import { useTRPC } from "~/trpc/react";
 
 interface ActivityTimelineProps {
@@ -78,14 +78,14 @@ export function ActivityTimeline({
   workspaceId,
 }: ActivityTimelineProps) {
   const trpc = useTRPC();
-  
+
   const historyQueryOptions = trpc.vacancy.responses.history.queryOptions({
     responseId: candidateId,
     workspaceId,
   });
-  
+
   const { data, isPending } = useQuery(historyQueryOptions);
-  
+
   const history = (data ?? []) as HistoryEvent[];
   const isLoading = isPending;
 
@@ -94,7 +94,7 @@ export function ActivityTimeline({
   const getColor = (type: string) =>
     ACTIVITY_COLORS[type as keyof typeof ACTIVITY_COLORS] ??
     "text-primary bg-primary/10 border-primary/20";
-  
+
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) return "—";
     if (typeof value === "string") return value;
@@ -132,7 +132,7 @@ export function ActivityTimeline({
       {history.map((event) => {
         const Icon = getIcon(event.eventType);
         const label = EVENT_LABELS[event.eventType] ?? event.eventType;
-        
+
         return (
           <div
             key={event.id}
@@ -150,13 +150,17 @@ export function ActivityTimeline({
                   {event.oldValue && (
                     <div className="flex items-center gap-1">
                       <span className="opacity-60">Было:</span>
-                      <span className="font-mono">{String(formatValue(event.oldValue))}</span>
+                      <span className="font-mono">
+                        {String(formatValue(event.oldValue))}
+                      </span>
                     </div>
                   )}
                   {event.newValue && (
                     <div className="flex items-center gap-1">
                       <span className="opacity-60">Стало:</span>
-                      <span className="font-mono">{String(formatValue(event.newValue))}</span>
+                      <span className="font-mono">
+                        {String(formatValue(event.newValue))}
+                      </span>
                     </div>
                   )}
                 </div>

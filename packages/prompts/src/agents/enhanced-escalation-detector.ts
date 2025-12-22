@@ -100,7 +100,7 @@ export class EnhancedEscalationDetectorAgent extends AIPoweredAgent<
 
       // Реальный AI-вызов для более сложных случаев
       const aiResponse = await this.generateAIResponse(prompt);
-      
+
       const expectedFormat = `{
   "shouldEscalate": boolean,
   "reason": "string (optional)",

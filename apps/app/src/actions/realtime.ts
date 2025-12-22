@@ -6,13 +6,12 @@ import {
   screenAllResponsesChannel,
   screenNewResponsesChannel,
 } from "@qbs-autonaim/jobs/channels";
+import { inngest } from "@qbs-autonaim/jobs/client";
 
 /**
  * Server action для получения токена подписки на Realtime канал скрининга новых откликов
  */
 export async function fetchScreenNewResponsesToken(vacancyId: string) {
-  const { inngest } = await import("@qbs-autonaim/jobs/client");
-
   const token = await getSubscriptionToken(inngest, {
     channel: screenNewResponsesChannel(vacancyId),
     topics: ["progress", "result"],
@@ -25,8 +24,6 @@ export async function fetchScreenNewResponsesToken(vacancyId: string) {
  * Server action для получения токена подписки на Realtime канал скрининга всех откликов
  */
 export async function fetchScreenAllResponsesToken(vacancyId: string) {
-  const { inngest } = await import("@qbs-autonaim/jobs/client");
-
   const token = await getSubscriptionToken(inngest, {
     channel: screenAllResponsesChannel(vacancyId),
     topics: ["progress", "result"],
@@ -39,7 +36,6 @@ export async function fetchScreenAllResponsesToken(vacancyId: string) {
  * Server action для получения токена подписки на Realtime канал обновления откликов
  */
 export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
-  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: refreshVacancyResponsesChannel(vacancyId),
     topics: ["status"],
@@ -52,7 +48,6 @@ export async function fetchRefreshVacancyResponsesToken(vacancyId: string) {
  * Server action для получения токена подписки на новые сообщения в чате
  */
 export async function fetchTelegramMessagesToken(conversationId: string) {
-  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: `telegram-messages-${conversationId}`,
     topics: ["message"],

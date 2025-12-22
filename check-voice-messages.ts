@@ -1,6 +1,6 @@
+import { desc } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
-import { desc } from "@qbs-autonaim/db";
 
 async function checkVoiceMessages() {
   console.log("🔍 Проверка голосовых сообщений в базе данных...\n");
@@ -32,7 +32,9 @@ async function checkVoiceMessages() {
     console.log(`External Message ID: ${msg.externalMessageId}`);
     console.log(`File ID: ${msg.fileId || "нет"}`);
     console.log(`Voice Duration: ${msg.voiceDuration || "нет"}`);
-    console.log(`Voice Transcription: ${msg.voiceTranscription ? "есть" : "нет"}`);
+    console.log(
+      `Voice Transcription: ${msg.voiceTranscription ? "есть" : "нет"}`,
+    );
     console.log(`Создано: ${msg.createdAt}`);
     console.log(`Username: ${msg.conversation?.username || "нет"}`);
     console.log();

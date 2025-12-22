@@ -1,4 +1,5 @@
 import { workspaceRepository } from "@qbs-autonaim/db";
+import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   updateWorkspaceSchema,
   workspaceIdSchema,
@@ -39,7 +40,6 @@ export const update = protectedProcedure
 
     const dataToUpdate = { ...input.data };
     if (dataToUpdate.logo?.startsWith("data:image/")) {
-      const { optimizeLogo } = await import("@qbs-autonaim/lib/image");
       dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
     }
 

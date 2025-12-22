@@ -1,9 +1,9 @@
 /**
  * Механизм группировки сообщений от кандидата
- * 
+ *
  * Проблема: кандидат может отправить несколько сообщений подряд (текст/голос в любом порядке),
  * а бот реагирует на каждое отдельно, создавая хаос.
- * 
+ *
  * Решение: Собираем все сообщения кандидата в течение 10 минут.
  * Ждем 10 минут после последнего сообщения кандидата, затем обрабатываем всю группу.
  */
@@ -31,7 +31,7 @@ interface MessageGroup {
 
 /**
  * Проверяет, нужно ли ждать еще сообщений или можно обрабатывать группу
- * 
+ *
  * Простая группировка: собираем все сообщения кандидата за последние 10 минут
  * Ждем 10 минут после последнего сообщения, затем обрабатываем всю группу
  */
@@ -52,7 +52,8 @@ export async function shouldProcessMessageGroup(
   const now = new Date();
   const groupingWindowMs = GROUPING_WINDOW_MINUTES * 60 * 1000;
   // Запрашиваем с буфером, чтобы не потерять сообщения при задержке обработки
-  const queryWindowMs = (GROUPING_WINDOW_MINUTES + QUERY_BUFFER_MINUTES) * 60 * 1000;
+  const queryWindowMs =
+    (GROUPING_WINDOW_MINUTES + QUERY_BUFFER_MINUTES) * 60 * 1000;
   const windowStartTime = new Date(now.getTime() - queryWindowMs);
 
   // Получаем все сообщения кандидата за последние 10+5 минут (с буфером)
@@ -104,7 +105,8 @@ export async function shouldProcessMessageGroup(
   }
 
   // Текущее сообщение - последнее. Проверяем, прошло ли 10 минут
-  const timeSinceLastMessage = now.getTime() - currentMessage.createdAt.getTime();
+  const timeSinceLastMessage =
+    now.getTime() - currentMessage.createdAt.getTime();
   const hasWaitedEnough = timeSinceLastMessage >= groupingWindowMs;
 
   if (!hasWaitedEnough) {
@@ -158,9 +160,10 @@ export async function shouldProcessMessageGroup(
     .reverse() // От старых к новым
     .map((m) => ({
       id: m.externalMessageId || m.id,
-      content: m.contentType === "VOICE" && m.voiceTranscription 
-        ? m.voiceTranscription 
-        : m.content,
+      content:
+        m.contentType === "VOICE" && m.voiceTranscription
+          ? m.voiceTranscription
+          : m.content,
       contentType: m.contentType as "TEXT" | "VOICE",
       createdAt: m.createdAt,
     }));

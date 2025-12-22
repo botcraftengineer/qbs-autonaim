@@ -21,12 +21,14 @@ import { authClient } from "~/auth/client";
 import { useTRPC } from "~/trpc/react";
 
 interface GeneralTabProps {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    image: string | null;
-  } | undefined;
+  user:
+    | {
+        id: string;
+        name: string | null;
+        email: string;
+        image: string | null;
+      }
+    | undefined;
 }
 
 export function GeneralTab({ user }: GeneralTabProps) {

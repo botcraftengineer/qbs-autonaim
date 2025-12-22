@@ -1,5 +1,7 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -15,8 +17,6 @@ import {
   FormMessage,
   PasswordInput,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -65,12 +65,15 @@ export function ResetPasswordForm({
         newPassword: data.password,
         token,
       });
-      
+
       if (error) {
-        toast.error(error.message ?? "Не удалось сбросить пароль. Возможно, ссылка устарела.");
+        toast.error(
+          error.message ??
+            "Не удалось сбросить пароль. Возможно, ссылка устарела.",
+        );
         return;
       }
-      
+
       toast.success("Пароль успешно сброшен!");
       router.push(paths.auth.signin);
     } catch (error) {

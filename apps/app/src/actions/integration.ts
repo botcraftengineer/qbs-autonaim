@@ -1,6 +1,7 @@
 "use server";
 
 import { getSubscriptionToken } from "@inngest/realtime";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 
 const verifyHHCredentialsSchema = z.object({
@@ -26,8 +27,6 @@ export async function triggerVerifyHHCredentials(
       .join(", ");
     throw new Error(`Validation failed: ${errors}`);
   }
-
-  const { inngest } = await import("@qbs-autonaim/jobs/client");
 
   try {
     await inngest.send({
@@ -56,7 +55,6 @@ export async function triggerVerifyHHCredentials(
 }
 
 export async function fetchVerifyHHCredentialsToken(workspaceId: string) {
-  const { inngest } = await import("@qbs-autonaim/jobs/client");
   const token = await getSubscriptionToken(inngest, {
     channel: `verify-hh-credentials-${workspaceId}`,
     topics: ["result"],

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -19,7 +20,6 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
 import { type OTPFormData, otpFormSchema } from "@qbs-autonaim/validators";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -100,12 +100,14 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
         email,
         type: "sign-in",
       });
-      
+
       if (error) {
-        toast.error(error.message ?? "Не удалось отправить код. Попробуйте снова.");
+        toast.error(
+          error.message ?? "Не удалось отправить код. Попробуйте снова.",
+        );
         return;
       }
-      
+
       toast.success("Код отправлен! Проверьте вашу почту.");
       setCountdown(60); // 60 second cooldown
     } catch (error) {
@@ -136,9 +138,9 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
                     Код подтверждения
                   </FormLabel>
                   <FormControl>
-                    <InputOTP 
-                      maxLength={6} 
-                      id="otp" 
+                    <InputOTP
+                      maxLength={6}
+                      id="otp"
                       {...field}
                       onChange={(value) => {
                         field.onChange(value);

@@ -303,7 +303,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           });
         }
 
-           const conv = await db.query.conversation.findFirst({
+        const conv = await db.query.conversation.findFirst({
           where: eq(conversation.responseId, responseId),
         });
 
@@ -330,7 +330,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           .update(vacancyResponse)
           .set({ welcomeSentAt: new Date() })
           .where(eq(vacancyResponse.id, responseId));
-        
+
         await logResponseEvent({
           db,
           responseId,

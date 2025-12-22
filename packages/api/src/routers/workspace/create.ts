@@ -1,4 +1,5 @@
 import { workspaceRepository } from "@qbs-autonaim/db";
+import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import { createWorkspaceSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../trpc";
@@ -16,7 +17,6 @@ export const create = protectedProcedure
 
     const dataToCreate = { ...input };
     if (dataToCreate.logo?.startsWith("data:image/")) {
-      const { optimizeLogo } = await import("@qbs-autonaim/lib/image");
       dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
     }
 

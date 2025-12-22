@@ -5,6 +5,7 @@ import {
   conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { getTempMessageHistory } from "./handlers/unidentified/temp-message-storage";
 import type { BotSettings } from "./types";
 
 export function extractPinCode(text: string): string | null {
@@ -63,15 +64,13 @@ function isValidContentType(value: unknown): value is "TEXT" | "VOICE" {
 export async function getConversationHistory(conversationId: string) {
   if (conversationId.startsWith("temp_")) {
     // Для временных conversation загружаем из временного хранилища
-    const { getTempMessageHistory } = await import(
-      "./handlers/unidentified/temp-message-storage"
-    );
     const tempMessages = await getTempMessageHistory(conversationId);
-    
+
     // Преобразуем в формат conversationMessage с валидацией
     return tempMessages
       .filter((msg) => {
-        const isValid = isValidSender(msg.sender) && isValidContentType(msg.contentType);
+        const isValid =
+          isValidSender(msg.sender) && isValidContentType(msg.contentType);
         if (!isValid) {
           console.error("❌ Невалидное временное сообщение, пропускаем", {
             id: msg.id,

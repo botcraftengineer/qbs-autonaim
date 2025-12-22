@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   Avatar,
   AvatarFallback,
@@ -16,7 +17,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
 import {
   IconDotsVertical,
   IconLogout,

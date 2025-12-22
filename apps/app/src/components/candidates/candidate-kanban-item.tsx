@@ -26,11 +26,7 @@ export function CandidateKanbanItem({
 
   if (isDragging) {
     return (
-      <div
-        ref={setNodeRef}
-        style={style}
-        className="opacity-40 grayscale"
-      >
+      <div ref={setNodeRef} style={style} className="opacity-40 grayscale">
         <CandidateKanbanCard candidate={candidate} onClick={() => {}} />
       </div>
     );

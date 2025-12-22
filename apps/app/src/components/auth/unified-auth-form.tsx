@@ -1,5 +1,7 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -20,8 +22,6 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
-import { paths } from "@qbs-autonaim/config";
-import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -72,7 +72,9 @@ export function UnifiedAuthForm({
         });
         if (error) {
           if (error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
-            toast.error("Пользователь уже существует. Используйте другой email.");
+            toast.error(
+              "Пользователь уже существует. Используйте другой email.",
+            );
           } else {
             toast.error(
               error.message || "Не удалось создать аккаунт. Попробуйте снова.",
@@ -113,7 +115,9 @@ export function UnifiedAuthForm({
         type: "sign-in",
       });
       if (error) {
-        toast.error(error.message || "Не удалось отправить код. Попробуйте снова.");
+        toast.error(
+          error.message || "Не удалось отправить код. Попробуйте снова.",
+        );
         return;
       }
       localStorage.setItem("otp_email", data.email);

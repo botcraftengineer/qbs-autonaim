@@ -5,6 +5,7 @@ import {
   vacancyResponse,
   workspaceRepository,
 } from "@qbs-autonaim/db";
+import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
@@ -65,8 +66,6 @@ export const getMessagesRouter = {
           file: true,
         },
       });
-
-      const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
 
       const messagesWithUrls = await Promise.all(
         messages.map(async (msg) => {

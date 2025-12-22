@@ -23,12 +23,13 @@ export function CandidateKanbanCard({
         {candidate.messageCount !== undefined && candidate.messageCount > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <MessageCircle className="h-3.5 w-3.5" />
-            <span className="font-medium tabular-nums">{candidate.messageCount}</span>
+            <span className="font-medium tabular-nums">
+              {candidate.messageCount}
+            </span>
           </div>
         )}
-        {(candidate.messageCount === undefined || candidate.messageCount === 0) && (
-          <div />
-        )}
+        {(candidate.messageCount === undefined ||
+          candidate.messageCount === 0) && <div />}
         <MatchScoreCircle score={candidate.matchScore} size="sm" />
       </div>
 

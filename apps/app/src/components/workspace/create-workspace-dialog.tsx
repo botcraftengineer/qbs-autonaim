@@ -1,8 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { env as baseEnv } from "@qbs-autonaim/config";
-import { paths } from "@qbs-autonaim/config";
+import { env as baseEnv, paths } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
