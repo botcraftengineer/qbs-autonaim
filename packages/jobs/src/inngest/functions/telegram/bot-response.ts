@@ -3,8 +3,8 @@ import { conversationMessage } from "@qbs-autonaim/db/schema";
 import type { getInterviewStartData } from "@qbs-autonaim/lib";
 import { generateText } from "@qbs-autonaim/lib/ai";
 import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
+import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { inngest } from "../../client";
-import { saveTempMessage } from "./handlers/unidentified/temp-message-storage";
 import type { BotSettings, PromptStage } from "./types";
 import { getConversationHistory } from "./utils";
 
@@ -88,17 +88,20 @@ export async function generateAndSendBotResponse(params: {
   let botMsg = null;
 
   if (conversationId.startsWith("temp_")) {
-    // Сохраняем во временное хранилище
     const chatId = conversationId.replace("temp_", "");
-    await saveTempMessage({
+
+    await tempMessageBufferService.addMessage({
       tempConversationId: conversationId,
       chatId,
-      sender: "BOT",
-      content: aiResponse,
-      contentType: "TEXT",
+      message: {
+        id: `bot_${crypto.randomUUID()}`,
+        content: aiResponse,
+        contentType: "TEXT",
+        sender: "BOT",
+        timestamp: new Date(),
+      },
     });
 
-    // Отправляем сообщение
     if (username) {
       await inngest.send({
         name: "telegram/message.send.by-username",

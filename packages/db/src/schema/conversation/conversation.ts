@@ -1,7 +1,6 @@
 import { uuidv7Schema } from "@qbs-autonaim/validators";
 import { sql } from "drizzle-orm";
 import {
-  integer,
   pgEnum,
   pgTable,
   text,

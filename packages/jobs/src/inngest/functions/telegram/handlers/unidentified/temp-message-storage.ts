@@ -1,9 +1,14 @@
 import { db } from "@qbs-autonaim/db/client";
 import {
+  bufferedTempMessage,
   conversationMessage,
   tempConversationMessage,
 } from "@qbs-autonaim/db/schema";
 import { eq } from "drizzle-orm";
+import {
+  type BufferedTempMessageData,
+  tempMessageBufferService,
+} from "~/services/buffer/temp-message-buffer-service";
 
 /**
  * Сохраняет временное сообщение для неидентифицированного пользователя
@@ -45,6 +50,62 @@ export async function saveTempMessage(params: {
       tempConversationId,
       error: error instanceof Error ? error.message : String(error),
     });
+  }
+}
+
+/**
+ * Переносит буферизованные сообщения в постоянное хранилище temp_conversation_messages
+ */
+export async function flushTempMessageBuffer(
+  tempConversationId: string,
+): Promise<void> {
+  try {
+    const bufferedMessages = await tempMessageBufferService.getMessages({
+      tempConversationId,
+    });
+
+    if (bufferedMessages.length === 0) {
+      console.log("Нет буферизованных сообщений для переноса", {
+        tempConversationId,
+      });
+      return;
+    }
+
+    const chatId = tempConversationId.replace("temp_", "");
+
+    await db.transaction(async (tx) => {
+      const messagesToInsert = bufferedMessages.map(
+        (msg: BufferedTempMessageData) => ({
+          tempConversationId,
+          chatId,
+          sender: msg.sender,
+          contentType: msg.contentType,
+          content: msg.content,
+          externalMessageId: msg.externalMessageId,
+        }),
+      );
+
+      await tx.insert(tempConversationMessage).values(messagesToInsert);
+
+      // Clear buffer within the same transaction to ensure atomicity
+      await tx
+        .delete(bufferedTempMessage)
+        .where(eq(bufferedTempMessage.tempConversationId, tempConversationId));
+    });
+
+    console.log(
+      "✅ Буферизованные сообщения перенесены в temp_conversation_messages",
+      {
+        tempConversationId,
+        count: bufferedMessages.length,
+      },
+    );
+  } catch (error) {
+    console.error("❌ Ошибка переноса буферизованных сообщений:", {
+      tempConversationId,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    throw error;
   }
 }
 

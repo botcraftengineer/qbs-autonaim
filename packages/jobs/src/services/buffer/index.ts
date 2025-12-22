@@ -1,6 +1,6 @@
 /**
  * Экспорты сервиса буферизации сообщений
- * 
+ *
  * Предоставляет интерфейсы, типы и singleton instance
  * для работы с буферизацией сообщений в интервью.
  */
@@ -14,13 +14,18 @@ export type {
 
 // Экспорт класса реализации
 export { PostgresMessageBufferService } from "./postgres-buffer-service";
+export type { BufferedTempMessageData } from "./temp-message-buffer-service";
+export {
+  TempMessageBufferService,
+  tempMessageBufferService,
+} from "./temp-message-buffer-service";
 
 // Создание и экспорт singleton instance
 import { PostgresMessageBufferService } from "./postgres-buffer-service";
 
 /**
  * Singleton instance PostgresMessageBufferService
- * 
+ *
  * Используется во всем приложении для обеспечения
  * единой точки доступа к сервису буферизации.
  */

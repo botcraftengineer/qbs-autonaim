@@ -342,6 +342,10 @@
       "name": "@qbs-autonaim/tsconfig",
     },
   },
+  "overrides": {
+    "@ai-sdk/provider": "3.0.0-beta.32",
+    "@ai-sdk/provider-utils": "4.0.0-beta.59",
+  },
   "packages": {
     "@ai-sdk/deepseek": ["@ai-sdk/deepseek@2.0.0-beta.62", "", { "dependencies": { "@ai-sdk/provider": "3.0.0-beta.32", "@ai-sdk/provider-utils": "4.0.0-beta.59" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-FtlROd5rYbDUQQEu1t34t8pm5SK++dll8yLOEwZnF5Ct3NwbWq26on4VI3gRqL/5xW2oF4Vzjwvxxd6AVtXQpA=="],
 
