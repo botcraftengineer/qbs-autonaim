@@ -10,7 +10,6 @@ import type { BaseAgentContext } from "./types";
 
 export interface OrchestratorInput {
   currentAnswer: string;
-  currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
   customOrganizationalQuestions?: string | null;
@@ -193,7 +192,6 @@ export class InterviewOrchestrator {
       // Логируем входные данные для Interviewer
       console.log("[Orchestrator] Preparing Interviewer input:", {
         currentAnswerLength: input.currentAnswer?.length,
-        currentQuestionLength: input.currentQuestion?.length,
         questionNumber: input.questionNumber,
         previousQALength: input.previousQA?.length,
         hasCustomOrganizationalQuestions: !!input.customOrganizationalQuestions,

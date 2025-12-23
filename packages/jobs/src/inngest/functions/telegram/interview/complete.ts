@@ -70,24 +70,9 @@ export const completeInterviewFunction = inngest.createFunction(
           responseId,
         });
 
-        const lastBotMessages = await db
-          .select()
-          .from(conversationMessage)
-          .where(
-            and(
-              eq(conversationMessage.conversationId, conversationId),
-              eq(conversationMessage.sender, "BOT"),
-            ),
-          )
-          .orderBy(desc(conversationMessage.createdAt))
-          .limit(1);
-
-        const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
-
         const updatedContext = await getInterviewContext(
           conversationId,
           transcription,
-          lastQuestion,
         );
 
         if (!updatedContext) {

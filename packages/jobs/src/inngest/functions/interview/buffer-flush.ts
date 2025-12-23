@@ -74,21 +74,13 @@ export const bufferFlushFunction = inngest.createFunction(
       return content;
     });
 
-    // Получение контекста для текущего вопроса
-    const currentQuestion = messages[0]?.questionContext || "";
-
     // Получение полного контекста интервью
     const context = await step.run("get-interview-context", async () => {
       console.log("📋 Getting interview context", {
         conversationId,
-        currentQuestion,
       });
 
-      const ctx = await getInterviewContext(
-        conversationId,
-        aggregatedContent,
-        currentQuestion,
-      );
+      const ctx = await getInterviewContext(conversationId, aggregatedContent);
 
       if (!ctx) {
         throw new Error("Interview context not found");

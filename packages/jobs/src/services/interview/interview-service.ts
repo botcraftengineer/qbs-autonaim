@@ -39,7 +39,6 @@ interface InterviewContext {
   vacancyTitle: string | null;
   vacancyDescription: string | null;
   currentAnswer: string;
-  currentQuestion: string;
   previousQA: QuestionAnswer[];
   questionNumber: number;
   responseId: string | null;
@@ -96,7 +95,6 @@ export async function analyzeAndGenerateNextQuestion(
   const {
     questionNumber,
     currentAnswer,
-    currentQuestion,
     previousQA,
     candidateName,
     vacancyTitle,
@@ -115,21 +113,6 @@ export async function analyzeAndGenerateNextQuestion(
       type: typeof currentAnswer,
     });
     throw new Error("currentAnswer is required and must be a non-empty string");
-  }
-
-  if (
-    !currentQuestion ||
-    typeof currentQuestion !== "string" ||
-    currentQuestion.trim() === ""
-  ) {
-    logger.error("Invalid currentQuestion in analyzeAndGenerateNextQuestion", {
-      conversationId: context.conversationId,
-      currentQuestion,
-      type: typeof currentQuestion,
-    });
-    throw new Error(
-      "currentQuestion is required and must be a non-empty string",
-    );
   }
 
   if (!Number.isFinite(questionNumber) || questionNumber < 0) {
@@ -172,7 +155,6 @@ export async function analyzeAndGenerateNextQuestion(
   const result = await orchestrator.execute(
     {
       currentAnswer,
-      currentQuestion,
       previousQA,
       questionNumber,
       customOrganizationalQuestions: context.customOrganizationalQuestions,
@@ -225,7 +207,6 @@ export async function analyzeAndGenerateNextQuestion(
 export async function getInterviewContext(
   conversationId: string,
   currentTranscription: string,
-  currentQuestion: string,
 ): Promise<InterviewContext | null> {
   const conv = await db.query.conversation.findFirst({
     where: eq(conversation.id, conversationId),
@@ -279,11 +260,10 @@ export async function getInterviewContext(
       ? stripHtml(conv.response.vacancy.description).result
       : null,
     currentAnswer: currentTranscription || "",
-    currentQuestion: currentQuestion || "Расскажите о себе",
     previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conv.responseId || null,
-    resumeLanguage: conv.response?.resumeLanguage || "en",
+    resumeLanguage: conv.response?.resumeLanguage || "ru",
     conversationHistory,
     companySettings: conv.response?.vacancy?.workspace?.companySettings
       ? {
@@ -314,14 +294,6 @@ export async function getInterviewContext(
       currentTranscription,
     });
     throw new Error("currentAnswer cannot be empty");
-  }
-
-  if (!result.currentQuestion || result.currentQuestion.trim() === "") {
-    logger.error("getInterviewContext: currentQuestion is empty", {
-      conversationId,
-      currentQuestion,
-    });
-    throw new Error("currentQuestion cannot be empty");
   }
 
   return result;

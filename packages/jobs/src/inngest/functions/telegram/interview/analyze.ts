@@ -1,10 +1,4 @@
-import {
-  and,
-  conversation,
-  conversationMessage,
-  desc,
-  eq,
-} from "@qbs-autonaim/db";
+import { conversation, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   analyzeAndGenerateNextQuestion,
@@ -31,7 +25,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
         conversationId,
       });
 
-      // Получаем последний вопрос от бота
+      // Получаем conversation для проверки существования
       const [conv] = await db
         .select()
         .from(conversation)
@@ -42,27 +36,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
         throw new Error("Conversation не найден");
       }
 
-      // Получаем последнее сообщение от бота (это текущий вопрос)
-      const lastBotMessages = await db
-        .select()
-        .from(conversationMessage)
-        .where(
-          and(
-            eq(conversationMessage.conversationId, conversationId),
-            eq(conversationMessage.sender, "BOT"),
-          ),
-        )
-        .orderBy(desc(conversationMessage.createdAt))
-        .limit(1);
-
-      const lastBotMessage = lastBotMessages[0];
-      const currentQuestion = lastBotMessage?.content || "Расскажи о себе";
-
-      const ctx = await getInterviewContext(
-        conversationId,
-        transcription,
-        currentQuestion,
-      );
+      const ctx = await getInterviewContext(conversationId, transcription);
 
       if (!ctx) {
         throw new Error("Контекст интервью не найден");
