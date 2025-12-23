@@ -23,11 +23,11 @@ export interface InterviewerInput {
 const interviewerOutputSchema = z.object({
   analysis: z.string(),
   shouldContinue: z.boolean(),
-  reason: z.string().default(""),
-  nextQuestion: z.string().default(""),
-  confidence: z.number().min(0).max(1).default(0.8),
-  waitingForCandidateResponse: z.boolean().default(false),
-  isSimpleAcknowledgment: z.boolean().default(false),
+  reason: z.string(),
+  nextQuestion: z.string(),
+  confidence: z.number().min(0).max(1),
+  waitingForCandidateResponse: z.boolean(),
+  isSimpleAcknowledgment: z.boolean(),
 });
 
 export type InterviewerOutput = z.infer<typeof interviewerOutputSchema>;
@@ -226,10 +226,10 @@ ${input.currentAnswer}
 Верни JSON:
 - analysis: краткая оценка (HTML: <p>, <strong>, <br>)
 - shouldContinue: true/false
-- reason: причина завершения (если false)
-- nextQuestion: следующее сообщение (если true)
+- reason: причина завершения (пустая строка если продолжаем)
+- nextQuestion: следующее сообщение (пустая строка если завершаем)
 - confidence: 0.0-1.0
-- waitingForCandidateResponse: true если ждем ответа
-- isSimpleAcknowledgment: true если простое подтверждение`;
+- waitingForCandidateResponse: true если ждем ответа, иначе false
+- isSimpleAcknowledgment: true если простое подтверждение, иначе false`;
   }
 }

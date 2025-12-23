@@ -15,7 +15,7 @@ export interface GreetingDetectorInput {
 
 const greetingDetectorOutputSchema = z.object({
   alreadyGreeted: z.boolean(),
-  greetingMessage: z.string().default(""),
+  greetingMessage: z.string(),
   confidence: z.number().min(0).max(1),
 });
 
@@ -47,7 +47,7 @@ export class GreetingDetectorAgent extends BaseAgent<
 ФОРМАТ ОТВЕТА:
 Верни JSON с полями:
 - alreadyGreeted: true если бот уже здоровался, false если нет
-- greetingMessage: текст приветствия (если найдено)
+- greetingMessage: текст приветствия (пустая строка если не найдено)
 - confidence: число от 0.0 до 1.0 (уверенность в определении)`;
 
     super(
@@ -86,7 +86,7 @@ ${historyText}
 
 Верни JSON с полями:
 - alreadyGreeted: true/false
-- greetingMessage: текст приветствия (если найдено) или undefined
+- greetingMessage: текст приветствия (пустая строка если не найдено)
 - confidence: число от 0.0 до 1.0`;
   }
 }

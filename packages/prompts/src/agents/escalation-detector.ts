@@ -14,9 +14,9 @@ export interface EscalationDetectorInput {
 
 const escalationDetectorOutputSchema = z.object({
   shouldEscalate: z.boolean(),
-  reason: z.string().default(""),
+  reason: z.string(),
   urgency: z.enum(["LOW", "MEDIUM", "HIGH"]),
-  suggestedAction: z.string().default(""),
+  suggestedAction: z.string(),
 });
 
 export type EscalationDetectorOutput = z.infer<
@@ -38,7 +38,7 @@ export class EscalationDetectorAgent extends BaseAgent<
 5. Запрос на общение с человеком
 6. Жалобы или конфликтные ситуации
 
-Поля "reason" и "suggestedAction" можно опустить, если эскалация не требуется.`;
+Поля "reason" и "suggestedAction" должны быть пустыми строками, если эскалация не требуется.`;
 
     super(
       "EscalationDetector",
@@ -68,9 +68,9 @@ export class EscalationDetectorAgent extends BaseAgent<
 
 Верни JSON с полями:
 - shouldEscalate: true/false
-- reason: причина эскалации (опционально)
+- reason: причина эскалации (пустая строка если не требуется)
 - urgency: "LOW" | "MEDIUM" | "HIGH"
-- suggestedAction: рекомендуемое действие (опционально)`;
+- suggestedAction: рекомендуемое действие (пустая строка если не требуется)`;
   }
 
   async execute(
