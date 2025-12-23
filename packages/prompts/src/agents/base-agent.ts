@@ -131,7 +131,7 @@ export abstract class BaseAgent<TInput, TOutput> {
             ? {
                 name: error.name,
                 message: error.message,
-                cause: (error as any).cause,
+                cause: error.cause,
               }
             : error,
       });

@@ -40,15 +40,41 @@ export class ContextAnalyzerAgent extends BaseAgent<
   constructor(config: AgentConfig) {
     const instructions = `Ты — эксперт по анализу контекста сообщений. Тебе нужно определить интент кандидата.
 
-КРИТЕРИИ:
-- PIN_CODE: STRICTLY 4 digits (e.g., "1234").
-- GREETING: "Здравствуйте", "Добрый день".
-- ACKNOWLEDGMENT: ТОЛЬКО если это изолированное подтверждение БЕЗ продолжения ("Ок", "Спасибо", "Понятно") (requiresResponse: false).
-- CONTINUATION: Короткое согласие с намерением продолжить ("Привет, ок", "Да, давайте", "Хорошо, готов") (requiresResponse: true).
-- QUESTION: Кандидат спрашивает о вакансии или условиях.
-- ANSWER: Кандидат отвечает на твой вопрос.
+КРИТЕРИИ ОПРЕДЕЛЕНИЯ ТИПА:
 
-ВАЖНО: Если сообщение содержит приветствие + согласие ("Привет, ок"), это CONTINUATION, а не ACKNOWLEDGMENT!
+1. PIN_CODE: СТРОГО 4 цифры (например, "1234", "0000"). Ничего больше.
+
+2. GREETING: Изолированное приветствие без других элементов:
+   - "Здравствуйте", "Добрый день", "Привет"
+   - requiresResponse: true (нужно ответить приветствием)
+
+3. ACKNOWLEDGMENT: Изолированное подтверждение БЕЗ намерения продолжить:
+   - "Ок", "Спасибо", "Понятно", "Хорошо" (одно слово)
+   - requiresResponse: false (не требует ответа)
+
+4. CONTINUATION: Согласие + намерение продолжить диалог:
+   - "Привет, ок" (приветствие + согласие)
+   - "Да, давайте" (согласие + призыв к действию)
+   - "Хорошо, готов" (подтверждение + готовность)
+   - "Ок, слушаю" (согласие + внимание)
+   - requiresResponse: true (кандидат ждет продолжения)
+
+5. QUESTION: Кандидат задает вопрос о вакансии, условиях, процессе.
+
+6. ANSWER: Кандидат отвечает на заданный вопрос.
+
+7. OTHER: Все остальное.
+
+⚠️ КЛЮЧЕВОЕ ПРАВИЛО:
+Если сообщение содержит ДВА элемента (приветствие + согласие, согласие + призыв), это CONTINUATION!
+Если только ОДНО слово подтверждения — это ACKNOWLEDGMENT.
+
+ПРИМЕРЫ:
+- "Привет, ок" → CONTINUATION (приветствие + согласие = ждет продолжения)
+- "Ок" → ACKNOWLEDGMENT (только подтверждение = не требует ответа)
+- "Да, давайте" → CONTINUATION (согласие + призыв = ждет действия)
+- "Спасибо" → ACKNOWLEDGMENT (только благодарность)
+- "Хорошо, готов отвечать" → CONTINUATION (готовность + намерение)
 
 ${RECRUITER_PERSONA.LANGUAGE_RULES}`;
 
@@ -74,20 +100,33 @@ ${RECRUITER_PERSONA.LANGUAGE_RULES}`;
         ? input.previousMessages
             .map((msg) => {
               const sender = msg.sender === "CANDIDATE" ? "Кандидат" : "Бот";
-              return `${sender}: ${msg.content}`;
+              return `  <message sender="${msg.sender}">\n    <role>${sender}</role>\n    <content>${msg.content}</content>\n  </message>`;
             })
             .join("\n")
         : "";
 
-    return `${historyText ? `ИСТОРИЯ:\n${historyText}\n\n` : ""}ТЕКУЩЕЕ СООБЩЕНИЕ:
-"${input.message}"
+    return `${historyText ? `<conversation_history>\n${historyText}\n</conversation_history>\n\n` : ""}<current_message>
+  <content>${input.message}</content>
+</current_message>
 
-Проанализируй сообщение и определи его тип.
+<analysis_rules>
+  ⚠️ АНАЛИЗИРУЙ ВНИМАТЕЛЬНО:
+  1. Это ОДНО слово подтверждения ("Ок", "Спасибо") → ACKNOWLEDGMENT
+  2. Это ДВА+ элемента ("Привет, ок", "Да, давайте") → CONTINUATION
+  3. Это 4 цифры → PIN_CODE
+  4. Это вопрос → QUESTION
+  5. Это развернутый ответ → ANSWER
+</analysis_rules>
 
-Верни JSON с полями:
-- messageType: тип сообщения
-- requiresResponse: требуется ли ответ (boolean)
-- extractedData: объект с полем pinCode (пустая строка если не найден)
-  - pinCode: СТРОГО 4 цифры (например, "1234") если найден, иначе пустая строка`;
+<output_format>
+  Верни JSON с полями:
+  - messageType: тип сообщения (PIN_CODE | GREETING | QUESTION | ANSWER | ACKNOWLEDGMENT | CONTINUATION | OTHER)
+  - requiresResponse: требуется ли ответ бота (boolean)
+    * ACKNOWLEDGMENT → false (не требует ответа)
+    * CONTINUATION → true (кандидат ждет продолжения)
+    * GREETING → true (нужно ответить приветствием)
+  - extractedData: объект с полем pinCode
+    * pinCode: СТРОГО 4 цифры (например, "1234") если найден, иначе пустая строка ""
+</output_format>`;
   }
 }

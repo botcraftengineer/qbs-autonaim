@@ -145,8 +145,9 @@ export const bufferFlushFunction = inngest.createFunction(
     if (!llmResponse.success) {
       console.error("❌ Skipping response due to LLM error", {
         conversationId,
-        error: llmResponse.error,
-        isAPIError: llmResponse.isAPIError,
+        error: "error" in llmResponse ? llmResponse.error : "Unknown error",
+        isAPIError:
+          "isAPIError" in llmResponse ? llmResponse.isAPIError : false,
       });
 
       // Очищаем буфер даже при ошибке
@@ -168,14 +169,17 @@ export const bufferFlushFunction = inngest.createFunction(
 
       return {
         success: false,
-        error: llmResponse.error,
+        error: "error" in llmResponse ? llmResponse.error : "Unknown error",
         messageCount: messages.length,
         flushId,
         skippedResponse: true,
       };
     }
 
-    const result = llmResponse.data;
+    const result = "data" in llmResponse ? llmResponse.data : null;
+    if (!result) {
+      throw new Error("LLM response data is missing");
+    }
 
     // Отправка ответа кандидату
     await step.run("send-response", async () => {
@@ -279,7 +283,7 @@ export const bufferFlushFunction = inngest.createFunction(
       success: true,
       messageCount: messages.length,
       flushId,
-      shouldContinue: llmResponse.shouldContinue,
+      shouldContinue: result.shouldContinue,
     };
   },
 );

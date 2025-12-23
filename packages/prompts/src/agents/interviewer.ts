@@ -185,51 +185,100 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
       ? `${vacancyDescription.substring(0, 300)}${vacancyDescription.length > 300 ? "..." : ""}`
       : "";
 
-    return `Язык резюме: ${resumeLanguage}. Адаптируйся к языку ответов кандидата.
+    return `<context>
+  <language>
+    <resume>${resumeLanguage}</resume>
+    <instruction>Адаптируйся к языку ответов кандидата</instruction>
+  </language>
 
-${organizationalQuestionsBlock}
-${technicalQuestionsBlock}
+  <bot>
+    <name>${botName}</name>
+    <role>${botRole}</role>
+    ${companyName ? `<company>${companyName}</company>` : ""}
+  </bot>
 
-${historyText ? `ИСТОРИЯ:\n${historyText}\n` : ""}
+  <candidate>
+    <name>${name}</name>
+  </candidate>
 
-КОНТЕКСТ:
-- Ты: ${botName} (${botRole}${companyName ? ` в ${companyName}` : ""})
-- Кандидат: ${name}
-- Вакансия: ${vacancyTitle || "не указана"}
-${shortVacancyDesc ? `- Описание: ${shortVacancyDesc}` : ""}
+  <vacancy>
+    <title>${vacancyTitle || "не указана"}</title>
+    ${shortVacancyDesc ? `<description>${shortVacancyDesc}</description>` : ""}
+  </vacancy>
 
-ЛОГИКА:
-1. Не повторяй вопросы из истории
-2. Сначала организационные темы, потом технические
-3. Если ответ полный - переходи к следующей теме
-4. Если собрал достаточно - завершай (shouldContinue: false)
+  ${organizationalQuestionsBlock ? `<organizational_topics>\n${input.customOrganizationalQuestions?.substring(0, 500)}\n</organizational_topics>\n` : ""}
+  ${technicalQuestionsBlock ? `<technical_topics>\n${input.customInterviewQuestions?.substring(0, 500)}\n</technical_topics>\n` : ""}
+</context>
 
-ТЕКУЩИЙ ВОПРОС:
-${input.currentQuestion}
+${historyText ? `<conversation_history>\n${historyText}\n</conversation_history>\n` : ""}
 
-${previousQAText}
+${previousQAText ? `<previous_qa>\n${recentQA.map((qa, i) => `<qa id="${i + 1}">\n  <question>${qa.question}</question>\n  <answer>${qa.answer.length > 150 ? `${qa.answer.substring(0, 150)}...` : qa.answer}</answer>\n</qa>`).join("\n")}\n</previous_qa>\n` : ""}
 
-ОТВЕТ КАНДИДАТА:
-${input.currentAnswer}
+<current_interaction>
+  <question>${input.currentQuestion}</question>
+  <answer>${input.currentAnswer}</answer>
+  <question_number>${input.questionNumber}</question_number>
+  <is_first_interaction>${input.previousQA.length === 0}</is_first_interaction>
+</current_interaction>
 
-ЗАДАЧА:
-1. Проанализируй ответ
-2. Определи ситуацию:
-   - Простое подтверждение ("ок", "спасибо") → shouldContinue: false, isSimpleAcknowledgment: true
-   - Вопрос/просьба отложить → shouldContinue: true, waitingForCandidateResponse: true, короткий ответ БЕЗ нового вопроса
-   - Полный ответ → задай следующий вопрос
+<rules>
+  <logic>
+    1. Не повторяй вопросы из истории
+    2. Сначала организационные темы, потом технические
+    3. Если ответ полный - переходи к следующей теме
+    4. Если собрал достаточно - завершай (shouldContinue: false)
+  </logic>
 
-ВАЖНО:
-- Если кандидат просто поздоровался/поблагодарил БЕЗ ответа - НЕ отвечай (isSimpleAcknowledgment: true)
-- Если задал вопрос - ответь кратко (1-2 предложения) и жди (waitingForCandidateResponse: true)
+  <first_interaction_case>
+    ⚠️ ОСОБЫЙ СЛУЧАЙ - ПЕРВОЕ ВЗАИМОДЕЙСТВИЕ:
+    Если is_first_interaction=true И текущий "вопрос" - это приветствие (не содержит "?"), 
+    а ответ кандидата - короткое согласие ("Привет, ок", "Да, давайте"):
+    → Это НЕ ответ на вопрос интервью!
+    → Задай ПЕРВЫЙ реальный вопрос интервью (организационный)
+    → НЕ анализируй "Привет, ок" как ответ
+  </first_interaction_case>
+</rules>
 
-Верни JSON:
-- analysis: краткая оценка (HTML: <p>, <strong>, <br>)
-- shouldContinue: true/false
-- reason: причина завершения (пустая строка если продолжаем)
-- nextQuestion: следующее сообщение (пустая строка если завершаем)
-- confidence: 0.0-1.0
-- waitingForCandidateResponse: true если ждем ответа, иначе false
-- isSimpleAcknowledgment: true если простое подтверждение, иначе false`;
+<task>
+  Проанализируй ситуацию и определи действие:
+
+  a) ПЕРВОЕ ВЗАИМОДЕЙСТВИЕ (is_first_interaction=true + вопрос без "?"):
+     - Кандидат ответил на приветствие ("Привет, ок", "Да, давайте")
+     - Это НЕ ответ на вопрос интервью
+     → Задай ПЕРВЫЙ организационный вопрос
+     → analysis: "Кандидат готов к интервью"
+     → shouldContinue: true
+     → nextQuestion: первый вопрос (график/зарплата/локация)
+  
+  b) Простое подтверждение ("ок", "спасибо"):
+     → shouldContinue: false
+     → isSimpleAcknowledgment: true
+     → nextQuestion: пустая строка
+  
+  c) Вопрос/просьба отложить:
+     → shouldContinue: true
+     → waitingForCandidateResponse: true
+     → nextQuestion: короткий ответ БЕЗ нового вопроса
+  
+  d) Полный ответ на вопрос интервью:
+     → Проанализируй ответ
+     → Задай следующий вопрос или завершай
+
+  ВАЖНО:
+  - Если кандидат просто поздоровался/поблагодарил БЕЗ ответа - НЕ отвечай (isSimpleAcknowledgment: true)
+  - Если задал вопрос - ответь кратко (1-2 предложения) и жди (waitingForCandidateResponse: true)
+  - Если это первое взаимодействие - сразу задай первый вопрос интервью
+</task>
+
+<output_format>
+  Верни JSON:
+  - analysis: краткая оценка (HTML: <p>, <strong>, <br>)
+  - shouldContinue: true/false
+  - reason: причина завершения (пустая строка если продолжаем)
+  - nextQuestion: следующее сообщение (пустая строка если завершаем)
+  - confidence: 0.0-1.0
+  - waitingForCandidateResponse: true если ждем ответа, иначе false
+  - isSimpleAcknowledgment: true если простое подтверждение, иначе false
+</output_format>`;
   }
 }
