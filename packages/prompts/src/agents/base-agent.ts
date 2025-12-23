@@ -69,12 +69,22 @@ export abstract class BaseAgent<TInput, TOutput> {
 
     try {
       const prompt = this.buildPrompt(input, context);
+
+      // Логируем скомпилированный prompt в Langfuse
+      span?.update({
+        input: {
+          rawInput: input,
+          compiledPrompt: prompt,
+        },
+      });
+
       const result = await this.agent.generate({ prompt });
 
       span?.end({
         output: result.output,
         metadata: {
           success: true,
+          promptLength: prompt.length,
         },
       });
 

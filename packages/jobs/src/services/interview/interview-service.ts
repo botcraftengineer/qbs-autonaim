@@ -60,6 +60,18 @@ interface InterviewContext {
     content: string;
     contentType?: "TEXT" | "VOICE";
   }>;
+  // Настройки компании
+  companySettings?: {
+    botName?: string;
+    botRole?: string;
+    name?: string;
+    description?: string;
+  };
+  // Настройки вакансии
+  customBotInstructions?: string | null;
+  customOrganizationalQuestions?: string | null;
+  customInterviewQuestions?: string | null;
+  interviewStage?: "ORGANIZATIONAL" | "TECHNICAL";
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -101,6 +113,7 @@ export async function analyzeAndGenerateNextQuestion(
     candidateName,
     vacancyTitle,
     vacancyDescription,
+    interviewStage = "ORGANIZATIONAL",
   } = context;
 
   // Создаем оркестратор
@@ -115,6 +128,10 @@ export async function analyzeAndGenerateNextQuestion(
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
     conversationHistory: context.conversationHistory || [],
+    companySettings: context.companySettings,
+    customBotInstructions: context.customBotInstructions,
+    customOrganizationalQuestions: context.customOrganizationalQuestions,
+    customInterviewQuestions: context.customInterviewQuestions,
   };
 
   // Выполняем оркестратор
@@ -124,8 +141,10 @@ export async function analyzeAndGenerateNextQuestion(
       currentQuestion,
       previousQA,
       questionNumber,
-      customInterviewQuestions: null,
+      customOrganizationalQuestions: context.customOrganizationalQuestions,
+      customInterviewQuestions: context.customInterviewQuestions,
       resumeLanguage: context.resumeLanguage || "en",
+      interviewStage,
     },
     agentContext,
   );
@@ -133,6 +152,7 @@ export async function analyzeAndGenerateNextQuestion(
   // Логируем трассировку агентов
   logger.info("Interview orchestrator trace", {
     conversationId: context.conversationId,
+    interviewStage,
     trace: result.agentTrace.map(
       (t: { agent: string; decision: string; timestamp: Date }) => ({
         agent: t.agent,
@@ -184,7 +204,15 @@ export async function getInterviewContext(
       },
       response: {
         with: {
-          vacancy: true,
+          vacancy: {
+            with: {
+              workspace: {
+                with: {
+                  companySettings: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -211,6 +239,24 @@ export async function getInterviewContext(
         : undefined) as "TEXT" | "VOICE" | undefined,
     }));
 
+  // Определяем этап интервью
+  // Если есть организационные вопросы и их меньше 4, то ORGANIZATIONAL
+  // Иначе переходим к TECHNICAL (если есть технические вопросы)
+  const hasOrganizationalQuestions =
+    !!conv.response?.vacancy?.customOrganizationalQuestions;
+  const hasTechnicalQuestions =
+    !!conv.response?.vacancy?.customInterviewQuestions;
+  const organizationalQuestionsCount = questionAnswers.filter((qa) =>
+    isOrganizationalQuestion(qa.question),
+  ).length;
+
+  let interviewStage: "ORGANIZATIONAL" | "TECHNICAL" = "ORGANIZATIONAL";
+  if (hasOrganizationalQuestions && organizationalQuestionsCount < 4) {
+    interviewStage = "ORGANIZATIONAL";
+  } else if (hasTechnicalQuestions) {
+    interviewStage = "TECHNICAL";
+  }
+
   return {
     conversationId: conv.id,
     candidateName: conv.candidateName,
@@ -225,7 +271,59 @@ export async function getInterviewContext(
     responseId: conv.responseId || null,
     resumeLanguage: conv.response?.resumeLanguage || "en",
     conversationHistory,
+    companySettings: conv.response?.vacancy?.workspace?.companySettings
+      ? {
+          botName:
+            conv.response.vacancy.workspace.companySettings.botName ||
+            undefined,
+          botRole:
+            conv.response.vacancy.workspace.companySettings.botRole ||
+            undefined,
+          name: conv.response.vacancy.workspace.companySettings.name,
+          description:
+            conv.response.vacancy.workspace.companySettings.description ||
+            undefined,
+        }
+      : undefined,
+    customBotInstructions:
+      conv.response?.vacancy?.customBotInstructions || null,
+    customOrganizationalQuestions:
+      conv.response?.vacancy?.customOrganizationalQuestions || null,
+    customInterviewQuestions:
+      conv.response?.vacancy?.customInterviewQuestions || null,
+    interviewStage,
   };
+}
+
+/**
+ * Определяет, является ли вопрос организационным
+ */
+function isOrganizationalQuestion(question: string): boolean {
+  const organizationalKeywords = [
+    "график",
+    "зарплат",
+    "переезд",
+    "командировк",
+    "срок",
+    "выход",
+    "офис",
+    "удален",
+    "гибрид",
+    "формат работы",
+    "schedule",
+    "salary",
+    "relocation",
+    "travel",
+    "start date",
+    "office",
+    "remote",
+    "hybrid",
+  ];
+
+  const lowerQuestion = question.toLowerCase();
+  return organizationalKeywords.some((keyword) =>
+    lowerQuestion.includes(keyword),
+  );
 }
 
 /**

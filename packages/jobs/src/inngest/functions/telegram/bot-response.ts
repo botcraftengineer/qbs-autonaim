@@ -5,6 +5,7 @@ import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   EscalationHandlerAgent,
   GreetingDetectorAgent,
+  InterviewStartAgent,
   PinHandlerAgent,
 } from "@qbs-autonaim/prompts";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
@@ -76,7 +77,23 @@ export async function generateAndSendBotResponse(params: {
           language: interviewData.response.resumeLanguage ?? undefined,
         }
       : undefined,
+    companySettings: interviewData?.response.vacancy?.workspace.companySettings
+      ? {
+          botName:
+            interviewData.response.vacancy.workspace.companySettings.botName ??
+            undefined,
+          botRole:
+            interviewData.response.vacancy.workspace.companySettings.botRole ??
+            undefined,
+          name: interviewData.response.vacancy.workspace.companySettings.name,
+          description:
+            interviewData.response.vacancy.workspace.companySettings
+              .description ?? undefined,
+        }
+      : undefined,
     customBotInstructions: vacancy?.customBotInstructions ?? undefined,
+    customOrganizationalQuestions:
+      vacancy?.customOrganizationalQuestions ?? undefined,
     customInterviewQuestions: vacancy?.customInterviewQuestions ?? undefined,
   };
 
@@ -84,11 +101,8 @@ export async function generateAndSendBotResponse(params: {
   let shouldSkip = false;
 
   // Используем соответствующий агент в зависимости от этапа
-  if (
-    stage === "AWAITING_PIN" ||
-    stage === "INVALID_PIN" ||
-    stage === "PIN_RECEIVED"
-  ) {
+  if (stage === "AWAITING_PIN" || stage === "INVALID_PIN") {
+    // PIN Handler - только для валидации PIN
     const pinHandler = new PinHandlerAgent({ model });
 
     const result = await pinHandler.execute(
@@ -96,18 +110,34 @@ export async function generateAndSendBotResponse(params: {
         messageText,
         stage,
         failedPinAttempts,
-        alreadyGreeted,
       },
       agentContext,
     );
 
     if (!result.success || !result.data) {
       console.error("❌ PinHandlerAgent failed", { error: result.error });
-      // Fallback сообщение
       aiResponse = "Извините, произошла ошибка. Попробуйте ещё раз.";
     } else {
       aiResponse = result.data.responseMessage;
       shouldSkip = result.data.shouldSkip;
+    }
+  } else if (stage === "PIN_RECEIVED") {
+    // Interview Start Agent - начало интервью с организационными вопросами
+    const interviewStart = new InterviewStartAgent({ model });
+
+    const result = await interviewStart.execute(
+      {
+        alreadyGreeted,
+      },
+      agentContext,
+    );
+
+    if (!result.success || !result.data) {
+      console.error("❌ InterviewStartAgent failed", { error: result.error });
+      aiResponse =
+        "Добрый день! Давайте начнем интервью. Расскажите о ваших ожиданиях по графику и зарплате?";
+    } else {
+      aiResponse = result.data.message;
     }
   } else {
     // Для других этапов (например, ESCALATED) используем EscalationHandlerAgent

@@ -15,8 +15,10 @@ export interface OrchestratorInput {
   currentQuestion: string;
   previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
-  customInterviewQuestions?: string | null;
+  customOrganizationalQuestions?: string | null;
+  customInterviewQuestions?: string | null; // Технические вопросы
   resumeLanguage?: string;
+  interviewStage?: "ORGANIZATIONAL" | "TECHNICAL"; // Этап интервью
 }
 
 export interface OrchestratorOutput {
@@ -76,11 +78,20 @@ export class InterviewOrchestrator {
         conversationId: context.conversationId,
         questionNumber: input.questionNumber,
         vacancyTitle: context.vacancyTitle,
+        conversationHistoryLength: context.conversationHistory.length,
+        hasCustomOrganizationalQuestions: !!input.customOrganizationalQuestions,
+        hasCustomTechnicalQuestions: !!input.customInterviewQuestions,
+        resumeLanguage: input.resumeLanguage,
+        interviewStage: input.interviewStage || "ORGANIZATIONAL",
+        companyName: context.companySettings?.name,
+        botName: context.companySettings?.botName,
       },
       input: {
         currentAnswer: input.currentAnswer,
         currentQuestion: input.currentQuestion,
         questionNumber: input.questionNumber,
+        previousQACount: input.previousQA.length,
+        interviewStage: input.interviewStage || "ORGANIZATIONAL",
       },
     });
 
@@ -103,11 +114,13 @@ export class InterviewOrchestrator {
 
     try {
       // ШАГ 1: Проверка необходимости эскалации
+      const escalationInput = {
+        message: input.currentAnswer,
+        conversationLength: context.conversationHistory.length,
+      };
+
       const escalationCheck = await escalationDetector.execute(
-        {
-          message: input.currentAnswer,
-          conversationLength: context.conversationHistory.length,
-        },
+        escalationInput,
         context,
       );
 
@@ -135,6 +148,9 @@ export class InterviewOrchestrator {
           output,
           metadata: {
             escalated: true,
+            escalationReason: escalationCheck.data.reason,
+            escalationUrgency: escalationCheck.data?.urgency,
+            agentTraceCount: agentTrace.length,
           },
         });
 
@@ -149,8 +165,10 @@ export class InterviewOrchestrator {
         currentQuestion: input.currentQuestion,
         previousQA: input.previousQA,
         questionNumber: input.questionNumber,
+        customOrganizationalQuestions: input.customOrganizationalQuestions,
         customInterviewQuestions: input.customInterviewQuestions,
         resumeLanguage: input.resumeLanguage,
+        interviewStage: input.interviewStage,
       };
 
       const interviewResult = await interviewer.execute(
@@ -187,6 +205,11 @@ export class InterviewOrchestrator {
         metadata: {
           escalated: false,
           shouldContinue: interviewResult.data.shouldContinue,
+          confidence: interviewResult.data.confidence,
+          waitingForCandidateResponse:
+            interviewResult.data.waitingForCandidateResponse,
+          isSimpleAcknowledgment: interviewResult.data.isSimpleAcknowledgment,
+          agentTraceCount: agentTrace.length,
         },
       });
 
@@ -206,6 +229,8 @@ export class InterviewOrchestrator {
         output,
         metadata: {
           error: true,
+          errorMessage: error instanceof Error ? error.message : "Unknown",
+          agentTraceCount: agentTrace.length,
         },
       });
 

@@ -72,19 +72,28 @@ export const USER_CONTENT_MARKERS = {
   questionsEnd: "----- END USER QUESTIONS -----",
   contextBegin: "----- BEGIN USER CONTEXT -----",
   contextEnd: "----- END USER CONTEXT -----",
+  organizationalQuestionsBegin: "----- BEGIN ORGANIZATIONAL QUESTIONS -----",
+  organizationalQuestionsEnd: "----- END ORGANIZATIONAL QUESTIONS -----",
+  technicalQuestionsBegin: "----- BEGIN TECHNICAL QUESTIONS -----",
+  technicalQuestionsEnd: "----- END TECHNICAL QUESTIONS -----",
 } as const;
 
 /**
  * Оборачивает пользовательский контент в защитные маркеры с предупреждением
  *
  * @param content - Пользовательский контент
- * @param type - Тип контента (instructions, questions, context)
+ * @param type - Тип контента (instructions, questions, context, organizational-questions, technical-questions)
  * @param warningText - Текст предупреждения для AI
  * @returns Обёрнутый и санитизированный контент
  */
 export function wrapUserContent(
   content: string,
-  type: "instructions" | "questions" | "context",
+  type:
+    | "instructions"
+    | "questions"
+    | "context"
+    | "organizational-questions"
+    | "technical-questions",
   warningText: string,
 ): string {
   if (!content) return "";
@@ -94,14 +103,22 @@ export function wrapUserContent(
       ? USER_CONTENT_MARKERS.instructionsBegin
       : type === "questions"
         ? USER_CONTENT_MARKERS.questionsBegin
-        : USER_CONTENT_MARKERS.contextBegin;
+        : type === "organizational-questions"
+          ? USER_CONTENT_MARKERS.organizationalQuestionsBegin
+          : type === "technical-questions"
+            ? USER_CONTENT_MARKERS.technicalQuestionsBegin
+            : USER_CONTENT_MARKERS.contextBegin;
 
   const endMarker =
     type === "instructions"
       ? USER_CONTENT_MARKERS.instructionsEnd
       : type === "questions"
         ? USER_CONTENT_MARKERS.questionsEnd
-        : USER_CONTENT_MARKERS.contextEnd;
+        : type === "organizational-questions"
+          ? USER_CONTENT_MARKERS.organizationalQuestionsEnd
+          : type === "technical-questions"
+            ? USER_CONTENT_MARKERS.technicalQuestionsEnd
+            : USER_CONTENT_MARKERS.contextEnd;
 
   return `
 

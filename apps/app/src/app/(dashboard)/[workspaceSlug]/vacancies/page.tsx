@@ -273,8 +273,8 @@ export default function VacanciesPage() {
                   </TableHeader>
                   <TableBody>
                     {isLoading ? (
-                      Array.from({ length: 5 }).map((_, i) => (
-                        <TableRow key={`skeleton-${i}`}>
+                      Array.from({ length: 5 }, (_, i) => i).map((id) => (
+                        <TableRow key={`skeleton-${id}`}>
                           <TableCell>
                             <Skeleton className="h-5 w-[200px]" />
                           </TableCell>

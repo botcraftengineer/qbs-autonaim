@@ -40,6 +40,11 @@ export {
   type InterviewScoringOutput,
 } from "./interview-scoring";
 export {
+  InterviewStartAgent,
+  type InterviewStartInput,
+  type InterviewStartOutput,
+} from "./interview-start";
+export {
   InterviewerAgent,
   type InterviewerInput,
   type InterviewerOutput,
