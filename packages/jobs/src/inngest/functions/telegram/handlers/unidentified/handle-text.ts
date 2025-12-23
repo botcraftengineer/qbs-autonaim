@@ -96,7 +96,7 @@ export async function handleUnidentifiedText(params: {
       });
 
       // Обработка пин-кода
-      if (messageType === "PIN_CODE" && extractedData?.pinCode) {
+      if (messageType === "PIN_CODE" && extractedData.pinCode) {
         pinCode = extractedData.pinCode;
 
         console.log("🔑 AI обнаружил пин-код, проверяем валидность", {

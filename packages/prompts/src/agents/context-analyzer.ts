@@ -26,11 +26,9 @@ const contextAnalyzerOutputSchema = z.object({
     "OTHER",
   ]),
   requiresResponse: z.boolean(),
-  extractedData: z
-    .object({
-      pinCode: z.string().optional(),
-    })
-    .optional(),
+  extractedData: z.object({
+    pinCode: z.string(),
+  }),
 });
 
 export type ContextAnalyzerOutput = z.infer<typeof contextAnalyzerOutputSchema>;
@@ -89,7 +87,7 @@ ${RECRUITER_PERSONA.LANGUAGE_RULES}`;
 Верни JSON с полями:
 - messageType: тип сообщения
 - requiresResponse: требуется ли ответ (boolean)
-- extractedData: извлеченные данные (опционально)
-  - pinCode: СТРОГО 4 цифры (например, "1234") если найден (опционально)`;
+- extractedData: объект с полем pinCode (пустая строка если не найден)
+  - pinCode: СТРОГО 4 цифры (например, "1234") если найден, иначе пустая строка`;
   }
 }

@@ -5,9 +5,8 @@
 
 import { z } from "zod";
 import { type AgentConfig, BaseAgent } from "./base-agent";
-import { AgentType, type BaseAgentContext } from "./types";
-
 import { RECRUITER_PERSONA } from "./persona";
+import { AgentType, type BaseAgentContext } from "./types";
 
 export interface PinHandlerInput {
   messageText: string;
@@ -17,7 +16,7 @@ export interface PinHandlerInput {
 
 const pinHandlerOutputSchema = z.object({
   responseMessage: z.string(),
-  shouldSkip: z.boolean().default(false),
+  shouldSkip: z.boolean(),
   confidence: z.number().min(0).max(1),
 });
 
