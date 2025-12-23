@@ -67,7 +67,7 @@ export class InterviewCompletionAgent extends BaseAgent<
     context: BaseAgentContext,
   ): string {
     const { candidateName, vacancyTitle, conversationHistory } = context;
-    const { resumeLanguage = "en" } = input;
+    const { resumeLanguage = "ru" } = input;
 
     const languageInstruction = `\n\n⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 
 - Изначальный язык резюме: "${resumeLanguage}"

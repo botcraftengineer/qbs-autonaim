@@ -70,10 +70,7 @@ export const completeInterviewFunction = inngest.createFunction(
           responseId,
         });
 
-        const updatedContext = await getInterviewContext(
-          conversationId,
-          transcription,
-        );
+        const updatedContext = await getInterviewContext(conversationId);
 
         if (!updatedContext) {
           throw new Error("Не удалось получить обновленный контекст");
@@ -262,7 +259,7 @@ export const completeInterviewFunction = inngest.createFunction(
         });
         candidateName = response?.candidateName ?? undefined;
         vacancyTitle = response?.vacancy?.title ?? undefined;
-        resumeLanguage = response?.resumeLanguage ?? "en";
+        resumeLanguage = response?.resumeLanguage ?? "ru";
 
         const scoring = await db.query.telegramInterviewScoring.findFirst({
           where: eq(telegramInterviewScoring.conversationId, conversationId),
@@ -299,7 +296,7 @@ export const completeInterviewFunction = inngest.createFunction(
           questionCount: questionNumber,
           score,
           detailedScore,
-          resumeLanguage: resumeLanguage || "en",
+          resumeLanguage: resumeLanguage || "ru",
         },
         agentContext,
       );

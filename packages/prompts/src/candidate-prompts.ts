@@ -29,7 +29,7 @@ export function buildTelegramInvitePrompt(
     candidateName,
     screeningScore,
     screeningAnalysis,
-    resumeLanguage = "en",
+    resumeLanguage = "ru",
   } = context;
 
   // Инструкция по адаптации к языку

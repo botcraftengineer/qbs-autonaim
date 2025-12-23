@@ -152,7 +152,7 @@ export async function generateTelegramInviteMessage(
     candidateName: response.candidateName,
     screeningScore: screening?.score,
     screeningAnalysis: screening?.analysis || undefined,
-    resumeLanguage: response.resumeLanguage || "en",
+    resumeLanguage: response.resumeLanguage || "ru",
   });
 
   logger.info("Sending request to AI for invite message generation");

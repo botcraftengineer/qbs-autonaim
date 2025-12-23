@@ -36,7 +36,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
         throw new Error("Conversation не найден");
       }
 
-      const ctx = await getInterviewContext(conversationId, transcription);
+      const ctx = await getInterviewContext(conversationId);
 
       if (!ctx) {
         throw new Error("Контекст интервью не найден");

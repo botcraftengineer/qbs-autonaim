@@ -38,8 +38,6 @@ interface InterviewContext {
   candidateName: string | null;
   vacancyTitle: string | null;
   vacancyDescription: string | null;
-  currentAnswer: string;
-  previousQA: QuestionAnswer[];
   questionNumber: number;
   responseId: string | null;
   resumeLanguage?: string | null;
@@ -92,29 +90,10 @@ function createAgentModel() {
 export async function analyzeAndGenerateNextQuestion(
   context: InterviewContext,
 ): Promise<ExtendedInterviewAnalysis> {
-  const {
-    questionNumber,
-    currentAnswer,
-    previousQA,
-    candidateName,
-    vacancyTitle,
-    vacancyDescription,
-  } = context;
+  const { questionNumber, candidateName, vacancyTitle, vacancyDescription } =
+    context;
 
   // Валидация входных данных
-  if (
-    !currentAnswer ||
-    typeof currentAnswer !== "string" ||
-    currentAnswer.trim() === ""
-  ) {
-    logger.error("Invalid currentAnswer in analyzeAndGenerateNextQuestion", {
-      conversationId: context.conversationId,
-      currentAnswer,
-      type: typeof currentAnswer,
-    });
-    throw new Error("currentAnswer is required and must be a non-empty string");
-  }
-
   if (!Number.isFinite(questionNumber) || questionNumber < 0) {
     logger.error("Invalid questionNumber in analyzeAndGenerateNextQuestion", {
       conversationId: context.conversationId,
@@ -122,15 +101,6 @@ export async function analyzeAndGenerateNextQuestion(
       type: typeof questionNumber,
     });
     throw new Error("questionNumber must be a non-negative number");
-  }
-
-  if (!Array.isArray(previousQA)) {
-    logger.error("Invalid previousQA in analyzeAndGenerateNextQuestion", {
-      conversationId: context.conversationId,
-      previousQA,
-      type: typeof previousQA,
-    });
-    throw new Error("previousQA must be an array");
   }
 
   // Создаем оркестратор
@@ -154,12 +124,10 @@ export async function analyzeAndGenerateNextQuestion(
   // Выполняем оркестратор
   const result = await orchestrator.execute(
     {
-      currentAnswer,
-      previousQA,
       questionNumber,
       customOrganizationalQuestions: context.customOrganizationalQuestions,
       customInterviewQuestions: context.customInterviewQuestions,
-      resumeLanguage: context.resumeLanguage || "en",
+      resumeLanguage: context.resumeLanguage || "ru",
     },
     agentContext,
   );
@@ -206,7 +174,6 @@ export async function analyzeAndGenerateNextQuestion(
  */
 export async function getInterviewContext(
   conversationId: string,
-  currentTranscription: string,
 ): Promise<InterviewContext | null> {
   const conv = await db.query.conversation.findFirst({
     where: eq(conversation.id, conversationId),
@@ -259,8 +226,6 @@ export async function getInterviewContext(
     vacancyDescription: conv.response?.vacancy?.description
       ? stripHtml(conv.response.vacancy.description).result
       : null,
-    currentAnswer: currentTranscription || "",
-    previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conv.responseId || null,
     resumeLanguage: conv.response?.resumeLanguage || "ru",
@@ -286,15 +251,6 @@ export async function getInterviewContext(
     customInterviewQuestions:
       conv.response?.vacancy?.customInterviewQuestions || null,
   };
-
-  // Валидация критичных полей
-  if (!result.currentAnswer || result.currentAnswer.trim() === "") {
-    logger.error("getInterviewContext: currentAnswer is empty", {
-      conversationId,
-      currentTranscription,
-    });
-    throw new Error("currentAnswer cannot be empty");
-  }
 
   return result;
 }
@@ -336,8 +292,7 @@ export async function saveQuestionAnswer(
 export async function createInterviewScoring(
   context: InterviewContext,
 ): Promise<InterviewScoring> {
-  const { candidateName, vacancyTitle, vacancyDescription, previousQA } =
-    context;
+  const { candidateName, vacancyTitle, vacancyDescription } = context;
 
   // Создаем агента
   const model = createAgentModel();
@@ -349,16 +304,11 @@ export async function createInterviewScoring(
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
-    conversationHistory: [],
+    conversationHistory: context.conversationHistory || [],
   };
 
   // Выполняем агента
-  const result = await agent.execute(
-    {
-      previousQA,
-    },
-    agentContext,
-  );
+  const result = await agent.execute({}, agentContext);
 
   // Обработка ошибки
   if (!result.success || !result.data) {

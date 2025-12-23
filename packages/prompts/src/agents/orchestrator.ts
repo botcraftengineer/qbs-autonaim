@@ -9,8 +9,6 @@ import { AgentFactory } from "./agent-factory";
 import type { BaseAgentContext } from "./types";
 
 export interface OrchestratorInput {
-  currentAnswer: string;
-  previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
   customOrganizationalQuestions?: string | null;
   customInterviewQuestions?: string | null; // Технические вопросы
@@ -117,10 +115,16 @@ export class InterviewOrchestrator {
     const interviewer = factory.createInterviewer();
 
     try {
+      // Получаем последнее сообщение кандидата из истории
+      const lastCandidateMessage =
+        context.conversationHistory
+          .filter((msg) => msg.sender === "CANDIDATE")
+          .slice(-1)[0]?.content || "";
+
       // ШАГ 1: Анализ контекста
       const contextResult = await contextAnalyzer.execute(
         {
-          message: input.currentAnswer,
+          message: lastCandidateMessage,
           previousMessages: context.conversationHistory,
         },
         context,
@@ -155,7 +159,7 @@ export class InterviewOrchestrator {
       // ШАГ 2: Проверка эскалации (если это не простое подтверждение)
       const escalationCheck = await escalationDetector.execute(
         {
-          message: input.currentAnswer,
+          message: lastCandidateMessage,
           conversationLength: context.conversationHistory.length,
         },
         context,
@@ -191,12 +195,11 @@ export class InterviewOrchestrator {
 
       // Логируем входные данные для Interviewer
       console.log("[Orchestrator] Preparing Interviewer input:", {
-        currentAnswerLength: input.currentAnswer?.length,
         questionNumber: input.questionNumber,
-        previousQALength: input.previousQA?.length,
         hasCustomOrganizationalQuestions: !!input.customOrganizationalQuestions,
         hasCustomInterviewQuestions: !!input.customInterviewQuestions,
         resumeLanguage: input.resumeLanguage,
+        conversationHistoryLength: context.conversationHistory?.length,
       });
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {

@@ -80,7 +80,7 @@ export const bufferFlushFunction = inngest.createFunction(
         conversationId,
       });
 
-      const ctx = await getInterviewContext(conversationId, aggregatedContent);
+      const ctx = await getInterviewContext(conversationId);
 
       if (!ctx) {
         throw new Error("Interview context not found");
