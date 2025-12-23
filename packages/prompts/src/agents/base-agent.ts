@@ -57,6 +57,10 @@ export abstract class BaseAgent<TInput, TOutput> {
     context: unknown,
   ): Promise<{ success: boolean; data?: TOutput; error?: string }> {
     if (!this.validate(input)) {
+      console.error(`[${this.name}] Validation failed for input:`, {
+        inputKeys: Object.keys(input as object),
+        inputSample: JSON.stringify(input).substring(0, 500),
+      });
       return { success: false, error: "Некорректные входные данные" };
     }
 

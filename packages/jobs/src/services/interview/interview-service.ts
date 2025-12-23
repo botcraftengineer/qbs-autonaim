@@ -103,6 +103,53 @@ export async function analyzeAndGenerateNextQuestion(
     vacancyDescription,
   } = context;
 
+  // Валидация входных данных
+  if (
+    !currentAnswer ||
+    typeof currentAnswer !== "string" ||
+    currentAnswer.trim() === ""
+  ) {
+    logger.error("Invalid currentAnswer in analyzeAndGenerateNextQuestion", {
+      conversationId: context.conversationId,
+      currentAnswer,
+      type: typeof currentAnswer,
+    });
+    throw new Error("currentAnswer is required and must be a non-empty string");
+  }
+
+  if (
+    !currentQuestion ||
+    typeof currentQuestion !== "string" ||
+    currentQuestion.trim() === ""
+  ) {
+    logger.error("Invalid currentQuestion in analyzeAndGenerateNextQuestion", {
+      conversationId: context.conversationId,
+      currentQuestion,
+      type: typeof currentQuestion,
+    });
+    throw new Error(
+      "currentQuestion is required and must be a non-empty string",
+    );
+  }
+
+  if (!Number.isFinite(questionNumber) || questionNumber < 0) {
+    logger.error("Invalid questionNumber in analyzeAndGenerateNextQuestion", {
+      conversationId: context.conversationId,
+      questionNumber,
+      type: typeof questionNumber,
+    });
+    throw new Error("questionNumber must be a non-negative number");
+  }
+
+  if (!Array.isArray(previousQA)) {
+    logger.error("Invalid previousQA in analyzeAndGenerateNextQuestion", {
+      conversationId: context.conversationId,
+      previousQA,
+      type: typeof previousQA,
+    });
+    throw new Error("previousQA must be an array");
+  }
+
   // Создаем оркестратор
   const model = createAgentModel();
   const orchestrator = new InterviewOrchestrator({ model });
@@ -224,15 +271,15 @@ export async function getInterviewContext(
     }));
 
   // Передаем обе группы вопросов, AI сам решит что спрашивать на основе истории
-  return {
+  const result: InterviewContext = {
     conversationId: conv.id,
     candidateName: conv.candidateName,
     vacancyTitle: conv.response?.vacancy?.title || null,
     vacancyDescription: conv.response?.vacancy?.description
       ? stripHtml(conv.response.vacancy.description).result
       : null,
-    currentAnswer: currentTranscription,
-    currentQuestion,
+    currentAnswer: currentTranscription || "",
+    currentQuestion: currentQuestion || "Расскажите о себе",
     previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conv.responseId || null,
@@ -259,6 +306,25 @@ export async function getInterviewContext(
     customInterviewQuestions:
       conv.response?.vacancy?.customInterviewQuestions || null,
   };
+
+  // Валидация критичных полей
+  if (!result.currentAnswer || result.currentAnswer.trim() === "") {
+    logger.error("getInterviewContext: currentAnswer is empty", {
+      conversationId,
+      currentTranscription,
+    });
+    throw new Error("currentAnswer cannot be empty");
+  }
+
+  if (!result.currentQuestion || result.currentQuestion.trim() === "") {
+    logger.error("getInterviewContext: currentQuestion is empty", {
+      conversationId,
+      currentQuestion,
+    });
+    throw new Error("currentQuestion cannot be empty");
+  }
+
+  return result;
 }
 
 /**

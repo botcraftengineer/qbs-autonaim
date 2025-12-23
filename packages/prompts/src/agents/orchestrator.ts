@@ -185,6 +185,17 @@ export class InterviewOrchestrator {
       let lastError: string | undefined;
       const maxRetries = 2;
 
+      // Логируем входные данные для Interviewer
+      console.log("[Orchestrator] Preparing Interviewer input:", {
+        currentAnswerLength: input.currentAnswer?.length,
+        currentQuestionLength: input.currentQuestion?.length,
+        questionNumber: input.questionNumber,
+        previousQALength: input.previousQA?.length,
+        hasCustomOrganizationalQuestions: !!input.customOrganizationalQuestions,
+        hasCustomInterviewQuestions: !!input.customInterviewQuestions,
+        resumeLanguage: input.resumeLanguage,
+      });
+
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
         interviewerResult = await interviewer.execute(
           {

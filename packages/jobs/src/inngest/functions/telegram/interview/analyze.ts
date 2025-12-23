@@ -75,6 +75,9 @@ export const analyzeInterviewFunction = inngest.createFunction(
       console.log("🤔 Анализ ответа и генерация следующего вопроса", {
         conversationId: context.conversationId,
         questionNumber: context.questionNumber,
+        currentAnswerLength: context.currentAnswer?.length,
+        currentQuestionLength: context.currentQuestion?.length,
+        previousQALength: context.previousQA?.length,
       });
 
       try {
@@ -83,8 +86,10 @@ export const analyzeInterviewFunction = inngest.createFunction(
         console.log("📊 Результат анализа", {
           shouldContinue: analysisResult.shouldContinue,
           hasQuestion: !!analysisResult.nextQuestion,
-          analysis: analysisResult.analysis,
+          analysis: analysisResult.analysis?.substring(0, 100),
           reason: analysisResult.reason,
+          shouldEscalate: analysisResult.shouldEscalate,
+          isSimpleAcknowledgment: analysisResult.isSimpleAcknowledgment,
         });
 
         return analysisResult;
@@ -93,6 +98,12 @@ export const analyzeInterviewFunction = inngest.createFunction(
           conversationId: context.conversationId,
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
+          contextSample: {
+            currentAnswerLength: context.currentAnswer?.length,
+            currentQuestionLength: context.currentQuestion?.length,
+            questionNumber: context.questionNumber,
+            previousQALength: context.previousQA?.length,
+          },
         });
         throw error;
       }

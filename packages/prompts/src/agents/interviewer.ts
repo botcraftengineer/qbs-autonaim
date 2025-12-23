@@ -68,7 +68,10 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
     if (!input.currentAnswer || typeof input.currentAnswer !== "string") {
       console.error(
         "[InterviewerAgent] Invalid currentAnswer:",
-        input.currentAnswer,
+        JSON.stringify({
+          currentAnswer: input.currentAnswer,
+          type: typeof input.currentAnswer,
+        }),
       );
       return false;
     }
@@ -76,7 +79,10 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
     if (!input.currentQuestion || typeof input.currentQuestion !== "string") {
       console.error(
         "[InterviewerAgent] Invalid currentQuestion:",
-        input.currentQuestion,
+        JSON.stringify({
+          currentQuestion: input.currentQuestion,
+          type: typeof input.currentQuestion,
+        }),
       );
       return false;
     }
@@ -84,15 +90,32 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
     if (!Number.isFinite(input.questionNumber) || input.questionNumber < 0) {
       console.error(
         "[InterviewerAgent] Invalid questionNumber:",
-        input.questionNumber,
+        JSON.stringify({
+          questionNumber: input.questionNumber,
+          type: typeof input.questionNumber,
+        }),
       );
       return false;
     }
 
     if (!Array.isArray(input.previousQA)) {
-      console.error("[InterviewerAgent] Invalid previousQA:", input.previousQA);
+      console.error(
+        "[InterviewerAgent] Invalid previousQA:",
+        JSON.stringify({
+          previousQA: input.previousQA,
+          type: typeof input.previousQA,
+        }),
+      );
       return false;
     }
+
+    // Логируем успешную валидацию для отладки
+    console.log("[InterviewerAgent] Validation passed:", {
+      currentAnswerLength: input.currentAnswer.length,
+      currentQuestionLength: input.currentQuestion.length,
+      questionNumber: input.questionNumber,
+      previousQALength: input.previousQA.length,
+    });
 
     return true;
   }
