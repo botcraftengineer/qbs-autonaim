@@ -86,17 +86,15 @@ export class EscalationHandlerAgent extends BaseAgent<
 
     return `${languageInstruction}
 
-${historyText}
-
-⚠️ ЭТАП: ПЕРЕДАЧА КОЛЛЕГЕ
+${historyText}⚠️ ЭТАП: ПЕРЕДАЧА КОЛЛЕГЕ
 Этот диалог нужно передать другому специалисту.
-${escalationReason ? `Причина: ${escalationReason}` : ""}
+${escalationReason ? `Причина: <escalation_reason>${escalationReason}</escalation_reason>` : ""}
 
-НОВОЕ СООБЩЕНИЕ КАНДИДАТА:
-${messageText}
+НОВОЕ СООБЩЕНИЕ КАНДИДАТА: <message>${messageText}</message>
 
 Создай вежливое сообщение о передаче диалога коллеге.
 
+ФОРМАТ ОТВЕТА:
 Верни JSON с полями:
 - responseMessage: текст ответа
 - confidence: число от 0.0 до 1.0`;

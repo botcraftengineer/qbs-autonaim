@@ -100,33 +100,28 @@ ${RECRUITER_PERSONA.LANGUAGE_RULES}`;
         ? input.previousMessages
             .map((msg) => {
               const sender = msg.sender === "CANDIDATE" ? "Кандидат" : "Бот";
-              return `  <message sender="${msg.sender}">\n    <role>${sender}</role>\n    <content>${msg.content}</content>\n  </message>`;
+              return `${sender}: ${msg.content}`;
             })
             .join("\n")
         : "";
 
-    return `${historyText ? `<conversation_history>\n${historyText}\n</conversation_history>\n\n` : ""}<current_message>
-  <content>${input.message}</content>
-</current_message>
+    return `${historyText ? `ИСТОРИЯ ДИАЛОГА:\n${historyText}\n\n` : ""}ТЕКУЩЕЕ СООБЩЕНИЕ: <message>${input.message}</message>
 
-<analysis_rules>
-  ⚠️ АНАЛИЗИРУЙ ВНИМАТЕЛЬНО:
-  1. Это ОДНО слово подтверждения ("Ок", "Спасибо") → ACKNOWLEDGMENT
-  2. Это ДВА+ элемента ("Привет, ок", "Да, давайте") → CONTINUATION
-  3. Это 4 цифры → PIN_CODE
-  4. Это вопрос → QUESTION
-  5. Это развернутый ответ → ANSWER
-</analysis_rules>
+⚠️ АНАЛИЗИРУЙ ВНИМАТЕЛЬНО:
+1. Это ОДНО слово подтверждения ("Ок", "Спасибо") → ACKNOWLEDGMENT
+2. Это ДВА+ элемента ("Привет, ок", "Да, давайте") → CONTINUATION
+3. Это 4 цифры → PIN_CODE
+4. Это вопрос → QUESTION
+5. Это развернутый ответ → ANSWER
 
-<output_format>
-  Верни JSON с полями:
-  - messageType: тип сообщения (PIN_CODE | GREETING | QUESTION | ANSWER | ACKNOWLEDGMENT | CONTINUATION | OTHER)
-  - requiresResponse: требуется ли ответ бота (boolean)
-    * ACKNOWLEDGMENT → false (не требует ответа)
-    * CONTINUATION → true (кандидат ждет продолжения)
-    * GREETING → true (нужно ответить приветствием)
-  - extractedData: объект с полем pinCode
-    * pinCode: СТРОГО 4 цифры (например, "1234") если найден, иначе пустая строка ""
-</output_format>`;
+ФОРМАТ ОТВЕТА:
+Верни JSON с полями:
+- messageType: тип сообщения (PIN_CODE | GREETING | QUESTION | ANSWER | ACKNOWLEDGMENT | CONTINUATION | OTHER)
+- requiresResponse: требуется ли ответ бота (boolean)
+  * ACKNOWLEDGMENT → false (не требует ответа)
+  * CONTINUATION → true (кандидат ждет продолжения)
+  * GREETING → true (нужно ответить приветствием)
+- extractedData: объект с полем pinCode
+  * pinCode: СТРОГО 4 цифры (например, "1234") если найден, иначе пустая строка ""`;
   }
 }
