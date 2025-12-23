@@ -64,10 +64,36 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
   }
 
   protected validate(input: InterviewerInput): boolean {
-    if (!input.currentAnswer || !input.currentQuestion) return false;
-    if (!Number.isFinite(input.questionNumber) || input.questionNumber < 0)
+    // Проверяем обязательные поля
+    if (!input.currentAnswer || typeof input.currentAnswer !== "string") {
+      console.error(
+        "[InterviewerAgent] Invalid currentAnswer:",
+        input.currentAnswer,
+      );
       return false;
-    if (!Array.isArray(input.previousQA)) return false;
+    }
+
+    if (!input.currentQuestion || typeof input.currentQuestion !== "string") {
+      console.error(
+        "[InterviewerAgent] Invalid currentQuestion:",
+        input.currentQuestion,
+      );
+      return false;
+    }
+
+    if (!Number.isFinite(input.questionNumber) || input.questionNumber < 0) {
+      console.error(
+        "[InterviewerAgent] Invalid questionNumber:",
+        input.questionNumber,
+      );
+      return false;
+    }
+
+    if (!Array.isArray(input.previousQA)) {
+      console.error("[InterviewerAgent] Invalid previousQA:", input.previousQA);
+      return false;
+    }
+
     return true;
   }
 

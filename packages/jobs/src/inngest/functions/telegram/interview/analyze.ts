@@ -77,16 +77,25 @@ export const analyzeInterviewFunction = inngest.createFunction(
         questionNumber: context.questionNumber,
       });
 
-      const analysisResult = await analyzeAndGenerateNextQuestion(context);
+      try {
+        const analysisResult = await analyzeAndGenerateNextQuestion(context);
 
-      console.log("📊 Результат анализа", {
-        shouldContinue: analysisResult.shouldContinue,
-        hasQuestion: !!analysisResult.nextQuestion,
-        analysis: analysisResult.analysis,
-        reason: analysisResult.reason,
-      });
+        console.log("📊 Результат анализа", {
+          shouldContinue: analysisResult.shouldContinue,
+          hasQuestion: !!analysisResult.nextQuestion,
+          analysis: analysisResult.analysis,
+          reason: analysisResult.reason,
+        });
 
-      return analysisResult;
+        return analysisResult;
+      } catch (error) {
+        console.error("❌ Ошибка при анализе интервью:", {
+          conversationId: context.conversationId,
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        throw error;
+      }
     });
 
     if (result.shouldContinue && result.nextQuestion) {

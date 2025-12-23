@@ -178,24 +178,53 @@ export class InterviewOrchestrator {
         };
       }
 
-      // ШАГ 3: Генерация ответа через Interviewer
-      const interviewerResult = await interviewer.execute(
-        {
-          ...input,
-        },
-        context,
-      );
+      // ШАГ 3: Генерация ответа через Interviewer (с retry)
+      let interviewerResult:
+        | Awaited<ReturnType<typeof interviewer.execute>>
+        | undefined;
+      let lastError: string | undefined;
+      const maxRetries = 2;
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        interviewerResult = await interviewer.execute(
+          {
+            ...input,
+          },
+          context,
+        );
+
+        if (interviewerResult.success && interviewerResult.data) {
+          break; // Успешно выполнено
+        }
+
+        lastError = interviewerResult.error || "Unknown error";
+
+        if (attempt < maxRetries) {
+          console.warn(
+            `[Orchestrator] Interviewer attempt ${attempt + 1} failed, retrying...`,
+            {
+              error: lastError,
+            },
+          );
+          // Небольшая задержка перед повторной попыткой
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (attempt + 1)),
+          );
+        }
+      }
 
       agentTrace.push({
         agent: "Interviewer",
-        decision: interviewerResult.success
+        decision: interviewerResult?.success
           ? `shouldContinue: ${interviewerResult.data?.shouldContinue}`
-          : "failed",
+          : `failed: ${lastError}`,
         timestamp: new Date(),
       });
 
-      if (!interviewerResult.success || !interviewerResult.data) {
-        throw new Error("Interviewer agent failed");
+      if (!interviewerResult?.success || !interviewerResult?.data) {
+        throw new Error(
+          `Interviewer agent failed after ${maxRetries + 1} attempts: ${lastError}`,
+        );
       }
 
       return {
@@ -203,11 +232,20 @@ export class InterviewOrchestrator {
         agentTrace,
       };
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown";
+
+      console.error("[Orchestrator] Critical error:", {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        agentTrace,
+      });
+
       const output = {
-        analysis: "Ошибка при обработке",
+        analysis:
+          "Произошла техническая ошибка при обработке вашего ответа. Пожалуйста, попробуйте еще раз или свяжитесь с рекрутером напрямую.",
         shouldContinue: false,
         shouldEscalate: true,
-        escalationReason: `Error: ${error instanceof Error ? error.message : "Unknown"}`,
+        escalationReason: `Technical error: ${errorMessage}`,
         agentTrace,
       };
 
@@ -215,7 +253,8 @@ export class InterviewOrchestrator {
         output,
         metadata: {
           error: true,
-          errorMessage: error instanceof Error ? error.message : "Unknown",
+          errorMessage,
+          errorStack: error instanceof Error ? error.stack : undefined,
           agentTraceCount: agentTrace.length,
         },
       });

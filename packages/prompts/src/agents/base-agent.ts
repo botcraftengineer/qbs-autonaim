@@ -98,11 +98,19 @@ export abstract class BaseAgent<TInput, TOutput> {
       const errorMessage =
         error instanceof Error ? error.message : "Неизвестная ошибка";
 
+      // Логируем детальную информацию об ошибке
+      console.error(`[${this.name}] Agent execution failed:`, {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        agentType: this.type,
+      });
+
       span?.end({
         output: { error: errorMessage },
         metadata: {
           success: false,
           error: errorMessage,
+          errorStack: error instanceof Error ? error.stack : undefined,
         },
       });
 
