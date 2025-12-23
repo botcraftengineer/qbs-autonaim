@@ -13,6 +13,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Lock, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
 
 interface CommentsSectionProps {
@@ -123,16 +124,11 @@ export function CommentsSection({
               <div className="flex items-start gap-3">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarImage
-                    src={comment.authorAvatar ?? undefined}
+                    src={getAvatarUrl(comment.authorAvatar, comment.author)}
                     alt={comment.author}
                   />
                   <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                    {comment.author
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2)}
+                    {getInitials(comment.author)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">

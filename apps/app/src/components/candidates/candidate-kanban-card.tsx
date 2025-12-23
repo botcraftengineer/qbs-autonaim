@@ -3,6 +3,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@qbs-autonaim/ui";
 import { Mail, MessageCircle, Phone } from "lucide-react";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
+import { getAvatarUrl } from "~/lib/avatar";
 import { MatchScoreCircle } from "./match-score-circle";
 import type { FunnelCandidate } from "./types";
 
@@ -15,7 +16,8 @@ export function CandidateKanbanCard({
   candidate,
   onClick,
 }: CandidateKanbanCardProps) {
-  const avatarUrl = useAvatarUrl(candidate.avatarFileId);
+  const photoUrl = useAvatarUrl(candidate.avatarFileId);
+  const avatarUrl = getAvatarUrl(photoUrl, candidate.name);
 
   return (
     <div className="bg-card border rounded-lg shadow-sm transition-all duration-200 hover:shadow-md hover:border-primary/30 flex flex-col group relative">
@@ -40,7 +42,7 @@ export function CandidateKanbanCard({
       >
         <div className="flex items-start gap-3 mb-3">
           <Avatar className="h-10 w-10 border shrink-0">
-            <AvatarImage src={avatarUrl ?? undefined} alt={candidate.name} />
+            <AvatarImage src={avatarUrl} alt={candidate.name} />
             <AvatarFallback className="text-xs font-semibold bg-primary/10 text-primary">
               {candidate.initials}
             </AvatarFallback>

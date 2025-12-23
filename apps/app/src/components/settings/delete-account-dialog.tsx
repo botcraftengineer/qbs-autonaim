@@ -17,6 +17,7 @@ import {
 } from "@qbs-autonaim/ui";
 import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
+import { getAvatarUrl } from "~/lib/avatar";
 
 interface DeleteAccountDialogProps {
   open: boolean;
@@ -60,7 +61,7 @@ export function DeleteAccountDialog({
         <AlertDialogHeader>
           <div className="flex items-center justify-center mb-4">
             <Avatar className="h-16 w-16">
-              <AvatarImage src={userAvatar || undefined} />
+              <AvatarImage src={getAvatarUrl(userAvatar, "User")} />
               <AvatarFallback className="text-2xl bg-destructive/10 text-destructive">
                 <AlertTriangle className="h-8 w-8" />
               </AvatarFallback>

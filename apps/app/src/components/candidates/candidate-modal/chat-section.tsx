@@ -12,6 +12,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Pause, Play, Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
 
 interface ChatSectionProps {
@@ -169,15 +170,14 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
                         {showAvatar && (
                           <Avatar className="h-8 w-8">
                             <AvatarImage
-                              src={message.senderAvatar ?? undefined}
+                              src={getAvatarUrl(
+                                message.senderAvatar,
+                                message.senderName,
+                              )}
                               alt={message.senderName}
                             />
                             <AvatarFallback className="text-xs bg-primary/10 text-primary">
-                              {message.senderName
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")
-                                .toUpperCase()}
+                              {getInitials(message.senderName)}
                             </AvatarFallback>
                           </Avatar>
                         )}

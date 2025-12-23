@@ -20,8 +20,9 @@ import {
 } from "@qbs-autonaim/ui";
 import { Award, Briefcase, Calendar, Phone, Send } from "lucide-react";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { ResumeActions } from "./resume-actions";
-import { getAvatarUrl, getInitials, getScoreColor } from "./utils";
+import { getScoreColor } from "./utils";
 
 interface ResponseHeaderProps {
   response: {
@@ -46,7 +47,7 @@ interface ResponseHeaderProps {
 export function ResponseHeader({ response }: ResponseHeaderProps) {
   const photoUrl = useAvatarUrl(response.photoFileId);
   const candidateName = response.candidateName || "Кандидат";
-  const fallbackAvatarUrl = getAvatarUrl(candidateName);
+  const avatarUrl = getAvatarUrl(photoUrl, candidateName);
 
   return (
     <Card className="border-2 shadow-lg">
@@ -54,10 +55,7 @@ export function ResponseHeader({ response }: ResponseHeaderProps) {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex gap-4">
             <Avatar className="h-16 w-16 border-2 border-primary/10 sm:h-20 sm:w-20">
-              <AvatarImage
-                src={photoUrl || fallbackAvatarUrl}
-                alt={candidateName}
-              />
+              <AvatarImage src={avatarUrl} alt={candidateName} />
               <AvatarFallback className="bg-primary/10 text-lg font-semibold">
                 {getInitials(candidateName)}
               </AvatarFallback>

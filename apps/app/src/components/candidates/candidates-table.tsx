@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
+import { getAvatarUrl } from "~/lib/avatar";
 import type { FunnelCandidate, FunnelStage } from "./types";
 import { STAGE_COLORS, STAGE_LABELS } from "./types";
 
@@ -33,7 +34,8 @@ function CandidateRow({
   candidate: FunnelCandidate;
   onRowClick: (candidate: FunnelCandidate) => void;
 }) {
-  const avatarUrl = useAvatarUrl(candidate.avatarFileId);
+  const photoUrl = useAvatarUrl(candidate.avatarFileId);
+  const avatarUrl = getAvatarUrl(photoUrl, candidate.name);
 
   const getStageText = (stage: string) =>
     STAGE_LABELS[stage as FunnelStage] ?? stage;
@@ -56,7 +58,7 @@ function CandidateRow({
       <TableCell>
         <div className="flex items-center gap-3">
           <Avatar className="h-10 w-10 border">
-            <AvatarImage src={avatarUrl ?? undefined} alt={candidate.name} />
+            <AvatarImage src={avatarUrl} alt={candidate.name} />
             <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
               {candidate.initials}
             </AvatarFallback>
