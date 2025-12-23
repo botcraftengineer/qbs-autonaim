@@ -109,9 +109,9 @@ export function UnifiedAuthForm({
 
         // Создаем организацию
         const userName = data.email.split("@")[0] ?? "User";
-        const orgName = `${userName}'s Organization`;
+        const orgName = `Организация ${userName}`;
         let orgSlug = generateSlug(orgName);
-        
+
         // Добавляем случайное число если slug слишком короткий
         if (orgSlug.length < 3) {
           orgSlug = `org-${Math.random().toString(36).substring(2, 8)}`;
@@ -124,9 +124,9 @@ export function UnifiedAuthForm({
           });
 
           // Создаем default workspace
-          const workspaceName = "Default Workspace";
+          const workspaceName = "Рабочее пространство по умолчанию";
           let workspaceSlug = generateSlug(workspaceName);
-          
+
           if (workspaceSlug.length < 3) {
             workspaceSlug = "default";
           }
@@ -143,7 +143,7 @@ export function UnifiedAuthForm({
           localStorage.setItem("lastOrganizationSlug", organization.slug);
 
           toast.success("Аккаунт успешно создан!");
-          
+
           // Редиректим на новый workspace
           router.push(paths.workspace.root(organization.slug, workspace.slug));
           return;
@@ -165,7 +165,7 @@ export function UnifiedAuthForm({
           return;
         }
         toast.success("Вход выполнен успешно!");
-        
+
         // Для входа используем сохраненную организацию или редиректим на dashboard
         const lastOrgSlug = localStorage.getItem("lastOrganizationSlug");
         if (lastOrgSlug) {

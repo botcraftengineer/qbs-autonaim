@@ -1,7 +1,7 @@
 "use client";
 
 import { paths } from "@qbs-autonaim/config";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
 import { AppSidebar } from "./app-sidebar";
@@ -39,6 +39,7 @@ export function AppSidebarWrapper({
   organizations?: OrganizationWithRole[];
 }) {
   const params = useParams();
+  const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string | undefined;
   const orgSlug = params.orgSlug as string | undefined;
 
@@ -113,7 +114,7 @@ export function AppSidebarWrapper({
     setActiveOrganizationId(organizationId);
     const organization = organizations?.find((o) => o.id === organizationId);
     if (organization) {
-      window.location.href = paths.organization.workspaces(organization.slug);
+      router.push(paths.organization.workspaces(organization.slug));
     }
   };
 
@@ -121,7 +122,7 @@ export function AppSidebarWrapper({
     setActiveWorkspaceId(workspaceId);
     const workspace = workspaces?.find((w) => w.id === workspaceId);
     if (workspace && orgSlug) {
-      window.location.href = paths.workspace.root(orgSlug, workspace.slug);
+      router.push(paths.workspace.root(orgSlug, workspace.slug));
     }
   };
 

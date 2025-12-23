@@ -61,12 +61,30 @@ export const createWorkspace = protectedProcedure
       });
     }
 
-    // Добавление создателя как owner
-    await workspaceRepository.addUser(
-      workspace.id,
-      ctx.session.user.id,
-      "owner",
-    );
+    // Добавление создателя как owner с защитой от ошибок
+    try {
+      await workspaceRepository.addUser(
+        workspace.id,
+        ctx.session.user.id,
+        "owner",
+      );
+    } catch (error) {
+      // Очистка: удаляем созданный workspace если не удалось добавить владельца
+      try {
+        await workspaceRepository.delete(workspace.id);
+      } catch (cleanupError) {
+        console.error("Failed to cleanup workspace after addUser failure:", {
+          workspaceId: workspace.id,
+          cleanupError,
+        });
+      }
+
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Не удалось назначить владельца workspace",
+        cause: error,
+      });
+    }
 
     return workspace;
   });

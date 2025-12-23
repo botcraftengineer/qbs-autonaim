@@ -3,6 +3,7 @@
 import { Button } from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DeleteOrganizationDialog } from "~/components/organization";
@@ -18,16 +19,19 @@ export function DangerZoneSection({
   organizationName,
 }: DangerZoneSectionProps) {
   const trpc = useTRPC();
+  const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const deleteOrganization = useMutation(
     trpc.organization.delete.mutationOptions({
       onSuccess: async () => {
         toast.success("Организация успешно удалена");
-        window.location.href = "/";
+        router.push("/");
       },
-      onError: (err: { message?: string }) => {
-        toast.error(err.message || "Не удалось удалить организацию");
+      onError: (err) => {
+        const message =
+          err instanceof Error ? err.message : "Не удалось удалить организацию";
+        toast.error(message);
       },
     }),
   );

@@ -58,6 +58,15 @@ export function WorkspaceSwitcher({
   const handleWorkspaceChange = (workspace: WorkspaceWithRole) => {
     setActiveWorkspace(workspace);
     onWorkspaceChange?.(workspace.id);
+
+    if (!workspace.organizationSlug || !workspace.slug) {
+      console.error(
+        "Invalid workspace data: missing organizationSlug or slug",
+        workspace,
+      );
+      return;
+    }
+
     router.push(
       paths.workspace.root(workspace.organizationSlug, workspace.slug),
     );

@@ -1,16 +1,27 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import { useQuery } from "@tanstack/react-query";
 import { useParams } from "next/navigation";
 import { useTRPC } from "~/trpc/react";
 
-export function useWorkspace() {
+interface UseWorkspaceReturn {
+  workspace: RouterOutputs["organization"]["getWorkspaceBySlug"] | undefined;
+  organization: RouterOutputs["organization"]["get"] | undefined;
+  orgSlug: string | undefined;
+  slug: string | undefined;
+  isLoading: boolean;
+  error: Error | null;
+  organizationError: Error | null;
+}
+
+export function useWorkspace(): UseWorkspaceReturn {
   const params = useParams();
   const orgSlug = params.orgSlug as string | undefined;
   const slug = params.slug as string | undefined;
   const trpc = useTRPC();
 
-  const { data: organization } = useQuery({
+  const { data: organization, error: organizationError } = useQuery({
     ...trpc.organization.get.queryOptions({ id: orgSlug ?? "" }),
     enabled: !!orgSlug,
   });
@@ -30,5 +41,6 @@ export function useWorkspace() {
     slug,
     isLoading,
     error,
+    organizationError,
   };
 }

@@ -22,6 +22,7 @@ import {
 } from "@qbs-autonaim/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HelpCircle, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ export function OrganizationGeneralForm({
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [logoPreview, setLogoPreview] = useState<string | null>(
     initialData?.logo || null,
   );
@@ -68,15 +70,18 @@ export function OrganizationGeneralForm({
         variables: { data: { slug?: string } },
       ) => {
         toast.success("Организация успешно обновлена");
-        // Если slug изменился, редиректим на новый URL
         if (variables.data.slug && variables.data.slug !== initialSlug) {
-          window.location.href = `/orgs/${variables.data.slug}/settings`;
+          router.push(`/orgs/${variables.data.slug}/settings`);
         } else {
           await queryClient.invalidateQueries(trpc.organization.pathFilter());
         }
       },
-      onError: (err: { message?: string }) => {
-        toast.error(err.message || "Не удалось обновить организацию");
+      onError: (err) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Не удалось обновить организацию";
+        toast.error(message);
       },
     }),
   );
@@ -85,10 +90,12 @@ export function OrganizationGeneralForm({
     trpc.organization.delete.mutationOptions({
       onSuccess: async () => {
         toast.success("Организация успешно удалена");
-        window.location.href = "/";
+        router.push("/");
       },
-      onError: (err: { message?: string }) => {
-        toast.error(err.message || "Не удалось удалить организацию");
+      onError: (err) => {
+        const message =
+          err instanceof Error ? err.message : "Не удалось удалить организацию";
+        toast.error(message);
       },
     }),
   );

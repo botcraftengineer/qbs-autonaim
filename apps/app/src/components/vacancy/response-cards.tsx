@@ -27,11 +27,13 @@ import { ContactInfo } from "./contact-info";
 
 interface ResponseCardsProps {
   responses: RouterOutputs["vacancy"]["responses"]["list"]["responses"];
+  orgSlug: string;
   workspaceSlug: string;
 }
 
 export function ResponseCards({
   responses,
+  orgSlug,
   workspaceSlug,
 }: ResponseCardsProps) {
   return (
@@ -70,6 +72,7 @@ export function ResponseCards({
                       <ChatIndicator
                         messageCount={response.conversation.messageCount}
                         conversationId={response.conversation.id}
+                        orgSlug={orgSlug}
                         workspaceSlug={workspaceSlug}
                       />
                     )}

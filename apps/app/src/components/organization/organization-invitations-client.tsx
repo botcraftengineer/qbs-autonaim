@@ -47,9 +47,7 @@ export function OrganizationInvitationsClient({
     trpc.organization.deleteInvite.mutationOptions({
       onSuccess: () => {
         toast.success("Приглашение отменено");
-        queryClient.invalidateQueries({
-          queryKey: [["organization", "listInvites"]],
-        });
+        queryClient.invalidateQueries(trpc.organization.pathFilter());
       },
       onError: (error) => {
         toast.error("Ошибка при отмене приглашения", {

@@ -1,13 +1,21 @@
 import { organizationRepository, workspaceRepository } from "@qbs-autonaim/db";
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
-import { createWorkspaceSchema } from "@qbs-autonaim/validators";
+import {
+  createWorkspaceSchema,
+  organizationIdSchema,
+} from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const create = protectedProcedure
-  .input(createWorkspaceSchema)
+  .input(
+    z.object({
+      organizationId: organizationIdSchema.optional(),
+      workspace: createWorkspaceSchema,
+    }),
+  )
   .mutation(async ({ input, ctx }) => {
-    // Получаем первую организацию пользователя
     const organizations = await organizationRepository.getUserOrganizations(
       ctx.session.user.id,
     );
@@ -19,9 +27,35 @@ export const create = protectedProcedure
       });
     }
 
-    const organizationId = organizations[0]!.id;
+    let organizationId: string;
 
-    const existing = await workspaceRepository.findBySlug(input.slug);
+    if (input.organizationId) {
+      // Validate that the provided organizationId belongs to the user
+      const hasAccess = organizations.some(
+        (org) => org.id === input.organizationId,
+      );
+
+      if (!hasAccess) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Нет доступа к указанной организации",
+        });
+      }
+
+      organizationId = input.organizationId;
+    } else {
+      // Fallback to first organization if organizationId is omitted
+      const firstOrg = organizations[0];
+      if (!firstOrg) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "У пользователя нет организаций",
+        });
+      }
+      organizationId = firstOrg.id;
+    }
+
+    const existing = await workspaceRepository.findBySlug(input.workspace.slug);
     if (existing) {
       throw new TRPCError({
         code: "CONFLICT",
@@ -29,7 +63,7 @@ export const create = protectedProcedure
       });
     }
 
-    const dataToCreate = { ...input };
+    const dataToCreate = { ...input.workspace };
     if (dataToCreate.logo?.startsWith("data:image/")) {
       dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
     }

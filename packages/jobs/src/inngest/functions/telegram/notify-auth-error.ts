@@ -94,9 +94,15 @@ export const notifyTelegramAuthErrorFunction = inngest.createFunction(
         .filter((admin) => admin.email)
         .map((admin) =>
           step.run(`send-email-${admin.userId}`, async () => {
-            const reauthorizeLink = workspaceData.organizationSlug
-              ? `${env.APP_URL}${paths.workspace.settings.telegram(workspaceData.organizationSlug, workspaceData.workspace.slug)}`
-              : `${env.APP_URL}/workspaces/${workspaceData.workspace.slug}/settings/telegram`;
+            if (!workspaceData.organizationSlug) {
+              const error = new Error(
+                `Missing organizationSlug for workspace ${workspaceData.workspace.slug} (ID: ${workspaceId})`,
+              );
+              console.error("❌ Cannot build reauthorize link:", error.message);
+              throw error;
+            }
+
+            const reauthorizeLink = `${env.APP_URL}${paths.workspace.settings.telegram(workspaceData.organizationSlug, workspaceData.workspace.slug)}`;
 
             await sendEmail({
               to: [admin.email],

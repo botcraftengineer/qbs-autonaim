@@ -35,6 +35,9 @@ export function DeleteOrganizationDialog({
   const isConfirmValid = confirmText === organizationName;
 
   const handleOpenChange = (newOpen: boolean) => {
+    if (!newOpen && isDeleting) {
+      return;
+    }
     onOpenChange(newOpen);
     if (!newOpen) {
       setConfirmText("");

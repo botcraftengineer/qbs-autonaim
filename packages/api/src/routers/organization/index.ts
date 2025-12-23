@@ -3,6 +3,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { create } from "./create";
 import { deleteOrganization } from "./delete";
 import { get } from "./get";
+import { getBySlug } from "./get-by-slug";
 import { acceptInvite } from "./invites/accept";
 import { createInvite } from "./invites/create";
 import { deleteInvite } from "./invites/delete";
@@ -20,6 +21,7 @@ import { listWorkspaces } from "./workspaces/list";
 export const organizationRouter = {
   list,
   get,
+  getBySlug,
   create,
   update,
   delete: deleteOrganization,
