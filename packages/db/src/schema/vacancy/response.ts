@@ -93,7 +93,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   coverLetter: z.string().optional(),
   telegramPinCode: z.string().length(4).optional(),
   salaryExpectations: z.string().max(200).optional(),
-  resumeLanguage: z.string().max(10).default("en").optional(),
+  resumeLanguage: z.string().max(10).default("ru").optional(),
   status: z
     .enum(["NEW", "EVALUATED", "INTERVIEW", "COMPLETED", "SKIPPED"])
     .default("NEW"),

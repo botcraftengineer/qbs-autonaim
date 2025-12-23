@@ -10,10 +10,7 @@ import {
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
-import {
-  InterviewCompletionAgent,
-  SalaryExtractionAgent,
-} from "@qbs-autonaim/prompts";
+import { AgentFactory } from "@qbs-autonaim/prompts";
 import {
   createInterviewScoring,
   getInterviewContext,
@@ -73,25 +70,7 @@ export const completeInterviewFunction = inngest.createFunction(
           responseId,
         });
 
-        const lastBotMessages = await db
-          .select()
-          .from(conversationMessage)
-          .where(
-            and(
-              eq(conversationMessage.conversationId, conversationId),
-              eq(conversationMessage.sender, "BOT"),
-            ),
-          )
-          .orderBy(desc(conversationMessage.createdAt))
-          .limit(1);
-
-        const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
-
-        const updatedContext = await getInterviewContext(
-          conversationId,
-          transcription,
-          lastQuestion,
-        );
+        const updatedContext = await getInterviewContext(conversationId);
 
         if (!updatedContext) {
           throw new Error("Не удалось получить обновленный контекст");
@@ -173,13 +152,15 @@ export const completeInterviewFunction = inngest.createFunction(
           .filter((msg) => msg.sender !== "ADMIN")
           .map((msg) => ({
             sender: msg.sender as "CANDIDATE" | "BOT",
-            content: msg.contentType === "VOICE" && msg.voiceTranscription 
-              ? msg.voiceTranscription 
-              : msg.content,
+            content:
+              msg.contentType === "VOICE" && msg.voiceTranscription
+                ? msg.voiceTranscription
+                : msg.content,
           }));
 
         const model = getAIModel();
-        const agent = new SalaryExtractionAgent({ model });
+        const factory = new AgentFactory({ model });
+        const agent = factory.createSalaryExtraction();
 
         const result = await agent.execute(
           { conversationHistory },
@@ -278,7 +259,7 @@ export const completeInterviewFunction = inngest.createFunction(
         });
         candidateName = response?.candidateName ?? undefined;
         vacancyTitle = response?.vacancy?.title ?? undefined;
-        resumeLanguage = response?.resumeLanguage ?? "en";
+        resumeLanguage = response?.resumeLanguage ?? "ru";
 
         const scoring = await db.query.telegramInterviewScoring.findFirst({
           where: eq(telegramInterviewScoring.conversationId, conversationId),
@@ -292,14 +273,16 @@ export const completeInterviewFunction = inngest.createFunction(
           .filter((msg) => msg.sender !== "ADMIN")
           .map((msg) => ({
             sender: msg.sender as "CANDIDATE" | "BOT",
-            content: msg.contentType === "VOICE" && msg.voiceTranscription 
-              ? msg.voiceTranscription 
-              : msg.content,
+            content:
+              msg.contentType === "VOICE" && msg.voiceTranscription
+                ? msg.voiceTranscription
+                : msg.content,
             contentType: msg.contentType,
           })) ?? [];
 
       const model = getAIModel();
-      const agent = new InterviewCompletionAgent({ model });
+      const factory = new AgentFactory({ model });
+      const agent = factory.createInterviewCompletion();
 
       const agentContext = {
         candidateName,
@@ -313,7 +296,7 @@ export const completeInterviewFunction = inngest.createFunction(
           questionCount: questionNumber,
           score,
           detailedScore,
-          resumeLanguage: resumeLanguage || "en",
+          resumeLanguage: resumeLanguage || "ru",
         },
         agentContext,
       );

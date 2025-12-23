@@ -11,8 +11,9 @@ import {
   Separator,
 } from "@qbs-autonaim/ui";
 import { MessageSquare } from "lucide-react";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { SafeHtml } from "./safe-html";
-import { getAvatarUrl, getInitials, getScoreBadgeVariant } from "./utils";
+import { getScoreBadgeVariant } from "./utils";
 import { VoicePlayer } from "./voice-player";
 
 interface Message {
@@ -106,7 +107,7 @@ export function InterviewCard({
                     >
                       <Avatar className="h-8 w-8 shrink-0 border sm:h-10 sm:w-10">
                         <AvatarImage
-                          src={getAvatarUrl(senderName)}
+                          src={getAvatarUrl(null, senderName)}
                           alt={senderName}
                         />
                         <AvatarFallback className="text-xs">

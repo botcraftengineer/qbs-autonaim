@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { useInviteLinkModal } from "~/components/settings/modals/invite-link-modal";
 import { useInviteMemberModal } from "~/components/settings/modals/invite-member-modal";
 import { useMemberActionsMenu } from "~/components/settings/modals/member-actions-menu";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
 
 type MemberRole = "owner" | "admin" | "member";
@@ -62,15 +63,6 @@ interface WorkspaceInvite {
 type MemberOrInvite =
   | { type: "member"; data: WorkspaceMember }
   | { type: "invite"; data: WorkspaceInvite };
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 function MembersLoadingSkeleton() {
   return (
@@ -446,6 +438,7 @@ function MemberRow({
   });
 
   const initials = getInitials(member.user.name);
+  const avatarUrl = getAvatarUrl(member.user.image, member.user.name);
 
   const updateRole = useMutation(
     trpc.workspace.members.updateRole.mutationOptions({
@@ -474,7 +467,7 @@ function MemberRow({
       <TableCell>
         <div className="flex items-center gap-2 sm:gap-3">
           <Avatar className="h-8 w-8 shrink-0">
-            <AvatarImage src={member.user.image || ""} alt={member.user.name} />
+            <AvatarImage src={avatarUrl} alt={member.user.name} />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">

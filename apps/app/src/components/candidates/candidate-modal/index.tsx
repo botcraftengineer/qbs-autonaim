@@ -24,6 +24,7 @@ import {
   triggerSendWelcome,
 } from "~/actions/trigger";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
+import { getAvatarUrl } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
 import { MatchScoreCircle } from "../match-score-circle";
 import type { FunnelCandidate, FunnelCandidateDetail } from "../types";
@@ -77,7 +78,8 @@ export function CandidateModal({
 
   const fullCandidate: FunnelCandidateDetail | FunnelCandidate | null =
     candidateDetail ?? candidate;
-  const avatarUrl = useAvatarUrl(fullCandidate?.avatarFileId);
+  const photoUrl = useAvatarUrl(fullCandidate?.avatarFileId);
+  const avatarUrl = getAvatarUrl(photoUrl, fullCandidate?.name ?? "Кандидат");
   const [activeTab, setActiveTab] = useState("chat");
   const [showOfferDialog, setShowOfferDialog] = useState(false);
   const [showRejectDialog, setShowRejectDialog] = useState(false);
@@ -220,10 +222,7 @@ export function CandidateModal({
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <Avatar className="h-10 w-10 border shrink-0">
-                <AvatarImage
-                  src={avatarUrl ?? undefined}
-                  alt={fullCandidate.name}
-                />
+                <AvatarImage src={avatarUrl} alt={fullCandidate.name} />
                 <AvatarFallback className="text-sm font-semibold bg-primary/10 text-primary">
                   {fullCandidate.initials}
                 </AvatarFallback>
@@ -314,6 +313,18 @@ export function CandidateModal({
                         window.open(candidateDetail.resumeUrl, "_blank");
                       } else {
                         toast.error("Резюме недоступно");
+                      }
+                      break;
+                    case "download-resume":
+                      if (candidateDetail.resumePdfUrl) {
+                        const link = document.createElement("a");
+                        link.href = candidateDetail.resumePdfUrl;
+                        link.download = `resume-${candidateDetail.name}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      } else {
+                        toast.error("PDF резюме недоступно");
                       }
                       break;
                     case "refresh-resume":

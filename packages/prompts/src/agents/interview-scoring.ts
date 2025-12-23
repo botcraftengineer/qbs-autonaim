@@ -6,9 +6,8 @@ import { z } from "zod";
 import { type AgentConfig, BaseAgent } from "./base-agent";
 import { AgentType, type BaseAgentContext } from "./types";
 
-export interface InterviewScoringInput {
-  previousQA: Array<{ question: string; answer: string }>;
-}
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export type InterviewScoringInput = {};
 
 const interviewScoringOutputSchema = z.object({
   score: z.number().min(1).max(5),
@@ -52,17 +51,39 @@ export class InterviewScoringAgent extends BaseAgent<
     );
   }
 
-  protected validate(input: InterviewScoringInput): boolean {
-    return Array.isArray(input.previousQA) && input.previousQA.length > 0;
+  protected validate(_input: InterviewScoringInput): boolean {
+    // Валидация не требуется - используем conversationHistory из context
+    return true;
   }
 
   protected buildPrompt(
-    input: InterviewScoringInput,
+    _input: InterviewScoringInput,
     context: BaseAgentContext,
   ): string {
-    const { candidateName, vacancyTitle, vacancyDescription } = context;
+    const {
+      candidateName,
+      vacancyTitle,
+      vacancyDescription,
+      conversationHistory,
+    } = context;
 
-    const qaText = input.previousQA
+    // Извлекаем пары вопрос-ответ из истории диалога
+    const qaText = (conversationHistory || [])
+      .filter((msg) => msg.sender === "BOT" || msg.sender === "CANDIDATE")
+      .reduce(
+        (acc, msg, idx, arr) => {
+          // Если это сообщение от бота и следующее от кандидата - это пара вопрос-ответ
+          const nextMsg = arr[idx + 1];
+          if (msg.sender === "BOT" && nextMsg?.sender === "CANDIDATE") {
+            acc.push({
+              question: msg.content,
+              answer: nextMsg.content,
+            });
+          }
+          return acc;
+        },
+        [] as Array<{ question: string; answer: string }>,
+      )
       .map(
         (qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   Ответ: ${qa.answer}`,
       )

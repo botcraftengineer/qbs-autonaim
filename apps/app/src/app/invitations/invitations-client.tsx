@@ -18,6 +18,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { getAvatarUrl } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
 
 type Invite = RouterOutputs["workspace"]["invites"]["list"][number];
@@ -99,7 +100,10 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
                 <div className="flex items-center gap-4">
                   <Avatar className="h-12 w-12">
                     <AvatarImage
-                      src={invite.workspace.logo || undefined}
+                      src={getAvatarUrl(
+                        invite.workspace.logo,
+                        invite.workspace.name,
+                      )}
                       alt={invite.workspace.name}
                     />
                     <AvatarFallback>

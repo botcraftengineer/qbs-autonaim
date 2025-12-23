@@ -1,5 +1,5 @@
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { ContextAnalyzerAgent } from "@qbs-autonaim/prompts";
+import { AgentFactory } from "@qbs-autonaim/prompts";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { createOrUpdateTempConversation, extractPinCode } from "../../utils";
@@ -59,14 +59,22 @@ export async function handleUnidentifiedText(params: {
     throw new Error("Failed to create temp conversation");
   }
 
+  // Подсчитываем количество неудачных попыток PIN из истории
+  const { getConversationHistory } = await import("../../utils");
+  const history = await getConversationHistory(tempConv.id);
+  const failedPinAttempts = history.filter(
+    (msg) =>
+      msg.sender === "BOT" &&
+      msg.content.toLowerCase().includes("код не подошел"),
+  ).length;
+
   let pinCode: string | null = null;
 
   // Используем AI-агент для анализа сообщения
   try {
     const model = getAIModel();
-    const contextAnalyzer = new ContextAnalyzerAgent({
-      model,
-    });
+    const factory = new AgentFactory({ model });
+    const contextAnalyzer = factory.createContextAnalyzer();
 
     const analysisResult = await contextAnalyzer.execute(
       {
@@ -88,7 +96,7 @@ export async function handleUnidentifiedText(params: {
       });
 
       // Обработка пин-кода
-      if (messageType === "PIN_CODE" && extractedData?.pinCode) {
+      if (messageType === "PIN_CODE" && extractedData.pinCode) {
         pinCode = extractedData.pinCode;
 
         console.log("🔑 AI обнаружил пин-код, проверяем валидность", {
@@ -137,6 +145,7 @@ export async function handleUnidentifiedText(params: {
           username,
           firstName,
           workspaceId,
+          failedPinAttempts: failedPinAttempts + 1,
         });
 
         return { identified: false, invalidPin: true };
@@ -230,6 +239,7 @@ export async function handleUnidentifiedText(params: {
       username,
       firstName,
       workspaceId,
+      failedPinAttempts: failedPinAttempts + 1,
     });
 
     return { identified: false, invalidPin: true };

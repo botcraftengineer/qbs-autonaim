@@ -2,10 +2,7 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import {
-  InterviewOrchestrator,
-  InterviewScoringAgent,
-} from "@qbs-autonaim/prompts";
+import { AgentFactory, InterviewOrchestrator } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import type {
   InterviewAnalysis,
@@ -41,9 +38,6 @@ interface InterviewContext {
   candidateName: string | null;
   vacancyTitle: string | null;
   vacancyDescription: string | null;
-  currentAnswer: string;
-  currentQuestion: string;
-  previousQA: QuestionAnswer[];
   questionNumber: number;
   responseId: string | null;
   resumeLanguage?: string | null;
@@ -52,6 +46,17 @@ interface InterviewContext {
     content: string;
     contentType?: "TEXT" | "VOICE";
   }>;
+  // Настройки компании
+  companySettings?: {
+    botName?: string;
+    botRole?: string;
+    name?: string;
+    description?: string;
+  };
+  // Настройки вакансии
+  customBotInstructions?: string | null;
+  customOrganizationalQuestions?: string | null;
+  customInterviewQuestions?: string | null;
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -85,15 +90,18 @@ function createAgentModel() {
 export async function analyzeAndGenerateNextQuestion(
   context: InterviewContext,
 ): Promise<ExtendedInterviewAnalysis> {
-  const {
-    questionNumber,
-    currentAnswer,
-    currentQuestion,
-    previousQA,
-    candidateName,
-    vacancyTitle,
-    vacancyDescription,
-  } = context;
+  const { questionNumber, candidateName, vacancyTitle, vacancyDescription } =
+    context;
+
+  // Валидация входных данных
+  if (!Number.isFinite(questionNumber) || questionNumber < 0) {
+    logger.error("Invalid questionNumber in analyzeAndGenerateNextQuestion", {
+      conversationId: context.conversationId,
+      questionNumber,
+      type: typeof questionNumber,
+    });
+    throw new Error("questionNumber must be a non-negative number");
+  }
 
   // Создаем оркестратор
   const model = createAgentModel();
@@ -101,26 +109,29 @@ export async function analyzeAndGenerateNextQuestion(
 
   // Формируем контекст для агентов
   const agentContext = {
+    candidateId: context.conversationId,
+    conversationId: context.conversationId,
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
     conversationHistory: context.conversationHistory || [],
+    companySettings: context.companySettings,
+    customBotInstructions: context.customBotInstructions,
+    customOrganizationalQuestions: context.customOrganizationalQuestions,
+    customInterviewQuestions: context.customInterviewQuestions,
   };
 
   // Выполняем оркестратор
   const result = await orchestrator.execute(
     {
-      currentAnswer,
-      currentQuestion,
-      previousQA,
       questionNumber,
-      customInterviewQuestions: null,
-      resumeLanguage: context.resumeLanguage || "en",
+      customOrganizationalQuestions: context.customOrganizationalQuestions,
+      customInterviewQuestions: context.customInterviewQuestions,
+      resumeLanguage: context.resumeLanguage || "ru",
     },
     agentContext,
   );
 
-  // Логируем трассировку агентов
   logger.info("Interview orchestrator trace", {
     conversationId: context.conversationId,
     trace: result.agentTrace.map(
@@ -163,8 +174,6 @@ export async function analyzeAndGenerateNextQuestion(
  */
 export async function getInterviewContext(
   conversationId: string,
-  currentTranscription: string,
-  currentQuestion: string,
 ): Promise<InterviewContext | null> {
   const conv = await db.query.conversation.findFirst({
     where: eq(conversation.id, conversationId),
@@ -174,7 +183,15 @@ export async function getInterviewContext(
       },
       response: {
         with: {
-          vacancy: true,
+          vacancy: {
+            with: {
+              workspace: {
+                with: {
+                  companySettings: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -192,29 +209,50 @@ export async function getInterviewContext(
     .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
     .map((msg) => ({
       sender: msg.sender as "CANDIDATE" | "BOT",
-      content: msg.contentType === "VOICE" && msg.voiceTranscription 
-        ? msg.voiceTranscription 
-        : msg.content,
+      content:
+        msg.contentType === "VOICE" && msg.voiceTranscription
+          ? msg.voiceTranscription
+          : msg.content,
       contentType: (msg.contentType === "TEXT" || msg.contentType === "VOICE"
         ? msg.contentType
         : undefined) as "TEXT" | "VOICE" | undefined,
     }));
 
-  return {
+  // Передаем обе группы вопросов, AI сам решит что спрашивать на основе истории
+  const result: InterviewContext = {
     conversationId: conv.id,
     candidateName: conv.candidateName,
     vacancyTitle: conv.response?.vacancy?.title || null,
     vacancyDescription: conv.response?.vacancy?.description
       ? stripHtml(conv.response.vacancy.description).result
       : null,
-    currentAnswer: currentTranscription,
-    currentQuestion,
-    previousQA: questionAnswers,
     questionNumber: questionAnswers.length + 1,
     responseId: conv.responseId || null,
-    resumeLanguage: conv.response?.resumeLanguage || "en",
+    resumeLanguage: conv.response?.resumeLanguage || "ru",
     conversationHistory,
+    companySettings: conv.response?.vacancy?.workspace?.companySettings
+      ? {
+          botName:
+            conv.response.vacancy.workspace.companySettings.botName ||
+            undefined,
+          botRole:
+            conv.response.vacancy.workspace.companySettings.botRole ||
+            undefined,
+          name: conv.response.vacancy.workspace.companySettings.name,
+          description:
+            conv.response.vacancy.workspace.companySettings.description ||
+            undefined,
+        }
+      : undefined,
+    customBotInstructions:
+      conv.response?.vacancy?.customBotInstructions || null,
+    customOrganizationalQuestions:
+      conv.response?.vacancy?.customOrganizationalQuestions || null,
+    customInterviewQuestions:
+      conv.response?.vacancy?.customInterviewQuestions || null,
   };
+
+  return result;
 }
 
 /**
@@ -254,28 +292,23 @@ export async function saveQuestionAnswer(
 export async function createInterviewScoring(
   context: InterviewContext,
 ): Promise<InterviewScoring> {
-  const { candidateName, vacancyTitle, vacancyDescription, previousQA } =
-    context;
+  const { candidateName, vacancyTitle, vacancyDescription } = context;
 
   // Создаем агента
   const model = createAgentModel();
-  const agent = new InterviewScoringAgent({ model });
+  const factory = new AgentFactory({ model });
+  const agent = factory.createInterviewScoring();
 
   // Формируем контекст для агента
   const agentContext = {
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
-    conversationHistory: [],
+    conversationHistory: context.conversationHistory || [],
   };
 
   // Выполняем агента
-  const result = await agent.execute(
-    {
-      previousQA,
-    },
-    agentContext,
-  );
+  const result = await agent.execute({}, agentContext);
 
   // Обработка ошибки
   if (!result.success || !result.data) {

@@ -6,6 +6,8 @@
  * Базовый контекст для всех агентов
  */
 export interface BaseAgentContext {
+  candidateId?: string;
+  conversationId?: string;
   conversationHistory: Array<{
     sender: "CANDIDATE" | "BOT";
     content: string;
@@ -22,8 +24,17 @@ export interface BaseAgentContext {
     phone?: string;
     language?: string; // Язык резюме: "ru", "en", и т.д.
   };
+  // Настройки компании
+  companySettings?: {
+    botName?: string;
+    botRole?: string;
+    name?: string;
+    description?: string;
+  };
+  // Настройки вакансии
   customBotInstructions?: string | null;
-  customInterviewQuestions?: string | null;
+  customOrganizationalQuestions?: string | null;
+  customInterviewQuestions?: string | null; // Технические вопросы
 }
 
 /**

@@ -25,15 +25,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "~/auth/client";
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 
 export function NavUser({
   user: initialUser,
@@ -58,6 +50,7 @@ export function NavUser({
     : initialUser;
 
   const initials = getInitials(user.name);
+  const avatarUrl = getAvatarUrl(user.avatar, user.name);
 
   const handleLogout = async () => {
     await authClient.signOut({
@@ -79,7 +72,7 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={avatarUrl} alt={user.name} />
                 <AvatarFallback className="rounded-lg">
                   {initials}
                 </AvatarFallback>
@@ -102,7 +95,7 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage src={avatarUrl} alt={user.name} />
                   <AvatarFallback className="rounded-lg">
                     {initials}
                   </AvatarFallback>

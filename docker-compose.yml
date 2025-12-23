@@ -88,3 +88,16 @@ services:
       - .env
     environment:
       - NODE_ENV=production
+  inngest:
+    restart: always
+    image: inngest/inngest:latest
+    container_name: inngest
+    command: "inngest start --sdk-url http://host.docker.internal:8000/api/inngest"
+    ports:
+      - 8288:8288
+    environment:
+      - INNGEST_EVENT_KEY=abcd
+      - INNGEST_SIGNING_KEY=1234
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+

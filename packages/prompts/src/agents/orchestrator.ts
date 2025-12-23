@@ -4,17 +4,14 @@
  */
 
 import type { LanguageModel } from "ai";
-import { EscalationDetectorAgent } from "./escalation-detector";
-import type { InterviewerInput } from "./interviewer";
-import { InterviewerAgent } from "./interviewer";
+import { Langfuse } from "langfuse";
+import { AgentFactory } from "./agent-factory";
 import type { BaseAgentContext } from "./types";
 
 export interface OrchestratorInput {
-  currentAnswer: string;
-  currentQuestion: string;
-  previousQA: Array<{ question: string; answer: string }>;
   questionNumber: number;
-  customInterviewQuestions?: string | null;
+  customOrganizationalQuestions?: string | null;
+  customInterviewQuestions?: string | null; // Технические вопросы
   resumeLanguage?: string;
 }
 
@@ -28,6 +25,7 @@ export interface OrchestratorOutput {
   confidence?: number;
   waitingForCandidateResponse?: boolean;
   isSimpleAcknowledgment?: boolean;
+  messageType?: string;
   agentTrace: Array<{
     agent: string;
     decision: string;
@@ -38,43 +36,130 @@ export interface OrchestratorOutput {
 export interface OrchestratorConfig {
   model: LanguageModel;
   maxSteps?: number;
+  langfuse?: Langfuse;
+}
+
+let globalLangfuse: Langfuse | null = null;
+
+/**
+ * Получает или создает singleton инстанс Langfuse для оркестратора
+ */
+function getLangfuseInstance(): Langfuse {
+  if (!globalLangfuse) {
+    const secretKey = process.env.LANGFUSE_SECRET_KEY;
+    const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
+    const baseUrl = process.env.LANGFUSE_BASE_URL;
+
+    if (!secretKey || !publicKey) {
+      throw new Error(
+        "LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY must be set in environment variables",
+      );
+    }
+
+    globalLangfuse = new Langfuse({
+      secretKey,
+      publicKey,
+      baseUrl,
+    });
+  }
+
+  return globalLangfuse;
 }
 
 /**
  * Orchestrator-Worker pattern:
  * - Orchestrator координирует выполнение
- * - Workers (EscalationDetector, Interviewer) выполняют специализированные задачи
+ * - Workers (Detector, Analyzer, Interviewer) выполняют специализированные задачи
  */
 export class InterviewOrchestrator {
-  private escalationDetector: EscalationDetectorAgent;
-  private interviewer: InterviewerAgent;
+  private model: LanguageModel;
+  private maxSteps: number;
+  private langfuse: Langfuse;
 
   constructor(config: OrchestratorConfig) {
-    const agentConfig = {
-      model: config.model,
-      maxSteps: config.maxSteps || 10,
-    };
-
-    this.escalationDetector = new EscalationDetectorAgent(agentConfig);
-    this.interviewer = new InterviewerAgent(agentConfig);
+    this.model = config.model;
+    this.maxSteps = config.maxSteps || 10;
+    this.langfuse = config.langfuse || getLangfuseInstance();
   }
 
-  /**
-   * Sequential Processing pattern:
-   * 1. Проверка эскалации
-   * 2. Генерация следующего вопроса
-   */
   async execute(
     input: OrchestratorInput,
     context: BaseAgentContext,
   ): Promise<OrchestratorOutput> {
     const agentTrace: OrchestratorOutput["agentTrace"] = [];
 
+    const trace = this.langfuse.trace({
+      name: "interview-orchestrator",
+      userId: context.candidateId,
+      metadata: {
+        conversationId: context.candidateId, // Use candidateId as conversation identifier in Langfuse
+        questionNumber: input.questionNumber,
+        vacancyTitle: context.vacancyTitle,
+        model: this.model,
+      },
+      input,
+    });
+
+    const traceId = trace?.id;
+
+    // Инициализация агентов через фабрику
+    const factory = new AgentFactory({
+      model: this.model,
+      langfuse: this.langfuse,
+      traceId,
+      maxSteps: this.maxSteps,
+    });
+
+    const contextAnalyzer = factory.createContextAnalyzer();
+    const escalationDetector = factory.createEscalationDetector();
+    const interviewer = factory.createInterviewer();
+
     try {
-      // ШАГ 1: Проверка необходимости эскалации
-      const escalationCheck = await this.escalationDetector.execute(
+      // Получаем последнее сообщение кандидата из истории
+      const lastCandidateMessage =
+        context.conversationHistory
+          .filter((msg) => msg.sender === "CANDIDATE")
+          .slice(-1)[0]?.content || "";
+
+      // ШАГ 1: Анализ контекста
+      const contextResult = await contextAnalyzer.execute(
         {
-          message: input.currentAnswer,
+          message: lastCandidateMessage,
+          previousMessages: context.conversationHistory,
+        },
+        context,
+      );
+
+      agentTrace.push({
+        agent: "ContextAnalyzer",
+        decision: contextResult.success
+          ? `type: ${contextResult.data?.messageType}`
+          : "failed",
+        timestamp: new Date(),
+      });
+
+      // Проверяем на простое подтверждение БЕЗ намерения продолжить
+      if (
+        contextResult.success &&
+        contextResult.data?.messageType === "ACKNOWLEDGMENT" &&
+        !contextResult.data.requiresResponse
+      ) {
+        return {
+          analysis: "Простое подтверждение, ответ не требуется",
+          shouldContinue: false,
+          isSimpleAcknowledgment: true,
+          messageType: "ACKNOWLEDGMENT",
+          agentTrace,
+        };
+      }
+
+      // CONTINUATION обрабатывается как обычный ответ - продолжаем интервью
+      // (не возвращаем раньше времени)
+
+      // ШАГ 2: Проверка эскалации (если это не простое подтверждение)
+      const escalationCheck = await escalationDetector.execute(
+        {
+          message: lastCandidateMessage,
           conversationLength: context.conversationHistory.length,
         },
         context,
@@ -101,52 +186,100 @@ export class InterviewOrchestrator {
         };
       }
 
-      // ШАГ 2: Генерация следующего вопроса
-      const interviewerInput: InterviewerInput = {
-        currentAnswer: input.currentAnswer,
-        currentQuestion: input.currentQuestion,
-        previousQA: input.previousQA,
-        questionNumber: input.questionNumber,
-        customInterviewQuestions: input.customInterviewQuestions,
-        resumeLanguage: input.resumeLanguage,
-      };
+      // ШАГ 3: Генерация ответа через Interviewer (с retry)
+      let interviewerResult:
+        | Awaited<ReturnType<typeof interviewer.execute>>
+        | undefined;
+      let lastError: string | undefined;
+      const maxRetries = 2;
 
-      const interviewResult = await this.interviewer.execute(
-        interviewerInput,
-        context,
-      );
+      // Логируем входные данные для Interviewer
+      console.log("[Orchestrator] Preparing Interviewer input:", {
+        questionNumber: input.questionNumber,
+        hasCustomOrganizationalQuestions: !!input.customOrganizationalQuestions,
+        hasCustomInterviewQuestions: !!input.customInterviewQuestions,
+        resumeLanguage: input.resumeLanguage,
+        conversationHistoryLength: context.conversationHistory?.length,
+      });
+
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        interviewerResult = await interviewer.execute(
+          {
+            ...input,
+          },
+          context,
+        );
+
+        if (interviewerResult.success && interviewerResult.data) {
+          break; // Успешно выполнено
+        }
+
+        lastError = interviewerResult.error || "Unknown error";
+
+        if (attempt < maxRetries) {
+          console.warn(
+            `[Orchestrator] Interviewer attempt ${attempt + 1} failed, retrying...`,
+            {
+              error: lastError,
+            },
+          );
+          // Небольшая задержка перед повторной попыткой
+          await new Promise((resolve) =>
+            setTimeout(resolve, 1000 * (attempt + 1)),
+          );
+        }
+      }
 
       agentTrace.push({
         agent: "Interviewer",
-        decision: interviewResult.success
-          ? `shouldContinue: ${interviewResult.data?.shouldContinue}`
-          : "failed",
+        decision: interviewerResult?.success
+          ? `shouldContinue: ${interviewerResult.data?.shouldContinue}`
+          : `failed: ${lastError}`,
         timestamp: new Date(),
       });
 
-      if (!interviewResult.success || !interviewResult.data) {
-        throw new Error("Interviewer agent failed");
+      if (!interviewerResult?.success || !interviewerResult?.data) {
+        throw new Error(
+          `Interviewer agent failed after ${maxRetries + 1} attempts: ${lastError}`,
+        );
       }
 
       return {
-        analysis: interviewResult.data.analysis,
-        shouldContinue: interviewResult.data.shouldContinue,
-        reason: interviewResult.data.reason,
-        nextQuestion: interviewResult.data.nextQuestion,
-        confidence: interviewResult.data.confidence,
-        waitingForCandidateResponse:
-          interviewResult.data.waitingForCandidateResponse,
-        isSimpleAcknowledgment: interviewResult.data.isSimpleAcknowledgment,
+        ...interviewerResult.data,
         agentTrace,
       };
     } catch (error) {
-      return {
-        analysis: "Ошибка при обработке",
+      const errorMessage = error instanceof Error ? error.message : "Unknown";
+
+      console.error("[Orchestrator] Critical error:", {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        agentTrace,
+      });
+
+      const output = {
+        analysis:
+          "Произошла техническая ошибка при обработке вашего ответа. Пожалуйста, попробуйте еще раз или свяжитесь с рекрутером напрямую.",
         shouldContinue: false,
         shouldEscalate: true,
-        escalationReason: `Error: ${error instanceof Error ? error.message : "Unknown"}`,
+        escalationReason: `Technical error: ${errorMessage}`,
         agentTrace,
       };
+
+      trace?.update({
+        output,
+        metadata: {
+          error: true,
+          errorMessage,
+          errorStack: error instanceof Error ? error.stack : undefined,
+          model: this.model,
+          agentTraceCount: agentTrace.length,
+        },
+      });
+
+      await this.langfuse.flushAsync();
+
+      return output;
     }
   }
 }

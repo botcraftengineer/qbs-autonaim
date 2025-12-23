@@ -22,6 +22,7 @@ import { Send, User } from "lucide-react";
 import Link from "next/link";
 import { ResponseActions } from "~/components/response";
 import { useAvatarUrl } from "~/hooks/use-avatar-url";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { ChatIndicator } from "./chat-indicator";
 import { ContactInfo } from "./contact-info";
 import { ScreenResponseButton } from "./screen-response-button";
@@ -42,21 +43,10 @@ export function ResponseRow({
   isSelected = false,
   onSelect,
 }: ResponseRowProps) {
-  const avatarUrl = useAvatarUrl(response.photoFileId);
-
-  // Генерируем инициалы из имени кандидата
-  const getInitials = (name: string | null) => {
-    if (!name) return null;
-    const parts = name.trim().split(/\s+/);
-    if (parts.length === 1) {
-      return parts[0]?.substring(0, 2).toUpperCase() ?? null;
-    }
-    return (
-      (parts[0]?.charAt(0) ?? "") + (parts[1]?.charAt(0) ?? "")
-    ).toUpperCase();
-  };
-
-  const initials = getInitials(response.candidateName);
+  const photoUrl = useAvatarUrl(response.photoFileId);
+  const candidateName = response.candidateName || "Кандидат";
+  const avatarUrl = getAvatarUrl(photoUrl, candidateName);
+  const initials = getInitials(candidateName);
 
   return (
     <TableRow>
@@ -73,10 +63,7 @@ export function ResponseRow({
       <TableCell>
         <div className="flex items-center gap-2">
           <Avatar className="h-10 w-10 border shrink-0">
-            <AvatarImage
-              src={avatarUrl ?? undefined}
-              alt={response.candidateName || "Кандидат"}
-            />
+            <AvatarImage src={avatarUrl} alt={candidateName} />
             <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
               {initials || <User className="h-5 w-5" />}
             </AvatarFallback>

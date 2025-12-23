@@ -19,6 +19,7 @@ import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
+import { getAvatarUrl } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
 
 interface GeneralTabProps {
@@ -164,7 +165,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
         <CardContent>
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={avatar || undefined} />
+              <AvatarImage src={getAvatarUrl(avatar, name)} />
               <AvatarFallback className="text-2xl">
                 {name?.charAt(0)?.toUpperCase() || "U"}
               </AvatarFallback>

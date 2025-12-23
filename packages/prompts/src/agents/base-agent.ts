@@ -2,14 +2,18 @@
  * Базовый класс для агентов на основе AI SDK 6 ToolLoopAgent
  */
 
-import type { LanguageModel } from "ai";
+import type { LanguageModel, ToolSet } from "ai";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
+import type { Langfuse } from "langfuse";
 import type { ZodType } from "zod";
 import type { AgentType } from "./types";
 
 export interface AgentConfig {
   model: LanguageModel;
   maxSteps?: number;
+  langfuse?: Langfuse;
+  traceId?: string;
+  tools?: ToolSet;
 }
 
 /**
@@ -19,6 +23,8 @@ export abstract class BaseAgent<TInput, TOutput> {
   protected readonly name: string;
   protected readonly type: AgentType;
   protected readonly agent: ToolLoopAgent;
+  protected readonly langfuse?: Langfuse;
+  protected readonly traceId?: string;
 
   constructor(
     name: string,
@@ -29,10 +35,13 @@ export abstract class BaseAgent<TInput, TOutput> {
   ) {
     this.name = name;
     this.type = type;
+    this.langfuse = config.langfuse;
+    this.traceId = config.traceId;
 
     this.agent = new ToolLoopAgent({
       model: config.model,
       instructions,
+      tools: config.tools,
       output: Output.object({
         schema: outputSchema,
       }),
@@ -48,21 +57,99 @@ export abstract class BaseAgent<TInput, TOutput> {
     context: unknown,
   ): Promise<{ success: boolean; data?: TOutput; error?: string }> {
     if (!this.validate(input)) {
+      console.error(`[${this.name}] Validation failed for input:`, {
+        inputKeys: Object.keys(input as object),
+        inputSample: JSON.stringify(input).substring(0, 500),
+      });
       return { success: false, error: "Некорректные входные данные" };
     }
 
+    const span = this.langfuse?.span({
+      traceId: this.traceId,
+      name: this.name,
+      input,
+      metadata: {
+        agentType: this.type,
+      },
+    });
+
     try {
       const prompt = this.buildPrompt(input, context);
+
+      // Логируем длину промпта и его содержимое для отладки
+      console.log(`[${this.name}] Executing agent:`, {
+        promptLength: prompt.length,
+        estimatedTokens: Math.ceil(prompt.length / 4),
+        promptPreview:
+          prompt.substring(0, 500) + (prompt.length > 500 ? "..." : ""),
+      });
+
+      // Логируем скомпилированный prompt в Langfuse
+      span?.update({
+        input: {
+          rawInput: input,
+          compiledPrompt: prompt,
+        },
+      });
+
       const result = await this.agent.generate({ prompt });
+
+      span?.end({
+        output: result.output,
+        metadata: {
+          success: true,
+          promptLength: prompt.length,
+        },
+      });
 
       return {
         success: true,
         data: result.output as TOutput,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Неизвестная ошибка";
+
+      // Извлекаем детали ошибки API
+      const apiError = error as any;
+      const responseBody = apiError?.responseBody;
+      const statusCode = apiError?.statusCode;
+      const requestId = apiError?.requestId;
+
+      // Логируем детальную информацию об ошибке
+      console.error(`[${this.name}] Agent execution failed:`, {
+        error: errorMessage,
+        stack: error instanceof Error ? error.stack : undefined,
+        agentType: this.type,
+        // API детали
+        statusCode,
+        requestId,
+        responseBody: responseBody ? JSON.stringify(responseBody) : undefined,
+        // Добавляем детали ошибки для отладки
+        errorDetails:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                cause: error.cause,
+              }
+            : error,
+      });
+
+      span?.end({
+        output: { error: errorMessage },
+        metadata: {
+          success: false,
+          error: errorMessage,
+          errorStack: error instanceof Error ? error.stack : undefined,
+          statusCode,
+          responseBody,
+        },
+      });
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Неизвестная ошибка",
+        error: errorMessage,
       };
     }
   }
