@@ -10,10 +10,7 @@ import {
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
-import {
-  InterviewCompletionAgent,
-  SalaryExtractionAgent,
-} from "@qbs-autonaim/prompts";
+import { AgentFactory } from "@qbs-autonaim/prompts";
 import {
   createInterviewScoring,
   getInterviewContext,
@@ -173,13 +170,15 @@ export const completeInterviewFunction = inngest.createFunction(
           .filter((msg) => msg.sender !== "ADMIN")
           .map((msg) => ({
             sender: msg.sender as "CANDIDATE" | "BOT",
-            content: msg.contentType === "VOICE" && msg.voiceTranscription 
-              ? msg.voiceTranscription 
-              : msg.content,
+            content:
+              msg.contentType === "VOICE" && msg.voiceTranscription
+                ? msg.voiceTranscription
+                : msg.content,
           }));
 
         const model = getAIModel();
-        const agent = new SalaryExtractionAgent({ model });
+        const factory = new AgentFactory({ model });
+        const agent = factory.createSalaryExtraction();
 
         const result = await agent.execute(
           { conversationHistory },
@@ -292,14 +291,16 @@ export const completeInterviewFunction = inngest.createFunction(
           .filter((msg) => msg.sender !== "ADMIN")
           .map((msg) => ({
             sender: msg.sender as "CANDIDATE" | "BOT",
-            content: msg.contentType === "VOICE" && msg.voiceTranscription 
-              ? msg.voiceTranscription 
-              : msg.content,
+            content:
+              msg.contentType === "VOICE" && msg.voiceTranscription
+                ? msg.voiceTranscription
+                : msg.content,
             contentType: msg.contentType,
           })) ?? [];
 
       const model = getAIModel();
-      const agent = new InterviewCompletionAgent({ model });
+      const factory = new AgentFactory({ model });
+      const agent = factory.createInterviewCompletion();
 
       const agentContext = {
         candidateName,

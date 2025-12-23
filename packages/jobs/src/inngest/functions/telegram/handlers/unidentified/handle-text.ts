@@ -1,5 +1,5 @@
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { ContextAnalyzerAgent } from "@qbs-autonaim/prompts";
+import { AgentFactory } from "@qbs-autonaim/prompts";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { createOrUpdateTempConversation, extractPinCode } from "../../utils";
@@ -73,9 +73,8 @@ export async function handleUnidentifiedText(params: {
   // Используем AI-агент для анализа сообщения
   try {
     const model = getAIModel();
-    const contextAnalyzer = new ContextAnalyzerAgent({
-      model,
-    });
+    const factory = new AgentFactory({ model });
+    const contextAnalyzer = factory.createContextAnalyzer();
 
     const analysisResult = await contextAnalyzer.execute(
       {

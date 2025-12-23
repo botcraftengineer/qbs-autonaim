@@ -2,12 +2,7 @@ import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
 import type { getInterviewStartData } from "@qbs-autonaim/lib";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import {
-  EscalationHandlerAgent,
-  GreetingDetectorAgent,
-  InterviewStartAgent,
-  PinHandlerAgent,
-} from "@qbs-autonaim/prompts";
+import { AgentFactory } from "@qbs-autonaim/prompts";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { inngest } from "../../client";
 import type { BotSettings, PromptStage } from "./types";
@@ -38,11 +33,12 @@ export async function generateAndSendBotResponse(params: {
   const conversationHistory = await getConversationHistory(conversationId);
   const vacancy = interviewData?.response.vacancy;
 
-  // Создаём AI модель
+  // Создаём AI модель и фабрику агентов
   const model = getAIModel();
+  const factory = new AgentFactory({ model });
 
   // Используем GreetingDetectorAgent для определения приветствия
-  const greetingDetector = new GreetingDetectorAgent({ model });
+  const greetingDetector = factory.createGreetingDetector();
   const greetingResult = await greetingDetector.execute(
     {
       conversationHistory: conversationHistory.map((msg) => ({
@@ -103,7 +99,7 @@ export async function generateAndSendBotResponse(params: {
   // Используем соответствующий агент в зависимости от этапа
   if (stage === "AWAITING_PIN" || stage === "INVALID_PIN") {
     // PIN Handler - только для валидации PIN
-    const pinHandler = new PinHandlerAgent({ model });
+    const pinHandler = factory.createPinHandler();
 
     const result = await pinHandler.execute(
       {
@@ -123,7 +119,7 @@ export async function generateAndSendBotResponse(params: {
     }
   } else if (stage === "PIN_RECEIVED") {
     // Interview Start Agent - начало интервью с организационными вопросами
-    const interviewStart = new InterviewStartAgent({ model });
+    const interviewStart = factory.createInterviewStart();
 
     const result = await interviewStart.execute(
       {
@@ -141,7 +137,7 @@ export async function generateAndSendBotResponse(params: {
     }
   } else {
     // Для других этапов (например, ESCALATED) используем EscalationHandlerAgent
-    const escalationHandler = new EscalationHandlerAgent({ model });
+    const escalationHandler = factory.createEscalationHandler();
 
     const result = await escalationHandler.execute(
       {

@@ -1,13 +1,8 @@
-import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import {
-  InterviewOrchestrator,
-  InterviewScoringAgent,
-} from "@qbs-autonaim/prompts";
-import { Langfuse } from "langfuse";
+import { AgentFactory, InterviewOrchestrator } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import type {
   InterviewAnalysis,
@@ -16,12 +11,6 @@ import type {
 import { createLogger, INTERVIEW } from "../base";
 
 const logger = createLogger("Interview");
-
-const langfuse = new Langfuse({
-  secretKey: env.LANGFUSE_SECRET_KEY,
-  publicKey: env.LANGFUSE_PUBLIC_KEY,
-  baseUrl: env.LANGFUSE_BASE_URL,
-});
 
 // ==================== TYPES ====================
 
@@ -116,7 +105,7 @@ export async function analyzeAndGenerateNextQuestion(
 
   // Создаем оркестратор
   const model = createAgentModel();
-  const orchestrator = new InterviewOrchestrator({ model, langfuse });
+  const orchestrator = new InterviewOrchestrator({ model });
 
   // Формируем контекст для агентов
   const agentContext = {
@@ -314,7 +303,8 @@ export async function createInterviewScoring(
 
   // Создаем агента
   const model = createAgentModel();
-  const agent = new InterviewScoringAgent({ model });
+  const factory = new AgentFactory({ model });
+  const agent = factory.createInterviewScoring();
 
   // Формируем контекст для агента
   const agentContext = {

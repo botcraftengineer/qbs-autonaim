@@ -4,10 +4,8 @@
  */
 
 import type { LanguageModel } from "ai";
-import type { Langfuse } from "langfuse";
-import { ContextAnalyzerAgent } from "./context-analyzer";
-import { EscalationDetectorAgent } from "./escalation-detector";
-import { InterviewerAgent } from "./interviewer";
+import { Langfuse } from "langfuse";
+import { AgentFactory } from "./agent-factory";
 import type { BaseAgentContext } from "./types";
 
 export interface OrchestratorInput {
@@ -44,6 +42,33 @@ export interface OrchestratorConfig {
   langfuse?: Langfuse;
 }
 
+let globalLangfuse: Langfuse | null = null;
+
+/**
+ * Получает или создает singleton инстанс Langfuse для оркестратора
+ */
+function getLangfuseInstance(): Langfuse {
+  if (!globalLangfuse) {
+    const secretKey = process.env.LANGFUSE_SECRET_KEY;
+    const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
+    const baseUrl = process.env.LANGFUSE_BASE_URL;
+
+    if (!secretKey || !publicKey) {
+      throw new Error(
+        "LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY must be set in environment variables",
+      );
+    }
+
+    globalLangfuse = new Langfuse({
+      secretKey,
+      publicKey,
+      baseUrl,
+    });
+  }
+
+  return globalLangfuse;
+}
+
 /**
  * Orchestrator-Worker pattern:
  * - Orchestrator координирует выполнение
@@ -52,12 +77,12 @@ export interface OrchestratorConfig {
 export class InterviewOrchestrator {
   private model: LanguageModel;
   private maxSteps: number;
-  private langfuse?: Langfuse;
+  private langfuse: Langfuse;
 
   constructor(config: OrchestratorConfig) {
     this.model = config.model;
     this.maxSteps = config.maxSteps || 10;
-    this.langfuse = config.langfuse;
+    this.langfuse = config.langfuse || getLangfuseInstance();
   }
 
   async execute(
@@ -66,7 +91,7 @@ export class InterviewOrchestrator {
   ): Promise<OrchestratorOutput> {
     const agentTrace: OrchestratorOutput["agentTrace"] = [];
 
-    const trace = this.langfuse?.trace({
+    const trace = this.langfuse.trace({
       name: "interview-orchestrator",
       userId: context.candidateId,
       metadata: {
@@ -79,24 +104,17 @@ export class InterviewOrchestrator {
 
     const traceId = trace?.id;
 
-    // Инициализация агентов
-    const contextAnalyzer = new ContextAnalyzerAgent({
+    // Инициализация агентов через фабрику
+    const factory = new AgentFactory({
       model: this.model,
-      traceId,
       langfuse: this.langfuse,
+      traceId,
+      maxSteps: this.maxSteps,
     });
 
-    const escalationDetector = new EscalationDetectorAgent({
-      model: this.model,
-      traceId,
-      langfuse: this.langfuse,
-    });
-
-    const interviewer = new InterviewerAgent({
-      model: this.model,
-      traceId,
-      langfuse: this.langfuse,
-    });
+    const contextAnalyzer = factory.createContextAnalyzer();
+    const escalationDetector = factory.createEscalationDetector();
+    const interviewer = factory.createInterviewer();
 
     try {
       // ШАГ 1: Анализ контекста
@@ -202,7 +220,7 @@ export class InterviewOrchestrator {
         },
       });
 
-      await this.langfuse?.flushAsync();
+      await this.langfuse.flushAsync();
 
       return output;
     }

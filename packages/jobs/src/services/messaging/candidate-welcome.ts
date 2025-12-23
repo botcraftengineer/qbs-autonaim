@@ -7,7 +7,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { buildTelegramInvitePrompt, WelcomeAgent } from "@qbs-autonaim/prompts";
+import { AgentFactory, buildTelegramInvitePrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { createLogger, err, type Result, tryCatch } from "../base";
 
@@ -59,7 +59,8 @@ export async function generateWelcomeMessage(
 
   const aiResult = await tryCatch(async () => {
     const model = getAIModel();
-    const welcomeAgent = new WelcomeAgent({ model });
+    const factory = new AgentFactory({ model });
+    const welcomeAgent = factory.createWelcome();
 
     const result = await welcomeAgent.execute(
       {

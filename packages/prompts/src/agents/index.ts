@@ -2,6 +2,11 @@
  * AI SDK 6 Agents
  */
 
+// Factory
+export {
+  AgentFactory,
+  type AgentFactoryConfig,
+} from "./agent-factory";
 // Base
 export { type AgentConfig, BaseAgent } from "./base-agent";
 
