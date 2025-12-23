@@ -89,10 +89,9 @@ export class InterviewCompletionAgent extends BaseAgent<
         ? `\nОценка интервью: ${input.score}/5${input.detailedScore !== undefined ? ` (${input.detailedScore}/100)` : ""}`
         : "";
 
-    const recentHistory = conversationHistory.slice(-10);
     const historyText =
-      recentHistory.length > 0
-        ? recentHistory
+      conversationHistory.length > 0
+        ? conversationHistory
             .map((msg) => {
               const sender = msg.sender === "CANDIDATE" ? "Кандидат" : "Бот";
               return `${sender}: ${msg.content}`;
@@ -102,7 +101,7 @@ export class InterviewCompletionAgent extends BaseAgent<
 
     return `${languageInstruction}
 
-${historyText ? `ИСТОРИЯ ДИАЛОГА (последние сообщения для контекста):\n${historyText}\n` : ""}
+${historyText ? `ИСТОРИЯ ДИАЛОГА:\n${historyText}\n` : ""}
 
 КОНТЕКСТ:
 ${candidateNameText}

@@ -76,7 +76,6 @@ export class EscalationHandlerAgent extends BaseAgent<
     const historyText =
       context.conversationHistory.length > 0
         ? `ИСТОРИЯ ДИАЛОГА (для контекста):\n${context.conversationHistory
-            .slice(-5)
             .map(
               (msg) =>
                 `${msg.sender === "CANDIDATE" ? "Кандидат" : "Ты"}: ${msg.content}`,

@@ -93,26 +93,21 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
     const botRole = context.companySettings?.botRole || "рекрутер";
     const companyName = context.companySettings?.name || "";
 
-    // Оптимизация: берем только последние 5 сообщений и обрезаем длинные
-    const recentHistory = context.conversationHistory.slice(-5);
+    // Передаём полную историю диалога без обрезки
     const historyText =
-      recentHistory.length > 0
-        ? recentHistory
+      context.conversationHistory.length > 0
+        ? context.conversationHistory
             .map((msg) => {
               const sender = msg.sender === "CANDIDATE" ? "К" : "Я";
-              const content =
-                msg.content.length > 200
-                  ? `${msg.content.substring(0, 200)}...`
-                  : msg.content;
-              return `${sender}: ${content}`;
+              return `${sender}: ${msg.content}`;
             })
             .join("\n")
         : "";
 
-    // Оптимизация: обрезаем длинные кастомные вопросы
+    // Передаём кастомные вопросы без обрезки
     const organizationalQuestionsBlock = input.customOrganizationalQuestions
       ? wrapUserContent(
-          input.customOrganizationalQuestions.substring(0, 500),
+          input.customOrganizationalQuestions,
           "organizational-questions",
           "ОРГАНИЗАЦИОННЫЕ ТЕМЫ:",
         )
@@ -120,16 +115,14 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
 
     const technicalQuestionsBlock = input.customInterviewQuestions
       ? wrapUserContent(
-          input.customInterviewQuestions.substring(0, 500),
+          input.customInterviewQuestions,
           "technical-questions",
           "ТЕХНИЧЕСКИЕ ТЕМЫ:",
         )
       : "";
 
-    // Оптимизация: обрезаем описание вакансии
-    const shortVacancyDesc = vacancyDescription
-      ? `${vacancyDescription.substring(0, 300)}${vacancyDescription.length > 300 ? "..." : ""}`
-      : "";
+    // Передаём описание вакансии без обрезки
+    const shortVacancyDesc = vacancyDescription || "";
 
     return `КОНТЕКСТ:
 Язык резюме: <resume_language>${resumeLanguage}</resume_language>

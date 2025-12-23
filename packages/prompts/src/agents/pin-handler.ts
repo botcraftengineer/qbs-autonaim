@@ -60,7 +60,6 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
     const historyText =
       context.conversationHistory.length > 0
         ? context.conversationHistory
-            .slice(-5)
             .map(
               (msg) =>
                 `${msg.sender === "CANDIDATE" ? "Кандидат" : "Я"}: ${msg.content}`,
