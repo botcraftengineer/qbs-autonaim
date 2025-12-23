@@ -66,26 +66,26 @@
   - **Property 2: Organization Slug Uniqueness**
   - **Validates: Requirements 1.5, 2.4**
 
-- [ ] 2. Repository Layer
-  - [ ] 2.1 Создать OrganizationRepository
+- [x] 2. Repository Layer
+  - [x] 2.1 Создать OrganizationRepository
     - Создать `packages/db/src/repositories/organization.repository.ts`
     - Реализовать CRUD методы: create, findById, findBySlug, update, delete
     - Реализовать методы для участников: addMember, removeMember, updateMemberRole, getMembers
     - Реализовать checkAccess для проверки прав доступа
     - _Requirements: 4.3, 4.4, 4.5, 5.4_
   
-  - [ ] 2.2 Добавить методы для приглашений в OrganizationRepository
+  - [x] 2.2 Добавить методы для приглашений в OrganizationRepository
     - Методы: createInvite, getInviteByToken, getPendingInvites, deleteInvite
     - Генерация уникального токена с помощью nanoid
     - Проверка дубликатов приглашений
     - _Requirements: 8.1, 8.2, 8.6_
   
-  - [ ] 2.3 Добавить методы для воркспейсов в OrganizationRepository
+  - [x] 2.3 Добавить методы для воркспейсов в OrganizationRepository
     - Методы: getWorkspaces, getWorkspaceBySlug
     - Валидация связи workspace ↔ organization
     - _Requirements: 3.3, 6.2_
   
-  - [ ] 2.4 Обновить WorkspaceRepository
+  - [x] 2.4 Обновить WorkspaceRepository
     - Добавить параметр organizationId в метод create
     - Обновить методы для работы с organizationId
     - Добавить валидацию organizationId при создании
@@ -105,8 +105,8 @@
   - **Property 7: Cascade Member Removal**
   - **Validates: Requirements 4.6**
 
-- [ ] 3. Validators
-  - [ ] 3.1 Создать Zod схемы для организаций
+- [x] 3. Validators
+  - [x] 3.1 Создать Zod схемы для организаций
     - Создать `packages/validators/src/organization.ts`
     - Схемы: createOrganizationSchema, updateOrganizationSchema
     - Валидация name (1-100 символов)
@@ -114,13 +114,13 @@
     - Валидация website (URL format)
     - _Requirements: 10.1, 10.2, 10.3_
   
-  - [ ] 3.2 Создать Zod схемы для приглашений
+  - [x] 3.2 Создать Zod схемы для приглашений
     - Схемы: inviteToOrganizationSchema, updateMemberRoleSchema
     - Валидация email
     - Валидация role enum
     - _Requirements: 8.1_
   
-  - [ ] 3.3 Экспортировать validators
+  - [x] 3.3 Экспортировать validators
     - Добавить exports в `packages/validators/src/index.ts`
     - _Requirements: 10.1_
 
@@ -128,7 +128,7 @@
   - **Property 12: Input Validation**
   - **Validates: Requirements 10.1, 10.2, 10.3**
 
-- [ ] 4. Checkpoint - Database & Repository Layer Complete
+- [-] 4. Checkpoint - Database & Repository Layer Complete
   - Убедиться что все схемы созданы и экспортированы
   - Убедиться что repository методы работают корректно
   - Спросить пользователя если возникли вопросы
