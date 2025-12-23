@@ -18,9 +18,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
 
-export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
+export function ChatList() {
+  const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const trpc = useTRPC();
   const { workspace } = useWorkspace();
   const pathname = usePathname();
@@ -158,7 +160,8 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
             const lastMessage = conversation.messages[0];
 
             const isActive =
-              pathname === `/${workspaceSlug}/chat/${conversation.id}`;
+              pathname ===
+              `/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${conversation.id}`;
 
             let vacancyTitle = null;
             if (conversation.metadata) {
@@ -176,7 +179,7 @@ export function ChatList({ workspaceSlug }: { workspaceSlug: string }) {
             return (
               <Link
                 key={conversation.id}
-                href={`/${workspaceSlug}/chat/${conversation.id}`}
+                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${conversation.id}`}
               >
                 <div
                   className={`flex items-start gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b ${

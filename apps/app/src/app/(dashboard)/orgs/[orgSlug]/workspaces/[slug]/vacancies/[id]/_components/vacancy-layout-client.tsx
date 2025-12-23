@@ -17,12 +17,14 @@ import { useTRPC } from "~/trpc/react";
 
 interface VacancyLayoutClientProps {
   children: React.ReactNode;
+  orgSlug: string;
   workspaceSlug: string;
   vacancyId: string;
 }
 
 export function VacancyLayoutClient({
   children,
+  orgSlug,
   workspaceSlug,
   vacancyId,
 }: VacancyLayoutClientProps) {
@@ -148,7 +150,9 @@ export function VacancyLayoutClient({
                   className="min-h-[44px] md:min-h-0"
                   asChild
                 >
-                  <Link href={`/${workspaceSlug}/vacancies`}>
+                  <Link
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+                  >
                     <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">Назад к списку</span>
                     <span className="sm:hidden">Назад</span>
@@ -164,7 +168,9 @@ export function VacancyLayoutClient({
                       asChild
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
                     >
-                      <Link href={`/${workspaceSlug}/vacancies/${vacancyId}`}>
+                      <Link
+                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}`}
+                      >
                         <span className="hidden sm:inline">
                           Отклики ({responsesCount?.total ?? 0})
                         </span>
@@ -177,7 +183,7 @@ export function VacancyLayoutClient({
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
                     >
                       <Link
-                        href={`/${workspaceSlug}/vacancies/${vacancyId}/detail`}
+                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}/detail`}
                       >
                         Обзор
                       </Link>
@@ -188,7 +194,7 @@ export function VacancyLayoutClient({
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
                     >
                       <Link
-                        href={`/${workspaceSlug}/vacancies/${vacancyId}/settings`}
+                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}/settings`}
                       >
                         Настройки
                       </Link>

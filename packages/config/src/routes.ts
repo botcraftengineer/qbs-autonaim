@@ -25,18 +25,29 @@ export const paths = {
     settings: `${ROOTS.ACCOUNT}/settings`,
   },
   workspace: {
-    root: (slug: string) => `/${slug}`,
-    candidates: (slug: string) => `/${slug}/candidates`,
-    chat: (slug: string, candidateId?: string) =>
-      candidateId ? `/${slug}/chat/${candidateId}` : `/${slug}/chat`,
-    funnel: (slug: string) => `/${slug}/funnel`,
-    responses: (slug: string, responseId?: string) =>
-      responseId ? `/${slug}/responses/${responseId}` : `/${slug}/responses`,
-    vacancies: (slug: string, vacancyId?: string) =>
-      vacancyId ? `/${slug}/vacancies/${vacancyId}` : `/${slug}/vacancies`,
+    root: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}`,
+    candidates: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}/candidates`,
+    chat: (orgSlug: string, slug: string, candidateId?: string) =>
+      candidateId
+        ? `/orgs/${orgSlug}/workspaces/${slug}/chat/${candidateId}`
+        : `/orgs/${orgSlug}/workspaces/${slug}/chat`,
+    funnel: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}/funnel`,
+    responses: (orgSlug: string, slug: string, responseId?: string) =>
+      responseId
+        ? `/orgs/${orgSlug}/workspaces/${slug}/responses/${responseId}`
+        : `/orgs/${orgSlug}/workspaces/${slug}/responses`,
+    vacancies: (orgSlug: string, slug: string, vacancyId?: string) =>
+      vacancyId
+        ? `/orgs/${orgSlug}/workspaces/${slug}/vacancies/${vacancyId}`
+        : `/orgs/${orgSlug}/workspaces/${slug}/vacancies`,
     settings: {
-      root: (slug: string) => `/${slug}/settings`,
-      members: (slug: string) => `/${slug}/settings/members`,
+      root: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings`,
+      members: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings/members`,
     },
   },
   onboarding: {

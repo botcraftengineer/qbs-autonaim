@@ -284,41 +284,41 @@
     - Защита от удаления последнего owner
     - _Requirements: 4.5, 5.1, 5.2_
   
-  - [ ] 11.3 Создать компонент InviteMemberDialog
+  - [x] 11.3 Создать компонент InviteMemberDialog
     - Создать `apps/app/components/invite-member-dialog.tsx`
     - Форма с полями: email, role
     - Валидация email
     - Отображение ошибки при дубликате
     - _Requirements: 8.1, 8.6_
   
-  - [ ] 11.4 Создать страницу Invitations
+  - [x] 11.4 Создать страницу Invitations
     - Создать `apps/app/app/orgs/[orgSlug]/settings/invitations/page.tsx`
     - Список активных приглашений
     - Кнопка отмены приглашения
     - Отображение срока действия
     - _Requirements: 8.1_
   
-  - [ ] 11.5 Создать страницу Danger Zone
+  - [x] 11.5 Создать страницу Danger Zone
     - Добавить секцию в settings для удаления организации
     - Подтверждение с вводом названия организации
     - Предупреждение о каскадном удалении
     - _Requirements: 3.2_
 
-- [ ] 12. UI Components - Workspace List
-  - [ ] 12.1 Создать страницу списка workspaces
+- [x] 12. UI Components - Workspace List
+  - [x] 12.1 Создать страницу списка workspaces
     - Создать `apps/app/app/orgs/[orgSlug]/workspaces/page.tsx`
     - Grid view с карточками workspaces
     - Кнопка создания нового workspace
     - Поиск и фильтрация
     - _Requirements: 3.4, 6.1_
   
-  - [ ] 12.2 Создать CreateWorkspaceDialog
+  - [x] 12.2 Создать CreateWorkspaceDialog
     - Создать `apps/app/components/create-workspace-dialog.tsx`
     - Форма с полями: name, slug, description
     - Валидация уникальности slug в рамках организации
     - _Requirements: 3.1_
   
-  - [ ] 12.3 Обновить workspace страницы для новой URL структуры
+  - [x] 12.3 Обновить workspace страницы для новой URL структуры
     - Изменить пути с `/workspaces/[slug]` на `/orgs/[orgSlug]/workspaces/[slug]`
     - Обновить все ссылки и навигацию
     - _Requirements: 6.1_

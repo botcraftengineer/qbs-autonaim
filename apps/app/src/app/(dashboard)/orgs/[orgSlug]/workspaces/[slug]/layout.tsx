@@ -9,7 +9,7 @@ export default async function WorkspaceLayout({
   params,
 }: {
   children: ReactNode;
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ orgSlug: string; slug: string }>;
 }) {
   const session = await getSession();
 
@@ -17,17 +17,23 @@ export default async function WorkspaceLayout({
     redirect("/auth/signin");
   }
 
-  const { workspaceSlug } = await params;
+  const { orgSlug, slug } = await params;
 
-  // Получаем workspaces пользователя
+  // Получаем организацию и проверяем доступ
   const caller = await api();
-  const userWorkspaces = await caller.workspace.list();
+  const organization = await caller.organization.getBySlug({ slug: orgSlug });
 
-  // Находим workspace по slug
-  const currentWorkspace = userWorkspaces.find(
-    (uw) => uw.workspace.slug === workspaceSlug,
-  );
-  if (!currentWorkspace) {
+  if (!organization) {
+    notFound();
+  }
+
+  // Получаем workspace по slug в рамках организации
+  const workspace = await caller.organization.workspaces.getBySlug({
+    organizationId: organization.id,
+    slug,
+  });
+
+  if (!workspace) {
     notFound();
   }
 

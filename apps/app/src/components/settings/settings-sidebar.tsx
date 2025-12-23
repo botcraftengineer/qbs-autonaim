@@ -4,6 +4,7 @@ import { cn } from "@qbs-autonaim/ui";
 import { Building2, Globe, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 
 const sidebarNavItems = [
   {
@@ -28,13 +29,16 @@ const sidebarNavItems = [
   },
 ];
 
-export function SettingsSidebar({ workspaceSlug }: { workspaceSlug: string }) {
+export function SettingsSidebar() {
   const pathname = usePathname();
+  const { orgSlug, slug } = useWorkspaceParams();
+
+  if (!orgSlug || !slug) return null;
 
   return (
     <nav className="flex flex-col space-y-1">
       {sidebarNavItems.map((item) => {
-        const href = `/${workspaceSlug}${item.href}`;
+        const href = `/orgs/${orgSlug}/workspaces/${slug}${item.href}`;
         return (
           <Link
             key={item.href}

@@ -7,9 +7,9 @@ export default async function SettingsLayout({
   params,
 }: {
   children: ReactNode;
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ orgSlug: string; slug: string }>;
 }) {
-  const { workspaceSlug } = await params;
+  const { orgSlug, slug } = await params;
 
   return (
     <>
@@ -24,7 +24,7 @@ export default async function SettingsLayout({
         <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row">
           <aside className="lg:w-[240px] shrink-0">
             <div className="rounded-lg border p-2">
-              <SettingsSidebar workspaceSlug={workspaceSlug} />
+              <SettingsSidebar />
             </div>
           </aside>
           <div className="flex-1">{children}</div>

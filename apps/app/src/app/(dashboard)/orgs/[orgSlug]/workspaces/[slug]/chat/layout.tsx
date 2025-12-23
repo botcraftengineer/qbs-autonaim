@@ -10,12 +10,12 @@ export default function ChatLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ orgSlug: string; slug: string }>;
 }) {
   const pathname = usePathname();
-  const { workspaceSlug } = use(params);
+  const { orgSlug, slug } = use(params);
 
-  // Check if pathname matches pattern: /[workspaceSlug]/chat/[responseId]
+  // Check if pathname matches pattern: /orgs/[orgSlug]/workspaces/[slug]/chat/[responseId]
   // A chat is selected when there's a non-empty segment after /chat/
   const chatSegmentMatch = pathname.match(/\/chat\/([^/]+)/);
   const isChatSelected = Boolean(chatSegmentMatch?.[1]);
@@ -29,7 +29,7 @@ export default function ChatLayout({
             isChatSelected ? "hidden md:block" : "block"
           } w-full md:w-80 border-r h-full overflow-hidden`}
         >
-          <ChatList workspaceSlug={workspaceSlug} />
+          <ChatList />
         </div>
         <div
           className={`${

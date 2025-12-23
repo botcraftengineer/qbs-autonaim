@@ -33,6 +33,7 @@ type WorkspaceWithRole = {
   role: "owner" | "admin" | "member";
   memberCount?: number;
   plan?: string;
+  organizationSlug: string;
 };
 
 export function WorkspaceSwitcher({
@@ -57,7 +58,9 @@ export function WorkspaceSwitcher({
   const handleWorkspaceChange = (workspace: WorkspaceWithRole) => {
     setActiveWorkspace(workspace);
     onWorkspaceChange?.(workspace.id);
-    router.push(paths.workspace.root(workspace.slug));
+    router.push(
+      paths.workspace.root(workspace.organizationSlug, workspace.slug),
+    );
   };
 
   const getRoleLabel = (role: string) => {
@@ -139,7 +142,10 @@ export function WorkspaceSwitcher({
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
                     router.push(
-                      paths.workspace.settings.root(activeWorkspace.slug),
+                      paths.workspace.settings.root(
+                        activeWorkspace.organizationSlug,
+                        activeWorkspace.slug,
+                      ),
                     )
                   }
                 >
@@ -150,7 +156,10 @@ export function WorkspaceSwitcher({
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() =>
                     router.push(
-                      paths.workspace.settings.members(activeWorkspace.slug),
+                      paths.workspace.settings.members(
+                        activeWorkspace.organizationSlug,
+                        activeWorkspace.slug,
+                      ),
                     )
                   }
                 >

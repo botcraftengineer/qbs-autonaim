@@ -27,11 +27,11 @@ import { triggerUpdateVacancies } from "~/actions/trigger";
 import { SiteHeader } from "~/components/layout";
 import { VacancyStats } from "~/components/vacancies";
 import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
 
 export default function VacanciesPage() {
-  const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const trpc = useTRPC();
   const { workspace } = useWorkspace();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -332,7 +332,7 @@ export default function VacanciesPage() {
                         >
                           <TableCell>
                             <Link
-                              href={`/${workspaceSlug}/vacancies/${vacancy.id}`}
+                              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`}
                               className="font-medium hover:underline"
                             >
                               {vacancy.title}
@@ -357,7 +357,7 @@ export default function VacanciesPage() {
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             <Link
-                              href={`/${workspaceSlug}/vacancies/${vacancy.id}`}
+                              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`}
                               className="font-medium hover:underline text-primary"
                             >
                               {vacancy.realResponsesCount ?? 0}

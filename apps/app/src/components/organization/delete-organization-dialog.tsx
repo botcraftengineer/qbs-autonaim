@@ -1,26 +1,27 @@
 "use client";
 
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
+  Alert,
+  AlertDescription,
+  AlertTitle,
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
   Input,
   Label,
 } from "@qbs-autonaim/ui";
 import { AlertTriangle } from "lucide-react";
-import { useState } from "react";
+import * as React from "react";
 
 interface DeleteOrganizationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   organizationName: string;
   onConfirm: () => void;
-  isDeleting?: boolean;
+  isDeleting: boolean;
 }
 
 export function DeleteOrganizationDialog({
@@ -28,86 +29,96 @@ export function DeleteOrganizationDialog({
   onOpenChange,
   organizationName,
   onConfirm,
-  isDeleting = false,
+  isDeleting,
 }: DeleteOrganizationDialogProps) {
-  const [nameInput, setNameInput] = useState("");
+  const [confirmText, setConfirmText] = React.useState("");
+  const isConfirmValid = confirmText === organizationName;
 
-  const isNameValid = nameInput === organizationName;
-  const canDelete = isNameValid && !isDeleting;
+  const handleOpenChange = (newOpen: boolean) => {
+    onOpenChange(newOpen);
+    if (!newOpen) {
+      setConfirmText("");
+    }
+  };
 
   const handleConfirm = () => {
-    if (canDelete) {
+    if (isConfirmValid) {
       onConfirm();
     }
   };
 
-  const handleOpenChange = (newOpen: boolean) => {
-    if (!isDeleting) {
-      onOpenChange(newOpen);
-      if (!newOpen) {
-        setNameInput("");
-      }
-    }
-  };
-
   return (
-    <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className="max-w-lg">
-        <AlertDialogHeader>
-          <div className="flex items-center justify-center mb-4">
-            <div className="rounded-full bg-destructive/10 p-3">
-              <AlertTriangle className="h-6 w-6 text-destructive" />
-            </div>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[540px]">
+        <DialogHeader className="text-center">
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-destructive/10">
+            <AlertTriangle className="size-6 text-destructive" />
           </div>
-          <AlertDialogTitle className="text-center text-xl">
-            Удалить организацию
-          </AlertDialogTitle>
-          <AlertDialogDescription className="text-center text-muted-foreground">
-            Внимание: Это безвозвратно удалит вашу организацию, все рабочие
-            пространства, интеграции, вакансии и отклики кандидатов.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          <DialogTitle className="text-2xl">Удалить организацию</DialogTitle>
+          <DialogDescription>
+            Это действие нельзя отменить. Пожалуйста, подтвердите удаление.
+          </DialogDescription>
+        </DialogHeader>
 
-        <div className="space-y-4 py-4">
+        <div className="space-y-6">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Предупреждение о каскадном удалении</AlertTitle>
+            <AlertDescription>
+              <p className="mb-2">
+                Удаление организации приведет к безвозвратному удалению:
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Всех рабочих пространств организации</li>
+                <li>Всех интеграций и настроек</li>
+                <li>Всех вакансий и откликов кандидатов</li>
+                <li>Всех данных и файлов</li>
+              </ul>
+            </AlertDescription>
+          </Alert>
+
           <div className="space-y-2">
-            <Label htmlFor="name-input" className="text-sm font-medium">
-              Введите название организации{" "}
-              <span className="font-semibold">{organizationName}</span> для
-              продолжения:
+            <Label htmlFor="confirm-name">
+              Введите <span className="font-semibold">{organizationName}</span>{" "}
+              для подтверждения
             </Label>
             <Input
-              id="name-input"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
+              id="confirm-name"
+              type="text"
               placeholder={organizationName}
+              value={confirmText}
+              onChange={(e) => setConfirmText(e.target.value)}
               disabled={isDeleting}
-              className={
-                nameInput && !isNameValid
-                  ? "border-destructive focus-visible:ring-destructive"
-                  : ""
-              }
+              autoComplete="off"
+              className="font-mono"
             />
+            <p className="text-xs text-muted-foreground">
+              Название должно совпадать точно, включая регистр букв
+            </p>
+          </div>
+
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              onClick={() => handleOpenChange(false)}
+              disabled={isDeleting}
+            >
+              Отмена
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              className="flex-1"
+              onClick={handleConfirm}
+              disabled={!isConfirmValid || isDeleting}
+            >
+              {isDeleting ? "Удаление…" : "Удалить организацию"}
+            </Button>
           </div>
         </div>
-
-        <AlertDialogFooter className="flex-col sm:flex-col gap-2">
-          <Button
-            variant="destructive"
-            onClick={handleConfirm}
-            disabled={!canDelete}
-            className="w-full"
-          >
-            {isDeleting ? "Удаление…" : "Подтвердить удаление"}
-          </Button>
-          <AlertDialogCancel
-            disabled={isDeleting}
-            className="w-full mt-0"
-            onClick={() => handleOpenChange(false)}
-          >
-            Отмена
-          </AlertDialogCancel>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      </DialogContent>
+    </Dialog>
   );
 }

@@ -16,13 +16,13 @@ import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface ResponseDetailPageProps {
-  params: Promise<{ workspaceSlug: string; id: string }>;
+  params: Promise<{ orgSlug: string; slug: string; id: string }>;
 }
 
 export default function ResponseDetailPage({
   params,
 }: ResponseDetailPageProps) {
-  const { workspaceSlug, id } = use(params);
+  const { orgSlug, slug: workspaceSlug, id } = use(params);
   const trpc = useTRPC();
   const { workspaceId } = useWorkspaceContext();
 
@@ -89,14 +89,16 @@ export default function ResponseDetailPage({
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
               <div className="mb-6 flex items-center justify-between gap-4">
-                <Link href={`/${workspaceSlug}`}>
+                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}`}>
                   <Button variant="ghost" size="sm">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Назад
                   </Button>
                 </Link>
                 {response.conversation && (
-                  <Link href={`/${workspaceSlug}/chat/${id}`}>
+                  <Link
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${id}`}
+                  >
                     <Button variant="default" size="sm">
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Открыть чат

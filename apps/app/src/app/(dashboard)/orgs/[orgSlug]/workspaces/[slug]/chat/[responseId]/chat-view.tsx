@@ -21,13 +21,13 @@ import { ChatLoading } from "~/components/chat/chat-loading";
 import { ChatMessages } from "~/components/chat/chat-messages";
 import { ChatSidebar } from "~/components/chat/sidebar/chat-sidebar";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
+import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
 
 export function ChatView({ conversationId }: { conversationId: string }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const { workspaceId, workspace } = useWorkspaceContext();
   const [transcribingMessageId, setTranscribingMessageId] = useState<
     string | null
@@ -185,7 +185,10 @@ export function ChatView({ conversationId }: { conversationId: string }) {
         <div className="shrink-0">
           <div className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="flex items-center gap-3 px-4 py-3">
-              <Link href={`/${workspaceSlug}/chat`} className="md:hidden">
+              <Link
+                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat`}
+                className="md:hidden"
+              >
                 <Button variant="ghost" size="icon" className="h-9 w-9">
                   <ArrowLeft className="h-5 w-5" />
                 </Button>
