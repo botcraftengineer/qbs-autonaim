@@ -128,38 +128,38 @@
   - **Property 12: Input Validation**
   - **Validates: Requirements 10.1, 10.2, 10.3**
 
-- [-] 4. Checkpoint - Database & Repository Layer Complete
-  - Убедиться что все схемы созданы и экспортированы
-  - Убедиться что repository методы работают корректно
-  - Спросить пользователя если возникли вопросы
+- [x] 4. Checkpoint - Database & Repository Layer Complete
+  - [x] Убедиться что все схемы созданы и экспортированы
+  - [x] Убедиться что repository методы работают корректно
+  - [x] Спросить пользователя если возникли вопросы
 
-- [ ] 5. API Endpoints - Organization Management
-  - [ ] 5.1 Создать POST /api/organizations
+- [x] 5. API Endpoints - Organization Management
+  - [x] 5.1 Создать POST /api/organizations
     - Создать `packages/api/src/routes/organizations/create.ts`
     - Валидация с помощью createOrganizationSchema
     - Проверка уникальности slug
     - Автоматическое добавление создателя как owner
     - _Requirements: 1.1, 1.5_
   
-  - [ ] 5.2 Создать GET /api/organizations
+  - [x] 5.2 Создать GET /api/organizations
     - Создать `packages/api/src/routes/organizations/list.ts`
     - Получение всех организаций текущего пользователя
     - Включить информацию о роли пользователя
     - _Requirements: 9.1_
   
-  - [ ] 5.3 Создать GET /api/organizations/:orgId
+  - [x] 5.3 Создать GET /api/organizations/:orgId
     - Создать `packages/api/src/routes/organizations/get.ts`
     - Проверка доступа пользователя к организации
     - Включить members и workspaces
     - _Requirements: 5.4_
   
-  - [ ] 5.4 Создать PATCH /api/organizations/:orgId
+  - [x] 5.4 Создать PATCH /api/organizations/:orgId
     - Создать `packages/api/src/routes/organizations/update.ts`
     - Проверка прав (только owner/admin)
     - Валидация с помощью updateOrganizationSchema
     - _Requirements: 5.1, 5.2_
   
-  - [ ] 5.5 Создать DELETE /api/organizations/:orgId
+  - [x] 5.5 Создать DELETE /api/organizations/:orgId
     - Создать `packages/api/src/routes/organizations/delete.ts`
     - Проверка прав (только owner)
     - Каскадное удаление workspaces и members

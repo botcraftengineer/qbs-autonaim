@@ -3,6 +3,7 @@ import { companyRouter } from "./routers/company";
 import { filesRouter } from "./routers/files";
 import { funnelRouter } from "./routers/funnel";
 import { integrationRouter } from "./routers/integration";
+import { organizationRouter } from "./routers/organization";
 import { telegramRouter } from "./routers/telegram";
 import { userRouter } from "./routers/user";
 import { vacancyRouter } from "./routers/vacancy";
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   company: companyRouter,
   telegram: telegramRouter,
   workspace: workspaceRouter,
+  organization: organizationRouter,
   funnel: funnelRouter,
   candidates: candidatesRouter,
   files: filesRouter,
