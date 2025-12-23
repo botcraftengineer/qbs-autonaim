@@ -76,6 +76,12 @@ export abstract class BaseAgent<TInput, TOutput> {
     try {
       const prompt = this.buildPrompt(input, context);
 
+      // Логируем длину промпта для отладки
+      console.log(`[${this.name}] Prompt length:`, {
+        characters: prompt.length,
+        estimatedTokens: Math.ceil(prompt.length / 4),
+      });
+
       // Логируем скомпилированный prompt в Langfuse
       span?.update({
         input: {
@@ -107,6 +113,15 @@ export abstract class BaseAgent<TInput, TOutput> {
         error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined,
         agentType: this.type,
+        // Добавляем детали ошибки для отладки
+        errorDetails:
+          error instanceof Error
+            ? {
+                name: error.name,
+                message: error.message,
+                cause: (error as any).cause,
+              }
+            : error,
       });
 
       span?.end({
