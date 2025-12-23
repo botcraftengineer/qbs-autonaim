@@ -4,6 +4,7 @@
 
 import { z } from "zod";
 import { type AgentConfig, BaseAgent } from "./base-agent";
+import { RECRUITER_PERSONA } from "./persona";
 import { AgentType, type BaseAgentContext } from "./types";
 
 export interface ContextAnalyzerInput {
@@ -38,23 +39,16 @@ export class ContextAnalyzerAgent extends BaseAgent<
   ContextAnalyzerOutput
 > {
   constructor(config: AgentConfig) {
-    const instructions = `Ты — эксперт по анализу контекста сообщений в диалоге.
+    const instructions = `Ты — эксперт по анализу контекста сообщений. Тебе нужно определить интент кандидата.
 
-ЗАДАЧА:
-Определи тип сообщения и извлеки важные данные.
+КРИТЕРИИ:
+- PIN_CODE: STRICTLY 4 digits (e.g., "1234").
+- GREETING: "Здравствуйте", "Добрый день".
+- ACKNOWLEDGMENT: "Ок", "Спасибо", "Понятно" (requiresResponse: false).
+- QUESTION: Кандидат спрашивает о вакансии или условиях.
+- ANSWER: Кандидат отвечает на твой вопрос.
 
-ТИПЫ СООБЩЕНИЙ:
-- PIN_CODE: сообщение содержит пин-код (4-6 цифр)
-- GREETING: приветствие ("Привет", "Здравствуйте", "Добрый день")
-- QUESTION: вопрос от кандидата
-- ANSWER: ответ на вопрос бота
-- ACKNOWLEDGMENT: простое подтверждение ("Ок", "Спасибо", "Да")
-- OTHER: другое
-
-ПРАВИЛА:
-- Если сообщение содержит 4-6 цифр подряд - это PIN_CODE
-- Извлекай пин-код в extractedData.pinCode
-- ACKNOWLEDGMENT не требует ответа (requiresResponse: false)`;
+${RECRUITER_PERSONA.LANGUAGE_RULES}`;
 
     super(
       "ContextAnalyzer",
@@ -92,6 +86,6 @@ export class ContextAnalyzerAgent extends BaseAgent<
 - messageType: тип сообщения
 - requiresResponse: требуется ли ответ (boolean)
 - extractedData: извлеченные данные (опционально)
-  - pinCode: пин-код если найден (опционально)`;
+  - pinCode: СТРОГО 4 цифры (например, "1234") если найден (опционально)`;
   }
 }

@@ -5,8 +5,8 @@
 
 import type { LanguageModel } from "ai";
 import type { Langfuse } from "langfuse";
+import { ContextAnalyzerAgent } from "./context-analyzer";
 import { EscalationDetectorAgent } from "./escalation-detector";
-import type { InterviewerInput } from "./interviewer";
 import { InterviewerAgent } from "./interviewer";
 import type { BaseAgentContext } from "./types";
 
@@ -18,7 +18,6 @@ export interface OrchestratorInput {
   customOrganizationalQuestions?: string | null;
   customInterviewQuestions?: string | null; // Технические вопросы
   resumeLanguage?: string;
-  interviewStage?: "ORGANIZATIONAL" | "TECHNICAL"; // Этап интервью
 }
 
 export interface OrchestratorOutput {
@@ -31,6 +30,7 @@ export interface OrchestratorOutput {
   confidence?: number;
   waitingForCandidateResponse?: boolean;
   isSimpleAcknowledgment?: boolean;
+  messageType?: string;
   agentTrace: Array<{
     agent: string;
     decision: string;
@@ -47,7 +47,7 @@ export interface OrchestratorConfig {
 /**
  * Orchestrator-Worker pattern:
  * - Orchestrator координирует выполнение
- * - Workers (EscalationDetector, Interviewer) выполняют специализированные задачи
+ * - Workers (Detector, Analyzer, Interviewer) выполняют специализированные задачи
  */
 export class InterviewOrchestrator {
   private model: LanguageModel;
@@ -60,11 +60,6 @@ export class InterviewOrchestrator {
     this.langfuse = config.langfuse;
   }
 
-  /**
-   * Sequential Processing pattern:
-   * 1. Проверка эскалации
-   * 2. Генерация следующего вопроса
-   */
   async execute(
     input: OrchestratorInput,
     context: BaseAgentContext,
@@ -75,52 +70,72 @@ export class InterviewOrchestrator {
       name: "interview-orchestrator",
       userId: context.candidateId,
       metadata: {
-        conversationId: context.conversationId,
+        conversationId: context.candidateId, // Use candidateId as conversation identifier in Langfuse
         questionNumber: input.questionNumber,
         vacancyTitle: context.vacancyTitle,
-        conversationHistoryLength: context.conversationHistory.length,
-        hasCustomOrganizationalQuestions: !!input.customOrganizationalQuestions,
-        hasCustomTechnicalQuestions: !!input.customInterviewQuestions,
-        resumeLanguage: input.resumeLanguage,
-        interviewStage: input.interviewStage || "ORGANIZATIONAL",
-        companyName: context.companySettings?.name,
-        botName: context.companySettings?.botName,
       },
-      input: {
-        currentAnswer: input.currentAnswer,
-        currentQuestion: input.currentQuestion,
-        questionNumber: input.questionNumber,
-        previousQACount: input.previousQA.length,
-        interviewStage: input.interviewStage || "ORGANIZATIONAL",
-      },
+      input,
     });
 
     const traceId = trace?.id;
 
-    // Создаем агентов с traceId для каждого вызова
+    // Инициализация агентов
+    const contextAnalyzer = new ContextAnalyzerAgent({
+      model: this.model,
+      traceId,
+      langfuse: this.langfuse,
+    });
+
     const escalationDetector = new EscalationDetectorAgent({
       model: this.model,
-      maxSteps: this.maxSteps,
-      langfuse: this.langfuse,
       traceId,
+      langfuse: this.langfuse,
     });
 
     const interviewer = new InterviewerAgent({
       model: this.model,
-      maxSteps: this.maxSteps,
-      langfuse: this.langfuse,
       traceId,
+      langfuse: this.langfuse,
     });
 
     try {
-      // ШАГ 1: Проверка необходимости эскалации
-      const escalationInput = {
-        message: input.currentAnswer,
-        conversationLength: context.conversationHistory.length,
-      };
+      // ШАГ 1: Анализ контекста
+      const contextResult = await contextAnalyzer.execute(
+        {
+          message: input.currentAnswer,
+          previousMessages: context.conversationHistory,
+        },
+        context,
+      );
 
+      agentTrace.push({
+        agent: "ContextAnalyzer",
+        decision: contextResult.success
+          ? `type: ${contextResult.data?.messageType}`
+          : "failed",
+        timestamp: new Date(),
+      });
+
+      if (
+        contextResult.success &&
+        contextResult.data?.messageType === "ACKNOWLEDGMENT" &&
+        !contextResult.data.requiresResponse
+      ) {
+        return {
+          analysis: "Простое подтверждение, ответ не требуется",
+          shouldContinue: false,
+          isSimpleAcknowledgment: true,
+          messageType: "ACKNOWLEDGMENT",
+          agentTrace,
+        };
+      }
+
+      // ШАГ 2: Проверка эскалации (если это не простое подтверждение)
       const escalationCheck = await escalationDetector.execute(
-        escalationInput,
+        {
+          message: input.currentAnswer,
+          conversationLength: context.conversationHistory.length,
+        },
         context,
       );
 
@@ -133,7 +148,7 @@ export class InterviewOrchestrator {
       });
 
       if (escalationCheck.success && escalationCheck.data?.shouldEscalate) {
-        const output = {
+        return {
           analysis:
             escalationCheck.data.suggestedAction ||
             "Требуется эскалация к рекрутеру",
@@ -143,79 +158,32 @@ export class InterviewOrchestrator {
           reason: escalationCheck.data.reason,
           agentTrace,
         };
-
-        trace?.update({
-          output,
-          metadata: {
-            escalated: true,
-            escalationReason: escalationCheck.data.reason,
-            escalationUrgency: escalationCheck.data?.urgency,
-            agentTraceCount: agentTrace.length,
-          },
-        });
-
-        await this.langfuse?.flushAsync();
-
-        return output;
       }
 
-      // ШАГ 2: Генерация следующего вопроса
-      const interviewerInput: InterviewerInput = {
-        currentAnswer: input.currentAnswer,
-        currentQuestion: input.currentQuestion,
-        previousQA: input.previousQA,
-        questionNumber: input.questionNumber,
-        customOrganizationalQuestions: input.customOrganizationalQuestions,
-        customInterviewQuestions: input.customInterviewQuestions,
-        resumeLanguage: input.resumeLanguage,
-        interviewStage: input.interviewStage,
-      };
-
-      const interviewResult = await interviewer.execute(
-        interviewerInput,
+      // ШАГ 3: Генерация ответа через Interviewer
+      const interviewerResult = await interviewer.execute(
+        {
+          ...input,
+        },
         context,
       );
 
       agentTrace.push({
         agent: "Interviewer",
-        decision: interviewResult.success
-          ? `shouldContinue: ${interviewResult.data?.shouldContinue}`
+        decision: interviewerResult.success
+          ? `shouldContinue: ${interviewerResult.data?.shouldContinue}`
           : "failed",
         timestamp: new Date(),
       });
 
-      if (!interviewResult.success || !interviewResult.data) {
+      if (!interviewerResult.success || !interviewerResult.data) {
         throw new Error("Interviewer agent failed");
       }
 
-      const output = {
-        analysis: interviewResult.data.analysis,
-        shouldContinue: interviewResult.data.shouldContinue,
-        reason: interviewResult.data.reason,
-        nextQuestion: interviewResult.data.nextQuestion,
-        confidence: interviewResult.data.confidence,
-        waitingForCandidateResponse:
-          interviewResult.data.waitingForCandidateResponse,
-        isSimpleAcknowledgment: interviewResult.data.isSimpleAcknowledgment,
+      return {
+        ...interviewerResult.data,
         agentTrace,
       };
-
-      trace?.update({
-        output,
-        metadata: {
-          escalated: false,
-          shouldContinue: interviewResult.data.shouldContinue,
-          confidence: interviewResult.data.confidence,
-          waitingForCandidateResponse:
-            interviewResult.data.waitingForCandidateResponse,
-          isSimpleAcknowledgment: interviewResult.data.isSimpleAcknowledgment,
-          agentTraceCount: agentTrace.length,
-        },
-      });
-
-      await this.langfuse?.flushAsync();
-
-      return output;
     } catch (error) {
       const output = {
         analysis: "Ошибка при обработке",

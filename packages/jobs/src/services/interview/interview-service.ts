@@ -71,7 +71,6 @@ interface InterviewContext {
   customBotInstructions?: string | null;
   customOrganizationalQuestions?: string | null;
   customInterviewQuestions?: string | null;
-  interviewStage?: "ORGANIZATIONAL" | "TECHNICAL";
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -113,7 +112,6 @@ export async function analyzeAndGenerateNextQuestion(
     candidateName,
     vacancyTitle,
     vacancyDescription,
-    interviewStage = "ORGANIZATIONAL",
   } = context;
 
   // Создаем оркестратор
@@ -144,15 +142,12 @@ export async function analyzeAndGenerateNextQuestion(
       customOrganizationalQuestions: context.customOrganizationalQuestions,
       customInterviewQuestions: context.customInterviewQuestions,
       resumeLanguage: context.resumeLanguage || "en",
-      interviewStage,
     },
     agentContext,
   );
 
-  // Логируем трассировку агентов
   logger.info("Interview orchestrator trace", {
     conversationId: context.conversationId,
-    interviewStage,
     trace: result.agentTrace.map(
       (t: { agent: string; decision: string; timestamp: Date }) => ({
         agent: t.agent,
@@ -239,24 +234,7 @@ export async function getInterviewContext(
         : undefined) as "TEXT" | "VOICE" | undefined,
     }));
 
-  // Определяем этап интервью
-  // Если есть организационные вопросы и их меньше 4, то ORGANIZATIONAL
-  // Иначе переходим к TECHNICAL (если есть технические вопросы)
-  const hasOrganizationalQuestions =
-    !!conv.response?.vacancy?.customOrganizationalQuestions;
-  const hasTechnicalQuestions =
-    !!conv.response?.vacancy?.customInterviewQuestions;
-  const organizationalQuestionsCount = questionAnswers.filter((qa) =>
-    isOrganizationalQuestion(qa.question),
-  ).length;
-
-  let interviewStage: "ORGANIZATIONAL" | "TECHNICAL" = "ORGANIZATIONAL";
-  if (hasOrganizationalQuestions && organizationalQuestionsCount < 4) {
-    interviewStage = "ORGANIZATIONAL";
-  } else if (hasTechnicalQuestions) {
-    interviewStage = "TECHNICAL";
-  }
-
+  // Передаем обе группы вопросов, AI сам решит что спрашивать на основе истории
   return {
     conversationId: conv.id,
     candidateName: conv.candidateName,
@@ -291,39 +269,7 @@ export async function getInterviewContext(
       conv.response?.vacancy?.customOrganizationalQuestions || null,
     customInterviewQuestions:
       conv.response?.vacancy?.customInterviewQuestions || null,
-    interviewStage,
   };
-}
-
-/**
- * Определяет, является ли вопрос организационным
- */
-function isOrganizationalQuestion(question: string): boolean {
-  const organizationalKeywords = [
-    "график",
-    "зарплат",
-    "переезд",
-    "командировк",
-    "срок",
-    "выход",
-    "офис",
-    "удален",
-    "гибрид",
-    "формат работы",
-    "schedule",
-    "salary",
-    "relocation",
-    "travel",
-    "start date",
-    "office",
-    "remote",
-    "hybrid",
-  ];
-
-  const lowerQuestion = question.toLowerCase();
-  return organizationalKeywords.some((keyword) =>
-    lowerQuestion.includes(keyword),
-  );
 }
 
 /**

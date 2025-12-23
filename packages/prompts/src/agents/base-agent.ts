@@ -2,7 +2,7 @@
  * Базовый класс для агентов на основе AI SDK 6 ToolLoopAgent
  */
 
-import type { LanguageModel } from "ai";
+import type { LanguageModel, ToolSet } from "ai";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import type { Langfuse } from "langfuse";
 import type { ZodType } from "zod";
@@ -13,6 +13,7 @@ export interface AgentConfig {
   maxSteps?: number;
   langfuse?: Langfuse;
   traceId?: string;
+  tools?: ToolSet;
 }
 
 /**
@@ -40,6 +41,7 @@ export abstract class BaseAgent<TInput, TOutput> {
     this.agent = new ToolLoopAgent({
       model: config.model,
       instructions,
+      tools: config.tools,
       output: Output.object({
         schema: outputSchema,
       }),
