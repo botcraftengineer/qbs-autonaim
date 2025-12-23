@@ -1,8 +1,12 @@
 import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
 import type { getInterviewStartData } from "@qbs-autonaim/lib";
-import { generateText } from "@qbs-autonaim/lib/ai";
-import { buildTelegramRecruiterPrompt } from "@qbs-autonaim/prompts";
+import { getAIModel } from "@qbs-autonaim/lib/ai";
+import {
+  EscalationHandlerAgent,
+  GreetingDetectorAgent,
+  PinHandlerAgent,
+} from "@qbs-autonaim/prompts";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { inngest } from "../../client";
 import type { BotSettings, PromptStage } from "./types";
@@ -17,67 +21,119 @@ export async function generateAndSendBotResponse(params: {
   firstName?: string;
   workspaceId: string;
   interviewData?: Awaited<ReturnType<typeof getInterviewStartData>>;
+  failedPinAttempts?: number;
 }) {
   const {
     conversationId,
     messageText,
     stage,
-    botSettings,
     username,
     firstName,
     workspaceId,
     interviewData,
+    failedPinAttempts = 0,
   } = params;
 
   const conversationHistory = await getConversationHistory(conversationId);
   const vacancy = interviewData?.response.vacancy;
 
-  const prompt = buildTelegramRecruiterPrompt({
-    messageText,
-    stage,
+  // Создаём AI модель
+  const model = getAIModel();
+
+  // Используем GreetingDetectorAgent для определения приветствия
+  const greetingDetector = new GreetingDetectorAgent({ model });
+  const greetingResult = await greetingDetector.execute(
+    {
+      conversationHistory: conversationHistory.map((msg) => ({
+        sender: msg.sender as "CANDIDATE" | "BOT",
+        content: msg.content,
+      })),
+    },
+    {
+      conversationHistory: [],
+    },
+  );
+
+  const alreadyGreeted = greetingResult.success
+    ? (greetingResult.data?.alreadyGreeted ?? false)
+    : false;
+
+  // Создаём контекст для агентов
+  const agentContext = {
+    conversationId,
     candidateName: interviewData?.response.candidateName ?? firstName,
     vacancyTitle: vacancy?.title ?? undefined,
-    vacancyRequirements: vacancy?.requirements
-      ? JSON.stringify(vacancy.requirements)
-      : undefined,
+    vacancyDescription: vacancy?.description ?? undefined,
     conversationHistory: conversationHistory.map((msg) => ({
-      sender: msg.sender,
+      sender: msg.sender as "CANDIDATE" | "BOT",
       content: msg.content,
-      contentType: msg.contentType,
+      contentType: msg.contentType as "TEXT" | "VOICE" | undefined,
     })),
     resumeData: interviewData
       ? {
           experience: interviewData.response.experience ?? undefined,
           coverLetter: interviewData.response.coverLetter ?? undefined,
+          language: interviewData.response.resumeLanguage ?? undefined,
         }
       : undefined,
     customBotInstructions: vacancy?.customBotInstructions ?? undefined,
     customInterviewQuestions: vacancy?.customInterviewQuestions ?? undefined,
-    customOrganizationalQuestions:
-      vacancy?.customOrganizationalQuestions ?? undefined,
-    botName: botSettings.botName,
-    botRole: botSettings.botRole,
-  });
+  };
 
-  const { text: aiResponse } = await generateText({
-    prompt,
-    generationName: `telegram-${stage.toLowerCase()}`,
-    entityId: conversationId,
-    metadata: {
-      candidateName: interviewData?.response.candidateName ?? firstName,
-      vacancyTitle: vacancy?.title ?? undefined,
-    },
-  });
+  let aiResponse = "";
+  let shouldSkip = false;
 
-  // Проверяем SKIP - если AI решил не отвечать
-  const trimmedResponse = aiResponse.trim();
-  const shouldSkip =
-    trimmedResponse === "[SKIP]" ||
-    trimmedResponse.toLowerCase() === "skip" ||
-    trimmedResponse === "";
+  // Используем соответствующий агент в зависимости от этапа
+  if (
+    stage === "AWAITING_PIN" ||
+    stage === "INVALID_PIN" ||
+    stage === "PIN_RECEIVED"
+  ) {
+    const pinHandler = new PinHandlerAgent({ model });
 
-  if (shouldSkip) {
-    console.log("⏭️ Пропускаем отправку сообщения (AI вернул SKIP)", {
+    const result = await pinHandler.execute(
+      {
+        messageText,
+        stage,
+        failedPinAttempts,
+        alreadyGreeted,
+      },
+      agentContext,
+    );
+
+    if (!result.success || !result.data) {
+      console.error("❌ PinHandlerAgent failed", { error: result.error });
+      // Fallback сообщение
+      aiResponse = "Извините, произошла ошибка. Попробуйте ещё раз.";
+    } else {
+      aiResponse = result.data.responseMessage;
+      shouldSkip = result.data.shouldSkip;
+    }
+  } else {
+    // Для других этапов (например, ESCALATED) используем EscalationHandlerAgent
+    const escalationHandler = new EscalationHandlerAgent({ model });
+
+    const result = await escalationHandler.execute(
+      {
+        messageText,
+      },
+      agentContext,
+    );
+
+    if (!result.success || !result.data) {
+      console.error("❌ EscalationHandlerAgent failed", {
+        error: result.error,
+      });
+      aiResponse =
+        "Передам ваш вопрос коллеге, он свяжется с вами в ближайшее время.";
+    } else {
+      aiResponse = result.data.responseMessage;
+    }
+  }
+
+  // Проверяем SKIP
+  if (shouldSkip || aiResponse.trim() === "") {
+    console.log("⏭️ Пропускаем отправку сообщения (агент вернул SKIP)", {
       conversationId,
       stage,
       messageText: messageText.substring(0, 50),

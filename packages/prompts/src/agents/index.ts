@@ -20,6 +20,16 @@ export {
   type EscalationDetectorOutput,
 } from "./escalation-detector";
 export {
+  EscalationHandlerAgent,
+  type EscalationHandlerInput,
+  type EscalationHandlerOutput,
+} from "./escalation-handler";
+export {
+  GreetingDetectorAgent,
+  type GreetingDetectorInput,
+  type GreetingDetectorOutput,
+} from "./greeting-detector";
+export {
   InterviewCompletionAgent,
   type InterviewCompletionInput,
   type InterviewCompletionOutput,
@@ -41,6 +51,11 @@ export {
   type OrchestratorInput,
   type OrchestratorOutput,
 } from "./orchestrator";
+export {
+  PinHandlerAgent,
+  type PinHandlerInput,
+  type PinHandlerOutput,
+} from "./pin-handler";
 export {
   SalaryExtractionAgent,
   type SalaryExtractionInput,

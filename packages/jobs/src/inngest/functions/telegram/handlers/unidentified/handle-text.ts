@@ -59,6 +59,15 @@ export async function handleUnidentifiedText(params: {
     throw new Error("Failed to create temp conversation");
   }
 
+  // Подсчитываем количество неудачных попыток PIN из истории
+  const { getConversationHistory } = await import("../../utils");
+  const history = await getConversationHistory(tempConv.id);
+  const failedPinAttempts = history.filter(
+    (msg) =>
+      msg.sender === "BOT" &&
+      msg.content.toLowerCase().includes("код не подошел"),
+  ).length;
+
   let pinCode: string | null = null;
 
   // Используем AI-агент для анализа сообщения
@@ -137,6 +146,7 @@ export async function handleUnidentifiedText(params: {
           username,
           firstName,
           workspaceId,
+          failedPinAttempts: failedPinAttempts + 1,
         });
 
         return { identified: false, invalidPin: true };
@@ -230,6 +240,7 @@ export async function handleUnidentifiedText(params: {
       username,
       firstName,
       workspaceId,
+      failedPinAttempts: failedPinAttempts + 1,
     });
 
     return { identified: false, invalidPin: true };
