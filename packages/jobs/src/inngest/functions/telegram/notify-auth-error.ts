@@ -1,7 +1,8 @@
-import { env } from "@qbs-autonaim/config";
+import { env, paths } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  organization,
   telegramSession,
   user,
   userWorkspace,
@@ -28,13 +29,29 @@ export const notifyTelegramAuthErrorFunction = inngest.createFunction(
     // Get workspace info and admin emails
     const workspaceData = await step.run("get-workspace-data", async () => {
       const [ws] = await db
-        .select()
+        .select({
+          id: workspace.id,
+          name: workspace.name,
+          slug: workspace.slug,
+          organizationId: workspace.organizationId,
+        })
         .from(workspace)
         .where(eq(workspace.id, workspaceId))
         .limit(1);
 
       if (!ws) {
         throw new Error(`Workspace not found: ${workspaceId}`);
+      }
+
+      // Get organization slug for the reauthorize link
+      let organizationSlug: string | undefined;
+      if (ws.organizationId) {
+        const [org] = await db
+          .select({ slug: organization.slug })
+          .from(organization)
+          .where(eq(organization.id, ws.organizationId))
+          .limit(1);
+        organizationSlug = org?.slug;
       }
 
       // Get all admins and owners of the workspace
@@ -56,6 +73,7 @@ export const notifyTelegramAuthErrorFunction = inngest.createFunction(
 
       return {
         workspace: ws,
+        organizationSlug,
         admins,
       };
     });
@@ -76,7 +94,9 @@ export const notifyTelegramAuthErrorFunction = inngest.createFunction(
         .filter((admin) => admin.email)
         .map((admin) =>
           step.run(`send-email-${admin.userId}`, async () => {
-            const reauthorizeLink = `${env.APP_URL}/workspaces/${workspaceData.workspace.slug}/settings/telegram`;
+            const reauthorizeLink = workspaceData.organizationSlug
+              ? `${env.APP_URL}${paths.workspace.settings.telegram(workspaceData.organizationSlug, workspaceData.workspace.slug)}`
+              : `${env.APP_URL}/workspaces/${workspaceData.workspace.slug}/settings/telegram`;
 
             await sendEmail({
               to: [admin.email],

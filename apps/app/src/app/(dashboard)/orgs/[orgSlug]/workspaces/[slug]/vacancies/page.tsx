@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   Badge,
   Button,
@@ -20,7 +21,6 @@ import {
 import { IconFilter, IconRefresh, IconSearch } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
-import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { triggerUpdateVacancies } from "~/actions/trigger";
@@ -332,7 +332,11 @@ export default function VacanciesPage() {
                         >
                           <TableCell>
                             <Link
-                              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`}
+                              href={paths.workspace.vacancies(
+                                orgSlug,
+                                workspaceSlug,
+                                vacancy.id,
+                              )}
                               className="font-medium hover:underline"
                             >
                               {vacancy.title}
@@ -357,7 +361,11 @@ export default function VacanciesPage() {
                           </TableCell>
                           <TableCell className="text-right tabular-nums">
                             <Link
-                              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`}
+                              href={paths.workspace.vacancies(
+                                orgSlug,
+                                workspaceSlug,
+                                vacancy.id,
+                              )}
                               className="font-medium hover:underline text-primary"
                             >
                               {vacancy.realResponsesCount ?? 0}

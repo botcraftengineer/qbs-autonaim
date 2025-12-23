@@ -13,7 +13,7 @@ export default function ChatLayout({
   params: Promise<{ orgSlug: string; slug: string }>;
 }) {
   const pathname = usePathname();
-  const { orgSlug, slug } = use(params);
+  use(params);
 
   // Check if pathname matches pattern: /orgs/[orgSlug]/workspaces/[slug]/chat/[responseId]
   // A chat is selected when there's a non-empty segment after /chat/

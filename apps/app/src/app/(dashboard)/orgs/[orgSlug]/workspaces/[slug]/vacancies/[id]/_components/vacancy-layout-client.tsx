@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Skeleton,
@@ -151,7 +152,7 @@ export function VacancyLayoutClient({
                   asChild
                 >
                   <Link
-                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+                    href={paths.workspace.vacancies(orgSlug, workspaceSlug)}
                   >
                     <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
                     <span className="hidden sm:inline">Назад к списку</span>
@@ -169,7 +170,11 @@ export function VacancyLayoutClient({
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
                     >
                       <Link
-                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}`}
+                        href={paths.workspace.vacancies(
+                          orgSlug,
+                          workspaceSlug,
+                          vacancyId,
+                        )}
                       >
                         <span className="hidden sm:inline">
                           Отклики ({responsesCount?.total ?? 0})
@@ -183,7 +188,12 @@ export function VacancyLayoutClient({
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
                     >
                       <Link
-                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}/detail`}
+                        href={paths.workspace.vacancies(
+                          orgSlug,
+                          workspaceSlug,
+                          vacancyId,
+                          "detail",
+                        )}
                       >
                         Обзор
                       </Link>
@@ -194,7 +204,12 @@ export function VacancyLayoutClient({
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
                     >
                       <Link
-                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}/settings`}
+                        href={paths.workspace.vacancies(
+                          orgSlug,
+                          workspaceSlug,
+                          vacancyId,
+                          "settings",
+                        )}
                       >
                         Настройки
                       </Link>

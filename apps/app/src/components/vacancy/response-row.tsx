@@ -1,6 +1,7 @@
 "use client";
 
 import type { RouterOutputs } from "@qbs-autonaim/api";
+import { paths } from "@qbs-autonaim/config";
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
@@ -73,7 +74,11 @@ export function ResponseRow({
           <div>
             <div className="font-medium flex items-center gap-2">
               <Link
-                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/responses/${response.id}`}
+                href={paths.workspace.responses(
+                  orgSlug,
+                  workspaceSlug,
+                  response.id,
+                )}
                 className="hover:text-primary transition-colors no-underline"
               >
                 {response.candidateName || "Без имени"}

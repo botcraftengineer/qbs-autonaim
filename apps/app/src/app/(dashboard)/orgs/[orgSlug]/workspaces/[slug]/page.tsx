@@ -13,9 +13,9 @@ import { SiteHeader } from "~/components/layout";
 export default function WorkspacePage({
   params,
 }: {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ orgSlug: string; slug: string }>;
 }) {
-  const { workspaceSlug } = use(params);
+  const { orgSlug, slug: workspaceSlug } = use(params);
 
   return (
     <>
@@ -25,11 +25,17 @@ export default function WorkspacePage({
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <DashboardStats />
             <div className="grid gap-4 px-4 lg:px-6 md:grid-cols-2">
-              <RecentResponses workspaceSlug={workspaceSlug} />
-              <ActiveVacancies workspaceSlug={workspaceSlug} />
+              <RecentResponses
+                orgSlug={orgSlug}
+                workspaceSlug={workspaceSlug}
+              />
+              <ActiveVacancies
+                orgSlug={orgSlug}
+                workspaceSlug={workspaceSlug}
+              />
             </div>
             <div className="px-4 lg:px-6">
-              <TopResponses workspaceSlug={workspaceSlug} />
+              <TopResponses orgSlug={orgSlug} workspaceSlug={workspaceSlug} />
             </div>
             <div className="px-4 lg:px-6">
               <ResponsesChart />

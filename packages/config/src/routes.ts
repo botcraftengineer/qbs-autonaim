@@ -39,15 +39,24 @@ export const paths = {
       responseId
         ? `/orgs/${orgSlug}/workspaces/${slug}/responses/${responseId}`
         : `/orgs/${orgSlug}/workspaces/${slug}/responses`,
-    vacancies: (orgSlug: string, slug: string, vacancyId?: string) =>
-      vacancyId
-        ? `/orgs/${orgSlug}/workspaces/${slug}/vacancies/${vacancyId}`
-        : `/orgs/${orgSlug}/workspaces/${slug}/vacancies`,
+    vacancies: (
+      orgSlug: string,
+      slug: string,
+      vacancyId?: string,
+      section?: "detail" | "settings",
+    ) => {
+      const base = `/orgs/${orgSlug}/workspaces/${slug}/vacancies`;
+      if (!vacancyId) return base;
+      if (section) return `${base}/${vacancyId}/${section}`;
+      return `${base}/${vacancyId}`;
+    },
     settings: {
       root: (orgSlug: string, slug: string) =>
         `/orgs/${orgSlug}/workspaces/${slug}/settings`,
       members: (orgSlug: string, slug: string) =>
         `/orgs/${orgSlug}/workspaces/${slug}/settings/members`,
+      telegram: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings/telegram`,
     },
   },
   onboarding: {

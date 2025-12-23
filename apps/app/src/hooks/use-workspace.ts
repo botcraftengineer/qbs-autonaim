@@ -11,12 +11,12 @@ export function useWorkspace() {
   const trpc = useTRPC();
 
   const { data: organization } = useQuery({
-    ...trpc.organization.getBySlug.queryOptions({ slug: orgSlug ?? "" }),
+    ...trpc.organization.get.queryOptions({ id: orgSlug ?? "" }),
     enabled: !!orgSlug,
   });
 
   const { data, isLoading, error } = useQuery({
-    ...trpc.organization.workspaces.getBySlug.queryOptions({
+    ...trpc.organization.getWorkspaceBySlug.queryOptions({
       organizationId: organization?.id ?? "",
       slug: slug ?? "",
     }),

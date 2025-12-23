@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   Badge,
   Input,
@@ -161,7 +162,7 @@ export function ChatList() {
 
             const isActive =
               pathname ===
-              `/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${conversation.id}`;
+              paths.workspace.chat(orgSlug, workspaceSlug, conversation.id);
 
             let vacancyTitle = null;
             if (conversation.metadata) {
@@ -179,7 +180,11 @@ export function ChatList() {
             return (
               <Link
                 key={conversation.id}
-                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${conversation.id}`}
+                href={paths.workspace.chat(
+                  orgSlug,
+                  workspaceSlug,
+                  conversation.id,
+                )}
               >
                 <div
                   className={`flex items-start gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer border-b ${

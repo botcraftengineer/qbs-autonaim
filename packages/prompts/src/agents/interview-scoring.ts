@@ -6,8 +6,7 @@ import { z } from "zod";
 import { type AgentConfig, BaseAgent } from "./base-agent";
 import { AgentType, type BaseAgentContext } from "./types";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-export type InterviewScoringInput = {};
+export type InterviewScoringInput = Record<string, never>;
 
 const interviewScoringOutputSchema = z.object({
   score: z.number().min(1).max(5),

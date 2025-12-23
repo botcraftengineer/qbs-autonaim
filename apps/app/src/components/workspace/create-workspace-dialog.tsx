@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -22,7 +23,6 @@ import { createWorkspaceSchema } from "@qbs-autonaim/validators";
 import { useMutation } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
@@ -66,7 +66,7 @@ export function CreateWorkspaceDialog({
         onOpenChange(false);
         form.reset();
         // Перенаправляем на страницу нового воркспейса
-        router.push(`/orgs/${organizationSlug}/workspaces/${workspace.slug}`);
+        router.push(paths.workspace.root(organizationSlug, workspace.slug));
         router.refresh();
       },
       onError: (error) => {

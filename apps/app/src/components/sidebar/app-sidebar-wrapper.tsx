@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { useParams } from "next/navigation";
 import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
@@ -112,15 +113,15 @@ export function AppSidebarWrapper({
     setActiveOrganizationId(organizationId);
     const organization = organizations?.find((o) => o.id === organizationId);
     if (organization) {
-      window.location.href = `/orgs/${organization.slug}/workspaces`;
+      window.location.href = paths.organization.workspaces(organization.slug);
     }
   };
 
   const handleWorkspaceChange = (workspaceId: string) => {
     setActiveWorkspaceId(workspaceId);
     const workspace = workspaces?.find((w) => w.id === workspaceId);
-    if (workspace) {
-      window.location.href = `/${workspace.slug}`;
+    if (workspace && orgSlug) {
+      window.location.href = paths.workspace.root(orgSlug, workspace.slug);
     }
   };
 

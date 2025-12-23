@@ -1,4 +1,7 @@
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import { organizationRepository } from "@qbs-autonaim/db";
+import { OrganizationInviteEmail } from "@qbs-autonaim/emails";
+import { sendEmail } from "@qbs-autonaim/emails/send";
 import {
   inviteToOrganizationSchema,
   organizationIdSchema,
@@ -50,8 +53,38 @@ export const createInvite = protectedProcedure
       expiresAt,
     });
 
-    // TODO: Отправка email уведомления (requirement 8.3)
-    // await sendInvitationEmail(invite);
+    // Получаем данные организации для email
+    const organization = await organizationRepository.findById(
+      input.organizationId,
+    );
+
+    if (!organization) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Организация не найдена",
+      });
+    }
+
+    // Отправка email уведомления (requirement 8.3)
+    try {
+      const inviteLink = `${APP_CONFIG.url}/invites/${invite.token}/accept`;
+
+      await sendEmail({
+        to: [input.email],
+        subject: `Приглашение в организацию ${organization.name}`,
+        react: OrganizationInviteEmail({
+          organizationName: organization.name,
+          organizationLogo: organization.logo ?? undefined,
+          inviterName: ctx.session.user.name ?? "Пользователь",
+          inviteLink,
+          role: input.role,
+        }),
+      });
+    } catch (error) {
+      // Логируем ошибку отправки email, но не прерываем процесс
+      console.error("Ошибка отправки email приглашения:", error);
+      // Приглашение уже создано, пользователь может использовать токен напрямую
+    }
 
     return invite;
   });

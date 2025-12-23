@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { cn } from "@qbs-autonaim/ui";
 import { Building2, Globe, Settings, Users } from "lucide-react";
 import Link from "next/link";
@@ -38,7 +39,7 @@ export function SettingsSidebar() {
   return (
     <nav className="flex flex-col space-y-1">
       {sidebarNavItems.map((item) => {
-        const href = `/orgs/${orgSlug}/workspaces/${slug}${item.href}`;
+        const href = `${paths.workspace.root(orgSlug, slug)}${item.href}`;
         return (
           <Link
             key={item.href}

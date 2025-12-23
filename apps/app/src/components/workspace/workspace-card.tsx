@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import type { Workspace } from "@qbs-autonaim/db";
 import { Avatar, AvatarFallback, AvatarImage, Card } from "@qbs-autonaim/ui";
 import { Building2, ExternalLink } from "lucide-react";
@@ -14,7 +15,7 @@ export function WorkspaceCard({
   workspace,
   organizationSlug,
 }: WorkspaceCardProps) {
-  const workspaceUrl = `/orgs/${organizationSlug}/workspaces/${workspace.slug}`;
+  const workspaceUrl = paths.workspace.root(organizationSlug, workspace.slug);
   const initials = workspace.name
     .split(" ")
     .map((word) => word[0])

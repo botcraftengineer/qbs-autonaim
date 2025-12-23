@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { Button, Skeleton } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MessageSquare } from "lucide-react";
@@ -89,16 +90,14 @@ export default function ResponseDetailPage({
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
               <div className="mb-6 flex items-center justify-between gap-4">
-                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}`}>
+                <Link href={paths.workspace.root(orgSlug, workspaceSlug)}>
                   <Button variant="ghost" size="sm">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Назад
                   </Button>
                 </Link>
                 {response.conversation && (
-                  <Link
-                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${id}`}
-                  >
+                  <Link href={paths.workspace.chat(orgSlug, workspaceSlug, id)}>
                     <Button variant="default" size="sm">
                       <MessageSquare className="mr-2 h-4 w-4" />
                       Открыть чат

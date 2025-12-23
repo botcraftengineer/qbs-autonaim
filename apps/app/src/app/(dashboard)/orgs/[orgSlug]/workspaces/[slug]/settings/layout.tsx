@@ -9,7 +9,7 @@ export default async function SettingsLayout({
   children: ReactNode;
   params: Promise<{ orgSlug: string; slug: string }>;
 }) {
-  const { orgSlug, slug } = await params;
+  await params;
 
   return (
     <>

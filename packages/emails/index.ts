@@ -1,3 +1,4 @@
+export { default as OrganizationInviteEmail } from "./emails/organization-invite";
 export { default as OtpSignInEmail } from "./emails/otp-sign-in";
 export { default as ResetPasswordEmail } from "./emails/reset-password";
 export { default as TelegramAuthErrorEmail } from "./emails/telegram-auth-error";

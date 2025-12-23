@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+import { organizationRepository, workspaceRepository } from "@qbs-autonaim/db";
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import { createWorkspaceSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -7,6 +7,20 @@ import { protectedProcedure } from "../../trpc";
 export const create = protectedProcedure
   .input(createWorkspaceSchema)
   .mutation(async ({ input, ctx }) => {
+    // Получаем первую организацию пользователя
+    const organizations = await organizationRepository.getUserOrganizations(
+      ctx.session.user.id,
+    );
+
+    if (!organizations.length) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "У пользователя нет организаций",
+      });
+    }
+
+    const organizationId = organizations[0]!.id;
+
     const existing = await workspaceRepository.findBySlug(input.slug);
     if (existing) {
       throw new TRPCError({
@@ -20,7 +34,10 @@ export const create = protectedProcedure
       dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
     }
 
-    const workspace = await workspaceRepository.create(dataToCreate);
+    const workspace = await workspaceRepository.create({
+      ...dataToCreate,
+      organizationId,
+    });
 
     if (!workspace) {
       throw new TRPCError({

@@ -22,6 +22,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
+import { useMutation } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -29,6 +30,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "~/auth/client";
+import { useTRPC } from "~/trpc/react";
 
 const emailPasswordSchema = z.object({
   email: z.string().email("Неверный email адрес"),
@@ -42,6 +44,18 @@ const emailOtpSchema = z.object({
 type EmailPasswordData = z.infer<typeof emailPasswordSchema>;
 type EmailOtpData = z.infer<typeof emailOtpSchema>;
 
+/**
+ * Генерирует slug из строки
+ */
+function generateSlug(text: string): string {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "") // Удаляем специальные символы
+    .replace(/[\s_-]+/g, "-") // Заменяем пробелы и подчеркивания на дефисы
+    .replace(/^-+|-+$/g, ""); // Удаляем дефисы в начале и конце
+}
+
 export function UnifiedAuthForm({
   mode = "signin",
   ...props
@@ -50,6 +64,7 @@ export function UnifiedAuthForm({
 }) {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const trpc = useTRPC();
 
   const passwordForm = useForm<EmailPasswordData>({
     resolver: zodResolver(emailPasswordSchema),
@@ -61,10 +76,19 @@ export function UnifiedAuthForm({
     defaultValues: { email: "" },
   });
 
+  // tRPC mutations for organization and workspace creation
+  const createOrganization = useMutation(
+    trpc.organization.create.mutationOptions(),
+  );
+  const createWorkspace = useMutation(
+    trpc.organization.createWorkspace.mutationOptions(),
+  );
+
   const onPasswordSubmit = async (data: EmailPasswordData) => {
     setLoading(true);
     try {
       if (mode === "signup") {
+        // Создаем пользователя
         const { error } = await authClient.signUp.email({
           email: data.email,
           password: data.password,
@@ -82,7 +106,55 @@ export function UnifiedAuthForm({
           }
           return;
         }
-        toast.success("Аккаунт успешно создан!");
+
+        // Создаем организацию
+        const userName = data.email.split("@")[0] ?? "User";
+        const orgName = `${userName}'s Organization`;
+        let orgSlug = generateSlug(orgName);
+        
+        // Добавляем случайное число если slug слишком короткий
+        if (orgSlug.length < 3) {
+          orgSlug = `org-${Math.random().toString(36).substring(2, 8)}`;
+        }
+
+        try {
+          const organization = await createOrganization.mutateAsync({
+            name: orgName,
+            slug: orgSlug,
+          });
+
+          // Создаем default workspace
+          const workspaceName = "Default Workspace";
+          let workspaceSlug = generateSlug(workspaceName);
+          
+          if (workspaceSlug.length < 3) {
+            workspaceSlug = "default";
+          }
+
+          const workspace = await createWorkspace.mutateAsync({
+            organizationId: organization.id,
+            workspace: {
+              name: workspaceName,
+              slug: workspaceSlug,
+            },
+          });
+
+          // Сохраняем последнюю посещенную организацию
+          localStorage.setItem("lastOrganizationSlug", organization.slug);
+
+          toast.success("Аккаунт успешно создан!");
+          
+          // Редиректим на новый workspace
+          router.push(paths.workspace.root(organization.slug, workspace.slug));
+          return;
+        } catch (orgError) {
+          console.error("Failed to create organization/workspace:", orgError);
+          toast.error(
+            "Аккаунт создан, но не удалось создать организацию. Попробуйте войти.",
+          );
+          router.push(paths.auth.signin);
+          return;
+        }
       } else {
         const { error } = await authClient.signIn.email({
           email: data.email,
@@ -93,8 +165,15 @@ export function UnifiedAuthForm({
           return;
         }
         toast.success("Вход выполнен успешно!");
+        
+        // Для входа используем сохраненную организацию или редиректим на dashboard
+        const lastOrgSlug = localStorage.getItem("lastOrganizationSlug");
+        if (lastOrgSlug) {
+          router.push(paths.organization.workspaces(lastOrgSlug));
+        } else {
+          router.push(paths.dashboard.root);
+        }
       }
-      router.push(paths.dashboard.root);
     } catch (error) {
       console.error(error);
       toast.error(

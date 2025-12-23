@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { Badge, Button, Card, cn } from "@qbs-autonaim/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -87,7 +88,7 @@ export function ChatPreviewCard({
             </div>
 
             <Link
-              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${candidateId}`}
+              href={paths.workspace.chat(orgSlug, workspaceSlug, candidateId)}
             >
               <Button variant="outline" size="sm" className="h-7 text-xs">
                 <MessageCircle className="h-3 w-3 mr-1" />

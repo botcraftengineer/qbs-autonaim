@@ -323,46 +323,75 @@
     - Обновить все ссылки и навигацию
     - _Requirements: 6.1_
 
-- [ ] 13. Registration Flow Update
-  - [ ] 13.1 Обновить процесс регистрации
+- [x] 13. Registration Flow Update
+
+
+
+
+  - [x] 13.1 Обновить процесс регистрации
+
+
     - Изменить `apps/app/app/auth/register/page.tsx`
     - После создания пользователя создавать организацию
     - Создавать default workspace в организации
     - Добавлять пользователя как owner в оба
     - _Requirements: 1.1, 1.3, 1.4_
   
-  - [ ] 13.2 Обновить редирект после регистрации
+  - [x] 13.2 Обновить редирект после регистрации
+
+
     - Редиректить на `/orgs/[orgSlug]/workspaces/[workspaceSlug]`
     - Сохранять последнюю посещенную организацию в cookies/localStorage
     - _Requirements: 1.6, 9.3_
 
-- [ ] 14. Middleware & Authorization
-  - [ ] 14.1 Создать middleware для проверки доступа к организации
+- [x] 14. Middleware & Authorization
+
+
+
+
+  - [x] 14.1 Создать middleware для проверки доступа к организации
+
+
     - Создать `apps/app/middleware/organization-access.ts`
     - Проверять членство в организации перед доступом к ресурсам
     - Возвращать 403 если доступ запрещен
     - _Requirements: 5.4, 5.5_
   
-  - [ ] 14.2 Создать middleware для проверки доступа к workspace
+  - [x] 14.2 Создать middleware для проверки доступа к workspace
+
+
     - Обновить существующий workspace middleware
     - Добавить проверку что workspace принадлежит организации из URL
     - Проверять доступ к организации перед доступом к workspace
     - _Requirements: 6.2, 6.3_
   
-  - [ ] 14.3 Создать хелперы для проверки прав
+  - [x] 14.3 Создать хелперы для проверки прав
+
+
     - Создать `packages/lib/src/permissions/organization.ts`
     - Функции: canManageOrganization, canManageMembers, canInviteMembers
     - Использовать в API endpoints и UI
     - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 15. Checkpoint - UI & Auth Complete
+- [x] 15. Checkpoint - UI & Auth Complete
+
+
+
+
+
+
+
   - Убедиться что все UI компоненты работают
   - Проверить авторизацию и редиректы
   - Протестировать регистрацию нового пользователя
   - Спросить пользователя если возникли вопросы
 
 - [ ] 16. Data Migration
-  - [ ] 16.1 Создать скрипт миграции
+
+
+  - [x] 16.1 Создать скрипт миграции
+
+
     - Создать `packages/db/src/scripts/migrate-to-organizations.ts`
     - Для каждого workspace owner создать организацию
     - Связать workspaces с организациями
@@ -371,6 +400,8 @@
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
   
   - [ ] 16.2 Создать rollback скрипт
+
+
     - Создать `packages/db/src/scripts/rollback-organizations.ts`
     - Возможность отката миграции в случае проблем
     - Восстановление старой структуры
@@ -394,20 +425,37 @@
     - Определять orgSlug на основе workspace
     - _Requirements: 6.6_
   
-  - [ ] 17.2 Обновить все внутренние ссылки
+  - [x] 17.2 Обновить все внутренние ссылки
+
+
+
+
+
+
+
+
+
     - Найти и заменить все ссылки на workspaces
     - Обновить навигацию
     - Обновить breadcrumbs
     - _Requirements: 6.1_
 
-- [ ] 18. Email Templates
-  - [ ] 18.1 Создать email template для приглашения в организацию
+- [x] 18. Email Templates
+
+
+
+
+  - [x] 18.1 Создать email template для приглашения в организацию
+
+
     - Создать `packages/emails/templates/organization-invite.tsx`
     - Использовать React Email
     - Включить название организации, роль, ссылку для принятия
     - _Requirements: 8.3_
   
-  - [ ] 18.2 Интегрировать отправку email
+  - [x] 18.2 Интегрировать отправку email
+
+
     - Обновить API endpoint создания приглашения
     - Отправлять email после создания приглашения
     - Обрабатывать ошибки отправки
