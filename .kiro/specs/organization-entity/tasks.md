@@ -169,33 +169,33 @@
   - **Property 8: Role-Based Access Control**
   - **Validates: Requirements 5.1, 5.2, 5.3, 5.4**
 
-- [ ] 6. API Endpoints - Organization Members
-  - [ ] 6.1 Создать GET /api/organizations/:orgId/members
+- [x] 6. API Endpoints - Organization Members
+  - [x] 6.1 Создать GET /api/organizations/:orgId/members
     - Создать `packages/api/src/routes/organizations/members/list.ts`
     - Проверка доступа к организации
     - Возврат списка участников с user данными
     - _Requirements: 4.7_
   
-  - [ ] 6.2 Создать POST /api/organizations/:orgId/members
+  - [x] 6.2 Создать POST /api/organizations/:orgId/members
     - Создать `packages/api/src/routes/organizations/members/add.ts`
     - Проверка прав (owner/admin)
     - Добавление участника с указанной ролью
     - _Requirements: 4.3, 5.2_
 
-  - [ ] 6.3 Создать PATCH /api/organizations/:orgId/members/:userId
+  - [x] 6.3 Создать PATCH /api/organizations/:orgId/members/:userId
     - Создать `packages/api/src/routes/organizations/members/update-role.ts`
     - Проверка прав (owner может менять всех, admin - кроме owner)
     - Обновление роли участника
     - _Requirements: 5.1, 5.2_
   
-  - [ ] 6.4 Создать DELETE /api/organizations/:orgId/members/:userId
+  - [x] 6.4 Создать DELETE /api/organizations/:orgId/members/:userId
     - Создать `packages/api/src/routes/organizations/members/remove.ts`
     - Проверка защиты последнего owner
     - Каскадное удаление из всех workspaces организации
     - _Requirements: 4.5, 4.6_
 
-- [ ] 7. API Endpoints - Organization Invites
-  - [ ] 7.1 Создать POST /api/organizations/:orgId/invites
+- [x] 7. API Endpoints - Organization Invites
+  - [x] 7.1 Создать POST /api/organizations/:orgId/invites
     - Создать `packages/api/src/routes/organizations/invites/create.ts`
     - Проверка прав (owner/admin)
     - Генерация уникального токена
@@ -203,20 +203,20 @@
     - Отправка email уведомления
     - _Requirements: 8.1, 8.2, 8.3, 8.6_
   
-  - [ ] 7.2 Создать GET /api/organizations/:orgId/invites
+  - [x] 7.2 Создать GET /api/organizations/:orgId/invites
     - Создать `packages/api/src/routes/organizations/invites/list.ts`
     - Проверка прав (owner/admin)
     - Возврат только активных приглашений
     - _Requirements: 8.1_
   
-  - [ ] 7.3 Создать POST /api/invites/:token/accept
+  - [x] 7.3 Создать POST /api/invites/:token/accept
     - Создать `packages/api/src/routes/invites/accept.ts`
     - Валидация токена и срока действия
     - Добавление пользователя в организацию
     - Удаление приглашения после принятия
     - _Requirements: 8.4, 8.5_
   
-  - [ ] 7.4 Создать DELETE /api/organizations/:orgId/invites/:inviteId
+  - [x] 7.4 Создать DELETE /api/organizations/:orgId/invites/:inviteId
     - Создать `packages/api/src/routes/organizations/invites/delete.ts`
     - Проверка прав (owner/admin)
     - Отмена приглашения
