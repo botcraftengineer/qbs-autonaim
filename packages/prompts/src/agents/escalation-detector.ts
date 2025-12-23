@@ -14,9 +14,9 @@ export interface EscalationDetectorInput {
 
 const escalationDetectorOutputSchema = z.object({
   shouldEscalate: z.boolean(),
-  reason: z.string().optional(),
+  reason: z.string().default(""),
   urgency: z.enum(["LOW", "MEDIUM", "HIGH"]),
-  suggestedAction: z.string().optional(),
+  suggestedAction: z.string().default(""),
 });
 
 export type EscalationDetectorOutput = z.infer<

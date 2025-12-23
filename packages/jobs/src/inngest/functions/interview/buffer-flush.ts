@@ -1,8 +1,8 @@
+import { messageBufferService } from "../../../services/buffer";
 import {
   analyzeAndGenerateNextQuestion,
   getInterviewContext,
 } from "../../../services/interview";
-import { messageBufferService } from "../../../services/buffer";
 import { inngest } from "../../client";
 
 /**
@@ -105,21 +105,81 @@ export const bufferFlushFunction = inngest.createFunction(
         messageCount: messages.length,
       });
 
-      const result = await analyzeAndGenerateNextQuestion(context);
+      try {
+        const result = await analyzeAndGenerateNextQuestion(context);
 
-      console.log("📊 LLM response received", {
+        console.log("📊 LLM response received", {
+          conversationId,
+          shouldContinue: result.shouldContinue,
+          hasQuestion: !!result.nextQuestion,
+          reason: result.reason,
+        });
+
+        return { success: true, data: result };
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : String(error);
+
+        // Проверяем, является ли это ошибкой API (Bad Request и т.д.)
+        const isAPIError =
+          errorMessage.includes("Bad Request") ||
+          errorMessage.includes("API") ||
+          errorMessage.includes("AI_APICallError");
+
+        console.error("❌ LLM request failed", {
+          conversationId,
+          error: errorMessage,
+          isAPIError,
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+
+        return {
+          success: false,
+          error: errorMessage,
+          isAPIError,
+        };
+      }
+    });
+
+    // Проверяем успешность запроса к LLM
+    if (!llmResponse.success) {
+      console.error("❌ Skipping response due to LLM error", {
         conversationId,
-        shouldContinue: result.shouldContinue,
-        hasQuestion: !!result.nextQuestion,
-        reason: result.reason,
+        error: llmResponse.error,
+        isAPIError: llmResponse.isAPIError,
       });
 
-      return result;
-    });
+      // Очищаем буфер даже при ошибке
+      await step.run("clear-buffer-on-error", async () => {
+        await messageBufferService.clearBuffer({
+          userId,
+          conversationId,
+          interviewStep,
+        });
+
+        console.log("🧹 Buffer cleared after error", {
+          userId,
+          conversationId,
+          interviewStep,
+        });
+
+        return { cleared: true };
+      });
+
+      return {
+        success: false,
+        error: llmResponse.error,
+        messageCount: messages.length,
+        flushId,
+        skippedResponse: true,
+      };
+    }
+
+    const result = llmResponse.data;
 
     // Отправка ответа кандидату
     await step.run("send-response", async () => {
-      if (llmResponse.shouldContinue && llmResponse.nextQuestion) {
+      if (result.shouldContinue && result.nextQuestion) {
         // Обычный флоу: продолжаем интервью с новым вопросом
         console.log("➡️ Sending next question", {
           conversationId,
@@ -130,45 +190,45 @@ export const bufferFlushFunction = inngest.createFunction(
           name: "telegram/interview.send-question",
           data: {
             conversationId: context.conversationId,
-            question: llmResponse.nextQuestion,
+            question: result.nextQuestion,
             transcription: aggregatedContent,
             questionNumber: context.questionNumber,
           },
         });
       } else if (
-        llmResponse.nextQuestion &&
-        llmResponse.nextQuestion !== "[SKIP]" &&
-        llmResponse.nextQuestion.trim().length > 0
+        result.nextQuestion &&
+        result.nextQuestion !== "[SKIP]" &&
+        result.nextQuestion.trim().length > 0
       ) {
         // Есть ответ кандидату, но shouldContinue=false
         console.log("💬 Sending response without continuing", {
           conversationId,
-          reason: llmResponse.reason,
+          reason: result.reason,
         });
 
         await inngest.send({
           name: "telegram/interview.send-question",
           data: {
             conversationId: context.conversationId,
-            question: llmResponse.nextQuestion,
+            question: result.nextQuestion,
             transcription: aggregatedContent,
             questionNumber: context.questionNumber,
           },
         });
       } else {
         // Проверяем на простое подтверждение
-        const isSimpleAcknowledgment = llmResponse.isSimpleAcknowledgment === true;
+        const isSimpleAcknowledgment = result.isSimpleAcknowledgment === true;
 
         if (isSimpleAcknowledgment) {
           console.log("⏸️ Simple acknowledgment, not completing interview", {
             conversationId,
-            reason: llmResponse.reason,
+            reason: result.reason,
           });
         } else {
           // Завершаем интервью
           console.log("🏁 Completing interview", {
             conversationId,
-            reason: llmResponse.reason,
+            reason: result.reason,
           });
 
           await inngest.send({
@@ -176,7 +236,7 @@ export const bufferFlushFunction = inngest.createFunction(
             data: {
               conversationId: context.conversationId,
               transcription: aggregatedContent,
-              reason: llmResponse.reason ?? undefined,
+              reason: result.reason ?? undefined,
               questionNumber: context.questionNumber,
               responseId: context.responseId ?? undefined,
             },
@@ -186,7 +246,7 @@ export const bufferFlushFunction = inngest.createFunction(
 
       return {
         sent: true,
-        shouldContinue: llmResponse.shouldContinue,
+        shouldContinue: result.shouldContinue,
       };
     });
 

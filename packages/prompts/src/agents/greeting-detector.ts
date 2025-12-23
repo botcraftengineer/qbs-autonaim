@@ -15,7 +15,7 @@ export interface GreetingDetectorInput {
 
 const greetingDetectorOutputSchema = z.object({
   alreadyGreeted: z.boolean(),
-  greetingMessage: z.string().optional(),
+  greetingMessage: z.string().default(""),
   confidence: z.number().min(0).max(1),
 });
 

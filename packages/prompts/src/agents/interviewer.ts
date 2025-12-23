@@ -23,11 +23,11 @@ export interface InterviewerInput {
 const interviewerOutputSchema = z.object({
   analysis: z.string(),
   shouldContinue: z.boolean(),
-  reason: z.string().optional(),
-  nextQuestion: z.string().optional(),
-  confidence: z.number().min(0).max(1).optional(),
-  waitingForCandidateResponse: z.boolean().optional(),
-  isSimpleAcknowledgment: z.boolean().optional(),
+  reason: z.string().default(""),
+  nextQuestion: z.string().default(""),
+  confidence: z.number().min(0).max(1).default(0.8),
+  waitingForCandidateResponse: z.boolean().default(false),
+  isSimpleAcknowledgment: z.boolean().default(false),
 });
 
 export type InterviewerOutput = z.infer<typeof interviewerOutputSchema>;
