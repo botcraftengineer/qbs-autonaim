@@ -34,7 +34,7 @@ export function ResponseTable({
   accessToken,
 }: ResponseTableProps) {
   const trpc = useTRPC();
-  const { workspace } = useWorkspace();
+  const { workspace, orgSlug } = useWorkspace();
   const {
     currentPage,
     setCurrentPage,
@@ -162,7 +162,7 @@ export function ResponseTable({
     return responses.map((response) => (
       <ResponseRow
         key={response.id}
-        orgSlug=""
+        orgSlug={orgSlug ?? ""}
         response={response}
         workspaceSlug={workspaceSlug}
         accessToken={accessToken}

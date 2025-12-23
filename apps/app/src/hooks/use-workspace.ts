@@ -7,10 +7,11 @@ import { useTRPC } from "~/trpc/react";
 
 interface UseWorkspaceReturn {
   workspace: RouterOutputs["organization"]["getWorkspaceBySlug"] | undefined;
-  organization: RouterOutputs["organization"]["get"] | undefined;
+  organization: RouterOutputs["organization"]["getBySlug"] | undefined;
   orgSlug: string | undefined;
   slug: string | undefined;
   isLoading: boolean;
+  organizationIsLoading: boolean;
   error: unknown;
   organizationError: unknown;
 }
@@ -21,8 +22,12 @@ export function useWorkspace(): UseWorkspaceReturn {
   const slug = params.slug as string | undefined;
   const trpc = useTRPC();
 
-  const { data: organization, error: organizationError } = useQuery({
-    ...trpc.organization.get.queryOptions({ id: orgSlug ?? "" }),
+  const {
+    data: organization,
+    isLoading: organizationIsLoading,
+    error: organizationError,
+  } = useQuery({
+    ...trpc.organization.getBySlug.queryOptions({ slug: orgSlug ?? "" }),
     enabled: !!orgSlug,
   });
 
@@ -40,6 +45,7 @@ export function useWorkspace(): UseWorkspaceReturn {
     orgSlug,
     slug,
     isLoading,
+    organizationIsLoading,
     error,
     organizationError,
   };

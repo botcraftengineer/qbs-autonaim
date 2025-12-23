@@ -33,7 +33,8 @@ type WorkspaceWithRole = {
   role: "owner" | "admin" | "member";
   memberCount?: number;
   plan?: string;
-  organizationSlug: string;
+  organizationSlug: string | undefined;
+  organizationId: string | null;
 };
 
 export function WorkspaceSwitcher({
@@ -50,6 +51,7 @@ export function WorkspaceSwitcher({
   const [activeWorkspace, setActiveWorkspace] = React.useState(
     workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0],
   );
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
 
   if (!activeWorkspace) {
     return null;
@@ -149,28 +151,30 @@ export function WorkspaceSwitcher({
               <div className="flex gap-2">
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
-                  onClick={() =>
+                  onClick={() => {
+                    if (!activeWorkspace.organizationSlug) return;
                     router.push(
                       paths.workspace.settings.root(
                         activeWorkspace.organizationSlug,
                         activeWorkspace.slug,
                       ),
-                    )
-                  }
+                    );
+                  }}
                 >
                   <IconSettings className="size-4" />
                   <span className="text-sm">Настройки</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
-                  onClick={() =>
+                  onClick={() => {
+                    if (!activeWorkspace.organizationSlug) return;
                     router.push(
                       paths.workspace.settings.members(
                         activeWorkspace.organizationSlug,
                         activeWorkspace.slug,
                       ),
-                    )
-                  }
+                    );
+                  }}
                 >
                   <IconUserPlus className="size-4" />
                   <span className="text-sm">Пригласить</span>
@@ -206,7 +210,7 @@ export function WorkspaceSwitcher({
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="gap-2 p-2"
-              onSelect={(e) => e.preventDefault()}
+              onClick={() => setCreateDialogOpen(true)}
             >
               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <IconPlus className="size-4" />
@@ -218,6 +222,14 @@ export function WorkspaceSwitcher({
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
+      {activeWorkspace.organizationId && activeWorkspace.organizationSlug && (
+        <CreateWorkspaceDialog
+          organizationId={activeWorkspace.organizationId}
+          organizationSlug={activeWorkspace.organizationSlug}
+          open={createDialogOpen}
+          onOpenChange={setCreateDialogOpen}
+        />
+      )}
     </SidebarMenu>
   );
 }

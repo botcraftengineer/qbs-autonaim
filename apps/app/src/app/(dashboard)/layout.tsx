@@ -33,7 +33,8 @@ export default async function DashboardLayout({
     slug: uw.workspace.slug,
     logo: uw.workspace.logo,
     role: uw.role,
-    organizationSlug: uw.workspace.organization?.slug ?? "",
+    organizationSlug: uw.workspace.organization?.slug,
+    organizationId: uw.workspace.organizationId,
   }));
 
   return (

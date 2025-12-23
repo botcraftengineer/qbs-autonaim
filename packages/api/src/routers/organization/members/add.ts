@@ -9,7 +9,7 @@ export const addMember = protectedProcedure
     z.object({
       organizationId: organizationIdSchema,
       userId: z.string().min(1, "ID пользователя обязателен"),
-      role: z.enum(["owner", "admin", "member"]),
+      role: z.enum(["admin", "member"]),
     }),
   )
   .mutation(async ({ input, ctx }) => {

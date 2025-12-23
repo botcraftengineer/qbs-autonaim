@@ -199,7 +199,11 @@ export class WorkspaceRepository {
           gt(invite.expiresAt, new Date()),
         ),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
     });
   }
@@ -349,7 +353,11 @@ export class WorkspaceRepository {
         gt(workspaceInvite.expiresAt, new Date()),
       ),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
       orderBy: (invite, { desc }) => [desc(invite.createdAt)],
     });

@@ -48,6 +48,11 @@ export function ChatList() {
     staleTime: 10000,
   });
 
+  // Guard: return null if required params are missing
+  if (!orgSlug || !workspaceSlug) {
+    return null;
+  }
+
   if (isPending) {
     return (
       <div className="flex flex-col h-full">
@@ -162,11 +167,7 @@ export function ChatList() {
 
             const isActive =
               pathname ===
-              paths.workspace.chat(
-                orgSlug ?? "",
-                workspaceSlug ?? "",
-                conversation.id,
-              );
+              paths.workspace.chat(orgSlug, workspaceSlug, conversation.id);
 
             let vacancyTitle = null;
             if (conversation.metadata) {
@@ -185,8 +186,8 @@ export function ChatList() {
               <Link
                 key={conversation.id}
                 href={paths.workspace.chat(
-                  orgSlug ?? "",
-                  workspaceSlug ?? "",
+                  orgSlug,
+                  workspaceSlug,
                   conversation.id,
                 )}
               >

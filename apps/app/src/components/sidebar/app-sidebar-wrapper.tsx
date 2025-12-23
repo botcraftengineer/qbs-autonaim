@@ -13,6 +13,8 @@ type WorkspaceWithRole = {
   slug: string;
   logo: string | null;
   role: "owner" | "admin" | "member";
+  organizationSlug: string | undefined;
+  organizationId: string | null;
 };
 
 const ACTIVE_WORKSPACE_KEY = "active-workspace-id";

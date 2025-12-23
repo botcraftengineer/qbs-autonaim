@@ -21,7 +21,7 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
       onSuccess: () => {
         toast.success(`Вы присоединились к ${invite.workspace.name}`);
         router.push(
-          `/orgs/${invite.workspace.organizationId}/workspaces/${invite.workspace.slug}`,
+          `/orgs/${invite.workspace.organization?.slug}/workspaces/${invite.workspace.slug}`,
         );
         router.refresh();
       },

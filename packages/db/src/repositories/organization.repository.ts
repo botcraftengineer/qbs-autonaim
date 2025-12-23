@@ -117,26 +117,28 @@ export class OrganizationRepository {
    * Удалить участника из организации
    */
   async removeMember(orgId: string, userId: string): Promise<void> {
-    // Проверяем, что это не последний owner
-    const owners = await db.query.organizationMember.findMany({
-      where: and(
-        eq(organizationMember.organizationId, orgId),
-        eq(organizationMember.role, "owner"),
-      ),
-    });
-
-    if (owners.length === 1 && owners[0]?.userId === userId) {
-      throw new Error("Невозможно удалить последнего владельца организации");
-    }
-
-    await db
-      .delete(organizationMember)
-      .where(
-        and(
+    await db.transaction(async (tx) => {
+      // Проверяем, что это не последний owner
+      const owners = await tx.query.organizationMember.findMany({
+        where: and(
           eq(organizationMember.organizationId, orgId),
-          eq(organizationMember.userId, userId),
+          eq(organizationMember.role, "owner"),
         ),
-      );
+      });
+
+      if (owners.length === 1 && owners[0]?.userId === userId) {
+        throw new Error("Невозможно удалить последнего владельца организации");
+      }
+
+      await tx
+        .delete(organizationMember)
+        .where(
+          and(
+            eq(organizationMember.organizationId, orgId),
+            eq(organizationMember.userId, userId),
+          ),
+        );
+    });
   }
 
   /**
@@ -147,45 +149,47 @@ export class OrganizationRepository {
     userId: string,
     role: OrganizationRole,
   ): Promise<OrganizationMember> {
-    // Если понижаем owner, проверяем что это не последний owner
-    if (role !== "owner") {
-      const currentMember = await db.query.organizationMember.findFirst({
-        where: and(
-          eq(organizationMember.organizationId, orgId),
-          eq(organizationMember.userId, userId),
-        ),
-      });
-
-      if (currentMember?.role === "owner") {
-        const owners = await db.query.organizationMember.findMany({
+    return db.transaction(async (tx) => {
+      // Если понижаем owner, проверяем что это не последний owner
+      if (role !== "owner") {
+        const currentMember = await tx.query.organizationMember.findFirst({
           where: and(
             eq(organizationMember.organizationId, orgId),
-            eq(organizationMember.role, "owner"),
+            eq(organizationMember.userId, userId),
           ),
         });
 
-        if (owners.length === 1) {
-          throw new Error("Невозможно изменить роль последнего владельца");
+        if (currentMember?.role === "owner") {
+          const owners = await tx.query.organizationMember.findMany({
+            where: and(
+              eq(organizationMember.organizationId, orgId),
+              eq(organizationMember.role, "owner"),
+            ),
+          });
+
+          if (owners.length === 1) {
+            throw new Error("Невозможно изменить роль последнего владельца");
+          }
         }
       }
-    }
 
-    const [updated] = await db
-      .update(organizationMember)
-      .set({ role })
-      .where(
-        and(
-          eq(organizationMember.organizationId, orgId),
-          eq(organizationMember.userId, userId),
-        ),
-      )
-      .returning();
+      const [updated] = await tx
+        .update(organizationMember)
+        .set({ role })
+        .where(
+          and(
+            eq(organizationMember.organizationId, orgId),
+            eq(organizationMember.userId, userId),
+          ),
+        )
+        .returning();
 
-    if (!updated) {
-      throw new Error("Не удалось обновить роль участника");
-    }
+      if (!updated) {
+        throw new Error("Не удалось обновить роль участника");
+      }
 
-    return updated;
+      return updated;
+    });
   }
 
   /**
