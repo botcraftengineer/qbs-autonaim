@@ -98,6 +98,7 @@ export class InterviewOrchestrator {
         conversationId: context.candidateId, // Use candidateId as conversation identifier in Langfuse
         questionNumber: input.questionNumber,
         vacancyTitle: context.vacancyTitle,
+        model: this.model,
       },
       input,
     });
@@ -134,6 +135,7 @@ export class InterviewOrchestrator {
         timestamp: new Date(),
       });
 
+      // Проверяем на простое подтверждение БЕЗ намерения продолжить
       if (
         contextResult.success &&
         contextResult.data?.messageType === "ACKNOWLEDGMENT" &&
@@ -147,6 +149,9 @@ export class InterviewOrchestrator {
           agentTrace,
         };
       }
+
+      // CONTINUATION обрабатывается как обычный ответ - продолжаем интервью
+      // (не возвращаем раньше времени)
 
       // ШАГ 2: Проверка эскалации (если это не простое подтверждение)
       const escalationCheck = await escalationDetector.execute(
@@ -266,6 +271,7 @@ export class InterviewOrchestrator {
           error: true,
           errorMessage,
           errorStack: error instanceof Error ? error.stack : undefined,
+          model: this.model,
           agentTraceCount: agentTrace.length,
         },
       });

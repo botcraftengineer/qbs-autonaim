@@ -76,10 +76,12 @@ export abstract class BaseAgent<TInput, TOutput> {
     try {
       const prompt = this.buildPrompt(input, context);
 
-      // Логируем длину промпта для отладки
-      console.log(`[${this.name}] Prompt length:`, {
-        characters: prompt.length,
+      // Логируем длину промпта и его содержимое для отладки
+      console.log(`[${this.name}] Executing agent:`, {
+        promptLength: prompt.length,
         estimatedTokens: Math.ceil(prompt.length / 4),
+        promptPreview:
+          prompt.substring(0, 500) + (prompt.length > 500 ? "..." : ""),
       });
 
       // Логируем скомпилированный prompt в Langfuse
@@ -108,11 +110,21 @@ export abstract class BaseAgent<TInput, TOutput> {
       const errorMessage =
         error instanceof Error ? error.message : "Неизвестная ошибка";
 
+      // Извлекаем детали ошибки API
+      const apiError = error as any;
+      const responseBody = apiError?.responseBody;
+      const statusCode = apiError?.statusCode;
+      const requestId = apiError?.requestId;
+
       // Логируем детальную информацию об ошибке
       console.error(`[${this.name}] Agent execution failed:`, {
         error: errorMessage,
         stack: error instanceof Error ? error.stack : undefined,
         agentType: this.type,
+        // API детали
+        statusCode,
+        requestId,
+        responseBody: responseBody ? JSON.stringify(responseBody) : undefined,
         // Добавляем детали ошибки для отладки
         errorDetails:
           error instanceof Error
@@ -130,6 +142,8 @@ export abstract class BaseAgent<TInput, TOutput> {
           success: false,
           error: errorMessage,
           errorStack: error instanceof Error ? error.stack : undefined,
+          statusCode,
+          responseBody,
         },
       });
 

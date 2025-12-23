@@ -11,7 +11,7 @@ const langfuse = new Langfuse({
   baseUrl: process.env.LANGFUSE_BASE_URL,
 });
 
-const DEFAULT_MODEL_OPENAI = "gpt-5.2-chat-latest";
+const DEFAULT_MODEL_OPENAI = "gpt-5.2";
 const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
 
 // Создаём OpenAI провайдер с прокси

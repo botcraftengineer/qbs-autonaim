@@ -22,6 +22,7 @@ const contextAnalyzerOutputSchema = z.object({
     "QUESTION",
     "ANSWER",
     "ACKNOWLEDGMENT",
+    "CONTINUATION", // Новый тип: кандидат продолжает свой ответ
     "OTHER",
   ]),
   requiresResponse: z.boolean(),
@@ -44,9 +45,12 @@ export class ContextAnalyzerAgent extends BaseAgent<
 КРИТЕРИИ:
 - PIN_CODE: STRICTLY 4 digits (e.g., "1234").
 - GREETING: "Здравствуйте", "Добрый день".
-- ACKNOWLEDGMENT: "Ок", "Спасибо", "Понятно" (requiresResponse: false).
+- ACKNOWLEDGMENT: ТОЛЬКО если это изолированное подтверждение БЕЗ продолжения ("Ок", "Спасибо", "Понятно") (requiresResponse: false).
+- CONTINUATION: Короткое согласие с намерением продолжить ("Привет, ок", "Да, давайте", "Хорошо, готов") (requiresResponse: true).
 - QUESTION: Кандидат спрашивает о вакансии или условиях.
 - ANSWER: Кандидат отвечает на твой вопрос.
+
+ВАЖНО: Если сообщение содержит приветствие + согласие ("Привет, ок"), это CONTINUATION, а не ACKNOWLEDGMENT!
 
 ${RECRUITER_PERSONA.LANGUAGE_RULES}`;
 
