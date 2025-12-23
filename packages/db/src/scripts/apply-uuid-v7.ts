@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { sql } from "drizzle-orm";
 import { db } from "../client";
 
-async function applyUuidV7AndOrganizationIdFunctions() {
+async function applyUuidV7AndOrganizationIdFunctions(): Promise<void> {
   try {
     const uuidV7Content = readFileSync(
       join(import.meta.dir, "uuid-v7.sql"),
@@ -22,8 +22,12 @@ async function applyUuidV7AndOrganizationIdFunctions() {
     console.log("✅ Функция генерации ID организации успешно обновлена");
 
     process.exit(0);
-  } catch (error) {
-    console.error("❌ Ошибка при применении функций:", error);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ Ошибка при применении функций:", error.message);
+    } else {
+      console.error("❌ Ошибка при применении функций:", String(error));
+    }
     process.exit(1);
   }
 }
