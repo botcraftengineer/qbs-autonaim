@@ -316,6 +316,18 @@ export function CandidateModal({
                         toast.error("Резюме недоступно");
                       }
                       break;
+                    case "download-resume":
+                      if (candidateDetail.resumePdfUrl) {
+                        const link = document.createElement("a");
+                        link.href = candidateDetail.resumePdfUrl;
+                        link.download = `resume-${candidateDetail.name}.pdf`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      } else {
+                        toast.error("PDF резюме недоступно");
+                      }
+                      break;
                     case "refresh-resume":
                       void handleRefreshResume();
                       break;

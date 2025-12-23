@@ -1,5 +1,6 @@
 import { eq, workspaceRepository } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -63,6 +64,7 @@ export const getById = protectedProcedure
         screening: true,
         telegramInterviewScoring: true,
         photoFile: true,
+        resumePdfFile: true,
         conversation: {
           with: {
             messages: {
@@ -114,6 +116,11 @@ export const getById = protectedProcedure
     const avatarFileId = response.photoFile?.id ?? null;
     const messageCount = response.conversation?.messages?.length ?? 0;
 
+    let resumePdfUrl: string | null = null;
+    if (response.resumePdfFile) {
+      resumePdfUrl = await getDownloadUrl(response.resumePdfFile.key);
+    }
+
     return {
       id: response.id,
       name: response.candidateName || "Без имени",
@@ -146,6 +153,7 @@ export const getById = protectedProcedure
       github: github,
       telegram: telegram,
       resumeUrl: response.resumeUrl,
+      resumePdfUrl,
       messageCount,
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,

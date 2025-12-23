@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
@@ -17,9 +18,9 @@ import { createLogger, INTERVIEW } from "../base";
 const logger = createLogger("Interview");
 
 const langfuse = new Langfuse({
-  secretKey: process.env.LANGFUSE_SECRET_KEY,
-  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-  baseUrl: process.env.LANGFUSE_BASE_URL,
+  secretKey: env.LANGFUSE_SECRET_KEY,
+  publicKey: env.LANGFUSE_PUBLIC_KEY,
+  baseUrl: env.LANGFUSE_BASE_URL,
 });
 
 // ==================== TYPES ====================

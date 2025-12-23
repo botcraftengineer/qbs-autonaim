@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   DollarSign,
+  Download,
   FileText,
   Github,
   Loader2,
@@ -154,96 +155,111 @@ export function CandidateInfo({
         </div>
       )}
 
-      <div className="border-t pt-5 flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          className="gap-2"
-          onClick={() => onAction?.("send-greeting")}
-          disabled={isLoading.sendGreeting}
-          aria-label="Отправить приветственное сообщение кандидату"
-        >
-          {isLoading.sendGreeting ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
+      <div className="border-t pt-5 space-y-3">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("send-greeting")}
+            disabled={isLoading.sendGreeting}
+            aria-label="Отправить приветственное сообщение кандидату"
+          >
+            {isLoading.sendGreeting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            Отправить приветствие
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("invite")}
+            disabled={isLoading.invite}
+            aria-label="Пригласить кандидата на собеседование"
+          >
+            {isLoading.invite ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCircle className="h-4 w-4" />
+            )}
+            Пригласить
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("send-offer")}
+            aria-label="Отправить оффер кандидату"
+          >
             <Send className="h-4 w-4" />
-          )}
-          Отправить приветствие
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => onAction?.("send-offer")}
-          aria-label="Отправить оффер кандидату"
-        >
-          <Send className="h-4 w-4" />
-          Отправить оффер
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => onAction?.("invite")}
-          disabled={isLoading.invite}
-          aria-label="Пригласить кандидата на собеседование"
-        >
-          {isLoading.invite ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <CheckCircle className="h-4 w-4" />
-          )}
-          Пригласить
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => onAction?.("rate")}
-          disabled={isLoading.rate}
-          aria-label="Оценить кандидата"
-        >
-          {isLoading.rate ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Sparkles className="h-4 w-4" />
-          )}
-          {isLoading.rate ? "Оценка…" : "Оценить"}
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => onAction?.("view-resume")}
-          aria-label="Открыть резюме кандидата"
-        >
-          <FileText className="h-4 w-4" />
-          Резюме
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2"
-          onClick={() => onAction?.("refresh-resume")}
-          disabled={isLoading.refreshResume}
-          aria-label="Обновить резюме кандидата"
-        >
-          {isLoading.refreshResume ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <RefreshCw className="h-4 w-4" />
-          )}
-          Обновить резюме
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-2 ml-auto text-destructive border-destructive hover:bg-destructive hover:text-destructive-foreground"
-          onClick={() => onAction?.("reject")}
-          aria-label="Отклонить кандидата"
-        >
-          <XCircle className="h-4 w-4" />
-          Отклонить
-        </Button>
+            Отправить оффер
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 ml-auto text-destructive border-destructive hover:bg-destructive hover:text-white"
+            onClick={() => onAction?.("reject")}
+            aria-label="Отклонить кандидата"
+          >
+            <XCircle className="h-4 w-4" />
+            Отклонить
+          </Button>
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("rate")}
+            disabled={isLoading.rate}
+            aria-label="Оценить кандидата"
+          >
+            {isLoading.rate ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {isLoading.rate ? "Оценка…" : "Оценить"}
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("view-resume")}
+            aria-label="Открыть резюме кандидата"
+          >
+            <FileText className="h-4 w-4" />
+            Резюме
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("download-resume")}
+            aria-label="Скачать резюме кандидата"
+          >
+            <Download className="h-4 w-4" />
+            Скачать резюме
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => onAction?.("refresh-resume")}
+            disabled={isLoading.refreshResume}
+            aria-label="Обновить резюме кандидата"
+          >
+            {isLoading.refreshResume ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
+            Обновить резюме
+          </Button>
+        </div>
       </div>
     </div>
   );
