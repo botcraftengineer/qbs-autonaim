@@ -13,6 +13,9 @@ import { listMembers } from "./members/list";
 import { removeMember } from "./members/remove";
 import { updateMemberRole } from "./members/update-role";
 import { update } from "./update";
+import { createWorkspace } from "./workspaces/create";
+import { getWorkspaceBySlug } from "./workspaces/get-by-slug";
+import { listWorkspaces } from "./workspaces/list";
 
 export const organizationRouter = {
   list,
@@ -28,4 +31,7 @@ export const organizationRouter = {
   listInvites,
   acceptInvite,
   deleteInvite,
+  createWorkspace,
+  listWorkspaces,
+  getWorkspaceBySlug,
 } satisfies TRPCRouterRecord;

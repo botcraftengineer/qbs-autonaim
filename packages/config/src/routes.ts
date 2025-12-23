@@ -47,4 +47,11 @@ export const paths = {
     accept: (token: string) => `${ROOTS.INVITE}/${token}`,
   },
   accessDenied: ROOTS.ACCESS_DENIED,
+  organization: {
+    workspaces: (slug: string) => `/orgs/${slug}/workspaces`,
+    settings: {
+      root: (slug: string) => `/orgs/${slug}/settings`,
+      members: (slug: string) => `/orgs/${slug}/settings/members`,
+    },
+  },
 } as const;

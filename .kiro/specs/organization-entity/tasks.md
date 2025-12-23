@@ -227,20 +227,20 @@
   - **Property 11: Invitation Acceptance**
   - **Validates: Requirements 8.1, 8.2, 8.4, 8.5, 8.6**
 
-- [ ] 8. API Endpoints - Workspaces (обновленные)
-  - [ ] 8.1 Обновить POST /api/workspaces
+- [x] 8. API Endpoints - Workspaces (обновленные)
+  - [x] 8.1 Обновить POST /api/workspaces
     - Изменить на POST /api/organizations/:orgId/workspaces
     - Добавить параметр organizationId
     - Проверка доступа к организации
     - Уникальность slug в рамках организации
     - _Requirements: 3.1, 6.1_
   
-  - [ ] 8.2 Создать GET /api/organizations/:orgId/workspaces
+  - [x] 8.2 Создать GET /api/organizations/:orgId/workspaces
     - Получение всех workspaces организации
     - Проверка доступа к организации
     - _Requirements: 3.4_
   
-  - [ ] 8.3 Создать GET /api/organizations/:orgId/workspaces/:workspaceSlug
+  - [x] 8.3 Создать GET /api/organizations/:orgId/workspaces/:workspaceSlug
     - Получение workspace по slug
     - Валидация что workspace принадлежит организации
     - _Requirements: 6.2_
@@ -249,13 +249,13 @@
   - **Property 9: URL Pattern Validation**
   - **Validates: Requirements 6.1, 6.2**
 
-- [ ] 9. Checkpoint - API Layer Complete
-  - Убедиться что все endpoints работают
-  - Проверить авторизацию и валидацию
-  - Спросить пользователя если возникли вопросы
+- [x] 9. Checkpoint - API Layer Complete
+  - [x] Убедиться что все endpoints работают
+  - [x] Проверить авторизацию и валидацию
+  - [x] Спросить пользователя если возникли вопросы
 
-- [ ] 10. UI Components - Organization Switcher
-  - [ ] 10.1 Создать OrganizationSwitcher компонент
+- [x] 10. UI Components - Organization Switcher
+  - [x] 10.1 Создать OrganizationSwitcher компонент
     - Создать `apps/app/components/organization-switcher.tsx`
     - Использовать Shadcn DropdownMenu
     - Отображение списка организаций пользователя
@@ -263,20 +263,20 @@
     - Переключение между организациями
     - _Requirements: 9.1, 9.2, 9.4_
   
-  - [ ] 10.2 Интегрировать OrganizationSwitcher в навигацию
+  - [x] 10.2 Интегрировать OrganizationSwitcher в навигацию
     - Добавить в главную навигацию приложения
     - Показывать текущую организацию
     - _Requirements: 9.4_
 
-- [ ] 11. UI Components - Organization Settings
-  - [ ] 11.1 Создать страницу General Settings
+- [-] 11. UI Components - Organization Settings
+  - [x] 11.1 Создать страницу General Settings
     - Создать `apps/app/app/orgs/[orgSlug]/settings/page.tsx`
     - Форма редактирования: name, slug, description, website, logo
     - Валидация на клиенте с помощью Zod
     - Оптимистичные обновления
     - _Requirements: 2.6_
 
-  - [ ] 11.2 Создать страницу Members Management
+  - [x] 11.2 Создать страницу Members Management
     - Создать `apps/app/app/orgs/[orgSlug]/settings/members/page.tsx`
     - Таблица участников с аватарами, именами, ролями
     - Dropdown для изменения ролей (с проверкой прав)
