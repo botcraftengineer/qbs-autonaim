@@ -34,7 +34,9 @@ export function InvitationsClient({ invites }: { invites: Invite[] }) {
     trpc.workspace.invites.accept.mutationOptions({
       onSuccess: (data) => {
         toast.success(`Вы присоединились к ${data.workspace.name}`);
-        router.push(`/${data.workspace.slug}`);
+        router.push(
+          `/orgs/${data.workspace.organization?.slug}/workspaces/${data.workspace.slug}`,
+        );
         router.refresh();
       },
       onError: (error) => {

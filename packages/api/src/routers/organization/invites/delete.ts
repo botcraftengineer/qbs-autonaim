@@ -33,6 +33,24 @@ export const deleteInvite = protectedProcedure
       });
     }
 
+    // Загрузка приглашения
+    const invite = await organizationRepository.getInviteById(input.inviteId);
+
+    if (!invite) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Приглашение не найдено",
+      });
+    }
+
+    // Проверка принадлежности приглашения к организации
+    if (invite.organizationId !== input.organizationId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к организации",
+      });
+    }
+
     // Отмена приглашения
     await organizationRepository.deleteInvite(input.inviteId);
 

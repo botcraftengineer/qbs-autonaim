@@ -22,7 +22,7 @@ const sidebarNavItems = [
     icon: Mail,
   },
   {
-    title: "Danger Zone",
+    title: "Опасная зона",
     href: "/settings/danger",
     icon: AlertTriangle,
     variant: "destructive" as const,

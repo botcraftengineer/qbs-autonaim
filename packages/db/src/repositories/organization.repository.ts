@@ -273,6 +273,17 @@ export class OrganizationRepository {
   }
 
   /**
+   * Получить приглашение по ID
+   */
+  async getInviteById(inviteId: string): Promise<OrganizationInvite | null> {
+    const invite = await db.query.organizationInvite.findFirst({
+      where: eq(organizationInvite.id, inviteId),
+    });
+
+    return invite ?? null;
+  }
+
+  /**
    * Получить приглашение по токену
    */
   async getInviteByToken(token: string): Promise<OrganizationInvite | null> {

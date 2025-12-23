@@ -162,6 +162,7 @@ export function ResponseTable({
     return responses.map((response) => (
       <ResponseRow
         key={response.id}
+        orgSlug=""
         response={response}
         workspaceSlug={workspaceSlug}
         accessToken={accessToken}

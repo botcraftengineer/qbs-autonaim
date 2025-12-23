@@ -5,17 +5,25 @@ import { db } from "../client";
 
 async function applyUuidV7Function() {
   try {
-    const sqlContent = readFileSync(
+    const uuidV7Content = readFileSync(
       join(import.meta.dir, "uuid-v7.sql"),
       "utf-8",
     );
 
-    await db.execute(sql.raw(sqlContent));
-
+    await db.execute(sql.raw(uuidV7Content));
     console.log("✅ UUID v7 function updated successfully");
+
+    const orgIdContent = readFileSync(
+      join(import.meta.dir, "organization-id-generate.sql"),
+      "utf-8",
+    );
+
+    await db.execute(sql.raw(orgIdContent));
+    console.log("✅ Organization ID generate function updated successfully");
+
     process.exit(0);
   } catch (error) {
-    console.error("❌ Error applying UUID v7 function:", error);
+    console.error("❌ Error applying functions:", error);
     process.exit(1);
   }
 }

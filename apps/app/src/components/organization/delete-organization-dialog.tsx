@@ -32,6 +32,7 @@ export function DeleteOrganizationDialog({
   isDeleting,
 }: DeleteOrganizationDialogProps) {
   const [confirmText, setConfirmText] = React.useState("");
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const isConfirmValid = confirmText === organizationName;
 
   const handleOpenChange = (newOpen: boolean) => {
@@ -41,6 +42,10 @@ export function DeleteOrganizationDialog({
     onOpenChange(newOpen);
     if (!newOpen) {
       setConfirmText("");
+    } else {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 0);
     }
   };
 
@@ -86,11 +91,17 @@ export function DeleteOrganizationDialog({
               для подтверждения
             </Label>
             <Input
+              ref={inputRef}
               id="confirm-name"
               type="text"
               placeholder={organizationName}
               value={confirmText}
               onChange={(e) => setConfirmText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && isConfirmValid && !isDeleting) {
+                  handleConfirm();
+                }
+              }}
               disabled={isDeleting}
               autoComplete="off"
               className="font-mono"

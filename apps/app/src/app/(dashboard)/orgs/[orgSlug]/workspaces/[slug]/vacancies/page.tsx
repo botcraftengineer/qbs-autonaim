@@ -333,8 +333,8 @@ export default function VacanciesPage() {
                           <TableCell>
                             <Link
                               href={paths.workspace.vacancies(
-                                orgSlug,
-                                workspaceSlug,
+                                orgSlug ?? "",
+                                workspaceSlug ?? "",
                                 vacancy.id,
                               )}
                               className="font-medium hover:underline"
@@ -362,8 +362,8 @@ export default function VacanciesPage() {
                           <TableCell className="text-right tabular-nums">
                             <Link
                               href={paths.workspace.vacancies(
-                                orgSlug,
-                                workspaceSlug,
+                                orgSlug ?? "",
+                                workspaceSlug ?? "",
                                 vacancy.id,
                               )}
                               className="font-medium hover:underline text-primary"

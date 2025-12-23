@@ -145,7 +145,9 @@ export function UnifiedAuthForm({
           toast.success("Аккаунт успешно создан!");
 
           // Редиректим на новый workspace
-          router.push(paths.workspace.root(organization.slug, workspace.slug));
+          router.push(
+            paths.workspace.root(organization.slug, workspace?.slug ?? ""),
+          );
           return;
         } catch (orgError) {
           console.error("Failed to create organization/workspace:", orgError);

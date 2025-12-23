@@ -22,16 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { ChevronsUpDown } from "lucide-react";
 import * as React from "react";
-
-type OrganizationWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  memberCount?: number;
-  workspaceCount?: number;
-};
+import type { OrganizationWithRole } from "~/types/organization";
 
 export function OrganizationSwitcher({
   organizations,

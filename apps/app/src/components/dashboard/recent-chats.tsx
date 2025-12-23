@@ -63,6 +63,7 @@ export function RecentChats({ workspaceSlug }: RecentChatsProps) {
         {chats.map(({ conversation, lastMessage }) => (
           <ChatPreviewCard
             key={conversation.id}
+            orgSlug=""
             candidateId={conversation.id}
             candidateName={conversation.candidateName ?? "Кандидат"}
             lastMessage={lastMessage.content}

@@ -40,6 +40,7 @@
     "migrate-server": "bun with-env bun src/scripts/migrate-server.ts",
     "migrate-server-dump": "bun with-env bun src/scripts/migrate-server-dump.ts",
     "migrate-workspace": "bun with-env bun src/scripts/migrate-workspace.ts",
+    "migrate-orgs": "bun with-env bun src/scripts/migrate-to-organizations.ts",
     "typecheck": "tsc --noEmit --emitDeclarationOnly false",
     "with-env": "bun run --env-file ../../.env"
   },

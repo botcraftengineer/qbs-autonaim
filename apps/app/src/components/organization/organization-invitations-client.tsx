@@ -3,6 +3,14 @@
 import {
   Alert,
   AlertDescription,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Button,
   Card,
   CardContent,
@@ -21,6 +29,7 @@ import {
   Trash2,
   UserPlus,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import { InviteMemberDialog } from "./invite-member-dialog";
@@ -34,6 +43,8 @@ export function OrganizationInvitationsClient({
 }: OrganizationInvitationsClientProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [selectedInviteId, setSelectedInviteId] = useState<string | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Получение списка приглашений
   const { data: invites, isLoading } = useQuery(
@@ -58,15 +69,18 @@ export function OrganizationInvitationsClient({
   );
 
   const handleDeleteInvite = (inviteId: string) => {
-    if (
-      confirm(
-        "Вы уверены, что хотите отменить это приглашение? Ссылка станет недействительной.",
-      )
-    ) {
+    setSelectedInviteId(inviteId);
+    setIsDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (selectedInviteId) {
       deleteInviteMutation.mutate({
         organizationId,
-        inviteId,
+        inviteId: selectedInviteId,
       });
+      setIsDialogOpen(false);
+      setSelectedInviteId(null);
     }
   };
 
@@ -225,6 +239,30 @@ export function OrganizationInvitationsClient({
           })}
         </div>
       )}
+
+      <AlertDialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Отменить приглашение</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы уверены, что хотите отменить это приглашение? Ссылка станет
+              недействительной, и пользователь не сможет присоединиться к
+              организации по этому приглашению.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteInviteMutation.isPending}
+            >
+              {deleteInviteMutation.isPending
+                ? "Отмена…"
+                : "Отменить приглашение"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

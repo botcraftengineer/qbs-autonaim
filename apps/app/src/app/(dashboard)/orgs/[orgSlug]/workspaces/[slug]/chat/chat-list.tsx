@@ -162,7 +162,11 @@ export function ChatList() {
 
             const isActive =
               pathname ===
-              paths.workspace.chat(orgSlug, workspaceSlug, conversation.id);
+              paths.workspace.chat(
+                orgSlug ?? "",
+                workspaceSlug ?? "",
+                conversation.id,
+              );
 
             let vacancyTitle = null;
             if (conversation.metadata) {
@@ -181,8 +185,8 @@ export function ChatList() {
               <Link
                 key={conversation.id}
                 href={paths.workspace.chat(
-                  orgSlug,
-                  workspaceSlug,
+                  orgSlug ?? "",
+                  workspaceSlug ?? "",
                   conversation.id,
                 )}
               >

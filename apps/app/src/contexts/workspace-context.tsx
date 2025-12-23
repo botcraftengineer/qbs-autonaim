@@ -25,15 +25,15 @@ const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(
 );
 
 export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const { workspace, role, workspaceSlug, isLoading } = useWorkspace();
+  const { workspace, isLoading } = useWorkspace();
 
   return (
     <WorkspaceContext.Provider
       value={{
         workspaceId: workspace?.id,
-        workspaceSlug,
+        workspaceSlug: workspace?.slug,
         workspace,
-        role,
+        role: undefined,
         isLoading,
       }}
     >

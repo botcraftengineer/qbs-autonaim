@@ -1,4 +1,9 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+import {
+  dbEdge,
+  organization,
+  organizationMember,
+  organizationRepository,
+} from "@qbs-autonaim/db";
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import { createOrganizationSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -20,20 +25,41 @@ export const create = protectedProcedure
       dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
     }
 
-    const organization = await organizationRepository.create(dataToCreate);
+    try {
+      const result = await dbEdge.transaction(async (tx) => {
+        const [newOrg] = await tx
+          .insert(organization)
+          .values(dataToCreate)
+          .returning();
 
-    if (!organization) {
+        if (!newOrg) {
+          throw new Error("Не удалось создать организацию");
+        }
+
+        const [member] = await tx
+          .insert(organizationMember)
+          .values({
+            organizationId: newOrg.id,
+            userId: ctx.session.user.id,
+            role: "owner",
+          })
+          .returning();
+
+        if (!member) {
+          throw new Error("Не удалось добавить владельца организации");
+        }
+
+        return newOrg;
+      });
+
+      return result;
+    } catch (error) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Не удалось создать организацию",
+        message:
+          error instanceof Error
+            ? error.message
+            : "Не удалось создать организацию",
       });
     }
-
-    await organizationRepository.addMember(
-      organization.id,
-      ctx.session.user.id,
-      "owner",
-    );
-
-    return organization;
   });

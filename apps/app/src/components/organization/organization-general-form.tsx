@@ -265,7 +265,7 @@ export function OrganizationGeneralForm({
                       {/* biome-ignore lint/performance/noImgElement: preview from FileReader */}
                       <img
                         src={logoPreview}
-                        alt="Organization logo"
+                        alt="Логотип организации"
                         className="h-full w-full object-cover"
                       />
                     </div>

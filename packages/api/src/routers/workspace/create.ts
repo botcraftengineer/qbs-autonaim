@@ -55,7 +55,10 @@ export const create = protectedProcedure
       organizationId = firstOrg.id;
     }
 
-    const existing = await workspaceRepository.findBySlug(input.workspace.slug);
+    const existing = await workspaceRepository.findBySlugAndOrganization(
+      input.workspace.slug,
+      organizationId,
+    );
     if (existing) {
       throw new TRPCError({
         code: "CONFLICT",
@@ -73,7 +76,7 @@ export const create = protectedProcedure
       organizationId,
     });
 
-    if (!workspace) {
+    if (!workspace || !workspace.id) {
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Не удалось создать workspace",

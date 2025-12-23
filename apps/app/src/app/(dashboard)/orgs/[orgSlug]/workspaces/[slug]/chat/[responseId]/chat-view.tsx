@@ -186,7 +186,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
           <div className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="flex items-center gap-3 px-4 py-3">
               <Link
-                href={paths.workspace.chat(orgSlug, workspaceSlug)}
+                href={paths.workspace.chat(orgSlug ?? "", workspaceSlug ?? "")}
                 className="md:hidden"
               >
                 <Button variant="ghost" size="icon" className="h-9 w-9">

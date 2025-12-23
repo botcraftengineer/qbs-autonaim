@@ -61,6 +61,14 @@ export const createWorkspace = protectedProcedure
       });
     }
 
+    // Проверка что id был сгенерирован
+    if (!workspace.id) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Не удалось сгенерировать ID workspace",
+      });
+    }
+
     // Добавление создателя как owner с защитой от ошибок
     try {
       await workspaceRepository.addUser(

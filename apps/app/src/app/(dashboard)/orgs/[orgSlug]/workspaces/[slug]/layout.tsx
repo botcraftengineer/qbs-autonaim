@@ -28,7 +28,7 @@ export default async function WorkspaceLayout({
   }
 
   // Получаем workspace по slug в рамках организации
-  const workspace = await caller.organization.workspaces.getBySlug({
+  const workspace = await caller.organization.getWorkspaceBySlug({
     organizationId: organization.id,
     slug,
   });

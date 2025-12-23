@@ -4,6 +4,7 @@ import { paths } from "@qbs-autonaim/config";
 import { useParams, useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
+import type { OrganizationWithRole } from "~/types/organization";
 import { AppSidebar } from "./app-sidebar";
 
 type WorkspaceWithRole = {
@@ -12,16 +13,6 @@ type WorkspaceWithRole = {
   slug: string;
   logo: string | null;
   role: "owner" | "admin" | "member";
-};
-
-type OrganizationWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  memberCount?: number;
-  workspaceCount?: number;
 };
 
 const ACTIVE_WORKSPACE_KEY = "active-workspace-id";

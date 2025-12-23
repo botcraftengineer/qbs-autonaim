@@ -53,7 +53,6 @@ export function CreateWorkspaceDialog({
       slug: "",
       description: "",
       website: "",
-      logo: "",
     },
   });
 
@@ -66,7 +65,9 @@ export function CreateWorkspaceDialog({
         onOpenChange(false);
         form.reset();
         // Перенаправляем на страницу нового воркспейса
-        router.push(paths.workspace.root(organizationSlug, workspace.slug));
+        router.push(
+          paths.workspace.root(organizationSlug, workspace?.slug ?? ""),
+        );
         router.refresh();
       },
       onError: (error) => {

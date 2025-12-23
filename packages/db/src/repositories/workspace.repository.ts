@@ -31,7 +31,12 @@ export class WorkspaceRepository {
 
     // ID генерируется автоматически через workspace_id_generate()
     const [newWorkspace] = await db.insert(workspace).values(data).returning();
-    return newWorkspace;
+
+    // Возвращаем workspace с организацией
+    return {
+      ...newWorkspace,
+      organization: org,
+    };
   }
 
   // Получить workspace по ID
@@ -56,12 +61,26 @@ export class WorkspaceRepository {
     });
   }
 
+  // Получить workspace по slug и organizationId
+  async findBySlugAndOrganization(slug: string, organizationId: string) {
+    return db.query.workspace.findFirst({
+      where: and(
+        eq(workspace.slug, slug),
+        eq(workspace.organizationId, organizationId),
+      ),
+    });
+  }
+
   // Получить все workspaces пользователя
   async findByUserId(userId: string) {
     return db.query.userWorkspace.findMany({
       where: eq(userWorkspace.userId, userId),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
     });
   }
@@ -310,7 +329,11 @@ export class WorkspaceRepository {
     return db.query.workspaceInvite.findFirst({
       where: eq(workspaceInvite.token, token),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
     });
   }

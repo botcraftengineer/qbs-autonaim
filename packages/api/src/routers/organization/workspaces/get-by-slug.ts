@@ -38,13 +38,5 @@ export const getWorkspaceBySlug = protectedProcedure
       });
     }
 
-    // Дополнительная валидация что workspace принадлежит организации
-    if (workspace.organizationId !== input.organizationId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Workspace не принадлежит этой организации",
-      });
-    }
-
     return workspace;
   });

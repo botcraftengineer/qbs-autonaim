@@ -204,21 +204,17 @@ export function WorkspaceSwitcher({
               </DropdownMenuItem>
             ))}
             <DropdownMenuSeparator />
-            <CreateWorkspaceDialog
-              trigger={
-                <DropdownMenuItem
-                  className="gap-2 p-2"
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                    <IconPlus className="size-4" />
-                  </div>
-                  <div className="text-muted-foreground font-medium">
-                    Создать рабочее пространство
-                  </div>
-                </DropdownMenuItem>
-              }
-            />
+            <DropdownMenuItem
+              className="gap-2 p-2"
+              onSelect={(e) => e.preventDefault()}
+            >
+              <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
+                <IconPlus className="size-4" />
+              </div>
+              <div className="text-muted-foreground font-medium">
+                Создать рабочее пространство
+              </div>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>

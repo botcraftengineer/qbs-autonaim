@@ -11,8 +11,8 @@ interface UseWorkspaceReturn {
   orgSlug: string | undefined;
   slug: string | undefined;
   isLoading: boolean;
-  error: Error | null;
-  organizationError: Error | null;
+  error: unknown;
+  organizationError: unknown;
 }
 
 export function useWorkspace(): UseWorkspaceReturn {
