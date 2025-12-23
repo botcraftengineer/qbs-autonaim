@@ -2,12 +2,17 @@ import { relations } from "drizzle-orm";
 import { user } from "../auth/user";
 import { companySettings } from "../company/company-settings";
 import { integration } from "../integration/integration";
+import { organization } from "../organization/organization";
 import { vacancy } from "../vacancy/vacancy";
 import { userWorkspace } from "./user-workspace";
 import { workspace } from "./workspace";
 import { workspaceInvite } from "./workspace-invite";
 
 export const workspaceRelations = relations(workspace, ({ many, one }) => ({
+  organization: one(organization, {
+    fields: [workspace.organizationId],
+    references: [organization.id],
+  }),
   userWorkspaces: many(userWorkspace),
   integrations: many(integration),
   vacancies: many(vacancy),
