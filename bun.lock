@@ -31,8 +31,8 @@
         "@tanstack/react-form": "1.27.6",
         "@tanstack/react-query": "5.90.12",
         "@tanstack/react-table": "8.21.3",
-        "@trpc/client": "^11.8.1",
-        "@trpc/server": "^11.8.1",
+        "@trpc/client": "11.8.1",
+        "@trpc/server": "11.8.1",
         "@trpc/tanstack-react-query": "^11.8.1",
         "@vercel/analytics": "^1.6.1",
         "better-auth": "1.4.9",
@@ -94,7 +94,7 @@
         "@radix-ui/react-tooltip": "1.2.8",
         "@t3-oss/env-nextjs": "^0.13.10",
         "@vercel/analytics": "1.6.1",
-        "class-variance-authority": "^0.7.1",
+        "class-variance-authority": "0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "1.1.1",
         "date-fns": "4.1.0",
@@ -228,7 +228,7 @@
     },
     "packages/jobs": {
       "name": "@qbs-autonaim/jobs",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@ai-sdk/deepseek": "2.0.1",
         "@ai-sdk/openai": "3.0.1",
@@ -265,7 +265,7 @@
     },
     "packages/lib": {
       "name": "@qbs-autonaim/lib",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "dependencies": {
         "@ai-sdk/deepseek": "2.0.1",
         "@ai-sdk/openai": "3.0.1",
