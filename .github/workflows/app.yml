@@ -31,6 +31,7 @@ jobs:
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           docker build . --file apps/app/Dockerfile \
+            --build-arg POSTGRES_URL=${{ secrets.POSTGRES_URL }} \
             --tag $IMAGE_ID:$IMAGE_TAG \
             --tag $IMAGE_ID:latest
           docker push $IMAGE_ID:latest
