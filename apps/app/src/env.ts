@@ -1,4 +1,3 @@
-import { env as baseEnv } from "@qbs-autonaim/config";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { vercel } from "@t3-oss/env-nextjs/presets-zod";
 import { z } from "zod";
@@ -35,6 +34,3 @@ export const env = createEnv({
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",
 });
-
-// Re-export base env for convenience
-export { baseEnv };
