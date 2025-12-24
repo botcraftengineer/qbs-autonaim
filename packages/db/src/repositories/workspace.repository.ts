@@ -54,15 +54,8 @@ export class WorkspaceRepository {
     });
   }
 
-  // Получить workspace по slug
-  async findBySlug(slug: string) {
-    return db.query.workspace.findFirst({
-      where: eq(workspace.slug, slug),
-    });
-  }
-
   // Получить workspace по slug и organizationId
-  async findBySlugAndOrganization(slug: string, organizationId: string) {
+  async findBySlug(slug: string, organizationId: string) {
     return db.query.workspace.findFirst({
       where: and(
         eq(workspace.slug, slug),

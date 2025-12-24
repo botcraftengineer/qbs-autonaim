@@ -55,7 +55,7 @@ export const create = protectedProcedure
       organizationId = firstOrg.id;
     }
 
-    const existing = await workspaceRepository.findBySlugAndOrganization(
+    const existing = await workspaceRepository.findBySlug(
       input.workspace.slug,
       organizationId,
     );

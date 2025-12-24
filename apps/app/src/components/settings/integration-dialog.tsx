@@ -119,11 +119,20 @@ export function IntegrationDialog({
   const queryClient = useQueryClient();
   const params = useParams();
   const workspaceSlug = params.workspaceSlug as string;
+  const orgSlug = params.orgSlug as string;
   const [showPassword, setShowPassword] = useState(false);
 
-  const { data: workspaceData } = useQuery(
-    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
+  const { data: orgData } = useQuery(
+    trpc.organization.getBySlug.queryOptions({ slug: orgSlug }),
   );
+
+  const { data: workspaceData } = useQuery({
+    ...trpc.workspace.getBySlug.queryOptions({
+      slug: workspaceSlug,
+      organizationId: orgData?.id ?? "",
+    }),
+    enabled: !!orgData?.id,
+  });
 
   const workspaceId = useMemo(
     () => workspaceData?.workspace?.id || "",

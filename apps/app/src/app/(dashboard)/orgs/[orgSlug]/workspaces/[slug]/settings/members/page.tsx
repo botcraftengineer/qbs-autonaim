@@ -6,19 +6,20 @@ import { api } from "~/trpc/server";
 export default async function MembersPage({
   params,
 }: {
-  params: Promise<{ workspaceSlug: string }>;
+  params: Promise<{ slug: string; orgSlug: string }>;
 }) {
-  const { workspaceSlug } = await params;
+  const { slug: workspaceSlug, orgSlug } = await params;
   const session = await getSession();
 
   if (!session?.user) {
     redirect("/auth/signin");
   }
 
-  // Получаем workspace по slug
   const caller = await api();
+  const orgData = await caller.organization.getBySlug({ slug: orgSlug });
   const workspaceData = await caller.workspace.getBySlug({
     slug: workspaceSlug,
+    organizationId: orgData.id,
   });
 
   return (
