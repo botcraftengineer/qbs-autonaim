@@ -16,6 +16,7 @@ import { FileText, Star } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
+import { CandidateAvatar } from "../ui/candidate-avatar";
 
 export function RecentResponses({
   orgSlug,
@@ -99,9 +100,16 @@ export function RecentResponses({
               )}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                <FileText className="h-5 w-5 text-primary" />
-              </div>
+              <CandidateAvatar
+                name={response.candidateName}
+                photoUrl={
+                  "photoUrl" in response &&
+                  typeof response.photoUrl === "string"
+                    ? response.photoUrl
+                    : null
+                }
+                className="h-10 w-10"
+              />
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <p className="text-sm font-medium truncate">

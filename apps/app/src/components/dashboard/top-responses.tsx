@@ -12,10 +12,11 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
-import { Award, FileText } from "lucide-react";
+import { Award } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
+import { CandidateAvatar } from "../ui/candidate-avatar";
 
 export function TopResponses({
   orgSlug,
@@ -101,11 +102,21 @@ export function TopResponses({
               )}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                {index === 0 ? (
-                  <Award className="h-5 w-5 text-yellow-500" />
-                ) : (
-                  <FileText className="h-5 w-5 text-primary" />
+              <div className="relative">
+                <CandidateAvatar
+                  name={response.candidateName}
+                  photoUrl={
+                    "photoUrl" in response &&
+                    typeof response.photoUrl === "string"
+                      ? response.photoUrl
+                      : null
+                  }
+                  className="h-10 w-10"
+                />
+                {index === 0 && (
+                  <div className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-yellow-500">
+                    <Award className="h-3 w-3 text-white" />
+                  </div>
                 )}
               </div>
               <div className="flex-1 min-w-0">

@@ -38,6 +38,21 @@ export const listRecent = protectedProcedure
       .orderBy(desc(vacancyResponse.createdAt))
       .limit(5);
 
+    // Получаем URLs для фото
+    const photoFileIds = responses
+      .map((r) => r.response.photoFileId)
+      .filter((id): id is string => id !== null);
+
+    const photoFiles =
+      photoFileIds.length > 0
+        ? await ctx.db.query.file.findMany({
+            where: (file, { inArray }) => inArray(file.id, photoFileIds),
+            columns: { id: true, url: true },
+          })
+        : [];
+
+    const photoUrlMap = new Map(photoFiles.map((f) => [f.id, f.url]));
+
     // Получаем screening и telegramInterviewScoring для каждого отклика
     const responsesWithRelations = await Promise.all(
       responses.map(async (r) => {
@@ -52,6 +67,9 @@ export const listRecent = protectedProcedure
 
         return {
           ...r.response,
+          photoUrl: r.response.photoFileId
+            ? photoUrlMap.get(r.response.photoFileId) || null
+            : null,
           vacancy: r.vacancy,
           screening: screening
             ? {

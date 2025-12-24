@@ -47,8 +47,24 @@ export const listTop = protectedProcedure
         id: true,
         candidateName: true,
         createdAt: true,
+        photoFileId: true,
       },
     });
+
+    // Получаем URLs для фото
+    const photoFileIds = allResponses
+      .map((r) => r.photoFileId)
+      .filter((id): id is string => id !== null);
+
+    const photoFiles =
+      photoFileIds.length > 0
+        ? await ctx.db.query.file.findMany({
+            where: (file, { inArray }) => inArray(file.id, photoFileIds),
+            columns: { id: true, url: true },
+          })
+        : [];
+
+    const photoUrlMap = new Map(photoFiles.map((f) => [f.id, f.url]));
 
     return allResponses
       .filter(
@@ -60,5 +76,9 @@ export const listTop = protectedProcedure
         (a, b) =>
           (b.screening?.detailedScore ?? 0) - (a.screening?.detailedScore ?? 0),
       )
-      .slice(0, input.limit);
+      .slice(0, input.limit)
+      .map((r) => ({
+        ...r,
+        photoUrl: r.photoFileId ? photoUrlMap.get(r.photoFileId) || null : null,
+      }));
   });
