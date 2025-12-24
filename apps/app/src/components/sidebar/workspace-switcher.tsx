@@ -211,6 +211,10 @@ export function WorkspaceSwitcher({
             <DropdownMenuItem
               className="gap-2 p-2"
               onClick={() => setCreateDialogOpen(true)}
+              disabled={
+                !activeWorkspace.organizationId ||
+                !activeWorkspace.organizationSlug
+              }
             >
               <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                 <IconPlus className="size-4" />

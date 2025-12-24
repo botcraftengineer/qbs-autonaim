@@ -1,4 +1,7 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+import {
+  type OrganizationMember,
+  organizationRepository,
+} from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
@@ -40,15 +43,38 @@ export const acceptInvite = protectedProcedure
       });
     }
 
-    // Добавление пользователя в организацию с указанной ролью
-    const member = await organizationRepository.addMember(
+    // Проверка, не является ли пользователь уже участником
+    const existingMember = await organizationRepository.checkAccess(
       invite.organizationId,
       ctx.session.user.id,
-      invite.role,
     );
 
-    // Удаление приглашения после принятия
-    await organizationRepository.deleteInvite(invite.id);
+    if (existingMember) {
+      throw new TRPCError({
+        code: "CONFLICT",
+        message: "Вы уже являетесь участником этой организации",
+      });
+    }
+
+    // Добавление пользователя в организацию с указанной ролью
+    let member: OrganizationMember;
+    try {
+      member = await organizationRepository.addMember(
+        invite.organizationId,
+        ctx.session.user.id,
+        invite.role,
+      );
+
+      // Удаление приглашения только после успешного добавления
+      await organizationRepository.deleteInvite(invite.id);
+    } catch (error) {
+      // Если добавление не удалось, не удаляем приглашение
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Не удалось добавить пользователя в организацию",
+        cause: error,
+      });
+    }
 
     return {
       member,
