@@ -1,6 +1,5 @@
 import { APP_CONFIG } from "@qbs-autonaim/config";
 import { cn, ThemeProvider, Toaster } from "@qbs-autonaim/ui";
-import { Analytics } from "@vercel/analytics/next";
 import type { Metadata, Viewport } from "next";
 import { env } from "~/env";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -44,7 +43,6 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           <TRPCReactProvider>{props.children}</TRPCReactProvider>
           <Toaster />
         </ThemeProvider>
-        <Analytics />
       </body>
     </html>
   );
