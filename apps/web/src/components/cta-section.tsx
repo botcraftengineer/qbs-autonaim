@@ -1,7 +1,7 @@
-import { APP_CONFIG } from "@qbs-autonaim/config";
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env";
 
 export function CTASection() {
   return (
@@ -47,7 +47,7 @@ export function CTASection() {
             className="bg-white text-neutral-900 hover:bg-neutral-100 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl shadow-lg hover:shadow-xl"
             asChild
           >
-            <Link href={`${APP_CONFIG.url}/sign-up`}>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
               Начать бесплатно
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
@@ -57,7 +57,9 @@ export function CTASection() {
             className="bg-neutral-800 text-white hover:bg-neutral-700 border border-neutral-700 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl"
             asChild
           >
-            <Link href={`${APP_CONFIG.url}/demo`}>Посмотреть демо</Link>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}/demo`}>
+              Посмотреть демо
+            </Link>
           </Button>
         </div>
 

@@ -30,8 +30,10 @@ RUN bun install
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-ARG POSTGRES_URL
-ENV POSTGRES_URL=$POSTGRES_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_APP_NAME
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
 ENV CI=true
 RUN bun turbo run build --filter=@qbs-autonaim/web
 

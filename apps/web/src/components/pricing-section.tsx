@@ -1,6 +1,5 @@
 "use client";
 
-import { APP_CONFIG } from "@qbs-autonaim/config";
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
@@ -14,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { env } from "@/env";
 
 export function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false);
@@ -32,7 +32,7 @@ export function PricingSection() {
         "Базовая аналитика",
       ],
       cta: "Начать бесплатно",
-      ctaLink: `${APP_CONFIG.url}/sign-up`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/sign-up`,
       popular: false,
     },
     {
@@ -49,7 +49,7 @@ export function PricingSection() {
         "Приоритетная поддержка",
       ],
       cta: "Попробовать 14 дней",
-      ctaLink: `${APP_CONFIG.url}/sign-up?plan=business`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/sign-up?plan=business`,
       popular: true,
     },
     {
@@ -66,7 +66,7 @@ export function PricingSection() {
         "Персональный менеджер",
       ],
       cta: "Связаться с нами",
-      ctaLink: `${APP_CONFIG.url}/contact`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/contact`,
       popular: false,
     },
   ];

@@ -13,7 +13,6 @@ env:
   IMAGE_TAG: ${{ github.sha }}
 jobs:
   deploy:
-    if: false
     runs-on: ubuntu-latest
     permissions:
       packages: write

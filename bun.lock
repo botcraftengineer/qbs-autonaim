@@ -65,7 +65,6 @@
       "version": "0.1.0",
       "dependencies": {
         "@hookform/resolvers": "5.2.2",
-        "@qbs-autonaim/config": "workspace:*",
         "@radix-ui/react-accordion": "1.2.12",
         "@radix-ui/react-alert-dialog": "1.1.15",
         "@radix-ui/react-aspect-ratio": "1.1.8",

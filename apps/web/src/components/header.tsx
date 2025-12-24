@@ -1,10 +1,10 @@
 "use client";
 
-import { APP_CONFIG } from "@qbs-autonaim/config";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -47,14 +47,16 @@ export function Header() {
             className="text-sm hover:bg-muted hover:text-foreground"
             asChild
           >
-            <Link href={`${APP_CONFIG.url}/sign-in`}>Войти</Link>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-in`}>Войти</Link>
           </Button>
           <Button
             size="sm"
             className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
             asChild
           >
-            <Link href={`${APP_CONFIG.url}/sign-up`}>Начать бесплатно</Link>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+              Начать бесплатно
+            </Link>
           </Button>
         </div>
 
@@ -93,13 +95,15 @@ export function Header() {
                 className="w-full justify-start hover:bg-muted hover:text-foreground"
                 asChild
               >
-                <Link href={`${APP_CONFIG.url}/sign-in`}>Войти</Link>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-in`}>Войти</Link>
               </Button>
               <Button
                 className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
                 asChild
               >
-                <Link href={`${APP_CONFIG.url}/sign-up`}>Начать бесплатно</Link>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+                  Начать бесплатно
+                </Link>
               </Button>
             </div>
           </nav>

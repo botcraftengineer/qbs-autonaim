@@ -31,6 +31,8 @@ jobs:
           IMAGE_ID=$REGISTRY/$IMAGE_NAME
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
           docker build . --file apps/web/Dockerfile \
+            --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
+            --build-arg NEXT_PUBLIC_APP_NAME="${{ secrets.NEXT_PUBLIC_APP_NAME }}" \
             --tag $IMAGE_ID:$IMAGE_TAG \
             --tag $IMAGE_ID:latest
           docker push $IMAGE_ID:latest

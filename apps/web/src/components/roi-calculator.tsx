@@ -1,6 +1,5 @@
 "use client";
 
-import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   ArrowRight,
   Calculator,
@@ -13,6 +12,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { env } from "@/env";
 
 export function ROICalculator() {
   const [vacancies, setVacancies] = useState(10);
@@ -256,7 +256,7 @@ export function ROICalculator() {
                 className="w-full h-12 bg-foreground text-background hover:bg-neutral-800 rounded-xl group"
                 asChild
               >
-                <Link href={`${APP_CONFIG.url}/sign-up`}>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
                   Начать экономить
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
