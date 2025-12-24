@@ -5,38 +5,43 @@ on:
     paths:
       - "apps/app/**"
       - "packages/**"
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  CI: "true"
-  KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
-  IMAGE_TAG: ${{ github.sha }}
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
-      contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+
+      - uses: actions/setup-node@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and Push Image
+          node-version: 20
+
+      - name: Login to Yandex Cloud Container Registry
+        id: login-cr
+        uses: yc-actions/yc-cr-login@v2
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+      - name: Build, tag, and push image
+        env:
+          CR_REGISTRY: crpb8701utioog2loisu
+          CR_REPOSITORY: app
+          IMAGE_TAG: ${{ github.sha }}
         run: |
-          IMAGE_ID=$REGISTRY/$IMAGE_NAME
-          IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
-          docker build . --file apps/app/Dockerfile \
-            --build-arg POSTGRES_URL="${{ secrets.POSTGRES_URL }}" \
-            --tag $IMAGE_ID:$IMAGE_TAG \
-            --tag $IMAGE_ID:latest
-          docker push $IMAGE_ID:latest
-          docker push $IMAGE_ID:$IMAGE_TAG
+          docker build -f apps/app/Dockerfile --build-arg POSTGRES_URL="${{ secrets.POSTGRES_URL }}" -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG -t cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest .
+          docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
+          docker push cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:latest
       - name: Deploy To Cluster
         uses: kodermax/kubectl-aws-eks@main
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+          CR_REGISTRY: crpb8701utioog2loisu
+          CR_REPOSITORY: app
+          IMAGE_TAG: ${{ github.sha }}
         with:
-          args: set image deployment/qbs-autonaim-app qbs-autonaim-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -n qbs
+          args: set image deployment/$CR_REPOSITORY $CR_REPOSITORY=cr.yandex/$CR_REGISTRY/$CR_REPOSITORY:$IMAGE_TAG
+      - name: Verify Deployment
+        uses: kodermax/kubectl-aws-eks@main
+        env:
+          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG_DATA }}
+        with:
+          args: rollout status deployment/app
