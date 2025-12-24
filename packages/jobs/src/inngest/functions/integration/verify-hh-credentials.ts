@@ -1,4 +1,4 @@
-import { upsertIntegration } from "@qbs-autonaim/db";
+import { db, upsertIntegration } from "@qbs-autonaim/db";
 import { Log } from "crawlee";
 import type { Browser } from "puppeteer";
 import puppeteer from "puppeteer";
@@ -47,7 +47,7 @@ export const verifyHHCredentialsFunction = inngest.createFunction(
         const cookies = await page.browserContext().cookies();
 
         // Сначала создаём/обновляем интеграцию с credentials
-        await upsertIntegration({
+        await upsertIntegration(db, {
           workspaceId,
           type: "hh",
           name: "HeadHunter",

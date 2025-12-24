@@ -1,5 +1,5 @@
 import { TelegramClient } from "@mtcute/bun";
-import { getIntegrationCredentials } from "@qbs-autonaim/db";
+import { db, getIntegrationCredentials } from "@qbs-autonaim/db";
 import { ExportableStorage } from "./storage";
 
 // Кэш клиентов по workspaceId
@@ -18,7 +18,11 @@ export async function getClient(
   }
 
   // Получаем credentials из базы
-  const credentials = await getIntegrationCredentials("telegram", workspaceId);
+  const credentials = await getIntegrationCredentials(
+    db,
+    "telegram",
+    workspaceId,
+  );
   if (!credentials) {
     console.error(
       `❌ Telegram интеграция не найдена для рабочего пространства ${workspaceId}`,

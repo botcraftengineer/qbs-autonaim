@@ -105,7 +105,7 @@ export async function findResponseByPinCode(
 ): Promise<Result<{ id: string; candidateName: string | null }>> {
   logger.info("Поиск отклика по пин-коду", { pinCode });
 
-  const result = await findResponseByPinCodeDB(pinCode);
+  const result = await findResponseByPinCodeDB(db, pinCode);
 
   if (!result.success) {
     return err(result.error);

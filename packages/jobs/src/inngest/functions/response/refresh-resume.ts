@@ -151,6 +151,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
 
     const credentials = await step.run("get-credentials", async () => {
       const creds = await getIntegrationCredentials(
+        db,
         "hh",
         response.vacancy.workspaceId,
       );

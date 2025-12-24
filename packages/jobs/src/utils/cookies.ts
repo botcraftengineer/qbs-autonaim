@@ -1,4 +1,5 @@
 import {
+  db,
   loadCookiesForIntegration,
   saveCookiesForIntegration,
 } from "@qbs-autonaim/db";
@@ -13,7 +14,7 @@ export async function saveCookies(
   workspaceId: string,
 ): Promise<void> {
   try {
-    await saveCookiesForIntegration(integrationType, cookies, workspaceId);
+    await saveCookiesForIntegration(db, integrationType, cookies, workspaceId);
     console.log(`✓ Cookies сохранены для интеграции ${integrationType}`);
   } catch (error) {
     console.error("Ошибка при сохранении cookies:", error);
@@ -30,6 +31,7 @@ export async function loadCookies(
 ): Promise<Cookie[] | null> {
   try {
     const cookies = await loadCookiesForIntegration(
+      db,
       integrationType,
       workspaceId,
     );

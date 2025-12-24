@@ -1,10 +1,9 @@
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
+import { WorkspaceListClient } from "~/components/workspace/workspace-list-client";
 
 const organizationRepository = new OrganizationRepository(db);
-
-import { WorkspaceListClient } from "~/components/workspace/workspace-list-client";
 
 export default async function WorkspacesPage({
   params,

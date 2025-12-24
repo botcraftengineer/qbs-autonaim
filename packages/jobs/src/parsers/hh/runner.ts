@@ -1,4 +1,4 @@
-import { getIntegrationCredentials } from "@qbs-autonaim/db";
+import { db, getIntegrationCredentials } from "@qbs-autonaim/db";
 import puppeteer from "puppeteer";
 import { checkAndPerformLogin, loadCookies } from "./auth";
 import { closeBrowserSafely } from "./browser-utils";
@@ -18,7 +18,7 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
   console.log(`   Workspace: ${workspaceId}`);
   console.log(`   Пропустить отклики: ${skipResponses}`);
 
-  const credentials = await getIntegrationCredentials("hh", workspaceId);
+  const credentials = await getIntegrationCredentials(db, "hh", workspaceId);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("Не найдены учетные данные для HH.ru");
   }

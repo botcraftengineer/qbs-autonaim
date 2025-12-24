@@ -31,8 +31,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { InviteMemberDialog } from "~/components/organization";
 import { useTRPC } from "~/trpc/react";
-import { InviteMemberDialog } from "./invite-member-dialog";
 
 interface OrganizationInvitationsClientProps {
   organizationId: string;

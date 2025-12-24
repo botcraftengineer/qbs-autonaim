@@ -1,5 +1,5 @@
 import os from "node:os";
-import { getIntegrationCredentials } from "@qbs-autonaim/db";
+import { db, getIntegrationCredentials } from "@qbs-autonaim/db";
 import { Log } from "crawlee";
 import type { Browser, BrowserContext, CookieData, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
@@ -110,7 +110,7 @@ async function checkAndPerformLogin(
 }
 
 export async function runEnricher(workspaceId: string) {
-  const credentials = await getIntegrationCredentials("hh", workspaceId);
+  const credentials = await getIntegrationCredentials(db, "hh", workspaceId);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("HH credentials не найдены в интеграциях");
   }

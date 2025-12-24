@@ -1,6 +1,7 @@
 "use client";
 
 import { paths } from "@qbs-autonaim/config";
+import { getPluralForm } from "@qbs-autonaim/lib";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -69,17 +70,27 @@ export function WorkspaceSwitcher({
 }) {
   const { isMobile } = useSidebar();
   const router = useRouter();
-  const [activeWorkspace, setActiveWorkspace] = React.useState(
-    workspaces.find((w) => w.id === activeWorkspaceId) ?? workspaces[0],
+  const [activeWorkspace, setActiveWorkspace] = React.useState<
+    WorkspaceWithRole | undefined
+  >(
+    workspaces.find((w) => w.id === activeWorkspaceId) ??
+      (workspaces.length > 0 ? workspaces[0] : undefined),
   );
-  const [activeOrganization, setActiveOrganization] = React.useState(
+  const [activeOrganization, setActiveOrganization] = React.useState<
+    OrganizationWithRole | undefined
+  >(
     organizations.find((o) => o.id === activeOrganizationId) ??
-      organizations[0],
+      (organizations.length > 0 ? organizations[0] : undefined),
   );
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
 
-  if (!activeWorkspace || !activeOrganization) {
+  if (
+    organizations.length === 0 ||
+    workspaces.length === 0 ||
+    !activeWorkspace ||
+    !activeOrganization
+  ) {
     return null;
   }
 
@@ -173,9 +184,11 @@ export function WorkspaceSwitcher({
                   <span className="text-muted-foreground text-xs">
                     {activeWorkspace.plan ?? "Бесплатный"} ·{" "}
                     {activeWorkspace.memberCount ?? 1}{" "}
-                    {activeWorkspace.memberCount === 1
-                      ? "участник"
-                      : "участников"}
+                    {getPluralForm(activeWorkspace.memberCount ?? 1, [
+                      "участник",
+                      "участника",
+                      "участников",
+                    ])}
                   </span>
                 </div>
               </div>
@@ -297,9 +310,11 @@ export function WorkspaceSwitcher({
                           </span>
                           <span className="text-muted-foreground text-xs">
                             {organization.workspaceCount ?? 0}{" "}
-                            {organization.workspaceCount === 1
-                              ? "пространство"
-                              : "пространств"}
+                            {getPluralForm(organization.workspaceCount ?? 0, [
+                              "пространство",
+                              "пространства",
+                              "пространств",
+                            ])}
                           </span>
                         </div>
                         {organization.id === activeOrganization.id && (
