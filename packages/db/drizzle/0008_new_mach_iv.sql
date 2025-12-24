@@ -1,1 +1,0 @@
-ALTER TABLE "conversations" ADD COLUMN "metadata_version" integer DEFAULT 1 NOT NULL;

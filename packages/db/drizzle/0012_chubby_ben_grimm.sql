@@ -1,1 +1,0 @@
-ALTER TABLE "vacancy_responses" ADD COLUMN "resume_language" varchar(10) DEFAULT 'ru';
