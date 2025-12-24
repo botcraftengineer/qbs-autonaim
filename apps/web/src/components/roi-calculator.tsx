@@ -1,31 +1,40 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { Calculator, TrendingUp, Clock, Users, Sparkles, ArrowRight } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Slider } from "@/components/ui/slider"
+import { APP_CONFIG } from "@qbs-autonaim/config";
+import {
+  ArrowRight,
+  Calculator,
+  Clock,
+  Sparkles,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 
 export function ROICalculator() {
-  const [vacancies, setVacancies] = useState(10)
-  const [hireTimeManual, setHireTimeManual] = useState(21)
-  const [hrSalary, setHrSalary] = useState(80000)
+  const [vacancies, setVacancies] = useState(10);
+  const [hireTimeManual, setHireTimeManual] = useState(21);
+  const [hrSalary, setHrSalary] = useState(80000);
 
   const calculations = useMemo(() => {
     // С QBS время найма сокращается в 3 раза
-    const hireTimeWithQBS = Math.round(hireTimeManual / 3)
-    const savedDays = hireTimeManual - hireTimeWithQBS
+    const hireTimeWithQBS = Math.round(hireTimeManual / 3);
+    const savedDays = hireTimeManual - hireTimeWithQBS;
 
     // Экономия на зарплате HR (дней в месяц * часов в день * стоимость часа)
-    const hourlyRate = hrSalary / 160 // 160 рабочих часов в месяц
-    const hoursPerVacancy = 20 // часов на одну вакансию вручную
-    const hoursWithQBS = 5 // часов с QBS
-    const savedHoursPerVacancy = hoursPerVacancy - hoursWithQBS
-    const totalSavedHours = savedHoursPerVacancy * vacancies
-    const moneySaved = Math.round(totalSavedHours * hourlyRate)
+    const hourlyRate = hrSalary / 160; // 160 рабочих часов в месяц
+    const hoursPerVacancy = 20; // часов на одну вакансию вручную
+    const hoursWithQBS = 5; // часов с QBS
+    const savedHoursPerVacancy = hoursPerVacancy - hoursWithQBS;
+    const totalSavedHours = savedHoursPerVacancy * vacancies;
+    const moneySaved = Math.round(totalSavedHours * hourlyRate);
 
     // Количество обработанных кандидатов
-    const candidatesManual = vacancies * 50
-    const candidatesWithQBS = vacancies * 200
+    const candidatesManual = vacancies * 50;
+    const candidatesWithQBS = vacancies * 200;
 
     return {
       hireTimeWithQBS,
@@ -35,8 +44,8 @@ export function ROICalculator() {
       candidatesManual,
       candidatesWithQBS,
       efficiency: Math.round((candidatesWithQBS / candidatesManual) * 100),
-    }
-  }, [vacancies, hireTimeManual, hrSalary])
+    };
+  }, [vacancies, hireTimeManual, hrSalary]);
 
   return (
     <section className="relative bg-background py-20 md:py-32 overflow-hidden">
@@ -58,7 +67,8 @@ export function ROICalculator() {
             Рассчитайте вашу <span className="text-primary">экономию</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Узнайте, сколько времени и денег вы сэкономите с QBS Автонайм. Настройте параметры под ваши процессы.
+            Узнайте, сколько времени и денег вы сэкономите с QBS Автонайм.
+            Настройте параметры под ваши процессы.
           </p>
         </div>
 
@@ -75,7 +85,9 @@ export function ROICalculator() {
                 {/* Vacancies slider */}
                 <div>
                   <div className="flex justify-between mb-3">
-                    <label className="text-sm font-medium">Вакансий в месяц</label>
+                    <label className="text-sm font-medium">
+                      Вакансий в месяц
+                    </label>
                     <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                       {vacancies}
                     </span>
@@ -97,7 +109,9 @@ export function ROICalculator() {
                 {/* Hire time slider */}
                 <div>
                   <div className="flex justify-between mb-3">
-                    <label className="text-sm font-medium">Текущее время найма (дней)</label>
+                    <label className="text-sm font-medium">
+                      Текущее время найма (дней)
+                    </label>
                     <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                       {hireTimeManual}
                     </span>
@@ -119,7 +133,9 @@ export function ROICalculator() {
                 {/* HR Salary slider */}
                 <div>
                   <div className="flex justify-between mb-3">
-                    <label className="text-sm font-medium">Зарплата HR-менеджера (₽/мес)</label>
+                    <label className="text-sm font-medium">
+                      Зарплата HR-менеджера (₽/мес)
+                    </label>
                     <span className="text-sm font-bold text-primary bg-primary/10 px-2 py-0.5 rounded">
                       {hrSalary.toLocaleString("ru-RU")} ₽
                     </span>
@@ -144,11 +160,15 @@ export function ROICalculator() {
             <div className="space-y-4">
               {/* Main result card */}
               <div className="bg-gradient-to-br from-primary/10 via-violet-500/10 to-accent/10 border border-primary/20 rounded-2xl p-8">
-                <div className="text-sm text-muted-foreground mb-2">Ваша экономия в месяц</div>
+                <div className="text-sm text-muted-foreground mb-2">
+                  Ваша экономия в месяц
+                </div>
                 <div className="text-5xl font-bold text-foreground mb-2">
                   {calculations.moneySaved.toLocaleString("ru-RU")} ₽
                 </div>
-                <div className="text-sm text-muted-foreground">или {calculations.totalSavedHours} часов работы HR</div>
+                <div className="text-sm text-muted-foreground">
+                  или {calculations.totalSavedHours} часов работы HR
+                </div>
               </div>
 
               {/* Stats grid */}
@@ -158,13 +178,19 @@ export function ROICalculator() {
                     <div className="p-2 rounded-lg bg-emerald-500/10">
                       <Clock className="h-4 w-4 text-emerald-600" />
                     </div>
-                    <span className="text-xs text-muted-foreground">Время найма</span>
+                    <span className="text-xs text-muted-foreground">
+                      Время найма
+                    </span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{calculations.hireTimeWithQBS}</span>
+                    <span className="text-2xl font-bold">
+                      {calculations.hireTimeWithQBS}
+                    </span>
                     <span className="text-sm text-muted-foreground">дней</span>
                   </div>
-                  <div className="text-xs text-emerald-600 mt-1">вместо {hireTimeManual} дней</div>
+                  <div className="text-xs text-emerald-600 mt-1">
+                    вместо {hireTimeManual} дней
+                  </div>
                 </div>
 
                 <div className="bg-card border border-border rounded-xl p-5">
@@ -172,12 +198,18 @@ export function ROICalculator() {
                     <div className="p-2 rounded-lg bg-blue-500/10">
                       <TrendingUp className="h-4 w-4 text-blue-600" />
                     </div>
-                    <span className="text-xs text-muted-foreground">Эффективность</span>
+                    <span className="text-xs text-muted-foreground">
+                      Эффективность
+                    </span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">+{calculations.efficiency - 100}%</span>
+                    <span className="text-2xl font-bold">
+                      +{calculations.efficiency - 100}%
+                    </span>
                   </div>
-                  <div className="text-xs text-blue-600 mt-1">больше кандидатов</div>
+                  <div className="text-xs text-blue-600 mt-1">
+                    больше кандидатов
+                  </div>
                 </div>
 
                 <div className="bg-card border border-border rounded-xl p-5">
@@ -188,9 +220,13 @@ export function ROICalculator() {
                     <span className="text-xs text-muted-foreground">С QBS</span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{calculations.candidatesWithQBS}</span>
+                    <span className="text-2xl font-bold">
+                      {calculations.candidatesWithQBS}
+                    </span>
                   </div>
-                  <div className="text-xs text-violet-600 mt-1">кандидатов обработано</div>
+                  <div className="text-xs text-violet-600 mt-1">
+                    кандидатов обработано
+                  </div>
                 </div>
 
                 <div className="bg-card border border-border rounded-xl p-5">
@@ -198,13 +234,19 @@ export function ROICalculator() {
                     <div className="p-2 rounded-lg bg-orange-500/10">
                       <Clock className="h-4 w-4 text-orange-600" />
                     </div>
-                    <span className="text-xs text-muted-foreground">Экономия</span>
+                    <span className="text-xs text-muted-foreground">
+                      Экономия
+                    </span>
                   </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold">{calculations.savedDays}</span>
+                    <span className="text-2xl font-bold">
+                      {calculations.savedDays}
+                    </span>
                     <span className="text-sm text-muted-foreground">дней</span>
                   </div>
-                  <div className="text-xs text-orange-600 mt-1">на каждую вакансию</div>
+                  <div className="text-xs text-orange-600 mt-1">
+                    на каждую вакансию
+                  </div>
                 </div>
               </div>
 
@@ -212,14 +254,17 @@ export function ROICalculator() {
               <Button
                 size="lg"
                 className="w-full h-12 bg-foreground text-background hover:bg-neutral-800 rounded-xl group"
+                asChild
               >
-                Начать экономить
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <Link href={`${APP_CONFIG.url}/sign-up`}>
+                  Начать экономить
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
               </Button>
             </div>
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }

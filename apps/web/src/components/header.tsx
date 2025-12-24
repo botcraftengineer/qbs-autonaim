@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Menu, X } from "lucide-react"
+import { APP_CONFIG } from "@qbs-autonaim/config";
+import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-xl">
@@ -19,28 +20,55 @@ export function Header() {
         </Link>
 
         <nav className="hidden items-center gap-8 md:flex">
-          <Link href="#features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link
+            href="#features"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             Возможности
           </Link>
-          <Link href="#how-it-works" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link
+            href="#how-it-works"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             Как работает
           </Link>
-          <Link href="#pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+          <Link
+            href="#pricing"
+            className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
             Цены
           </Link>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <Button variant="ghost" size="sm" className="text-sm hover:bg-muted hover:text-foreground">
-            Войти
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-sm hover:bg-muted hover:text-foreground"
+            asChild
+          >
+            <Link href={`${APP_CONFIG.url}/sign-in`}>Войти</Link>
           </Button>
-          <Button size="sm" className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200">
-            Начать бесплатно
+          <Button
+            size="sm"
+            className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
+            asChild
+          >
+            <Link href={`${APP_CONFIG.url}/sign-up`}>Начать бесплатно</Link>
           </Button>
         </div>
 
-        <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)} aria-label="Toggle menu">
-          {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        <button
+          type="button"
+          className="md:hidden"
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
+        >
+          {isMenuOpen ? (
+            <X className="h-5 w-5" />
+          ) : (
+            <Menu className="h-5 w-5" />
+          )}
         </button>
       </div>
 
@@ -50,23 +78,33 @@ export function Header() {
             <Link href="#features" className="text-sm text-muted-foreground">
               Возможности
             </Link>
-            <Link href="#how-it-works" className="text-sm text-muted-foreground">
+            <Link
+              href="#how-it-works"
+              className="text-sm text-muted-foreground"
+            >
               Как работает
             </Link>
             <Link href="#pricing" className="text-sm text-muted-foreground">
               Цены
             </Link>
             <div className="flex flex-col gap-2 pt-4 border-t border-border">
-              <Button variant="ghost" className="w-full justify-start hover:bg-muted hover:text-foreground">
-                Войти
+              <Button
+                variant="ghost"
+                className="w-full justify-start hover:bg-muted hover:text-foreground"
+                asChild
+              >
+                <Link href={`${APP_CONFIG.url}/sign-in`}>Войти</Link>
               </Button>
-              <Button className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200">
-                Начать бесплатно
+              <Button
+                className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
+                asChild
+              >
+                <Link href={`${APP_CONFIG.url}/sign-up`}>Начать бесплатно</Link>
               </Button>
             </div>
           </nav>
         </div>
       )}
     </header>
-  )
+  );
 }

@@ -1,13 +1,22 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Check } from "lucide-react"
+import { APP_CONFIG } from "@qbs-autonaim/config";
+import { Check } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(false)
+  const [isAnnual, setIsAnnual] = useState(false);
 
   const plans = [
     {
@@ -15,8 +24,15 @@ export function PricingSection() {
       price: "Бесплатно",
       priceAnnual: "Бесплатно",
       description: "Для небольших команд",
-      features: ["1 workspace", "3 активные вакансии", "100 откликов/месяц", "AI-скрининг резюме", "Базовая аналитика"],
+      features: [
+        "1 workspace",
+        "3 активные вакансии",
+        "100 откликов/месяц",
+        "AI-скрининг резюме",
+        "Базовая аналитика",
+      ],
       cta: "Начать бесплатно",
+      ctaLink: `${APP_CONFIG.url}/sign-up`,
       popular: false,
     },
     {
@@ -33,6 +49,7 @@ export function PricingSection() {
         "Приоритетная поддержка",
       ],
       cta: "Попробовать 14 дней",
+      ctaLink: `${APP_CONFIG.url}/sign-up?plan=business`,
       popular: true,
     },
     {
@@ -49,9 +66,10 @@ export function PricingSection() {
         "Персональный менеджер",
       ],
       cta: "Связаться с нами",
+      ctaLink: `${APP_CONFIG.url}/contact`,
       popular: false,
     },
-  ]
+  ];
 
   return (
     <section id="pricing" className="bg-muted/30 py-24 md:py-32">
@@ -60,25 +78,36 @@ export function PricingSection() {
           <h2 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl text-balance">
             Прозрачные цены для каждой команды
           </h2>
-          <p className="mb-12 text-xl text-muted-foreground">Начните бесплатно. Масштабируйтесь по мере роста.</p>
+          <p className="mb-12 text-xl text-muted-foreground">
+            Начните бесплатно. Масштабируйтесь по мере роста.
+          </p>
 
           <div className="mb-16 inline-flex items-center gap-3 rounded-full border border-border bg-background p-1">
             <button
+              type="button"
               onClick={() => setIsAnnual(false)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                !isAnnual ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                !isAnnual
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Помесячно
             </button>
             <button
+              type="button"
               onClick={() => setIsAnnual(true)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                isAnnual ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                isAnnual
+                  ? "bg-foreground text-background"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Ежегодно
-              <Badge variant="secondary" className="ml-2 bg-emerald-500/10 text-emerald-600 border-0">
+              <Badge
+                variant="secondary"
+                className="ml-2 bg-emerald-500/10 text-emerald-600 border-0"
+              >
                 -20%
               </Badge>
             </button>
@@ -97,17 +126,24 @@ export function PricingSection() {
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-foreground text-background border-0 px-4 py-1">Популярный</Badge>
+                  <Badge className="bg-foreground text-background border-0 px-4 py-1">
+                    Популярный
+                  </Badge>
                 </div>
               )}
               <CardHeader className="text-center pb-8 pt-8">
                 <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                <CardDescription className="text-base">{plan.description}</CardDescription>
+                <CardDescription className="text-base">
+                  {plan.description}
+                </CardDescription>
                 <div className="mt-6">
-                  <span className="text-5xl font-bold text-foreground">{isAnnual ? plan.priceAnnual : plan.price}</span>
-                  {plan.price !== "Бесплатно" && plan.price !== "По запросу" && (
-                    <span className="text-muted-foreground ml-1">/мес</span>
-                  )}
+                  <span className="text-5xl font-bold text-foreground">
+                    {isAnnual ? plan.priceAnnual : plan.price}
+                  </span>
+                  {plan.price !== "Бесплатно" &&
+                    plan.price !== "По запросу" && (
+                      <span className="text-muted-foreground ml-1">/мес</span>
+                    )}
                 </div>
               </CardHeader>
               <CardContent className="pb-8">
@@ -128,8 +164,9 @@ export function PricingSection() {
                       : "hover:bg-muted hover:text-foreground"
                   }`}
                   variant={plan.popular ? "default" : "outline"}
+                  asChild
                 >
-                  {plan.cta}
+                  <Link href={plan.ctaLink}>{plan.cta}</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -137,5 +174,5 @@ export function PricingSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }

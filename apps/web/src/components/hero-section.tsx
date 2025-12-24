@@ -1,8 +1,17 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { ArrowRight, Users, BarChart3, FileText, MessageCircle, Brain } from "lucide-react"
-import { useState } from "react"
+import { APP_CONFIG } from "@qbs-autonaim/config";
+import {
+  ArrowRight,
+  BarChart3,
+  Brain,
+  FileText,
+  MessageCircle,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
   return (
@@ -16,7 +25,9 @@ export function HeroSection() {
               href="#"
               className="group inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm transition-all hover:border-foreground/20 hover:bg-muted/50"
             >
-              <span className="text-muted-foreground">Запущено 10M+ интервью с AI</span>
+              <span className="text-muted-foreground">
+                Запущено 10M+ интервью с AI
+              </span>
               <span className="text-foreground font-medium group-hover:underline flex items-center gap-1">
                 Подробнее
                 <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -29,22 +40,25 @@ export function HeroSection() {
           </h1>
 
           <p className="mx-auto mb-10 max-w-2xl text-lg md:text-xl text-muted-foreground leading-relaxed text-balance">
-            QBS — современная платформа для автоматизации найма. AI-скрининг, умные интервью и аналитика в одном месте.
+            QBS — современная платформа для автоматизации найма. AI-скрининг,
+            умные интервью и аналитика в одном месте.
           </p>
 
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button
               size="lg"
               className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl"
+              asChild
             >
-              Начать бесплатно
+              <Link href={`${APP_CONFIG.url}/sign-up`}>Начать бесплатно</Link>
             </Button>
             <Button
               size="lg"
               variant="outline"
               className="h-12 px-8 text-base font-medium rounded-xl border-border bg-card text-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
+              asChild
             >
-              Посмотреть демо
+              <Link href={`${APP_CONFIG.url}/demo`}>Посмотреть демо</Link>
             </Button>
           </div>
         </div>
@@ -54,17 +68,17 @@ export function HeroSection() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function DashboardPreview() {
-  const [activeTab, setActiveTab] = useState(0)
+  const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
     { icon: Users, label: "AI Скрининг", color: "text-amber-500" },
     { icon: BarChart3, label: "Аналитика воронки", color: "text-emerald-500" },
     { icon: MessageCircle, label: "Telegram интервью", color: "text-blue-500" },
-  ]
+  ];
 
   return (
     <div className="relative mx-auto max-w-6xl">
@@ -80,7 +94,9 @@ function DashboardPreview() {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <tab.icon className={`h-4 w-4 ${activeTab === index ? tab.color : ""}`} />
+              <tab.icon
+                className={`h-4 w-4 ${activeTab === index ? tab.color : ""}`}
+              />
               {tab.label}
             </button>
           ))}
@@ -93,7 +109,9 @@ function DashboardPreview() {
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
               <span className="text-xs font-bold text-background">Q</span>
             </div>
-            <span className="text-sm font-medium text-foreground">QBS Автонайм</span>
+            <span className="text-sm font-medium text-foreground">
+              QBS Автонайм
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="h-3 w-3 rounded-full bg-red-400" />
@@ -139,9 +157,13 @@ function DashboardPreview() {
           <div className="p-6 border-r border-border group cursor-pointer hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <FileText className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Скрининг резюме</span>
+              <span className="text-sm font-medium text-foreground">
+                Скрининг резюме
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Анализ кандидатов от отклика до интервью</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Анализ кандидатов от отклика до интервью
+            </p>
             <span className="text-xs text-foreground font-medium flex items-center gap-1 group-hover:underline">
               Подробнее
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -150,9 +172,13 @@ function DashboardPreview() {
           <div className="p-6 border-r border-border group cursor-pointer hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Аналитика в реальном времени</span>
+              <span className="text-sm font-medium text-foreground">
+                Аналитика в реальном времени
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Полная статистика по кликам и откликам</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Полная статистика по кликам и откликам
+            </p>
             <span className="text-xs text-foreground font-medium flex items-center gap-1 group-hover:underline">
               Подробнее
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -161,9 +187,13 @@ function DashboardPreview() {
           <div className="p-6 group cursor-pointer hover:bg-muted/30 transition-colors">
             <div className="flex items-center gap-2 mb-2">
               <Brain className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-foreground">Инсайты о кандидатах</span>
+              <span className="text-sm font-medium text-foreground">
+                Инсайты о кандидатах
+              </span>
             </div>
-            <p className="text-xs text-muted-foreground mb-3">Понимание пути кандидата и рейтинг</p>
+            <p className="text-xs text-muted-foreground mb-3">
+              Понимание пути кандидата и рейтинг
+            </p>
             <span className="text-xs text-foreground font-medium flex items-center gap-1 group-hover:underline">
               Подробнее
               <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
@@ -172,5 +202,5 @@ function DashboardPreview() {
         </div>
       </div>
     </div>
-  )
+  );
 }
