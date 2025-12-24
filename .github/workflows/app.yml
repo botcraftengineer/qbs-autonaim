@@ -38,4 +38,4 @@ jobs:
       - name: Deploy To Cluster
         uses: kodermax/kubectl-aws-eks@main
         with:
-          args: set image deployment/qbs-autonaim-app qbs-autonaim-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          args: set image deployment/qbs-autonaim-app qbs-autonaim-app=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -n qbs

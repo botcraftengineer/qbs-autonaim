@@ -27,6 +27,32 @@ cd apps/web
 bun dev
 ```
 
+## GitHub Actions
+
+### Настройка секретов
+
+Добавьте секреты в GitHub репозиторий:
+
+1. Перейдите в **Settings** → **Secrets and variables** → **Actions**
+2. Нажмите **New repository secret**
+3. Добавьте следующие секреты:
+
+| Имя секрета | Значение | Пример |
+|-------------|----------|--------|
+| `NEXT_PUBLIC_APP_URL` | URL основного приложения | `https://app.qbs-autonaim.com` |
+| `NEXT_PUBLIC_APP_NAME` | Название приложения | `QBS Автонайм` |
+
+### Workflow
+
+Workflow `.github/workflows/web.yml` автоматически использует эти секреты при сборке:
+
+```yaml
+docker build . --file apps/web/Dockerfile \
+  --build-arg NEXT_PUBLIC_APP_URL=${{ secrets.NEXT_PUBLIC_APP_URL }} \
+  --build-arg NEXT_PUBLIC_APP_NAME="${{ secrets.NEXT_PUBLIC_APP_NAME }}" \
+  --tag $IMAGE_ID:$IMAGE_TAG
+```
+
 ## Docker
 
 ### Сборка образа
