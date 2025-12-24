@@ -4,33 +4,22 @@ import { paths } from "@qbs-autonaim/config";
 import { useParams, useRouter } from "next/navigation";
 import type { ComponentProps } from "react";
 import { useEffect, useState } from "react";
-import type { OrganizationWithRole } from "~/types/organization";
+import { useWorkspaces } from "~/contexts/workspace-context";
 import { AppSidebar } from "./app-sidebar";
-
-type WorkspaceWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  organizationSlug: string | undefined;
-  organizationId: string | null;
-};
 
 const ACTIVE_WORKSPACE_KEY = "active-workspace-id";
 const ACTIVE_ORGANIZATION_KEY = "active-organization-id";
 
 export function AppSidebarWrapper({
-  workspaces,
-  organizations,
   ...props
 }: Omit<
   ComponentProps<typeof AppSidebar>,
-  "onWorkspaceChangeAction" | "onOrganizationChangeAction"
-> & {
-  workspaces?: WorkspaceWithRole[];
-  organizations?: OrganizationWithRole[];
-}) {
+  | "onWorkspaceChangeAction"
+  | "onOrganizationChangeAction"
+  | "workspaces"
+  | "organizations"
+>) {
+  const { workspaces, organizations } = useWorkspaces();
   const params = useParams();
   const router = useRouter();
   const workspaceSlug = params.workspaceSlug as string | undefined;
@@ -122,10 +111,8 @@ export function AppSidebarWrapper({
   return (
     <AppSidebar
       {...props}
-      workspaces={workspaces}
       activeWorkspaceId={activeWorkspaceId}
       onWorkspaceChangeAction={handleWorkspaceChangeAction}
-      organizations={organizations}
       activeOrganizationId={activeOrganizationId}
       onOrganizationChangeAction={handleOrganizationChangeAction}
     />

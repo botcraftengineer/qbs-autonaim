@@ -1,6 +1,7 @@
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
+import { SiteHeader } from "~/components/layout";
 import { OrganizationGeneralForm } from "~/components/organization";
 
 const organizationRepository = new OrganizationRepository(db);
@@ -32,16 +33,21 @@ export default async function OrganizationSettingsPage({
   }
 
   return (
-    <OrganizationGeneralForm
-      initialData={{
-        name: organization.name,
-        slug: organization.slug,
-        description: organization.description ?? undefined,
-        website: organization.website ?? undefined,
-        logo: organization.logo ?? undefined,
-      }}
-      organizationId={organization.id}
-      userRole={access.role}
-    />
+    <>
+      <SiteHeader title="Общие настройки" />
+      <div className="flex-1 overflow-auto p-6">
+        <OrganizationGeneralForm
+          initialData={{
+            name: organization.name,
+            slug: organization.slug,
+            description: organization.description ?? undefined,
+            website: organization.website ?? undefined,
+            logo: organization.logo ?? undefined,
+          }}
+          organizationId={organization.id}
+          userRole={access.role}
+        />
+      </div>
+    </>
   );
 }

@@ -26,6 +26,7 @@ import {
   NavUser,
   WorkspaceSwitcher,
 } from "~/components/sidebar";
+import { useWorkspaces } from "~/contexts/workspace-context";
 
 const getNavData = (orgSlug?: string, workspaceSlug?: string) => ({
   navMain: [
@@ -82,34 +83,10 @@ const getNavData = (orgSlug?: string, workspaceSlug?: string) => ({
   ],
 });
 
-type WorkspaceWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  memberCount?: number;
-  plan?: string;
-  organizationSlug: string | undefined;
-  organizationId: string | null;
-};
-
-type OrganizationWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  memberCount?: number;
-  workspaceCount?: number;
-};
-
 export function AppSidebar({
   user,
-  workspaces,
   activeWorkspaceId,
   onWorkspaceChangeAction,
-  organizations,
   activeOrganizationId,
   onOrganizationChangeAction,
   ...props
@@ -119,13 +96,12 @@ export function AppSidebar({
     email: string;
     avatar: string;
   };
-  workspaces?: WorkspaceWithRole[];
   activeWorkspaceId?: string;
   onWorkspaceChangeAction?: (workspaceId: string) => void;
-  organizations?: OrganizationWithRole[];
   activeOrganizationId?: string;
   onOrganizationChangeAction?: (organizationId: string) => void;
 }) {
+  const { workspaces, organizations } = useWorkspaces();
   const activeWorkspace = workspaces?.find((w) => w.id === activeWorkspaceId);
   const data = getNavData(
     activeWorkspace?.organizationSlug,
@@ -133,7 +109,7 @@ export function AppSidebar({
   );
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar variant="floating" collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -159,8 +135,6 @@ export function AppSidebar({
         </SidebarMenu>
         {workspaces && workspaces.length > 0 && organizations && (
           <WorkspaceSwitcher
-            workspaces={workspaces}
-            organizations={organizations}
             activeWorkspaceId={activeWorkspaceId}
             activeOrganizationId={activeOrganizationId}
             onWorkspaceChangeAction={onWorkspaceChangeAction}
