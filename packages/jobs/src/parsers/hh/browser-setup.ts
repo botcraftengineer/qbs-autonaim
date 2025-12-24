@@ -1,4 +1,4 @@
-import { getIntegrationCredentials } from "@qbs-autonaim/db";
+import { db, getIntegrationCredentials } from "@qbs-autonaim/db";
 import type { Log } from "crawlee";
 import type { Browser, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";
@@ -32,7 +32,7 @@ export async function setupAuthenticatedBrowser(
   const { workspaceId, headless = HH_CONFIG.puppeteer.headless } = options;
 
   // Get credentials
-  const credentials = await getIntegrationCredentials("hh", workspaceId);
+  const credentials = await getIntegrationCredentials(db, "hh", workspaceId);
   if (!credentials?.email || !credentials?.password) {
     throw new Error("HH credentials not found in integrations");
   }

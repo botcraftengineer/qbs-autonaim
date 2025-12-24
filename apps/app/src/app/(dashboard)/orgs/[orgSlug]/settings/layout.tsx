@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { SiteHeader } from "~/components/layout";
-import { OrganizationSettingsSidebar } from "~/components/organization/organization-settings-sidebar";
+import { OrganizationSettingsSidebar } from "~/components/organization";
 
 export default async function OrganizationSettingsLayout({
   children,
