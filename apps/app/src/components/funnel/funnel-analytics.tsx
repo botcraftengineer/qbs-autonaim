@@ -28,13 +28,21 @@ import {
 } from "./analytics";
 
 export function FunnelAnalytics() {
-  const params = useParams<{ workspaceSlug: string }>();
+  const params = useParams<{ workspaceSlug: string; orgSlug: string }>();
   const [selectedVacancyId, setSelectedVacancyId] = useState<string>("all");
   const trpc = useTRPC();
 
-  const { data: workspaceData, isLoading: isLoadingWorkspace } = useQuery(
-    trpc.workspace.getBySlug.queryOptions({ slug: params.workspaceSlug }),
+  const { data: orgData } = useQuery(
+    trpc.organization.getBySlug.queryOptions({ slug: params.orgSlug }),
   );
+
+  const { data: workspaceData, isLoading: isLoadingWorkspace } = useQuery({
+    ...trpc.workspace.getBySlug.queryOptions({
+      slug: params.workspaceSlug,
+      organizationId: orgData?.id ?? "",
+    }),
+    enabled: !!orgData?.id,
+  });
 
   const workspaceId = workspaceData?.workspace.id;
 

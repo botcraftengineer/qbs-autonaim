@@ -8,10 +8,11 @@ export const workspace = pgTable(
     id: text("id").primaryKey().default(sql`workspace_id_generate()`),
 
     // Организация, которой принадлежит workspace
-    // nullable на время миграции, потом станет NOT NULL
-    organizationId: text("organization_id").references(() => organization.id, {
-      onDelete: "cascade",
-    }),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, {
+        onDelete: "cascade",
+      }),
 
     // Название workspace (компании)
     name: text("name").notNull(),

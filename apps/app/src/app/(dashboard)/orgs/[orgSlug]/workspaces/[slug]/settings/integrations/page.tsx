@@ -13,15 +13,23 @@ import { useTRPC } from "~/trpc/react";
 export default function IntegrationsPage() {
   const api = useTRPC();
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params.slug as string;
+  const orgSlug = params.orgSlug as string;
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const workspaceQueryOptions = api.workspace.getBySlug.queryOptions({
-    slug: workspaceSlug,
+  const { data: orgData } = useQuery(
+    api.organization.getBySlug.queryOptions({ slug: orgSlug }),
+  );
+
+  const { data: workspaceData } = useQuery({
+    ...api.workspace.getBySlug.queryOptions({
+      slug: workspaceSlug,
+      organizationId: orgData?.id ?? "",
+    }),
+    enabled: !!orgData?.id,
   });
-  const { data: workspaceData } = useQuery(workspaceQueryOptions);
 
   const workspaceId = workspaceData?.workspace?.id || "";
   const userRole = workspaceData?.role;

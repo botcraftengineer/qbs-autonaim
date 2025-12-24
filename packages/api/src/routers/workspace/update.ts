@@ -28,8 +28,20 @@ export const update = protectedProcedure
       });
     }
 
+    // Получаем текущий workspace для проверки organizationId
+    const currentWorkspace = await workspaceRepository.findById(input.id);
+    if (!currentWorkspace) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Workspace не найден",
+      });
+    }
+
     if (input.data.slug) {
-      const existing = await workspaceRepository.findBySlug(input.data.slug);
+      const existing = await workspaceRepository.findBySlug(
+        input.data.slug,
+        currentWorkspace.organizationId,
+      );
       if (existing && existing.id !== input.id) {
         throw new TRPCError({
           code: "CONFLICT",

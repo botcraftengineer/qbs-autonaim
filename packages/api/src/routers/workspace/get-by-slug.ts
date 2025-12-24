@@ -4,9 +4,17 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const getBySlug = protectedProcedure
-  .input(z.object({ slug: z.string() }))
+  .input(
+    z.object({
+      slug: z.string(),
+      organizationId: z.string(),
+    }),
+  )
   .query(async ({ input, ctx }) => {
-    const workspace = await workspaceRepository.findBySlug(input.slug);
+    const workspace = await workspaceRepository.findBySlug(
+      input.slug,
+      input.organizationId,
+    );
 
     if (!workspace) {
       throw new TRPCError({

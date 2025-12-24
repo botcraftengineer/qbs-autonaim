@@ -9,12 +9,20 @@ import { useTRPC } from "~/trpc/react";
 export default function SettingsCompanyPage() {
   const trpc = useTRPC();
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params.slug as string;
+  const orgSlug = params.orgSlug as string;
 
-  // Получаем workspace по slug
-  const { data: workspaceData } = useQuery(
-    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
+  const { data: orgData } = useQuery(
+    trpc.organization.getBySlug.queryOptions({ slug: orgSlug }),
   );
+
+  const { data: workspaceData } = useQuery({
+    ...trpc.workspace.getBySlug.queryOptions({
+      slug: workspaceSlug,
+      organizationId: orgData?.id ?? "",
+    }),
+    enabled: !!orgData?.id,
+  });
 
   const workspaceId = workspaceData?.workspace.id;
   const userRole = workspaceData?.role;

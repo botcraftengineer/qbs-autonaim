@@ -10,11 +10,20 @@ import { useTRPC } from "~/trpc/react";
 export default function SettingsPage() {
   const trpc = useTRPC();
   const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
+  const workspaceSlug = params.slug as string;
+  const orgSlug = params.orgSlug as string;
 
-  const { data, isLoading } = useQuery(
-    trpc.workspace.getBySlug.queryOptions({ slug: workspaceSlug }),
+  const { data: orgData } = useQuery(
+    trpc.organization.getBySlug.queryOptions({ slug: orgSlug }),
   );
+
+  const { data, isLoading } = useQuery({
+    ...trpc.workspace.getBySlug.queryOptions({
+      slug: workspaceSlug,
+      organizationId: orgData?.id ?? "",
+    }),
+    enabled: !!orgData?.id,
+  });
 
   if (isLoading) {
     return (
