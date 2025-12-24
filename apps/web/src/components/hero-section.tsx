@@ -50,7 +50,7 @@ export function HeroSection() {
               className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl"
               asChild
             >
-              <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+              <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
                 Начать бесплатно
               </Link>
             </Button>
@@ -60,9 +60,7 @@ export function HeroSection() {
               className="h-12 px-8 text-base font-medium rounded-xl border-border bg-card text-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
               asChild
             >
-              <Link href={`${env.NEXT_PUBLIC_APP_URL}/demo`}>
-                Посмотреть демо
-              </Link>
+              <Link href={`#`}>Посмотреть демо</Link>
             </Button>
           </div>
         </div>

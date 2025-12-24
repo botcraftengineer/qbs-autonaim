@@ -95,13 +95,15 @@ export function Header() {
                 className="w-full justify-start hover:bg-muted hover:text-foreground"
                 asChild
               >
-                <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-in`}>Войти</Link>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signin`}>
+                  Войти
+                </Link>
               </Button>
               <Button
                 className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
                 asChild
               >
-                <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
                   Начать бесплатно
                 </Link>
               </Button>

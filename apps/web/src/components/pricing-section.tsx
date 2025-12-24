@@ -32,7 +32,7 @@ export function PricingSection() {
         "Базовая аналитика",
       ],
       cta: "Начать бесплатно",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/sign-up`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/auth/signup`,
       popular: false,
     },
     {
@@ -49,7 +49,7 @@ export function PricingSection() {
         "Приоритетная поддержка",
       ],
       cta: "Попробовать 14 дней",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/sign-up?plan=business`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/auth/signup?plan=business`,
       popular: true,
     },
     {

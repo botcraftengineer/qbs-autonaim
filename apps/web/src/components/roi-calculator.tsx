@@ -256,7 +256,7 @@ export function ROICalculator() {
                 className="w-full h-12 bg-foreground text-background hover:bg-neutral-800 rounded-xl group"
                 asChild
               >
-                <Link href={`${env.NEXT_PUBLIC_APP_URL}/sign-up`}>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
                   Начать экономить
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
