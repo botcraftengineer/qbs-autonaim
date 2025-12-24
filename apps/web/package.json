@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "dev": "next dev -p 3001",
+    "dev": "bun with-env next dev -p 3001",
     "lint": "eslint .",
-    "start": "next start"
+    "start": "next start",
+    "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
     "@hookform/resolvers": "5.2.2",
