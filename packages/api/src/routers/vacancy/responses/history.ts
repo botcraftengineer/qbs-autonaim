@@ -1,4 +1,4 @@
-import { desc, eq, workspaceRepository } from "@qbs-autonaim/db";
+import { desc, eq } from "@qbs-autonaim/db";
 import {
   vacancyResponse,
   vacancyResponseHistory,
@@ -13,7 +13,7 @@ export const getHistory = protectedProcedure
     z.object({ responseId: z.string().uuid(), workspaceId: workspaceIdSchema }),
   )
   .query(async ({ ctx, input }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );

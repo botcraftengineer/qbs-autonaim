@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { dbEdge as db } from "../index";
+import type { DbClient } from "../index";
 import { vacancyResponse } from "../schema";
 
 export interface ResponseByPinCode {
@@ -11,6 +11,7 @@ export interface ResponseByPinCode {
  * Поиск отклика по пин-коду
  */
 export async function findResponseByPinCode(
+  db: DbClient,
   pinCode: string,
 ): Promise<
   { success: true; data: ResponseByPinCode } | { success: false; error: string }

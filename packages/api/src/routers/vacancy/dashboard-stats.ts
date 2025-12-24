@@ -5,7 +5,6 @@ import {
   gte,
   isNull,
   sql,
-  workspaceRepository,
 } from "@qbs-autonaim/db";
 import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -17,7 +16,7 @@ export const getDashboardStats = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );

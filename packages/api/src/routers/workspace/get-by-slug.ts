@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -11,7 +11,7 @@ export const getBySlug = protectedProcedure
     }),
   )
   .query(async ({ input, ctx }) => {
-    const workspace = await workspaceRepository.findBySlug(
+    const workspace = await ctx.workspaceRepository.findBySlug(
       input.slug,
       input.organizationId,
     );
@@ -23,7 +23,7 @@ export const getBySlug = protectedProcedure
       });
     }
 
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       workspace.id,
       ctx.session.user.id,
     );

@@ -1,6 +1,8 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import type { OrganizationMember } from "@qbs-autonaim/db/schema";
 import { getSession } from "../auth/server";
+
+const organizationRepository = new OrganizationRepository(db);
 
 /**
  * Проверяет доступ пользователя к организации
@@ -44,7 +46,10 @@ export async function checkOrganizationAccessBySlug(
   }
 
   // Проверяем доступ пользователя
-  const member = await organizationRepository.checkAccess(org.id, session.user.id);
+  const member = await organizationRepository.checkAccess(
+    org.id,
+    session.user.id,
+  );
 
   if (!member) {
     return null;

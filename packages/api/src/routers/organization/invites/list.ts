@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -12,7 +12,7 @@ export const listInvites = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -33,7 +33,7 @@ export const listInvites = protectedProcedure
     }
 
     // Получение только активных приглашений
-    const invites = await organizationRepository.getPendingInvites(
+    const invites = await ctx.organizationRepository.getPendingInvites(
       input.organizationId,
     );
 

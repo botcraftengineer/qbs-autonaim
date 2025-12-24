@@ -48,6 +48,7 @@
   "dependencies": {
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/validators": "workspace:*",
+    "@sindresorhus/slugify": "^3.0.0",
     "@vercel/postgres": "0.10.0",
     "drizzle-orm": "0.45.1",
     "drizzle-zod": "0.8.3",

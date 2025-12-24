@@ -1,4 +1,4 @@
-import { eq, workspaceRepository } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -46,7 +46,7 @@ export const getById = protectedProcedure
     }),
   )
   .query(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );

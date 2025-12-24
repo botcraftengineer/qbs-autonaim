@@ -1,7 +1,8 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+import type { WorkspaceRepository } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 
 export async function verifyWorkspaceAccess(
+  workspaceRepository: WorkspaceRepository,
   workspaceId: string,
   userId: string,
 ) {

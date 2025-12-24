@@ -1,44 +1,113 @@
 "use client";
 
-import { env as baseEnv } from "@qbs-autonaim/config";
-import { Button, Input, Label } from "@qbs-autonaim/ui";
+import { paths } from "@qbs-autonaim/config";
+import { Button, Input, Label, Textarea } from "@qbs-autonaim/ui";
+import slugify from "@sindresorhus/slugify";
 import { useMutation } from "@tanstack/react-query";
+import { Briefcase, Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
+
+type OnboardingStep = "organization" | "workspace";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [isGeneratingSlug, setIsGeneratingSlug] = useState(true);
-  const [error, setError] = useState("");
   const trpc = useTRPC();
 
-  const createWorkspace = useMutation(
-    trpc.workspace.create.mutationOptions({
-      onSuccess: (workspace) => {
-        router.push(
-          `/orgs/${workspace.organization.slug}/workspaces/${workspace.slug}`,
-        );
-        router.refresh();
+  const [step, setStep] = useState<OnboardingStep>("organization");
+
+  // Данные организации
+  const [name, setName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [description, setDescription] = useState("");
+  const [website, setWebsite] = useState("");
+  const [isGeneratingSlug, setIsGeneratingSlug] = useState(true);
+
+  // Созданная организация
+  const [createdOrganization, setCreatedOrganization] = useState<{
+    id: string;
+    slug: string;
+    name: string;
+  } | null>(null);
+
+  // Данные workspace
+  const [workspaceName, setWorkspaceName] = useState("");
+  const [workspaceSlug, setWorkspaceSlug] = useState("");
+  const [workspaceDescription, setWorkspaceDescription] = useState("");
+  const [workspaceWebsite, setWorkspaceWebsite] = useState("");
+  const [isGeneratingWorkspaceSlug, setIsGeneratingWorkspaceSlug] =
+    useState(true);
+
+  const createOrganization = useMutation(
+    trpc.organization.create.mutationOptions({
+      onSuccess: (organization) => {
+        toast.success("Организация создана", {
+          description: `Организация "${organization.name}" успешно создана`,
+        });
+        setCreatedOrganization({
+          id: organization.id,
+          slug: organization.slug,
+          name: organization.name,
+        });
+        setStep("workspace");
       },
-      onError: (err) => {
-        setError(err.message || "Ошибка при создании рабочего пространства");
+      onError: (error) => {
+        if (
+          error.message.includes("уже существует") ||
+          error.message.includes("already exists") ||
+          error.message.includes("duplicate") ||
+          error.message.includes("CONFLICT")
+        ) {
+          toast.error("Организация с таким slug уже существует", {
+            description: "Попробуйте другой slug",
+          });
+        } else {
+          toast.error("Ошибка при создании организации", {
+            description: error.message,
+          });
+        }
       },
     }),
   );
 
-  // Автогенерация slug из названия
+  const createWorkspace = useMutation(
+    trpc.organization.createWorkspace.mutationOptions({
+      onSuccess: (workspace) => {
+        toast.success("Воркспейс создан", {
+          description: `Воркспейс "${workspace.name}" успешно создан`,
+        });
+        if (createdOrganization && workspace.slug) {
+          router.push(
+            paths.workspace.root(createdOrganization.slug, workspace.slug),
+          );
+          router.refresh();
+        }
+      },
+      onError: (error) => {
+        if (
+          error.message.includes("уже существует") ||
+          error.message.includes("already exists") ||
+          error.message.includes("duplicate") ||
+          error.message.includes("CONFLICT")
+        ) {
+          toast.error("Воркспейс с таким slug уже существует", {
+            description: "Попробуйте другой slug",
+          });
+        } else {
+          toast.error("Ошибка при создании воркспейса", {
+            description: error.message,
+          });
+        }
+      },
+    }),
+  );
+
   const handleNameChange = (value: string) => {
     setName(value);
     if (isGeneratingSlug) {
-      const generatedSlug = value
-        .toLowerCase()
-        .replace(/[^a-z0-9\s-]/g, "")
-        .replace(/\s+/g, "-")
-        .replace(/-+/g, "-")
-        .slice(0, 50);
+      const generatedSlug = slugify(value);
       setSlug(generatedSlug);
     }
   };
@@ -48,17 +117,55 @@ export default function OnboardingPage() {
     setSlug(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleOrganizationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
-    createWorkspace.mutate({ workspace: { name, slug } });
+    createOrganization.mutate({
+      name,
+      slug,
+      description: description || undefined,
+      website: website || undefined,
+    });
+  };
+
+  const handleWorkspaceNameChange = (value: string) => {
+    setWorkspaceName(value);
+    if (isGeneratingWorkspaceSlug) {
+      const generatedSlug = slugify(value);
+      setWorkspaceSlug(generatedSlug);
+    }
+  };
+
+  const handleWorkspaceSlugChange = (value: string) => {
+    setIsGeneratingWorkspaceSlug(false);
+    setWorkspaceSlug(value);
+  };
+
+  const handleWorkspaceSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createdOrganization) return;
+
+    createWorkspace.mutate({
+      organizationId: createdOrganization.id,
+      workspace: {
+        name: workspaceName,
+        slug: workspaceSlug,
+        description: workspaceDescription || undefined,
+        website: workspaceWebsite || undefined,
+      },
+    });
+  };
+
+  const handleSkipWorkspace = () => {
+    if (!createdOrganization) return;
+    router.push(paths.organization.workspaces(createdOrganization.slug));
+    router.refresh();
   };
 
   return (
     <div className="relative flex min-h-screen items-start justify-center p-4 pt-20">
       {/* Background gradient */}
       <div className="absolute inset-0 isolate overflow-hidden bg-white">
-        <div className="absolute inset-y-0 left-1/2 w-[1200px] -translate-x-1/2 [mask-composite:intersect] [mask-image:linear-gradient(black,transparent_320px),linear-gradient(90deg,transparent,black_5%,black_95%,transparent)]">
+        <div className="absolute inset-y-0 left-1/2 w-[1200px] -translate-x-1/2 mask-intersect mask-[linear-gradient(black,transparent_320px),linear-gradient(90deg,transparent,black_5%,black_95%,transparent)]">
           <svg
             className="pointer-events-none absolute inset-0 text-neutral-200"
             width="100%"
@@ -94,83 +201,215 @@ export default function OnboardingPage() {
         </div>
       </div>
 
-      <div className="w-full max-w-md space-y-8">
-        <div className="text-center">
-          <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary/10 backdrop-blur-sm">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="size-8 text-primary"
-              aria-label="Workspace icon"
-            >
-              <title>Workspace</title>
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold">Создайте рабочее пространство</h1>
-          <p className="text-muted-foreground mt-2">
-            Настройте общее пространство для управления вакансиями
-          </p>
+      <div className="relative w-full max-w-md space-y-8">
+        {/* Progress indicator */}
+        <div className="flex items-center justify-center gap-2">
+          <div
+            className={`h-2 w-16 rounded-full transition-colors ${
+              step === "organization" ? "bg-primary" : "bg-primary/30"
+            }`}
+          />
+          <div
+            className={`h-2 w-16 rounded-full transition-colors ${
+              step === "workspace" ? "bg-primary" : "bg-muted"
+            }`}
+          />
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-6 rounded-xl border bg-card p-8 shadow-lg backdrop-blur-sm"
-        >
-          <div className="space-y-2">
-            <Label htmlFor="name">Название рабочего пространства</Label>
-            <Input
-              id="name"
-              placeholder="Моя компания"
-              value={name}
-              onChange={(e) => handleNameChange(e.target.value)}
-              required
-              maxLength={100}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="slug">Адрес пространства</Label>
-            <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-sm">
-                {new URL(baseEnv.NEXT_PUBLIC_APP_URL).host}/
-              </span>
-              <Input
-                id="slug"
-                placeholder="my-company"
-                value={slug}
-                onChange={(e) => handleSlugChange(e.target.value)}
-                required
-                maxLength={50}
-                pattern="[a-z0-9-]+"
-                title="Только строчные буквы, цифры и дефис"
-              />
+        {step === "organization" ? (
+          <>
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary/10 backdrop-blur-sm">
+                <Building2 className="size-8 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold">Создайте организацию</h1>
+              <p className="text-muted-foreground mt-2">
+                Настройте организацию для управления командами и рабочими
+                пространствами
+              </p>
             </div>
-            <p className="text-muted-foreground text-xs">
-              Можно изменить позже в настройках
-            </p>
-          </div>
 
-          <Button
-            type="submit"
-            className="w-full"
-            disabled={createWorkspace.isPending || !name || !slug}
-          >
-            {createWorkspace.isPending
-              ? "Создание..."
-              : "Создать рабочее пространство"}
-          </Button>
+            <form
+              onSubmit={handleOrganizationSubmit}
+              className="space-y-6 rounded-xl border bg-card p-8 shadow-lg backdrop-blur-sm"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="name">Название организации</Label>
+                <Input
+                  id="name"
+                  placeholder="Моя компания"
+                  value={name}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                  required
+                  maxLength={100}
+                  autoFocus
+                />
+              </div>
 
-          {error && (
-            <p className="text-destructive text-sm text-center">{error}</p>
-          )}
-        </form>
+              <div className="space-y-2">
+                <Label htmlFor="slug">URL slug</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">/orgs/</span>
+                  <Input
+                    id="slug"
+                    placeholder="moya-kompaniya"
+                    value={slug}
+                    onChange={(e) => handleSlugChange(e.target.value)}
+                    required
+                    maxLength={50}
+                    pattern="[a-z0-9-]+"
+                    title="Только строчные буквы, цифры и дефис"
+                  />
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  Только строчные буквы, цифры и дефисы. Должен быть уникальным.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">Описание (опционально)</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Краткое описание организации…"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  className="resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="website">Веб-сайт (опционально)</Label>
+                <Input
+                  id="website"
+                  type="url"
+                  placeholder="https://example.com"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  maxLength={200}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={createOrganization.isPending || !name || !slug}
+              >
+                {createOrganization.isPending
+                  ? "Создание…"
+                  : "Создать организацию"}
+              </Button>
+            </form>
+          </>
+        ) : (
+          <>
+            <div className="text-center">
+              <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary/10 backdrop-blur-sm">
+                <Briefcase className="size-8 text-primary" />
+              </div>
+              <h1 className="text-3xl font-bold">Создайте воркспейс</h1>
+              <p className="text-muted-foreground mt-2">
+                Создайте первое рабочее пространство для вашей команды
+              </p>
+            </div>
+
+            <form
+              onSubmit={handleWorkspaceSubmit}
+              className="space-y-6 rounded-xl border bg-card p-8 shadow-lg backdrop-blur-sm"
+            >
+              <div className="space-y-2">
+                <Label htmlFor="workspace-name">Название воркспейса</Label>
+                <Input
+                  id="workspace-name"
+                  placeholder="Основной проект"
+                  value={workspaceName}
+                  onChange={(e) => handleWorkspaceNameChange(e.target.value)}
+                  required
+                  maxLength={100}
+                  autoFocus
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="workspace-slug">URL slug</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground text-sm">
+                    /orgs/{createdOrganization?.slug}/workspaces/
+                  </span>
+                  <Input
+                    id="workspace-slug"
+                    placeholder="osnovnoy-proekt"
+                    value={workspaceSlug}
+                    onChange={(e) => handleWorkspaceSlugChange(e.target.value)}
+                    required
+                    maxLength={50}
+                    pattern="[a-z0-9-]+"
+                    title="Только строчные буквы, цифры и дефис"
+                  />
+                </div>
+                <p className="text-muted-foreground text-xs">
+                  Только строчные буквы, цифры и дефисы. Должен быть уникальным
+                  в рамках организации.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="workspace-description">
+                  Описание (опционально)
+                </Label>
+                <Textarea
+                  id="workspace-description"
+                  placeholder="Краткое описание воркспейса…"
+                  value={workspaceDescription}
+                  onChange={(e) => setWorkspaceDescription(e.target.value)}
+                  rows={3}
+                  maxLength={500}
+                  className="resize-none"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="workspace-website">
+                  Веб-сайт (опционально)
+                </Label>
+                <Input
+                  id="workspace-website"
+                  type="url"
+                  placeholder="https://example.com"
+                  value={workspaceWebsite}
+                  onChange={(e) => setWorkspaceWebsite(e.target.value)}
+                  maxLength={200}
+                />
+              </div>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleSkipWorkspace}
+                  disabled={createWorkspace.isPending}
+                >
+                  Пропустить
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1"
+                  disabled={
+                    createWorkspace.isPending ||
+                    !workspaceName ||
+                    !workspaceSlug
+                  }
+                >
+                  {createWorkspace.isPending
+                    ? "Создание…"
+                    : "Создать воркспейс"}
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
       </div>
     </div>
   );

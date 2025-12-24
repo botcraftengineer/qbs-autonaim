@@ -1,6 +1,5 @@
 import {
   type OrganizationMember,
-  organizationRepository,
 } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -14,7 +13,7 @@ export const acceptInvite = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Получение приглашения по токену
-    const invite = await organizationRepository.getInviteByToken(input.token);
+    const invite = await ctx.organizationRepository.getInviteByToken(input.token);
 
     if (!invite) {
       throw new TRPCError({
@@ -32,7 +31,7 @@ export const acceptInvite = protectedProcedure
     }
 
     // Получение организации
-    const organization = await organizationRepository.findById(
+    const organization = await ctx.organizationRepository.findById(
       invite.organizationId,
     );
 
@@ -44,7 +43,7 @@ export const acceptInvite = protectedProcedure
     }
 
     // Проверка, не является ли пользователь уже участником
-    const existingMember = await organizationRepository.checkAccess(
+    const existingMember = await ctx.organizationRepository.checkAccess(
       invite.organizationId,
       ctx.session.user.id,
     );
@@ -59,14 +58,14 @@ export const acceptInvite = protectedProcedure
     // Добавление пользователя в организацию с указанной ролью
     let member: OrganizationMember;
     try {
-      member = await organizationRepository.addMember(
+      member = await ctx.organizationRepository.addMember(
         invite.organizationId,
         ctx.session.user.id,
         invite.role,
       );
 
       // Удаление приглашения только после успешного добавления
-      await organizationRepository.deleteInvite(invite.id);
+      await ctx.organizationRepository.deleteInvite(invite.id);
     } catch (error) {
       // Если добавление не удалось, не удаляем приглашение
       throw new TRPCError({

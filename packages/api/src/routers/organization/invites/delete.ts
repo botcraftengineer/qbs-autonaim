@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -13,7 +13,7 @@ export const deleteInvite = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -34,7 +34,7 @@ export const deleteInvite = protectedProcedure
     }
 
     // Загрузка приглашения
-    const invite = await organizationRepository.getInviteById(input.inviteId);
+    const invite = await ctx.organizationRepository.getInviteById(input.inviteId);
 
     if (!invite) {
       throw new TRPCError({
@@ -52,7 +52,7 @@ export const deleteInvite = protectedProcedure
     }
 
     // Отмена приглашения
-    await organizationRepository.deleteInvite(input.inviteId);
+    await ctx.organizationRepository.deleteInvite(input.inviteId);
 
     return { success: true };
   });

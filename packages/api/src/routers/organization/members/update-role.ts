@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -14,7 +14,7 @@ export const updateMemberRole = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -27,7 +27,7 @@ export const updateMemberRole = protectedProcedure
     }
 
     // Получаем информацию о целевом участнике
-    const targetMember = await organizationRepository.checkAccess(
+    const targetMember = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       input.userId,
     );
@@ -57,7 +57,7 @@ export const updateMemberRole = protectedProcedure
     }
 
     // Обновление роли участника (метод сам проверит защиту последнего owner)
-    const updatedMember = await organizationRepository.updateMemberRole(
+    const updatedMember = await ctx.organizationRepository.updateMemberRole(
       input.organizationId,
       input.userId,
       input.role,

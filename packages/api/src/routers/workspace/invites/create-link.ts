@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -12,7 +12,7 @@ export const createLink = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -24,7 +24,7 @@ export const createLink = protectedProcedure
       });
     }
 
-    const invite = await workspaceRepository.createInviteLink(
+    const invite = await ctx.workspaceRepository.createInviteLink(
       input.workspaceId,
       ctx.session.user.id,
       input.role,

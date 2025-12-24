@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { generateText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -119,7 +119,7 @@ export const improveInstructions = protectedProcedure
       vacancyDescription,
     } = input;
 
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       workspaceId,
       ctx.session.user.id,
     );

@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
@@ -6,7 +6,7 @@ import { protectedProcedure } from "../../../trpc";
 export const accept = protectedProcedure
   .input(z.object({ token: z.string() }))
   .mutation(async ({ input, ctx }) => {
-    const invite = await workspaceRepository.getInviteByToken(input.token);
+    const invite = await ctx.workspaceRepository.getInviteByToken(input.token);
 
     if (!invite) {
       throw new TRPCError({
@@ -56,7 +56,7 @@ export const accept = protectedProcedure
     }
 
     // Проверка: пользователь уже является участником
-    const existingMember = await workspaceRepository.checkAccess(
+    const existingMember = await ctx.workspaceRepository.checkAccess(
       invite.workspaceId,
       ctx.session.user.id,
     );
@@ -69,14 +69,14 @@ export const accept = protectedProcedure
     }
 
     // Добавляем пользователя в workspace
-    await workspaceRepository.addUser(
+    await ctx.workspaceRepository.addUser(
       invite.workspaceId,
       ctx.session.user.id,
       invite.role,
     );
 
     // Удаляем использованное приглашение
-    await workspaceRepository.deleteInviteByToken(input.token);
+    await ctx.workspaceRepository.deleteInviteByToken(input.token);
 
     return { success: true, workspace: invite.workspace };
   });

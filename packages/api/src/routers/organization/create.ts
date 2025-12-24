@@ -1,9 +1,4 @@
-import {
-  dbEdge,
-  organization,
-  organizationMember,
-  organizationRepository,
-} from "@qbs-autonaim/db";
+import { organization, organizationMember } from "@qbs-autonaim/db";
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import { createOrganizationSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -12,7 +7,7 @@ import { protectedProcedure } from "../../trpc";
 export const create = protectedProcedure
   .input(createOrganizationSchema)
   .mutation(async ({ input, ctx }) => {
-    const existing = await organizationRepository.findBySlug(input.slug);
+    const existing = await ctx.organizationRepository.findBySlug(input.slug);
     if (existing) {
       throw new TRPCError({
         code: "CONFLICT",
@@ -26,7 +21,7 @@ export const create = protectedProcedure
     }
 
     try {
-      const result = await dbEdge.transaction(async (tx) => {
+      const result = await ctx.db.transaction(async (tx) => {
         const [newOrg] = await tx
           .insert(organization)
           .values(dataToCreate)

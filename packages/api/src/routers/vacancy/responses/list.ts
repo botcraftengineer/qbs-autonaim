@@ -9,7 +9,6 @@ import {
   inArray,
   lt,
   sql,
-  workspaceRepository,
 } from "@qbs-autonaim/db";
 import {
   conversationMessage,
@@ -62,7 +61,7 @@ export const list = protectedProcedure
     const offset = (page - 1) * limit;
 
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       workspaceId,
       ctx.session.user.id,
     );

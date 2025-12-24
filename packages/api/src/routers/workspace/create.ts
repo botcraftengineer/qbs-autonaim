@@ -1,4 +1,4 @@
-import { organizationRepository, workspaceRepository } from "@qbs-autonaim/db";
+
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   createWorkspaceSchema,
@@ -16,7 +16,7 @@ export const create = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const organizations = await organizationRepository.getUserOrganizations(
+    const organizations = await ctx.organizationRepository.getUserOrganizations(
       ctx.session.user.id,
     );
 
@@ -55,7 +55,7 @@ export const create = protectedProcedure
       organizationId = firstOrg.id;
     }
 
-    const existing = await workspaceRepository.findBySlug(
+    const existing = await ctx.workspaceRepository.findBySlug(
       input.workspace.slug,
       organizationId,
     );
@@ -71,7 +71,7 @@ export const create = protectedProcedure
       dataToCreate.logo = await optimizeLogo(dataToCreate.logo);
     }
 
-    const workspace = await workspaceRepository.create({
+    const workspace = await ctx.workspaceRepository.create({
       ...dataToCreate,
       organizationId,
     });
@@ -83,7 +83,7 @@ export const create = protectedProcedure
       });
     }
 
-    await workspaceRepository.addUser(
+    await ctx.workspaceRepository.addUser(
       workspace.id,
       ctx.session.user.id,
       "owner",

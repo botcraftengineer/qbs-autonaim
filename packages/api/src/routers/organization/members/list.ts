@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -8,7 +8,7 @@ export const listMembers = protectedProcedure
   .input(z.object({ organizationId: organizationIdSchema }))
   .query(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -21,7 +21,7 @@ export const listMembers = protectedProcedure
     }
 
     // Получение списка участников с user данными
-    const members = await organizationRepository.getMembers(
+    const members = await ctx.organizationRepository.getMembers(
       input.organizationId,
     );
 

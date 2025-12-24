@@ -1,4 +1,4 @@
-import { eq, workspaceRepository } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -18,7 +18,7 @@ export const sendByUsername = protectedProcedure
     const { responseId, username, workspaceId } = input;
 
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       workspaceId,
       ctx.session.user.id,
     );

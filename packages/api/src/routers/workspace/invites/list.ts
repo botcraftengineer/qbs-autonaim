@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import { protectedProcedure } from "../../../trpc";
 export const listInvites = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -19,6 +19,6 @@ export const listInvites = protectedProcedure
       });
     }
 
-    const invites = await workspaceRepository.getInvites(input.workspaceId);
+    const invites = await ctx.workspaceRepository.getInvites(input.workspaceId);
     return invites;
   });

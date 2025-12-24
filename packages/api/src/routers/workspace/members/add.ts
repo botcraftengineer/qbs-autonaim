@@ -1,5 +1,5 @@
 import { env } from "@qbs-autonaim/config";
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { WorkspaceInviteEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
 import { addUserToWorkspaceSchema } from "@qbs-autonaim/validators";
@@ -9,7 +9,7 @@ import { protectedProcedure } from "../../../trpc";
 export const addMember = protectedProcedure
   .input(addUserToWorkspaceSchema)
   .mutation(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -21,11 +21,11 @@ export const addMember = protectedProcedure
       });
     }
 
-    const user = await workspaceRepository.findUserByEmail(input.email);
+    const user = await ctx.workspaceRepository.findUserByEmail(input.email);
     const userId = user?.id || null;
 
     if (userId) {
-      const existingMember = await workspaceRepository.checkAccess(
+      const existingMember = await ctx.workspaceRepository.checkAccess(
         input.workspaceId,
         userId,
       );
@@ -38,7 +38,7 @@ export const addMember = protectedProcedure
       }
     }
 
-    const existingInvite = await workspaceRepository.findInviteByEmail(
+    const existingInvite = await ctx.workspaceRepository.findInviteByEmail(
       input.workspaceId,
       input.email,
     );
@@ -50,7 +50,7 @@ export const addMember = protectedProcedure
       });
     }
 
-    const invite = await workspaceRepository.createPersonalInvite(
+    const invite = await ctx.workspaceRepository.createPersonalInvite(
       input.workspaceId,
       ctx.session.user.id,
       input.email,
@@ -58,7 +58,7 @@ export const addMember = protectedProcedure
       input.role,
     );
 
-    const workspace = await workspaceRepository.findById(input.workspaceId);
+    const workspace = await ctx.workspaceRepository.findById(input.workspaceId);
 
     if (workspace) {
       const inviteLink = `${env.APP_URL}/invite/${invite.token}`;

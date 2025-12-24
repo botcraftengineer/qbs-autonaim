@@ -5,7 +5,6 @@ import {
   inArray,
   lt,
   or,
-  workspaceRepository,
 } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -70,7 +69,7 @@ export const list = protectedProcedure
     }),
   )
   .query(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );

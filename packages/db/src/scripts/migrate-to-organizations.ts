@@ -10,6 +10,7 @@
  * Requirements: 7.1, 7.2, 7.3, 7.4, 7.5
  */
 
+import slugify from "@sindresorhus/slugify";
 import { eq } from "drizzle-orm";
 import { db } from "../client";
 import {
@@ -31,11 +32,8 @@ interface MigrationStats {
  * Генерирует slug из имени
  */
 function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .substring(0, 50);
+  const slug = slugify(name);
+  return slug.length > 50 ? slug.substring(0, 50) : slug;
 }
 
 /**

@@ -23,7 +23,7 @@ function getInitials(name?: string | null): string {
 
 function getDiceBearUrl(name?: string | null): string {
   const seed = name || "anonymous";
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(seed)}`;
+  return `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(seed)}&scale=50`;
 }
 
 export function CandidateAvatar({

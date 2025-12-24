@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -14,7 +14,7 @@ export const removeMember = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const isSelfRemoval = input.userId === ctx.session.user.id;
 
-    const targetUserAccess = await workspaceRepository.checkAccess(
+    const targetUserAccess = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       input.userId,
     );
@@ -27,7 +27,7 @@ export const removeMember = protectedProcedure
     }
 
     if (!isSelfRemoval) {
-      const access = await workspaceRepository.checkAccess(
+      const access = await ctx.workspaceRepository.checkAccess(
         input.workspaceId,
         ctx.session.user.id,
       );
@@ -41,7 +41,7 @@ export const removeMember = protectedProcedure
     }
 
     if (targetUserAccess.role === "owner") {
-      const members = await workspaceRepository.getMembers(input.workspaceId);
+      const members = await ctx.workspaceRepository.getMembers(input.workspaceId);
       const ownerCount = members.filter((m) => m.role === "owner").length;
 
       if (ownerCount <= 1) {
@@ -53,6 +53,6 @@ export const removeMember = protectedProcedure
       }
     }
 
-    await workspaceRepository.removeUser(input.workspaceId, input.userId);
+    await ctx.workspaceRepository.removeUser(input.workspaceId, input.userId);
     return { success: true };
   });

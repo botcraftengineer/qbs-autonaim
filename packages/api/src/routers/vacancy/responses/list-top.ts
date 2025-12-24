@@ -1,4 +1,4 @@
-import { desc, workspaceRepository } from "@qbs-autonaim/db";
+import { desc } from "@qbs-autonaim/db";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -15,7 +15,7 @@ export const listTop = protectedProcedure
   )
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
