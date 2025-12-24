@@ -36,6 +36,7 @@ export default async function OrganizationMembersPage({
     <OrganizationMembersClient
       organizationId={organization.id}
       currentUserId={session.user.id}
+      currentUserRole={access.role}
     />
   );
 }

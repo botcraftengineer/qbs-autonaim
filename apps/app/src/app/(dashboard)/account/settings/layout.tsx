@@ -8,8 +8,13 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  const currentTab =
-    pathname === "/account/settings/security" ? "security" : "general";
+  const getCurrentTab = () => {
+    if (pathname === "/account/settings/security") return "security";
+    if (pathname === "/account/settings/billing") return "billing";
+    return "general";
+  };
+
+  const currentTab = getCurrentTab();
 
   const handleTabChange = (value: string) => {
     if (value === "general") {
@@ -35,9 +40,10 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid w-full max-w-md grid-cols-2">
+        <TabsList className="grid w-full max-w-lg grid-cols-3">
           <TabsTrigger value="general">Основное</TabsTrigger>
           <TabsTrigger value="security">Безопасность</TabsTrigger>
+          <TabsTrigger value="billing">Биллинг</TabsTrigger>
         </TabsList>
 
         <div className="mt-6">{children}</div>
