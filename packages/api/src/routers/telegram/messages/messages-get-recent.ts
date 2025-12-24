@@ -18,7 +18,7 @@ export const getRecentMessagesRouter = protectedProcedure
     }),
   )
   .query(async ({ input, ctx }) => {
-    await verifyWorkspaceAccess(input.workspaceId, ctx.session.user.id);
+    await verifyWorkspaceAccess(ctx.workspaceRepository, input.workspaceId, ctx.session.user.id);
 
     const messages = await ctx.db
       .select({

@@ -20,7 +20,6 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import type * as React from "react";
-import { OrganizationSwitcher } from "~/components/organization";
 import {
   NavMain,
   NavSecondary,
@@ -109,7 +108,7 @@ export function AppSidebar({
   user,
   workspaces,
   activeWorkspaceId,
-  onWorkspaceChange,
+  onWorkspaceChangeAction,
   organizations,
   activeOrganizationId,
   onOrganizationChangeAction,
@@ -122,7 +121,7 @@ export function AppSidebar({
   };
   workspaces?: WorkspaceWithRole[];
   activeWorkspaceId?: string;
-  onWorkspaceChange?: (workspaceId: string) => void;
+  onWorkspaceChangeAction?: (workspaceId: string) => void;
   organizations?: OrganizationWithRole[];
   activeOrganizationId?: string;
   onOrganizationChangeAction?: (organizationId: string) => void;
@@ -158,18 +157,14 @@ export function AppSidebar({
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        {organizations && organizations.length > 0 && (
-          <OrganizationSwitcher
-            organizations={organizations}
-            activeOrganizationId={activeOrganizationId}
-            onOrganizationChangeAction={onOrganizationChangeAction}
-          />
-        )}
-        {workspaces && workspaces.length > 0 && (
+        {workspaces && workspaces.length > 0 && organizations && (
           <WorkspaceSwitcher
             workspaces={workspaces}
+            organizations={organizations}
             activeWorkspaceId={activeWorkspaceId}
-            onWorkspaceChange={onWorkspaceChange}
+            activeOrganizationId={activeOrganizationId}
+            onWorkspaceChangeAction={onWorkspaceChangeAction}
+            onOrganizationChangeAction={onOrganizationChangeAction}
           />
         )}
       </SidebarHeader>

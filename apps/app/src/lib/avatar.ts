@@ -15,7 +15,7 @@ export function getAvatarUrl(
     return photoUrl;
   }
 
-  return `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(name)}`;
+  return `https://api.dicebear.com/9.x/initials/svg?seed=${encodeURIComponent(name)}&scale=50`;
 }
 
 /**

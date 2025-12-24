@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -13,7 +13,7 @@ export const getWorkspaceBySlug = protectedProcedure
   )
   .query(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -26,7 +26,7 @@ export const getWorkspaceBySlug = protectedProcedure
     }
 
     // Получение workspace по slug
-    const workspace = await organizationRepository.getWorkspaceBySlug(
+    const workspace = await ctx.organizationRepository.getWorkspaceBySlug(
       input.organizationId,
       input.slug,
     );

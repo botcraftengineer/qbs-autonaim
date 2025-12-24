@@ -14,12 +14,12 @@ export default async function OnboardingLayout({
     redirect("/auth/signin");
   }
 
-  // Проверяем, есть ли у пользователя рабочие пространства
+  // Проверяем, есть ли у пользователя организации
   const caller = await api();
-  const userWorkspaces = await caller.workspace.list();
+  const userOrganizations = await caller.organization.list();
 
-  // Если есть рабочие пространства, редиректим на главную
-  if (userWorkspaces.length > 0) {
+  // Если есть организации, редиректим на главную
+  if (userOrganizations.length > 0) {
     redirect("/");
   }
 

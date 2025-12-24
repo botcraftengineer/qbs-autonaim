@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -14,7 +14,7 @@ export const addMember = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -35,7 +35,7 @@ export const addMember = protectedProcedure
     }
 
     // Добавление участника с указанной ролью
-    const member = await organizationRepository.addMember(
+    const member = await ctx.organizationRepository.addMember(
       input.organizationId,
       input.userId,
       input.role,

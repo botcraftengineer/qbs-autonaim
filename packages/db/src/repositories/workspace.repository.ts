@@ -1,7 +1,7 @@
 import { and, eq, gt, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
-import { dbEdge as db } from "../index";
+import type { DbClient } from "../index";
 import {
   organization,
   user,
@@ -11,6 +11,7 @@ import {
 } from "../schema";
 
 export class WorkspaceRepository {
+  constructor(private db: DbClient) {}
   // Создать workspace
   async create(data: {
     organizationId: string;
@@ -21,7 +22,7 @@ export class WorkspaceRepository {
     logo?: string;
   }) {
     // Проверяем, что организация существует
-    const org = await db.query.organization.findFirst({
+    const org = await this.db.query.organization.findFirst({
       where: eq(organization.id, data.organizationId),
     });
 
@@ -30,7 +31,10 @@ export class WorkspaceRepository {
     }
 
     // ID генерируется автоматически через workspace_id_generate()
-    const [newWorkspace] = await db.insert(workspace).values(data).returning();
+    const [newWorkspace] = await this.db
+      .insert(workspace)
+      .values(data)
+      .returning();
 
     // Возвращаем workspace с организацией
     return {
@@ -41,7 +45,7 @@ export class WorkspaceRepository {
 
   // Получить workspace по ID
   async findById(id: string) {
-    return db.query.workspace.findFirst({
+    return this.db.query.workspace.findFirst({
       where: eq(workspace.id, id),
       with: {
         userWorkspaces: {
@@ -56,7 +60,7 @@ export class WorkspaceRepository {
 
   // Получить workspace по slug и organizationId
   async findBySlug(slug: string, organizationId: string) {
-    return db.query.workspace.findFirst({
+    return this.db.query.workspace.findFirst({
       where: and(
         eq(workspace.slug, slug),
         eq(workspace.organizationId, organizationId),
@@ -66,7 +70,7 @@ export class WorkspaceRepository {
 
   // Получить все workspaces пользователя
   async findByUserId(userId: string) {
-    return db.query.userWorkspace.findMany({
+    return this.db.query.userWorkspace.findMany({
       where: eq(userWorkspace.userId, userId),
       with: {
         workspace: {
@@ -92,7 +96,7 @@ export class WorkspaceRepository {
   ) {
     // Если обновляется organizationId, проверяем что организация существует
     if (data.organizationId) {
-      const org = await db.query.organization.findFirst({
+      const org = await this.db.query.organization.findFirst({
         where: eq(organization.id, data.organizationId),
       });
 
@@ -101,7 +105,7 @@ export class WorkspaceRepository {
       }
     }
 
-    const [updated] = await db
+    const [updated] = await this.db
       .update(workspace)
       .set(data)
       .where(eq(workspace.id, id))
@@ -111,7 +115,7 @@ export class WorkspaceRepository {
 
   // Удалить workspace
   async delete(id: string) {
-    await db.delete(workspace).where(eq(workspace.id, id));
+    await this.db.delete(workspace).where(eq(workspace.id, id));
   }
 
   // Добавить пользователя в workspace
@@ -120,7 +124,7 @@ export class WorkspaceRepository {
     userId: string,
     role: "owner" | "admin" | "member" = "member",
   ) {
-    const [member] = await db
+    const [member] = await this.db
       .insert(userWorkspace)
       .values({
         workspaceId,
@@ -133,7 +137,7 @@ export class WorkspaceRepository {
 
   // Удалить пользователя из workspace
   async removeUser(workspaceId: string, userId: string) {
-    await db
+    await this.db
       .delete(userWorkspace)
       .where(
         and(
@@ -149,7 +153,7 @@ export class WorkspaceRepository {
     userId: string,
     role: "owner" | "admin" | "member",
   ) {
-    const [updated] = await db
+    const [updated] = await this.db
       .update(userWorkspace)
       .set({ role })
       .where(
@@ -164,7 +168,7 @@ export class WorkspaceRepository {
 
   // Проверить доступ пользователя к workspace
   async checkAccess(workspaceId: string, userId: string) {
-    const member = await db.query.userWorkspace.findFirst({
+    const member = await this.db.query.userWorkspace.findFirst({
       where: and(
         eq(userWorkspace.workspaceId, workspaceId),
         eq(userWorkspace.userId, userId),
@@ -175,7 +179,7 @@ export class WorkspaceRepository {
 
   // Получить всех участников workspace
   async getMembers(workspaceId: string) {
-    return db.query.userWorkspace.findMany({
+    return this.db.query.userWorkspace.findMany({
       where: eq(userWorkspace.workspaceId, workspaceId),
       with: {
         user: true,
@@ -185,7 +189,7 @@ export class WorkspaceRepository {
 
   // Получить все активные приглашения workspace
   async getInvites(workspaceId: string) {
-    return db.query.workspaceInvite.findMany({
+    return this.db.query.workspaceInvite.findMany({
       where: (invite, { and, eq }) =>
         and(
           eq(invite.workspaceId, workspaceId),
@@ -203,7 +207,7 @@ export class WorkspaceRepository {
 
   // Найти приглашение по email
   async findInviteByEmail(workspaceId: string, email: string) {
-    return db.query.workspaceInvite.findFirst({
+    return this.db.query.workspaceInvite.findFirst({
       where: and(
         eq(workspaceInvite.workspaceId, workspaceId),
         eq(workspaceInvite.invitedEmail, email),
@@ -214,7 +218,7 @@ export class WorkspaceRepository {
 
   // Отменить приглашение по email
   async cancelInviteByEmail(workspaceId: string, email: string) {
-    const result = await db
+    const result = await this.db
       .delete(workspaceInvite)
       .where(
         and(
@@ -229,7 +233,9 @@ export class WorkspaceRepository {
 
   // Удалить приглашение после принятия
   async deleteInviteByToken(token: string) {
-    await db.delete(workspaceInvite).where(eq(workspaceInvite.token, token));
+    await this.db
+      .delete(workspaceInvite)
+      .where(eq(workspaceInvite.token, token));
   }
 
   // Найти пользователя по email
@@ -240,7 +246,7 @@ export class WorkspaceRepository {
       .email({ message: "Некорректный формат email" });
     const validatedEmail = emailSchema.parse(email);
 
-    return db.query.user.findFirst({
+    return this.db.query.user.findFirst({
       where: eq(user.email, validatedEmail),
     });
   }
@@ -256,7 +262,7 @@ export class WorkspaceRepository {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-    const [invite] = await db
+    const [invite] = await this.db
       .insert(workspaceInvite)
       .values({
         workspaceId,
@@ -289,7 +295,7 @@ export class WorkspaceRepository {
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + expiresInDays);
 
-    const [invite] = await db
+    const [invite] = await this.db
       .insert(workspaceInvite)
       .values({
         workspaceId,
@@ -311,7 +317,7 @@ export class WorkspaceRepository {
 
   // Получить активный invite link для workspace
   async getActiveInviteLink(workspaceId: string) {
-    return db.query.workspaceInvite.findFirst({
+    return this.db.query.workspaceInvite.findFirst({
       where: (invite, { and, eq }) =>
         and(
           eq(invite.workspaceId, workspaceId),
@@ -323,7 +329,7 @@ export class WorkspaceRepository {
 
   // Получить invite по токену
   async getInviteByToken(token: string) {
-    return db.query.workspaceInvite.findFirst({
+    return this.db.query.workspaceInvite.findFirst({
       where: eq(workspaceInvite.token, token),
       with: {
         workspace: {
@@ -337,7 +343,7 @@ export class WorkspaceRepository {
 
   // Получить все активные приглашения для пользователя
   async getPendingInvitesByUser(userId: string, email: string) {
-    return db.query.workspaceInvite.findMany({
+    return this.db.query.workspaceInvite.findMany({
       where: and(
         or(
           eq(workspaceInvite.invitedUserId, userId),
@@ -358,8 +364,8 @@ export class WorkspaceRepository {
 
   // Удалить invite
   async deleteInvite(inviteId: string) {
-    await db.delete(workspaceInvite).where(eq(workspaceInvite.id, inviteId));
+    await this.db
+      .delete(workspaceInvite)
+      .where(eq(workspaceInvite.id, inviteId));
   }
 }
-
-export const workspaceRepository = new WorkspaceRepository();

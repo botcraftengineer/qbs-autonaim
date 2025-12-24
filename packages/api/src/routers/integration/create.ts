@@ -1,4 +1,4 @@
-import { upsertIntegration, workspaceRepository } from "@qbs-autonaim/db";
+import { upsertIntegration } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -16,7 +16,7 @@ export const createIntegration = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -28,7 +28,7 @@ export const createIntegration = protectedProcedure
       });
     }
 
-    const integration = await upsertIntegration({
+    const integration = await upsertIntegration(ctx.db, {
       workspaceId: input.workspaceId,
       type: input.type,
       name: input.name,

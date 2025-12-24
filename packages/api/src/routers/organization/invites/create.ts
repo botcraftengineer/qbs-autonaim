@@ -1,5 +1,5 @@
 import { APP_CONFIG } from "@qbs-autonaim/config";
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { OrganizationInviteEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
 import {
@@ -20,7 +20,7 @@ export const createInvite = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -45,7 +45,7 @@ export const createInvite = protectedProcedure
     expiresAt.setDate(expiresAt.getDate() + 7);
 
     // Создание приглашения
-    const invite = await organizationRepository.createInvite({
+    const invite = await ctx.organizationRepository.createInvite({
       organizationId: input.organizationId,
       invitedEmail: input.email,
       role: input.role,
@@ -54,7 +54,7 @@ export const createInvite = protectedProcedure
     });
 
     // Получаем данные организации для email
-    const organization = await organizationRepository.findById(
+    const organization = await ctx.organizationRepository.findById(
       input.organizationId,
     );
 

@@ -4,7 +4,6 @@ import {
   eq,
   gte,
   sql,
-  workspaceRepository,
 } from "@qbs-autonaim/db";
 import {
   responseScreening,
@@ -20,7 +19,7 @@ export const getAnalytics = protectedProcedure
   .input(z.object({ vacancyId: z.string(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );

@@ -9,7 +9,7 @@ import { verifyWorkspaceAccess } from "../utils";
 export const getConversationByResponseIdRouter = protectedProcedure
   .input(z.object({ responseId: uuidv7Schema, workspaceId: workspaceIdSchema }))
   .query(async ({ input, ctx }) => {
-    await verifyWorkspaceAccess(input.workspaceId, ctx.session.user.id);
+    await verifyWorkspaceAccess(ctx.workspaceRepository, input.workspaceId, ctx.session.user.id);
 
     const response = await ctx.db.query.vacancyResponse.findFirst({
       where: eq(vacancyResponse.id, input.responseId),

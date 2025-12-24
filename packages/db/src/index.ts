@@ -7,7 +7,13 @@ export { db as dbEdge } from "./client.edge";
 
 export * from "./repositories/integration";
 export * from "./repositories/organization.repository";
+export { OrganizationRepository } from "./repositories/organization.repository";
 export * from "./repositories/vacancy-response.repository";
-export * from "./repositories/workspace.repository";
+export { WorkspaceRepository } from "./repositories/workspace.repository";
 export * from "./schema";
 export * from "./utils/encryption";
+
+// Тип для db клиента - поддерживает оба типа
+export type DbClient =
+  | typeof import("./client.edge").db
+  | typeof import("./client").db;

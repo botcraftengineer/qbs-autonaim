@@ -1,6 +1,9 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
+
+const organizationRepository = new OrganizationRepository(db);
+
 import { OrganizationMembersClient } from "~/components/organization";
 
 export default async function OrganizationMembersPage({

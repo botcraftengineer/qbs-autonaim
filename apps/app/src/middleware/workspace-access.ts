@@ -1,9 +1,13 @@
 import {
-  organizationRepository,
-  workspaceRepository,
+  db,
+  OrganizationRepository,
+  WorkspaceRepository,
 } from "@qbs-autonaim/db";
 import type { OrganizationMember, Workspace } from "@qbs-autonaim/db/schema";
 import { getSession } from "../auth/server";
+
+const workspaceRepository = new WorkspaceRepository(db);
+const organizationRepository = new OrganizationRepository(db);
 
 /**
  * Результат проверки доступа к workspace
@@ -39,7 +43,10 @@ export async function checkWorkspaceAccess(
   }
 
   // Проверяем доступ пользователя к организации
-  const member = await organizationRepository.checkAccess(org.id, session.user.id);
+  const member = await organizationRepository.checkAccess(
+    org.id,
+    session.user.id,
+  );
 
   if (!member) {
     return null;

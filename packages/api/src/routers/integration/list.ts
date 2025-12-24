@@ -1,7 +1,6 @@
 import {
   decryptCredentials,
   getIntegrationsByWorkspace,
-  workspaceRepository,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -12,7 +11,7 @@ export const listIntegrations = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ input, ctx }) => {
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -24,7 +23,7 @@ export const listIntegrations = protectedProcedure
       });
     }
 
-    const integrations = await getIntegrationsByWorkspace(input.workspaceId);
+    const integrations = await getIntegrationsByWorkspace(ctx.db, input.workspaceId);
 
     // Не возвращаем credentials на клиент, только email
     return integrations.map((int: (typeof integrations)[number]) => {

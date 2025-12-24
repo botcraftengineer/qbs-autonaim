@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -12,7 +12,7 @@ export const cancel = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -24,7 +24,7 @@ export const cancel = protectedProcedure
       });
     }
 
-    const invite = await workspaceRepository.findInviteByEmail(
+    const invite = await ctx.workspaceRepository.findInviteByEmail(
       input.workspaceId,
       input.email,
     );
@@ -36,7 +36,7 @@ export const cancel = protectedProcedure
       });
     }
 
-    await workspaceRepository.cancelInviteByEmail(
+    await ctx.workspaceRepository.cancelInviteByEmail(
       input.workspaceId,
       input.email,
     );

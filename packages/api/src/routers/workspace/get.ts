@@ -1,4 +1,3 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -7,7 +6,7 @@ import { protectedProcedure } from "../../trpc";
 export const get = protectedProcedure
   .input(z.object({ id: workspaceIdSchema }))
   .query(async ({ input, ctx }) => {
-    const workspace = await workspaceRepository.findById(input.id);
+    const workspace = await ctx.workspaceRepository.findById(input.id);
 
     if (!workspace) {
       throw new TRPCError({
@@ -16,7 +15,7 @@ export const get = protectedProcedure
       });
     }
 
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.id,
       ctx.session.user.id,
     );

@@ -18,7 +18,10 @@ export default async function DashboardLayout({
   }
 
   const caller = await api();
-  const userWorkspaces = await caller.workspace.list();
+  const [userWorkspaces, userOrganizations] = await Promise.all([
+    caller.workspace.list(),
+    caller.organization.list(),
+  ]);
 
   // Если нет workspaces, редирект на создание
   // (логика с приглашениями обрабатывается на странице /invite/[token])
@@ -37,6 +40,17 @@ export default async function DashboardLayout({
     organizationId: uw.workspace.organizationId,
   }));
 
+  const organizations = userOrganizations.map((org) => ({
+    id: org.id,
+    name: org.name,
+    slug: org.slug,
+    logo: org.logo,
+    role: (org as typeof org & { role: "owner" | "admin" | "member" }).role,
+    memberCount: (org as typeof org & { memberCount: number }).memberCount,
+    workspaceCount: (org as typeof org & { workspaceCount: number })
+      .workspaceCount,
+  }));
+
   return (
     <SidebarProvider>
       <AppSidebarWrapper
@@ -46,6 +60,7 @@ export default async function DashboardLayout({
           avatar: session.user.image || "",
         }}
         workspaces={workspaces}
+        organizations={organizations}
       />
       <SidebarInset>{children}</SidebarInset>
     </SidebarProvider>

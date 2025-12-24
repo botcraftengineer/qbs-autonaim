@@ -26,7 +26,7 @@ export function AppSidebarWrapper({
   ...props
 }: Omit<
   ComponentProps<typeof AppSidebar>,
-  "onWorkspaceChange" | "onOrganizationChangeAction"
+  "onWorkspaceChangeAction" | "onOrganizationChangeAction"
 > & {
   workspaces?: WorkspaceWithRole[];
   organizations?: OrganizationWithRole[];
@@ -111,7 +111,7 @@ export function AppSidebarWrapper({
     }
   };
 
-  const handleWorkspaceChange = (workspaceId: string) => {
+  const handleWorkspaceChangeAction = (workspaceId: string) => {
     setActiveWorkspaceId(workspaceId);
     const workspace = workspaces?.find((w) => w.id === workspaceId);
     if (workspace && orgSlug) {
@@ -124,7 +124,7 @@ export function AppSidebarWrapper({
       {...props}
       workspaces={workspaces}
       activeWorkspaceId={activeWorkspaceId}
-      onWorkspaceChange={handleWorkspaceChange}
+      onWorkspaceChangeAction={handleWorkspaceChangeAction}
       organizations={organizations}
       activeOrganizationId={activeOrganizationId}
       onOrganizationChangeAction={handleOrganizationChangeAction}

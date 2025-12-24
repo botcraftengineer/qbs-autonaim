@@ -1,4 +1,4 @@
-import { organizationRepository, workspaceRepository } from "@qbs-autonaim/db";
+
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   createWorkspaceSchema,
@@ -17,7 +17,7 @@ export const createWorkspace = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к организации
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       input.organizationId,
       ctx.session.user.id,
     );
@@ -30,7 +30,7 @@ export const createWorkspace = protectedProcedure
     }
 
     // Проверка уникальности slug в рамках организации
-    const existing = await organizationRepository.getWorkspaceBySlug(
+    const existing = await ctx.organizationRepository.getWorkspaceBySlug(
       input.organizationId,
       input.workspace.slug,
     );
@@ -49,7 +49,7 @@ export const createWorkspace = protectedProcedure
     }
 
     // Создание workspace с organizationId
-    const workspace = await workspaceRepository.create({
+    const workspace = await ctx.workspaceRepository.create({
       ...dataToCreate,
       organizationId: input.organizationId,
     });
@@ -71,7 +71,7 @@ export const createWorkspace = protectedProcedure
 
     // Добавление создателя как owner с защитой от ошибок
     try {
-      await workspaceRepository.addUser(
+      await ctx.workspaceRepository.addUser(
         workspace.id,
         ctx.session.user.id,
         "owner",
@@ -79,7 +79,7 @@ export const createWorkspace = protectedProcedure
     } catch (error) {
       // Очистка: удаляем созданный workspace если не удалось добавить владельца
       try {
-        await workspaceRepository.delete(workspace.id);
+        await ctx.workspaceRepository.delete(workspace.id);
       } catch (cleanupError) {
         console.error("Failed to cleanup workspace after addUser failure:", {
           workspaceId: workspace.id,

@@ -1,7 +1,6 @@
 import {
   getIntegration,
   upsertIntegration,
-  workspaceRepository,
 } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -20,7 +19,7 @@ export const updateIntegration = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Проверка доступа к workspace
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -32,7 +31,7 @@ export const updateIntegration = protectedProcedure
       });
     }
 
-    const integration = await getIntegration(input.type, input.workspaceId);
+    const integration = await getIntegration(ctx.db, input.type, input.workspaceId);
 
     if (!integration) {
       throw new TRPCError({
@@ -41,7 +40,7 @@ export const updateIntegration = protectedProcedure
       });
     }
 
-    const updated = await upsertIntegration({
+    const updated = await upsertIntegration(ctx.db, {
       workspaceId: input.workspaceId,
       type: input.type,
       name: input.name ?? integration.name,

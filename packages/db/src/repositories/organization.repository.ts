@@ -1,6 +1,6 @@
 import { and, eq, gt } from "drizzle-orm";
 import { nanoid } from "nanoid";
-import { dbEdge as db } from "../index";
+import type { DbClient } from "../index";
 import {
   type NewOrganization,
   type NewOrganizationInvite,
@@ -15,13 +15,15 @@ import {
 } from "../schema";
 
 export class OrganizationRepository {
+  constructor(private db: DbClient) {}
+
   // ==================== CRUD операции ====================
 
   /**
    * Создать организацию
    */
   async create(data: NewOrganization): Promise<Organization> {
-    const [newOrganization] = await db
+    const [newOrganization] = await this.db
       .insert(organization)
       .values(data)
       .returning();
@@ -37,7 +39,7 @@ export class OrganizationRepository {
    * Получить организацию по ID с участниками и воркспейсами
    */
   async findById(id: string) {
-    return db.query.organization.findFirst({
+    return this.db.query.organization.findFirst({
       where: eq(organization.id, id),
       with: {
         members: {
@@ -55,7 +57,7 @@ export class OrganizationRepository {
    * Получить организацию по slug
    */
   async findBySlug(slug: string) {
-    return db.query.organization.findFirst({
+    return this.db.query.organization.findFirst({
       where: eq(organization.slug, slug),
     });
   }
@@ -67,7 +69,7 @@ export class OrganizationRepository {
     id: string,
     data: Partial<Omit<Organization, "id" | "createdAt" | "updatedAt">>,
   ): Promise<Organization> {
-    const [updated] = await db
+    const [updated] = await this.db
       .update(organization)
       .set(data)
       .where(eq(organization.id, id))
@@ -84,7 +86,7 @@ export class OrganizationRepository {
    * Удалить организацию (каскадно удалит workspaces и members)
    */
   async delete(id: string): Promise<void> {
-    await db.delete(organization).where(eq(organization.id, id));
+    await this.db.delete(organization).where(eq(organization.id, id));
   }
 
   // ==================== Управление участниками ====================
@@ -97,7 +99,7 @@ export class OrganizationRepository {
     userId: string,
     role: OrganizationRole = "member",
   ): Promise<OrganizationMember> {
-    const [member] = await db
+    const [member] = await this.db
       .insert(organizationMember)
       .values({
         organizationId: orgId,
@@ -117,7 +119,7 @@ export class OrganizationRepository {
    * Удалить участника из организации
    */
   async removeMember(orgId: string, userId: string): Promise<void> {
-    await db.transaction(async (tx) => {
+    await this.db.transaction(async (tx) => {
       // Проверяем, что это не последний owner
       const owners = await tx.query.organizationMember.findMany({
         where: and(
@@ -149,7 +151,7 @@ export class OrganizationRepository {
     userId: string,
     role: OrganizationRole,
   ): Promise<OrganizationMember> {
-    return db.transaction(async (tx) => {
+    return this.db.transaction(async (tx) => {
       // Если понижаем owner, проверяем что это не последний owner
       if (role !== "owner") {
         const currentMember = await tx.query.organizationMember.findFirst({
@@ -196,7 +198,7 @@ export class OrganizationRepository {
    * Получить всех участников организации
    */
   async getMembers(orgId: string) {
-    return db.query.organizationMember.findMany({
+    return this.db.query.organizationMember.findMany({
       where: eq(organizationMember.organizationId, orgId),
       with: {
         user: true,
@@ -211,7 +213,7 @@ export class OrganizationRepository {
     orgId: string,
     userId: string,
   ): Promise<OrganizationMember | null> {
-    const member = await db.query.organizationMember.findFirst({
+    const member = await this.db.query.organizationMember.findFirst({
       where: and(
         eq(organizationMember.organizationId, orgId),
         eq(organizationMember.userId, userId),
@@ -225,14 +227,24 @@ export class OrganizationRepository {
    * Получить все организации пользователя
    */
   async getUserOrganizations(userId: string) {
-    const memberships = await db.query.organizationMember.findMany({
+    const memberships = await this.db.query.organizationMember.findMany({
       where: eq(organizationMember.userId, userId),
       with: {
-        organization: true,
+        organization: {
+          with: {
+            workspaces: true,
+            members: true,
+          },
+        },
       },
     });
 
-    return memberships.map((m) => m.organization);
+    return memberships.map((m) => ({
+      ...m.organization,
+      role: m.role,
+      workspaceCount: m.organization.workspaces.length,
+      memberCount: m.organization.members.length,
+    }));
   }
 
   // ==================== Управление приглашениями ====================
@@ -248,7 +260,7 @@ export class OrganizationRepository {
 
     // Проверяем дубликаты приглашений по email
     if (data.invitedEmail) {
-      const existingInvite = await db.query.organizationInvite.findFirst({
+      const existingInvite = await this.db.query.organizationInvite.findFirst({
         where: and(
           eq(organizationInvite.organizationId, data.organizationId),
           eq(organizationInvite.invitedEmail, data.invitedEmail),
@@ -261,7 +273,7 @@ export class OrganizationRepository {
       }
     }
 
-    const [invite] = await db
+    const [invite] = await this.db
       .insert(organizationInvite)
       .values({
         ...data,
@@ -280,7 +292,7 @@ export class OrganizationRepository {
    * Получить приглашение по ID
    */
   async getInviteById(inviteId: string): Promise<OrganizationInvite | null> {
-    const invite = await db.query.organizationInvite.findFirst({
+    const invite = await this.db.query.organizationInvite.findFirst({
       where: eq(organizationInvite.id, inviteId),
     });
 
@@ -291,7 +303,7 @@ export class OrganizationRepository {
    * Получить приглашение по токену
    */
   async getInviteByToken(token: string): Promise<OrganizationInvite | null> {
-    const invite = await db.query.organizationInvite.findFirst({
+    const invite = await this.db.query.organizationInvite.findFirst({
       where: eq(organizationInvite.token, token),
       with: {
         organization: true,
@@ -305,7 +317,7 @@ export class OrganizationRepository {
    * Получить все активные приглашения организации
    */
   async getPendingInvites(orgId: string): Promise<OrganizationInvite[]> {
-    return db.query.organizationInvite.findMany({
+    return this.db.query.organizationInvite.findMany({
       where: and(
         eq(organizationInvite.organizationId, orgId),
         gt(organizationInvite.expiresAt, new Date()),
@@ -318,7 +330,7 @@ export class OrganizationRepository {
    * Удалить приглашение
    */
   async deleteInvite(inviteId: string): Promise<void> {
-    await db
+    await this.db
       .delete(organizationInvite)
       .where(eq(organizationInvite.id, inviteId));
   }
@@ -329,7 +341,7 @@ export class OrganizationRepository {
    * Получить все воркспейсы организации
    */
   async getWorkspaces(orgId: string) {
-    return db.query.workspace.findMany({
+    return this.db.query.workspace.findMany({
       where: eq(workspace.organizationId, orgId),
       orderBy: (ws, { asc }) => [asc(ws.createdAt)],
     });
@@ -339,10 +351,8 @@ export class OrganizationRepository {
    * Получить воркспейс по slug в рамках организации
    */
   async getWorkspaceBySlug(orgId: string, slug: string) {
-    return db.query.workspace.findFirst({
+    return this.db.query.workspace.findFirst({
       where: and(eq(workspace.organizationId, orgId), eq(workspace.slug, slug)),
     });
   }
 }
-
-export const organizationRepository = new OrganizationRepository();

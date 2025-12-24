@@ -1,4 +1,4 @@
-import { organizationRepository } from "@qbs-autonaim/db";
+
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -6,7 +6,7 @@ import { protectedProcedure } from "../../trpc";
 export const getBySlug = protectedProcedure
   .input(z.object({ slug: z.string() }))
   .query(async ({ input, ctx }) => {
-    const organization = await organizationRepository.findBySlug(input.slug);
+    const organization = await ctx.organizationRepository.findBySlug(input.slug);
 
     if (!organization) {
       throw new TRPCError({
@@ -15,7 +15,7 @@ export const getBySlug = protectedProcedure
       });
     }
 
-    const access = await organizationRepository.checkAccess(
+    const access = await ctx.organizationRepository.checkAccess(
       organization.id,
       ctx.session.user.id,
     );

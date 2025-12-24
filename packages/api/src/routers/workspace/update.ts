@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   updateWorkspaceSchema,
@@ -16,7 +16,7 @@ export const update = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.id,
       ctx.session.user.id,
     );
@@ -29,7 +29,7 @@ export const update = protectedProcedure
     }
 
     // Получаем текущий workspace для проверки organizationId
-    const currentWorkspace = await workspaceRepository.findById(input.id);
+    const currentWorkspace = await ctx.workspaceRepository.findById(input.id);
     if (!currentWorkspace) {
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -38,7 +38,7 @@ export const update = protectedProcedure
     }
 
     if (input.data.slug) {
-      const existing = await workspaceRepository.findBySlug(
+      const existing = await ctx.workspaceRepository.findBySlug(
         input.data.slug,
         currentWorkspace.organizationId,
       );
@@ -55,6 +55,6 @@ export const update = protectedProcedure
       dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
     }
 
-    const updated = await workspaceRepository.update(input.id, dataToUpdate);
+    const updated = await ctx.workspaceRepository.update(input.id, dataToUpdate);
     return updated;
   });

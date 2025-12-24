@@ -1,4 +1,4 @@
-import { workspaceRepository } from "@qbs-autonaim/db";
+
 import { updateUserRoleSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../trpc";
@@ -6,7 +6,7 @@ import { protectedProcedure } from "../../../trpc";
 export const updateRole = protectedProcedure
   .input(updateUserRoleSchema)
   .mutation(async ({ input, ctx }) => {
-    const access = await workspaceRepository.checkAccess(
+    const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
       ctx.session.user.id,
     );
@@ -18,7 +18,7 @@ export const updateRole = protectedProcedure
       });
     }
 
-    const updated = await workspaceRepository.updateUserRole(
+    const updated = await ctx.workspaceRepository.updateUserRole(
       input.workspaceId,
       input.userId,
       input.role,
