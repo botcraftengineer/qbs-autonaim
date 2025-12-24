@@ -1,6 +1,4 @@
-import {
-  type OrganizationMember,
-} from "@qbs-autonaim/db";
+import type { OrganizationMember } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
@@ -13,7 +11,9 @@ export const acceptInvite = protectedProcedure
   )
   .mutation(async ({ input, ctx }) => {
     // Получение приглашения по токену
-    const invite = await ctx.organizationRepository.getInviteByToken(input.token);
+    const invite = await ctx.organizationRepository.getInviteByToken(
+      input.token,
+    );
 
     if (!invite) {
       throw new TRPCError({

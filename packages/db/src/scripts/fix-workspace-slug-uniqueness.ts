@@ -10,9 +10,8 @@
  * 3. Переименовываем дубликаты, добавляя суффикс
  */
 
-import { isNull, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import { db } from "../client";
-import { workspace } from "../schema";
 
 interface DuplicateSlug {
   slug: string;
