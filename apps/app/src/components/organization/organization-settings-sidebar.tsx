@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@qbs-autonaim/ui";
-import { AlertTriangle, Mail, Settings, Users } from "lucide-react";
+import { AlertTriangle, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -15,11 +15,6 @@ const sidebarNavItems = [
     title: "Участники",
     href: "/settings/members",
     icon: Users,
-  },
-  {
-    title: "Приглашения",
-    href: "/settings/invitations",
-    icon: Mail,
   },
   {
     title: "Опасная зона",
