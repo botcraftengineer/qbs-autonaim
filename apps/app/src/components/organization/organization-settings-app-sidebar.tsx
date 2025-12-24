@@ -14,7 +14,6 @@ import {
 } from "@qbs-autonaim/ui";
 import {
   IconArrowLeft,
-  IconBell,
   IconChartBar,
   IconCreditCard,
   IconSettings,
@@ -35,11 +34,6 @@ const organizationNavItems = [
     href: "/settings/billing",
     icon: IconCreditCard,
     badge: true,
-  },
-  {
-    title: "Уведомления о биллинге",
-    href: "/settings/billing-alerts",
-    icon: IconBell,
   },
   {
     title: "Команда",
