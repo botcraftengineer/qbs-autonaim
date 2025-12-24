@@ -9,7 +9,7 @@
 
 import type { Auth } from "@qbs-autonaim/auth";
 import { OrganizationRepository, WorkspaceRepository } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client.ws";
+import { db } from "@qbs-autonaim/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError, z } from "zod";
