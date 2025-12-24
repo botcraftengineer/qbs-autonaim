@@ -1,7 +1,6 @@
 "use client";
 
 import { paths } from "@qbs-autonaim/config";
-import { getPluralForm } from "@qbs-autonaim/lib";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +20,7 @@ import {
 import {
   IconBriefcase,
   IconBuildingCommunity,
+  IconCreditCard,
   IconPlus,
   IconSettings,
   IconUserPlus,
@@ -30,54 +30,31 @@ import { useRouter } from "next/navigation";
 import * as React from "react";
 import { CreateOrganizationDialog } from "~/components/organization";
 import { CreateWorkspaceDialog } from "~/components/workspace";
-
-type WorkspaceWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  memberCount?: number;
-  plan?: string;
-  organizationSlug: string | undefined;
-  organizationId: string | null;
-};
-
-type OrganizationWithRole = {
-  id: string;
-  name: string;
-  slug: string;
-  logo: string | null;
-  role: "owner" | "admin" | "member";
-  memberCount?: number;
-  workspaceCount?: number;
-};
+import { useWorkspaces } from "~/contexts/workspace-context";
+import { getPluralForm } from "~/lib/pluralization";
 
 export function WorkspaceSwitcher({
-  workspaces,
-  organizations,
   activeWorkspaceId,
   activeOrganizationId,
   onWorkspaceChangeAction,
   onOrganizationChangeAction,
 }: {
-  workspaces: WorkspaceWithRole[];
-  organizations: OrganizationWithRole[];
   activeWorkspaceId?: string;
   activeOrganizationId?: string;
   onWorkspaceChangeAction?: (workspaceId: string) => void;
   onOrganizationChangeAction?: (organizationId: string) => void;
 }) {
+  const { workspaces, organizations } = useWorkspaces();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const [activeWorkspace, setActiveWorkspace] = React.useState<
-    WorkspaceWithRole | undefined
+    (typeof workspaces)[number] | undefined
   >(
     workspaces.find((w) => w.id === activeWorkspaceId) ??
       (workspaces.length > 0 ? workspaces[0] : undefined),
   );
   const [activeOrganization, setActiveOrganization] = React.useState<
-    OrganizationWithRole | undefined
+    (typeof organizations)[number] | undefined
   >(
     organizations.find((o) => o.id === activeOrganizationId) ??
       (organizations.length > 0 ? organizations[0] : undefined),
@@ -99,7 +76,7 @@ export function WorkspaceSwitcher({
     (w) => w.organizationId === activeOrganization.id,
   );
 
-  const handleWorkspaceChange = (workspace: WorkspaceWithRole) => {
+  const handleWorkspaceChange = (workspace: (typeof workspaces)[number]) => {
     setActiveWorkspace(workspace);
     onWorkspaceChangeAction?.(workspace.id);
 
@@ -116,7 +93,9 @@ export function WorkspaceSwitcher({
     );
   };
 
-  const handleOrganizationChange = (organization: OrganizationWithRole) => {
+  const handleOrganizationChange = (
+    organization: (typeof organizations)[number],
+  ) => {
     setActiveOrganization(organization);
     onOrganizationChangeAction?.(organization.id);
     router.push(paths.organization.workspaces(organization.slug));
@@ -166,6 +145,69 @@ export function WorkspaceSwitcher({
             <div className="flex flex-col gap-2 p-2">
               <div className="flex items-center gap-2">
                 <div className="flex size-10 items-center justify-center rounded-lg border">
+                  {activeOrganization.logo ? (
+                    // biome-ignore lint/performance/noImgElement: external URL from database
+                    <img
+                      src={activeOrganization.logo}
+                      alt={activeOrganization.name}
+                      className="size-10 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <IconBuildingCommunity className="size-5" />
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col">
+                  <span className="font-semibold text-sm">
+                    {activeOrganization.name}
+                  </span>
+                  <span className="text-muted-foreground text-xs">
+                    {activeOrganization.plan ?? "Бесплатный"} ·{" "}
+                    {activeOrganization.memberCount ?? 1}{" "}
+                    {getPluralForm(activeOrganization.memberCount ?? 1, [
+                      "участник",
+                      "участника",
+                      "участников",
+                    ])}{" "}
+                    · {activeOrganization.workspaceCount ?? 0}{" "}
+                    {getPluralForm(activeOrganization.workspaceCount ?? 0, [
+                      "пространство",
+                      "пространства",
+                      "пространств",
+                    ])}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <DropdownMenuItem
+                  className="flex-1 cursor-pointer justify-center gap-2 p-2"
+                  onClick={() => {
+                    router.push(
+                      paths.organization.settings.root(activeOrganization.slug),
+                    );
+                  }}
+                >
+                  <IconSettings className="size-4" />
+                  <span className="text-sm">Настройки</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="flex-1 cursor-pointer justify-center gap-2 p-2"
+                  onClick={() => {
+                    router.push(
+                      paths.organization.settings.billing(
+                        activeOrganization.slug,
+                      ),
+                    );
+                  }}
+                >
+                  <IconCreditCard className="size-4" />
+                  <span className="text-sm">Потребление</span>
+                </DropdownMenuItem>
+              </div>
+            </div>
+            <DropdownMenuSeparator />
+            <div className="flex flex-col gap-2 p-2">
+              <div className="flex items-center gap-2">
+                <div className="flex size-10 items-center justify-center rounded-lg border">
                   {activeWorkspace.logo ? (
                     // biome-ignore lint/performance/noImgElement: external URL from database
                     <img
@@ -182,7 +224,6 @@ export function WorkspaceSwitcher({
                     {activeWorkspace.name}
                   </span>
                   <span className="text-muted-foreground text-xs">
-                    {activeWorkspace.plan ?? "Бесплатный"} ·{" "}
                     {activeWorkspace.memberCount ?? 1}{" "}
                     {getPluralForm(activeWorkspace.memberCount ?? 1, [
                       "участник",
@@ -272,7 +313,7 @@ export function WorkspaceSwitcher({
                 Создать рабочее пространство
               </div>
             </DropdownMenuItem>
-            {organizations.length > 1 && (
+            {organizations.length >= 1 && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuSub>

@@ -1,7 +1,6 @@
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
-import { WorkspaceProvider } from "~/contexts/workspace-context";
 import { api } from "~/trpc/server";
 
 export default async function WorkspaceLayout({
@@ -37,5 +36,5 @@ export default async function WorkspaceLayout({
     notFound();
   }
 
-  return <WorkspaceProvider>{children}</WorkspaceProvider>;
+  return <>{children}</>;
 }

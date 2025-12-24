@@ -1,52 +1,60 @@
 "use client";
 
-import type { UserWorkspaceRole } from "@qbs-autonaim/db/schema";
-import { createContext, type ReactNode, useContext } from "react";
-import { useWorkspace } from "~/hooks/use-workspace";
+import { createContext, useContext } from "react";
 
-interface WorkspaceContextValue {
-  workspaceId: string | undefined;
-  workspaceSlug: string | undefined;
-  workspace:
-    | {
-        id: string;
-        name: string;
-        slug: string;
-        createdAt: Date;
-        updatedAt: Date;
-      }
-    | undefined;
-  role: UserWorkspaceRole | undefined;
-  isLoading: boolean;
-}
+type WorkspaceWithRole = {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  role: "owner" | "admin" | "member";
+  organizationSlug: string | undefined;
+  organizationId: string | null;
+  memberCount?: number;
+  plan?: string;
+};
 
-const WorkspaceContext = createContext<WorkspaceContextValue | undefined>(
-  undefined,
-);
+type OrganizationWithRole = {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  role: "owner" | "admin" | "member";
+  memberCount: number;
+  workspaceCount: number;
+  plan?: string;
+};
 
-export function WorkspaceProvider({ children }: { children: ReactNode }) {
-  const { workspace, isLoading } = useWorkspace();
+export type { WorkspaceWithRole, OrganizationWithRole };
 
+type WorkspaceContextType = {
+  workspaces: WorkspaceWithRole[];
+  organizations: OrganizationWithRole[];
+};
+
+const WorkspaceContext = createContext<WorkspaceContextType | null>(null);
+
+export function WorkspaceProvider({
+  children,
+  workspaces,
+  organizations,
+}: {
+  children: React.ReactNode;
+  workspaces: WorkspaceWithRole[];
+  organizations: OrganizationWithRole[];
+}) {
   return (
-    <WorkspaceContext.Provider
-      value={{
-        workspaceId: workspace?.id,
-        workspaceSlug: workspace?.slug,
-        workspace,
-        role: undefined,
-        isLoading,
-      }}
-    >
+    <WorkspaceContext.Provider value={{ workspaces, organizations }}>
       {children}
     </WorkspaceContext.Provider>
   );
 }
 
-export function useWorkspaceContext() {
+export function useWorkspaces() {
   const context = useContext(WorkspaceContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error(
-      "useWorkspaceContext must be used within a WorkspaceProvider",
+      "useWorkspaces должен использоваться внутри WorkspaceProvider",
     );
   }
   return context;

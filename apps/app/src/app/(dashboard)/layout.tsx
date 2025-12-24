@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
 import { AppSidebarWrapper } from "~/components/sidebar";
+import { WorkspaceProvider } from "~/contexts/workspace-context";
 import { api } from "~/trpc/server";
 
 export default async function DashboardLayout({
@@ -52,17 +53,17 @@ export default async function DashboardLayout({
   }));
 
   return (
-    <SidebarProvider>
-      <AppSidebarWrapper
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          avatar: session.user.image || "",
-        }}
-        workspaces={workspaces}
-        organizations={organizations}
-      />
-      <SidebarInset>{children}</SidebarInset>
-    </SidebarProvider>
+    <WorkspaceProvider workspaces={workspaces} organizations={organizations}>
+      <SidebarProvider>
+        <AppSidebarWrapper
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            avatar: session.user.image || "",
+          }}
+        />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </WorkspaceProvider>
   );
 }
