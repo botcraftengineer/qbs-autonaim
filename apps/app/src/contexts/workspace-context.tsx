@@ -1,6 +1,7 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { useParams } from "next/navigation";
+import { createContext, useContext, useMemo } from "react";
 
 type WorkspaceWithRole = {
   id: string;
@@ -30,6 +31,8 @@ export type { WorkspaceWithRole, OrganizationWithRole };
 type WorkspaceContextType = {
   workspaces: WorkspaceWithRole[];
   organizations: OrganizationWithRole[];
+  workspace?: WorkspaceWithRole;
+  workspaceId?: string;
 };
 
 const WorkspaceContext = createContext<WorkspaceContextType | null>(null);
@@ -43,8 +46,26 @@ export function WorkspaceProvider({
   workspaces: WorkspaceWithRole[];
   organizations: OrganizationWithRole[];
 }) {
+  const params = useParams();
+  const workspaceSlug = params?.slug as string | undefined;
+
+  const workspace = useMemo(() => {
+    if (!workspaceSlug) return undefined;
+    return workspaces.find((w) => w.slug === workspaceSlug);
+  }, [workspaces, workspaceSlug]);
+
+  const value = useMemo(
+    () => ({
+      workspaces,
+      organizations,
+      workspace,
+      workspaceId: workspace?.id,
+    }),
+    [workspaces, organizations, workspace],
+  );
+
   return (
-    <WorkspaceContext.Provider value={{ workspaces, organizations }}>
+    <WorkspaceContext.Provider value={value}>
       {children}
     </WorkspaceContext.Provider>
   );
@@ -58,4 +79,9 @@ export function useWorkspaces() {
     );
   }
   return context;
+}
+
+// Алиас для обратной совместимости
+export function useWorkspaceContext() {
+  return useWorkspaces();
 }
