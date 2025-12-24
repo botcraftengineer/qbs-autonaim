@@ -104,7 +104,7 @@ export const env: Prettify<{
     INNGEST_EVENT_API_BASE_URL: z.url().optional().default("https://inn.gs"),
 
     // App URL
-    APP_URL: z.url().optional().default("http://localhot:3000"),
+    APP_URL: z.url().optional().default("http://localhost:3000"),
     APP_NAME: z.string().optional().default("QBS Автонайм"),
 
     // Interview Buffer Configuration

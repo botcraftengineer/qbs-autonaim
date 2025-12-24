@@ -13,6 +13,4 @@ export * from "./schema";
 export * from "./utils/encryption";
 
 // Тип для db клиента - поддерживает оба типа
-export type DbClient =
-  | typeof import("./client.edge").db
-  | typeof import("./client").db;
+export type DbClient = typeof import("./client").db;

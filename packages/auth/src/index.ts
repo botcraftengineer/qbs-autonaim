@@ -1,4 +1,4 @@
-import { dbEdge as db } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db";
 import { user } from "@qbs-autonaim/db/schema";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
