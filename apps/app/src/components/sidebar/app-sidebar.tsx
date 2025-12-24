@@ -89,7 +89,10 @@ type WorkspaceWithRole = {
   slug: string;
   logo: string | null;
   role: "owner" | "admin" | "member";
-  organizationSlug: string;
+  memberCount?: number;
+  plan?: string;
+  organizationSlug: string | undefined;
+  organizationId: string | null;
 };
 
 type OrganizationWithRole = {
@@ -141,7 +144,7 @@ export function AppSidebar({
             >
               <Link
                 href={
-                  activeWorkspace
+                  activeWorkspace?.organizationSlug && activeWorkspace?.slug
                     ? paths.workspace.root(
                         activeWorkspace.organizationSlug,
                         activeWorkspace.slug,

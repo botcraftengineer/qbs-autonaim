@@ -5,6 +5,7 @@ import {
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import z from "zod";
@@ -47,11 +48,13 @@ export const listRecent = protectedProcedure
       photoFileIds.length > 0
         ? await ctx.db.query.file.findMany({
             where: (file, { inArray }) => inArray(file.id, photoFileIds),
-            columns: { id: true, url: true },
+            columns: { id: true, key: true },
           })
         : [];
 
-    const photoUrlMap = new Map(photoFiles.map((f) => [f.id, f.url]));
+    const photoUrlMap = new Map(
+      photoFiles.map((f) => [f.id, getFileUrl(f.key)]),
+    );
 
     // Получаем screening и telegramInterviewScoring для каждого отклика
     const responsesWithRelations = await Promise.all(

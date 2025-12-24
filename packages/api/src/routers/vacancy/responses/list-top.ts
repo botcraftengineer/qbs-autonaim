@@ -1,5 +1,6 @@
 import { desc, workspaceRepository } from "@qbs-autonaim/db";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -60,11 +61,13 @@ export const listTop = protectedProcedure
       photoFileIds.length > 0
         ? await ctx.db.query.file.findMany({
             where: (file, { inArray }) => inArray(file.id, photoFileIds),
-            columns: { id: true, url: true },
+            columns: { id: true, key: true },
           })
         : [];
 
-    const photoUrlMap = new Map(photoFiles.map((f) => [f.id, f.url]));
+    const photoUrlMap = new Map(
+      photoFiles.map((f) => [f.id, getFileUrl(f.key)]),
+    );
 
     return allResponses
       .filter(
