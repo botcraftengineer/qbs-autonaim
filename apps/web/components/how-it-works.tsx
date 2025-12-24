@@ -1,25 +1,26 @@
-"use client"
+"use client";
 
 import {
-  Link2,
-  Brain,
-  MessageCircle,
-  CheckCircle,
   ArrowRight,
-  Play,
-  Mic,
-  Users,
   BarChart3,
-  Zap,
+  Brain,
+  CheckCircle,
   Clock,
+  Link2,
+  type LucideIcon,
+  MessageCircle,
+  Mic,
+  Play,
+  Send,
   Shield,
   Sparkles,
-  Send,
-} from "lucide-react"
-import { useState } from "react"
+  Users,
+  Zap,
+} from "lucide-react";
+import { useState } from "react";
 
 export function HowItWorks() {
-  const [activeTab, setActiveTab] = useState(0)
+  const [activeTab, setActiveTab] = useState(0);
 
   const tabs = [
     { icon: Link2, label: "Интеграция HH", color: "text-red-500" },
@@ -27,10 +28,13 @@ export function HowItWorks() {
     { icon: Brain, label: "AI Анализ", color: "text-violet-500" },
     { icon: MessageCircle, label: "Интервью", color: "text-blue-500" },
     { icon: CheckCircle, label: "Результат", color: "text-emerald-500" },
-  ]
+  ];
 
   return (
-    <section id="how-it-works" className="py-24 md:py-32 relative overflow-hidden">
+    <section
+      id="how-it-works"
+      className="py-24 md:py-32 relative overflow-hidden"
+    >
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,rgba(120,119,198,0.05),transparent)]" />
       <div className="absolute top-40 left-1/4 w-96 h-96 bg-primary/3 rounded-full blur-3xl" />
@@ -49,7 +53,8 @@ export function HowItWorks() {
             <span className="text-muted-foreground">за 5 простых шагов</span>
           </h2>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Автоматизируйте рутину найма и сфокусируйтесь на лучших кандидатах. QBS делает всю работу за вас.
+            Автоматизируйте рутину найма и сфокусируйтесь на лучших кандидатах.
+            QBS делает всю работу за вас.
           </p>
         </div>
 
@@ -66,7 +71,9 @@ export function HowItWorks() {
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                <tab.icon className={`h-4 w-4 ${activeTab === index ? tab.color : ""}`} />
+                <tab.icon
+                  className={`h-4 w-4 ${activeTab === index ? tab.color : ""}`}
+                />
                 <span className="hidden sm:inline">{tab.label}</span>
               </button>
             ))}
@@ -105,7 +112,7 @@ export function HowItWorks() {
         </div>
       </div>
     </section>
-  )
+  );
 }
 
 function FeatureCard({
@@ -113,7 +120,12 @@ function FeatureCard({
   title,
   description,
   link,
-}: { icon: any; title: string; description: string; link: string }) {
+}: {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  link: string;
+}) {
   return (
     <div className="group p-6 rounded-2xl border border-border bg-card/50 hover:bg-card hover:shadow-lg transition-all">
       <div className="h-10 w-10 rounded-xl bg-muted flex items-center justify-center mb-4 group-hover:bg-primary/10 transition-colors">
@@ -129,7 +141,7 @@ function FeatureCard({
         <ArrowRight className="h-3.5 w-3.5" />
       </a>
     </div>
-  )
+  );
 }
 
 function TelegramMTProtoDemo() {
@@ -174,7 +186,9 @@ function TelegramMTProtoDemo() {
 
               <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Telegram MTProto</span>
+                  <span className="text-sm font-medium text-foreground">
+                    Telegram MTProto
+                  </span>
                   <span className="text-xs text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded-full">
                     Прямое подключение
                   </span>
@@ -186,10 +200,13 @@ function TelegramMTProtoDemo() {
                       <Shield className="h-5 w-5 text-[#0088cc]" />
                     </div>
                     <div>
-                      <h4 className="font-medium text-foreground text-sm mb-1">Что такое MTProto?</h4>
+                      <h4 className="font-medium text-foreground text-sm mb-1">
+                        Что такое MTProto?
+                      </h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">
-                        Это официальный протокол Telegram для прямой связи с серверами. Работает как полноценный клиент
-                        — без ботов и ограничений.
+                        Это официальный протокол Telegram для прямой связи с
+                        серверами. Работает как полноценный клиент — без ботов и
+                        ограничений.
                       </p>
                     </div>
                   </div>
@@ -198,15 +215,26 @@ function TelegramMTProtoDemo() {
                 <div className="space-y-3">
                   {[
                     { label: "Чаты с кандидатами", value: "234", icon: "💬" },
-                    { label: "Отправлено сообщений", value: "1.2K", icon: "📨" },
+                    {
+                      label: "Отправлено сообщений",
+                      value: "1.2K",
+                      icon: "📨",
+                    },
                     { label: "Средний ответ", value: "< 5 мин", icon: "⚡" },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
+                    >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">{item.icon}</span>
-                        <span className="text-sm text-muted-foreground">{item.label}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {item.label}
+                        </span>
                       </div>
-                      <span className="text-lg font-bold text-foreground">{item.value}</span>
+                      <span className="text-lg font-bold text-foreground">
+                        {item.value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -244,8 +272,12 @@ function TelegramMTProtoDemo() {
                         <CheckCircle className="h-3 w-3 text-emerald-500" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-medium text-foreground">{item.title}</h4>
-                        <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                        <h4 className="text-sm font-medium text-foreground">
+                          {item.title}
+                        </h4>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {item.desc}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -254,14 +286,26 @@ function TelegramMTProtoDemo() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <div className="text-2xl font-bold text-foreground mb-1">98%</div>
-                  <div className="text-sm text-muted-foreground">Доставляемость</div>
-                  <div className="text-xs text-emerald-500 mt-2">vs 45% email</div>
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    98%
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Доставляемость
+                  </div>
+                  <div className="text-xs text-emerald-500 mt-2">
+                    vs 45% email
+                  </div>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <div className="text-2xl font-bold text-foreground mb-1">3x</div>
-                  <div className="text-sm text-muted-foreground">Скорость ответа</div>
-                  <div className="text-xs text-emerald-500 mt-2">быстрее звонков</div>
+                  <div className="text-2xl font-bold text-foreground mb-1">
+                    3x
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Скорость ответа
+                  </div>
+                  <div className="text-xs text-emerald-500 mt-2">
+                    быстрее звонков
+                  </div>
                 </div>
               </div>
             </div>
@@ -269,7 +313,7 @@ function TelegramMTProtoDemo() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function HHIntegrationDemo() {
@@ -288,7 +332,9 @@ function HHIntegrationDemo() {
             <div className="w-3 h-3 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 flex justify-center">
-            <div className="px-4 py-1 rounded-lg bg-background text-xs text-muted-foreground">qbs.ru/integrations</div>
+            <div className="px-4 py-1 rounded-lg bg-background text-xs text-muted-foreground">
+              qbs.ru/integrations
+            </div>
           </div>
         </div>
 
@@ -312,7 +358,9 @@ function HHIntegrationDemo() {
 
               <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-foreground">Синхронизация</span>
+                  <span className="text-sm font-medium text-foreground">
+                    Синхронизация
+                  </span>
                   <span className="text-xs text-emerald-500 font-medium bg-emerald-500/10 px-2 py-1 rounded-full">
                     Активно
                   </span>
@@ -323,12 +371,19 @@ function HHIntegrationDemo() {
                     { label: "Отклики сегодня", value: "47", icon: "📩" },
                     { label: "В обработке", value: "156", icon: "⚙️" },
                   ].map((item, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-muted/50">
+                    <div
+                      key={i}
+                      className="flex items-center justify-between p-3 rounded-xl bg-muted/50"
+                    >
                       <div className="flex items-center gap-3">
                         <span className="text-lg">{item.icon}</span>
-                        <span className="text-sm text-muted-foreground">{item.label}</span>
+                        <span className="text-sm text-muted-foreground">
+                          {item.label}
+                        </span>
                       </div>
-                      <span className="text-lg font-bold text-foreground">{item.value}</span>
+                      <span className="text-lg font-bold text-foreground">
+                        {item.value}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -338,7 +393,11 @@ function HHIntegrationDemo() {
             {/* Right: Stats cards */}
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <StatCard value="15 сек" label="Синхронизация" trend="+автоматически" />
+                <StatCard
+                  value="15 сек"
+                  label="Синхронизация"
+                  trend="+автоматически"
+                />
                 <StatCard value="99.9%" label="Uptime" trend="SLA гарантия" />
               </div>
               <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-violet-500/5 p-6">
@@ -347,9 +406,12 @@ function HHIntegrationDemo() {
                     <CheckCircle className="h-6 w-6 text-emerald-500" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-foreground mb-1">Готово к работе</h4>
+                    <h4 className="font-semibold text-foreground mb-1">
+                      Готово к работе
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      Ваш аккаунт HH.ru успешно подключен. Все отклики автоматически импортируются.
+                      Ваш аккаунт HH.ru успешно подключен. Все отклики
+                      автоматически импортируются.
                     </p>
                   </div>
                 </div>
@@ -359,17 +421,25 @@ function HHIntegrationDemo() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function StatCard({ value, label, trend }: { value: string; label: string; trend: string }) {
+function StatCard({
+  value,
+  label,
+  trend,
+}: {
+  value: string;
+  label: string;
+  trend: string;
+}) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       <div className="text-2xl font-bold text-foreground mb-1">{value}</div>
       <div className="text-sm text-muted-foreground">{label}</div>
       <div className="text-xs text-emerald-500 mt-2">{trend}</div>
     </div>
-  )
+  );
 }
 
 function AIAnalysisDemo() {
@@ -401,10 +471,16 @@ function AIAnalysisDemo() {
                   АИ
                 </div>
                 <div className="flex-1">
-                  <h4 className="font-semibold text-foreground">Алексей Иванов</h4>
-                  <p className="text-sm text-muted-foreground">Python Developer</p>
+                  <h4 className="font-semibold text-foreground">
+                    Алексей Иванов
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    Python Developer
+                  </p>
                   <div className="flex items-center gap-2 mt-2">
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">8 лет опыта</span>
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      8 лет опыта
+                    </span>
                     <span className="text-xs bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full">
                       Релевантен
                     </span>
@@ -420,8 +496,12 @@ function AIAnalysisDemo() {
                 ].map((skill, i) => (
                   <div key={i}>
                     <div className="flex justify-between text-sm mb-1.5">
-                      <span className="text-muted-foreground">{skill.label}</span>
-                      <span className="font-semibold text-foreground">{skill.value}%</span>
+                      <span className="text-muted-foreground">
+                        {skill.label}
+                      </span>
+                      <span className="font-semibold text-foreground">
+                        {skill.value}%
+                      </span>
                     </div>
                     <div className="h-2 rounded-full bg-muted overflow-hidden">
                       <div
@@ -442,32 +522,57 @@ function AIAnalysisDemo() {
                     <Brain className="h-5 w-5 text-violet-500" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-foreground">AI Рекомендация</h4>
-                    <p className="text-xs text-muted-foreground">GPT-4 анализ за 3.2 сек</p>
+                    <h4 className="font-semibold text-foreground">
+                      AI Рекомендация
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      GPT-4 анализ за 3.2 сек
+                    </p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Кандидат имеет релевантный опыт в разработке высоконагруженных систем на Python. Стек технологий
-                  полностью соответствует требованиям вакансии.
-                  <span className="text-foreground font-medium"> Рекомендуется пригласить на собеседование.</span>
+                  Кандидат имеет релевантный опыт в разработке высоконагруженных
+                  систем на Python. Стек технологий полностью соответствует
+                  требованиям вакансии.
+                  <span className="text-foreground font-medium">
+                    {" "}
+                    Рекомендуется пригласить на собеседование.
+                  </span>
                 </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <div className="text-xs text-muted-foreground mb-1">Ключевые навыки</div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Ключевые навыки
+                  </div>
                   <div className="flex flex-wrap gap-1.5 mt-2">
-                    {["Python", "Django", "FastAPI", "PostgreSQL", "Docker"].map((skill) => (
-                      <span key={skill} className="text-xs bg-muted px-2 py-1 rounded-md text-foreground">
+                    {[
+                      "Python",
+                      "Django",
+                      "FastAPI",
+                      "PostgreSQL",
+                      "Docker",
+                    ].map((skill) => (
+                      <span
+                        key={skill}
+                        className="text-xs bg-muted px-2 py-1 rounded-md text-foreground"
+                      >
                         {skill}
                       </span>
                     ))}
                   </div>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4">
-                  <div className="text-xs text-muted-foreground mb-1">Зарплатные ожидания</div>
-                  <div className="text-xl font-bold text-foreground">250-300K ₽</div>
-                  <div className="text-xs text-emerald-500 mt-1">В рамках бюджета</div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Зарплатные ожидания
+                  </div>
+                  <div className="text-xl font-bold text-foreground">
+                    250-300K ₽
+                  </div>
+                  <div className="text-xs text-emerald-500 mt-1">
+                    В рамках бюджета
+                  </div>
                 </div>
               </div>
             </div>
@@ -475,7 +580,7 @@ function AIAnalysisDemo() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function TelegramInterviewDemo() {
@@ -503,10 +608,34 @@ function TelegramInterviewDemo() {
             {/* Chat list */}
             <div className="flex-1 overflow-auto">
               {[
-                { name: "Алексей Иванов", msg: "Голосовое сообщение", time: "14:25", unread: 0, active: true },
-                { name: "Мария Сидорова", msg: "Спасибо за приглашение!", time: "13:42", unread: 2, active: false },
-                { name: "Дмитрий Козлов", msg: "Готов к интервью", time: "12:18", unread: 0, active: false },
-                { name: "Анна Петрова", msg: "Когда удобно созвониться?", time: "вчера", unread: 1, active: false },
+                {
+                  name: "Алексей Иванов",
+                  msg: "Голосовое сообщение",
+                  time: "14:25",
+                  unread: 0,
+                  active: true,
+                },
+                {
+                  name: "Мария Сидорова",
+                  msg: "Спасибо за приглашение!",
+                  time: "13:42",
+                  unread: 2,
+                  active: false,
+                },
+                {
+                  name: "Дмитрий Козлов",
+                  msg: "Готов к интервью",
+                  time: "12:18",
+                  unread: 0,
+                  active: false,
+                },
+                {
+                  name: "Анна Петрова",
+                  msg: "Когда удобно созвониться?",
+                  time: "вчера",
+                  unread: 1,
+                  active: false,
+                },
               ].map((chat, i) => (
                 <div
                   key={i}
@@ -520,11 +649,15 @@ function TelegramInterviewDemo() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between">
-                      <span className="text-white text-sm font-medium truncate">{chat.name}</span>
+                      <span className="text-white text-sm font-medium truncate">
+                        {chat.name}
+                      </span>
                       <span className="text-white/40 text-xs">{chat.time}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-white/50 text-sm truncate">{chat.msg}</span>
+                      <span className="text-white/50 text-sm truncate">
+                        {chat.msg}
+                      </span>
                       {chat.unread > 0 && (
                         <span className="ml-2 h-5 min-w-5 rounded-full bg-[#3390ec] text-white text-xs flex items-center justify-center px-1.5">
                           {chat.unread}
@@ -545,7 +678,9 @@ function TelegramInterviewDemo() {
                 АИ
               </div>
               <div className="flex-1">
-                <div className="text-white text-sm font-medium">Алексей Иванов</div>
+                <div className="text-white text-sm font-medium">
+                  Алексей Иванов
+                </div>
                 <div className="text-white/50 text-xs">был(а) только что</div>
               </div>
               <div className="flex gap-2">
@@ -559,14 +694,16 @@ function TelegramInterviewDemo() {
             <div
               className="flex-1 p-4 space-y-3 overflow-auto"
               style={{
-                background: "linear-gradient(180deg, #0e1621 0%, #0d1219 50%, #0a0f14 100%)",
+                background:
+                  "linear-gradient(180deg, #0e1621 0%, #0d1219 50%, #0a0f14 100%)",
               }}
             >
               {/* Bot question */}
               <div className="flex justify-start">
                 <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-[#182533] px-4 py-3 shadow">
                   <p className="text-sm text-white">
-                    Здравствуйте, Алексей! Это автоматическое интервью от QBS. Расскажите о вашем опыте работы с Python?
+                    Здравствуйте, Алексей! Это автоматическое интервью от QBS.
+                    Расскажите о вашем опыте работы с Python?
                   </p>
                   <div className="flex items-center gap-1 mt-1">
                     <span className="text-[10px] text-white/40">14:20</span>
@@ -586,7 +723,9 @@ function TelegramInterviewDemo() {
                         <div
                           key={i}
                           className="w-[3px] rounded-full bg-white/60"
-                          style={{ height: `${Math.max(20, Math.random() * 100)}%` }}
+                          style={{
+                            height: `${Math.max(20, Math.random() * 100)}%`,
+                          }}
                         />
                       ))}
                     </div>
@@ -610,8 +749,9 @@ function TelegramInterviewDemo() {
                     </span>
                   </div>
                   <p className="text-sm text-white/80 leading-relaxed">
-                    Работаю с Python уже 8 лет. Начинал с веб-разработки на Django, последние 3 года специализируюсь на
-                    FastAPI и асинхронном программировании...
+                    Работаю с Python уже 8 лет. Начинал с веб-разработки на
+                    Django, последние 3 года специализируюсь на FastAPI и
+                    асинхронном программировании...
                   </p>
                 </div>
               </div>
@@ -620,9 +760,12 @@ function TelegramInterviewDemo() {
               <div className="flex justify-start">
                 <div className="max-w-[80%] rounded-2xl rounded-tl-sm bg-[#182533] px-4 py-3 shadow">
                   <p className="text-sm text-white">
-                    Отлично! Расскажите о самом сложном проекте, над которым вы работали.
+                    Отлично! Расскажите о самом сложном проекте, над которым вы
+                    работали.
                   </p>
-                  <span className="text-[10px] text-white/40 mt-1 block">14:25</span>
+                  <span className="text-[10px] text-white/40 mt-1 block">
+                    14:25
+                  </span>
                 </div>
               </div>
             </div>
@@ -631,7 +774,9 @@ function TelegramInterviewDemo() {
             <div className="p-3 border-t border-white/5 bg-[#17212b]">
               <div className="flex items-center gap-3 bg-[#242f3d] rounded-xl px-4 py-2.5">
                 <Mic className="h-5 w-5 text-white/40" />
-                <span className="flex-1 text-white/40 text-sm">Голосовое сообщение...</span>
+                <span className="flex-1 text-white/40 text-sm">
+                  Голосовое сообщение...
+                </span>
                 <div className="h-8 w-8 rounded-full bg-[#3390ec] flex items-center justify-center">
                   <Mic className="h-4 w-4 text-white" />
                 </div>
@@ -641,15 +786,33 @@ function TelegramInterviewDemo() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function ResultsDemo() {
   const candidates = [
-    { name: "Алексей Иванов", role: "Python Developer", score: 95, avatar: "АИ", trend: "+12%" },
-    { name: "Мария Сидорова", role: "Product Manager", score: 91, avatar: "МС", trend: "+8%" },
-    { name: "Дмитрий Козлов", role: "Frontend Dev", score: 87, avatar: "ДК", trend: "+5%" },
-  ]
+    {
+      name: "Алексей Иванов",
+      role: "Python Developer",
+      score: 95,
+      avatar: "АИ",
+      trend: "+12%",
+    },
+    {
+      name: "Мария Сидорова",
+      role: "Product Manager",
+      score: 91,
+      avatar: "МС",
+      trend: "+8%",
+    },
+    {
+      name: "Дмитрий Козлов",
+      role: "Frontend Dev",
+      score: 87,
+      avatar: "ДК",
+      trend: "+5%",
+    },
+  ];
 
   return (
     <div className="relative">
@@ -664,7 +827,9 @@ function ResultsDemo() {
             <div className="w-3 h-3 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 flex justify-center">
-            <div className="px-4 py-1 rounded-lg bg-background text-xs text-muted-foreground">qbs.ru/dashboard</div>
+            <div className="px-4 py-1 rounded-lg bg-background text-xs text-muted-foreground">
+              qbs.ru/dashboard
+            </div>
           </div>
         </div>
 
@@ -674,7 +839,9 @@ function ResultsDemo() {
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl border border-border bg-card p-5">
-                  <div className="text-sm text-muted-foreground mb-2">Обработано откликов</div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Обработано откликов
+                  </div>
                   <div className="text-3xl font-bold text-foreground">247</div>
                   <div className="text-xs text-emerald-500 mt-1 flex items-center gap-1">
                     <ArrowRight className="h-3 w-3 rotate-[-45deg]" />
@@ -682,30 +849,55 @@ function ResultsDemo() {
                   </div>
                 </div>
                 <div className="rounded-2xl border border-border bg-card p-5">
-                  <div className="text-sm text-muted-foreground mb-2">Финалистов</div>
+                  <div className="text-sm text-muted-foreground mb-2">
+                    Финалистов
+                  </div>
                   <div className="text-3xl font-bold text-foreground">12</div>
-                  <div className="text-xs text-primary mt-1">топ 5% кандидатов</div>
+                  <div className="text-xs text-primary mt-1">
+                    топ 5% кандидатов
+                  </div>
                 </div>
               </div>
 
               {/* Conversion funnel mini */}
               <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 via-violet-500/5 to-emerald-500/5 p-5">
-                <div className="text-sm font-medium text-foreground mb-4">Воронка найма</div>
+                <div className="text-sm font-medium text-foreground mb-4">
+                  Воронка найма
+                </div>
                 <div className="flex items-center gap-2">
                   <div className="flex-1 space-y-2">
                     {[
-                      { label: "Просмотры", value: 247, width: "100%", color: "bg-primary" },
-                      { label: "Интервью", value: 86, width: "35%", color: "bg-violet-500" },
-                      { label: "Финалисты", value: 12, width: "5%", color: "bg-emerald-500" },
+                      {
+                        label: "Просмотры",
+                        value: 247,
+                        width: "100%",
+                        color: "bg-primary",
+                      },
+                      {
+                        label: "Интервью",
+                        value: 86,
+                        width: "35%",
+                        color: "bg-violet-500",
+                      },
+                      {
+                        label: "Финалисты",
+                        value: 12,
+                        width: "5%",
+                        color: "bg-emerald-500",
+                      },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center gap-3">
-                        <div className="w-20 text-xs text-muted-foreground">{item.label}</div>
+                        <div className="w-20 text-xs text-muted-foreground">
+                          {item.label}
+                        </div>
                         <div className="flex-1 h-6 rounded-full bg-muted/50 overflow-hidden">
                           <div
                             className={`h-full ${item.color} rounded-full flex items-center justify-end pr-2`}
                             style={{ width: item.width }}
                           >
-                            <span className="text-[10px] font-medium text-white">{item.value}</span>
+                            <span className="text-[10px] font-medium text-white">
+                              {item.value}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -719,7 +911,9 @@ function ResultsDemo() {
             <div className="rounded-2xl border border-border bg-card p-6">
               <div className="flex items-center justify-between mb-6">
                 <h4 className="font-semibold text-foreground">Топ кандидаты</h4>
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">Python Developer</span>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                  Python Developer
+                </span>
               </div>
               <div className="space-y-3">
                 {candidates.map((c, i) => (
@@ -751,12 +945,18 @@ function ResultsDemo() {
                         </div>
                       </div>
                       <div>
-                        <div className="font-medium text-foreground">{c.name}</div>
-                        <div className="text-sm text-muted-foreground">{c.role}</div>
+                        <div className="font-medium text-foreground">
+                          {c.name}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {c.role}
+                        </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className={`text-xl font-bold ${i === 0 ? "text-emerald-500" : "text-foreground"}`}>
+                      <div
+                        className={`text-xl font-bold ${i === 0 ? "text-emerald-500" : "text-foreground"}`}
+                      >
                         {c.score}%
                       </div>
                       <div className="text-xs text-emerald-500">{c.trend}</div>
@@ -772,5 +972,5 @@ function ResultsDemo() {
         </div>
       </div>
     </div>
-  )
+  );
 }

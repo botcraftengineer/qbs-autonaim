@@ -24,12 +24,12 @@ RUN npm install -g bun
 WORKDIR /app
 
 # First install the dependencies (as they change less often)
-COPY --from=builder /web/out/json/ .
-COPY --from=builder /web/bun.lock .
+COPY --from=builder /app/out/json/ .
+COPY --from=builder /app/bun.lock .
 RUN bun install
 
 # Build the project
-COPY --from=builder /web/out/full/ .
+COPY --from=builder /app/out/full/ .
 ARG POSTGRES_URL
 ENV POSTGRES_URL=$POSTGRES_URL
 ENV CI=true
