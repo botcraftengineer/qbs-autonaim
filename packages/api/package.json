@@ -31,7 +31,7 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/sanitize-html": "^2.16.0",
-    "tsdown": "^0.18.2",
+    "tsdown": "^0.18.3",
     "typescript": "5.9.3"
   }
 }
