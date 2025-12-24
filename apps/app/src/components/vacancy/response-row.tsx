@@ -1,6 +1,7 @@
 "use client";
 
 import type { RouterOutputs } from "@qbs-autonaim/api";
+import { paths } from "@qbs-autonaim/config";
 import {
   HR_SELECTION_STATUS_LABELS,
   RESPONSE_STATUS_LABELS,
@@ -30,6 +31,7 @@ import { ScreeningHoverCard } from "./screening-hover-card";
 
 interface ResponseRowProps {
   response: RouterOutputs["vacancy"]["responses"]["list"]["responses"][0];
+  orgSlug: string;
   workspaceSlug: string;
   accessToken: string | undefined;
   isSelected?: boolean;
@@ -38,6 +40,7 @@ interface ResponseRowProps {
 
 export function ResponseRow({
   response,
+  orgSlug,
   workspaceSlug,
   accessToken,
   isSelected = false,
@@ -71,7 +74,11 @@ export function ResponseRow({
           <div>
             <div className="font-medium flex items-center gap-2">
               <Link
-                href={`/${workspaceSlug}/responses/${response.id}`}
+                href={paths.workspace.responses(
+                  orgSlug,
+                  workspaceSlug,
+                  response.id,
+                )}
                 className="hover:text-primary transition-colors no-underline"
               >
                 {response.candidateName || "Без имени"}
@@ -99,6 +106,7 @@ export function ResponseRow({
                 <ChatIndicator
                   messageCount={response.conversation.messageCount}
                   conversationId={response.conversation.id}
+                  orgSlug={orgSlug}
                   workspaceSlug={workspaceSlug}
                 />
               )}

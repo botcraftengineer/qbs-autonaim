@@ -63,7 +63,9 @@ export default async function InvitePage({
     );
 
     if (isAlreadyMember) {
-      redirect(`/${invite.workspace.slug}`);
+      redirect(
+        `/orgs/${invite.workspace.organization?.slug}/workspaces/${invite.workspace.slug}`,
+      );
     }
 
     // Случай 3: Приглашение для конкретного пользователя (по ID)

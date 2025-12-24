@@ -2,6 +2,7 @@
 
 import { Button } from "@qbs-autonaim/ui";
 import { AlertTriangle, Home, RefreshCw } from "lucide-react";
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function GlobalError({
@@ -67,13 +68,11 @@ export default function GlobalError({
                 <RefreshCw className="h-4 w-4" />
                 Попробовать снова
               </Button>
-              <Button
-                onClick={() => (window.location.href = "/")}
-                size="lg"
-                className="gap-2"
-              >
-                <Home className="h-4 w-4" />
-                На главную
+              <Button asChild size="lg" className="gap-2">
+                <Link href="/">
+                  <Home className="h-4 w-4" />
+                  На главную
+                </Link>
               </Button>
             </div>
 

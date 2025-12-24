@@ -15,7 +15,13 @@ import Link from "next/link";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
-export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
+export function ActiveVacancies({
+  orgSlug,
+  workspaceSlug,
+}: {
+  orgSlug: string;
+  workspaceSlug: string;
+}) {
   const trpc = useTRPC();
   const { workspace } = useWorkspace();
 
@@ -70,7 +76,7 @@ export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
               Нет активных вакансий
             </p>
             <Link
-              href={paths.workspace.vacancies(workspaceSlug)}
+              href={paths.workspace.vacancies(orgSlug, workspaceSlug)}
               className="text-sm text-primary hover:underline"
             >
               Перейти к вакансиям
@@ -92,7 +98,11 @@ export function ActiveVacancies({ workspaceSlug }: { workspaceSlug: string }) {
           {vacancies?.map((vacancy) => (
             <Link
               key={vacancy.id}
-              href={paths.workspace.vacancies(workspaceSlug, vacancy.id)}
+              href={paths.workspace.vacancies(
+                orgSlug,
+                workspaceSlug,
+                vacancy.id,
+              )}
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">

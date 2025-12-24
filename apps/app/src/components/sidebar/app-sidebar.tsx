@@ -20,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 import type * as React from "react";
+import { OrganizationSwitcher } from "~/components/organization";
 import {
   NavMain,
   NavSecondary,
@@ -27,46 +28,56 @@ import {
   WorkspaceSwitcher,
 } from "~/components/sidebar";
 
-const getNavData = (workspaceSlug?: string) => ({
+const getNavData = (orgSlug?: string, workspaceSlug?: string) => ({
   navMain: [
     {
       title: "Панель управления",
-      url: workspaceSlug
-        ? paths.workspace.root(workspaceSlug)
-        : paths.dashboard.root,
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.root(orgSlug, workspaceSlug)
+          : paths.dashboard.root,
       icon: IconDashboard,
     },
     {
       title: "Вакансии",
-      url: workspaceSlug
-        ? paths.workspace.vacancies(workspaceSlug)
-        : "/vacancies",
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.vacancies(orgSlug, workspaceSlug)
+          : "/vacancies",
       icon: IconFileDescription,
     },
     {
       title: "Кандидаты",
-      url: workspaceSlug
-        ? paths.workspace.candidates(workspaceSlug)
-        : "/candidates",
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.candidates(orgSlug, workspaceSlug)
+          : "/candidates",
       icon: IconUsersGroup,
     },
     {
       title: "Воронка найма",
-      url: workspaceSlug ? paths.workspace.funnel(workspaceSlug) : "/funnel",
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.funnel(orgSlug, workspaceSlug)
+          : "/funnel",
       icon: IconInnerShadowTop,
     },
     {
       title: "Чаты",
-      url: workspaceSlug ? paths.workspace.chat(workspaceSlug) : "/chat",
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.chat(orgSlug, workspaceSlug)
+          : "/chat",
       icon: IconMessage,
     },
   ],
   navSecondary: [
     {
       title: "Настройки",
-      url: workspaceSlug
-        ? paths.workspace.settings.root(workspaceSlug)
-        : "/settings",
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.settings.root(orgSlug, workspaceSlug)
+          : "/settings",
       icon: IconSettings,
     },
   ],
@@ -78,6 +89,17 @@ type WorkspaceWithRole = {
   slug: string;
   logo: string | null;
   role: "owner" | "admin" | "member";
+  organizationSlug: string;
+};
+
+type OrganizationWithRole = {
+  id: string;
+  name: string;
+  slug: string;
+  logo: string | null;
+  role: "owner" | "admin" | "member";
+  memberCount?: number;
+  workspaceCount?: number;
 };
 
 export function AppSidebar({
@@ -85,6 +107,9 @@ export function AppSidebar({
   workspaces,
   activeWorkspaceId,
   onWorkspaceChange,
+  organizations,
+  activeOrganizationId,
+  onOrganizationChangeAction,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user: {
@@ -95,9 +120,15 @@ export function AppSidebar({
   workspaces?: WorkspaceWithRole[];
   activeWorkspaceId?: string;
   onWorkspaceChange?: (workspaceId: string) => void;
+  organizations?: OrganizationWithRole[];
+  activeOrganizationId?: string;
+  onOrganizationChangeAction?: (organizationId: string) => void;
 }) {
   const activeWorkspace = workspaces?.find((w) => w.id === activeWorkspaceId);
-  const data = getNavData(activeWorkspace?.slug);
+  const data = getNavData(
+    activeWorkspace?.organizationSlug,
+    activeWorkspace?.slug,
+  );
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -111,7 +142,10 @@ export function AppSidebar({
               <Link
                 href={
                   activeWorkspace
-                    ? paths.workspace.root(activeWorkspace.slug)
+                    ? paths.workspace.root(
+                        activeWorkspace.organizationSlug,
+                        activeWorkspace.slug,
+                      )
                     : paths.dashboard.root
                 }
               >
@@ -121,6 +155,13 @@ export function AppSidebar({
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+        {organizations && organizations.length > 0 && (
+          <OrganizationSwitcher
+            organizations={organizations}
+            activeOrganizationId={activeOrganizationId}
+            onOrganizationChangeAction={onOrganizationChangeAction}
+          />
+        )}
         {workspaces && workspaces.length > 0 && (
           <WorkspaceSwitcher
             workspaces={workspaces}

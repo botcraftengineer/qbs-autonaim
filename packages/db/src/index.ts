@@ -6,6 +6,7 @@ export { db } from "./client";
 export { db as dbEdge } from "./client.edge";
 
 export * from "./repositories/integration";
+export * from "./repositories/organization.repository";
 export * from "./repositories/vacancy-response.repository";
 export * from "./repositories/workspace.repository";
 export * from "./schema";

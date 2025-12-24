@@ -111,7 +111,11 @@ export abstract class BaseAgent<TInput, TOutput> {
         error instanceof Error ? error.message : "Неизвестная ошибка";
 
       // Извлекаем детали ошибки API
-      const apiError = error as any;
+      const apiError = error as {
+        responseBody?: unknown;
+        statusCode?: number;
+        requestId?: string;
+      };
       const responseBody = apiError?.responseBody;
       const statusCode = apiError?.statusCode;
       const requestId = apiError?.requestId;

@@ -25,18 +25,38 @@ export const paths = {
     settings: `${ROOTS.ACCOUNT}/settings`,
   },
   workspace: {
-    root: (slug: string) => `/${slug}`,
-    candidates: (slug: string) => `/${slug}/candidates`,
-    chat: (slug: string, candidateId?: string) =>
-      candidateId ? `/${slug}/chat/${candidateId}` : `/${slug}/chat`,
-    funnel: (slug: string) => `/${slug}/funnel`,
-    responses: (slug: string, responseId?: string) =>
-      responseId ? `/${slug}/responses/${responseId}` : `/${slug}/responses`,
-    vacancies: (slug: string, vacancyId?: string) =>
-      vacancyId ? `/${slug}/vacancies/${vacancyId}` : `/${slug}/vacancies`,
+    root: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}`,
+    candidates: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}/candidates`,
+    chat: (orgSlug: string, slug: string, candidateId?: string) =>
+      candidateId
+        ? `/orgs/${orgSlug}/workspaces/${slug}/chat/${candidateId}`
+        : `/orgs/${orgSlug}/workspaces/${slug}/chat`,
+    funnel: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}/funnel`,
+    responses: (orgSlug: string, slug: string, responseId?: string) =>
+      responseId
+        ? `/orgs/${orgSlug}/workspaces/${slug}/responses/${responseId}`
+        : `/orgs/${orgSlug}/workspaces/${slug}/responses`,
+    vacancies: (
+      orgSlug: string,
+      slug: string,
+      vacancyId?: string,
+      section?: "detail" | "settings",
+    ) => {
+      const base = `/orgs/${orgSlug}/workspaces/${slug}/vacancies`;
+      if (!vacancyId) return base;
+      if (section) return `${base}/${vacancyId}/${section}`;
+      return `${base}/${vacancyId}`;
+    },
     settings: {
-      root: (slug: string) => `/${slug}/settings`,
-      members: (slug: string) => `/${slug}/settings/members`,
+      root: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings`,
+      members: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings/members`,
+      telegram: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings/telegram`,
     },
   },
   onboarding: {
@@ -47,4 +67,11 @@ export const paths = {
     accept: (token: string) => `${ROOTS.INVITE}/${token}`,
   },
   accessDenied: ROOTS.ACCESS_DENIED,
+  organization: {
+    workspaces: (slug: string) => `/orgs/${slug}/workspaces`,
+    settings: {
+      root: (slug: string) => `/orgs/${slug}/settings`,
+      members: (slug: string) => `/orgs/${slug}/settings/members`,
+    },
+  },
 } as const;

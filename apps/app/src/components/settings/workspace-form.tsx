@@ -17,6 +17,7 @@ import {
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { HelpCircle, Upload } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -52,6 +53,7 @@ export function WorkspaceForm({
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [logoPreview, setLogoPreview] = useState<string | null>(
     initialData?.logo || null,
   );
@@ -74,15 +76,18 @@ export function WorkspaceForm({
     trpc.workspace.update.mutationOptions({
       onSuccess: async (_data, variables) => {
         toast.success("Рабочее пространство успешно обновлено");
-        // Если slug изменился, редиректим на новый URL
         if (variables.data.slug && variables.data.slug !== initialSlug) {
-          window.location.href = `/${variables.data.slug}/settings`;
+          router.push(`/${variables.data.slug}/settings`);
         } else {
           await queryClient.invalidateQueries(trpc.workspace.pathFilter());
         }
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось обновить рабочее пространство");
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Не удалось обновить рабочее пространство";
+        toast.error(message);
       },
     }),
   );
@@ -91,10 +96,14 @@ export function WorkspaceForm({
     trpc.workspace.delete.mutationOptions({
       onSuccess: async () => {
         toast.success("Рабочее пространство успешно удалено");
-        window.location.href = "/";
+        router.push("/");
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось удалить рабочее пространство");
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Не удалось удалить рабочее пространство";
+        toast.error(message);
       },
     }),
   );

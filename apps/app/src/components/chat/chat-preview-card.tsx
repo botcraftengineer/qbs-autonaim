@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { Badge, Button, Card, cn } from "@qbs-autonaim/ui";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -16,6 +17,7 @@ interface ChatPreviewCardProps {
   unreadCount?: number;
   status?: "active" | "pending" | "completed";
   className?: string;
+  orgSlug: string;
   workspaceSlug: string;
 }
 
@@ -35,6 +37,7 @@ export function ChatPreviewCard({
   unreadCount = 0,
   status = "active",
   className,
+  orgSlug,
   workspaceSlug,
 }: ChatPreviewCardProps) {
   const statusInfo = statusConfig[status];
@@ -84,7 +87,9 @@ export function ChatPreviewCard({
               {format(lastMessageTime, "dd MMM, HH:mm", { locale: ru })}
             </div>
 
-            <Link href={`/${workspaceSlug}/chat/${candidateId}`}>
+            <Link
+              href={paths.workspace.chat(orgSlug, workspaceSlug, candidateId)}
+            >
               <Button variant="outline" size="sm" className="h-7 text-xs">
                 <MessageCircle className="h-3 w-3 mr-1" />
                 Открыть ({messageCount})

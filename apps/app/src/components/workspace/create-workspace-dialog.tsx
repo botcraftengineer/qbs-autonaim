@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { env as baseEnv, paths } from "@qbs-autonaim/config";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -9,7 +9,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   Form,
   FormControl,
   FormDescription,
@@ -18,103 +17,115 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  Textarea,
 } from "@qbs-autonaim/ui";
+import { createWorkspaceSchema } from "@qbs-autonaim/validators";
 import { useMutation } from "@tanstack/react-query";
 import { Building2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import * as React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
+import { toast } from "sonner";
+import type { z } from "zod";
 import { useTRPC } from "~/trpc/react";
 
-const workspaceSchema = z.object({
-  name: z
-    .string()
-    .min(1, "Название обязательно")
-    .max(100, "Название не должно превышать 100 символов"),
-  slug: z
-    .string()
-    .min(1, "Slug обязателен")
-    .max(50, "Slug не должен превышать 50 символов")
-    .regex(
-      /^[a-z0-9-]+$/,
-      "Slug может содержать только строчные буквы, цифры и дефисы",
-    ),
-  description: z.string().max(500).optional(),
-});
-
-type WorkspaceFormValues = z.infer<typeof workspaceSchema>;
+type CreateWorkspaceFormValues = z.infer<typeof createWorkspaceSchema>;
 
 interface CreateWorkspaceDialogProps {
-  trigger?: React.ReactNode;
+  organizationId: string;
+  organizationSlug: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
-  const [open, setOpen] = React.useState(false);
+export function CreateWorkspaceDialog({
+  organizationId,
+  organizationSlug,
+  open,
+  onOpenChange,
+}: CreateWorkspaceDialogProps) {
   const router = useRouter();
   const trpc = useTRPC();
 
-  const form = useForm<WorkspaceFormValues>({
-    resolver: zodResolver(workspaceSchema),
+  const form = useForm<CreateWorkspaceFormValues>({
+    resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: "",
       slug: "",
       description: "",
+      website: "",
     },
   });
 
   const createMutation = useMutation(
-    trpc.workspace.create.mutationOptions({
+    trpc.organization.createWorkspace.mutationOptions({
       onSuccess: (workspace) => {
-        setOpen(false);
+        toast.success("Воркспейс создан", {
+          description: `Воркспейс "${workspace.name}" успешно создан`,
+        });
+        onOpenChange(false);
         form.reset();
-        router.push(paths.workspace.root(workspace.slug));
+        // Перенаправляем на страницу нового воркспейса
+        router.push(
+          paths.workspace.root(organizationSlug, workspace?.slug ?? ""),
+        );
         router.refresh();
       },
       onError: (error) => {
-        form.setError("slug", {
-          message: error.message || "Ошибка при создании рабочего пространства",
-        });
+        // Проверяем на дубликат slug
+        if (
+          error.message.includes("уже существует") ||
+          error.message.includes("already exists") ||
+          error.message.includes("duplicate") ||
+          error.message.includes("CONFLICT")
+        ) {
+          form.setError("slug", {
+            message: "Воркспейс с таким slug уже существует в этой организации",
+          });
+        } else {
+          toast.error("Ошибка при создании воркспейса", {
+            description: error.message,
+          });
+        }
       },
     }),
   );
 
-  const handleNameChange = (value: string) => {
-    form.setValue("name", value);
+  const handleSubmit = async (values: CreateWorkspaceFormValues) => {
+    createMutation.mutate({
+      organizationId,
+      workspace: values,
+    });
+  };
 
-    // Автоматическая генерация slug из названия
-    const slug = value
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")
-      .replace(/-+/g, "-")
-      .slice(0, 50);
+  const handleOpenChange = (newOpen: boolean) => {
+    onOpenChange(newOpen);
+    if (!newOpen) {
+      form.reset();
+    }
+  };
 
+  // Автоматическая генерация slug из названия
+  const handleNameChange = (name: string) => {
+    form.setValue("name", name);
     if (!form.formState.dirtyFields.slug) {
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
       form.setValue("slug", slug);
     }
   };
 
-  const handleSubmit = async (values: WorkspaceFormValues) => {
-    createMutation.mutate(values);
-  };
-
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {trigger || <Button>Создать рабочее пространство</Button>}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader className="text-center">
           <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10">
             <Building2 className="size-6 text-primary" />
           </div>
-          <DialogTitle className="text-2xl">
-            Создать рабочее пространство
-          </DialogTitle>
+          <DialogTitle className="text-2xl">Создать воркспейс</DialogTitle>
           <DialogDescription>
-            Настройте общее пространство для управления вакансиями с вашей
-            командой.
+            Создайте новое рабочее пространство для вашей команды
           </DialogDescription>
         </DialogHeader>
 
@@ -128,10 +139,10 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Название рабочего пространства</FormLabel>
+                  <FormLabel>Название воркспейса</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Acme, Inc."
+                      placeholder="Моя компания"
                       {...field}
                       onChange={(e) => handleNameChange(e.target.value)}
                     />
@@ -146,17 +157,26 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Адрес пространства</FormLabel>
+                  <FormLabel>URL slug</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-2">
                       <span className="text-muted-foreground text-sm">
-                        {new URL(baseEnv.NEXT_PUBLIC_APP_URL).host}/
+                        /orgs/{organizationSlug}/workspaces/
                       </span>
-                      <Input placeholder="acme" {...field} className="flex-1" />
+                      <Input
+                        placeholder="moya-kompaniya"
+                        {...field}
+                        onChange={(e) => {
+                          form.setValue("slug", e.target.value, {
+                            shouldDirty: true,
+                          });
+                        }}
+                      />
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Вы можете изменить это позже в настройках
+                    Только строчные буквы, цифры и дефисы. Должен быть
+                    уникальным в рамках организации.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -170,23 +190,54 @@ export function CreateWorkspaceDialog({ trigger }: CreateWorkspaceDialogProps) {
                 <FormItem>
                   <FormLabel>Описание (опционально)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Краткое описание" {...field} />
+                    <Textarea
+                      placeholder="Краткое описание воркспейса..."
+                      className="resize-none"
+                      rows={3}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full"
-              size="lg"
-              disabled={createMutation.isPending}
-            >
-              {createMutation.isPending
-                ? "Создание..."
-                : "Создать рабочее пространство"}
-            </Button>
+            <FormField
+              control={form.control}
+              name="website"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Веб-сайт (опционально)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="url"
+                      placeholder="https://example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => handleOpenChange(false)}
+                disabled={createMutation.isPending}
+              >
+                Отмена
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1"
+                disabled={createMutation.isPending}
+              >
+                {createMutation.isPending ? "Создание…" : "Создать воркспейс"}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>

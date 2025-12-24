@@ -13,3 +13,6 @@ export * from "./telegram-identification";
 export * from "./vacancy-response-history";
 // Pin code validation utilities
 export * from "./validate-pin-code";
+
+// Organization permissions utilities
+export * from "./permissions/organization";

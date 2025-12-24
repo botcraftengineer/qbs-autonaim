@@ -14,6 +14,7 @@ import {
 } from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { Check, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
@@ -26,6 +27,7 @@ interface SecurityTabProps {
 
 export function SecurityTab({ user }: SecurityTabProps) {
   const trpc = useTRPC();
+  const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState("");
@@ -109,10 +111,12 @@ export function SecurityTab({ user }: SecurityTabProps) {
     trpc.user.delete.mutationOptions({
       onSuccess: async () => {
         toast.success("Аккаунт успешно удален");
-        window.location.href = "/auth/signin";
+        router.push("/auth/signin");
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось удалить аккаунт");
+        const message =
+          err instanceof Error ? err.message : "Не удалось удалить аккаунт";
+        toast.error(message);
       },
     }),
   );

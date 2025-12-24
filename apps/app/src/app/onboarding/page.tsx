@@ -18,7 +18,9 @@ export default function OnboardingPage() {
   const createWorkspace = useMutation(
     trpc.workspace.create.mutationOptions({
       onSuccess: (workspace) => {
-        router.push(`/${workspace.slug}`);
+        router.push(
+          `/orgs/${workspace.organization.slug}/workspaces/${workspace.slug}`,
+        );
         router.refresh();
       },
       onError: (err) => {
@@ -49,7 +51,7 @@ export default function OnboardingPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    createWorkspace.mutate({ name, slug });
+    createWorkspace.mutate({ workspace: { name, slug } });
   };
 
   return (

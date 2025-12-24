@@ -2,20 +2,41 @@ import { and, eq, gt, or } from "drizzle-orm";
 import { nanoid } from "nanoid";
 import { z } from "zod";
 import { dbEdge as db } from "../index";
-import { user, userWorkspace, workspace, workspaceInvite } from "../schema";
+import {
+  organization,
+  user,
+  userWorkspace,
+  workspace,
+  workspaceInvite,
+} from "../schema";
 
 export class WorkspaceRepository {
   // Создать workspace
   async create(data: {
+    organizationId: string;
     name: string;
     slug: string;
     description?: string;
     website?: string;
     logo?: string;
   }) {
+    // Проверяем, что организация существует
+    const org = await db.query.organization.findFirst({
+      where: eq(organization.id, data.organizationId),
+    });
+
+    if (!org) {
+      throw new Error("Организация не найдена");
+    }
+
     // ID генерируется автоматически через workspace_id_generate()
     const [newWorkspace] = await db.insert(workspace).values(data).returning();
-    return newWorkspace;
+
+    // Возвращаем workspace с организацией
+    return {
+      ...newWorkspace,
+      organization: org,
+    };
   }
 
   // Получить workspace по ID
@@ -40,12 +61,26 @@ export class WorkspaceRepository {
     });
   }
 
+  // Получить workspace по slug и organizationId
+  async findBySlugAndOrganization(slug: string, organizationId: string) {
+    return db.query.workspace.findFirst({
+      where: and(
+        eq(workspace.slug, slug),
+        eq(workspace.organizationId, organizationId),
+      ),
+    });
+  }
+
   // Получить все workspaces пользователя
   async findByUserId(userId: string) {
     return db.query.userWorkspace.findMany({
       where: eq(userWorkspace.userId, userId),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
     });
   }
@@ -59,8 +94,20 @@ export class WorkspaceRepository {
       description?: string;
       website?: string;
       logo?: string;
+      organizationId?: string;
     },
   ) {
+    // Если обновляется organizationId, проверяем что организация существует
+    if (data.organizationId) {
+      const org = await db.query.organization.findFirst({
+        where: eq(organization.id, data.organizationId),
+      });
+
+      if (!org) {
+        throw new Error("Организация не найдена");
+      }
+    }
+
     const [updated] = await db
       .update(workspace)
       .set(data)
@@ -152,7 +199,11 @@ export class WorkspaceRepository {
           gt(invite.expiresAt, new Date()),
         ),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
     });
   }
@@ -226,7 +277,7 @@ export class WorkspaceRepository {
       .returning();
 
     if (!invite) {
-      throw new Error("Failed to create invite link");
+      throw new Error("Не удалось создать ссылку-приглашение");
     }
 
     return invite;
@@ -259,7 +310,7 @@ export class WorkspaceRepository {
       .returning();
 
     if (!invite) {
-      throw new Error("Failed to create personal invite");
+      throw new Error("Не удалось создать персональное приглашение");
     }
 
     return invite;
@@ -282,7 +333,11 @@ export class WorkspaceRepository {
     return db.query.workspaceInvite.findFirst({
       where: eq(workspaceInvite.token, token),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
     });
   }
@@ -298,7 +353,11 @@ export class WorkspaceRepository {
         gt(workspaceInvite.expiresAt, new Date()),
       ),
       with: {
-        workspace: true,
+        workspace: {
+          with: {
+            organization: true,
+          },
+        },
       },
       orderBy: (invite, { desc }) => [desc(invite.createdAt)],
     });

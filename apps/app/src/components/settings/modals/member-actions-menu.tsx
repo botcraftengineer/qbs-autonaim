@@ -23,6 +23,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
@@ -283,6 +284,7 @@ function LeaveWorkspaceDialog({
 }) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const leaveWorkspace = useMutation(
     trpc.workspace.members.remove.mutationOptions({
@@ -290,11 +292,12 @@ function LeaveWorkspaceDialog({
         toast.success("Вы покинули workspace");
         onOpenChange(false);
         queryClient.invalidateQueries(trpc.workspace.members.pathFilter());
-        // Redirect to workspaces list or home
-        window.location.href = "/";
+        router.push("/");
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось покинуть workspace");
+        const message =
+          err instanceof Error ? err.message : "Не удалось покинуть workspace";
+        toast.error(message);
       },
     }),
   );

@@ -20,7 +20,9 @@ export function InviteAcceptClient({ invite, token }: InviteAcceptClientProps) {
     trpc.workspace.invites.accept.mutationOptions({
       onSuccess: () => {
         toast.success(`Вы присоединились к ${invite.workspace.name}`);
-        router.push(`/${invite.workspace.slug}`);
+        router.push(
+          `/orgs/${invite.workspace.organization?.slug}/workspaces/${invite.workspace.slug}`,
+        );
         router.refresh();
       },
       onError: (err) => {

@@ -18,7 +18,9 @@ export default async function Page() {
   // Если есть workspaces, редирект на первый
   const firstWorkspace = userWorkspaces[0];
   if (firstWorkspace) {
-    redirect(`/${firstWorkspace.workspace.slug}`);
+    redirect(
+      `/orgs/${firstWorkspace.workspace.organization?.slug}/workspaces/${firstWorkspace.workspace.slug}`,
+    );
   }
 
   // Проверяем наличие pending invitations
