@@ -25,6 +25,7 @@ import {
   IconSettings,
   IconUserPlus,
 } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -47,6 +48,7 @@ export function WorkspaceSwitcher({
   const { workspaces, organizations } = useWorkspaces();
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [activeWorkspace, setActiveWorkspace] = React.useState<
     (typeof workspaces)[number] | undefined
   >(
@@ -112,6 +114,10 @@ export function WorkspaceSwitcher({
     router.push(
       paths.workspace.root(workspace.organizationSlug, workspace.slug),
     );
+
+    // Инвалидируем кэш для обновления данных
+    queryClient.invalidateQueries({ queryKey: [["workspace", "list"]] });
+    queryClient.invalidateQueries({ queryKey: [["organization", "list"]] });
   };
 
   const handleOrganizationChange = (
@@ -137,6 +143,10 @@ export function WorkspaceSwitcher({
       // Если нет воркспейсов, перенаправляем на страницу списка
       router.push(paths.organization.workspaces(organization.slug));
     }
+
+    // Инвалидируем кэш для обновления данных
+    queryClient.invalidateQueries({ queryKey: [["workspace", "list"]] });
+    queryClient.invalidateQueries({ queryKey: [["organization", "list"]] });
   };
 
   return (
