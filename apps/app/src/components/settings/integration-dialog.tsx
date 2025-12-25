@@ -220,6 +220,7 @@ export function IntegrationDialog({
   const handleClose = useCallback(() => {
     form.reset();
     setShowPassword(false);
+    setIsVerifying(false);
     onClose();
   }, [form, onClose]);
 
