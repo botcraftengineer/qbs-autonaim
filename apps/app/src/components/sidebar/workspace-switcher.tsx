@@ -37,53 +37,41 @@ import { getPluralForm } from "~/lib/pluralization";
 export function WorkspaceSwitcher({
   activeWorkspaceId,
   activeOrganizationId,
-  onWorkspaceChangeAction,
-  onOrganizationChangeAction,
 }: {
   activeWorkspaceId?: string;
   activeOrganizationId?: string;
-  onWorkspaceChangeAction?: (workspaceId: string) => void;
-  onOrganizationChangeAction?: (organizationId: string) => void;
 }) {
-  const { workspaces, organizations } = useWorkspaces();
+  const {
+    workspaces,
+    organizations,
+    workspace: contextWorkspace,
+  } = useWorkspaces();
   const { isMobile } = useSidebar();
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [activeWorkspace, setActiveWorkspace] = React.useState<
-    (typeof workspaces)[number] | undefined
-  >(
-    workspaces.find((w) => w.id === activeWorkspaceId) ??
-      (workspaces.length > 0 ? workspaces[0] : undefined),
-  );
-  const [activeOrganization, setActiveOrganization] = React.useState<
-    (typeof organizations)[number] | undefined
-  >(
-    organizations.find((o) => o.id === activeOrganizationId) ??
-      (organizations.length > 0 ? organizations[0] : undefined),
-  );
+
+  // Используем воркспейс из контекста (определяется по URL) или fallback
+  const activeWorkspace = React.useMemo(() => {
+    if (contextWorkspace) return contextWorkspace;
+    if (activeWorkspaceId) {
+      return workspaces.find((w) => w.id === activeWorkspaceId);
+    }
+    return workspaces.length > 0 ? workspaces[0] : undefined;
+  }, [contextWorkspace, activeWorkspaceId, workspaces]);
+
+  // Определяем активную организацию по воркспейсу
+  const activeOrganization = React.useMemo(() => {
+    if (activeWorkspace?.organizationId) {
+      return organizations.find((o) => o.id === activeWorkspace.organizationId);
+    }
+    if (activeOrganizationId) {
+      return organizations.find((o) => o.id === activeOrganizationId);
+    }
+    return organizations.length > 0 ? organizations[0] : undefined;
+  }, [activeWorkspace, activeOrganizationId, organizations]);
+
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
-
-  // Синхронизируем локальный state с данными из контекста
-  React.useEffect(() => {
-    if (activeWorkspaceId) {
-      const workspace = workspaces.find((w) => w.id === activeWorkspaceId);
-      if (workspace) {
-        setActiveWorkspace(workspace);
-      }
-    }
-  }, [activeWorkspaceId, workspaces]);
-
-  React.useEffect(() => {
-    if (activeOrganizationId) {
-      const organization = organizations.find(
-        (o) => o.id === activeOrganizationId,
-      );
-      if (organization) {
-        setActiveOrganization(organization);
-      }
-    }
-  }, [activeOrganizationId, organizations]);
 
   if (
     organizations.length === 0 ||
@@ -100,9 +88,6 @@ export function WorkspaceSwitcher({
   );
 
   const handleWorkspaceChange = (workspace: (typeof workspaces)[number]) => {
-    setActiveWorkspace(workspace);
-    onWorkspaceChangeAction?.(workspace.id);
-
     if (!workspace.organizationSlug || !workspace.slug) {
       console.error(
         "Invalid workspace data: missing organizationSlug or slug",
@@ -123,9 +108,6 @@ export function WorkspaceSwitcher({
   const handleOrganizationChange = (
     organization: (typeof organizations)[number],
   ) => {
-    setActiveOrganization(organization);
-    onOrganizationChangeAction?.(organization.id);
-
     // Находим первый воркспейс в этой организации
     const firstWorkspace = workspaces.find(
       (w) => w.organizationId === organization.id,

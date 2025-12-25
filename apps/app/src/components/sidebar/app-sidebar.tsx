@@ -86,9 +86,7 @@ const getNavData = (orgSlug?: string, workspaceSlug?: string) => ({
 export function AppSidebar({
   user,
   activeWorkspaceId,
-  onWorkspaceChangeAction,
   activeOrganizationId,
-  onOrganizationChangeAction,
   ...props
 }: React.ComponentProps<typeof Sidebar> & {
   user: {
@@ -97,9 +95,7 @@ export function AppSidebar({
     avatar: string;
   };
   activeWorkspaceId?: string;
-  onWorkspaceChangeAction?: (workspaceId: string) => void;
   activeOrganizationId?: string;
-  onOrganizationChangeAction?: (organizationId: string) => void;
 }) {
   const { workspaces, organizations } = useWorkspaces();
   const activeWorkspace = workspaces?.find((w) => w.id === activeWorkspaceId);
@@ -137,8 +133,6 @@ export function AppSidebar({
           <WorkspaceSwitcher
             activeWorkspaceId={activeWorkspaceId}
             activeOrganizationId={activeOrganizationId}
-            onWorkspaceChangeAction={onWorkspaceChangeAction}
-            onOrganizationChangeAction={onOrganizationChangeAction}
           />
         )}
       </SidebarHeader>
