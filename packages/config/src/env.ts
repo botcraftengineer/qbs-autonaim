@@ -81,7 +81,7 @@ export const env: Prettify<{
 
     // AI Services
     AI_PROVIDER: z.enum(["openai", "deepseek"]).default("openai"),
-    AI_MODEL: z.string().optional(),
+    AI_MODEL: z.string().default("gpt-5.2").optional(),
     OPENAI_API_KEY: z.string().min(1).optional(),
     DEEPSEEK_API_KEY: z.string().min(1).optional(),
     LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
