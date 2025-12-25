@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -17,11 +18,15 @@ import {
   FormMessage,
   Input,
   Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@qbs-autonaim/ui";
 import { createOrganizationSchema } from "@qbs-autonaim/validators";
 import slugify from "@sindresorhus/slugify";
-import { useMutation } from "@tanstack/react-query";
-import { Building2 } from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Building2, HelpCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -41,11 +46,15 @@ export function CreateOrganizationDialog({
   onOpenChange,
 }: CreateOrganizationDialogProps) {
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const [createdOrganization, setCreatedOrganization] = useState<{
     id: string;
     slug: string;
   } | null>(null);
   const [showWorkspaceDialog, setShowWorkspaceDialog] = useState(false);
+
+  // Извлекаем домен из URL
+  const appDomain = new URL(APP_CONFIG.url).host;
 
   const form = useForm<CreateOrganizationFormValues>({
     resolver: zodResolver(createOrganizationSchema),
@@ -59,10 +68,16 @@ export function CreateOrganizationDialog({
 
   const createMutation = useMutation(
     trpc.organization.create.mutationOptions({
-      onSuccess: (organization) => {
+      onSuccess: async (organization) => {
         toast.success("Организация создана", {
           description: `Организация "${organization.name}" успешно создана`,
         });
+
+        // Инвалидируем кеш организаций
+        await queryClient.invalidateQueries(
+          trpc.organization.list.pathFilter(),
+        );
+
         onOpenChange(false);
         form.reset();
         setCreatedOrganization({
@@ -151,26 +166,43 @@ export function CreateOrganizationDialog({
                 name="slug"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>URL slug</FormLabel>
+                    <div className="flex items-center gap-1.5">
+                      <FormLabel>Slug организации</FormLabel>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="text-muted-foreground size-4 cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-xs">
+                            <p>
+                              Slug — это уникальный идентификатор для URL.
+                              Например, для организации "Моя Компания" slug
+                              может быть "moya-kompaniya". Используется только
+                              латиница, цифры и дефисы.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                     <FormControl>
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground text-sm">
-                          /orgs/
-                        </span>
+                      <div className="flex items-stretch overflow-hidden rounded-md border">
+                        <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
+                          {appDomain}/orgs/
+                        </div>
                         <Input
-                          placeholder="moya-kompaniya"
+                          placeholder="acme"
                           {...field}
                           onChange={(e) => {
                             form.setValue("slug", e.target.value, {
                               shouldDirty: true,
                             });
                           }}
+                          className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                         />
                       </div>
                     </FormControl>
                     <FormDescription>
-                      Только строчные буквы, цифры и дефисы. Должен быть
-                      уникальным.
+                      Вы сможете изменить это позже в настройках организации.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

@@ -1,10 +1,19 @@
 "use client";
 
-import { paths } from "@qbs-autonaim/config";
-import { Button, Input, Label, Textarea } from "@qbs-autonaim/ui";
+import { APP_CONFIG, paths } from "@qbs-autonaim/config";
+import {
+  Button,
+  Input,
+  Label,
+  Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@qbs-autonaim/ui";
 import slugify from "@sindresorhus/slugify";
 import { useMutation } from "@tanstack/react-query";
-import { Briefcase, Building2 } from "lucide-react";
+import { Briefcase, Building2, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -39,6 +48,9 @@ export default function OnboardingPage() {
   const [workspaceWebsite, setWorkspaceWebsite] = useState("");
   const [isGeneratingWorkspaceSlug, setIsGeneratingWorkspaceSlug] =
     useState(true);
+
+  // Извлекаем домен из URL
+  const appDomain = new URL(APP_CONFIG.url).host;
 
   const createOrganization = useMutation(
     trpc.organization.create.mutationOptions({
@@ -247,22 +259,42 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="slug">URL slug</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">/orgs/</span>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="slug">Slug организации</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="text-muted-foreground size-4 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          Slug — это уникальный идентификатор для URL. Например,
+                          для организации "Моя Компания" slug может быть
+                          "moya-kompaniya". Используется только латиница, цифры
+                          и дефисы.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-stretch overflow-hidden rounded-md border">
+                  <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
+                    {appDomain}/orgs/
+                  </div>
                   <Input
                     id="slug"
-                    placeholder="moya-kompaniya"
+                    placeholder="acme"
                     value={slug}
                     onChange={(e) => handleSlugChange(e.target.value)}
                     required
                     maxLength={50}
                     pattern="[a-z0-9-]+"
                     title="Только строчные буквы, цифры и дефис"
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
                 <p className="text-muted-foreground text-xs">
-                  Только строчные буквы, цифры и дефисы. Должен быть уникальным.
+                  Вы сможете изменить это позже в настройках организации.
                 </p>
               </div>
 
@@ -310,7 +342,27 @@ export default function OnboardingPage() {
               </div>
               <h1 className="text-3xl font-bold">Создайте воркспейс</h1>
               <p className="text-muted-foreground mt-2">
-                Создайте первое рабочее пространство для вашей команды
+                Настройте общее пространство для управления проектами с вашей
+                командой.{" "}
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-help border-b border-dotted border-current">
+                        Узнать больше
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-sm">
+                      <p>
+                        <strong>Что такое рабочее пространство?</strong>
+                        <br />
+                        Воркспейс — это изолированная среда внутри организации
+                        для работы над конкретным проектом или направлением. В
+                        каждом воркспейсе могут быть свои участники, настройки и
+                        данные.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </p>
             </div>
 
@@ -332,25 +384,42 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="workspace-slug">URL slug</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-muted-foreground text-sm">
-                    /orgs/{createdOrganization?.slug}/workspaces/
-                  </span>
+                <div className="flex items-center gap-1.5">
+                  <Label htmlFor="workspace-slug">Slug воркспейса</Label>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <HelpCircle className="text-muted-foreground size-4 cursor-help" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          Slug — это уникальный идентификатор для URL. Например,
+                          для воркспейса "Основной проект" slug может быть
+                          "osnovnoy-proekt". Используется только латиница, цифры
+                          и дефисы.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <div className="flex items-stretch overflow-hidden rounded-md border">
+                  <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
+                    {appDomain}/orgs/{createdOrganization?.slug}/workspaces/
+                  </div>
                   <Input
                     id="workspace-slug"
-                    placeholder="osnovnoy-proekt"
+                    placeholder="acme"
                     value={workspaceSlug}
                     onChange={(e) => handleWorkspaceSlugChange(e.target.value)}
                     required
                     maxLength={50}
                     pattern="[a-z0-9-]+"
                     title="Только строчные буквы, цифры и дефис"
+                    className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                   />
                 </div>
                 <p className="text-muted-foreground text-xs">
-                  Только строчные буквы, цифры и дефисы. Должен быть уникальным
-                  в рамках организации.
+                  Вы сможете изменить это позже в настройках воркспейса.
                 </p>
               </div>
 

@@ -41,7 +41,7 @@ export default function WelcomeEmail({
               Мы рады приветствовать вас в {APP_CONFIG.name}! Ваш аккаунт был
               успешно создан на{" "}
               <Link href={APP_CONFIG.url} className="text-black">
-                <strong>{APP_CONFIG.url.replace(/^https?:\/\//, "")}</strong>
+                <strong>{new URL(APP_CONFIG.url).host}</strong>
               </Link>
               .
             </Text>

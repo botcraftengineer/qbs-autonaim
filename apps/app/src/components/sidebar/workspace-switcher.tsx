@@ -62,6 +62,27 @@ export function WorkspaceSwitcher({
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = React.useState(false);
 
+  // Синхронизируем локальный state с данными из контекста
+  React.useEffect(() => {
+    if (activeWorkspaceId) {
+      const workspace = workspaces.find((w) => w.id === activeWorkspaceId);
+      if (workspace) {
+        setActiveWorkspace(workspace);
+      }
+    }
+  }, [activeWorkspaceId, workspaces]);
+
+  React.useEffect(() => {
+    if (activeOrganizationId) {
+      const organization = organizations.find(
+        (o) => o.id === activeOrganizationId,
+      );
+      if (organization) {
+        setActiveOrganization(organization);
+      }
+    }
+  }, [activeOrganizationId, organizations]);
+
   if (
     organizations.length === 0 ||
     workspaces.length === 0 ||
@@ -98,7 +119,24 @@ export function WorkspaceSwitcher({
   ) => {
     setActiveOrganization(organization);
     onOrganizationChangeAction?.(organization.id);
-    router.push(paths.organization.workspaces(organization.slug));
+
+    // Находим первый воркспейс в этой организации
+    const firstWorkspace = workspaces.find(
+      (w) => w.organizationId === organization.id,
+    );
+
+    if (firstWorkspace?.organizationSlug && firstWorkspace?.slug) {
+      // Перенаправляем на первый воркспейс
+      router.push(
+        paths.workspace.root(
+          firstWorkspace.organizationSlug,
+          firstWorkspace.slug,
+        ),
+      );
+    } else {
+      // Если нет воркспейсов, перенаправляем на страницу списка
+      router.push(paths.organization.workspaces(organization.slug));
+    }
   };
 
   return (
