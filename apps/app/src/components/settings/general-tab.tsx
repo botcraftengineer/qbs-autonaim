@@ -14,13 +14,13 @@ import {
   CardTitle,
   Input,
 } from "@qbs-autonaim/ui";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Upload } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
 import { getAvatarUrl } from "~/lib/avatar";
-import { trpc } from "~/trpc/react";
+import { useTRPC } from "~/trpc/react";
 
 interface GeneralTabProps {
   user: RouterOutputs["user"]["me"];
@@ -28,6 +28,7 @@ interface GeneralTabProps {
 
 export function GeneralTab({ user }: GeneralTabProps) {
   const queryClient = useQueryClient();
+  const trpc = useTRPC();
 
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -42,23 +43,26 @@ export function GeneralTab({ user }: GeneralTabProps) {
     }
   }, [user]);
 
-  const updateUser = trpc.user.update.useMutation({
+  const updateUserMutation = trpc.user.update.mutationOptions({
     onSuccess: async () => {
       toast.success("Изменения сохранены");
-      await queryClient.invalidateQueries(trpc.user.pathFilter());
+      await queryClient.invalidateQueries({
+        queryKey: trpc.user.me.queryKey(),
+      });
       await authClient.getSession();
     },
     onError: (err) => {
-      const message =
-        err instanceof Error ? err.message : "Не удалось сохранить изменения";
+      const message = err.message || "Не удалось сохранить изменения";
       toast.error(message);
     },
   });
 
+  const { mutateAsync: updateUser } = useMutation(updateUserMutation);
+
   const handleUpdateName = async () => {
     setIsUpdatingName(true);
     try {
-      await updateUser.mutateAsync({ name, image: avatar });
+      await updateUser({ name, image: avatar });
     } finally {
       setIsUpdatingName(false);
     }
@@ -67,7 +71,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
   const handleUpdateAvatar = async () => {
     setIsUpdatingAvatar(true);
     try {
-      await updateUser.mutateAsync({ name, image: avatar });
+      await updateUser({ name, image: avatar });
     } finally {
       setIsUpdatingAvatar(false);
     }

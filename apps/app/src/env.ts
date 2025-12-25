@@ -9,6 +9,8 @@ export const env = createEnv({
   },
   server: {
     PORT: z.coerce.number().default(3000),
+    VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
+    VERCEL_URL: z.string().optional(),
   },
   client: {},
   experimental__runtimeEnv: {
