@@ -22,20 +22,36 @@ export const me = protectedProcedure.query(async ({ ctx }) => {
     },
   });
 
-  // Получаем последнюю активную организацию и воркспейс
+  // Получаем последнюю активную организацию и воркспейс с проверкой доступа
   let lastActiveOrganization = null;
   let lastActiveWorkspace = null;
 
   if (userData.lastActiveOrganizationId) {
-    lastActiveOrganization = await ctx.db.query.organization.findFirst({
-      where: eq(organization.id, userData.lastActiveOrganizationId),
-    });
+    // Проверяем доступ к организации
+    const hasOrgAccess = await ctx.organizationRepository.checkAccess(
+      userData.lastActiveOrganizationId,
+      ctx.session.user.id,
+    );
+
+    if (hasOrgAccess) {
+      lastActiveOrganization = await ctx.db.query.organization.findFirst({
+        where: eq(organization.id, userData.lastActiveOrganizationId),
+      });
+    }
   }
 
   if (userData.lastActiveWorkspaceId) {
-    lastActiveWorkspace = await ctx.db.query.workspace.findFirst({
-      where: eq(workspace.id, userData.lastActiveWorkspaceId),
-    });
+    // Проверяем доступ к workspace
+    const hasWorkspaceAccess = await ctx.workspaceRepository.checkAccess(
+      userData.lastActiveWorkspaceId,
+      ctx.session.user.id,
+    );
+
+    if (hasWorkspaceAccess) {
+      lastActiveWorkspace = await ctx.db.query.workspace.findFirst({
+        where: eq(workspace.id, userData.lastActiveWorkspaceId),
+      });
+    }
   }
 
   return {

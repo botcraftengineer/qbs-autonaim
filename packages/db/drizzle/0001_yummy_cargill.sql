@@ -1,0 +1,4 @@
+ALTER TABLE "users" ADD COLUMN "last_active_organization_id" text;--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "last_active_workspace_id" text;--> statement-breakpoint
+ALTER TABLE "users" ADD CONSTRAINT "users_last_active_organization_id_organizations_id_fk" FOREIGN KEY ("last_active_organization_id") REFERENCES "public"."organizations"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "users" ADD CONSTRAINT "users_last_active_workspace_id_workspaces_id_fk" FOREIGN KEY ("last_active_workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE set null ON UPDATE no action;
