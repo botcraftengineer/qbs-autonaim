@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useContext, useEffect, useMemo } from "react";
 
 type WorkspaceWithRole = {
   id: string;
@@ -37,6 +37,8 @@ type WorkspaceContextType = {
 
 const WorkspaceContext = createContext<WorkspaceContextType | null>(null);
 
+const LAST_WORKSPACE_KEY = "lastActiveWorkspace";
+
 export function WorkspaceProvider({
   children,
   workspaces,
@@ -50,9 +52,47 @@ export function WorkspaceProvider({
   const workspaceSlug = params?.slug as string | undefined;
 
   const workspace = useMemo(() => {
-    if (!workspaceSlug) return undefined;
-    return workspaces.find((w) => w.slug === workspaceSlug);
+    // Если есть slug в URL, используем его
+    if (workspaceSlug) {
+      return workspaces.find((w) => w.slug === workspaceSlug);
+    }
+
+    // Если нет slug в URL, пытаемся использовать последний активный workspace
+    if (typeof window !== "undefined") {
+      const lastWorkspaceData = localStorage.getItem(LAST_WORKSPACE_KEY);
+      if (lastWorkspaceData) {
+        try {
+          const { slug, orgSlug } = JSON.parse(lastWorkspaceData);
+          return workspaces.find(
+            (w) => w.slug === slug && w.organizationSlug === orgSlug,
+          );
+        } catch {
+          // Игнорируем ошибки парсинга
+        }
+      }
+    }
+
+    // Fallback на первый доступный workspace
+    return workspaces[0];
   }, [workspaces, workspaceSlug]);
+
+  // Сохраняем активный workspace в localStorage когда он определен из URL
+  useEffect(() => {
+    if (
+      workspace &&
+      workspaceSlug &&
+      workspace.organizationSlug &&
+      typeof window !== "undefined"
+    ) {
+      localStorage.setItem(
+        LAST_WORKSPACE_KEY,
+        JSON.stringify({
+          slug: workspace.slug,
+          orgSlug: workspace.organizationSlug,
+        }),
+      );
+    }
+  }, [workspace, workspaceSlug]);
 
   const value = useMemo(
     () => ({
