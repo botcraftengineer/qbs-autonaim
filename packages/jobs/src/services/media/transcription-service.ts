@@ -18,7 +18,8 @@ export async function transcribeAudio(
 
   return tryCatch(async () => {
     // Use proxy service
-    const proxyBaseUrl = env.APP_URL || "http://localhost:3000";
+    const proxyBaseUrl =
+      env.AI_PROXY_URL || env.APP_URL || "http://localhost:3000";
     const openaiProvider = createOpenAI({
       apiKey: env.OPENAI_API_KEY,
       baseURL: `${proxyBaseUrl}/api/ai-proxy`,

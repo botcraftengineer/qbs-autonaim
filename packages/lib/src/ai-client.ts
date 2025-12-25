@@ -15,7 +15,7 @@ const DEFAULT_MODEL_OPENAI = "gpt-5.2";
 const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
 
 // Создаём OpenAI провайдер с прокси
-const proxyBaseUrl = env.APP_URL || "http://localhost:3000";
+const proxyBaseUrl = env.AI_PROXY_URL || env.APP_URL || "http://localhost:3000";
 const openaiProvider = createOpenAI({
   apiKey: env.OPENAI_API_KEY || "dummy-key",
   baseURL: `${proxyBaseUrl}/api/ai-proxy`,

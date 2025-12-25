@@ -29,6 +29,7 @@ export const env: Prettify<{
   LANGFUSE_SECRET_KEY?: string;
   LANGFUSE_PUBLIC_KEY?: string;
   LANGFUSE_BASE_URL?: string;
+  AI_PROXY_URL?: string;
   PORT: number;
   USER_ID?: string;
   TELEGRAM_API_ID?: string;
@@ -86,6 +87,7 @@ export const env: Prettify<{
     LANGFUSE_SECRET_KEY: z.string().min(1).optional(),
     LANGFUSE_PUBLIC_KEY: z.string().min(1).optional(),
     LANGFUSE_BASE_URL: z.url().optional(),
+    AI_PROXY_URL: z.url().optional(),
 
     // Jobs
     PORT: z.string().optional().default("8000").transform(Number),
@@ -125,10 +127,7 @@ export const env: Prettify<{
       .transform((val) => val === "true"),
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z
-      .url()
-      .optional()
-      .default("http://localhost:3000"),
+    NEXT_PUBLIC_APP_URL: z.url().optional().default("http://localhost:3000"),
     NEXT_PUBLIC_APP_NAME: z.string().optional().default("QBS Автонайм"),
   },
   clientPrefix: "NEXT_PUBLIC_",
@@ -158,6 +157,7 @@ export const env: Prettify<{
     LANGFUSE_SECRET_KEY: process.env.LANGFUSE_SECRET_KEY,
     LANGFUSE_PUBLIC_KEY: process.env.LANGFUSE_PUBLIC_KEY,
     LANGFUSE_BASE_URL: process.env.LANGFUSE_BASE_URL,
+    AI_PROXY_URL: process.env.AI_PROXY_URL,
     PORT: process.env.PORT,
     USER_ID: process.env.USER_ID,
     TELEGRAM_API_ID: process.env.TELEGRAM_API_ID,
