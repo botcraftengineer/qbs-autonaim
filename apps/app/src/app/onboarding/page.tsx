@@ -279,7 +279,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="flex items-stretch overflow-hidden rounded-md border">
                   <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
-                    {appDomain}
+                    {appDomain}/orgs/
                   </div>
                   <Input
                     id="slug"

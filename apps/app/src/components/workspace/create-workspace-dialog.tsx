@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { paths } from "@qbs-autonaim/config";
+import { APP_CONFIG, paths } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -18,10 +18,15 @@ import {
   FormMessage,
   Input,
   Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
 } from "@qbs-autonaim/ui";
 import { createWorkspaceSchema } from "@qbs-autonaim/validators";
-import { useMutation } from "@tanstack/react-query";
-import { Building2 } from "lucide-react";
+import slugify from "@sindresorhus/slugify";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Building2, HelpCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -45,6 +50,10 @@ export function CreateWorkspaceDialog({
 }: CreateWorkspaceDialogProps) {
   const router = useRouter();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  // Извлекаем домен из URL
+  const appDomain = APP_CONFIG.url.replace(/^https?:\/\//, "");
 
   const form = useForm<CreateWorkspaceFormValues>({
     resolver: zodResolver(createWorkspaceSchema),
@@ -58,10 +67,17 @@ export function CreateWorkspaceDialog({
 
   const createMutation = useMutation(
     trpc.organization.createWorkspace.mutationOptions({
-      onSuccess: (workspace) => {
+      onSuccess: async (workspace) => {
         toast.success("Воркспейс создан", {
           description: `Воркспейс "${workspace.name}" успешно создан`,
         });
+
+        // Инвалидируем кеш воркспейсов и организаций
+        await queryClient.invalidateQueries(trpc.workspace.list.pathFilter());
+        await queryClient.invalidateQueries(
+          trpc.organization.list.pathFilter(),
+        );
+
         onOpenChange(false);
         form.reset();
         // Перенаправляем на страницу нового воркспейса
@@ -108,10 +124,7 @@ export function CreateWorkspaceDialog({
   const handleNameChange = (name: string) => {
     form.setValue("name", name);
     if (!form.formState.dirtyFields.slug) {
-      const slug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+      const slug = slugify(name);
       form.setValue("slug", slug);
     }
   };
@@ -157,26 +170,43 @@ export function CreateWorkspaceDialog({
               name="slug"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL slug</FormLabel>
+                  <div className="flex items-center gap-1.5">
+                    <FormLabel>Slug воркспейса</FormLabel>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <HelpCircle className="text-muted-foreground size-4 cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs">
+                          <p>
+                            Slug — это уникальный идентификатор для URL.
+                            Например, для воркспейса "Основной проект" slug
+                            может быть "osnovnoy-proekt". Используется только
+                            латиница, цифры и дефисы.
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                   <FormControl>
-                    <div className="flex items-center gap-2">
-                      <span className="text-muted-foreground text-sm">
-                        /orgs/{organizationSlug}/workspaces/
-                      </span>
+                    <div className="flex items-stretch overflow-hidden rounded-md border">
+                      <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
+                        {appDomain}/orgs/{organizationSlug}/workspaces/
+                      </div>
                       <Input
-                        placeholder="moya-kompaniya"
+                        placeholder="acme"
                         {...field}
                         onChange={(e) => {
                           form.setValue("slug", e.target.value, {
                             shouldDirty: true,
                           });
                         }}
+                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       />
                     </div>
                   </FormControl>
                   <FormDescription>
-                    Только строчные буквы, цифры и дефисы. Должен быть
-                    уникальным в рамках организации.
+                    Вы сможете изменить это позже в настройках воркспейса.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
