@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { fillEmailPasswordForm, submitForm } from "../helpers/auth";
+import { fillEmailPasswordForm, submitSignUpForm } from "../helpers/auth";
 
 test.describe("Регистрация", () => {
   test.beforeEach(async ({ page }) => {
@@ -38,7 +38,7 @@ test.describe("Регистрация", () => {
 
   test("валидация пароля - минимальная длина", async ({ page }) => {
     await fillEmailPasswordForm(page, "test@example.com", "short");
-    await submitForm(page);
+    await submitSignUpForm(page);
 
     await expect(
       page.getByText("Пароль должен содержать минимум 8 символов"),

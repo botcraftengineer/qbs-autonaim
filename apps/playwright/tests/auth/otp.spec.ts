@@ -118,8 +118,8 @@ test.describe("OTP верификация", () => {
   });
 
   test("проверка inputmode для числового ввода", async ({ page }) => {
-    // Проверяем, что OTP input существует
     const otpInput = page.getByRole("textbox", { name: "Код подтверждения" });
     await expect(otpInput).toBeVisible();
+    await expect(otpInput).toHaveAttribute("inputmode", "numeric");
   });
 });

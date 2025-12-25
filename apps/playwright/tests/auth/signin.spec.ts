@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { fillEmailPasswordForm, submitForm } from "../helpers/auth";
+import { fillEmailPasswordForm, submitSignInForm } from "../helpers/auth";
 
 test.describe("Авторизация", () => {
   test.beforeEach(async ({ page }) => {
@@ -33,7 +33,7 @@ test.describe("Авторизация", () => {
 
   test("показывает ошибку при пустом email", async ({ page }) => {
     await page.getByRole("tab", { name: "Пароль" }).click();
-    await submitForm(page);
+    await submitSignInForm(page);
 
     await expect(page.getByText("Неверный email адрес")).toBeVisible();
   });
@@ -50,7 +50,7 @@ test.describe("Авторизация", () => {
 
   test("показывает ошибку при коротком пароле", async ({ page }) => {
     await fillEmailPasswordForm(page, "test@example.com", "123");
-    await submitForm(page);
+    await submitSignInForm(page);
 
     await expect(
       page.getByText("Пароль должен содержать минимум 8 символов"),

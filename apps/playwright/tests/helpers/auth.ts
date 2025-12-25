@@ -15,8 +15,12 @@ export async function fillEmailOtpForm(page: Page, email: string) {
   await page.getByRole("textbox", { name: "Email" }).fill(email);
 }
 
-export async function submitForm(page: Page) {
-  await page.getByRole("button", { name: /войти|создать аккаунт/i }).click();
+export async function submitSignInForm(page: Page) {
+  await page.getByRole("button", { name: "Войти" }).click();
+}
+
+export async function submitSignUpForm(page: Page) {
+  await page.getByRole("button", { name: "Создать аккаунт" }).click();
 }
 
 export async function waitForAuthSuccess(page: Page) {

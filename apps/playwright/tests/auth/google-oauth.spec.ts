@@ -38,23 +38,36 @@ test.describe("Google OAuth", () => {
     expect(box?.height).toBeGreaterThanOrEqual(36);
   });
 
-  test("кнопка доступна через клавиатуру", async ({ page }) => {
-    const googleButton = page.getByRole("button", {
-      name: "Продолжить с Google",
-    });
-
-    // Проверяем, что кнопка может получить фокус
-    await googleButton.focus();
-    await expect(googleButton).toBeFocused();
-  });
-
-  test("кнопка имеет видимый фокус", async ({ page }) => {
+  test("кнопка доступна через клавиатуру и имеет видимый фокус", async ({
+    page,
+  }) => {
     const googleButton = page.getByRole("button", {
       name: "Продолжить с Google",
     });
 
     await googleButton.focus();
     await expect(googleButton).toBeFocused();
+
+    const focusStyles = await googleButton.evaluate((el: HTMLElement) => {
+      const styles = window.getComputedStyle(el);
+      return {
+        outlineStyle: styles.getPropertyValue("outline-style"),
+        outlineWidth: styles.getPropertyValue("outline-width"),
+        boxShadow: styles.getPropertyValue("box-shadow"),
+      };
+    });
+
+    const hasVisibleOutline =
+      focusStyles.outlineStyle !== "none" &&
+      focusStyles.outlineWidth !== "0px" &&
+      focusStyles.outlineWidth !== "";
+
+    const hasVisibleBoxShadow =
+      focusStyles.boxShadow !== "none" &&
+      focusStyles.boxShadow !== "0px 0px 0px" &&
+      focusStyles.boxShadow !== "";
+
+    expect(hasVisibleOutline || hasVisibleBoxShadow).toBe(true);
   });
 
   test("логотип Google имеет правильный title", async ({ page }) => {

@@ -17,35 +17,19 @@ export default async function Page() {
 
   // Если есть последний активный воркспейс, проверяем доступ перед редиректом
   if (userData?.lastActiveWorkspace && userData?.lastActiveOrganization) {
-    try {
-      // Проверяем, что пользователь все еще имеет доступ к организации и воркспейсу
-      await caller.organization.getWorkspaceBySlug({
-        organizationId: userData.lastActiveOrganization.id,
-        slug: userData.lastActiveWorkspace.slug,
-      });
+    const accessCheck = await caller.user.checkWorkspaceAccess({
+      organizationId: userData.lastActiveOrganization.id,
+      workspaceId: userData.lastActiveWorkspace.id,
+    });
 
-      // Если проверка прошла успешно, выполняем редирект
+    if (accessCheck.hasAccess) {
       redirect(
         `/orgs/${userData.lastActiveOrganization.slug}/workspaces/${userData.lastActiveWorkspace.slug}`,
       );
-    } catch (error) {
-      // Если доступ отсутствует, очищаем lastActive поля
-      console.error(
-        "Access check failed for lastActive workspace, clearing:",
-        error,
-      );
-
-      try {
-        await caller.user.setActiveWorkspace({
-          organizationId: "",
-          workspaceId: "",
-        });
-      } catch (updateError) {
-        console.error("Failed to clear lastActive fields:", updateError);
-      }
-
-      // Продолжаем с обычным flow (не делаем редирект)
     }
+
+    // Если доступ отсутствует, очищаем lastActive поля
+    await caller.user.clearActiveWorkspace();
   }
 
   // Получаем workspaces пользователя
