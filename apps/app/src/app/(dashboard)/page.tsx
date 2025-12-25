@@ -12,6 +12,16 @@ export default async function Page() {
 
   const caller = await api();
 
+  // Получаем данные пользователя с последним активным воркспейсом
+  const userData = await caller.user.me();
+
+  // Если есть последний активный воркспейс, редирект на него
+  if (userData?.lastActiveWorkspace && userData?.lastActiveOrganization) {
+    redirect(
+      `/orgs/${userData.lastActiveOrganization.slug}/workspaces/${userData.lastActiveWorkspace.slug}`,
+    );
+  }
+
   // Получаем workspaces пользователя
   const userWorkspaces = await caller.workspace.list();
 
