@@ -7,7 +7,7 @@
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
-    "test:auth": "playwright test tests/auth --ui",
+    "test:auth": "playwright test tests/auth",
     "codegen": "playwright codegen",
     "report": "playwright show-report"
   },
