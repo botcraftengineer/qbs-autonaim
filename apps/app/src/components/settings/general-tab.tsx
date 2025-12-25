@@ -20,14 +20,13 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
 import { getAvatarUrl } from "~/lib/avatar";
-import { useTRPC } from "~/trpc/react";
+import { trpc } from "~/trpc/react";
 
 interface GeneralTabProps {
   user: RouterOutputs["user"]["me"];
 }
 
 export function GeneralTab({ user }: GeneralTabProps) {
-  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const [name, setName] = useState("");
@@ -43,20 +42,23 @@ export function GeneralTab({ user }: GeneralTabProps) {
     }
   }, [user]);
 
+  const updateUser = trpc.user.update.useMutation({
+    onSuccess: async () => {
+      toast.success("Изменения сохранены");
+      await queryClient.invalidateQueries(trpc.user.pathFilter());
+      await authClient.getSession();
+    },
+    onError: (err) => {
+      const message =
+        err instanceof Error ? err.message : "Не удалось сохранить изменения";
+      toast.error(message);
+    },
+  });
+
   const handleUpdateName = async () => {
     setIsUpdatingName(true);
     try {
-      const { error } = await authClient.updateUser({ name });
-
-      if (error) {
-        toast.error(error.message ?? "Не удалось сохранить изменения");
-        return;
-      }
-
-      toast.success("Изменения сохранены");
-      await queryClient.invalidateQueries(trpc.user.pathFilter());
-    } catch {
-      toast.error("Не удалось сохранить изменения");
+      await updateUser.mutateAsync({ name, image: avatar });
     } finally {
       setIsUpdatingName(false);
     }
@@ -65,17 +67,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
   const handleUpdateAvatar = async () => {
     setIsUpdatingAvatar(true);
     try {
-      const { error } = await authClient.updateUser({ image: avatar });
-
-      if (error) {
-        toast.error(error.message ?? "Не удалось сохранить изменения");
-        return;
-      }
-
-      toast.success("Изменения сохранены");
-      await queryClient.invalidateQueries(trpc.user.pathFilter());
-    } catch {
-      toast.error("Не удалось сохранить изменения");
+      await updateUser.mutateAsync({ name, image: avatar });
     } finally {
       setIsUpdatingAvatar(false);
     }
