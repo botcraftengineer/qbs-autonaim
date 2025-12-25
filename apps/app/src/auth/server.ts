@@ -2,7 +2,11 @@ import "server-only";
 
 import { initAuth } from "@qbs-autonaim/auth";
 import { env } from "@qbs-autonaim/config";
-import { OtpSignInEmail, ResetPasswordEmail } from "@qbs-autonaim/emails";
+import {
+  OtpSignInEmail,
+  ResetPasswordEmail,
+  WelcomeEmail,
+} from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
 import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
@@ -54,6 +58,20 @@ export const auth = initAuth({
         react: OtpSignInEmail({ otp, isSignUp: type !== "sign-in" }),
       });
     }
+  },
+  // sendWelcomeEmail отправляет приветственное письмо после регистрации
+  sendWelcomeEmail: async ({
+    email,
+    username,
+  }: {
+    email: string;
+    username: string;
+  }) => {
+    await sendEmail({
+      to: [email],
+      subject: "Добро пожаловать!",
+      react: WelcomeEmail({ username }),
+    });
   },
 });
 

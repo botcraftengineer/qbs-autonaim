@@ -3,7 +3,12 @@ import { user } from "@qbs-autonaim/db/schema";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { customSession, emailOTP, oAuthProxy } from "better-auth/plugins";
+import {
+  createAuthMiddleware,
+  customSession,
+  emailOTP,
+  oAuthProxy,
+} from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
 export function initAuth<
@@ -19,6 +24,10 @@ export function initAuth<
     otp?: string;
     url?: string;
     type: "sign-in" | "email-verification" | "forget-password";
+  }) => Promise<void>;
+  sendWelcomeEmail?: (data: {
+    email: string;
+    username: string;
   }) => Promise<void>;
   extraPlugins?: TExtraPlugins;
 }) {
@@ -40,6 +49,30 @@ export function initAuth<
           });
         }
       },
+    },
+    hooks: {
+      after: createAuthMiddleware(async (ctx) => {
+        // Отправляем приветственное письмо после регистрации
+        const isSignup =
+          ctx.path === "/sign-up/email" || ctx.path.startsWith("/callback/");
+
+        if (isSignup && ctx.context.newSession && options.sendWelcomeEmail) {
+          const userData = await db
+            .select({ email: user.email, name: user.name })
+            .from(user)
+            .where(eq(user.id, ctx.context.newSession.session.userId))
+            .limit(1);
+
+          if (userData[0]) {
+            await options.sendWelcomeEmail({
+              email: userData[0].email,
+              username: userData[0].name || userData[0].email,
+            });
+          }
+        }
+
+        return ctx;
+      }),
     },
     plugins: [
       oAuthProxy({

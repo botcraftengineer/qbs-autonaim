@@ -15,7 +15,7 @@
     "db:generate-key": "bun --filter @qbs-autonaim/db generate-key",
     "db:migrate-workspaces": "bun --filter @qbs-autonaim/db migrate-workspaces",
     "dev": "turbo watch dev --continue",
-    "dev:next": "turbo watch dev -F @qbs-autonaim/nextjs...",
+    "dev:app": "turbo watch dev -F @qbs-autonaim/app...",
     "dev:all": "concurrently \"bun run tg:dev\" \"bun run jobs:dev\"",
     "jobs:dev": "bun --filter @qbs-autonaim/jobs dev",
     "tg": "bun --filter @qbs-autonaim/tg-client start",
