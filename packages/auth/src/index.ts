@@ -7,7 +7,6 @@ import {
   createAuthMiddleware,
   customSession,
   emailOTP,
-  oAuthProxy,
 } from "better-auth/plugins";
 import { eq } from "drizzle-orm";
 
@@ -73,9 +72,6 @@ export function initAuth<
       }),
     },
     plugins: [
-      oAuthProxy({
-        productionURL: options.productionUrl,
-      }),
       emailOTP({
         async sendVerificationOTP(data) {
           if (options.sendEmail) {
