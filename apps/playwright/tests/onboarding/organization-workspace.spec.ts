@@ -45,6 +45,9 @@ test.describe("Онбординг: создание организации и в
           .delete(workspace)
           .where(eq(workspace.organizationId, organizationId));
         await db
+          .delete(organizationMember)
+          .where(eq(organizationMember.organizationId, organizationId));
+        await db
           .delete(organization)
           .where(eq(organization.id, organizationId));
       }
