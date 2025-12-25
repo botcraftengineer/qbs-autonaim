@@ -193,7 +193,7 @@ export function WorkspaceSwitcher({
                   className="flex-1 cursor-pointer justify-center gap-2 p-2"
                   onClick={() => {
                     router.push(
-                      paths.organization.settings.billing(
+                      paths.organization.settings.usage(
                         activeOrganization.slug,
                       ),
                     );

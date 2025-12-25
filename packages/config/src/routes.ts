@@ -73,6 +73,7 @@ export const paths = {
       root: (slug: string) => `/orgs/${slug}/settings`,
       members: (slug: string) => `/orgs/${slug}/settings/members`,
       billing: (slug: string) => `/orgs/${slug}/settings/billing`,
+      usage: (slug: string) => `/orgs/${slug}/settings/usage`,
     },
   },
 } as const;
