@@ -225,13 +225,13 @@ export default function VacanciesPage() {
                   onClick={handleUpdate}
                   disabled={isUpdating}
                   className="w-full md:w-auto"
-                  aria-label="Обновить вакансии"
+                  aria-label="Синхронизировать активные вакансии из источников"
                 >
                   <IconRefresh
                     className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
                     aria-hidden="true"
                   />
-                  {isUpdating ? "Обновление…" : "Обновить"}
+                  {isUpdating ? "Синхронизация…" : "Синхронизировать вакансии"}
                 </Button>
               </div>
 

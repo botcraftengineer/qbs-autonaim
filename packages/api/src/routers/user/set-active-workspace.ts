@@ -7,24 +7,11 @@ import { protectedProcedure } from "../../trpc";
 export const setActiveWorkspace = protectedProcedure
   .input(
     z.object({
-      organizationId: z.string(),
-      workspaceId: z.string(),
+      organizationId: z.string().min(1),
+      workspaceId: z.string().min(1),
     }),
   )
   .mutation(async ({ ctx, input }) => {
-    // Если передаются пустые строки, очищаем lastActive поля без проверок
-    if (!input.organizationId || !input.workspaceId) {
-      await ctx.db
-        .update(user)
-        .set({
-          lastActiveOrganizationId: null,
-          lastActiveWorkspaceId: null,
-        })
-        .where(eq(user.id, ctx.session.user.id));
-
-      return { success: true };
-    }
-
     // Проверка доступа к организации
     const organizationAccess = await ctx.organizationRepository.checkAccess(
       input.organizationId,
