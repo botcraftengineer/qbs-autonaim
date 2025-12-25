@@ -54,7 +54,7 @@ export function CreateOrganizationDialog({
   const [showWorkspaceDialog, setShowWorkspaceDialog] = useState(false);
 
   // Извлекаем домен из URL
-  const appDomain = APP_CONFIG.url.replace(/^https?:\/\//, "");
+  const appDomain = new URL(APP_CONFIG.url).host;
 
   const form = useForm<CreateOrganizationFormValues>({
     resolver: zodResolver(createOrganizationSchema),

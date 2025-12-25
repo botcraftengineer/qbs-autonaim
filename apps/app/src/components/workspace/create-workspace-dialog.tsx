@@ -53,7 +53,7 @@ export function CreateWorkspaceDialog({
   const queryClient = useQueryClient();
 
   // Извлекаем домен из URL
-  const appDomain = APP_CONFIG.url.replace(/^https?:\/\//, "");
+  const appDomain = new URL(APP_CONFIG.url).host;
 
   const form = useForm<CreateWorkspaceFormValues>({
     resolver: zodResolver(createWorkspaceSchema),

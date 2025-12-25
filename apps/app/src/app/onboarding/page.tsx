@@ -50,7 +50,7 @@ export default function OnboardingPage() {
     useState(true);
 
   // Извлекаем домен из URL
-  const appDomain = APP_CONFIG.url.replace(/^https?:\/\//, "");
+  const appDomain = new URL(APP_CONFIG.url).host;
 
   const createOrganization = useMutation(
     trpc.organization.create.mutationOptions({
@@ -404,7 +404,7 @@ export default function OnboardingPage() {
                 </div>
                 <div className="flex items-stretch overflow-hidden rounded-md border">
                   <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
-                    {appDomain}
+                    {appDomain}/orgs/{createdOrganization?.slug}/workspaces/
                   </div>
                   <Input
                     id="workspace-slug"
