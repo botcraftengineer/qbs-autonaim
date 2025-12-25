@@ -70,8 +70,6 @@ export function initAuth<
             });
           }
         }
-
-        return ctx;
       }),
     },
     plugins: [
