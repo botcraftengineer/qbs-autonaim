@@ -29,6 +29,7 @@ interface GeneralTabProps {
 export function GeneralTab({ user }: GeneralTabProps) {
   const queryClient = useQueryClient();
   const trpc = useTRPC();
+  const { refetch } = authClient.useSession();
 
   const [name, setName] = useState("");
   const [avatar, setAvatar] = useState<string | null>(null);
@@ -49,7 +50,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
       await queryClient.invalidateQueries({
         queryKey: trpc.user.me.queryKey(),
       });
-      await authClient.getSession();
+      await refetch();
     },
     onError: (err) => {
       const message = err.message || "Не удалось сохранить изменения";
@@ -91,6 +92,10 @@ export function GeneralTab({ user }: GeneralTabProps) {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatar(null);
   };
 
   return (
@@ -167,14 +172,24 @@ export function GeneralTab({ user }: GeneralTabProps) {
               </AvatarFallback>
             </Avatar>
             <div>
-              <label htmlFor="avatar-upload">
-                <Button variant="outline" size="sm" asChild>
-                  <span className="cursor-pointer">
-                    <Upload className="h-4 w-4 mr-2" />
-                    Загрузить аватар
-                  </span>
+              <div className="flex gap-2">
+                <label htmlFor="avatar-upload">
+                  <Button variant="outline" size="sm" asChild>
+                    <span className="cursor-pointer">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Загрузить аватар
+                    </span>
+                  </Button>
+                </label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRemoveAvatar}
+                  disabled={!avatar}
+                >
+                  Удалить
                 </Button>
-              </label>
+              </div>
               <input
                 id="avatar-upload"
                 type="file"
@@ -192,7 +207,7 @@ export function GeneralTab({ user }: GeneralTabProps) {
         <CardFooter className="border-t px-6 py-4">
           <Button
             onClick={handleUpdateAvatar}
-            disabled={isUpdatingAvatar || !avatar || avatar === user?.image}
+            disabled={isUpdatingAvatar || avatar === user?.image}
           >
             {isUpdatingAvatar ? "Сохранение…" : "Сохранить изменения"}
           </Button>
