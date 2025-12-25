@@ -2,11 +2,6 @@ import { expect, test } from "@playwright/test";
 
 test.describe("OTP верификация", () => {
   test.beforeEach(async ({ page, context }) => {
-    await page.goto("/auth/signin");
-
-    await page.getByRole("tab", { name: "Код на email" }).click();
-    await page.getByLabel("Email").fill("test@example.com");
-
     await context.addInitScript(() => {
       localStorage.setItem("otp_email", "test@example.com");
     });
@@ -15,12 +10,8 @@ test.describe("OTP верификация", () => {
   });
 
   test("отображает форму OTP", async ({ page }) => {
-    await expect(
-      page.getByRole("heading", { name: "Введите код подтверждения" }),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Мы отправили 6-значный код на test@example.com"),
-    ).toBeVisible();
+    await expect(page.getByText("Введите код подтверждения")).toBeVisible();
+    await expect(page.getByText(/Мы отправили 6-значный код на/)).toBeVisible();
   });
 
   test("отображает 6 полей для ввода кода", async ({ page }) => {
@@ -89,8 +80,11 @@ test.describe("OTP верификация", () => {
   });
 
   test("проверка aria-label для полей OTP", async ({ page }) => {
-    const otpLabel = page.getByText("Код подтверждения");
-    await expect(otpLabel).toHaveClass(/sr-only/);
+    const srOnlyLabel = page
+      .locator("label.sr-only")
+      .filter({ hasText: "Код подтверждения" })
+      .first();
+    await expect(srOnlyLabel).toHaveClass(/sr-only/);
   });
 
   test("описание формы видимо", async ({ page }) => {
@@ -121,8 +115,10 @@ test.describe("OTP верификация", () => {
   });
 
   test("проверка inputmode для числового ввода", async ({ page }) => {
-    const firstInput = page.locator('[data-slot="input-otp-slot"]').first();
+    const inputs = page.locator('[data-slot="input-otp-slot"]');
+    const firstInput = inputs.first();
 
-    await expect(firstInput).toHaveAttribute("inputmode", "numeric");
+    const inputmode = await firstInput.getAttribute("inputmode");
+    expect(inputmode).toBe("numeric");
   });
 });

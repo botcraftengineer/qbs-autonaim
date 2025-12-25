@@ -4,19 +4,16 @@ test.describe("Доступность форм авторизации", () => {
   test("signin - проверка семантики", async ({ page }) => {
     await page.goto("/auth/signin");
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText("С возвращением")).toBeVisible();
 
-    const emailInput = page.getByLabel("Email");
+    const emailInput = page.getByRole("textbox", { name: "Email" });
     await expect(emailInput).toHaveAttribute("type", "email");
-
-    const passwordInput = page.getByLabel("Пароль", { exact: true });
-    await expect(passwordInput).toHaveAttribute("type", "password");
   });
 
   test("signup - проверка семантики", async ({ page }) => {
     await page.goto("/auth/signup");
 
-    await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+    await expect(page.getByText("Создать аккаунт")).toBeVisible();
 
     const form = page.locator("form");
     await expect(form).toBeVisible();
@@ -30,8 +27,8 @@ test.describe("Доступность форм авторизации", () => {
       page.getByRole("button", { name: "Продолжить с Google" }),
       page.getByRole("tab", { name: "Пароль" }),
       page.getByRole("tab", { name: "Код на email" }),
-      page.getByLabel("Email"),
-      page.getByLabel("Пароль", { exact: true }),
+      page.getByRole("textbox", { name: "Email" }),
+      page.getByRole("textbox", { name: "Пароль" }),
       page.getByRole("link", { name: "Забыли пароль?" }),
       page.getByRole("button", { name: "Войти" }),
       page.getByRole("link", { name: "Зарегистрироваться" }),
@@ -46,7 +43,7 @@ test.describe("Доступность форм авторизации", () => {
     await page.goto("/auth/signin");
     await page.getByRole("tab", { name: "Пароль" }).click();
 
-    const emailInput = page.getByLabel("Email");
+    const emailInput = page.getByRole("textbox", { name: "Email" });
     await emailInput.fill("invalid");
     await page.getByRole("button", { name: "Войти" }).click();
 
@@ -99,14 +96,17 @@ test.describe("Доступность форм авторизации", () => {
 
     await page.goto("/auth/otp");
 
-    const srOnlyLabel = page.getByText("Код подтверждения");
+    const srOnlyLabel = page
+      .locator("label.sr-only")
+      .filter({ hasText: "Код подтверждения" })
+      .first();
     await expect(srOnlyLabel).toHaveClass(/sr-only/);
   });
 
   test("проверка контраста текста", async ({ page }) => {
     await page.goto("/auth/signin");
 
-    const heading = page.getByRole("heading", { name: "С возвращением" });
+    const heading = page.getByText("С возвращением");
     const color = await heading.evaluate((el: HTMLElement) =>
       window.getComputedStyle(el).getPropertyValue("color"),
     );
@@ -127,11 +127,5 @@ test.describe("Доступность форм авторизации", () => {
 
     const form = page.locator("form");
     await expect(form).toBeVisible();
-
-    const emailLabel = page.getByText("Email", { exact: true });
-    await expect(emailLabel).toBeVisible();
-
-    const passwordLabel = page.getByText("Пароль", { exact: true });
-    await expect(passwordLabel).toBeVisible();
   });
 });

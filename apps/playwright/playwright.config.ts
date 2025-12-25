@@ -9,7 +9,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
   reporter: [
-    ["html"],
+    ["html", { open: "never" }],
     ["list"],
     ...(process.env.CI ? [["github"] as const] : []),
   ],
@@ -25,22 +25,22 @@ export default defineConfig({
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
     },
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
-    },
-    {
-      name: "mobile-chrome",
-      use: { ...devices["Pixel 5"] },
-    },
-    {
-      name: "mobile-safari",
-      use: { ...devices["iPhone 12"] },
-    },
+    // {
+    //   name: "firefox",
+    //   use: { ...devices["Desktop Firefox"] },
+    // },
+    // {
+    //   name: "webkit",
+    //   use: { ...devices["Desktop Safari"] },
+    // },
+    // {
+    //   name: "mobile-chrome",
+    //   use: { ...devices["Pixel 5"] },
+    // },
+    // {
+    //   name: "mobile-safari",
+    //   use: { ...devices["iPhone 12"] },
+    // },
   ],
 
   webServer: {

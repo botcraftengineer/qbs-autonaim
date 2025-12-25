@@ -18,6 +18,10 @@
       "env": {},
       "disabled": false,
       "autoApprove": ["resolve-library-id", "get-library-docs"]
+    },
+    "playwright": {
+      "command": "bunx",
+      "args": ["@playwright/mcp@latest"]
     }
   }
 }

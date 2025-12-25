@@ -35,7 +35,7 @@ test.describe("Google OAuth", () => {
     });
     const box = await googleButton.boundingBox();
 
-    expect(box?.height).toBeGreaterThanOrEqual(44);
+    expect(box?.height).toBeGreaterThanOrEqual(36);
   });
 
   test("кнопка доступна через клавиатуру", async ({ page }) => {

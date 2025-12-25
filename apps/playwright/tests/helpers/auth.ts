@@ -6,13 +6,13 @@ export async function fillEmailPasswordForm(
   password: string,
 ) {
   await page.getByRole("tab", { name: "Пароль" }).click();
-  await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Пароль", { exact: true }).fill(password);
+  await page.getByRole("textbox", { name: "Email" }).fill(email);
+  await page.getByRole("textbox", { name: "Пароль" }).fill(password);
 }
 
 export async function fillEmailOtpForm(page: Page, email: string) {
   await page.getByRole("tab", { name: "Код на email" }).click();
-  await page.getByLabel("Email").fill(email);
+  await page.getByRole("textbox", { name: "Email" }).fill(email);
 }
 
 export async function submitForm(page: Page) {
