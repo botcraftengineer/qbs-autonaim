@@ -26,7 +26,6 @@ import {
 } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Briefcase, Eye, EyeOff, Mail } from "lucide-react";
-import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -35,6 +34,7 @@ import {
   fetchVerifyHHCredentialsToken,
   triggerVerifyHHCredentials,
 } from "~/actions/integration";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
 
@@ -117,27 +117,10 @@ export function IntegrationDialog({
 }: IntegrationDialogProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const params = useParams();
-  const workspaceSlug = params.workspaceSlug as string;
-  const orgSlug = params.orgSlug as string;
+  const { workspace } = useWorkspace();
   const [showPassword, setShowPassword] = useState(false);
 
-  const { data: orgData } = useQuery(
-    trpc.organization.getBySlug.queryOptions({ slug: orgSlug }),
-  );
-
-  const { data: workspaceData } = useQuery({
-    ...trpc.workspace.getBySlug.queryOptions({
-      slug: workspaceSlug,
-      organizationId: orgData?.id ?? "",
-    }),
-    enabled: !!orgData?.id,
-  });
-
-  const workspaceId = useMemo(
-    () => workspaceData?.workspace?.id || "",
-    [workspaceData?.workspace?.id],
-  );
+  const workspaceId = useMemo(() => workspace?.id || "", [workspace?.id]);
 
   const { data: integrations } = useQuery({
     ...trpc.integration.list.queryOptions({

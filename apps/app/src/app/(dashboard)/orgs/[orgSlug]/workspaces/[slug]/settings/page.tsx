@@ -2,28 +2,11 @@
 
 import { env as baseEnv } from "@qbs-autonaim/config";
 import { Skeleton } from "@qbs-autonaim/ui";
-import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 import { WorkspaceForm } from "~/components/settings/workspace-form";
-import { useTRPC } from "~/trpc/react";
+import { useWorkspace } from "~/hooks/use-workspace";
 
 export default function SettingsPage() {
-  const trpc = useTRPC();
-  const params = useParams();
-  const workspaceSlug = params.slug as string;
-  const orgSlug = params.orgSlug as string;
-
-  const { data: orgData } = useQuery(
-    trpc.organization.getBySlug.queryOptions({ slug: orgSlug }),
-  );
-
-  const { data, isLoading } = useQuery({
-    ...trpc.workspace.getBySlug.queryOptions({
-      slug: workspaceSlug,
-      organizationId: orgData?.id ?? "",
-    }),
-    enabled: !!orgData?.id,
-  });
+  const { workspace, isLoading } = useWorkspace();
 
   if (isLoading) {
     return (
@@ -35,15 +18,13 @@ export default function SettingsPage() {
     );
   }
 
-  if (!data?.workspace) {
+  if (!workspace) {
     return (
       <div className="rounded-lg border p-6">
         <p className="text-muted-foreground">Workspace не найден</p>
       </div>
     );
   }
-
-  const { workspace, role } = data;
 
   return (
     <div className="space-y-6">
@@ -55,7 +36,7 @@ export default function SettingsPage() {
             logo: workspace.logo,
           }}
           workspaceId={workspace.id}
-          userRole={role}
+          userRole={workspace.role}
           appUrl={baseEnv.NEXT_PUBLIC_APP_URL}
         />
       </div>

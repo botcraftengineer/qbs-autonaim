@@ -2,32 +2,17 @@
 
 import { Skeleton } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 import { CompanyForm } from "~/components/settings/company-form";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 export default function SettingsCompanyPage() {
   const trpc = useTRPC();
-  const params = useParams();
-  const workspaceSlug = params.slug as string;
-  const orgSlug = params.orgSlug as string;
+  const { workspace, isLoading: workspaceLoading } = useWorkspace();
 
-  const { data: orgData } = useQuery(
-    trpc.organization.getBySlug.queryOptions({ slug: orgSlug }),
-  );
+  const workspaceId = workspace?.id;
+  const userRole = workspace?.role;
 
-  const { data: workspaceData } = useQuery({
-    ...trpc.workspace.getBySlug.queryOptions({
-      slug: workspaceSlug,
-      organizationId: orgData?.id ?? "",
-    }),
-    enabled: !!orgData?.id,
-  });
-
-  const workspaceId = workspaceData?.workspace.id;
-  const userRole = workspaceData?.role;
-
-  // Получаем настройки компании
   const { data: company, isLoading } = useQuery({
     ...trpc.company.get.queryOptions({
       workspaceId: workspaceId || "",
@@ -35,7 +20,7 @@ export default function SettingsCompanyPage() {
     enabled: !!workspaceId,
   });
 
-  if (isLoading || !workspaceId) {
+  if (isLoading || workspaceLoading || !workspaceId) {
     return (
       <div className="rounded-lg border p-6 space-y-4">
         <Skeleton className="h-10 w-full" />

@@ -6,7 +6,11 @@ import { useParams } from "next/navigation";
 import { useTRPC } from "~/trpc/react";
 
 interface UseWorkspaceReturn {
-  workspace: RouterOutputs["organization"]["getWorkspaceBySlug"] | undefined;
+  workspace:
+    | (RouterOutputs["workspace"]["getBySlug"]["workspace"] & {
+        role: RouterOutputs["workspace"]["getBySlug"]["role"];
+      })
+    | undefined;
   organization: RouterOutputs["organization"]["getBySlug"] | undefined;
   orgSlug: string | undefined;
   slug: string | undefined;
@@ -32,7 +36,7 @@ export function useWorkspace(): UseWorkspaceReturn {
   });
 
   const { data, isLoading, error } = useQuery({
-    ...trpc.organization.getWorkspaceBySlug.queryOptions({
+    ...trpc.workspace.getBySlug.queryOptions({
       organizationId: organization?.id ?? "",
       slug: slug ?? "",
     }),
@@ -40,7 +44,7 @@ export function useWorkspace(): UseWorkspaceReturn {
   });
 
   return {
-    workspace: data,
+    workspace: data ? { ...data.workspace, role: data.role } : undefined,
     organization,
     orgSlug,
     slug,

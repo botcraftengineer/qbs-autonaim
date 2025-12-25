@@ -2,43 +2,26 @@
 
 import { Skeleton } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { useParams } from "next/navigation";
 import { useState } from "react";
 import { IntegrationCard } from "~/components/settings/integration-card";
 import { IntegrationDialog } from "~/components/settings/integration-dialog";
 import { TelegramSessionsCard } from "~/components/settings/telegram-sessions-card";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
 
 export default function IntegrationsPage() {
   const api = useTRPC();
-  const params = useParams();
-  const workspaceSlug = params.slug as string;
-  const orgSlug = params.orgSlug as string;
+  const { workspace, isLoading: workspaceLoading } = useWorkspace();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedType, setSelectedType] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const { data: orgData } = useQuery(
-    api.organization.getBySlug.queryOptions({ slug: orgSlug }),
-  );
+  const workspaceId = workspace?.id || "";
+  const userRole = workspace?.role;
 
-  const { data: workspaceData } = useQuery({
-    ...api.workspace.getBySlug.queryOptions({
-      slug: workspaceSlug,
-      organizationId: orgData?.id ?? "",
-    }),
-    enabled: !!orgData?.id,
-  });
-
-  const workspaceId = workspaceData?.workspace?.id || "";
-  const userRole = workspaceData?.role;
-
-  const integrationsQueryOptions = api.integration.list.queryOptions({
-    workspaceId,
-  });
   const { data: integrations, isLoading } = useQuery({
-    ...integrationsQueryOptions,
+    ...api.integration.list.queryOptions({ workspaceId }),
     enabled: !!workspaceId,
   });
 
@@ -60,7 +43,7 @@ export default function IntegrationsPage() {
     setIsEditing(false);
   };
 
-  if (isLoading) {
+  if (isLoading || workspaceLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-32 w-full" />
