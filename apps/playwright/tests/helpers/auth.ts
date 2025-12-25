@@ -1,4 +1,6 @@
 import type { Page } from "@playwright/test";
+import { db, verification } from "@qbs-autonaim/db";
+import { desc, eq } from "drizzle-orm";
 
 export async function fillEmailPasswordForm(
   page: Page,
@@ -24,11 +26,22 @@ export async function submitSignUpForm(page: Page) {
 }
 
 export async function waitForAuthSuccess(page: Page) {
-  await page.waitForURL(/\/(dashboard|onboarding|organization)/);
+  await page.waitForURL(
+    /\/(orgs\/[^/]+\/workspaces\/[^/]+|invitations|onboarding)/,
+  );
 }
 
 export async function getOtpFromEmail(email: string): Promise<string> {
-  // TODO: Интеграция с email провайдером для получения OTP
-  // Пока возвращаем моковое значение
-  return "123456";
+  const record = await db
+    .select()
+    .from(verification)
+    .where(eq(verification.identifier, email))
+    .orderBy(desc(verification.createdAt))
+    .limit(1);
+
+  if (!record[0]) {
+    throw new Error(`OTP не найден для email: ${email}`);
+  }
+
+  return record[0].value;
 }

@@ -15,21 +15,11 @@ export default async function Page() {
   // Получаем данные пользователя с последним активным воркспейсом
   const userData = await caller.user.me();
 
-  // Если есть последний активный воркспейс, проверяем доступ перед редиректом
+  // Если есть последний активный воркспейс, редирект на него
   if (userData?.lastActiveWorkspace && userData?.lastActiveOrganization) {
-    const accessCheck = await caller.user.checkWorkspaceAccess({
-      organizationId: userData.lastActiveOrganization.id,
-      workspaceId: userData.lastActiveWorkspace.id,
-    });
-
-    if (accessCheck.hasAccess) {
-      redirect(
-        `/orgs/${userData.lastActiveOrganization.slug}/workspaces/${userData.lastActiveWorkspace.slug}`,
-      );
-    }
-
-    // Если доступ отсутствует, очищаем lastActive поля
-    await caller.user.clearActiveWorkspace();
+    redirect(
+      `/orgs/${userData.lastActiveOrganization.slug}/workspaces/${userData.lastActiveWorkspace.slug}`,
+    );
   }
 
   // Получаем workspaces пользователя

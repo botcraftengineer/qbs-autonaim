@@ -3,13 +3,14 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
+    "test": "bun with-env playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:auth": "playwright test tests/auth",
     "codegen": "playwright codegen",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "with-env": "bun run --env-file ../../.env"
   },
   "devDependencies": {
     "@playwright/test": "^1.57.0",
