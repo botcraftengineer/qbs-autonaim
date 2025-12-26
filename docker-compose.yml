@@ -1,7 +1,20 @@
 volumes:
   minio:
+  postgres:
 services:
 
+  postgres:
+    restart: always
+    image: postgres:18-alpine
+    container_name: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: qbs-dev
   inbucket:
     restart: always
     image: inbucket/inbucket:latest
