@@ -1,87 +1,18 @@
 import { expect, test } from "@playwright/test";
-import {
-  db,
-  organization,
-  organizationMember,
-  user,
-  userWorkspace,
-  workspace,
-} from "@qbs-autonaim/db";
-import { eq } from "drizzle-orm";
-import {
-  fillEmailPasswordForm,
-  submitSignUpForm,
-  waitForAuthSuccess,
-} from "../helpers/auth";
-import { completeOnboarding } from "../helpers/onboarding";
+import { setupAuthenticatedTest, type TestUser } from "../helpers/test-setup";
 
 test.describe("Настройки воркспейса", () => {
-  const testPassword = "Password123";
-  let testEmail: string;
+  let testUser: TestUser;
   let orgSlug: string;
   let workspaceSlug: string;
 
   test.beforeEach(async ({ page }) => {
-    testEmail = `workspace-settings-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
-    await page.goto("/auth/signup");
-    await fillEmailPasswordForm(page, testEmail, testPassword);
-    await submitSignUpForm(page);
-    await waitForAuthSuccess(page);
-    await completeOnboarding(page);
-
-    // Получаем slug организации и воркспейса из URL
-    await page.waitForURL(/\/orgs\/[^/]+\/workspaces\/[^/]+/, {
-      timeout: 15000,
-    });
-    const url = page.url();
-    const match = url.match(/\/orgs\/([^/]+)\/workspaces\/([^/]+)/);
-    if (match?.[1] && match[2]) {
-      orgSlug = match[1];
-      workspaceSlug = match[2];
-    }
+    testUser = await setupAuthenticatedTest(page);
+    orgSlug = testUser.organization.slug;
+    workspaceSlug = testUser.workspace.slug;
   });
 
-  test.afterEach(async () => {
-    if (!testEmail) return;
 
-    const userRecord = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, testEmail))
-      .limit(1);
-
-    if (userRecord[0]) {
-      const userOrgs = await db
-        .select({ organizationId: organizationMember.organizationId })
-        .from(organizationMember)
-        .where(eq(organizationMember.userId, userRecord[0].id));
-
-      for (const { organizationId } of userOrgs) {
-        const workspaces = await db
-          .select()
-          .from(workspace)
-          .where(eq(workspace.organizationId, organizationId));
-
-        for (const ws of workspaces) {
-          await db
-            .delete(userWorkspace)
-            .where(eq(userWorkspace.workspaceId, ws.id));
-        }
-
-        await db
-          .delete(workspace)
-          .where(eq(workspace.organizationId, organizationId));
-        await db
-          .delete(organizationMember)
-          .where(eq(organizationMember.organizationId, organizationId));
-        await db
-          .delete(organization)
-          .where(eq(organization.id, organizationId));
-      }
-
-      await db.delete(user).where(eq(user.id, userRecord[0].id));
-    }
-  });
 
   test.describe("Общая навигация", () => {
     test("отображает страницу настроек воркспейса", async ({ page }) => {
