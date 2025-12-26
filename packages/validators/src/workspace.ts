@@ -47,6 +47,7 @@ export const updateWorkspaceSchema = z.object({
           "Логотип должен быть в формате data URL",
         ),
       z.literal(""),
+      z.null(),
     ])
     .optional(),
 });

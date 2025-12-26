@@ -1,4 +1,3 @@
-
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   organizationIdSchema,
@@ -29,7 +28,9 @@ export const update = protectedProcedure
     }
 
     if (input.data.slug) {
-      const existing = await ctx.organizationRepository.findBySlug(input.data.slug);
+      const existing = await ctx.organizationRepository.findBySlug(
+        input.data.slug,
+      );
       if (existing && existing.id !== input.id) {
         throw new TRPCError({
           code: "CONFLICT",
@@ -41,8 +42,13 @@ export const update = protectedProcedure
     const dataToUpdate = { ...input.data };
     if (dataToUpdate.logo?.startsWith("data:image/")) {
       dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
+    } else if (dataToUpdate.logo === null) {
+      dataToUpdate.logo = null;
     }
 
-    const updated = await ctx.organizationRepository.update(input.id, dataToUpdate);
+    const updated = await ctx.organizationRepository.update(
+      input.id,
+      dataToUpdate,
+    );
     return updated;
   });

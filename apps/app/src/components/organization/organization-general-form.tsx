@@ -21,7 +21,7 @@ import {
   updateOrganizationSchema,
 } from "@qbs-autonaim/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { HelpCircle, Upload } from "lucide-react";
+import { HelpCircle, Trash2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -70,10 +70,9 @@ export function OrganizationGeneralForm({
         variables: { data: { slug?: string } },
       ) => {
         toast.success("Организация успешно обновлена");
+        await queryClient.invalidateQueries(trpc.organization.pathFilter());
         if (variables.data.slug && variables.data.slug !== initialSlug) {
           router.push(`/orgs/${variables.data.slug}/settings`);
-        } else {
-          await queryClient.invalidateQueries(trpc.organization.pathFilter());
         }
       },
       onError: (err) => {
@@ -127,6 +126,18 @@ export function OrganizationGeneralForm({
         form.setValue("logo", result);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoPreview(null);
+    form.setValue("logo", null as unknown as string);
+    // Reset file input to allow re-uploading the same file
+    const fileInput = document.getElementById(
+      "logo-upload",
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
     }
   };
 
@@ -270,21 +281,35 @@ export function OrganizationGeneralForm({
                       />
                     </div>
                   )}
-                  <div className="flex-1">
-                    <label
-                      htmlFor="logo-upload"
-                      className="inline-flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors"
-                    >
-                      <Upload className="h-4 w-4" />
-                      <span className="text-sm">Загрузить логотип</span>
-                    </label>
-                    <input
-                      id="logo-upload"
-                      type="file"
-                      accept=".png,.jpg,.jpeg"
-                      className="hidden"
-                      onChange={handleLogoChange}
-                    />
+                  <div className="flex-1 space-y-2">
+                    <div className="flex gap-2">
+                      <label
+                        htmlFor="logo-upload"
+                        className="inline-flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors"
+                      >
+                        <Upload className="h-4 w-4" />
+                        <span className="text-sm">Загрузить логотип</span>
+                      </label>
+                      <input
+                        id="logo-upload"
+                        type="file"
+                        accept=".png,.jpg,.jpeg"
+                        className="hidden"
+                        onChange={handleLogoChange}
+                      />
+                      {logoPreview && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="default"
+                          onClick={handleRemoveLogo}
+                          className="inline-flex items-center gap-2"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          <span className="text-sm">Удалить</span>
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground">
