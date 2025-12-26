@@ -1,7 +1,7 @@
+import { env } from "@qbs-autonaim/config";
 import { drizzle, type NodePgDatabase } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema";
-import { env } from "@qbs-autonaim/config";
 
 const pool = new Pool({
   connectionString: env.POSTGRES_URL,
