@@ -4,6 +4,7 @@ import {
   conversationMessage,
   tempConversationMessage,
 } from "@qbs-autonaim/db/schema";
+import { removeNullBytes } from "@qbs-autonaim/lib";
 import { eq } from "drizzle-orm";
 import {
   type BufferedTempMessageData,
@@ -36,7 +37,7 @@ export async function saveTempMessage(params: {
       chatId,
       sender,
       contentType,
-      content,
+      content: removeNullBytes(content),
       externalMessageId,
     });
 
@@ -94,7 +95,7 @@ export async function flushTempMessageBuffer(
           chatId,
           sender: msg.sender,
           contentType: msg.contentType,
-          content: msg.content,
+          content: removeNullBytes(msg.content),
           externalMessageId: msg.externalMessageId,
         }),
       );
@@ -153,7 +154,7 @@ export async function migrateTempMessages(
         conversationId: realConversationId,
         sender: msg.sender as "CANDIDATE" | "BOT",
         contentType: msg.contentType as "TEXT" | "VOICE",
-        content: msg.content,
+        content: removeNullBytes(msg.content),
         externalMessageId: msg.externalMessageId ?? undefined,
         channel: "TELEGRAM" as const,
       }));

@@ -1,5 +1,6 @@
 import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
+import { removeNullBytes } from "@qbs-autonaim/lib";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { findDuplicateMessage } from "../../utils";
 
@@ -46,7 +47,7 @@ export async function saveUnidentifiedMessage(params: {
         conversationId,
         sender: "CANDIDATE",
         contentType,
-        content,
+        content: removeNullBytes(content),
         externalMessageId: messageId,
       });
     }
