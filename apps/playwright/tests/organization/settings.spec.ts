@@ -1,13 +1,23 @@
 import { expect, test } from "@playwright/test";
-import { setupAuthenticatedTest, type TestUser } from "../helpers/test-setup";
+import {
+  deleteTestUser,
+  setupAuthenticatedTest,
+  type TestUser,
+} from "../helpers/test-setup";
 
 test.describe("Настройки организации", () => {
+  test.describe.configure({ mode: "parallel" });
+
   let testUser: TestUser;
   let orgSlug: string;
 
   test.beforeEach(async ({ page }) => {
     testUser = await setupAuthenticatedTest(page);
     orgSlug = testUser.organization.slug;
+  });
+
+  test.afterEach(async () => {
+    await deleteTestUser(testUser.email);
   });
 
 

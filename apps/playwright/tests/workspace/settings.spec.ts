@@ -1,7 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { setupAuthenticatedTest, type TestUser } from "../helpers/test-setup";
+import {
+  deleteTestUser,
+  setupAuthenticatedTest,
+  type TestUser,
+} from "../helpers/test-setup";
 
 test.describe("Настройки воркспейса", () => {
+  test.describe.configure({ mode: "parallel" });
+
   let testUser: TestUser;
   let orgSlug: string;
   let workspaceSlug: string;
@@ -10,6 +16,10 @@ test.describe("Настройки воркспейса", () => {
     testUser = await setupAuthenticatedTest(page);
     orgSlug = testUser.organization.slug;
     workspaceSlug = testUser.workspace.slug;
+  });
+
+  test.afterEach(async () => {
+    await deleteTestUser(testUser.email);
   });
 
 

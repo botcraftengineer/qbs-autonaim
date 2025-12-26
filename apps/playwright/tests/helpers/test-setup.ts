@@ -175,3 +175,31 @@ export async function setupAuthenticatedTest(
 
   return testUser;
 }
+
+/**
+ * Хелпер для автоматической очистки тестового пользователя
+ * Регистрирует cleanup который выполнится после теста
+ */
+export function registerTestUserCleanup(
+  testUser: TestUser,
+  baseURL = "http://localhost:3000",
+): void {
+  // Сохраняем email для cleanup
+  const email = testUser.email;
+
+  // Регистрируем cleanup через process.on для гарантированного выполнения
+  const cleanup = async () => {
+    try {
+      await deleteTestUser(email, baseURL);
+    } catch (error) {
+      // Игнорируем ошибки cleanup чтобы не ломать тесты
+      console.warn(`Failed to cleanup test user ${email}:`, error);
+    }
+  };
+
+  // Добавляем в очередь cleanup
+  if (typeof (globalThis as any).__testCleanups === "undefined") {
+    (globalThis as any).__testCleanups = [];
+  }
+  (globalThis as any).__testCleanups.push(cleanup);
+}

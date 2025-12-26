@@ -6,6 +6,8 @@ import {
 } from "../helpers/test-setup";
 
 test.describe("Настройки аккаунта", () => {
+  test.describe.configure({ mode: "parallel" });
+
   let testUser: TestUser;
 
   test.beforeEach(async ({ page }) => {
