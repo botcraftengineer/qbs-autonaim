@@ -5,7 +5,7 @@ import {
   conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { logResponseEvent } from "@qbs-autonaim/lib";
+import { logResponseEvent, removeNullBytes } from "@qbs-autonaim/lib";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
 
@@ -98,7 +98,7 @@ ${offerDetails.message ? `\n${offerDetails.message}\n` : ""}
         sender: "BOT",
         contentType: "TEXT",
         channel: "TELEGRAM",
-        content: offerMessage,
+        content: removeNullBytes(offerMessage),
         externalMessageId: result.messageId,
       });
     });

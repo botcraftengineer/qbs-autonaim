@@ -7,6 +7,7 @@ import {
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { removeNullBytes } from "@qbs-autonaim/lib";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import {
   generateTelegramInvite,
@@ -285,7 +286,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   conversationId: conv.id,
                   sender: "BOT",
                   contentType: "TEXT",
-                  content: actualSentMessage,
+                  content: removeNullBytes(actualSentMessage),
                   externalMessageId: sendResult.messageId,
                 });
               }

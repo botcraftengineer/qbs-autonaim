@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "lint": "biome lint .",
     "test": "bun with-env playwright test",
     "test:ui": "bun with-env playwright test --ui",
     "test:headed": "playwright test --headed",

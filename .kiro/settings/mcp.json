@@ -38,7 +38,8 @@
         "browser_type",
         "browser_click",
         "browser_wait_for",
-        "browser_run_code"
+        "browser_run_code",
+        "browser_close"
       ]
     }
   }

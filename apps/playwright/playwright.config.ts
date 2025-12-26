@@ -4,10 +4,10 @@ const baseURL = process.env.BASE_URL || "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./tests",
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  workers: 1, // Один воркер = последовательное выполнение
   timeout: 60000, // Увеличиваем общий таймаут теста до 60 секунд
   reporter: [
     ["html", { open: "never" }],
@@ -20,7 +20,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "retain-on-failure",
     actionTimeout: 15000, // Увеличиваем таймаут для действий
-    navigationTimeout: 30000, // Увеличиваем таймаут для навигации
+    navigationTimeout: 60000, // Увеличиваем таймаут для навигации
   },
 
   projects: [

@@ -11,6 +11,8 @@ export * from "./pluralization";
 export * from "./s3";
 // Telegram identification utilities
 export * from "./telegram-identification";
+// Sanitization utilities
+export * from "./utils/sanitize";
 // Vacancy response history utilities
 export * from "./vacancy-response-history";
 // Pin code validation utilities
