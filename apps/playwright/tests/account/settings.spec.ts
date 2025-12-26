@@ -1,60 +1,21 @@
 import { expect, test } from "@playwright/test";
 import {
-  db,
-  organization,
-  organizationMember,
-  user,
-  workspace,
-} from "@qbs-autonaim/db";
-import { eq } from "drizzle-orm";
-import {
-  fillEmailPasswordForm,
-  submitSignUpForm,
-  waitForAuthSuccess,
-} from "../helpers/auth";
-import { completeOnboarding } from "../helpers/onboarding";
+  deleteTestUser,
+  setupAuthenticatedTest,
+  type TestUser,
+} from "../helpers/test-setup";
 
 test.describe("Настройки аккаунта", () => {
-  const testPassword = "Password123";
-  let testEmail: string;
+  let testUser: TestUser;
 
   test.beforeEach(async ({ page }) => {
-    testEmail = `settings-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
-    await page.goto("/auth/signup");
-    await fillEmailPasswordForm(page, testEmail, testPassword);
-    await submitSignUpForm(page);
-    await waitForAuthSuccess(page);
-    await completeOnboarding(page);
+    // Быстрое создание пользователя через API + авторизация
+    testUser = await setupAuthenticatedTest(page);
   });
 
   test.afterEach(async () => {
-    if (!testEmail) return;
-
-    const userRecord = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, testEmail))
-      .limit(1);
-
-    if (userRecord[0]) {
-      const userOrgs = await db
-        .select({ organizationId: organizationMember.organizationId })
-        .from(organizationMember)
-        .where(eq(organizationMember.userId, userRecord[0].id));
-
-      for (const { organizationId } of userOrgs) {
-        await db
-          .delete(workspace)
-          .where(eq(workspace.organizationId, organizationId));
-        await db
-          .delete(organizationMember)
-          .where(eq(organizationMember.organizationId, organizationId));
-        await db
-          .delete(organization)
-          .where(eq(organization.id, organizationId));
-      }
-
-      await db.delete(user).where(eq(user.id, userRecord[0].id));
+    if (testUser?.email) {
+      await deleteTestUser(testUser.email);
     }
   });
 

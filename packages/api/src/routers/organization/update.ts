@@ -43,7 +43,7 @@ export const update = protectedProcedure
     if (dataToUpdate.logo?.startsWith("data:image/")) {
       dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
     } else if (dataToUpdate.logo === null) {
-      dataToUpdate.logo = null;
+      dataToUpdate.logo = undefined;
     }
 
     const updated = await ctx.organizationRepository.update(
