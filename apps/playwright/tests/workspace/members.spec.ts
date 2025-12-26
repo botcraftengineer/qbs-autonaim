@@ -70,7 +70,7 @@ test.describe("Управление участниками воркспейса"
       await page.goto(
         `/orgs/${orgSlug}/workspaces/${workspaceSlug}/settings/members`,
       );
-      await expect(page.getByText(testEmail)).toBeVisible();
+      await expect(page.getByText(testUser.email)).toBeVisible();
     });
 
     test("отображает роль текущего пользователя", async ({ page }) => {
@@ -135,10 +135,10 @@ test.describe("Управление участниками воркспейса"
       );
 
       const searchInput = page.getByPlaceholder("Поиск по имени или email");
-      await searchInput.fill(testEmail);
+      await searchInput.fill(testUser.email);
 
       // Участник должен быть найден
-      await expect(page.getByText(testEmail)).toBeVisible();
+      await expect(page.getByText(testUser.email)).toBeVisible();
     });
 
     test("показывает сообщение когда участники не найдены", async ({
