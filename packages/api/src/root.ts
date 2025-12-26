@@ -5,6 +5,7 @@ import { funnelRouter } from "./routers/funnel";
 import { integrationRouter } from "./routers/integration";
 import { organizationRouter } from "./routers/organization";
 import { telegramRouter } from "./routers/telegram";
+import { testRouter } from "./routers/test";
 import { userRouter } from "./routers/user";
 import { vacancyRouter } from "./routers/vacancy";
 import { workspaceRouter } from "./routers/workspace";
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   funnel: funnelRouter,
   candidates: candidatesRouter,
   files: filesRouter,
+  ...(process.env.NODE_ENV !== "production" && { test: testRouter }),
 });
 
 // export type definition of API
