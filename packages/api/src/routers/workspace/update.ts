@@ -1,4 +1,3 @@
-
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   updateWorkspaceSchema,
@@ -53,8 +52,13 @@ export const update = protectedProcedure
     const dataToUpdate = { ...input.data };
     if (dataToUpdate.logo?.startsWith("data:image/")) {
       dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
+    } else if (dataToUpdate.logo === null) {
+      dataToUpdate.logo = null;
     }
 
-    const updated = await ctx.workspaceRepository.update(input.id, dataToUpdate);
+    const updated = await ctx.workspaceRepository.update(
+      input.id,
+      dataToUpdate,
+    );
     return updated;
   });

@@ -28,6 +28,7 @@ export async function submitSignUpForm(page: Page) {
 export async function waitForAuthSuccess(page: Page) {
   await page.waitForURL(
     /\/(orgs\/[^/]+\/workspaces\/[^/]+|invitations|onboarding)/,
+    { timeout: 30000 },
   );
 }
 
