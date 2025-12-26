@@ -49,11 +49,20 @@ export const update = protectedProcedure
       }
     }
 
-    const dataToUpdate = { ...input.data };
-    if (dataToUpdate.logo?.startsWith("data:image/")) {
-      dataToUpdate.logo = await optimizeLogo(dataToUpdate.logo);
-    } else if (dataToUpdate.logo === null) {
-      dataToUpdate.logo = null;
+    const { logo, ...restData } = input.data;
+
+    const dataToUpdate: {
+      name?: string;
+      slug?: string;
+      description?: string;
+      website?: string;
+      logo?: string;
+    } = { ...restData };
+
+    if (logo?.startsWith("data:image/")) {
+      dataToUpdate.logo = await optimizeLogo(logo);
+    } else if (logo !== null && logo !== undefined) {
+      dataToUpdate.logo = logo;
     }
 
     const updated = await ctx.workspaceRepository.update(
