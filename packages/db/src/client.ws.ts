@@ -7,6 +7,12 @@ import * as schema from "./schema";
 
 neonConfig.webSocketConstructor = ws;
 
+if (!env.POSTGRES_URL) {
+  throw new Error(
+    "Переменная окружения POSTGRES_URL не установлена. Пожалуйста, настройте её в окружении.",
+  );
+}
+
 const pool = new Pool({ connectionString: env.POSTGRES_URL });
 
 export const db = drizzle(pool, {

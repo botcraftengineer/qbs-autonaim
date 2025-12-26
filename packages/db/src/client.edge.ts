@@ -6,7 +6,7 @@ import * as schema from "./schema";
 
 if (!env.POSTGRES_URL) {
   throw new Error(
-    "POSTGRES_URL environment variable is not set. Please configure it in your environment.",
+    "Переменная окружения POSTGRES_URL не установлена. Пожалуйста, настройте её в окружении.",
   );
 }
 

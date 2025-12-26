@@ -61,7 +61,7 @@ export const update = protectedProcedure
 
     if (logo?.startsWith("data:image/")) {
       dataToUpdate.logo = await optimizeLogo(logo);
-    } else if (logo !== null && logo !== undefined) {
+    } else if (logo !== undefined) {
       dataToUpdate.logo = logo;
     }
 
