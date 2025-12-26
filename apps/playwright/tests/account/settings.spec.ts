@@ -69,7 +69,7 @@ test.describe("Настройки аккаунта", () => {
     test("отображает email пользователя как disabled", async ({ page }) => {
       const emailInput = page.getByPlaceholder("your@email.com");
       await expect(emailInput).toBeDisabled();
-      await expect(emailInput).toHaveValue(testEmail);
+      await expect(emailInput).toHaveValue(testUser.email);
     });
   });
 
@@ -96,7 +96,7 @@ test.describe("Настройки аккаунта", () => {
       );
       const newPasswordInput = page.getByPlaceholder("Введите новый пароль");
 
-      await currentPasswordInput.fill(testPassword);
+      await currentPasswordInput.fill(testUser.password);
       await newPasswordInput.fill("weak");
 
       const updateButton = page.getByRole("button", {

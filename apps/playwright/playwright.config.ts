@@ -7,7 +7,6 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: 1, // Один воркер = последовательное выполнение
   timeout: 60000, // Увеличиваем общий таймаут теста до 60 секунд
   reporter: [
     ["html", { open: "never" }],

@@ -3,6 +3,7 @@ import {
   organization,
   organizationMember,
   user,
+  userWorkspace,
   workspace,
 } from "@qbs-autonaim/db";
 import { eq } from "drizzle-orm";
@@ -97,6 +98,13 @@ export const setupTestUser = publicProcedure
     if (!ws) {
       throw new Error("Failed to create workspace");
     }
+
+    // Добавляем пользователя в workspace как владельца
+    await db.insert(userWorkspace).values({
+      userId,
+      workspaceId: ws.id,
+      role: "owner",
+    });
 
     // Возвращаем данные для тестов
     return {
