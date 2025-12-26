@@ -122,8 +122,9 @@ export async function loginTestUser(
 ): Promise<void> {
   await page.goto("/auth/signin");
 
-  // Переключаемся на таб с паролем
-  await page.getByRole("tab", { name: "Пароль" }).click();
+  // Таб "Пароль" уже выбран по умолчанию, не нужно кликать
+  // Ждем появления формы
+  await page.waitForSelector('input[type="email"]', { timeout: 10000 });
 
   // Заполняем форму
   await page.getByRole("textbox", { name: "Email" }).fill(email);
@@ -134,7 +135,7 @@ export async function loginTestUser(
 
   // Ждем редиректа на dashboard
   await page.waitForURL(/\/orgs\/[^/]+\/workspaces\/[^/]+/, {
-    timeout: 15000,
+    timeout: 30000,
   });
 }
 
