@@ -172,7 +172,9 @@ export function ChatList() {
             let vacancyTitle = null;
             if (conversation.metadata) {
               try {
-                const metadata = JSON.parse(conversation.metadata);
+                const metadata = JSON.parse(
+                  conversation.metadata as unknown as string,
+                );
                 const vacancy = vacancies.find(
                   (v) => v.id === metadata.vacancyId,
                 );

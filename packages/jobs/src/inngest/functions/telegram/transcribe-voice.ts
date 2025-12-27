@@ -122,9 +122,15 @@ export const transcribeVoiceFunction = inngest.createFunction(
         // Пытаемся буферизовать голосовое сообщение с транскрипцией
         try {
           const { env } = await import("@qbs-autonaim/config");
-          const { messageBufferService } = await import("../../../services/buffer");
-          const { getCurrentInterviewStep } = await import("@qbs-autonaim/tg-client");
-          const { getConversationMetadata } = await import("@qbs-autonaim/shared");
+          const { messageBufferService } = await import(
+            "../../../services/buffer"
+          );
+          const { getCurrentInterviewStep } = await import(
+            "@qbs-autonaim/tg-client"
+          );
+          const { getConversationMetadata } = await import(
+            "@qbs-autonaim/shared"
+          );
 
           const bufferEnabled = env.INTERVIEW_BUFFER_ENABLED ?? false;
 
@@ -147,8 +153,9 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
           // Добавляем в буфер
           await messageBufferService.addMessage({
-            userId: message.conversation.metadata 
-              ? JSON.parse(message.conversation.metadata).senderId 
+            userId: message.conversation.metadata
+              ? JSON.parse(message.conversation.metadata as unknown as string)
+                  .senderId
               : conversationId,
             conversationId,
             interviewStep,
@@ -170,30 +177,38 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
           // Отправляем событие в Inngest для debounce
           if (env.INNGEST_EVENT_KEY) {
-            await fetch(`${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                name: "interview/message.buffered",
-                data: {
-                  userId: message.conversation.metadata 
-                    ? JSON.parse(message.conversation.metadata).senderId 
-                    : conversationId,
-                  conversationId,
-                  interviewStep,
-                  messageId,
-                  timestamp: Date.now(),
+            await fetch(
+              `${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
                 },
-              }),
-            });
+                body: JSON.stringify({
+                  name: "interview/message.buffered",
+                  data: {
+                    userId: message.conversation.metadata
+                      ? JSON.parse(
+                          message.conversation.metadata as unknown as string,
+                        ).senderId
+                      : conversationId,
+                    conversationId,
+                    interviewStep,
+                    messageId,
+                    timestamp: Date.now(),
+                  },
+                }),
+              },
+            );
 
-            console.log("✅ Событие interview/message.buffered отправлено для голосового", {
-              conversationId,
-              interviewStep,
-              messageId,
-            });
+            console.log(
+              "✅ Событие interview/message.buffered отправлено для голосового",
+              {
+                conversationId,
+                interviewStep,
+                messageId,
+              },
+            );
 
             // Если буферизация успешна, выходим - не запускаем стандартную обработку
             return;

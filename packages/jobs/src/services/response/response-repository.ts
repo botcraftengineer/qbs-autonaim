@@ -152,7 +152,7 @@ export async function updateResponseDetails(
       .update(vacancyResponse)
       .set({
         experience: response.experience,
-        contacts: response.contacts,
+        contacts: response.contacts as Record<string, unknown> | null,
         phone: response.phone,
         telegramUsername: response.telegramUsername,
         resumePdfFileId: response.resumePdfFileId,
@@ -361,7 +361,7 @@ export async function saveResponseToDb(
         candidateName: response.candidateName,
         status: RESPONSE_STATUS.NEW,
         experience: response.experience,
-        contacts: response.contacts,
+        contacts: response.contacts as Record<string, unknown> | null,
         phone: response.phone,
       })
       .onConflictDoNothing({

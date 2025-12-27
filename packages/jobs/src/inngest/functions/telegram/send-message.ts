@@ -77,7 +77,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         // 1. Проверяем metadata
         if (conv.metadata) {
           try {
-            const metadata = JSON.parse(conv.metadata);
+            const metadata = JSON.parse(conv.metadata as unknown as string);
             username = metadata.username;
           } catch (e) {
             console.warn("Не удалось распарсить metadata", e);
