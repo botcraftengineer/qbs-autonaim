@@ -1,11 +1,21 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+  index,
+  pgTable,
+  text,
+  timestamp,
+  unique,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { organization } from "../organization/organization";
 
 export const workspace = pgTable(
   "workspaces",
   {
     id: text("id").primaryKey().default(sql`workspace_id_generate()`),
+
+    // Внешний ID (для интеграций)
+    externalId: varchar("external_id", { length: 100 }),
 
     // Организация, которой принадлежит workspace
     organizationId: text("organization_id")
@@ -29,8 +39,10 @@ export const workspace = pgTable(
     // Логотип
     logo: text("logo"),
 
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
@@ -38,6 +50,9 @@ export const workspace = pgTable(
   (table) => ({
     // Уникальность slug в рамках организации
     uniqueSlugPerOrg: unique().on(table.organizationId, table.slug),
+    organizationIdx: index("workspace_organization_idx").on(
+      table.organizationId,
+    ),
   }),
 );
 

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  index,
   jsonb,
   pgTable,
   text,
@@ -66,6 +67,12 @@ export const integration = pgTable(
   (table) => ({
     // Уникальное ограничение: один workspace - одна интеграция каждого типа
     workspaceTypeUnique: unique().on(table.workspaceId, table.type),
+    workspaceIdx: index("integration_workspace_idx").on(table.workspaceId),
+    typeIdx: index("integration_type_idx").on(table.type),
+    // Partial index для активных интеграций
+    activeIntegrationsIdx: index("integration_active_idx")
+      .on(table.workspaceId, table.isActive)
+      .where(sql`${table.isActive} = true`),
   }),
 );
 

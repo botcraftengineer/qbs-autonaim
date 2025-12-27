@@ -1,30 +1,41 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { index, pgTable, text, timestamp, varchar } from "drizzle-orm/pg-core";
 
-export const organization = pgTable("organizations", {
-  id: text("id").primaryKey().default(sql`organization_id_generate()`),
+export const organization = pgTable(
+  "organizations",
+  {
+    id: text("id").primaryKey().default(sql`organization_id_generate()`),
 
-  // Название организации
-  name: text("name").notNull(),
+    // Внешний ID (для интеграций)
+    externalId: varchar("external_id", { length: 100 }),
 
-  // Уникальный slug для URL
-  slug: text("slug").notNull().unique(),
+    // Название организации
+    name: text("name").notNull(),
 
-  // Описание организации
-  description: text("description"),
+    // Уникальный slug для URL
+    slug: text("slug").notNull().unique(),
 
-  // Сайт организации
-  website: text("website"),
+    // Описание организации
+    description: text("description"),
 
-  // Логотип
-  logo: text("logo"),
+    // Сайт организации
+    website: text("website"),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
-    .defaultNow()
-    .$onUpdate(() => new Date())
-    .notNull(),
-});
+    // Логотип
+    logo: text("logo"),
+
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => ({
+    slugIdx: index("organization_slug_idx").on(table.slug),
+  }),
+);
 
 export type Organization = typeof organization.$inferSelect;
 export type NewOrganization = typeof organization.$inferInsert;

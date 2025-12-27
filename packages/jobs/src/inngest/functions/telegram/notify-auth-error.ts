@@ -5,8 +5,8 @@ import {
   organization,
   telegramSession,
   user,
-  userWorkspace,
   workspace,
+  workspaceMember,
 } from "@qbs-autonaim/db/schema";
 import { TelegramAuthErrorEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
@@ -57,14 +57,14 @@ export const notifyTelegramAuthErrorFunction = inngest.createFunction(
       // Get all admins and owners of the workspace
       const members = await db
         .select({
-          userId: userWorkspace.userId,
-          role: userWorkspace.role,
+          userId: workspaceMember.userId,
+          role: workspaceMember.role,
           email: user.email,
           name: user.name,
         })
-        .from(userWorkspace)
-        .innerJoin(user, eq(user.id, userWorkspace.userId))
-        .where(eq(userWorkspace.workspaceId, workspaceId));
+        .from(workspaceMember)
+        .innerJoin(user, eq(user.id, workspaceMember.userId))
+        .where(eq(workspaceMember.workspaceId, workspaceId));
 
       // Filter to admins and owners only
       const admins = members.filter(

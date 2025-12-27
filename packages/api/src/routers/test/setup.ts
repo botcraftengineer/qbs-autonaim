@@ -3,8 +3,8 @@ import {
   organization,
   organizationMember,
   user,
-  userWorkspace,
   workspace,
+  workspaceMember,
 } from "@qbs-autonaim/db";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
@@ -100,7 +100,7 @@ export const setupTestUser = publicProcedure
     }
 
     // Добавляем пользователя в workspace как владельца
-    await db.insert(userWorkspace).values({
+    await db.insert(workspaceMember).values({
       userId,
       workspaceId: ws.id,
       role: "owner",
