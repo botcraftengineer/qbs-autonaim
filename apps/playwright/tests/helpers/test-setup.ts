@@ -185,6 +185,11 @@ export async function setupAuthenticatedTest(
   return testUser;
 }
 
+// Типизация для глобального объекта с cleanups
+interface GlobalWithCleanups {
+  __testCleanups?: Array<() => Promise<void>>;
+}
+
 /**
  * Хелпер для автоматической очистки тестового пользователя
  * Регистрирует cleanup который выполнится после теста
@@ -207,8 +212,9 @@ export function registerTestUserCleanup(
   };
 
   // Добавляем в очередь cleanup
-  if (typeof (globalThis as any).__testCleanups === "undefined") {
-    (globalThis as any).__testCleanups = [];
+  const global = globalThis as GlobalWithCleanups;
+  if (typeof global.__testCleanups === "undefined") {
+    global.__testCleanups = [];
   }
-  (globalThis as any).__testCleanups.push(cleanup);
+  global.__testCleanups.push(cleanup);
 }

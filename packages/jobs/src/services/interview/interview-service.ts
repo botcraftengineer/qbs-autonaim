@@ -62,17 +62,14 @@ interface InterviewContext {
 // ==================== HELPER FUNCTIONS ====================
 
 /**
- * Safely parses JSON metadata string into typed object
+ * Safely converts metadata to typed object
  */
-function parseMetadata(metadataStr: string | null): ConversationMetadata {
-  if (!metadataStr) return {};
+function parseMetadata(
+  metadata: Record<string, unknown> | null,
+): ConversationMetadata {
+  if (!metadata) return {};
 
-  try {
-    return JSON.parse(metadataStr) as ConversationMetadata;
-  } catch (error) {
-    logger.error("Error parsing metadata", { error });
-    return {};
-  }
+  return metadata as ConversationMetadata;
 }
 
 /**

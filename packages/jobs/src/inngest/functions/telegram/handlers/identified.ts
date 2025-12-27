@@ -48,7 +48,7 @@ export async function triggerTextAnalysis(params: {
   text: string;
   responseId: string | null;
   status: string;
-  metadata: string | null;
+  metadata: Record<string, unknown> | null;
 }) {
   const { conversationId, text, responseId, status, metadata } = params;
 
@@ -61,18 +61,8 @@ export async function triggerTextAnalysis(params: {
     return;
   }
 
-  let parsedMetadata: ConversationMetadata = {};
-
-  if (metadata) {
-    try {
-      parsedMetadata = JSON.parse(metadata) as ConversationMetadata;
-    } catch (error) {
-      console.error("❌ Ошибка парсинга metadata, используем пустой объект", {
-        conversationId,
-        error,
-      });
-    }
-  }
+  const parsedMetadata: ConversationMetadata = (metadata ||
+    {}) as ConversationMetadata;
 
   if (
     parsedMetadata.interviewStarted === true &&
@@ -108,7 +98,7 @@ export async function handleIdentifiedText(params: {
   messageId: string;
   responseId: string | null;
   status: string;
-  metadata: string | null;
+  metadata: Record<string, unknown> | null;
 }) {
   const { conversationId, text, messageId, responseId, status, metadata } =
     params;

@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -22,7 +23,7 @@ export const file = pgTable(
     fileName: varchar("file_name", { length: 500 }).notNull(),
     mimeType: varchar("mime_type", { length: 100 }).notNull(),
     fileSize: varchar("file_size", { length: 50 }),
-    metadata: text("metadata"),
+    metadata: jsonb("metadata").$type<Record<string, unknown>>(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -46,7 +47,7 @@ export const CreateFileSchema = createInsertSchema(file, {
   fileName: z.string().max(500),
   mimeType: z.string().max(100),
   fileSize: z.string().max(50).optional(),
-  metadata: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 }).omit({
   id: true,
   createdAt: true,

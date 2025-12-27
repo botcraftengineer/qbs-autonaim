@@ -73,10 +73,10 @@ export async function identifyCandidate(
             candidateName: responseByUsername.candidateName || undefined,
             username,
             status: "ACTIVE",
-            metadata: JSON.stringify({
+            metadata: {
               identifiedBy: "username",
               username,
-            }),
+            },
           })
           .returning();
 
@@ -136,10 +136,10 @@ export async function identifyCandidate(
             candidateName: responseByPhone.candidateName || undefined,
             username,
             status: "ACTIVE",
-            metadata: JSON.stringify({
+            metadata: {
               identifiedBy: "phone",
               phone,
-            }),
+            },
           })
           .returning();
 

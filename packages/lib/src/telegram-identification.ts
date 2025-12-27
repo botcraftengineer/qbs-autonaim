@@ -208,18 +208,8 @@ async function createOrUpdateConversation(
   });
 
   if (existing) {
-    // Парсим существующие метаданные
-    let existingMetadata: Record<string, unknown> = {};
-    if (existing.metadata) {
-      try {
-        existingMetadata = JSON.parse(existing.metadata);
-      } catch (error) {
-        console.error("Failed to parse existing metadata", {
-          conversationId: existing.id,
-          error,
-        });
-      }
-    }
+    // Получаем существующие метаданные
+    const existingMetadata: Record<string, unknown> = existing.metadata || {};
 
     // Объединяем с новыми данными, сохраняя существующие поля
     const updatedMetadata = {
@@ -239,7 +229,7 @@ async function createOrUpdateConversation(
         candidateName: data.candidateName,
         username: data.username,
         status: "ACTIVE",
-        metadata: JSON.stringify(updatedMetadata),
+        metadata: updatedMetadata,
       })
       .where(eq(conversation.id, existing.id))
       .returning();
@@ -267,7 +257,7 @@ async function createOrUpdateConversation(
       candidateName: data.candidateName,
       username: data.username,
       status: "ACTIVE",
-      metadata: JSON.stringify(newMetadata),
+      metadata: newMetadata,
     })
     .returning();
 
