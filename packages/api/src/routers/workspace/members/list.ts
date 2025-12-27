@@ -1,10 +1,9 @@
-
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
-export const listMembers = protectedProcedure
+export const list = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ input, ctx }) => {
     const access = await ctx.workspaceRepository.checkAccess(

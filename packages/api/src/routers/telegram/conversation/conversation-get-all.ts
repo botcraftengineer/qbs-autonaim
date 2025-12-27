@@ -18,7 +18,11 @@ export const getAllConversationsRouter = protectedProcedure
     }),
   )
   .query(async ({ input, ctx }) => {
-    await verifyWorkspaceAccess(ctx.workspaceRepository, input.workspaceId, ctx.session.user.id);
+    await verifyWorkspaceAccess(
+      ctx.workspaceRepository,
+      input.workspaceId,
+      ctx.session.user.id,
+    );
 
     const conversations = await ctx.db
       .select()

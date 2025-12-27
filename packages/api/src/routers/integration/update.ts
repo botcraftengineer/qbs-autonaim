@@ -1,7 +1,4 @@
-import {
-  getIntegration,
-  upsertIntegration,
-} from "@qbs-autonaim/db";
+import { getIntegration, upsertIntegration } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -31,7 +28,11 @@ export const updateIntegration = protectedProcedure
       });
     }
 
-    const integration = await getIntegration(ctx.db, input.type, input.workspaceId);
+    const integration = await getIntegration(
+      ctx.db,
+      input.type,
+      input.workspaceId,
+    );
 
     if (!integration) {
       throw new TRPCError({

@@ -17,21 +17,26 @@ const QuestionAnswerSchema = z.object({
   timestamp: z.string().optional(),
 });
 
-const ConversationMetadataSchema = z
-  .object({
-    identifiedBy: z
-      .enum(["pin_code", "vacancy_search", "username", "none"])
-      .optional(),
-    pinCode: z.string().optional(),
-    searchQuery: z.string().optional(),
-    awaitingPin: z.boolean().optional(),
-    interviewStarted: z.boolean().optional(),
-    questionAnswers: z.array(QuestionAnswerSchema).optional(),
-    lastQuestionAsked: z.string().optional(),
-    interviewCompleted: z.boolean().optional(),
-    completedAt: z.string().optional(),
-  })
-  .passthrough(); // Разрешаем дополнительные поля для обратной совместимости
+const ConversationMetadataSchema = z.object({
+  identifiedBy: z
+    .enum(["pin_code", "vacancy_search", "username", "phone", "none"])
+    .optional(),
+  pinCode: z.string().optional(),
+  username: z.string().optional(),
+  phone: z.string().optional(),
+  searchQuery: z.string().optional(),
+  awaitingPin: z.boolean().optional(),
+  interviewStarted: z.boolean().optional(),
+  questionAnswers: z.array(QuestionAnswerSchema).optional(),
+  lastQuestionAsked: z.string().optional(),
+  interviewCompleted: z.boolean().optional(),
+  completedAt: z.string().optional(),
+});
+
+/**
+ * Экспортируем схему для использования в других модулях
+ */
+export { ConversationMetadataSchema };
 
 /**
  * Безопасно парсит и валидирует метаданные

@@ -1,4 +1,3 @@
-
 import { updateUserRoleSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../trpc";

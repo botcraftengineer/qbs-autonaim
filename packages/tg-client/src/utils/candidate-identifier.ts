@@ -6,6 +6,7 @@ import {
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { ConversationMetadataSchema } from "@qbs-autonaim/shared/utils";
 
 interface IdentificationResult {
   identified: boolean;
@@ -66,6 +67,18 @@ export async function identifyCandidate(
         }
 
         // Создаем новую беседу
+        const metadata = {
+          identifiedBy: "username" as const,
+          username,
+        };
+
+        // Валидируем метаданные перед вставкой
+        const validationResult = ConversationMetadataSchema.safeParse(metadata);
+        if (!validationResult.success) {
+          console.error("Metadata validation failed:", validationResult.error);
+          return { identified: false };
+        }
+
         const [conv] = await db
           .insert(conversation)
           .values({
@@ -73,10 +86,7 @@ export async function identifyCandidate(
             candidateName: responseByUsername.candidateName || undefined,
             username,
             status: "ACTIVE",
-            metadata: {
-              identifiedBy: "username",
-              username,
-            },
+            metadata: validationResult.data,
           })
           .returning();
 
@@ -129,6 +139,18 @@ export async function identifyCandidate(
         }
 
         // Создаем новую беседу
+        const metadata = {
+          identifiedBy: "phone" as const,
+          phone,
+        };
+
+        // Валидируем метаданные перед вставкой
+        const validationResult = ConversationMetadataSchema.safeParse(metadata);
+        if (!validationResult.success) {
+          console.error("Metadata validation failed:", validationResult.error);
+          return { identified: false };
+        }
+
         const [conv] = await db
           .insert(conversation)
           .values({
@@ -136,10 +158,7 @@ export async function identifyCandidate(
             candidateName: responseByPhone.candidateName || undefined,
             username,
             status: "ACTIVE",
-            metadata: {
-              identifiedBy: "phone",
-              phone,
-            },
+            metadata: validationResult.data,
           })
           .returning();
 

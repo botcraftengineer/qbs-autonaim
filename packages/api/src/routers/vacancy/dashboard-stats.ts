@@ -1,18 +1,11 @@
-import {
-  and,
-  count,
-  eq,
-  gte,
-  isNull,
-  sql,
-} from "@qbs-autonaim/db";
+import { and, count, eq, gte, isNull, sql } from "@qbs-autonaim/db";
 import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
-import z from "zod";
+import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-export const getDashboardStats = protectedProcedure
+export const dashboardStats = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace

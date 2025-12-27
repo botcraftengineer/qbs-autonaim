@@ -1,10 +1,9 @@
-
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-export const getResponsesChartData = protectedProcedure
+export const responsesChart = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace

@@ -1,10 +1,9 @@
-
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
-export const removeMember = protectedProcedure
+export const remove = protectedProcedure
   .input(
     z.object({
       workspaceId: workspaceIdSchema,
@@ -41,7 +40,9 @@ export const removeMember = protectedProcedure
     }
 
     if (targetUserAccess.role === "owner") {
-      const members = await ctx.workspaceRepository.getMembers(input.workspaceId);
+      const members = await ctx.workspaceRepository.getMembers(
+        input.workspaceId,
+      );
       const ownerCount = members.filter((m) => m.role === "owner").length;
 
       if (ownerCount <= 1) {

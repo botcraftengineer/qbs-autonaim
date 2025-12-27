@@ -1,10 +1,4 @@
-import {
-  and,
-  desc,
-  eq,
-  inArray,
-  lt,
-} from "@qbs-autonaim/db";
+import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
 import {
   responseScreening,
   telegramInterviewScoring,
@@ -13,7 +7,7 @@ import {
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
-import z from "zod";
+import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 import { sanitizeHtml } from "../../utils/sanitize-html";
 

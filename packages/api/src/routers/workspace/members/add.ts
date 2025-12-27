@@ -6,7 +6,7 @@ import { addUserToWorkspaceSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { protectedProcedure } from "../../../trpc";
 
-export const addMember = protectedProcedure
+export const add = protectedProcedure
   .input(addUserToWorkspaceSchema)
   .mutation(async ({ input, ctx }) => {
     const access = await ctx.workspaceRepository.checkAccess(

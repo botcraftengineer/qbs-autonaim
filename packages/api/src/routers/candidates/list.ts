@@ -1,11 +1,4 @@
-import {
-  and,
-  eq,
-  ilike,
-  inArray,
-  lt,
-  or,
-} from "@qbs-autonaim/db";
+import { and, eq, ilike, inArray, lt, or } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";

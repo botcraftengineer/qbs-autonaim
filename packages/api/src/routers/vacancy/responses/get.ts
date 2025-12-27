@@ -7,7 +7,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 import { sanitizeHtml } from "../../utils/sanitize-html";
 
-export const getById = protectedProcedure
+export const get = protectedProcedure
   .input(z.object({ id: z.string(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace

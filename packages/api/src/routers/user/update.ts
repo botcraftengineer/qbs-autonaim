@@ -4,7 +4,7 @@ import { optimizeAvatar } from "@qbs-autonaim/lib/image";
 import { accountFormSchema } from "@qbs-autonaim/validators";
 import { protectedProcedure } from "../../trpc";
 
-export const updateAccount = protectedProcedure
+export const update = protectedProcedure
   .input(accountFormSchema)
   .mutation(async ({ ctx, input }) => {
     let optimizedImage = input.image;
