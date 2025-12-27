@@ -1,4 +1,3 @@
-
 import { organizationIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -34,7 +33,9 @@ export const deleteInvite = protectedProcedure
     }
 
     // Загрузка приглашения
-    const invite = await ctx.organizationRepository.getInviteById(input.inviteId);
+    const invite = await ctx.organizationRepository.getInviteById(
+      input.inviteId,
+    );
 
     if (!invite) {
       throw new TRPCError({

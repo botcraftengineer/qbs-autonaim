@@ -1,4 +1,3 @@
-
 import { optimizeLogo } from "@qbs-autonaim/lib/image";
 import {
   createWorkspaceSchema,

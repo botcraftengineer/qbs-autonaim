@@ -23,7 +23,10 @@ export const listIntegrations = protectedProcedure
       });
     }
 
-    const integrations = await getIntegrationsByWorkspace(ctx.db, input.workspaceId);
+    const integrations = await getIntegrationsByWorkspace(
+      ctx.db,
+      input.workspaceId,
+    );
 
     // Не возвращаем credentials на клиент, только email
     return integrations.map((int: (typeof integrations)[number]) => {

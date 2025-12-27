@@ -8,7 +8,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-export const updateSettings = protectedProcedure
+export const update = protectedProcedure
   .input(
     z.object({
       vacancyId: z.string(),

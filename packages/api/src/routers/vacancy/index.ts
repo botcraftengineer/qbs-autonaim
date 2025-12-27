@@ -1,23 +1,23 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
-import { getAnalytics } from "./analytics";
-import { getDashboardStats } from "./dashboard-stats";
-import { getById } from "./get";
+import { analytics } from "./analytics";
+import { dashboardStats } from "./dashboard-stats";
+import { get } from "./get";
 import { improveInstructions } from "./improve-instructions";
 import { list } from "./list";
 import { listActive } from "./list-active";
 import { responsesRouter } from "./responses";
-import { getResponsesChartData } from "./responses-chart";
-import { updateSettings } from "./update";
+import { responsesChart } from "./responses-chart";
+import { update } from "./update";
 
 export const vacancyRouter = {
   list,
   listActive,
-  get: getById,
-  analytics: getAnalytics,
-  dashboardStats: getDashboardStats,
-  responsesChart: getResponsesChartData,
-  update: updateSettings,
+  get,
+  analytics,
+  dashboardStats,
+  responsesChart,
+  update,
   improveInstructions,
   responses: responsesRouter,
 } satisfies TRPCRouterRecord;

@@ -8,7 +8,7 @@ import {
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
-import z from "zod";
+import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 import { sanitizeHtml } from "../../utils/sanitize-html";
 

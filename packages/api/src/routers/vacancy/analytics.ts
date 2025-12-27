@@ -1,10 +1,4 @@
-import {
-  and,
-  count,
-  eq,
-  gte,
-  sql,
-} from "@qbs-autonaim/db";
+import { and, count, eq, gte, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
   vacancy,
@@ -15,7 +9,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-export const getAnalytics = protectedProcedure
+export const analytics = protectedProcedure
   .input(z.object({ vacancyId: z.string(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     // Проверка доступа к workspace

@@ -1,4 +1,4 @@
-import { and, count, eq } from "@qbs-autonaim/db";
+import { and, count as countFn, eq } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -42,7 +42,7 @@ export const getCount = protectedProcedure
     }
 
     const result = await ctx.db
-      .select({ count: count() })
+      .select({ count: countFn() })
       .from(vacancyResponse)
       .where(eq(vacancyResponse.vacancyId, input.vacancyId));
 
