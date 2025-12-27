@@ -133,10 +133,18 @@ export async function loginTestUser(
   // Отправляем форму
   await page.getByRole("button", { name: "Войти" }).click();
 
-  // Ждем редиректа на dashboard
-  await page.waitForURL(/\/orgs\/[^/]+\/workspaces\/[^/]+/, {
+  // Ждем редиректа (может быть на / или на /orgs/.../workspaces/...)
+  await page.waitForURL((url) => url.pathname !== "/auth/signin", {
     timeout: 30000,
   });
+
+  // Ждем появления уведомления об успешном входе
+  await page
+    .getByText("Вход выполнен успешно!")
+    .waitFor({ state: "visible", timeout: 5000 })
+    .catch(() => {
+      // Игнорируем если уведомление не появилось
+    });
 }
 
 /**
