@@ -4,6 +4,7 @@
 
 // Утилиты для работы с conversation
 export {
+  ConversationMetadataSchema,
   getConversationMetadata,
   getQuestionCount,
   updateConversationMetadata,
