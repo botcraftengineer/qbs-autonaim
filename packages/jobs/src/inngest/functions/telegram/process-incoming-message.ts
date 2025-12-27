@@ -85,12 +85,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
       });
 
       const byMetadata = allConversations.find((c) => {
-        try {
-          const metadata = c.metadata ? JSON.parse(c.metadata) : null;
-          return metadata?.senderId === chatId.toString();
-        } catch {
-          return false;
-        }
+        const metadata = c.metadata as Record<string, unknown> | null;
+        return metadata?.senderId === chatId.toString();
       });
 
       if (byMetadata) {
@@ -221,23 +217,29 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
       // Если сообщение буферизовано, пропускаем стандартную обработку
       if (bufferResult.buffered) {
-        console.log("✅ Сообщение сохранено и буферизовано, стандартная обработка пропущена", {
-          conversationId: conv.id,
-          messageId: messageData.id.toString(),
-          interviewStep: bufferResult.interviewStep,
-        });
-        return { 
-          processed: true, 
-          identified: true, 
+        console.log(
+          "✅ Сообщение сохранено и буферизовано, стандартная обработка пропущена",
+          {
+            conversationId: conv.id,
+            messageId: messageData.id.toString(),
+            interviewStep: bufferResult.interviewStep,
+          },
+        );
+        return {
+          processed: true,
+          identified: true,
           buffered: true,
           interviewStep: bufferResult.interviewStep,
         };
       }
 
-      console.log("ℹ️ Буферизация не применена, используем стандартную обработку", {
-        conversationId: conv.id,
-        reason: bufferResult.reason,
-      });
+      console.log(
+        "ℹ️ Буферизация не применена, используем стандартную обработку",
+        {
+          conversationId: conv.id,
+          reason: bufferResult.reason,
+        },
+      );
 
       // 2. Проверяем группировку сообщений (сообщение уже в БД)
       const groupCheck = await step.run("check-message-grouping", async () => {

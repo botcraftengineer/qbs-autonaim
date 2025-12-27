@@ -1,5 +1,6 @@
 ---
-inclusion: manual
+inclusion: fileMatch
+fileMatchPattern: "packages/db/**/*"
 ---
 
 You are an expert in PostgreSQL database administration and development.

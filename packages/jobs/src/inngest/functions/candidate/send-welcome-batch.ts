@@ -222,18 +222,9 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
               let conv: typeof conversation.$inferSelect | undefined;
               if (existing) {
-                // Парсим существующие метаданные
-                let existingMetadata: Record<string, unknown> = {};
-                if (existing.metadata) {
-                  try {
-                    existingMetadata = JSON.parse(existing.metadata);
-                  } catch (error) {
-                    console.error("Failed to parse existing metadata", {
-                      conversationId: existing.id,
-                      error,
-                    });
-                  }
-                }
+                // Получаем существующие метаданные
+                const existingMetadata: Record<string, unknown> =
+                  existing.metadata || {};
 
                 // Объединяем с новыми данными
                 const updatedMetadata = {
@@ -252,7 +243,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                     candidateName: response.candidateName,
                     username: response.telegramUsername || undefined,
                     status: "ACTIVE",
-                    metadata: JSON.stringify(updatedMetadata),
+                    metadata: updatedMetadata,
                   })
                   .where(eq(conversation.id, existing.id))
                   .returning();
@@ -274,7 +265,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                     candidateName: response.candidateName,
                     username: response.telegramUsername || undefined,
                     status: "ACTIVE",
-                    metadata: JSON.stringify(newMetadata),
+                    metadata: newMetadata,
                   })
                   .returning();
                 conv = created;

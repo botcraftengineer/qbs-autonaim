@@ -16,8 +16,8 @@ import { db } from "../client";
 import {
   organization,
   organizationMember,
-  userWorkspace,
   workspace,
+  workspaceMember,
 } from "../schema";
 
 interface MigrationStats {
@@ -63,8 +63,8 @@ async function ensureUniqueSlug(baseSlug: string): Promise<string> {
 async function getWorkspaceOwners() {
   const workspaces = await db.query.workspace.findMany({
     with: {
-      userWorkspaces: {
-        where: eq(userWorkspace.role, "owner"),
+      members: {
+        where: eq(workspaceMember.role, "owner"),
         with: {
           user: true,
         },
@@ -139,7 +139,7 @@ export async function migrateToOrganizations(): Promise<MigrationStats> {
         }
 
         // Проверяем наличие owners
-        if (ws.userWorkspaces.length === 0) {
+        if (ws.members.length === 0) {
           console.log(`  ⚠️  Нет owners для workspace, пропускаем`);
           stats.errors.push({
             workspace: ws.id,
@@ -149,7 +149,7 @@ export async function migrateToOrganizations(): Promise<MigrationStats> {
         }
 
         // Берем первого owner (если их несколько)
-        const primaryOwner = ws.userWorkspaces[0];
+        const primaryOwner = ws.members[0];
         if (!primaryOwner) {
           throw new Error("Primary owner не найден");
         }
@@ -172,7 +172,7 @@ export async function migrateToOrganizations(): Promise<MigrationStats> {
 
         // Добавляем всех owners в organization_members
         console.log(`  👥 Добавляем owners в организацию...`);
-        for (const ownerMember of ws.userWorkspaces) {
+        for (const ownerMember of ws.members) {
           await db.insert(organizationMember).values({
             organizationId: org.id,
             userId: ownerMember.userId,
@@ -180,11 +180,11 @@ export async function migrateToOrganizations(): Promise<MigrationStats> {
           });
           stats.membersMigrated++;
         }
-        console.log(`  ✅ Добавлено owners: ${ws.userWorkspaces.length}`);
+        console.log(`  ✅ Добавлено owners: ${ws.members.length}`);
 
         // Получаем всех остальных участников workspace
-        const allMembers = await db.query.userWorkspace.findMany({
-          where: eq(userWorkspace.workspaceId, ws.id),
+        const allMembers = await db.query.workspaceMember.findMany({
+          where: eq(workspaceMember.workspaceId, ws.id),
         });
 
         // Добавляем не-owners в organization_members

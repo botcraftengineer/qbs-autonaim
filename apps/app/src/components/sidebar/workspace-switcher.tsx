@@ -33,6 +33,7 @@ import { CreateOrganizationDialog } from "~/components/organization";
 import { CreateWorkspaceDialog } from "~/components/workspace";
 import { useWorkspaces } from "~/contexts/workspace-context";
 import { getPluralForm } from "~/lib/pluralization";
+import { useTRPC } from "~/trpc/react";
 
 export function WorkspaceSwitcher({
   activeWorkspaceId,
@@ -48,6 +49,7 @@ export function WorkspaceSwitcher({
   } = useWorkspaces();
   const { isMobile } = useSidebar();
   const router = useRouter();
+  const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   // Используем воркспейс из контекста (определяется по URL) или fallback
@@ -101,8 +103,8 @@ export function WorkspaceSwitcher({
     );
 
     // Инвалидируем кэш для обновления данных
-    queryClient.invalidateQueries({ queryKey: [["workspace", "list"]] });
-    queryClient.invalidateQueries({ queryKey: [["organization", "list"]] });
+    queryClient.invalidateQueries(trpc.workspace.list.pathFilter());
+    queryClient.invalidateQueries(trpc.organization.list.pathFilter());
   };
 
   const handleOrganizationChange = (
@@ -127,8 +129,8 @@ export function WorkspaceSwitcher({
     }
 
     // Инвалидируем кэш для обновления данных
-    queryClient.invalidateQueries({ queryKey: [["workspace", "list"]] });
-    queryClient.invalidateQueries({ queryKey: [["organization", "list"]] });
+    queryClient.invalidateQueries(trpc.workspace.list.pathFilter());
+    queryClient.invalidateQueries(trpc.organization.list.pathFilter());
   };
 
   return (

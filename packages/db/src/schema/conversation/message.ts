@@ -1,6 +1,7 @@
 import { uuidv7Schema } from "@qbs-autonaim/validators";
 import { sql } from "drizzle-orm";
 import {
+  index,
   pgEnum,
   pgTable,
   text,
@@ -26,21 +27,38 @@ export const messageContentTypeEnum = pgEnum("message_content_type", [
 
 export const messageChannelEnum = pgEnum("message_channel", ["TELEGRAM", "HH"]);
 
-export const conversationMessage = pgTable("conversation_messages", {
-  id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  conversationId: uuid("conversation_id")
-    .notNull()
-    .references(() => conversation.id, { onDelete: "cascade" }),
-  sender: messageSenderEnum("sender").notNull(),
-  contentType: messageContentTypeEnum("content_type").default("TEXT").notNull(),
-  channel: messageChannelEnum("channel").default("TELEGRAM").notNull(),
-  content: text("content").notNull(),
-  fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
-  voiceDuration: varchar("voice_duration", { length: 20 }),
-  voiceTranscription: text("voice_transcription"),
-  externalMessageId: varchar("external_message_id", { length: 100 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const conversationMessage = pgTable(
+  "conversation_messages",
+  {
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+    conversationId: uuid("conversation_id")
+      .notNull()
+      .references(() => conversation.id, { onDelete: "cascade" }),
+    sender: messageSenderEnum("sender").notNull(),
+    contentType: messageContentTypeEnum("content_type")
+      .default("TEXT")
+      .notNull(),
+    channel: messageChannelEnum("channel").default("TELEGRAM").notNull(),
+    content: text("content").notNull(),
+    fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
+    voiceDuration: varchar("voice_duration", { length: 20 }),
+    voiceTranscription: text("voice_transcription"),
+    externalMessageId: varchar("external_message_id", { length: 100 }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => ({
+    conversationIdx: index("message_conversation_idx").on(table.conversationId),
+    senderIdx: index("message_sender_idx").on(table.sender),
+    channelIdx: index("message_channel_idx").on(table.channel),
+    // Composite index для фильтрации сообщений по разговору и времени
+    conversationCreatedIdx: index("message_conversation_created_idx").on(
+      table.conversationId,
+      table.createdAt,
+    ),
+  }),
+);
 
 export const CreateMessageSchema = createInsertSchema(conversationMessage, {
   conversationId: uuidv7Schema,

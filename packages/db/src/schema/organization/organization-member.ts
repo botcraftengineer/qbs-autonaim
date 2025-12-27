@@ -1,4 +1,10 @@
-import { pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import {
+  index,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+} from "drizzle-orm/pg-core";
 import { user } from "../auth/user";
 import { organization } from "./organization";
 
@@ -20,14 +26,21 @@ export const organizationMember = pgTable(
       .default("member")
       .notNull(),
 
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.userId, table.organizationId] }),
+    userIdx: index("organization_member_user_idx").on(table.userId),
+    organizationIdx: index("organization_member_organization_idx").on(
+      table.organizationId,
+    ),
+    roleIdx: index("organization_member_role_idx").on(table.role),
   }),
 );
 

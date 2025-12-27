@@ -133,10 +133,18 @@ export async function loginTestUser(
   // Отправляем форму
   await page.getByRole("button", { name: "Войти" }).click();
 
-  // Ждем редиректа на dashboard
-  await page.waitForURL(/\/orgs\/[^/]+\/workspaces\/[^/]+/, {
+  // Ждем редиректа (может быть на / или на /orgs/.../workspaces/...)
+  await page.waitForURL((url) => url.pathname !== "/auth/signin", {
     timeout: 30000,
   });
+
+  // Ждем появления уведомления об успешном входе
+  await page
+    .getByText("Вход выполнен успешно!")
+    .waitFor({ state: "visible", timeout: 5000 })
+    .catch(() => {
+      // Игнорируем если уведомление не появилось
+    });
 }
 
 /**
@@ -177,6 +185,11 @@ export async function setupAuthenticatedTest(
   return testUser;
 }
 
+// Типизация для глобального объекта с cleanups
+interface GlobalWithCleanups {
+  __testCleanups?: Array<() => Promise<void>>;
+}
+
 /**
  * Хелпер для автоматической очистки тестового пользователя
  * Регистрирует cleanup который выполнится после теста
@@ -199,8 +212,9 @@ export function registerTestUserCleanup(
   };
 
   // Добавляем в очередь cleanup
-  if (typeof (globalThis as any).__testCleanups === "undefined") {
-    (globalThis as any).__testCleanups = [];
+  const global = globalThis as GlobalWithCleanups;
+  if (typeof global.__testCleanups === "undefined") {
+    global.__testCleanups = [];
   }
-  (globalThis as any).__testCleanups.push(cleanup);
+  global.__testCleanups.push(cleanup);
 }

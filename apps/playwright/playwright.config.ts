@@ -4,7 +4,7 @@ const baseURL = process.env.BASE_URL || "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./tests",
-  fullyParallel: true,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : "75%", // В CI - 2 воркера, локально - 75% CPU cores

@@ -5,9 +5,9 @@ import type { DbClient } from "../index";
 import {
   organization,
   user,
-  userWorkspace,
   workspace,
   workspaceInvite,
+  workspaceMember,
 } from "../schema";
 
 export class WorkspaceRepository {
@@ -48,7 +48,7 @@ export class WorkspaceRepository {
     return this.db.query.workspace.findFirst({
       where: eq(workspace.id, id),
       with: {
-        userWorkspaces: {
+        members: {
           with: {
             user: true,
           },
@@ -70,8 +70,8 @@ export class WorkspaceRepository {
 
   // Получить все workspaces пользователя
   async findByUserId(userId: string) {
-    return this.db.query.userWorkspace.findMany({
-      where: eq(userWorkspace.userId, userId),
+    return this.db.query.workspaceMember.findMany({
+      where: eq(workspaceMember.userId, userId),
       with: {
         workspace: {
           with: {
@@ -125,7 +125,7 @@ export class WorkspaceRepository {
     role: "owner" | "admin" | "member" = "member",
   ) {
     const [member] = await this.db
-      .insert(userWorkspace)
+      .insert(workspaceMember)
       .values({
         workspaceId,
         userId,
@@ -138,11 +138,11 @@ export class WorkspaceRepository {
   // Удалить пользователя из workspace
   async removeUser(workspaceId: string, userId: string) {
     await this.db
-      .delete(userWorkspace)
+      .delete(workspaceMember)
       .where(
         and(
-          eq(userWorkspace.workspaceId, workspaceId),
-          eq(userWorkspace.userId, userId),
+          eq(workspaceMember.workspaceId, workspaceId),
+          eq(workspaceMember.userId, userId),
         ),
       );
   }
@@ -154,12 +154,12 @@ export class WorkspaceRepository {
     role: "owner" | "admin" | "member",
   ) {
     const [updated] = await this.db
-      .update(userWorkspace)
+      .update(workspaceMember)
       .set({ role })
       .where(
         and(
-          eq(userWorkspace.workspaceId, workspaceId),
-          eq(userWorkspace.userId, userId),
+          eq(workspaceMember.workspaceId, workspaceId),
+          eq(workspaceMember.userId, userId),
         ),
       )
       .returning();
@@ -168,10 +168,10 @@ export class WorkspaceRepository {
 
   // Проверить доступ пользователя к workspace
   async checkAccess(workspaceId: string, userId: string) {
-    const member = await this.db.query.userWorkspace.findFirst({
+    const member = await this.db.query.workspaceMember.findFirst({
       where: and(
-        eq(userWorkspace.workspaceId, workspaceId),
-        eq(userWorkspace.userId, userId),
+        eq(workspaceMember.workspaceId, workspaceId),
+        eq(workspaceMember.userId, userId),
       ),
     });
     return member;
@@ -179,8 +179,8 @@ export class WorkspaceRepository {
 
   // Получить всех участников workspace
   async getMembers(workspaceId: string) {
-    return this.db.query.userWorkspace.findMany({
-      where: eq(userWorkspace.workspaceId, workspaceId),
+    return this.db.query.workspaceMember.findMany({
+      where: eq(workspaceMember.workspaceId, workspaceId),
       with: {
         user: true,
       },

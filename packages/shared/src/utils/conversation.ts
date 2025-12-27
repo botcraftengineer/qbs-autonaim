@@ -17,31 +17,34 @@ const QuestionAnswerSchema = z.object({
   timestamp: z.string().optional(),
 });
 
-const ConversationMetadataSchema = z.object({
-  identifiedBy: z
-    .enum(["pin_code", "vacancy_search", "username", "none"])
-    .optional(),
-  pinCode: z.string().optional(),
-  searchQuery: z.string().optional(),
-  awaitingPin: z.boolean().optional(),
-  interviewStarted: z.boolean().optional(),
-  questionAnswers: z.array(QuestionAnswerSchema).optional(),
-  lastQuestionAsked: z.string().optional(),
-  interviewCompleted: z.boolean().optional(),
-  completedAt: z.string().optional(),
-}).passthrough(); // Разрешаем дополнительные поля для обратной совместимости
+const ConversationMetadataSchema = z
+  .object({
+    identifiedBy: z
+      .enum(["pin_code", "vacancy_search", "username", "none"])
+      .optional(),
+    pinCode: z.string().optional(),
+    searchQuery: z.string().optional(),
+    awaitingPin: z.boolean().optional(),
+    interviewStarted: z.boolean().optional(),
+    questionAnswers: z.array(QuestionAnswerSchema).optional(),
+    lastQuestionAsked: z.string().optional(),
+    interviewCompleted: z.boolean().optional(),
+    completedAt: z.string().optional(),
+  })
+  .passthrough(); // Разрешаем дополнительные поля для обратной совместимости
 
 /**
- * Безопасно парсит JSON метаданные с валидацией
- * 
- * @param jsonString - JSON строка для парсинга
+ * Безопасно парсит и валидирует метаданные
+ *
+ * @param metadata - Объект метаданных для валидации
  * @returns Валидированные метаданные
- * @throws Error если JSON невалиден или не соответствует схеме
+ * @throws Error если метаданные не соответствуют схеме
  */
-function safeParseMetadata(jsonString: string): ConversationMetadata {
+function safeParseMetadata(
+  metadata: Record<string, unknown>,
+): ConversationMetadata {
   try {
-    const parsed = JSON.parse(jsonString);
-    const validated = ConversationMetadataSchema.parse(parsed);
+    const validated = ConversationMetadataSchema.parse(metadata);
     return validated;
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -50,13 +53,13 @@ function safeParseMetadata(jsonString: string): ConversationMetadata {
         .join(", ");
       throw new Error(`Invalid metadata schema: ${errorMessages}`);
     }
-    throw new Error(`Failed to parse metadata JSON: ${error}`);
+    throw new Error(`Failed to validate metadata: ${error}`);
   }
 }
 
 /**
  * Получает метаданные conversation
- * 
+ *
  * @param conversationId - ID разговора
  * @returns Promise с метаданными conversation
  */
@@ -94,7 +97,7 @@ export async function getConversationMetadata(
 
 /**
  * Обновляет метаданные conversation
- * 
+ *
  * @param conversationId - ID разговора
  * @param updates - Частичные обновления метаданных
  * @returns Promise с true если обновление успешно, false в противном случае
@@ -141,7 +144,7 @@ export async function updateConversationMetadata(
     await db
       .update(conversation)
       .set({
-        metadata: JSON.stringify(updatedMetadata),
+        metadata: updatedMetadata,
       })
       .where(eq(conversation.id, conversationId));
 
@@ -157,7 +160,7 @@ export async function updateConversationMetadata(
 
 /**
  * Получает количество заданных вопросов
- * 
+ *
  * @param conversationId - ID разговора
  * @returns Promise с количеством вопросов
  */

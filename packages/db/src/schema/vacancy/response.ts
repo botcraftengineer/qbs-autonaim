@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  index,
   jsonb,
   pgEnum,
   pgTable,
@@ -38,7 +39,7 @@ export const vacancyResponse = pgTable(
   "vacancy_responses",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-    vacancyId: varchar("vacancy_id", { length: 50 })
+    vacancyId: uuid("vacancy_id")
       .notNull()
       .references(() => vacancy.id, { onDelete: "cascade" }),
     resumeId: varchar("resume_id", { length: 100 }).notNull(),
@@ -50,7 +51,7 @@ export const vacancyResponse = pgTable(
     status: responseStatusEnum("status").default("NEW").notNull(),
     hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
     experience: text("experience"),
-    contacts: jsonb("contacts"),
+    contacts: jsonb("contacts").$type<Record<string, unknown>>(),
     phone: varchar("phone", { length: 50 }),
     resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
     telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
@@ -73,6 +74,7 @@ export const vacancyResponse = pgTable(
       .defaultNow()
       .notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
   },
@@ -80,11 +82,18 @@ export const vacancyResponse = pgTable(
     // Composite unique constraint: one resume can apply to multiple vacancies
     // but can only apply once per vacancy
     vacancyResumeUnique: unique().on(table.vacancyId, table.resumeId),
+    vacancyIdx: index("response_vacancy_idx").on(table.vacancyId),
+    statusIdx: index("response_status_idx").on(table.status),
+    hrStatusIdx: index("response_hr_status_idx").on(table.hrSelectionStatus),
+    // Composite index для фильтрации по вакансии и статусу
+    vacancyStatusIdx: index("response_vacancy_status_idx").on(
+      table.vacancyId,
+      table.status,
+    ),
   }),
 );
 
 export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
-  vacancyId: z.string().max(50),
   resumeId: z.string().max(100),
   resumeUrl: z.string(),
   candidateName: z.string().max(500).optional(),

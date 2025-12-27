@@ -29,9 +29,17 @@ export const responseScreening = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
   },
   (table) => ({
     responseIdx: index("screening_response_idx").on(table.responseId),
+    scoreIdx: index("screening_score_idx").on(table.score),
+    detailedScoreIdx: index("screening_detailed_score_idx").on(
+      table.detailedScore,
+    ),
     scoreCheck: check("score_check", sql`${table.score} BETWEEN 0 AND 5`),
     detailedScoreCheck: check(
       "detailed_score_check",
@@ -51,4 +59,5 @@ export const CreateResponseScreeningSchema = createInsertSchema(
 ).omit({
   id: true,
   createdAt: true,
+  updatedAt: true,
 });

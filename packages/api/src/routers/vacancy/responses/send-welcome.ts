@@ -71,18 +71,9 @@ export const sendWelcome = protectedProcedure
     });
 
     if (existingConv) {
-      // Парсим существующие метаданные
-      let existingMetadata: Record<string, unknown> = {};
-      if (existingConv.metadata) {
-        try {
-          existingMetadata = JSON.parse(existingConv.metadata);
-        } catch (error) {
-          console.error("Failed to parse existing metadata", {
-            conversationId: existingConv.id,
-            error,
-          });
-        }
-      }
+      // Получаем существующие метаданные
+      const existingMetadata: Record<string, unknown> =
+        existingConv.metadata || {};
 
       // Объединяем с новыми данными
       const updatedMetadata = {
@@ -98,7 +89,7 @@ export const sendWelcome = protectedProcedure
           candidateName: response.candidateName,
           username: cleanUsername,
           status: "ACTIVE",
-          metadata: JSON.stringify(updatedMetadata),
+          metadata: updatedMetadata,
         })
         .where(eq(conversation.id, existingConv.id));
     } else {
@@ -108,10 +99,10 @@ export const sendWelcome = protectedProcedure
         candidateName: response.candidateName,
         username: cleanUsername,
         status: "ACTIVE",
-        metadata: JSON.stringify({
+        metadata: {
           responseId,
           vacancyId: response.vacancyId,
-        }),
+        },
       });
     }
 

@@ -41,7 +41,7 @@ type ConversationWithChatId = {
   candidateName: string | null;
   username: string | null;
   status: "ACTIVE" | "COMPLETED" | "CANCELLED";
-  metadata: string | null;
+  metadata: Record<string, unknown> | null;
   createdAt: Date;
   updatedAt: Date;
   chatId: string | null;

@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -6,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
@@ -33,7 +35,7 @@ export interface VacancyRequirements {
 export const vacancy = pgTable(
   "vacancies",
   {
-    id: varchar("id", { length: 50 }).primaryKey(),
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
     // Workspace к которому принадлежит вакансия
     workspaceId: text("workspace_id")
@@ -72,11 +74,18 @@ export const vacancy = pgTable(
   },
   (table) => ({
     workspaceIdx: index("vacancy_workspace_idx").on(table.workspaceId),
+    // Partial index для активных вакансий
+    activeVacanciesIdx: index("vacancy_active_idx")
+      .on(table.workspaceId, table.isActive)
+      .where(sql`${table.isActive} = true`),
+    sourceExternalIdx: index("vacancy_source_external_idx").on(
+      table.source,
+      table.externalId,
+    ),
   }),
 );
 
 export const CreateVacancySchema = createInsertSchema(vacancy, {
-  id: z.string().max(50),
   title: z.string().max(500),
   url: z.string().optional(),
   source: z.enum(["hh", "avito", "superjob"]).default("hh"),
@@ -86,6 +95,7 @@ export const CreateVacancySchema = createInsertSchema(vacancy, {
   customInterviewQuestions: z.string().max(5000).optional(),
   customOrganizationalQuestions: z.string().max(5000).optional(),
 }).omit({
+  id: true,
   createdAt: true,
   updatedAt: true,
 });
