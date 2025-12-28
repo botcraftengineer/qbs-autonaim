@@ -80,9 +80,15 @@ export function InterviewLandingForm({
     );
 
   const startInterviewMutation =
-    trpc.freelancePlatforms.startInterview.useMutation({
-      onSuccess: (data: { responseId: string; vacancyId: string }) => {
-        router.push(`/interview/${token}/chat?responseId=${data.responseId}`);
+    trpc.freelancePlatforms.startWebInterview.useMutation({
+      onSuccess: (data: {
+        conversationId: string;
+        responseId: string;
+        vacancyId: string;
+      }) => {
+        router.push(
+          `/interview/${token}/chat?responseId=${data.conversationId}`,
+        );
       },
       onError: (error: { message: string }) => {
         setIsSubmitting(false);

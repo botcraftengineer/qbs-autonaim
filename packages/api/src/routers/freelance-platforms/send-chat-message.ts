@@ -1,0 +1,120 @@
+import { randomUUID } from "node:crypto";
+import { conversationMessage } from "@qbs-autonaim/db/schema";
+import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
+import type { BufferedMessage } from "@qbs-autonaim/shared";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { publicProcedure } from "../../trpc";
+
+const sendChatMessageInputSchema = z.object({
+  conversationId: z.string().uuid(),
+  message: z.string().min(1, "Сообщение не может быть пустым").max(10000),
+});
+
+export const sendChatMessage = publicProcedure
+  .input(sendChatMessageInputSchema)
+  .mutation(async ({ input, ctx }) => {
+    // Проверяем существование conversation
+    const conv = await ctx.db.query.conversation.findFirst({
+      where: (conversation, { eq, and }) =>
+        and(
+          eq(conversation.id, input.conversationId),
+          eq(conversation.source, "WEB"),
+        ),
+    });
+
+    if (!conv) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Разговор не найден",
+      });
+    }
+
+    // Проверяем, что разговор активен
+    if (conv.status !== "ACTIVE") {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Разговор завершён",
+      });
+    }
+
+    // Получаем текущий номер вопроса из метаданных
+    const metadata = (conv.metadata as Record<string, unknown>) || {};
+    const questionAnswers =
+      (metadata.questionAnswers as Array<{
+        question: string;
+        answer: string;
+      }>) || [];
+    const interviewStep = questionAnswers.length + 1;
+
+    // Сохраняем сообщение в conversation_messages
+    const [savedMessage] = await ctx.db
+      .insert(conversationMessage)
+      .values({
+        conversationId: input.conversationId,
+        sender: "CANDIDATE",
+        contentType: "TEXT",
+        channel: "TELEGRAM",
+        content: input.message,
+      })
+      .returning();
+
+    if (!savedMessage) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Не удалось сохранить сообщение",
+      });
+    }
+
+    // Добавляем сообщение в буфер
+    const messageId = randomUUID();
+    const timestamp = Date.now();
+
+    const bufferedMessage: BufferedMessage = {
+      id: messageId,
+      content: input.message,
+      contentType: "TEXT",
+      timestamp,
+    };
+
+    await messageBufferService.addMessage({
+      userId: conv.username || "web_user",
+      conversationId: input.conversationId,
+      interviewStep,
+      message: bufferedMessage,
+    });
+
+    // Отправляем событие debounce через fetch (так как Inngest клиент доступен только в jobs)
+    const inngestEventUrl =
+      process.env.INNGEST_EVENT_API_BASE_URL || "https://inn.gs";
+    const inngestEventKey = process.env.INNGEST_EVENT_KEY;
+
+    if (inngestEventKey) {
+      try {
+        await fetch(`${inngestEventUrl}/e/${inngestEventKey}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "interview/message.buffered",
+            data: {
+              userId: conv.username || "web_user",
+              conversationId: input.conversationId,
+              interviewStep,
+              messageId,
+              timestamp,
+            },
+          }),
+        });
+      } catch (error) {
+        console.error("Failed to send Inngest event:", error);
+        // Не бросаем ошибку, чтобы не блокировать пользователя
+      }
+    }
+
+    return {
+      success: true,
+      messageId: savedMessage.id,
+    };
+  });
