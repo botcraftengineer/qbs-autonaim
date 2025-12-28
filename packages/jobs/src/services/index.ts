@@ -37,6 +37,10 @@ export {
   unwrap,
   unwrapOr,
 } from "./base";
+
+// ==================== Freelance ====================
+export { generateFreelanceInvitation } from "./freelance";
+
 // ==================== Interview ====================
 export {
   addQuestionAnswer,

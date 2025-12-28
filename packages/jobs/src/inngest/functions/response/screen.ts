@@ -14,7 +14,7 @@ export const screenResponseFunction = inngest.createFunction(
   async ({ event, step }) => {
     const { responseId } = event.data;
 
-    return await step.run("screen-response", async () => {
+    const result = await step.run("screen-response", async () => {
       console.log("🎯 Скрининг отклика через AI", {
         responseId,
       });
@@ -42,5 +42,15 @@ export const screenResponseFunction = inngest.createFunction(
         throw error;
       }
     });
+
+    // Trigger invitation generation after successful screening
+    await step.sendEvent("trigger-invitation-generation", {
+      name: "freelance/invitation.generate",
+      data: {
+        responseId,
+      },
+    });
+
+    return result;
   },
 );

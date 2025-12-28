@@ -5,6 +5,9 @@
 // Candidate functions
 export * from "./candidate";
 
+// Freelance functions
+export * from "./freelance";
+
 // Integration functions
 export * from "./integration";
 
@@ -18,20 +21,19 @@ export * from "./telegram";
 // Vacancy functions
 export * from "./vacancy";
 
+import type { InngestFunction } from "inngest";
 import {
   sendCandidateWelcomeBatchFunction,
   sendCandidateWelcomeFunction,
   sendOfferFunction,
 } from "./candidate";
-
+import { generateFreelanceInvitationFunction } from "./freelance";
 import { verifyHHCredentialsFunction } from "./integration";
-
 import {
   bufferDebounceFunction,
   bufferFlushFunction,
   typingActivityFunction,
 } from "./interview";
-
 import {
   parseMissingContactsFunction,
   parseNewResumesFunction,
@@ -60,7 +62,7 @@ import {
   updateVacanciesFunction,
 } from "./vacancy";
 
-export const inngestFunctions = [
+export const inngestFunctions: InngestFunction.Any[] = [
   // Vacancy
   collectChatIdsFunction,
   extractVacancyRequirementsFunction,
@@ -79,6 +81,8 @@ export const inngestFunctions = [
   sendCandidateWelcomeBatchFunction,
   sendCandidateWelcomeFunction,
   sendOfferFunction,
+  // Freelance
+  generateFreelanceInvitationFunction,
   // Integration
   verifyHHCredentialsFunction,
   // Interview
