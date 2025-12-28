@@ -66,5 +66,7 @@ export const inngest = new Inngest({
     "interview/message.buffered": messageBufferedDataSchema,
     "interview/typing.activity": typingActivityDataSchema,
     "interview/buffer.flush": bufferFlushDataSchema,
+    "web/interview.send-question": interviewSendQuestionDataSchema,
+    "web/interview.complete": interviewCompleteDataSchema,
   }),
 });

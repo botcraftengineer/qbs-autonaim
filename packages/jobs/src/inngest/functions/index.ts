@@ -20,6 +20,8 @@ export * from "./response";
 export * from "./telegram";
 // Vacancy functions
 export * from "./vacancy";
+// Web Interview functions
+export * from "./web-interview";
 
 import type { InngestFunction } from "inngest";
 import {
@@ -61,6 +63,10 @@ import {
   updateSingleVacancyFunction,
   updateVacanciesFunction,
 } from "./vacancy";
+import {
+  webCompleteInterviewFunction,
+  webSendQuestionFunction,
+} from "./web-interview";
 
 export const inngestFunctions: InngestFunction.Any[] = [
   // Vacancy
@@ -98,4 +104,7 @@ export const inngestFunctions: InngestFunction.Any[] = [
   sendTelegramMessageFunction,
   sendTelegramMessageByUsernameFunction,
   transcribeVoiceFunction,
+  // Web Interview
+  webCompleteInterviewFunction,
+  webSendQuestionFunction,
 ];

@@ -228,7 +228,7 @@
     - Автоматическое переподключение при потере соединения
     - _Требования: 3.4_
 
-  - [-] 12.3 Адаптировать систему буферизации для веб-чата
+  - [x] 12.3 Адаптировать систему буферизации для веб-чата
     - Переименовать `telegram_interview_scoring` → `interview_scoring` (универсальная таблица)
     - Добавить поле `source: 'TELEGRAM' | 'WEB'` в таблицу `conversations`
     - Переиспользовать существующий `PostgresMessageBufferService` и таблицу `buffered_messages`
@@ -237,7 +237,7 @@
     - Настроить debounce timeout через env: `INTERVIEW_BUFFER_DEBOUNCE_MS` (по умолчанию 3000ms)
     - _Требования: 3.4, 3.5_
 
-  - [ ] 12.4 Создать tRPC эндпоинты для веб-чата с буферизацией
+  - [x] 12.4 Создать tRPC эндпоинты для веб-чата с буферизацией
     - Мутация `startWebInterview`: 
       - Принимать token, FreelancerInfo (name, email, platformProfileUrl, phone?, telegram?)
       - Валидировать token и проверить, что вакансия активна
