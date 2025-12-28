@@ -34,9 +34,8 @@ export function ChatHeader({ status, isProcessing }: ChatHeaderProps) {
           )}
         </div>
         {isProcessing && (
-          <div
+          <output
             className="flex items-center gap-2 text-sm text-blue-600"
-            role="status"
             aria-live="polite"
           >
             <svg
@@ -61,7 +60,7 @@ export function ChatHeader({ status, isProcessing }: ChatHeaderProps) {
               />
             </svg>
             <span>Обработка</span>
-          </div>
+          </output>
         )}
       </div>
     </header>

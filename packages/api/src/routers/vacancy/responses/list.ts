@@ -230,7 +230,7 @@ export const list = protectedProcedure
             analysis: true,
           },
         },
-        telegramInterviewScoring: {
+        interviewScoring: {
           columns: {
             score: true,
             detailedScore: true,
@@ -282,11 +282,11 @@ export const list = protectedProcedure
               : null,
           }
         : null,
-      telegramInterviewScoring: r.telegramInterviewScoring
+      interviewScoring: r.interviewScoring
         ? {
-            ...r.telegramInterviewScoring,
-            analysis: r.telegramInterviewScoring.analysis
-              ? sanitizeHtml(r.telegramInterviewScoring.analysis)
+            ...r.interviewScoring,
+            analysis: r.interviewScoring.analysis
+              ? sanitizeHtml(r.interviewScoring.analysis)
               : null,
           }
         : null,

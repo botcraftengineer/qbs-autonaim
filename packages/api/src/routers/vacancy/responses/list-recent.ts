@@ -1,7 +1,7 @@
 import { desc, eq } from "@qbs-autonaim/db";
 import {
+  interviewScoring,
   responseScreening,
-  telegramInterviewScoring,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -63,10 +63,9 @@ export const listRecent = protectedProcedure
           where: eq(responseScreening.responseId, r.response.id),
         });
 
-        const interviewScoring =
-          await ctx.db.query.telegramInterviewScoring.findFirst({
-            where: eq(telegramInterviewScoring.responseId, r.response.id),
-          });
+        const scoring = await ctx.db.query.interviewScoring.findFirst({
+          where: eq(interviewScoring.responseId, r.response.id),
+        });
 
         return {
           ...r.response,
@@ -82,11 +81,11 @@ export const listRecent = protectedProcedure
                   : null,
               }
             : null,
-          telegramInterviewScoring: interviewScoring
+          interviewScoring: scoring
             ? {
-                ...interviewScoring,
-                analysis: interviewScoring.analysis
-                  ? sanitizeHtml(interviewScoring.analysis)
+                ...scoring,
+                analysis: scoring.analysis
+                  ? sanitizeHtml(scoring.analysis)
                   : null,
               }
             : null,

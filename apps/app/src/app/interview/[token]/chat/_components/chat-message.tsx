@@ -20,9 +20,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
   });
 
   return (
-    <div
+    <article
       className={`flex ${isBot ? "justify-start" : "justify-end"}`}
-      role="article"
       aria-label={`Сообщение от ${isBot ? "ассистента" : "вас"}`}
     >
       <div
@@ -42,6 +41,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
           {time}
         </time>
       </div>
-    </div>
+    </article>
   );
 }

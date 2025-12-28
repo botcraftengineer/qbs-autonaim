@@ -5,9 +5,8 @@ export function TypingIndicator() {
     <div className="bg-gray-50 px-4 pb-2">
       <div className="mx-auto max-w-4xl">
         <div className="flex justify-start">
-          <div
+          <output
             className="flex items-center gap-1 rounded-lg bg-white px-4 py-3 shadow-sm"
-            role="status"
             aria-live="polite"
             aria-label="Ассистент печатает"
           >
@@ -24,7 +23,7 @@ export function TypingIndicator() {
               className="h-2 w-2 animate-bounce rounded-full bg-gray-400"
               style={{ animationDelay: "300ms" }}
             />
-          </div>
+          </output>
         </div>
       </div>
     </div>

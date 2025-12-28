@@ -44,7 +44,7 @@ export const get = protectedProcedure
           },
         },
         resumePdfFile: true,
-        telegramInterviewScoring: true,
+        interviewScoring: true,
       },
     });
 
@@ -95,11 +95,11 @@ export const get = protectedProcedure
               : undefined,
           }
         : null,
-      telegramInterviewScoring: response.telegramInterviewScoring
+      interviewScoring: response.interviewScoring
         ? {
-            ...response.telegramInterviewScoring,
-            analysis: response.telegramInterviewScoring.analysis
-              ? sanitizeHtml(response.telegramInterviewScoring.analysis)
+            ...response.interviewScoring,
+            analysis: response.interviewScoring.analysis
+              ? sanitizeHtml(response.interviewScoring.analysis)
               : undefined,
           }
         : null,

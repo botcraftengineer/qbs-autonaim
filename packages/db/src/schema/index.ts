@@ -3,6 +3,7 @@ export * from "./company";
 export * from "./conversation";
 export * from "./file";
 export * from "./integration";
+export * from "./interview";
 export * from "./organization";
 export * from "./telegram";
 export * from "./vacancy";

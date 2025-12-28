@@ -58,7 +58,7 @@ export const list = protectedProcedure
       limit: input.limit + 1,
       with: {
         screening: true,
-        telegramInterviewScoring: true,
+        interviewScoring: true,
         photoFile: true,
       },
     });
@@ -92,8 +92,8 @@ export const list = protectedProcedure
         skills: [],
         matchScore: r.screening?.detailedScore || 0,
         resumeScore: r.screening?.detailedScore,
-        interviewScore: r.telegramInterviewScoring?.detailedScore,
-        scoreAnalysis: r.telegramInterviewScoring?.analysis ?? undefined,
+        interviewScore: r.interviewScoring?.detailedScore,
+        scoreAnalysis: r.interviewScoring?.analysis ?? undefined,
         availability: "Не указано",
         salaryExpectation: "Не указано",
         stage,

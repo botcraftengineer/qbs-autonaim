@@ -9,62 +9,83 @@ import { TypingIndicator } from "./typing-indicator";
 
 interface WebChatInterfaceProps {
   conversationId: string;
-  token: string;
 }
 
-export function WebChatInterface({
-  conversationId,
-  token,
-}: WebChatInterfaceProps) {
+interface ChatMessage {
+  id: string;
+  sender: "BOT" | "CANDIDATE" | "ADMIN";
+  content: string;
+  contentType: "TEXT" | "VOICE";
+  createdAt: Date;
+}
+
+export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
   const trpc = useTRPC();
-  const [messages, setMessages] = useState<
-    Array<{
-      id: string;
-      sender: "BOT" | "CANDIDATE" | "ADMIN";
-      content: string;
-      contentType: "TEXT" | "VOICE";
-      createdAt: Date;
-    }>
-  >([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isBotTyping, setIsBotTyping] = useState(false);
   const [lastMessageId, setLastMessageId] = useState<string | undefined>();
+  const [isOnline, setIsOnline] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Загружаем историю сообщений
   const { data: chatHistory, isLoading } =
-    trpc.freelancePlatforms.getChatHistory.useQuery({
+    trpc.freelancePlatforms?.getChatHistory.useQuery({
       conversationId,
     });
 
-  // Проверяем статус интервью
-  const { data: interviewStatus } =
-    trpc.freelancePlatforms.getWebInterviewStatus.useQuery(
+  // Проверяем статус интервью с автоматическим переподключением
+  const { data: interviewStatus, error: statusError } =
+    trpc.freelancePlatforms?.getWebInterviewStatus.useQuery(
       {
         conversationId,
       },
       {
-        refetchInterval: 2000, // Проверяем каждые 2 секунды
+        refetchInterval: 2000,
+        retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
     );
 
-  // Polling для новых сообщений от бота
-  const { data: newMessages } = trpc.freelancePlatforms.getNewMessages.useQuery(
-    {
-      conversationId,
-      lastMessageId,
-    },
-    {
-      refetchInterval: 2000, // Проверяем каждые 2 секунды
-      enabled: !!lastMessageId || messages.length > 0,
-    },
-  );
+  // Polling для новых сообщений с автоматическим переподключением
+  const { data: newMessages, error: messagesError } =
+    trpc.freelancePlatforms?.getNewMessages.useQuery(
+      {
+        conversationId,
+        lastMessageId,
+      },
+      {
+        refetchInterval: 2000,
+        enabled: !!lastMessageId || messages.length > 0,
+        retry: 3,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
+    );
+
+  // Отслеживаем состояние подключения
+  useEffect(() => {
+    const hasError = !!statusError || !!messagesError;
+    setIsOnline(!hasError);
+
+    if (hasError) {
+      // Автоматическое переподключение через 5 секунд
+      reconnectTimeoutRef.current = setTimeout(() => {
+        setIsOnline(true);
+      }, 5000);
+    }
+
+    return () => {
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+      }
+    };
+  }, [statusError, messagesError]);
 
   // Загружаем историю при монтировании
   useEffect(() => {
     if (chatHistory?.messages) {
       setMessages(chatHistory.messages);
-      // Устанавливаем последнее сообщение для polling
       const lastMsg = chatHistory.messages[chatHistory.messages.length - 1];
       if (lastMsg) {
         setLastMessageId(lastMsg.id);
@@ -77,12 +98,11 @@ export function WebChatInterface({
     if (newMessages?.messages && newMessages.messages.length > 0) {
       setMessages((prev) => {
         const newMsgs = newMessages.messages.filter(
-          (msg) => !prev.some((m) => m.id === msg.id),
+          (msg: { id: string }) => !prev.some((m) => m.id === msg.id),
         );
         if (newMsgs.length > 0) {
           setIsBotTyping(false);
           setIsProcessing(false);
-          // Обновляем lastMessageId
           const lastMsg = newMsgs[newMsgs.length - 1];
           if (lastMsg) {
             setLastMessageId(lastMsg.id);
@@ -104,15 +124,15 @@ export function WebChatInterface({
   // Автопрокрутка к последнему сообщению
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isBotTyping]);
+  }, [messages]);
 
   const sendMessageMutation =
-    trpc.freelancePlatforms.sendChatMessage.useMutation({
+    trpc.freelancePlatforms?.sendChatMessage.useMutation({
       onSuccess: () => {
         setIsProcessing(true);
         setIsBotTyping(true);
       },
-      onError: (error) => {
+      onError: (error: Error) => {
         console.error("Failed to send message:", error);
         setIsProcessing(false);
         setIsBotTyping(false);
@@ -123,11 +143,11 @@ export function WebChatInterface({
     if (!message.trim() || isProcessing) return;
 
     // Оптимистично добавляем сообщение пользователя
-    const userMessage = {
+    const userMessage: ChatMessage = {
       id: `temp-${Date.now()}`,
-      sender: "CANDIDATE" as const,
+      sender: "CANDIDATE",
       content: message,
-      contentType: "TEXT" as const,
+      contentType: "TEXT",
       createdAt: new Date(),
     };
 
@@ -150,6 +170,12 @@ export function WebChatInterface({
         isProcessing={isProcessing}
       />
 
+      {!isOnline && (
+        <div className="bg-yellow-50 px-4 py-2 text-sm text-yellow-800">
+          Переподключение…
+        </div>
+      )}
+
       <ChatMessageList
         messages={messages}
         isLoading={isLoading}
@@ -160,7 +186,7 @@ export function WebChatInterface({
 
       <ChatInput
         onSendMessage={handleSendMessage}
-        disabled={isProcessing || isCompleted || isCancelled}
+        disabled={isProcessing || isCompleted || isCancelled || !isOnline}
         isProcessing={isProcessing}
       />
     </div>

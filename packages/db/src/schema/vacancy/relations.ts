@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
+import { interviewScoring } from "../interview/scoring";
 import { telegramConversation } from "../telegram/conversation";
-import { telegramInterviewScoring } from "../telegram/interview-scoring";
 import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
 import { vacancyResponseHistory } from "./response-history";
@@ -41,9 +41,9 @@ export const vacancyResponseRelations = relations(
       references: [file.id],
       relationName: "photoFile",
     }),
-    telegramInterviewScoring: one(telegramInterviewScoring, {
+    interviewScoring: one(interviewScoring, {
       fields: [vacancyResponse.id],
-      references: [telegramInterviewScoring.responseId],
+      references: [interviewScoring.responseId],
     }),
     history: many(vacancyResponseHistory),
   }),
