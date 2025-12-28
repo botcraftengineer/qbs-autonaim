@@ -18,7 +18,12 @@ import {
   TableHeader,
   TableRow,
 } from "@qbs-autonaim/ui";
-import { IconFilter, IconRefresh, IconSearch } from "@tabler/icons-react";
+import {
+  IconFilter,
+  IconRefresh,
+  IconSearch,
+  IconSparkles,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -221,18 +226,38 @@ export default function VacanciesPage() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleUpdate}
-                  disabled={isUpdating}
-                  className="w-full md:w-auto"
-                  aria-label="Синхронизировать активные вакансии из источников"
-                >
-                  <IconRefresh
-                    className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
-                    aria-hidden="true"
-                  />
-                  {isUpdating ? "Синхронизация…" : "Синхронизировать вакансии"}
-                </Button>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <Button
+                    asChild
+                    variant="default"
+                    className="flex-1 md:flex-initial"
+                  >
+                    <Link
+                      href={paths.workspace.vacancies(
+                        orgSlug ?? "",
+                        workspaceSlug ?? "",
+                        "generate",
+                      )}
+                      aria-label="Создать вакансию с помощью AI"
+                    >
+                      <IconSparkles className="size-4" aria-hidden="true" />
+                      Создать с&nbsp;AI
+                    </Link>
+                  </Button>
+                  <Button
+                    onClick={handleUpdate}
+                    disabled={isUpdating}
+                    variant="outline"
+                    className="flex-1 md:flex-initial"
+                    aria-label="Синхронизировать активные вакансии из источников"
+                  >
+                    <IconRefresh
+                      className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
+                      aria-hidden="true"
+                    />
+                    {isUpdating ? "Синхронизация…" : "Синхронизировать"}
+                  </Button>
+                </div>
               </div>
 
               {!isLoading && filteredAndSortedVacancies.length > 0 && (

@@ -88,7 +88,9 @@ export const vacancy = pgTable(
 export const CreateVacancySchema = createInsertSchema(vacancy, {
   title: z.string().max(500),
   url: z.string().optional(),
-  source: z.enum(["hh", "avito", "superjob"]).default("hh"),
+  source: z
+    .enum(["hh", "avito", "superjob", "kwork", "fl", "weblancer", "upwork"])
+    .default("hh"),
   externalId: z.string().max(100).optional(),
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),
