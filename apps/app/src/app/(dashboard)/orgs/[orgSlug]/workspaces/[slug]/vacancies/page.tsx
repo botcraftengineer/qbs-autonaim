@@ -37,7 +37,7 @@ import { useTRPC } from "~/trpc/react";
 
 export default function VacanciesPage() {
   const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
-  const trpc = useTRPC();
+  const api = useTRPC();
   const { workspace } = useWorkspace();
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,8 +46,20 @@ export default function VacanciesPage() {
   const [sortBy, setSortBy] = useState<string>("createdAt");
 
   const { data: vacancies, isLoading } = useQuery({
-    ...trpc.vacancy.list.queryOptions({
+    ...api.freelancePlatforms.getVacancies.queryOptions({
       workspaceId: workspace?.id ?? "",
+      ...(sourceFilter !== "all" && {
+        source: sourceFilter as
+          | "hh"
+          | "kwork"
+          | "fl"
+          | "weblancer"
+          | "upwork"
+          | "freelancer"
+          | "fiverr"
+          | "avito"
+          | "superjob",
+      }),
     }),
     enabled: !!workspace?.id,
   });
@@ -79,7 +91,7 @@ export default function VacanciesPage() {
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "responses":
-          return (b.realResponsesCount ?? 0) - (a.realResponsesCount ?? 0);
+          return (b.totalResponsesCount ?? 0) - (a.totalResponsesCount ?? 0);
         case "newResponses":
           return (b.newResponses ?? 0) - (a.newResponses ?? 0);
         case "views":
@@ -110,7 +122,7 @@ export default function VacanciesPage() {
       totalVacancies: vacancies.length,
       activeVacancies: vacancies.filter((v) => v.isActive).length,
       totalResponses: vacancies.reduce(
-        (sum, v) => sum + (v.realResponsesCount ?? 0),
+        (sum, v) => sum + (v.totalResponsesCount ?? 0),
         0,
       ),
       newResponses: vacancies.reduce(
@@ -186,6 +198,12 @@ export default function VacanciesPage() {
                       <SelectContent>
                         <SelectItem value="all">Все источники</SelectItem>
                         <SelectItem value="hh">HeadHunter</SelectItem>
+                        <SelectItem value="kwork">Kwork</SelectItem>
+                        <SelectItem value="fl">FL.ru</SelectItem>
+                        <SelectItem value="weblancer">Weblancer</SelectItem>
+                        <SelectItem value="upwork">Upwork</SelectItem>
+                        <SelectItem value="freelancer">Freelancer</SelectItem>
+                        <SelectItem value="fiverr">Fiverr</SelectItem>
                         <SelectItem value="avito">Avito</SelectItem>
                         <SelectItem value="superjob">SuperJob</SelectItem>
                       </SelectContent>
@@ -233,15 +251,11 @@ export default function VacanciesPage() {
                     className="flex-1 md:flex-initial"
                   >
                     <Link
-                      href={paths.workspace.vacancies(
-                        orgSlug ?? "",
-                        workspaceSlug ?? "",
-                        "generate",
-                      )}
-                      aria-label="Создать вакансию с помощью AI"
+                      href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/create`}
+                      aria-label="Создать вакансию для фриланс-платформы"
                     >
                       <IconSparkles className="size-4" aria-hidden="true" />
-                      Создать с&nbsp;AI
+                      Создать вакансию
                     </Link>
                   </Button>
                   <Button
@@ -371,11 +385,23 @@ export default function VacanciesPage() {
                             <Badge variant="outline">
                               {vacancy.source === "hh"
                                 ? "HeadHunter"
-                                : vacancy.source === "avito"
-                                  ? "Avito"
-                                  : vacancy.source === "superjob"
-                                    ? "SuperJob"
-                                    : vacancy.source}
+                                : vacancy.source === "kwork"
+                                  ? "Kwork"
+                                  : vacancy.source === "fl"
+                                    ? "FL.ru"
+                                    : vacancy.source === "weblancer"
+                                      ? "Weblancer"
+                                      : vacancy.source === "upwork"
+                                        ? "Upwork"
+                                        : vacancy.source === "freelancer"
+                                          ? "Freelancer"
+                                          : vacancy.source === "fiverr"
+                                            ? "Fiverr"
+                                            : vacancy.source === "avito"
+                                              ? "Avito"
+                                              : vacancy.source === "superjob"
+                                                ? "SuperJob"
+                                                : vacancy.source}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
@@ -393,7 +419,7 @@ export default function VacanciesPage() {
                               )}
                               className="font-medium hover:underline text-primary"
                             >
-                              {vacancy.realResponsesCount ?? 0}
+                              {vacancy.totalResponsesCount ?? 0}
                             </Link>
                           </TableCell>
                           <TableCell className="text-right">

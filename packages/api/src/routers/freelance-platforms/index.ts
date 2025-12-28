@@ -11,6 +11,9 @@ import { getVacancies } from "./get-vacancies";
 import { getVacancyById } from "./get-vacancy-by-id";
 import { getVacancyByToken } from "./get-vacancy-by-token";
 import { getWebInterviewStatus } from "./get-web-interview-status";
+import { importBulkResponses } from "./import-bulk-responses";
+import { importSingleResponse } from "./import-single-response";
+import { previewBulkImport } from "./preview-bulk-import";
 import { sendChatMessage } from "./send-chat-message";
 import { startInterview } from "./start-interview";
 import { startWebInterview } from "./start-web-interview";
@@ -30,6 +33,10 @@ export const freelancePlatformsRouter = {
   checkDuplicateResponse,
   startInterview,
   getShortlist,
+  // Manual import endpoints
+  importSingleResponse,
+  importBulkResponses,
+  previewBulkImport,
   // Web chat endpoints
   startWebInterview,
   sendChatMessage,

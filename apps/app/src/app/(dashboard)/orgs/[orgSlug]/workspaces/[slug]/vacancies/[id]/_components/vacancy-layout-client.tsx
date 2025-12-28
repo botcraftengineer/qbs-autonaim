@@ -60,8 +60,8 @@ export function VacancyLayoutClient({
   // Определяем активный таб на основе pathname
   const getActiveTab = () => {
     if (pathname.endsWith("/settings")) return "settings";
-    if (pathname.endsWith("/detail")) return "overview";
-    return "responses";
+    if (pathname.endsWith("/responses")) return "responses";
+    return "detail";
   };
 
   // (1) Если workspaceId еще не доступен, показываем загрузку
@@ -165,6 +165,21 @@ export function VacancyLayoutClient({
                 <div className="flex items-center justify-between">
                   <TabsList className="w-full sm:w-auto">
                     <TabsTrigger
+                      value="detail"
+                      asChild
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                    >
+                      <Link
+                        href={paths.workspace.vacancies(
+                          orgSlug,
+                          workspaceSlug,
+                          vacancyId,
+                        )}
+                      >
+                        Обзор
+                      </Link>
+                    </TabsTrigger>
+                    <TabsTrigger
                       value="responses"
                       asChild
                       className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
@@ -174,28 +189,13 @@ export function VacancyLayoutClient({
                           orgSlug,
                           workspaceSlug,
                           vacancyId,
+                          "responses" as any,
                         )}
                       >
                         <span className="hidden sm:inline">
                           Отклики ({responsesCount?.total ?? 0})
                         </span>
                         <span className="sm:hidden">Отклики</span>
-                      </Link>
-                    </TabsTrigger>
-                    <TabsTrigger
-                      value="overview"
-                      asChild
-                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
-                    >
-                      <Link
-                        href={paths.workspace.vacancies(
-                          orgSlug,
-                          workspaceSlug,
-                          vacancyId,
-                          "detail",
-                        )}
-                      >
-                        Обзор
                       </Link>
                     </TabsTrigger>
                     <TabsTrigger
