@@ -6,6 +6,7 @@ import { generateInterviewLink } from "./generate-interview-link";
 import { getChatHistory } from "./get-chat-history";
 import { getInterviewLink } from "./get-interview-link";
 import { getNewMessages } from "./get-new-messages";
+import { getShortlist } from "./get-shortlist";
 import { getVacancies } from "./get-vacancies";
 import { getVacancyById } from "./get-vacancy-by-id";
 import { getVacancyByToken } from "./get-vacancy-by-token";
@@ -28,6 +29,7 @@ export const freelancePlatformsRouter = {
   validateInterviewToken,
   checkDuplicateResponse,
   startInterview,
+  getShortlist,
   // Web chat endpoints
   startWebInterview,
   sendChatMessage,

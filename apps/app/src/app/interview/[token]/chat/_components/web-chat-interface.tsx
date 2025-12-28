@@ -27,7 +27,7 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
   const [lastMessageId, setLastMessageId] = useState<string | undefined>();
   const [isOnline, setIsOnline] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout>();
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Загружаем историю сообщений
   const { data: chatHistory, isLoading } =
@@ -44,7 +44,8 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
       {
         refetchInterval: 2000,
         retry: 3,
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        retryDelay: (attemptIndex: number) =>
+          Math.min(1000 * 2 ** attemptIndex, 30000),
       },
     );
 
@@ -59,7 +60,8 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
         refetchInterval: 2000,
         enabled: !!lastMessageId || messages.length > 0,
         retry: 3,
-        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+        retryDelay: (attemptIndex: number) =>
+          Math.min(1000 * 2 ** attemptIndex, 30000),
       },
     );
 

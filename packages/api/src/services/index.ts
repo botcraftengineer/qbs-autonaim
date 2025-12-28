@@ -7,3 +7,11 @@ export type {
   ValidationResult,
 } from "./response-parser";
 export { ResponseParser } from "./response-parser";
+
+export type {
+  ContactInfo as ShortlistContactInfo,
+  Shortlist,
+  ShortlistCandidate,
+  ShortlistOptions,
+} from "./shortlist-generator";
+export { ShortlistGenerator } from "./shortlist-generator";

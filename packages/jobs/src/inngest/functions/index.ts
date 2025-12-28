@@ -29,7 +29,10 @@ import {
   sendCandidateWelcomeFunction,
   sendOfferFunction,
 } from "./candidate";
-import { generateFreelanceInvitationFunction } from "./freelance";
+import {
+  analyzeFreelanceResponseFunction,
+  generateFreelanceInvitationFunction,
+} from "./freelance";
 import { verifyHHCredentialsFunction } from "./integration";
 import {
   bufferDebounceFunction,
@@ -88,6 +91,7 @@ export const inngestFunctions: InngestFunction.Any[] = [
   sendCandidateWelcomeFunction,
   sendOfferFunction,
   // Freelance
+  analyzeFreelanceResponseFunction,
   generateFreelanceInvitationFunction,
   // Integration
   verifyHHCredentialsFunction,

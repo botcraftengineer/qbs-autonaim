@@ -28,7 +28,7 @@ export default async function InterviewChatPage({
 
   return (
     <main className="flex h-screen flex-col bg-gray-50">
-      <WebChatInterface conversationId={responseId} token={token} />
+      <WebChatInterface conversationId={responseId} />
     </main>
   );
 }

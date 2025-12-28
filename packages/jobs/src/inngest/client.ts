@@ -1,6 +1,7 @@
 import { realtimeMiddleware } from "@inngest/realtime/middleware";
 import { EventSchemas, Inngest } from "inngest";
 import {
+  analyzeFreelanceResponseDataSchema,
   bufferFlushDataSchema,
   candidateOfferSendDataSchema,
   candidateWelcomeBatchDataSchema,
@@ -52,6 +53,7 @@ export const inngest = new Inngest({
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
     "candidate/offer.send": candidateOfferSendDataSchema,
+    "freelance/response.analyze": analyzeFreelanceResponseDataSchema,
     "freelance/invitation.generate": generateInvitationDataSchema,
     "telegram/message.received": conversationMessageReceivedDataSchema,
     "telegram/message.send": conversationMessageSendDataSchema,
