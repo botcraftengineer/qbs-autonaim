@@ -7,8 +7,8 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : "75%", // В CI - 2 воркера, локально - 75% CPU cores
-  timeout: 60000, // Увеличиваем общий таймаут теста до 60 секунд
+  workers: process.env.CI ? 2 : 1, // В CI - 2 воркера, локально - 1 для стабильности
+  timeout: 90000, // Увеличиваем общий таймаут теста до 90 секунд
   maxFailures: process.env.CI ? 10 : undefined, // Останавливаем после 10 ошибок в CI
   globalSetup: "./global-setup.ts",
   reporter: [

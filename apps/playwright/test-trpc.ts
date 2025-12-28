@@ -26,7 +26,7 @@ async function testTRPC() {
   try {
     // Создаем пользователя
     console.log("\n1️⃣ Создаем пользователя через TRPC...");
-    const result = await trpc.test.setup.mutate({
+    const result = await trpc.test?.setup.mutate({
       email,
       password,
       name: "Test User",
@@ -39,7 +39,7 @@ async function testTRPC() {
 
     // Удаляем пользователя
     console.log("\n2️⃣ Удаляем пользователя...");
-    await trpc.test.cleanup.mutate({ email });
+    await trpc.test?.cleanup.mutate({ email });
 
     console.log("✅ Пользователь удален!");
     console.log("\n🎉 Все тесты прошли успешно!");

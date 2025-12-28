@@ -60,38 +60,51 @@ export async function createTestUser(
 
   const trpc = createTestTRPCClient(baseURL);
 
-  try {
-    const result = await trpc.test?.setup.mutate({
-      email,
-      password,
-      name: options?.name,
-      orgName: options?.orgName,
-      workspaceName: options?.workspaceName,
-    });
+  // Retry механизм для создания пользователя
+  let lastError: Error | null = null;
+  const maxRetries = 3;
 
-    if (
-      !result ||
-      !result.user ||
-      !result.organization ||
-      !result.workspace ||
-      !result.dashboardUrl
-    ) {
-      throw new Error("Invalid response from test setup API");
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await trpc.test?.setup.mutate({
+        email,
+        password,
+        name: options?.name,
+        orgName: options?.orgName,
+        workspaceName: options?.workspaceName,
+      });
+
+      if (
+        !result ||
+        !result.user ||
+        !result.organization ||
+        !result.workspace ||
+        !result.dashboardUrl
+      ) {
+        throw new Error("Invalid response from test setup API");
+      }
+
+      return {
+        email,
+        password,
+        user: result.user,
+        organization: result.organization,
+        workspace: result.workspace,
+        dashboardUrl: result.dashboardUrl,
+      };
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries) {
+        // Ждем перед повторной попыткой (экспоненциальная задержка)
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      }
     }
-
-    return {
-      email,
-      password,
-      user: result.user,
-      organization: result.organization,
-      workspace: result.workspace,
-      dashboardUrl: result.dashboardUrl,
-    };
-  } catch (error) {
-    throw new Error(
-      `Failed to create test user: ${error instanceof Error ? error.message : String(error)}`,
-    );
   }
+
+  throw new Error(
+    `Failed to create test user after ${maxRetries} attempts: ${lastError?.message || "Unknown error"}`,
+  );
 }
 
 /**
