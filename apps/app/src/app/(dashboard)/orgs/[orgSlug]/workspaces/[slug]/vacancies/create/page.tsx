@@ -1,14 +1,17 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
   Input,
-  Label,
   Select,
   SelectContent,
   SelectItem,
@@ -16,71 +19,107 @@ import {
   SelectValue,
   Textarea,
 } from "@qbs-autonaim/ui";
-import { IconArrowLeft, IconPlus } from "@tabler/icons-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { z } from "zod";
 import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
 
+const createVacancySchema = z.object({
+  title: z
+    .string()
+    .min(1, "Название обязательно")
+    .max(500, "Максимум 500 символов"),
+  description: z.string().optional(),
+  requirements: z.string().optional(),
+  platformSource: z.enum(
+    ["kwork", "fl", "weblancer", "upwork", "freelancer", "fiverr"],
+    "Выберите платформу",
+  ),
+  platformUrl: z
+    .string()
+    .url("Введите корректный URL")
+    .optional()
+    .or(z.literal("")),
+});
+
+type CreateVacancyFormValues = z.infer<typeof createVacancySchema>;
+
+const platformLabels: Record<string, string> = {
+  kwork: "Kwork",
+  fl: "FL.ru",
+  weblancer: "Weblancer",
+  upwork: "Upwork",
+  freelancer: "Freelancer",
+  fiverr: "Fiverr",
+};
+
 export default function CreateVacancyPage() {
+  const router = useRouter();
   const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const { workspace } = useWorkspace();
-  const router = useRouter();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [requirements, setRequirements] = useState("");
-  const [platformSource, setPlatformSource] = useState<string>("");
-  const [platformUrl, setPlatformUrl] = useState("");
-
-  const createMutation = trpc.freelancePlatforms.createVacancy.useMutation({
-    onSuccess: (data: { vacancy: { id: string } }) => {
-      toast.success("Вакансия создана");
-      router.push(
-        `/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${data.vacancy.id}`,
-      );
-    },
-    onError: (error: { message?: string }) => {
-      toast.error(error.message || "Ошибка при создании вакансии");
+  const form = useForm<CreateVacancyFormValues>({
+    resolver: zodResolver(createVacancySchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      requirements: "",
+      platformSource: undefined,
+      platformUrl: "",
     },
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const createMutation = useMutation(
+    trpc.freelancePlatforms.createVacancy.mutationOptions({
+      onSuccess: async (data) => {
+        toast.success("Вакансия создана", {
+          description: `Вакансия "${data.vacancy.title}" успешно создана`,
+        });
 
+        // Инвалидируем кеш вакансий
+        await queryClient.invalidateQueries(
+          trpc.freelancePlatforms.getVacancies.pathFilter(),
+        );
+
+        // Перенаправляем на страницу деталей вакансии
+        router.push(
+          paths.workspace.vacancies(
+            orgSlug ?? "",
+            workspaceSlug ?? "",
+            data.vacancy.id,
+          ),
+        );
+      },
+      onError: (error) => {
+        toast.error("Ошибка при создании вакансии", {
+          description: error.message,
+        });
+      },
+    }),
+  );
+
+  const handleSubmit = async (values: CreateVacancyFormValues) => {
     if (!workspace?.id) {
       toast.error("Workspace не найден");
       return;
     }
 
-    if (!title.trim()) {
-      toast.error("Укажите название вакансии");
-      return;
-    }
-
-    if (!platformSource) {
-      toast.error("Выберите платформу");
-      return;
-    }
-
-    await createMutation.mutateAsync({
+    createMutation.mutate({
       workspaceId: workspace.id,
-      title: title.trim(),
-      description: description.trim() || undefined,
-      requirements: requirements.trim() || undefined,
-      platformSource: platformSource as
-        | "kwork"
-        | "fl"
-        | "weblancer"
-        | "upwork"
-        | "freelancer"
-        | "fiverr",
-      platformUrl: platformUrl.trim() || undefined,
+      title: values.title,
+      description: values.description || undefined,
+      requirements: values.requirements || undefined,
+      platformSource: values.platformSource,
+      platformUrl: values.platformUrl || undefined,
     });
   };
 
@@ -89,140 +128,192 @@ export default function CreateVacancyPage() {
       <SiteHeader title="Создать вакансию" />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-            <div className="mb-4">
-              <Button variant="ghost" size="sm" asChild>
-                <Link
-                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
-                >
-                  <IconArrowLeft className="size-4" aria-hidden="true" />
-                  Назад к списку
-                </Link>
-              </Button>
-            </div>
+          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+            <div className="px-4 lg:px-6">
+              <div className="mb-6">
+                <Button variant="ghost" size="sm" asChild className="mb-4">
+                  <Link
+                    href={paths.workspace.vacancies(
+                      orgSlug ?? "",
+                      workspaceSlug ?? "",
+                    )}
+                    aria-label="Вернуться к списку вакансий"
+                  >
+                    <ArrowLeft className="size-4" aria-hidden="true" />
+                    Назад к вакансиям
+                  </Link>
+                </Button>
 
-            <Card className="max-w-3xl">
-              <CardHeader>
-                <CardTitle>Новая вакансия для фриланс-платформы</CardTitle>
-                <CardDescription>
-                  Создайте вакансию для размещения на фриланс-платформе. После
-                  создания вы получите ссылку на AI-интервью для добавления в
-                  описание задания.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">
-                      Название вакансии
-                      <span className="text-destructive ml-1">*</span>
-                    </Label>
-                    <Input
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Например: Frontend разработчик на React"
-                      maxLength={500}
-                      required
-                      aria-required="true"
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                    <Sparkles
+                      className="size-5 text-primary"
+                      aria-hidden="true"
                     />
                   </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="platformSource">
-                      Платформа
-                      <span className="text-destructive ml-1">*</span>
-                    </Label>
-                    <Select
-                      value={platformSource}
-                      onValueChange={setPlatformSource}
-                      required
-                    >
-                      <SelectTrigger id="platformSource" aria-required="true">
-                        <SelectValue placeholder="Выберите платформу" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="kwork">Kwork</SelectItem>
-                        <SelectItem value="fl">FL.ru</SelectItem>
-                        <SelectItem value="weblancer">Weblancer</SelectItem>
-                        <SelectItem value="upwork">Upwork</SelectItem>
-                        <SelectItem value="freelancer">Freelancer</SelectItem>
-                        <SelectItem value="fiverr">Fiverr</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="platformUrl">
-                      URL вакансии на платформе (опционально)
-                    </Label>
-                    <Input
-                      id="platformUrl"
-                      type="url"
-                      value={platformUrl}
-                      onChange={(e) => setPlatformUrl(e.target.value)}
-                      placeholder="https://kwork.ru/projects/..."
-                    />
-                    <p className="text-sm text-muted-foreground">
-                      Если вы уже опубликовали вакансию, укажите ссылку на неё
+                  <div>
+                    <h1 className="text-2xl font-semibold">Создать вакансию</h1>
+                    <p className="text-muted-foreground text-sm">
+                      Создайте вакансию для фриланс-платформы
                     </p>
                   </div>
+                </div>
+              </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Описание</Label>
-                    <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Опишите задачу, проект или вакансию…"
-                      rows={6}
-                      className="resize-none"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="requirements">Требования</Label>
-                    <Textarea
-                      id="requirements"
-                      value={requirements}
-                      onChange={(e) => setRequirements(e.target.value)}
-                      placeholder="Укажите необходимые навыки, опыт, квалификацию…"
-                      rows={6}
-                      className="resize-none"
-                    />
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      type="submit"
-                      disabled={createMutation.isPending}
-                      className="min-w-[120px]"
-                    >
-                      {createMutation.isPending ? (
-                        <>Создание…</>
-                      ) : (
-                        <>
-                          <IconPlus className="size-4" aria-hidden="true" />
-                          Создать
-                        </>
+              <div className="max-w-2xl">
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="space-y-6"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Название вакансии</FormLabel>
+                          <FormControl>
+                            <Input
+                              placeholder="Например: Разработчик React"
+                              autoFocus
+                              {...field}
+                              aria-label="Название вакансии"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Краткое и понятное название вакансии
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      asChild
-                      disabled={createMutation.isPending}
-                    >
-                      <Link
-                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Описание</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Опишите задачу или проект…"
+                              className="resize-none min-h-[120px]"
+                              {...field}
+                              aria-label="Описание вакансии"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Подробное описание задачи или проекта (опционально)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="requirements"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Требования</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Укажите требования к кандидату…"
+                              className="resize-none min-h-[120px]"
+                              {...field}
+                              aria-label="Требования к кандидату"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Навыки, опыт и квалификация (опционально)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="platformSource"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Платформа</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger aria-label="Выберите платформу">
+                                <SelectValue placeholder="Выберите платформу" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {Object.entries(platformLabels).map(
+                                ([value, label]) => (
+                                  <SelectItem key={value} value={value}>
+                                    {label}
+                                  </SelectItem>
+                                ),
+                              )}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Фриланс-платформа, на которой размещена вакансия
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="platformUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>URL вакансии на платформе</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="url"
+                              placeholder="https://kwork.ru/projects/12345"
+                              {...field}
+                              aria-label="URL вакансии на платформе"
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            Ссылка на вакансию на фриланс-платформе
+                            (опционально)
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => router.back()}
+                        disabled={createMutation.isPending}
+                        aria-label="Отменить создание вакансии"
                       >
                         Отмена
-                      </Link>
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
+                      </Button>
+                      <Button
+                        type="submit"
+                        className="flex-1"
+                        disabled={createMutation.isPending}
+                        aria-label="Создать вакансию"
+                      >
+                        {createMutation.isPending
+                          ? "Создание…"
+                          : "Создать вакансию"}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -5,6 +5,9 @@ import {
   Badge,
   Button,
   Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
@@ -19,6 +22,7 @@ import {
   TableRow,
 } from "@qbs-autonaim/ui";
 import {
+  IconCalendar,
   IconFilter,
   IconRefresh,
   IconSearch,
@@ -44,6 +48,8 @@ export default function VacanciesPage() {
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   const { data: vacancies, isLoading } = useQuery({
     ...api.freelancePlatforms.getVacancies.queryOptions({
@@ -88,6 +94,17 @@ export default function VacanciesPage() {
       filtered = filtered.filter((v) => !v.isActive);
     }
 
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      filtered = filtered.filter((v) => new Date(v.createdAt) >= fromDate);
+    }
+
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((v) => new Date(v.createdAt) <= toDate);
+    }
+
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "responses":
@@ -106,7 +123,15 @@ export default function VacanciesPage() {
     });
 
     return filtered;
-  }, [vacancies, searchQuery, sourceFilter, statusFilter, sortBy]);
+  }, [
+    vacancies,
+    searchQuery,
+    sourceFilter,
+    statusFilter,
+    sortBy,
+    dateFrom,
+    dateTo,
+  ]);
 
   const stats = useMemo(() => {
     if (!vacancies) {
@@ -226,6 +251,78 @@ export default function VacanciesPage() {
                       </SelectContent>
                     </Select>
 
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full sm:w-[180px] justify-start"
+                          aria-label="Фильтр по дате"
+                        >
+                          <IconCalendar className="size-4" aria-hidden="true" />
+                          {dateFrom || dateTo ? (
+                            <span className="truncate">
+                              {dateFrom &&
+                                new Date(dateFrom).toLocaleDateString("ru-RU")}
+                              {dateFrom && dateTo && " - "}
+                              {dateTo &&
+                                new Date(dateTo).toLocaleDateString("ru-RU")}
+                            </span>
+                          ) : (
+                            "Диапазон дат"
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-2">
+                            <label
+                              htmlFor="date-from"
+                              className="text-sm font-medium"
+                            >
+                              С даты
+                            </label>
+                            <Input
+                              id="date-from"
+                              type="date"
+                              value={dateFrom}
+                              onChange={(e) => setDateFrom(e.target.value)}
+                              max={dateTo || undefined}
+                              aria-label="Дата начала"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label
+                              htmlFor="date-to"
+                              className="text-sm font-medium"
+                            >
+                              По дату
+                            </label>
+                            <Input
+                              id="date-to"
+                              type="date"
+                              value={dateTo}
+                              onChange={(e) => setDateTo(e.target.value)}
+                              min={dateFrom || undefined}
+                              aria-label="Дата окончания"
+                            />
+                          </div>
+                          {(dateFrom || dateTo) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDateFrom("");
+                                setDateTo("");
+                              }}
+                              aria-label="Сбросить фильтр по дате"
+                            >
+                              Сбросить
+                            </Button>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
                     <Select value={sortBy} onValueChange={setSortBy}>
                       <SelectTrigger
                         className="w-full sm:w-[160px]"
@@ -282,7 +379,9 @@ export default function VacanciesPage() {
                   </span>
                   {(searchQuery ||
                     sourceFilter !== "all" ||
-                    statusFilter !== "all") &&
+                    statusFilter !== "all" ||
+                    dateFrom ||
+                    dateTo) &&
                     vacancies &&
                     filteredAndSortedVacancies.length !== vacancies.length && (
                       <span> из {vacancies.length}</span>
@@ -348,14 +447,18 @@ export default function VacanciesPage() {
                               <h2 className="text-2xl font-semibold mb-2">
                                 {searchQuery ||
                                 sourceFilter !== "all" ||
-                                statusFilter !== "all"
+                                statusFilter !== "all" ||
+                                dateFrom ||
+                                dateTo
                                   ? "Ничего не найдено"
                                   : "Нет вакансий"}
                               </h2>
                               <p className="text-muted-foreground">
                                 {searchQuery ||
                                 sourceFilter !== "all" ||
-                                statusFilter !== "all"
+                                statusFilter !== "all" ||
+                                dateFrom ||
+                                dateTo
                                   ? "Попробуйте изменить параметры поиска"
                                   : "Запустите парсер для загрузки вакансий"}
                               </p>
