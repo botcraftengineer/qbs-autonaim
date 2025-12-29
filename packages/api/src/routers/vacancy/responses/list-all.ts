@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
 import {
+  interviewScoring,
   responseScreening,
-  telegramInterviewScoring,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -72,11 +72,11 @@ export const listAll = protectedProcedure
       .from(responseScreening)
       .where(inArray(responseScreening.responseId, responseIds));
 
-    // Батчевый запрос telegramInterviewScoring
+    // Батчевый запрос interviewScoring
     const interviewScorings = await ctx.db
       .select()
-      .from(telegramInterviewScoring)
-      .where(inArray(telegramInterviewScoring.responseId, responseIds));
+      .from(interviewScoring)
+      .where(inArray(interviewScoring.responseId, responseIds));
 
     // Создаем lookup maps
     const screeningMap = new Map(screenings.map((s) => [s.responseId, s]));
@@ -100,7 +100,7 @@ export const listAll = protectedProcedure
                 : null,
             }
           : null,
-        telegramInterviewScoring: interviewScoring
+        interviewScoring: interviewScoring
           ? {
               ...interviewScoring,
               analysis: interviewScoring.analysis

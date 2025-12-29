@@ -187,7 +187,7 @@ export const list = protectedProcedure
         screening: {
           columns: { detailedScore: true },
         },
-        telegramInterviewScoring: {
+        interviewScoring: {
           columns: { detailedScore: true },
         },
         photoFile: {
@@ -215,7 +215,7 @@ export const list = protectedProcedure
       const stage = mapResponseToStage(r.status, r.hrSelectionStatus);
 
       const resumeScore = r.screening?.detailedScore;
-      const interviewScore = r.telegramInterviewScoring?.detailedScore;
+      const interviewScore = r.interviewScoring?.detailedScore;
 
       const matchScore =
         resumeScore !== undefined && interviewScore !== undefined

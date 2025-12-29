@@ -1,6 +1,7 @@
 import { realtimeMiddleware } from "@inngest/realtime/middleware";
 import { EventSchemas, Inngest } from "inngest";
 import {
+  analyzeFreelanceResponseDataSchema,
   bufferFlushDataSchema,
   candidateOfferSendDataSchema,
   candidateWelcomeBatchDataSchema,
@@ -8,6 +9,7 @@ import {
   collectChatIdsDataSchema,
   conversationMessageReceivedDataSchema,
   conversationMessageSendDataSchema,
+  generateInvitationDataSchema,
   interviewAnalysisDataSchema,
   interviewCompleteDataSchema,
   interviewSendQuestionDataSchema,
@@ -19,6 +21,7 @@ import {
   screenAllResponsesDataSchema,
   screenNewResponsesDataSchema,
   screenResponsesBatchDataSchema,
+  sendFreelanceNotificationDataSchema,
   telegramAuthErrorDataSchema,
   telegramUnidentifiedMessageSendDataSchema,
   typingActivityDataSchema,
@@ -51,6 +54,9 @@ export const inngest = new Inngest({
     "candidate/welcome": candidateWelcomeDataSchema,
     "candidate/welcome.batch": candidateWelcomeBatchDataSchema,
     "candidate/offer.send": candidateOfferSendDataSchema,
+    "freelance/response.analyze": analyzeFreelanceResponseDataSchema,
+    "freelance/invitation.generate": generateInvitationDataSchema,
+    "freelance/notification.send": sendFreelanceNotificationDataSchema,
     "telegram/message.received": conversationMessageReceivedDataSchema,
     "telegram/message.send": conversationMessageSendDataSchema,
     "telegram/message.send.by-username":
@@ -64,5 +70,7 @@ export const inngest = new Inngest({
     "interview/message.buffered": messageBufferedDataSchema,
     "interview/typing.activity": typingActivityDataSchema,
     "interview/buffer.flush": bufferFlushDataSchema,
+    "web/interview.send-question": interviewSendQuestionDataSchema,
+    "web/interview.complete": interviewCompleteDataSchema,
   }),
 });

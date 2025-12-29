@@ -35,6 +35,12 @@ export const hrSelectionStatusEnum = pgEnum("hr_selection_status", [
   "ONBOARDING",
 ]);
 
+export const importSourceEnum = pgEnum("import_source", [
+  "HH_API",
+  "FREELANCE_MANUAL",
+  "FREELANCE_LINK",
+]);
+
 export const vacancyResponse = pgTable(
   "vacancy_responses",
   {
@@ -50,6 +56,8 @@ export const vacancyResponse = pgTable(
     coverLetter: text("cover_letter"),
     status: responseStatusEnum("status").default("NEW").notNull(),
     hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
+    importSource: importSourceEnum("import_source").default("HH_API"),
+    platformProfileUrl: text("platform_profile_url"),
     experience: text("experience"),
     contacts: jsonb("contacts").$type<Record<string, unknown>>(),
     phone: varchar("phone", { length: 50 }),
@@ -85,10 +93,19 @@ export const vacancyResponse = pgTable(
     vacancyIdx: index("response_vacancy_idx").on(table.vacancyId),
     statusIdx: index("response_status_idx").on(table.status),
     hrStatusIdx: index("response_hr_status_idx").on(table.hrSelectionStatus),
+    importSourceIdx: index("response_import_source_idx").on(table.importSource),
+    platformProfileIdx: index("response_platform_profile_idx").on(
+      table.platformProfileUrl,
+    ),
     // Composite index для фильтрации по вакансии и статусу
     vacancyStatusIdx: index("response_vacancy_status_idx").on(
       table.vacancyId,
       table.status,
+    ),
+    // Composite index для проверки дубликатов по platformProfileUrl + vacancyId
+    vacancyPlatformProfileIdx: index("response_vacancy_platform_idx").on(
+      table.vacancyId,
+      table.platformProfileUrl,
     ),
   }),
 );
@@ -118,6 +135,11 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
       "ONBOARDING",
     ])
     .optional(),
+  importSource: z
+    .enum(["HH_API", "FREELANCE_MANUAL", "FREELANCE_LINK"])
+    .default("HH_API")
+    .optional(),
+  platformProfileUrl: z.string().optional(),
   respondedAt: z.date().optional(),
   welcomeSentAt: z.date().optional(),
 }).omit({

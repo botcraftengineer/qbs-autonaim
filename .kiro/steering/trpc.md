@@ -1,72 +1,253 @@
 ---
-inclusion: manual
+inclusion: fileMatch
+fileMatchPattern: "apps/app/**/*"
 ---
 
-// Пример использования useQuery с tRPC
+# tRPC + TanStack Query Standards
 
+## Core Rules
+
+- MUST: Получать клиент через `useTRPC()` для типобезопасности
+- MUST: Использовать фабрики `.queryOptions()` и `.mutationOptions()` вместо прямых хуков
+- MUST: Передавать результаты фабрик в нативные хуки TanStack Query (`useQuery`, `useMutation`, `useSuspenseQuery`)
+- NEVER: Вызывать `trpc.procedure.useQuery()` напрямую
+- MUST: Использовать `.queryKey()` для инвалидации и работы с кэшем
+- NEVER: Строить query keys вручную
+
+## Queries
+
+### Базовый паттерн
+
+```tsx
 import { useTRPC } from "~/trpc/react";
 import { useQuery } from "@tanstack/react-query";
 
-function BrandDetails({ brandId }: { brandId: string }) {
 const trpc = useTRPC();
+const { data, isPending } = useQuery(
+  trpc.brands.getById.queryOptions({ id: brandId })
+);
+```
 
-// Создаем опции запроса с помощью queryOptions
-const brandQueryOptions = trpc.brands.getById.queryOptions({ id: brandId });
+### Условные запросы
 
-// Используем опции с хуком useQuery
-const { data, isPending, error } = useQuery(brandQueryOptions);
+- MUST: Использовать `skipToken` для условного отключения
+- NEVER: Использовать `enabled: false`
 
-if (isLoading) return <div>Загрузка...</div>;
-if (error) return <div>Ошибка: {error.message}</div>;
+```tsx
+import { skipToken } from "@tanstack/react-query";
+
+const { data } = useQuery(
+  trpc.user.details.queryOptions(
+    userId ? { userId } : skipToken
+  )
+);
+```
+
+### Suspense
+
+- SHOULD: Использовать `useSuspenseQuery` в компонентах с Suspense границами
+
+```tsx
+import { useSuspenseQuery } from "@tanstack/react-query";
+
+const { data } = useSuspenseQuery(
+  trpc.brands.getById.queryOptions({ id: brandId })
+);
+```
+
+### Server-side prefetch
+
+- SHOULD: Prefetch критичные данные на сервере
+
+```tsx
+import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
+import { createServerSideHelpers } from "@trpc/tanstack-react-query/server";
+
+const helpers = createServerSideHelpers({ router: appRouter, ctx: await createContext() });
+await helpers.brands.getById.prefetch({ id: params.id });
 
 return (
-
-<div>
-<h1>{data.name}</h1>
-<p>{data.description}</p>
-</div>
+  <HydrationBoundary state={dehydrate(helpers.queryClient)}>
+    <BrandDetails brandId={params.id} />
+  </HydrationBoundary>
 );
-}
+```
 
-// Пример использования useMutation с tRPC
+### Infinite queries
 
-import { useTRPC } from "~/trpc/react";
+```tsx
+import { useInfiniteQuery } from "@tanstack/react-query";
+
+const { data, fetchNextPage, hasNextPage } = useInfiniteQuery(
+  trpc.brands.list.infiniteQueryOptions(
+    { limit: 10 },
+    { getNextPageParam: (lastPage) => lastPage.nextCursor }
+  )
+);
+```
+
+## Mutations
+
+### Базовый паттерн
+
+- MUST: Инвалидировать связанные запросы в `onSuccess`
+- MUST: Обрабатывать ошибки в `onError`
+
+```tsx
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
-function CreateBrandForm() {
 const trpc = useTRPC();
 const queryClient = useQueryClient();
 
-// Создаем опции мутации с помощью mutationOptions
-const createBrandMutationOptions = trpc.brands.create.mutationOptions({
-onSuccess: (data) => {
-// Инвалидируем кэш запроса списка брендов
-queryClient.invalidateQueries({
-queryKey: trpc.brands.getAll.queryKey()
-});
-
-      // Дополнительная логика после успешного создания
-      toast.success(`Бренд "${data.name}" успешно создан`);
+const { mutate, isPending } = useMutation(
+  trpc.brands.create.mutationOptions({
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: trpc.brands.list.queryKey(),
+      });
     },
     onError: (error) => {
-      toast.error(error.message || "Не удалось создать бренд");
-    }
+      toast.error(error.message);
+    },
+  })
+);
+```
 
+### Оптимистичные обновления
+
+- SHOULD: Использовать для лучшего UX
+- MUST: Откатывать изменения в `onError`
+- MUST: Синхронизировать с сервером в `onSettled`
+
+```tsx
+const { mutate } = useMutation(
+  trpc.brands.update.mutationOptions({
+    onMutate: async (newData) => {
+      await queryClient.cancelQueries({
+        queryKey: trpc.brands.getById.queryKey({ id: brand.id }),
+      });
+      
+      const previousBrand = queryClient.getQueryData(
+        trpc.brands.getById.queryKey({ id: brand.id })
+      );
+      
+      queryClient.setQueryData(
+        trpc.brands.getById.queryKey({ id: brand.id }),
+        { ...brand, ...newData }
+      );
+      
+      return { previousBrand };
+    },
+    onError: (err, newData, context) => {
+      if (context?.previousBrand) {
+        queryClient.setQueryData(
+          trpc.brands.getById.queryKey({ id: brand.id }),
+          context.previousBrand
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: trpc.brands.getById.queryKey({ id: brand.id }),
+      });
+    },
+  })
+);
+```
+
+## Query Client Operations
+
+### Инвалидация
+
+```tsx
+// Конкретный запрос
+queryClient.invalidateQueries({
+  queryKey: trpc.brands.getById.queryKey({ id: "123" }),
 });
 
-// Используем опции с хуком useMutation
-const { mutate, isPending} = useMutation(createBrandMutationOptions);
+// Весь роутер
+queryClient.invalidateQueries({
+  queryKey: trpc.brands.queryKey(),
+});
 
-const handleSubmit = (formData) => {
-mutate(formData);
-};
+// Все tRPC запросы
+queryClient.invalidateQueries({
+  queryKey: trpc.queryKey(),
+});
+```
 
-return (
+### Prefetch и Fetch
 
-<form onSubmit={handleSubmit}>
-{/_ Форма создания бренда _/}
-</form>
+```tsx
+// Prefetch (фоновая загрузка)
+await queryClient.prefetchQuery(
+  trpc.brands.getById.queryOptions({ id: "123" })
 );
 
-}
+// Fetch (получить данные)
+const brand = await queryClient.fetchQuery(
+  trpc.brands.getById.queryOptions({ id: "123" })
+);
+```
+
+### Работа с кэшем
+
+```tsx
+// Получить
+const brand = queryClient.getQueryData(
+  trpc.brands.getById.queryKey({ id: "123" })
+);
+
+// Установить
+queryClient.setQueryData(
+  trpc.brands.getById.queryKey({ id: "123" }),
+  { id: "123", name: "New Brand" }
+);
+```
+
+### Query Filters
+
+```tsx
+// Точная фильтрация
+queryClient.invalidateQueries(
+  trpc.brands.getById.queryFilter({ id: "123" })
+);
+
+// Весь роутер
+queryClient.invalidateQueries(
+  trpc.brands.pathFilter()
+);
+
+// Infinite queries
+queryClient.invalidateQueries(
+  trpc.brands.list.infiniteQueryFilter({ status: "active" })
+);
+```
+
+## Subscriptions
+
+```tsx
+import { useSubscription } from "@trpc/tanstack-react-query";
+
+const subscription = useSubscription(
+  trpc.notifications.onNew.subscriptionOptions(
+    { userId: "123" },
+    {
+      onData: (notification) => toast.info(notification.message),
+      onError: (error) => console.error(error),
+    }
+  )
+);
+
+// subscription.status: 'idle' | 'connecting' | 'pending' | 'error'
+// subscription.data, subscription.error, subscription.reset()
+```
+
+## Type Inference
+
+```tsx
+import type { RouterInputs, RouterOutputs } from "~/trpc/react";
+
+type BrandCreateInput = RouterInputs["brands"]["create"];
+type Brand = RouterOutputs["brands"]["getById"];
+```

@@ -7,9 +7,10 @@ import { conversation } from "../conversation/conversation";
 import { vacancyResponse } from "../vacancy/response";
 
 /**
- * Таблица для результатов скоринга интервью в Telegram
+ * Универсальная таблица для результатов скоринга интервью
+ * Используется для всех источников: Telegram, Web и других
  */
-export const telegramInterviewScoring = pgTable("telegram_interview_scorings", {
+export const interviewScoring = pgTable("interview_scorings", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
   conversationId: uuid("conversation_id")
     .notNull()
@@ -21,11 +22,13 @@ export const telegramInterviewScoring = pgTable("telegram_interview_scorings", {
   score: integer("score").notNull(), // Оценка от 0 до 5
   detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
   analysis: text("analysis"), // Анализ на основе интервью
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
-export const CreateTelegramInterviewScoringSchema = createInsertSchema(
-  telegramInterviewScoring,
+export const CreateInterviewScoringSchema = createInsertSchema(
+  interviewScoring,
   {
     conversationId: uuidv7Schema,
     responseId: uuidv7Schema.optional(),

@@ -5,6 +5,9 @@ import {
   Badge,
   Button,
   Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,
@@ -18,7 +21,13 @@ import {
   TableHeader,
   TableRow,
 } from "@qbs-autonaim/ui";
-import { IconFilter, IconRefresh, IconSearch } from "@tabler/icons-react";
+import {
+  IconCalendar,
+  IconFilter,
+  IconRefresh,
+  IconSearch,
+  IconSparkles,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
@@ -32,17 +41,31 @@ import { useTRPC } from "~/trpc/react";
 
 export default function VacanciesPage() {
   const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
-  const trpc = useTRPC();
+  const api = useTRPC();
   const { workspace } = useWorkspace();
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [dateFrom, setDateFrom] = useState<string>("");
+  const [dateTo, setDateTo] = useState<string>("");
 
   const { data: vacancies, isLoading } = useQuery({
-    ...trpc.vacancy.list.queryOptions({
+    ...api.freelancePlatforms.getVacancies.queryOptions({
       workspaceId: workspace?.id ?? "",
+      ...(sourceFilter !== "all" && {
+        source: sourceFilter as
+          | "hh"
+          | "kwork"
+          | "fl"
+          | "weblancer"
+          | "upwork"
+          | "freelancer"
+          | "fiverr"
+          | "avito"
+          | "superjob",
+      }),
     }),
     enabled: !!workspace?.id,
   });
@@ -71,10 +94,21 @@ export default function VacanciesPage() {
       filtered = filtered.filter((v) => !v.isActive);
     }
 
+    if (dateFrom) {
+      const fromDate = new Date(dateFrom);
+      filtered = filtered.filter((v) => new Date(v.createdAt) >= fromDate);
+    }
+
+    if (dateTo) {
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter((v) => new Date(v.createdAt) <= toDate);
+    }
+
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "responses":
-          return (b.realResponsesCount ?? 0) - (a.realResponsesCount ?? 0);
+          return (b.totalResponsesCount ?? 0) - (a.totalResponsesCount ?? 0);
         case "newResponses":
           return (b.newResponses ?? 0) - (a.newResponses ?? 0);
         case "views":
@@ -89,7 +123,15 @@ export default function VacanciesPage() {
     });
 
     return filtered;
-  }, [vacancies, searchQuery, sourceFilter, statusFilter, sortBy]);
+  }, [
+    vacancies,
+    searchQuery,
+    sourceFilter,
+    statusFilter,
+    sortBy,
+    dateFrom,
+    dateTo,
+  ]);
 
   const stats = useMemo(() => {
     if (!vacancies) {
@@ -105,7 +147,7 @@ export default function VacanciesPage() {
       totalVacancies: vacancies.length,
       activeVacancies: vacancies.filter((v) => v.isActive).length,
       totalResponses: vacancies.reduce(
-        (sum, v) => sum + (v.realResponsesCount ?? 0),
+        (sum, v) => sum + (v.totalResponsesCount ?? 0),
         0,
       ),
       newResponses: vacancies.reduce(
@@ -181,6 +223,12 @@ export default function VacanciesPage() {
                       <SelectContent>
                         <SelectItem value="all">Все источники</SelectItem>
                         <SelectItem value="hh">HeadHunter</SelectItem>
+                        <SelectItem value="kwork">Kwork</SelectItem>
+                        <SelectItem value="fl">FL.ru</SelectItem>
+                        <SelectItem value="weblancer">Weblancer</SelectItem>
+                        <SelectItem value="upwork">Upwork</SelectItem>
+                        <SelectItem value="freelancer">Freelancer</SelectItem>
+                        <SelectItem value="fiverr">Fiverr</SelectItem>
                         <SelectItem value="avito">Avito</SelectItem>
                         <SelectItem value="superjob">SuperJob</SelectItem>
                       </SelectContent>
@@ -203,6 +251,78 @@ export default function VacanciesPage() {
                       </SelectContent>
                     </Select>
 
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className="w-full sm:w-[180px] justify-start"
+                          aria-label="Фильтр по дате"
+                        >
+                          <IconCalendar className="size-4" aria-hidden="true" />
+                          {dateFrom || dateTo ? (
+                            <span className="truncate">
+                              {dateFrom &&
+                                new Date(dateFrom).toLocaleDateString("ru-RU")}
+                              {dateFrom && dateTo && " - "}
+                              {dateTo &&
+                                new Date(dateTo).toLocaleDateString("ru-RU")}
+                            </span>
+                          ) : (
+                            "Диапазон дат"
+                          )}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <div className="flex flex-col gap-3">
+                          <div className="flex flex-col gap-2">
+                            <label
+                              htmlFor="date-from"
+                              className="text-sm font-medium"
+                            >
+                              С даты
+                            </label>
+                            <Input
+                              id="date-from"
+                              type="date"
+                              value={dateFrom}
+                              onChange={(e) => setDateFrom(e.target.value)}
+                              max={dateTo || undefined}
+                              aria-label="Дата начала"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <label
+                              htmlFor="date-to"
+                              className="text-sm font-medium"
+                            >
+                              По дату
+                            </label>
+                            <Input
+                              id="date-to"
+                              type="date"
+                              value={dateTo}
+                              onChange={(e) => setDateTo(e.target.value)}
+                              min={dateFrom || undefined}
+                              aria-label="Дата окончания"
+                            />
+                          </div>
+                          {(dateFrom || dateTo) && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setDateFrom("");
+                                setDateTo("");
+                              }}
+                              aria-label="Сбросить фильтр по дате"
+                            >
+                              Сбросить
+                            </Button>
+                          )}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+
                     <Select value={sortBy} onValueChange={setSortBy}>
                       <SelectTrigger
                         className="w-full sm:w-[160px]"
@@ -221,18 +341,34 @@ export default function VacanciesPage() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleUpdate}
-                  disabled={isUpdating}
-                  className="w-full md:w-auto"
-                  aria-label="Синхронизировать активные вакансии из источников"
-                >
-                  <IconRefresh
-                    className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
-                    aria-hidden="true"
-                  />
-                  {isUpdating ? "Синхронизация…" : "Синхронизировать вакансии"}
-                </Button>
+                <div className="flex gap-2 w-full md:w-auto">
+                  <Button
+                    asChild
+                    variant="default"
+                    className="flex-1 md:flex-initial"
+                  >
+                    <Link
+                      href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/create`}
+                      aria-label="Создать вакансию для фриланс-платформы"
+                    >
+                      <IconSparkles className="size-4" aria-hidden="true" />
+                      Создать вакансию
+                    </Link>
+                  </Button>
+                  <Button
+                    onClick={handleUpdate}
+                    disabled={isUpdating}
+                    variant="outline"
+                    className="flex-1 md:flex-initial"
+                    aria-label="Синхронизировать активные вакансии из источников"
+                  >
+                    <IconRefresh
+                      className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
+                      aria-hidden="true"
+                    />
+                    {isUpdating ? "Синхронизация…" : "Синхронизировать"}
+                  </Button>
+                </div>
               </div>
 
               {!isLoading && filteredAndSortedVacancies.length > 0 && (
@@ -243,7 +379,9 @@ export default function VacanciesPage() {
                   </span>
                   {(searchQuery ||
                     sourceFilter !== "all" ||
-                    statusFilter !== "all") &&
+                    statusFilter !== "all" ||
+                    dateFrom ||
+                    dateTo) &&
                     vacancies &&
                     filteredAndSortedVacancies.length !== vacancies.length && (
                       <span> из {vacancies.length}</span>
@@ -309,14 +447,18 @@ export default function VacanciesPage() {
                               <h2 className="text-2xl font-semibold mb-2">
                                 {searchQuery ||
                                 sourceFilter !== "all" ||
-                                statusFilter !== "all"
+                                statusFilter !== "all" ||
+                                dateFrom ||
+                                dateTo
                                   ? "Ничего не найдено"
                                   : "Нет вакансий"}
                               </h2>
                               <p className="text-muted-foreground">
                                 {searchQuery ||
                                 sourceFilter !== "all" ||
-                                statusFilter !== "all"
+                                statusFilter !== "all" ||
+                                dateFrom ||
+                                dateTo
                                   ? "Попробуйте изменить параметры поиска"
                                   : "Запустите парсер для загрузки вакансий"}
                               </p>
@@ -346,11 +488,23 @@ export default function VacanciesPage() {
                             <Badge variant="outline">
                               {vacancy.source === "hh"
                                 ? "HeadHunter"
-                                : vacancy.source === "avito"
-                                  ? "Avito"
-                                  : vacancy.source === "superjob"
-                                    ? "SuperJob"
-                                    : vacancy.source}
+                                : vacancy.source === "kwork"
+                                  ? "Kwork"
+                                  : vacancy.source === "fl"
+                                    ? "FL.ru"
+                                    : vacancy.source === "weblancer"
+                                      ? "Weblancer"
+                                      : vacancy.source === "upwork"
+                                        ? "Upwork"
+                                        : vacancy.source === "freelancer"
+                                          ? "Freelancer"
+                                          : vacancy.source === "fiverr"
+                                            ? "Fiverr"
+                                            : vacancy.source === "avito"
+                                              ? "Avito"
+                                              : vacancy.source === "superjob"
+                                                ? "SuperJob"
+                                                : vacancy.source}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">
@@ -368,7 +522,7 @@ export default function VacanciesPage() {
                               )}
                               className="font-medium hover:underline text-primary"
                             >
-                              {vacancy.realResponsesCount ?? 0}
+                              {vacancy.totalResponsesCount ?? 0}
                             </Link>
                           </TableCell>
                           <TableCell className="text-right">

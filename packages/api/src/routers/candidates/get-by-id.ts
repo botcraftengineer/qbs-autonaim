@@ -62,7 +62,7 @@ export const getById = protectedProcedure
       where: eq(vacancyResponse.id, input.candidateId),
       with: {
         screening: true,
-        telegramInterviewScoring: true,
+        interviewScoring: true,
         photoFile: true,
         resumePdfFile: true,
         conversation: {
@@ -100,7 +100,7 @@ export const getById = protectedProcedure
     );
 
     const resumeScore = response.screening?.detailedScore;
-    const interviewScore = response.telegramInterviewScoring?.detailedScore;
+    const interviewScore = response.interviewScoring?.detailedScore;
 
     const matchScore =
       resumeScore !== undefined && interviewScore !== undefined
@@ -139,7 +139,7 @@ export const getById = protectedProcedure
       matchScore,
       resumeScore,
       interviewScore,
-      scoreAnalysis: response.telegramInterviewScoring?.analysis ?? undefined,
+      scoreAnalysis: response.interviewScoring?.analysis ?? undefined,
       screeningAnalysis: response.screening?.analysis ?? undefined,
       availability: "Не указано",
       salaryExpectation: response.salaryExpectations || "Не указано",

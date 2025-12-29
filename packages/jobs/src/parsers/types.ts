@@ -1,7 +1,7 @@
 export interface VacancyData {
   id: string; // Внутренний ID (может совпадать с externalId для HH)
   externalId?: string;
-  source: "hh" | "avito" | "superjob";
+  source: "hh" | "avito" | "superjob" | "kwork" | "fl" | "weblancer" | "upwork";
   title: string;
   url: string | null;
   views: string;
@@ -10,7 +10,7 @@ export interface VacancyData {
   newResponses: string;
   resumesInProgress: string;
   suitableResumes: string;
-  region: string;
+  region?: string; // Опционально: не все источники предоставляют географический регион (например, фриланс-платформы)
   description: string;
 }
 

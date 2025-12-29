@@ -20,6 +20,11 @@ export const conversationStatusEnum = pgEnum("conversation_status", [
   "CANCELLED",
 ]);
 
+export const conversationSourceEnum = pgEnum("conversation_source", [
+  "TELEGRAM",
+  "WEB",
+]);
+
 export const conversation = pgTable(
   "conversations",
   {
@@ -33,6 +38,7 @@ export const conversation = pgTable(
     candidateName: varchar("candidate_name", { length: 500 }),
     username: varchar("username", { length: 100 }),
     status: conversationStatusEnum("status").default("ACTIVE").notNull(),
+    source: conversationSourceEnum("source").default("TELEGRAM").notNull(),
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
@@ -56,6 +62,7 @@ export const CreateConversationSchema = createInsertSchema(conversation, {
   candidateName: z.string().max(500).optional(),
   username: z.string().max(100).optional(),
   status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),
+  source: z.enum(["TELEGRAM", "WEB"]).default("TELEGRAM"),
   metadata: z.record(z.string(), z.unknown()).optional(),
 }).omit({
   id: true,

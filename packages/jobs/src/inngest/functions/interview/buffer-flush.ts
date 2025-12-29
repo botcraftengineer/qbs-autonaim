@@ -1,3 +1,5 @@
+import { conversation, eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
 import { messageBufferService } from "../../../services/buffer";
 import {
   analyzeAndGenerateNextQuestion,
@@ -29,6 +31,24 @@ export const bufferFlushFunction = inngest.createFunction(
       interviewStep,
       flushId,
     });
+
+    // Определяем источник разговора для отправки правильных событий
+    const conversationSource = await step.run(
+      "get-conversation-source",
+      async () => {
+        const conv = await db.query.conversation.findFirst({
+          where: eq(conversation.id, conversationId),
+          columns: { source: true },
+        });
+
+        console.log("📍 Conversation source detected", {
+          conversationId,
+          source: conv?.source ?? "TELEGRAM",
+        });
+
+        return conv?.source ?? "TELEGRAM";
+      },
+    );
 
     // Получение сообщений из буфера
     const messages = await step.run("get-buffered-messages", async () => {
@@ -175,15 +195,26 @@ export const bufferFlushFunction = inngest.createFunction(
 
     // Отправка ответа кандидату
     await step.run("send-response", async () => {
+      // Определяем имя события в зависимости от источника
+      const sendQuestionEvent =
+        conversationSource === "WEB"
+          ? "web/interview.send-question"
+          : "telegram/interview.send-question";
+      const completeEvent =
+        conversationSource === "WEB"
+          ? "web/interview.complete"
+          : "telegram/interview.complete";
+
       if (result.shouldContinue && result.nextQuestion) {
         // Обычный флоу: продолжаем интервью с новым вопросом
         console.log("➡️ Sending next question", {
           conversationId,
           questionNumber: context.questionNumber,
+          source: conversationSource,
         });
 
         await inngest.send({
-          name: "telegram/interview.send-question",
+          name: sendQuestionEvent,
           data: {
             conversationId: context.conversationId,
             question: result.nextQuestion,
@@ -200,10 +231,11 @@ export const bufferFlushFunction = inngest.createFunction(
         console.log("💬 Sending response without continuing", {
           conversationId,
           reason: result.reason,
+          source: conversationSource,
         });
 
         await inngest.send({
-          name: "telegram/interview.send-question",
+          name: sendQuestionEvent,
           data: {
             conversationId: context.conversationId,
             question: result.nextQuestion,
@@ -225,10 +257,11 @@ export const bufferFlushFunction = inngest.createFunction(
           console.log("🏁 Completing interview", {
             conversationId,
             reason: result.reason,
+            source: conversationSource,
           });
 
           await inngest.send({
-            name: "telegram/interview.complete",
+            name: completeEvent,
             data: {
               conversationId: context.conversationId,
               transcription: aggregatedContent,

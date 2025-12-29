@@ -1,7 +1,7 @@
 import { desc, eq } from "@qbs-autonaim/db";
 import {
+  interviewScoring,
   responseScreening,
-  telegramInterviewScoring,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -56,17 +56,18 @@ export const listRecent = protectedProcedure
       photoFiles.map((f) => [f.id, getFileUrl(f.key)]),
     );
 
-    // Получаем screening и telegramInterviewScoring для каждого отклика
+    // Получаем screening и interviewScoring для каждого отклика
     const responsesWithRelations = await Promise.all(
       responses.map(async (r) => {
         const screening = await ctx.db.query.responseScreening.findFirst({
           where: eq(responseScreening.responseId, r.response.id),
+          orderBy: desc(responseScreening.updatedAt),
         });
 
-        const interviewScoring =
-          await ctx.db.query.telegramInterviewScoring.findFirst({
-            where: eq(telegramInterviewScoring.responseId, r.response.id),
-          });
+        const scoring = await ctx.db.query.interviewScoring.findFirst({
+          where: eq(interviewScoring.responseId, r.response.id),
+          orderBy: desc(interviewScoring.createdAt),
+        });
 
         return {
           ...r.response,
@@ -82,11 +83,11 @@ export const listRecent = protectedProcedure
                   : null,
               }
             : null,
-          telegramInterviewScoring: interviewScoring
+          interviewScoring: scoring
             ? {
-                ...interviewScoring,
-                analysis: interviewScoring.analysis
-                  ? sanitizeHtml(interviewScoring.analysis)
+                ...scoring,
+                analysis: scoring.analysis
+                  ? sanitizeHtml(scoring.analysis)
                   : null,
               }
             : null,

@@ -1,6 +1,7 @@
 import { candidatesRouter } from "./routers/candidates";
 import { companyRouter } from "./routers/company";
 import { filesRouter } from "./routers/files";
+import { freelancePlatformsRouter } from "./routers/freelance-platforms";
 import { funnelRouter } from "./routers/funnel";
 import { integrationRouter } from "./routers/integration";
 import { organizationRouter } from "./routers/organization";
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   funnel: funnelRouter,
   candidates: candidatesRouter,
   files: filesRouter,
+  freelancePlatforms: freelancePlatformsRouter,
   ...(process.env.NODE_ENV !== "production" && { test: testRouter }),
 });
 

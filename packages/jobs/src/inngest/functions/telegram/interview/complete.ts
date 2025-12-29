@@ -4,8 +4,8 @@ import {
   conversationMessage,
   desc,
   eq,
+  interviewScoring,
   sql,
-  telegramInterviewScoring,
   vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
@@ -84,7 +84,7 @@ export const completeInterviewFunction = inngest.createFunction(
         });
 
         await db
-          .insert(telegramInterviewScoring)
+          .insert(interviewScoring)
           .values({
             conversationId,
             responseId,
@@ -93,7 +93,7 @@ export const completeInterviewFunction = inngest.createFunction(
             analysis: scoring.analysis,
           })
           .onConflictDoUpdate({
-            target: telegramInterviewScoring.conversationId,
+            target: interviewScoring.conversationId,
             set: {
               score: sql`excluded.score`,
               detailedScore: sql`excluded.detailed_score`,
@@ -128,6 +128,59 @@ export const completeInterviewFunction = inngest.createFunction(
           status: "COMPLETED",
           hrSelectionStatus,
           detailedScore: scoringResult.detailedScore,
+        });
+      });
+
+      // Отправляем уведомление о завершении интервью
+      await step.run("send-completion-notification", async () => {
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, responseId),
+          with: {
+            vacancy: true,
+          },
+        });
+
+        if (!response?.vacancy?.workspaceId) {
+          console.warn("⚠️ Не удалось получить workspaceId для уведомления");
+          return;
+        }
+
+        // Отправляем уведомление о завершении интервью
+        await inngest.send({
+          name: "freelance/notification.send",
+          data: {
+            workspaceId: response.vacancy.workspaceId,
+            vacancyId: response.vacancyId,
+            responseId,
+            notificationType: "INTERVIEW_COMPLETED",
+            candidateName: response.candidateName ?? undefined,
+            score: scoringResult.score,
+            detailedScore: scoringResult.detailedScore,
+            profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+          },
+        });
+
+        // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
+        if (scoringResult.detailedScore >= 85) {
+          await inngest.send({
+            name: "freelance/notification.send",
+            data: {
+              workspaceId: response.vacancy.workspaceId,
+              vacancyId: response.vacancyId,
+              responseId,
+              notificationType: "HIGH_SCORE_CANDIDATE",
+              candidateName: response.candidateName ?? undefined,
+              score: scoringResult.score,
+              detailedScore: scoringResult.detailedScore,
+              profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+            },
+          });
+        }
+
+        console.log("✅ Уведомления отправлены", {
+          responseId,
+          detailedScore: scoringResult.detailedScore,
+          isHighScore: scoringResult.detailedScore >= 85,
         });
       });
 
@@ -261,8 +314,8 @@ export const completeInterviewFunction = inngest.createFunction(
         vacancyTitle = response?.vacancy?.title ?? undefined;
         resumeLanguage = response?.resumeLanguage ?? "ru";
 
-        const scoring = await db.query.telegramInterviewScoring.findFirst({
-          where: eq(telegramInterviewScoring.conversationId, conversationId),
+        const scoring = await db.query.interviewScoring.findFirst({
+          where: eq(interviewScoring.conversationId, conversationId),
         });
         score = scoring?.score ?? undefined;
         detailedScore = scoring?.detailedScore ?? undefined;

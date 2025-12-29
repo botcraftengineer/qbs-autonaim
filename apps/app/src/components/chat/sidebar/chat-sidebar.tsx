@@ -21,7 +21,7 @@ interface ChatSidebarProps {
       detailedScore?: number | null;
       analysis?: string | null;
     } | null;
-    telegramInterviewScoring?: {
+    interviewScoring?: {
       score: number | null;
       detailedScore: number | null;
       analysis?: string | null;
@@ -59,13 +59,11 @@ export function ChatSidebar({
             />
           )}
 
-          {responseData?.telegramInterviewScoring && (
+          {responseData?.interviewScoring && (
             <TelegramInterviewScoring
-              score={responseData.telegramInterviewScoring.score}
-              detailedScore={
-                responseData.telegramInterviewScoring.detailedScore
-              }
-              analysis={responseData.telegramInterviewScoring.analysis}
+              score={responseData.interviewScoring.score}
+              detailedScore={responseData.interviewScoring.detailedScore}
+              analysis={responseData.interviewScoring.analysis}
             />
           )}
 

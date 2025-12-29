@@ -43,7 +43,7 @@ export const paths = {
       orgSlug: string,
       slug: string,
       vacancyId?: string,
-      section?: "detail" | "settings",
+      section?: "detail" | "settings" | "responses",
     ) => {
       const base = `/orgs/${orgSlug}/workspaces/${slug}/vacancies`;
       if (!vacancyId) return base;

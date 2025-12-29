@@ -142,8 +142,8 @@ export function ResponseRow({
         )}
       </TableCell>
       <TableCell>
-        {response.telegramInterviewScoring ? (
-          <ScreeningHoverCard screening={response.telegramInterviewScoring} />
+        {response.interviewScoring ? (
+          <ScreeningHoverCard screening={response.interviewScoring} />
         ) : (
           <Badge variant="outline" className="text-muted-foreground">
             Не оценен
