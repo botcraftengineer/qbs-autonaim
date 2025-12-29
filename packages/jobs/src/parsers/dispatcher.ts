@@ -1,21 +1,28 @@
 import { parseFlVacancies } from "./fl";
 import type { RawFreelanceVacancy } from "./freelance";
+import { FREELANCE_SOURCES, type FreelanceSource } from "./freelance/types";
 import { parseKworkVacancies } from "./kwork";
 import type { VacancyData } from "./types";
 import { parseUpworkVacancies } from "./upwork";
 import { parseWeblancerVacancies } from "./weblancer";
 
 /**
+ * Список поддерживаемых источников вакансий
+ */
+export const VACANCY_SOURCES = [
+  "hh",
+  "avito",
+  "superjob",
+  "kwork",
+  "fl",
+  "weblancer",
+  "upwork",
+] as const;
+
+/**
  * Тип источника вакансии
  */
-export type VacancySource =
-  | "hh"
-  | "avito"
-  | "superjob"
-  | "kwork"
-  | "fl"
-  | "weblancer"
-  | "upwork";
+export type VacancySource = (typeof VACANCY_SOURCES)[number];
 
 /**
  * Парсит вакансии в зависимости от источника
@@ -50,20 +57,14 @@ export async function parseVacanciesBySource(
 export function isVacancySourceSupported(
   source: string,
 ): source is VacancySource {
-  return [
-    "hh",
-    "avito",
-    "superjob",
-    "kwork",
-    "fl",
-    "weblancer",
-    "upwork",
-  ].includes(source);
+  return VACANCY_SOURCES.includes(source as VacancySource);
 }
 
 /**
  * Проверяет, является ли источник фриланс-платформой
  */
-export function isFreelancePlatform(source: VacancySource): boolean {
-  return ["kwork", "fl", "weblancer", "upwork"].includes(source);
+export function isFreelancePlatform(
+  source: VacancySource,
+): source is FreelanceSource {
+  return FREELANCE_SOURCES.includes(source as FreelanceSource);
 }

@@ -1,7 +1,8 @@
+import { AuditLoggerService } from "@qbs-autonaim/api";
 import { db } from "@qbs-autonaim/db";
 import { workspace, workspaceMember } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getSession } from "~/auth/server";
 
@@ -107,6 +108,25 @@ export async function POST(request: Request) {
         { error: "Нет доступа к workspace" },
         { status: 403 },
       );
+    }
+
+    // Логирование начала AI генерации
+    try {
+      const auditLogger = new AuditLoggerService(db);
+      await auditLogger.logAccess({
+        userId: session.user.id,
+        action: "ACCESS",
+        resourceType: "VACANCY",
+        resourceId: workspaceId,
+        metadata: {
+          action: "vacancy_ai_generation_started",
+          messageLength: message.length,
+          hasConversationHistory: !!conversationHistory?.length,
+        },
+      });
+    } catch (auditError) {
+      // Логируем ошибку, но не блокируем основной поток
+      console.error("Failed to log audit entry:", auditError);
     }
 
     // Генерация промпта

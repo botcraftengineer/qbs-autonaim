@@ -25,7 +25,7 @@ export const webSendQuestionFunction = inngest.createFunction(
     });
 
     // Проверяем существование conversation
-    await step.run("check-conversation", async () => {
+    const conv = await step.run("check-conversation", async () => {
       const c = await db.query.conversation.findFirst({
         where: eq(conversation.id, conversationId),
       });
@@ -53,7 +53,7 @@ export const webSendQuestionFunction = inngest.createFunction(
         conversationId,
         sender: "BOT",
         contentType: "TEXT",
-        channel: "TELEGRAM", // Используем TELEGRAM как универсальный канал
+        channel: conv.source,
         content: question,
       });
 

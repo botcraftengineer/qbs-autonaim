@@ -42,7 +42,7 @@ export const conversationMessage = pgTable(
     contentType: messageContentTypeEnum("content_type")
       .default("TEXT")
       .notNull(),
-    channel: messageChannelEnum("channel").default("TELEGRAM").notNull(),
+    channel: messageChannelEnum("channel").notNull(),
     content: text("content").notNull(),
     fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
     voiceDuration: varchar("voice_duration", { length: 20 }),
@@ -68,7 +68,7 @@ export const CreateMessageSchema = createInsertSchema(conversationMessage, {
   conversationId: uuidv7Schema,
   sender: z.enum(["CANDIDATE", "BOT", "ADMIN"]),
   contentType: z.enum(["TEXT", "VOICE"]).default("TEXT"),
-  channel: z.enum(["TELEGRAM", "HH", "WEB"]).default("TELEGRAM"),
+  channel: z.enum(["TELEGRAM", "HH", "WEB"]),
   content: z.string().transform((val) => val.replace(/\0/g, "")),
   fileId: uuidv7Schema.optional(),
   voiceDuration: z.string().max(20).optional(),

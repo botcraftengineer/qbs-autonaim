@@ -21,7 +21,7 @@ export function normalizeFreelanceVacancy(
     newResponses: "0",
     resumesInProgress: "0",
     suitableResumes: "0",
-    region: raw.category || "",
+    // region не указывается для фриланс-вакансий, так как они обычно удаленные
     description: raw.description || "",
   };
 }
@@ -43,6 +43,7 @@ export async function parseFreelanceVacancies(
 
   for (let i = 0; i < rawVacancies.length; i++) {
     const raw = rawVacancies[i];
+    if (!raw) continue;
     try {
       const normalized = normalizeFreelanceVacancy(raw, source);
       vacancies.push(normalized);
@@ -87,7 +88,7 @@ export function createFreelanceVacancyStub(
     newResponses: "0",
     resumesInProgress: "0",
     suitableResumes: "0",
-    region: "",
+    // region не указывается для фриланс-вакансий
     description: "",
   };
 }

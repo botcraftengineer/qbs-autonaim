@@ -1,5 +1,6 @@
 import { vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { InterviewLinkGenerator } from "../../services";
 import { protectedProcedure } from "../../trpc";
@@ -82,7 +83,7 @@ export const createVacancy = protectedProcedure
         },
       };
     } catch (error) {
-      if (error instanceof Error && error.message.includes("TRPC")) {
+      if (error instanceof TRPCError) {
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {

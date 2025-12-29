@@ -11,6 +11,19 @@ const sendChatMessageInputSchema = z.object({
   message: z.string().min(1, "Сообщение не может быть пустым").max(10000),
 });
 
+const conversationMetadataSchema = z
+  .object({
+    questionAnswers: z
+      .array(
+        z.object({
+          question: z.string(),
+          answer: z.string(),
+        }),
+      )
+      .default([]),
+  })
+  .default({ questionAnswers: [] });
+
 export const sendChatMessage = publicProcedure
   .input(sendChatMessageInputSchema)
   .mutation(async ({ input, ctx }) => {
@@ -45,14 +58,11 @@ export const sendChatMessage = publicProcedure
         });
       }
 
-      // Получаем текущий номер вопроса из метаданных
-      const metadata = (conv.metadata as Record<string, unknown>) || {};
-      const questionAnswers =
-        (metadata.questionAnswers as Array<{
-          question: string;
-          answer: string;
-        }>) || [];
-      const interviewStep = questionAnswers.length + 1;
+      // Получаем текущий номер вопроса из метаданных с валидацией
+      const parsedMetadata = conversationMetadataSchema.parse(
+        conv.metadata || {},
+      );
+      const interviewStep = parsedMetadata.questionAnswers.length + 1;
 
       // Сохраняем сообщение в conversation_messages
       const [savedMessage] = await ctx.db
@@ -61,7 +71,7 @@ export const sendChatMessage = publicProcedure
           conversationId: input.conversationId,
           sender: "CANDIDATE",
           contentType: "TEXT",
-          channel: "TELEGRAM",
+          channel: conv.source,
           content: input.message,
         })
         .returning();

@@ -15,8 +15,25 @@ export async function parseFlVacancies(
 
   console.log(`🚀 Парсинг вакансий с ${config.name}`);
 
-  const vacancies = rawVacancies.map((raw) =>
-    normalizeFreelanceVacancy(raw, "fl"),
+  const vacancies: VacancyData[] = [];
+  let failedCount = 0;
+
+  for (let i = 0; i < rawVacancies.length; i++) {
+    const raw = rawVacancies[i];
+    try {
+      const normalized = normalizeFreelanceVacancy(raw, "fl");
+      vacancies.push(normalized);
+    } catch (error) {
+      failedCount++;
+      console.error(
+        `❌ Ошибка нормализации вакансии [индекс: ${i}, id: ${raw.id || "unknown"}, заголовок: "${raw.title?.slice(0, 50) || "N/A"}..."]:`,
+        error,
+      );
+    }
+  }
+
+  console.log(
+    `✅ Успешно обработано: ${vacancies.length}, ошибок: ${failedCount}`,
   );
 
   return vacancies;

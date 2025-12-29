@@ -61,10 +61,12 @@ export const listRecent = protectedProcedure
       responses.map(async (r) => {
         const screening = await ctx.db.query.responseScreening.findFirst({
           where: eq(responseScreening.responseId, r.response.id),
+          orderBy: desc(responseScreening.updatedAt),
         });
 
         const scoring = await ctx.db.query.interviewScoring.findFirst({
           where: eq(interviewScoring.responseId, r.response.id),
+          orderBy: desc(interviewScoring.createdAt),
         });
 
         return {

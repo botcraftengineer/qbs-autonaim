@@ -217,11 +217,20 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         reason ||
         "Спасибо за ваши ответы! Интервью завершено. Мы свяжемся с вами в ближайшее время.";
 
+      // Получаем conversation для доступа к source
+      const conv = await db.query.conversation.findFirst({
+        where: eq(conversation.id, conversationId),
+      });
+
+      if (!conv) {
+        throw new Error(`Conversation ${conversationId} not found`);
+      }
+
       await db.insert(conversationMessage).values({
         conversationId,
         sender: "BOT",
         contentType: "TEXT",
-        channel: "TELEGRAM",
+        channel: conv.source,
         content: completionMessage,
       });
 

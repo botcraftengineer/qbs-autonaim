@@ -35,9 +35,8 @@ export function VacancyDocumentPreview({
 
   if (isEmpty) {
     return (
-      <div
+      <output
         className="flex h-full items-center justify-center p-8"
-        role="status"
         aria-label="Документ пуст"
       >
         <div className="text-center">
@@ -51,7 +50,7 @@ export function VacancyDocumentPreview({
             <br />и документ будет формироваться автоматически
           </p>
         </div>
-      </div>
+      </output>
     );
   }
 

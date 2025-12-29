@@ -97,7 +97,7 @@ ${offerDetails.message ? `\n${offerDetails.message}\n` : ""}
         conversationId: conv.id,
         sender: "BOT",
         contentType: "TEXT",
-        channel: "TELEGRAM",
+        channel: conv.source,
         content: removeNullBytes(offerMessage),
         externalMessageId: result.messageId,
       });

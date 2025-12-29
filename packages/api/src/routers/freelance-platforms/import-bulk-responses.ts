@@ -162,23 +162,14 @@ export const importBulkResponses = protectedProcedure
             })
             .returning();
 
-          if (createdResponse) {
-            results.push({
-              success: true,
-              responseId: createdResponse.id,
-              freelancerName: parsed.freelancerName,
-              platformProfileUrl: parsed.contactInfo.platformProfile,
-            });
-            successCount++;
-          } else {
-            results.push({
-              success: false,
-              error: "Не удалось создать отклик",
-              freelancerName: parsed.freelancerName,
-              platformProfileUrl: parsed.contactInfo.platformProfile,
-            });
-            failureCount++;
-          }
+          // Drizzle .returning() всегда возвращает запись или выбрасывает ошибку
+          results.push({
+            success: true,
+            responseId: createdResponse.id,
+            freelancerName: parsed.freelancerName,
+            platformProfileUrl: parsed.contactInfo.platformProfile,
+          });
+          successCount++;
         } catch (error) {
           results.push({
             success: false,

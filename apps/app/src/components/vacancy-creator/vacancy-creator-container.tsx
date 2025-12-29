@@ -216,9 +216,8 @@ export function VacancyCreatorContainer({
             aria-relevant="additions"
           >
             {messages.length === 0 ? (
-              <div
+              <output
                 className="flex h-full min-h-[300px] items-center justify-center"
-                role="status"
                 aria-label="Пустое состояние чата"
               >
                 <div className="text-center text-muted-foreground">
@@ -227,7 +226,7 @@ export function VacancyCreatorContainer({
                     Например: "Нужен React разработчик с опытом 3+&nbsp;года"
                   </p>
                 </div>
-              </div>
+              </output>
             ) : (
               <>
                 {messages.map((msg) => (
@@ -239,9 +238,8 @@ export function VacancyCreatorContainer({
                   />
                 ))}
                 {isGenerating && (
-                  <div
+                  <output
                     className="flex gap-3 rounded-lg bg-muted/50 p-4"
-                    role="status"
                     aria-label="Ассистент печатает"
                   >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
@@ -255,7 +253,7 @@ export function VacancyCreatorContainer({
                         Генерирую документ…
                       </p>
                     </div>
-                  </div>
+                  </output>
                 )}
                 <div ref={messagesEndRef} aria-hidden="true" />
               </>

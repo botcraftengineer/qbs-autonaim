@@ -4,6 +4,60 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
+// Схема для валидации ответа от AI
+const aiResponseSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  requirements: z.string().optional(),
+  responsibilities: z.string().optional(),
+  conditions: z.string().optional(),
+});
+
+/**
+ * Безопасно извлекает первый валидный JSON объект из текста
+ * Использует балансировку скобок для поиска корректного JSON
+ */
+function extractJSON(text: string): string | null {
+  const startIndex = text.indexOf("{");
+  if (startIndex === -1) return null;
+
+  let braceCount = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = startIndex; i < text.length; i++) {
+    const char = text[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (char === "{") {
+      braceCount++;
+    } else if (char === "}") {
+      braceCount--;
+      if (braceCount === 0) {
+        return text.substring(startIndex, i + 1);
+      }
+    }
+  }
+
+  return null;
+}
+
 const chatGenerateInputSchema = z.object({
   workspaceId: workspaceIdSchema,
   message: z.string().min(1).max(2000),
@@ -134,22 +188,58 @@ export const chatGenerate = protectedProcedure
         fullText += chunk;
       }
 
-      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("Invalid JSON response from AI");
+      // Безопасно извлекаем JSON
+      const jsonString = extractJSON(fullText);
+      if (!jsonString) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "AI не вернул валидный JSON. Попробуйте переформулировать запрос.",
+        });
       }
 
-      const parsed = JSON.parse(jsonMatch[0]);
+      // Парсим JSON с обработкой ошибок
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(jsonString);
+      } catch (error) {
+        console.error("JSON parse error:", error, "Raw JSON:", jsonString);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Не удалось распарсить ответ от AI. Попробуйте ещё раз.",
+        });
+      }
+
+      // Валидируем структуру через Zod
+      const validationResult = aiResponseSchema.safeParse(parsed);
+      if (!validationResult.success) {
+        console.error(
+          "Validation error:",
+          validationResult.error,
+          "Parsed data:",
+          parsed,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "AI вернул данные в неожиданном формате. Попробуйте ещё раз.",
+        });
+      }
+
+      const validated = validationResult.data;
 
       return {
         document: {
-          title: parsed.title || currentDocument?.title || "",
-          description: parsed.description || currentDocument?.description || "",
+          title: validated.title ?? currentDocument?.title ?? "",
+          description:
+            validated.description ?? currentDocument?.description ?? "",
           requirements:
-            parsed.requirements || currentDocument?.requirements || "",
+            validated.requirements ?? currentDocument?.requirements ?? "",
           responsibilities:
-            parsed.responsibilities || currentDocument?.responsibilities || "",
-          conditions: parsed.conditions || currentDocument?.conditions || "",
+            validated.responsibilities ??
+            currentDocument?.responsibilities ??
+            "",
+          conditions: validated.conditions ?? currentDocument?.conditions ?? "",
         },
       };
     } catch (error) {

@@ -10,7 +10,7 @@ export interface VacancyData {
   newResponses: string;
   resumesInProgress: string;
   suitableResumes: string;
-  region: string;
+  region?: string; // Опционально: не все источники предоставляют географический регион (например, фриланс-платформы)
   description: string;
 }
 
