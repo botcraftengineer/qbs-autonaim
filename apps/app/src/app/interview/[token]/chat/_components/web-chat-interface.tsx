@@ -31,13 +31,13 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
 
   // Загружаем историю сообщений
   const { data: chatHistory, isLoading } =
-    trpc.freelancePlatforms?.getChatHistory.useQuery({
+    trpc.freelancePlatforms.getChatHistory.useQuery({
       conversationId,
     });
 
   // Проверяем статус интервью с автоматическим переподключением
   const { data: interviewStatus, error: statusError } =
-    trpc.freelancePlatforms?.getWebInterviewStatus.useQuery(
+    trpc.freelancePlatforms.getWebInterviewStatus.useQuery(
       {
         conversationId,
       },
@@ -51,7 +51,7 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
 
   // Polling для новых сообщений с автоматическим переподключением
   const { data: newMessages, error: messagesError } =
-    trpc.freelancePlatforms?.getNewMessages.useQuery(
+    trpc.freelancePlatforms.getNewMessages.useQuery(
       {
         conversationId,
         lastMessageId,
@@ -126,7 +126,7 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
   // Автопрокрутка к последнему сообщению
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, []);
 
   const sendMessageMutation =
     trpc.freelancePlatforms?.sendChatMessage.useMutation({

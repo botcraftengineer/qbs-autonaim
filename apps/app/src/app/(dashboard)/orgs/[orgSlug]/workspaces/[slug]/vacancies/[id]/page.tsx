@@ -228,7 +228,8 @@ ${data.interviewLink.url}
                 Шаблон для описания вакансии
               </h4>
               <p className="text-xs text-muted-foreground mb-2">
-                Используйте этот текст при размещении вакансии на фриланс-платформе
+                Используйте этот текст при размещении вакансии на
+                фриланс-платформе
               </p>
               <div className="rounded-md bg-muted p-3 text-sm whitespace-pre-wrap mb-2">
                 {vacancy.description || vacancy.title}
@@ -273,7 +274,10 @@ ${data.interviewLink.url}
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-lg border p-4">
-              <div className="text-2xl font-bold tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <div
+                className="text-2xl font-bold tabular-nums"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
                 {responseStats.HH_API}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -281,7 +285,10 @@ ${data.interviewLink.url}
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-2xl font-bold tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <div
+                className="text-2xl font-bold tabular-nums"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
                 {responseStats.FREELANCE_MANUAL}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -289,7 +296,10 @@ ${data.interviewLink.url}
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-2xl font-bold tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <div
+                className="text-2xl font-bold tabular-nums"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
                 {responseStats.FREELANCE_LINK}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -298,7 +308,12 @@ ${data.interviewLink.url}
             </div>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
-            Всего откликов: <span className="font-semibold tabular-nums">{responseStats.HH_API + responseStats.FREELANCE_MANUAL + responseStats.FREELANCE_LINK}</span>
+            Всего откликов:{" "}
+            <span className="font-semibold tabular-nums">
+              {responseStats.HH_API +
+                responseStats.FREELANCE_MANUAL +
+                responseStats.FREELANCE_LINK}
+            </span>
           </div>
         </CardContent>
       </Card>
@@ -340,16 +355,20 @@ ${data.interviewLink.url}
         </CardHeader>
         <CardContent>
           {shortlistLoading ? (
-            <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
+            <output
+              className="text-sm text-muted-foreground"
+              aria-live="polite"
+            >
               Загрузка…
-            </div>
+            </output>
           ) : !shortlist || shortlist.length === 0 ? (
             <div className="rounded-lg border border-dashed p-6 text-center">
               <p className="text-sm text-muted-foreground mb-2">
                 Шортлист пока пуст
               </p>
               <p className="text-xs text-muted-foreground">
-                Импортируйте отклики и проведите интервью для формирования шортлиста
+                Импортируйте отклики и проведите интервью для формирования
+                шортлиста
               </p>
             </div>
           ) : (
@@ -360,26 +379,31 @@ ${data.interviewLink.url}
                   className="flex items-center justify-between rounded-lg border p-3 gap-3"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div 
+                    <span
                       className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm shrink-0"
-                      aria-label={`Место ${index + 1}`}
+                      aria-hidden="true"
                     >
                       {index + 1}
-                    </div>
+                    </span>
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium truncate">{candidate.name}</div>
+                      <div className="font-medium truncate">
+                        {candidate.name}
+                      </div>
                       <div className="text-sm text-muted-foreground">
                         Оценка:{" "}
-                        <span className="font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        <span
+                          className="font-semibold"
+                          style={{ fontVariantNumeric: "tabular-nums" }}
+                        >
                           {candidate.overallScore}
                         </span>
                         /100
                       </div>
                     </div>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     asChild
                     className="shrink-0 min-h-[44px] md:min-h-0"
                   >
@@ -393,9 +417,9 @@ ${data.interviewLink.url}
                 </div>
               ))}
               {shortlist.length > 5 && (
-                <Button 
-                  variant="outline" 
-                  className="w-full min-h-[44px] md:min-h-0" 
+                <Button
+                  variant="outline"
+                  className="w-full min-h-[44px] md:min-h-0"
                   asChild
                 >
                   <Link

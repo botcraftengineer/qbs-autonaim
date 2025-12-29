@@ -96,7 +96,7 @@ export default function ImportResponsesPage() {
         );
       },
       onError: (error) => {
-        toast.error("Ошибка импорта: " + error.message);
+        toast.error(`Ошибка импорта: ${error.message}`);
       },
     }),
   );
@@ -126,7 +126,7 @@ export default function ImportResponsesPage() {
 
       const result = await response.json();
       const data = result.result.data;
-      
+
       setParsedData(data.preview);
       toast.success(
         `Распознано ${data.summary.total} откликов (${data.summary.valid} валидных)`,
@@ -168,13 +168,18 @@ export default function ImportResponsesPage() {
 
   const handleEdit = (index: number, field: string, value: string) => {
     const updated = [...parsedData];
+    const item = updated[index];
+    if (!item) return;
+
     if (field === "freelancerName") {
-      updated[index]!.freelancerName = value;
+      item.freelancerName = value;
     } else if (field.startsWith("contactInfo.")) {
-      const contactField = field.split(".")[1] as keyof ParsedResponseItem["contactInfo"];
-      updated[index]!.contactInfo[contactField] = value;
+      const contactField = field.split(
+        ".",
+      )[1] as keyof ParsedResponseItem["contactInfo"];
+      item.contactInfo[contactField] = value;
     } else if (field === "responseText") {
-      updated[index]!.responseText = value;
+      item.responseText = value;
     }
     setParsedData(updated);
   };
@@ -227,7 +232,9 @@ export default function ImportResponsesPage() {
             <Switch
               id="mode-switch"
               checked={mode === "bulk"}
-              onCheckedChange={(checked) => setMode(checked ? "bulk" : "single")}
+              onCheckedChange={(checked) =>
+                setMode(checked ? "bulk" : "single")
+              }
               aria-label="Переключить режим импорта"
             />
           </div>
@@ -264,7 +271,10 @@ export default function ImportResponsesPage() {
           >
             {isParsing ? (
               <>
-                <IconLoader2 className="size-4 animate-spin" aria-hidden="true" />
+                <IconLoader2
+                  className="size-4 animate-spin"
+                  aria-hidden="true"
+                />
                 Парсинг…
               </>
             ) : (
@@ -286,7 +296,7 @@ export default function ImportResponsesPage() {
           <CardContent className="space-y-4">
             {parsedData.map((item, index) => (
               <div
-                key={index}
+                key={`${item.freelancerName}-${item.responseText.slice(0, 20)}-${index}`}
                 className="rounded-lg border p-4 space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
@@ -295,7 +305,10 @@ export default function ImportResponsesPage() {
                     {getConfidenceBadge(item.confidence)}
                     {!item.validation.isValid && (
                       <Badge variant="destructive">
-                        <IconAlertCircle className="size-3 mr-1" aria-hidden="true" />
+                        <IconAlertCircle
+                          className="size-3 mr-1"
+                          aria-hidden="true"
+                        />
                         Ошибки
                       </Badge>
                     )}
@@ -307,7 +320,11 @@ export default function ImportResponsesPage() {
                       setEditingIndex(editingIndex === index ? null : index)
                     }
                     className="min-h-[44px] md:min-h-0"
-                    aria-label={editingIndex === index ? "Закрыть редактирование" : "Редактировать"}
+                    aria-label={
+                      editingIndex === index
+                        ? "Закрыть редактирование"
+                        : "Редактировать"
+                    }
                   >
                     {editingIndex === index ? "Закрыть" : "Редактировать"}
                   </Button>
@@ -316,10 +333,12 @@ export default function ImportResponsesPage() {
                 {/* Ошибки валидации */}
                 {item.validation.errors.length > 0 && (
                   <div className="rounded-md bg-destructive/10 p-3 text-sm">
-                    <p className="font-semibold text-destructive mb-1">Ошибки:</p>
+                    <p className="font-semibold text-destructive mb-1">
+                      Ошибки:
+                    </p>
                     <ul className="list-disc list-inside space-y-1">
-                      {item.validation.errors.map((error, i) => (
-                        <li key={i} className="text-destructive">
+                      {item.validation.errors.map((error) => (
+                        <li key={error} className="text-destructive">
                           {error}
                         </li>
                       ))}
@@ -334,9 +353,9 @@ export default function ImportResponsesPage() {
                       Предупреждения:
                     </p>
                     <ul className="list-disc list-inside space-y-1">
-                      {item.validation.warnings.map((warning, i) => (
+                      {item.validation.warnings.map((warning) => (
                         <li
-                          key={i}
+                          key={warning}
                           className="text-yellow-700 dark:text-yellow-500"
                         >
                           {warning}
@@ -393,14 +412,20 @@ export default function ImportResponsesPage() {
                         id={`telegram-${index}`}
                         value={item.contactInfo.telegram || ""}
                         onChange={(e) =>
-                          handleEdit(index, "contactInfo.telegram", e.target.value)
+                          handleEdit(
+                            index,
+                            "contactInfo.telegram",
+                            e.target.value,
+                          )
                         }
                         placeholder="@username"
                         className="min-h-[44px] md:min-h-0"
                       />
                     </div>
                     <div>
-                      <Label htmlFor={`profile-${index}`}>Профиль на платформе</Label>
+                      <Label htmlFor={`profile-${index}`}>
+                        Профиль на платформе
+                      </Label>
                       <Input
                         id={`profile-${index}`}
                         type="url"
@@ -434,7 +459,9 @@ export default function ImportResponsesPage() {
                     <div>
                       <span className="font-semibold">Имя:</span>{" "}
                       {item.freelancerName || (
-                        <span className="text-muted-foreground">Не указано</span>
+                        <span className="text-muted-foreground">
+                          Не указано
+                        </span>
                       )}
                     </div>
                     {item.contactInfo.email && (
@@ -490,13 +517,17 @@ export default function ImportResponsesPage() {
               >
                 {importMutation.isPending ? (
                   <>
-                    <IconLoader2 className="size-4 animate-spin" aria-hidden="true" />
+                    <IconLoader2
+                      className="size-4 animate-spin"
+                      aria-hidden="true"
+                    />
                     Импорт…
                   </>
                 ) : (
                   <>
                     <IconCheck className="size-4" aria-hidden="true" />
-                    Импортировать ({parsedData.filter((p) => p.validation.isValid).length})
+                    Импортировать (
+                    {parsedData.filter((p) => p.validation.isValid).length})
                   </>
                 )}
               </Button>

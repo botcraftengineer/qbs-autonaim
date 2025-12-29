@@ -148,13 +148,12 @@ export default function VacancyGeneratorPage() {
                           : "justify-start"
                       }`}
                     >
-                      <div
+                      <article
                         className={`max-w-[80%] rounded-lg px-4 py-2 ${
                           message.role === "user"
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted"
                         }`}
-                        role="article"
                         aria-label={
                           message.role === "user"
                             ? "Ваше сообщение"
@@ -168,14 +167,13 @@ export default function VacancyGeneratorPage() {
                             minute: "2-digit",
                           })}
                         </span>
-                      </div>
+                      </article>
                     </div>
                   ))}
                   {isGenerating && (
                     <div className="flex justify-start">
-                      <div
+                      <output
                         className="max-w-[80%] rounded-lg bg-muted px-4 py-2"
-                        role="status"
                         aria-label="Ассистент печатает"
                       >
                         <div className="flex gap-1">
@@ -189,7 +187,7 @@ export default function VacancyGeneratorPage() {
                             style={{ animationDelay: "0.4s" }}
                           />
                         </div>
-                      </div>
+                      </output>
                     </div>
                   )}
                   <div ref={messagesEndRef} />

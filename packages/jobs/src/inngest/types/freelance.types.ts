@@ -17,17 +17,19 @@ export const notificationChannelEnum = z.enum(["EMAIL", "IN_APP", "TELEGRAM"]);
 export const notificationTypeEnum = z.enum([
   "INTERVIEW_COMPLETED",
   "HIGH_SCORE_CANDIDATE",
+  "ANALYSIS_FAILED",
 ]);
 
 export const sendFreelanceNotificationDataSchema = z.object({
-  workspaceId: z.string().min(1, "Workspace ID is required"),
-  vacancyId: z.string().uuid(),
+  workspaceId: z.string().min(1, "Workspace ID is required").optional(),
+  vacancyId: z.string().uuid().optional(),
   responseId: z.string().uuid(),
   notificationType: notificationTypeEnum,
   candidateName: z.string().optional(),
   score: z.number().int().min(0).max(100).optional(),
   detailedScore: z.number().int().min(0).max(100).optional(),
   profileUrl: z.string().optional(),
+  error: z.string().optional(),
 });
 
 /**

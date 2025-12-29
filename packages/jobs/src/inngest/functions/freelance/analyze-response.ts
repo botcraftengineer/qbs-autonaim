@@ -12,8 +12,9 @@ export const analyzeFreelanceResponseFunction = inngest.createFunction(
     name: "Analyze Freelance Response",
     retries: 3,
     // Экспоненциальная задержка для повторов: 2s, 4s, 8s
-    onFailure: async ({ error, event, step }) => {
-      const { responseId } = event.data;
+    onFailure: async ({ error, event }) => {
+      const responseId = (event.data as unknown as { responseId: string })
+        .responseId;
 
       console.error("❌ Все попытки AI-анализа исчерпаны", {
         responseId,
@@ -21,11 +22,11 @@ export const analyzeFreelanceResponseFunction = inngest.createFunction(
       });
 
       // Отправляем уведомление работодателю о неудаче анализа
-      await step.sendEvent("notify-analysis-failure", {
+      await inngest.send({
         name: "freelance/notification.send",
         data: {
           responseId,
-          notificationType: "ANALYSIS_FAILED",
+          notificationType: "ANALYSIS_FAILED" as const,
           error: error.message,
         },
       });

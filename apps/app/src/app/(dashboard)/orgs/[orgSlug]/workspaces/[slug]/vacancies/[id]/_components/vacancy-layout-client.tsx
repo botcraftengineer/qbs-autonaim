@@ -189,7 +189,7 @@ export function VacancyLayoutClient({
                           orgSlug,
                           workspaceSlug,
                           vacancyId,
-                          "responses" as any,
+                          "responses",
                         )}
                       >
                         <span className="hidden sm:inline">

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound, redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { WebChatInterface } from "./_components/web-chat-interface";
 
 interface PageProps {
