@@ -78,6 +78,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
     if (!messageText.trim() || !conversationId) return;
     sendMessage.mutate({
       conversationId,
+      channel: "TELEGRAM",
       sender: "ADMIN",
       contentType: "TEXT",
       content: messageText.trim(),

@@ -23,6 +23,7 @@ export const sendMutateRouter = protectedProcedure
         conversationId: input.conversationId,
         sender: "ADMIN",
         contentType: "TEXT",
+        channel: "WEB",
         content: input.text,
         channel: "WEB",
       })

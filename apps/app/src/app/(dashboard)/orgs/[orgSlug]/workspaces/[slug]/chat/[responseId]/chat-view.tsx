@@ -158,6 +158,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
     sendMessage({
       conversationId,
+      channel: "TELEGRAM",
       sender: "ADMIN",
       contentType: "TEXT",
       content: message,

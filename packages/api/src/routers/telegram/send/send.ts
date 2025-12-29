@@ -22,6 +22,7 @@ export const sendMessageRouter = protectedProcedure
         conversationId: input.conversationId,
         sender: input.sender,
         contentType: input.contentType,
+        channel: "WEB",
         content: input.content,
         fileId: input.fileId,
         voiceDuration: input.voiceDuration,
