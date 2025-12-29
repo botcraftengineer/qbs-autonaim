@@ -276,6 +276,7 @@ export async function saveMessage(
   sender: "CANDIDATE" | "BOT",
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
+  channel: "TELEGRAM" | "HH" | "WEB" = "TELEGRAM",
   externalMessageId?: string,
 ): Promise<string | null> {
   try {
@@ -285,6 +286,7 @@ export async function saveMessage(
         conversationId,
         sender,
         contentType,
+        channel,
         content,
         externalMessageId,
       })

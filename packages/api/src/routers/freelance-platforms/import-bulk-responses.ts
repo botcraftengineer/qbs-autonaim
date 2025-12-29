@@ -163,12 +163,14 @@ export const importBulkResponses = protectedProcedure
             .returning();
 
           // Drizzle .returning() всегда возвращает запись или выбрасывает ошибку
-          results.push({
-            success: true,
-            responseId: createdResponse.id,
-            freelancerName: parsed.freelancerName,
-            platformProfileUrl: parsed.contactInfo.platformProfile,
-          });
+          if (createdResponse) {
+            results.push({
+              success: true,
+              responseId: createdResponse.id,
+              freelancerName: parsed.freelancerName,
+              platformProfileUrl: parsed.contactInfo.platformProfile,
+            });
+          }
           successCount++;
         } catch (error) {
           results.push({

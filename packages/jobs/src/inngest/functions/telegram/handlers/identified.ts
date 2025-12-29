@@ -26,6 +26,7 @@ export async function saveIdentifiedText(params: {
       conversationId,
       sender: "CANDIDATE",
       contentType: "TEXT",
+      channel: "TELEGRAM",
       content: text,
       externalMessageId: messageId,
     })
@@ -160,6 +161,7 @@ export async function handleIdentifiedMedia(params: {
       conversationId,
       sender: "CANDIDATE",
       contentType: "VOICE",
+      channel: "TELEGRAM",
       content: `${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение`,
       fileId: downloadData.fileId,
       voiceDuration: downloadData.duration.toString(),

@@ -203,6 +203,7 @@ export async function generateAndSendBotResponse(params: {
         conversationId,
         sender: "BOT",
         contentType: "TEXT",
+        channel: "TELEGRAM",
         content: aiResponse,
       })
       .returning();
