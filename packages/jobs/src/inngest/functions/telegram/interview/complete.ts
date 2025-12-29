@@ -131,6 +131,59 @@ export const completeInterviewFunction = inngest.createFunction(
         });
       });
 
+      // Отправляем уведомление о завершении интервью
+      await step.run("send-completion-notification", async () => {
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, responseId),
+          with: {
+            vacancy: true,
+          },
+        });
+
+        if (!response?.vacancy?.workspaceId) {
+          console.warn("⚠️ Не удалось получить workspaceId для уведомления");
+          return;
+        }
+
+        // Отправляем уведомление о завершении интервью
+        await inngest.send({
+          name: "freelance/notification.send",
+          data: {
+            workspaceId: response.vacancy.workspaceId,
+            vacancyId: response.vacancyId,
+            responseId,
+            notificationType: "INTERVIEW_COMPLETED",
+            candidateName: response.candidateName ?? undefined,
+            score: scoringResult.score,
+            detailedScore: scoringResult.detailedScore,
+            profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+          },
+        });
+
+        // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
+        if (scoringResult.detailedScore >= 85) {
+          await inngest.send({
+            name: "freelance/notification.send",
+            data: {
+              workspaceId: response.vacancy.workspaceId,
+              vacancyId: response.vacancyId,
+              responseId,
+              notificationType: "HIGH_SCORE_CANDIDATE",
+              candidateName: response.candidateName ?? undefined,
+              score: scoringResult.score,
+              detailedScore: scoringResult.detailedScore,
+              profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+            },
+          });
+        }
+
+        console.log("✅ Уведомления отправлены", {
+          responseId,
+          detailedScore: scoringResult.detailedScore,
+          isHighScore: scoringResult.detailedScore >= 85,
+        });
+      });
+
       await step.run("extract-salary-expectations", async () => {
         console.log("💰 Извлечение зарплатных ожиданий");
 

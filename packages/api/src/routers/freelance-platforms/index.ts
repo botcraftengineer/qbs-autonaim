@@ -2,8 +2,12 @@ import type { TRPCRouterRecord } from "@trpc/server";
 
 import { checkDuplicateResponse } from "./check-duplicate-response";
 import { createVacancy } from "./create-vacancy";
+import { deleteVacancy } from "./delete-vacancy";
+import { exportAnalytics } from "./export-analytics";
 import { generateInterviewLink } from "./generate-interview-link";
+import { getAnalytics } from "./get-analytics";
 import { getChatHistory } from "./get-chat-history";
+import { getDashboardStats } from "./get-dashboard-stats";
 import { getInterviewLink } from "./get-interview-link";
 import { getNewMessages } from "./get-new-messages";
 import { getShortlist } from "./get-shortlist";
@@ -26,7 +30,11 @@ export const freelancePlatformsRouter = {
   getVacancies,
   getVacancyById,
   getVacancyByToken,
+  getDashboardStats,
+  getAnalytics,
+  exportAnalytics,
   updateVacancyStatus,
+  deleteVacancy,
   generateInterviewLink,
   getInterviewLink,
   validateInterviewToken,

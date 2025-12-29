@@ -13,6 +13,7 @@ export * from "./calendar";
 export * from "./card";
 export * from "./chart";
 export * from "./checkbox";
+export * from "./delete-vacancy-dialog";
 export * from "./dialog";
 export * from "./drawer";
 export * from "./dropdown-menu";

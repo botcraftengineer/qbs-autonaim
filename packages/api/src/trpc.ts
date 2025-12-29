@@ -13,6 +13,7 @@ import { db } from "@qbs-autonaim/db/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError, z } from "zod";
+import { AuditLoggerService } from "./services/audit-logger";
 
 /**
  * 1. CONTEXT
@@ -39,6 +40,14 @@ export const createTRPCContext = async (opts: {
   // Создаем экземпляры репозиториев с db
   const workspaceRepository = new WorkspaceRepository(db);
   const organizationRepository = new OrganizationRepository(db);
+  const auditLogger = new AuditLoggerService(db);
+
+  // Извлекаем IP и User-Agent из headers
+  const ipAddress =
+    opts.headers.get("x-forwarded-for") ??
+    opts.headers.get("x-real-ip") ??
+    undefined;
+  const userAgent = opts.headers.get("user-agent") ?? undefined;
 
   return {
     authApi,
@@ -46,6 +55,9 @@ export const createTRPCContext = async (opts: {
     db,
     workspaceRepository,
     organizationRepository,
+    auditLogger,
+    ipAddress,
+    userAgent,
   };
 };
 /**

@@ -32,6 +32,7 @@ import {
 import {
   analyzeFreelanceResponseFunction,
   generateFreelanceInvitationFunction,
+  sendFreelanceNotificationFunction,
 } from "./freelance";
 import { verifyHHCredentialsFunction } from "./integration";
 import {
@@ -93,6 +94,7 @@ export const inngestFunctions: InngestFunction.Any[] = [
   // Freelance
   analyzeFreelanceResponseFunction,
   generateFreelanceInvitationFunction,
+  sendFreelanceNotificationFunction,
   // Integration
   verifyHHCredentialsFunction,
   // Interview

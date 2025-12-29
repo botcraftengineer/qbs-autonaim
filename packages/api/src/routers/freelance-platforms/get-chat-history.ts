@@ -30,6 +30,16 @@ export const getChatHistory = publicProcedure
       });
     }
 
+    // Логируем доступ к разговору (если пользователь авторизован)
+    if (ctx.session?.user) {
+      await ctx.auditLogger.logConversationAccess({
+        userId: ctx.session.user.id,
+        conversationId: input.conversationId,
+        ipAddress: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+      });
+    }
+
     // Форматируем сообщения для клиента
     const messages = conv.messages.map((msg) => ({
       id: msg.id,

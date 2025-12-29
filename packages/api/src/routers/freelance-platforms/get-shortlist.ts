@@ -55,5 +55,15 @@ export const getShortlist = protectedProcedure
       sortBy: input.sortBy,
     });
 
+    // Логируем доступ к персональным данным фрилансеров
+    for (const candidate of shortlist.candidates) {
+      await ctx.auditLogger.logResponseView({
+        userId: ctx.session.user.id,
+        responseId: candidate.responseId,
+        ipAddress: ctx.ipAddress,
+        userAgent: ctx.userAgent,
+      });
+    }
+
     return shortlist;
   });

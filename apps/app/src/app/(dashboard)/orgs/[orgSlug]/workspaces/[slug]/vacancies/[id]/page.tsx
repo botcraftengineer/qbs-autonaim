@@ -182,7 +182,7 @@ ${data.interviewLink.url}
             <div>
               <h3 className="font-semibold mb-2">Требования</h3>
               <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                {vacancy.requirements}
+                {String(vacancy.requirements)}
               </p>
             </div>
           )}
@@ -227,6 +227,9 @@ ${data.interviewLink.url}
               <h4 className="font-semibold mb-2 text-sm">
                 Шаблон для описания вакансии
               </h4>
+              <p className="text-xs text-muted-foreground mb-2">
+                Используйте этот текст при размещении вакансии на фриланс-платформе
+              </p>
               <div className="rounded-md bg-muted p-3 text-sm whitespace-pre-wrap mb-2">
                 {vacancy.description || vacancy.title}
                 {"\n\n"}
@@ -270,15 +273,15 @@ ${data.interviewLink.url}
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="rounded-lg border p-4">
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-2xl font-bold tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {responseStats.HH_API}
               </div>
               <div className="text-sm text-muted-foreground">
-                Из HeadHunter API
+                Из HeadHunter&nbsp;API
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-2xl font-bold tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {responseStats.FREELANCE_MANUAL}
               </div>
               <div className="text-sm text-muted-foreground">
@@ -286,13 +289,16 @@ ${data.interviewLink.url}
               </div>
             </div>
             <div className="rounded-lg border p-4">
-              <div className="text-2xl font-bold tabular-nums">
+              <div className="text-2xl font-bold tabular-nums" style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {responseStats.FREELANCE_LINK}
               </div>
               <div className="text-sm text-muted-foreground">
                 По ссылке на интервью
               </div>
             </div>
+          </div>
+          <div className="mt-4 text-sm text-muted-foreground">
+            Всего откликов: <span className="font-semibold tabular-nums">{responseStats.HH_API + responseStats.FREELANCE_MANUAL + responseStats.FREELANCE_LINK}</span>
           </div>
         </CardContent>
       </Card>
@@ -334,35 +340,49 @@ ${data.interviewLink.url}
         </CardHeader>
         <CardContent>
           {shortlistLoading ? (
-            <div className="text-sm text-muted-foreground">Загрузка…</div>
+            <div className="text-sm text-muted-foreground" role="status" aria-live="polite">
+              Загрузка…
+            </div>
           ) : !shortlist || shortlist.length === 0 ? (
-            <div className="text-sm text-muted-foreground">
-              Шортлист пока пуст. Импортируйте отклики и проведите интервью для
-              формирования шортлиста.
+            <div className="rounded-lg border border-dashed p-6 text-center">
+              <p className="text-sm text-muted-foreground mb-2">
+                Шортлист пока пуст
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Импортируйте отклики и проведите интервью для формирования шортлиста
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {shortlist.slice(0, 5).map((candidate, index) => (
                 <div
                   key={candidate.responseId}
-                  className="flex items-center justify-between rounded-lg border p-3"
+                  className="flex items-center justify-between rounded-lg border p-3 gap-3"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div 
+                      className="flex size-8 items-center justify-center rounded-full bg-primary text-primary-foreground font-semibold text-sm shrink-0"
+                      aria-label={`Место ${index + 1}`}
+                    >
                       {index + 1}
                     </div>
-                    <div>
-                      <div className="font-medium">{candidate.name}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium truncate">{candidate.name}</div>
                       <div className="text-sm text-muted-foreground">
                         Оценка:{" "}
-                        <span className="tabular-nums font-semibold">
+                        <span className="font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
                           {candidate.overallScore}
                         </span>
                         /100
                       </div>
                     </div>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    asChild
+                    className="shrink-0 min-h-[44px] md:min-h-0"
+                  >
                     <Link
                       href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/responses/${candidate.responseId}`}
                       aria-label={`Посмотреть профиль ${candidate.name}`}
@@ -373,7 +393,11 @@ ${data.interviewLink.url}
                 </div>
               ))}
               {shortlist.length > 5 && (
-                <Button variant="outline" className="w-full" asChild>
+                <Button 
+                  variant="outline" 
+                  className="w-full min-h-[44px] md:min-h-0" 
+                  asChild
+                >
                   <Link
                     href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/shortlist`}
                   >

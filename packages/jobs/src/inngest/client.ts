@@ -21,6 +21,7 @@ import {
   screenAllResponsesDataSchema,
   screenNewResponsesDataSchema,
   screenResponsesBatchDataSchema,
+  sendFreelanceNotificationDataSchema,
   telegramAuthErrorDataSchema,
   telegramUnidentifiedMessageSendDataSchema,
   typingActivityDataSchema,
@@ -55,6 +56,7 @@ export const inngest = new Inngest({
     "candidate/offer.send": candidateOfferSendDataSchema,
     "freelance/response.analyze": analyzeFreelanceResponseDataSchema,
     "freelance/invitation.generate": generateInvitationDataSchema,
+    "freelance/notification.send": sendFreelanceNotificationDataSchema,
     "telegram/message.received": conversationMessageReceivedDataSchema,
     "telegram/message.send": conversationMessageSendDataSchema,
     "telegram/message.send.by-username":

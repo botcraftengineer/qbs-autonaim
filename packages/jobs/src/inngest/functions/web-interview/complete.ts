@@ -145,6 +145,69 @@ export const webCompleteInterviewFunction = inngest.createFunction(
             responseId,
           });
         });
+
+        // Отправляем уведомления
+        await step.run("send-notifications", async () => {
+          const response = await db.query.vacancyResponse.findFirst({
+            where: eq(vacancyResponse.id, responseId),
+            with: {
+              vacancy: true,
+            },
+          });
+
+          if (!response?.vacancy?.workspaceId) {
+            console.warn("⚠️ Не удалось получить workspaceId для уведомления");
+            return;
+          }
+
+          // Получаем скоринг
+          const scoring = await db.query.interviewScoring.findFirst({
+            where: eq(interviewScoring.responseId, responseId),
+          });
+
+          if (!scoring) {
+            console.warn("⚠️ Скоринг не найден для уведомления");
+            return;
+          }
+
+          // Отправляем уведомление о завершении интервью
+          await inngest.send({
+            name: "freelance/notification.send",
+            data: {
+              workspaceId: response.vacancy.workspaceId,
+              vacancyId: response.vacancyId,
+              responseId,
+              notificationType: "INTERVIEW_COMPLETED",
+              candidateName: response.candidateName ?? undefined,
+              score: scoring.score,
+              detailedScore: scoring.detailedScore,
+              profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+            },
+          });
+
+          // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
+          if (scoring.detailedScore >= 85) {
+            await inngest.send({
+              name: "freelance/notification.send",
+              data: {
+                workspaceId: response.vacancy.workspaceId,
+                vacancyId: response.vacancyId,
+                responseId,
+                notificationType: "HIGH_SCORE_CANDIDATE",
+                candidateName: response.candidateName ?? undefined,
+                score: scoring.score,
+                detailedScore: scoring.detailedScore,
+                profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+              },
+            });
+          }
+
+          console.log("✅ Уведомления отправлены", {
+            responseId,
+            detailedScore: scoring.detailedScore,
+            isHighScore: scoring.detailedScore >= 85,
+          });
+        });
       }
     }
 
