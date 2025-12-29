@@ -20,7 +20,6 @@ interface VacancyDocumentPreviewProps {
 
 export function VacancyDocumentPreview({
   document,
-  workspaceId,
   onVacancyCreated,
   isCreating = false,
 }: VacancyDocumentPreviewProps) {

@@ -13,6 +13,7 @@ export function sanitizePromptText(text: string): string {
   let sanitized = text;
 
   // Удаляем управляющие символы (кроме переносов строк и табуляции)
+  // biome-ignore lint/suspicious/noControlCharactersInRegex: необходимо для санитизации промптов
   sanitized = sanitized.replace(/[\x00-\x08\x0B-\x0C\x0E-\x1F\x7F]/g, "");
 
   // Ограничиваем последовательности специальных символов
@@ -74,7 +75,7 @@ export function truncateText(text: string, maxLength: number): string {
  * Санитизирует объект сообщения из истории диалога
  */
 export function sanitizeConversationMessage(message: {
-  role: string;
+  role: "user" | "assistant" | string;
   content: string;
 }): { role: "user" | "assistant"; content: string } {
   const role = message.role === "assistant" ? "assistant" : "user";

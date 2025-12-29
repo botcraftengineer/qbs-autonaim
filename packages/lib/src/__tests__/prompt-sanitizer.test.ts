@@ -25,7 +25,7 @@ describe("sanitizePromptText", () => {
   });
 
   test("обрезает длинные блоки кода", () => {
-    const longCode = "```\n" + "x".repeat(600) + "\n```";
+    const longCode = `\`\`\`\n${"x".repeat(600)}\n\`\`\``;
     const result = sanitizePromptText(longCode);
     expect(result).toContain("[код обрезан для безопасности]");
   });
@@ -48,7 +48,7 @@ describe("truncateText", () => {
 describe("sanitizeConversationMessage", () => {
   test("нормализует роль", () => {
     const result = sanitizeConversationMessage({
-      role: "unknown" as any,
+      role: "unknown",
       content: "test",
     });
     expect(result.role).toBe("user");
