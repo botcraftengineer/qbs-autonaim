@@ -15,8 +15,29 @@ export async function parseUpworkVacancies(
 
   console.log(`🚀 Парсинг вакансий с ${config.name}`);
 
-  const vacancies = rawVacancies.map((raw) =>
-    normalizeFreelanceVacancy(raw, "upwork"),
+  const vacancies: VacancyData[] = [];
+
+  for (const raw of rawVacancies) {
+    try {
+      const normalized = normalizeFreelanceVacancy(raw, "upwork");
+      vacancies.push(normalized);
+    } catch (error) {
+      const vacancyId = raw.id || "unknown";
+      const vacancyTitle = raw.title || "no title";
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+
+      console.error(
+        `❌ Ошибка при нормализации вакансии [ID: ${vacancyId}, Title: "${vacancyTitle}"]:`,
+        errorMessage,
+        errorStack ? `\nStack: ${errorStack}` : "",
+      );
+    }
+  }
+
+  console.log(
+    `✅ Успешно обработано ${vacancies.length} из ${rawVacancies.length} вакансий`,
   );
 
   return vacancies;

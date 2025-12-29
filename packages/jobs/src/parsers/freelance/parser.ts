@@ -38,11 +38,29 @@ export async function parseFreelanceVacancies(
   console.log(`🚀 Парсинг вакансий с ${config.name}`);
   console.log(`   Найдено вакансий: ${rawVacancies.length}`);
 
-  const vacancies = rawVacancies.map((raw) =>
-    normalizeFreelanceVacancy(raw, source),
-  );
+  const vacancies: VacancyData[] = [];
+  let failedCount = 0;
+
+  for (let i = 0; i < rawVacancies.length; i++) {
+    const raw = rawVacancies[i];
+    try {
+      const normalized = normalizeFreelanceVacancy(raw, source);
+      vacancies.push(normalized);
+    } catch (error) {
+      failedCount++;
+      console.error(`❌ Ошибка при нормализации вакансии [${config.name}]:`, {
+        source,
+        configName: config.name,
+        vacancyId: raw?.id || `index-${i}`,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
 
   console.log(`✅ Обработано вакансий: ${vacancies.length}`);
+  if (failedCount > 0) {
+    console.warn(`⚠️  Пропущено вакансий с ошибками: ${failedCount}`);
+  }
 
   return vacancies;
 }

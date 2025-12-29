@@ -26,11 +26,4 @@ export interface FreelancePlatformConfig {
   name: string;
   baseUrl: string;
   vacanciesUrl: string;
-  selectors?: {
-    vacancyCard?: string;
-    title?: string;
-    url?: string;
-    description?: string;
-    budget?: string;
-  };
 }
