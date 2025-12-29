@@ -68,6 +68,14 @@ export const deleteVacancy = protectedProcedure
           })
           .where(eq(vacancyResponse.vacancyId, input.vacancyId));
 
+        // Помечаем вакансию как неактивную (soft delete)
+        await ctx.db
+          .update(vacancy)
+          .set({
+            isActive: false,
+          })
+          .where(eq(vacancy.id, input.vacancyId));
+
         // Логируем анонимизацию
         await ctx.auditLogger.logVacancyDeletion({
           userId: ctx.session.user.id,
@@ -76,8 +84,12 @@ export const deleteVacancy = protectedProcedure
           ipAddress: ctx.ipAddress,
           userAgent: ctx.userAgent,
         });
+
+        return {
+          success: true,
+          message: "Вакансия архивирована, данные фрилансеров анонимизированы",
+        };
       } else {
-        // Удаляем все связанные данные (каскадное удаление настроено в схеме)
         // Логируем удаление перед фактическим удалением
         await ctx.auditLogger.logVacancyDeletion({
           userId: ctx.session.user.id,
@@ -86,18 +98,15 @@ export const deleteVacancy = protectedProcedure
           ipAddress: ctx.ipAddress,
           userAgent: ctx.userAgent,
         });
+
+        // Удаляем вакансию (каскадное удаление удалит и отклики)
+        await ctx.db.delete(vacancy).where(eq(vacancy.id, input.vacancyId));
+
+        return {
+          success: true,
+          message: "Вакансия и все связанные данные удалены",
+        };
       }
-
-      // Удаляем вакансию (если выбрано "delete", каскадное удаление удалит и отклики)
-      await ctx.db.delete(vacancy).where(eq(vacancy.id, input.vacancyId));
-
-      return {
-        success: true,
-        message:
-          input.dataCleanupOption === "anonymize"
-            ? "Вакансия удалена, данные фрилансеров анонимизированы"
-            : "Вакансия и все связанные данные удалены",
-      };
     } catch (error) {
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;

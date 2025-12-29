@@ -56,7 +56,7 @@ export const listRecent = protectedProcedure
       photoFiles.map((f) => [f.id, getFileUrl(f.key)]),
     );
 
-    // Получаем screening и telegramInterviewScoring для каждого отклика
+    // Получаем screening и interviewScoring для каждого отклика
     const responsesWithRelations = await Promise.all(
       responses.map(async (r) => {
         const screening = await ctx.db.query.responseScreening.findFirst({

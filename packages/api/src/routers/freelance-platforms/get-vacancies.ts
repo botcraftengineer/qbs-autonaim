@@ -1,4 +1,4 @@
-import { count, desc, eq, sql } from "@qbs-autonaim/db";
+import { and, count, desc, eq, sql } from "@qbs-autonaim/db";
 import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
@@ -46,8 +46,16 @@ export const getVacancies = protectedProcedure
         });
       }
 
+      // Построение условий фильтрации
+      const conditions = [eq(vacancy.workspaceId, input.workspaceId)];
+
+      // Фильтрация по источнику, если указан
+      if (input.source) {
+        conditions.push(eq(vacancy.source, input.source));
+      }
+
       // Базовый запрос
-      let query = ctx.db
+      const query = ctx.db
         .select({
           id: vacancy.id,
           workspaceId: vacancy.workspaceId,
@@ -78,13 +86,7 @@ export const getVacancies = protectedProcedure
         })
         .from(vacancy)
         .leftJoin(vacancyResponse, eq(vacancy.id, vacancyResponse.vacancyId))
-        .where(eq(vacancy.workspaceId, input.workspaceId))
-        .$dynamic();
-
-      // Фильтрация по источнику, если указан
-      if (input.source) {
-        query = query.where(eq(vacancy.source, input.source));
-      }
+        .where(and(...conditions));
 
       const vacancies = await query
         .groupBy(vacancy.id)

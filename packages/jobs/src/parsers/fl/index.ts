@@ -1,0 +1,1 @@
+export { parseFlVacancies } from "./parser";
