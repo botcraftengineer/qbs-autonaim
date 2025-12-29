@@ -3,10 +3,10 @@ import {
   conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { InterviewLinkGenerator } from "../../services";
 import { publicProcedure } from "../../trpc";
+import { createErrorHandler } from "../../utils/error-handler";
 
 const platformProfileUrlSchema = z
   .string()
@@ -30,111 +30,136 @@ const startWebInterviewInputSchema = z.object({
 export const startWebInterview = publicProcedure
   .input(startWebInterviewInputSchema)
   .mutation(async ({ input, ctx }) => {
-    // Валидируем токен
-    const linkGenerator = new InterviewLinkGenerator();
-    const interviewLink = await linkGenerator.validateLink(input.token);
+    const errorHandler = createErrorHandler(
+      ctx.auditLogger,
+      undefined,
+      ctx.ipAddress,
+      ctx.userAgent,
+    );
 
-    if (!interviewLink) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Ссылка на интервью недействительна или истекла",
-      });
-    }
+    try {
+      // Валидируем токен
+      const linkGenerator = new InterviewLinkGenerator();
+      const interviewLink = await linkGenerator.validateLink(input.token);
 
-    // Проверяем, что вакансия активна
-    const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.vacancyId),
-      with: {
-        workspace: {
-          with: {
-            companySettings: true,
+      if (!interviewLink) {
+        await errorHandler.handleNotFoundError("Ссылка на интервью", {
+          token: input.token,
+        });
+        return; // TypeScript не понимает, что handleNotFoundError выбрасывает исключение
+      }
+
+      // Проверяем, что вакансия активна
+      const vacancy = await ctx.db.query.vacancy.findFirst({
+        where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.vacancyId),
+        with: {
+          workspace: {
+            with: {
+              companySettings: true,
+            },
           },
         },
-      },
-    });
-
-    if (!vacancy || !vacancy.isActive) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Вакансия закрыта",
       });
-    }
 
-    // Проверяем дубликаты по platformProfileUrl + vacancyId
-    const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
-      where: (response, { and, eq }) =>
-        and(
-          eq(response.vacancyId, interviewLink.vacancyId),
-          eq(
-            response.platformProfileUrl,
-            input.freelancerInfo.platformProfileUrl,
+      if (!vacancy) {
+        await errorHandler.handleNotFoundError("Вакансия", {
+          vacancyId: interviewLink.vacancyId,
+        });
+        return;
+      }
+
+      if (!vacancy.isActive) {
+        await errorHandler.handleValidationError("Вакансия закрыта", {
+          vacancyId: interviewLink.vacancyId,
+        });
+      }
+
+      // Проверяем дубликаты по platformProfileUrl + vacancyId
+      const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
+        where: (response, { and, eq }) =>
+          and(
+            eq(response.vacancyId, interviewLink.vacancyId),
+            eq(
+              response.platformProfileUrl,
+              input.freelancerInfo.platformProfileUrl,
+            ),
           ),
-        ),
-    });
-
-    if (existingResponse) {
-      throw new TRPCError({
-        code: "CONFLICT",
-        message: "Вы уже откликнулись на эту вакансию",
       });
-    }
 
-    // Создаём отклик
-    const [response] = await ctx.db
-      .insert(vacancyResponse)
-      .values({
-        vacancyId: interviewLink.vacancyId,
-        resumeId: `freelance_web_${Date.now()}`,
-        resumeUrl: input.freelancerInfo.platformProfileUrl,
-        candidateName: input.freelancerInfo.name,
-        platformProfileUrl: input.freelancerInfo.platformProfileUrl,
-        phone: input.freelancerInfo.phone,
-        telegramUsername: input.freelancerInfo.telegram,
-        contacts: {
-          email: input.freelancerInfo.email,
+      if (existingResponse) {
+        await errorHandler.handleConflictError(
+          "Вы уже откликнулись на эту вакансию",
+          {
+            vacancyId: interviewLink.vacancyId,
+            platformProfileUrl: input.freelancerInfo.platformProfileUrl,
+          },
+        );
+      }
+
+      // Создаём отклик
+      const [response] = await ctx.db
+        .insert(vacancyResponse)
+        .values({
+          vacancyId: interviewLink.vacancyId,
+          resumeId: `freelance_web_${Date.now()}`,
+          resumeUrl: input.freelancerInfo.platformProfileUrl,
+          candidateName: input.freelancerInfo.name,
+          platformProfileUrl: input.freelancerInfo.platformProfileUrl,
           phone: input.freelancerInfo.phone,
-          telegram: input.freelancerInfo.telegram,
-        },
-        importSource: "FREELANCE_LINK",
-        status: "NEW",
-        respondedAt: new Date(),
-      })
-      .returning();
+          telegramUsername: input.freelancerInfo.telegram,
+          contacts: {
+            email: input.freelancerInfo.email,
+            phone: input.freelancerInfo.phone,
+            telegram: input.freelancerInfo.telegram,
+          },
+          importSource: "FREELANCE_LINK",
+          status: "NEW",
+          respondedAt: new Date(),
+        })
+        .returning();
 
-    if (!response) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Не удалось создать отклик",
-      });
-    }
+      if (!response) {
+        await errorHandler.handleInternalError(
+          new Error("Failed to create response"),
+          {
+            vacancyId: interviewLink.vacancyId,
+            freelancerName: input.freelancerInfo.name,
+          },
+        );
+        return;
+      }
 
-    // Создаём conversation с source='WEB'
-    const [conv] = await ctx.db
-      .insert(conversation)
-      .values({
-        responseId: response.id,
-        candidateName: input.freelancerInfo.name,
-        username: input.freelancerInfo.email,
-        status: "ACTIVE",
-        source: "WEB",
-        metadata: {},
-      })
-      .returning();
+      // Создаём conversation с source='WEB'
+      const [conv] = await ctx.db
+        .insert(conversation)
+        .values({
+          responseId: response.id,
+          candidateName: input.freelancerInfo.name,
+          username: input.freelancerInfo.email,
+          status: "ACTIVE",
+          source: "WEB",
+          metadata: {},
+        })
+        .returning();
 
-    if (!conv) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Не удалось создать разговор",
-      });
-    }
+      if (!conv) {
+        await errorHandler.handleInternalError(
+          new Error("Failed to create conversation"),
+          {
+            responseId: response.id,
+            freelancerName: input.freelancerInfo.name,
+          },
+        );
+        return;
+      }
 
-    // Генерируем приветственное сообщение
-    const botName =
-      vacancy.workspace?.companySettings?.botName || "Ассистент по найму";
-    const companyName =
-      vacancy.workspace?.companySettings?.name || "нашей компании";
+      // Генерируем приветственное сообщение
+      const botName =
+        vacancy.workspace?.companySettings?.botName || "Ассистент по найму";
+      const companyName =
+        vacancy.workspace?.companySettings?.name || "нашей компании";
 
-    const welcomeMessage = `Здравствуйте, ${input.freelancerInfo.name}! 👋
+      const welcomeMessage = `Здравствуйте, ${input.freelancerInfo.name}! 👋
 
 Меня зовут ${botName}, я помогаю ${companyName} в подборе кандидатов на вакансию "${vacancy.title}".
 
@@ -142,19 +167,28 @@ export const startWebInterview = publicProcedure
 
 Готовы начать?`;
 
-    // Сохраняем приветственное сообщение
-    await ctx.db.insert(conversationMessage).values({
-      conversationId: conv.id,
-      sender: "BOT",
-      contentType: "TEXT",
-      channel: "TELEGRAM",
-      content: welcomeMessage,
-    });
+      // Сохраняем приветственное сообщение
+      await ctx.db.insert(conversationMessage).values({
+        conversationId: conv.id,
+        sender: "BOT",
+        contentType: "TEXT",
+        channel: "TELEGRAM",
+        content: welcomeMessage,
+      });
 
-    return {
-      conversationId: conv.id,
-      responseId: response.id,
-      vacancyId: response.vacancyId,
-      welcomeMessage,
-    };
+      return {
+        conversationId: conv.id,
+        responseId: response.id,
+        vacancyId: response.vacancyId,
+        welcomeMessage,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("TRPC")) {
+        throw error;
+      }
+      await errorHandler.handleDatabaseError(error as Error, {
+        token: input.token,
+        operation: "start_web_interview",
+      });
+    }
   });

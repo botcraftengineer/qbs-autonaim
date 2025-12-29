@@ -6,9 +6,9 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+import { createErrorHandler } from "../../utils/error-handler";
 
 const getDashboardStatsInputSchema = z.object({
   workspaceId: workspaceIdSchema,
@@ -23,138 +23,155 @@ const getDashboardStatsInputSchema = z.object({
 export const getDashboardStats = protectedProcedure
   .input(getDashboardStatsInputSchema)
   .query(async ({ input, ctx }) => {
-    // Проверка доступа к workspace
-    const access = await ctx.workspaceRepository.checkAccess(
-      input.workspaceId,
+    const errorHandler = createErrorHandler(
+      ctx.auditLogger,
       ctx.session.user.id,
+      ctx.ipAddress,
+      ctx.userAgent,
     );
 
-    if (!access) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Нет доступа к этому workspace",
-      });
-    }
+    try {
+      // Проверка доступа к workspace
+      const access = await ctx.workspaceRepository.checkAccess(
+        input.workspaceId,
+        ctx.session.user.id,
+      );
 
-    // Построение условий фильтрации
-    const conditions = [eq(vacancy.workspaceId, input.workspaceId)];
+      if (!access) {
+        await errorHandler.handleAuthorizationError("workspace", {
+          workspaceId: input.workspaceId,
+          userId: ctx.session.user.id,
+        });
+      }
 
-    // Фильтр по статусу
-    if (input.status === "active") {
-      conditions.push(eq(vacancy.isActive, true));
-    } else if (input.status === "inactive") {
-      conditions.push(eq(vacancy.isActive, false));
-    }
+      // Построение условий фильтрации
+      const conditions = [eq(vacancy.workspaceId, input.workspaceId)];
 
-    // Фильтр по платформе
-    if (input.platformSource) {
-      conditions.push(eq(vacancy.source, input.platformSource));
-    }
+      // Фильтр по статусу
+      if (input.status === "active") {
+        conditions.push(eq(vacancy.isActive, true));
+      } else if (input.status === "inactive") {
+        conditions.push(eq(vacancy.isActive, false));
+      }
 
-    // Фильтр по датам
-    if (input.dateFrom) {
-      conditions.push(gte(vacancy.createdAt, new Date(input.dateFrom)));
-    }
-    if (input.dateTo) {
-      conditions.push(lte(vacancy.createdAt, new Date(input.dateTo)));
-    }
+      // Фильтр по платформе
+      if (input.platformSource) {
+        conditions.push(eq(vacancy.source, input.platformSource));
+      }
 
-    // Получаем обзорные метрики
-    const overviewMetrics = await ctx.db
-      .select({
-        totalJobs: count(vacancy.id),
-        totalResponses: sql<number>`COALESCE(SUM(${vacancy.responses}), 0)`,
-        totalNewResponses: sql<number>`COALESCE(SUM(${vacancy.newResponses}), 0)`,
-        totalSuitableResumes: sql<number>`COALESCE(SUM(${vacancy.suitableResumes}), 0)`,
-      })
-      .from(vacancy)
-      .where(and(...conditions));
+      // Фильтр по датам
+      if (input.dateFrom) {
+        conditions.push(gte(vacancy.createdAt, new Date(input.dateFrom)));
+      }
+      if (input.dateTo) {
+        conditions.push(lte(vacancy.createdAt, new Date(input.dateTo)));
+      }
 
-    // Получаем список заданий с ключевой статистикой
-    const jobs = await ctx.db
-      .select({
-        id: vacancy.id,
-        title: vacancy.title,
-        source: vacancy.source,
-        isActive: vacancy.isActive,
-        createdAt: vacancy.createdAt,
-        url: vacancy.url,
-        // Статистика откликов
-        totalResponses: vacancy.responses,
-        newResponses: vacancy.newResponses,
-        suitableResumes: vacancy.suitableResumes,
-        // Статистика по источникам
-        hhApiCount: sql<number>`(
+      // Получаем обзорные метрики
+      const overviewMetrics = await ctx.db
+        .select({
+          totalJobs: count(vacancy.id),
+          totalResponses: sql<number>`COALESCE(SUM(${vacancy.responses}), 0)`,
+          totalNewResponses: sql<number>`COALESCE(SUM(${vacancy.newResponses}), 0)`,
+          totalSuitableResumes: sql<number>`COALESCE(SUM(${vacancy.suitableResumes}), 0)`,
+        })
+        .from(vacancy)
+        .where(and(...conditions));
+
+      // Получаем список заданий с ключевой статистикой
+      const jobs = await ctx.db
+        .select({
+          id: vacancy.id,
+          title: vacancy.title,
+          source: vacancy.source,
+          isActive: vacancy.isActive,
+          createdAt: vacancy.createdAt,
+          url: vacancy.url,
+          // Статистика откликов
+          totalResponses: vacancy.responses,
+          newResponses: vacancy.newResponses,
+          suitableResumes: vacancy.suitableResumes,
+          // Статистика по источникам
+          hhApiCount: sql<number>`(
           SELECT COUNT(*) 
           FROM ${vacancyResponse} 
           WHERE ${vacancyResponse.vacancyId} = ${vacancy.id} 
           AND ${vacancyResponse.importSource} = 'HH_API'
         )`,
-        freelanceManualCount: sql<number>`(
+          freelanceManualCount: sql<number>`(
           SELECT COUNT(*) 
           FROM ${vacancyResponse} 
           WHERE ${vacancyResponse.vacancyId} = ${vacancy.id} 
           AND ${vacancyResponse.importSource} = 'FREELANCE_MANUAL'
         )`,
-        freelanceLinkCount: sql<number>`(
+          freelanceLinkCount: sql<number>`(
           SELECT COUNT(*) 
           FROM ${vacancyResponse} 
           WHERE ${vacancyResponse.vacancyId} = ${vacancy.id} 
           AND ${vacancyResponse.importSource} = 'FREELANCE_LINK'
         )`,
-        // Статистика интервью
-        completedInterviews: sql<number>`(
+          // Статистика интервью
+          completedInterviews: sql<number>`(
           SELECT COUNT(*) 
           FROM ${vacancyResponse} vr
           INNER JOIN ${responseScreening} rs ON vr.id = rs."response_id"
           WHERE vr."vacancy_id" = ${vacancy.id}
         )`,
-        // Средняя оценка
-        avgScore: sql<number>`(
+          // Средняя оценка
+          avgScore: sql<number>`(
           SELECT COALESCE(AVG(rs."detailed_score"), 0)
           FROM ${vacancyResponse} vr
           INNER JOIN ${responseScreening} rs ON vr.id = rs."response_id"
           WHERE vr."vacancy_id" = ${vacancy.id}
         )`,
-        // Есть ли ссылка на интервью
-        hasInterviewLink: sql<boolean>`EXISTS(
+          // Есть ли ссылка на интервью
+          hasInterviewLink: sql<boolean>`EXISTS(
           SELECT 1 
           FROM ${interviewLink} 
           WHERE ${interviewLink.vacancyId} = ${vacancy.id}
         )`,
-      })
-      .from(vacancy)
-      .where(and(...conditions))
-      .orderBy(vacancy.createdAt);
+        })
+        .from(vacancy)
+        .where(and(...conditions))
+        .orderBy(vacancy.createdAt);
 
-    // Рассчитываем средний коэффициент завершения
-    const totalResponsesSum = jobs.reduce(
-      (sum, job) => sum + (job.totalResponses ?? 0),
-      0,
-    );
-    const completedInterviewsSum = jobs.reduce(
-      (sum, job) => sum + (job.completedInterviews ?? 0),
-      0,
-    );
-    const avgCompletionRate =
-      totalResponsesSum > 0
-        ? Math.round((completedInterviewsSum / totalResponsesSum) * 100)
-        : 0;
+      // Рассчитываем средний коэффициент завершения
+      const totalResponsesSum = jobs.reduce(
+        (sum, job) => sum + (job.totalResponses ?? 0),
+        0,
+      );
+      const completedInterviewsSum = jobs.reduce(
+        (sum, job) => sum + (job.completedInterviews ?? 0),
+        0,
+      );
+      const avgCompletionRate =
+        totalResponsesSum > 0
+          ? Math.round((completedInterviewsSum / totalResponsesSum) * 100)
+          : 0;
 
-    return {
-      overview: {
-        totalJobs: overviewMetrics[0]?.totalJobs ?? 0,
-        totalResponses: Number(overviewMetrics[0]?.totalResponses ?? 0),
-        totalNewResponses: Number(overviewMetrics[0]?.totalNewResponses ?? 0),
-        totalSuitableResumes: Number(
-          overviewMetrics[0]?.totalSuitableResumes ?? 0,
-        ),
-        avgCompletionRate,
-      },
-      jobs: jobs.map((job) => ({
-        ...job,
-        needsAttention:
-          (job.newResponses ?? 0) > 5 || (job.totalResponses ?? 0) > 20,
-      })),
-    };
+      return {
+        overview: {
+          totalJobs: overviewMetrics[0]?.totalJobs ?? 0,
+          totalResponses: Number(overviewMetrics[0]?.totalResponses ?? 0),
+          totalNewResponses: Number(overviewMetrics[0]?.totalNewResponses ?? 0),
+          totalSuitableResumes: Number(
+            overviewMetrics[0]?.totalSuitableResumes ?? 0,
+          ),
+          avgCompletionRate,
+        },
+        jobs: jobs.map((job) => ({
+          ...job,
+          needsAttention:
+            (job.newResponses ?? 0) > 5 || (job.totalResponses ?? 0) > 20,
+        })),
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("TRPC")) {
+        throw error;
+      }
+      await errorHandler.handleDatabaseError(error as Error, {
+        workspaceId: input.workspaceId,
+        operation: "get_dashboard_stats",
+      });
+    }
   });

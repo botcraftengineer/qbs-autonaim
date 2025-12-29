@@ -7,9 +7,17 @@ import { z } from "zod";
 import { ResponseParser } from "../../services/response-parser";
 import { protectedProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
+import type { ImportResult } from "./import-bulk-responses";
 
-const importBulkResponsesInputSchema = z.object({
+const retryBulkImportInputSchema = z.object({
   vacancyId: z.string().uuid(),
+  failedRecords: z.array(
+    z.object({
+      freelancerName: z.string().nullable(),
+      platformProfileUrl: z.string().optional(),
+      rawText: z.string(),
+    }),
+  ),
   platformSource: z.enum([
     "kwork",
     "fl",
@@ -18,19 +26,14 @@ const importBulkResponsesInputSchema = z.object({
     "freelancer",
     "fiverr",
   ]),
-  rawText: z.string().min(1),
 });
 
-export interface ImportResult {
-  success: boolean;
-  responseId?: string;
-  error?: string;
-  freelancerName: string | null;
-  platformProfileUrl?: string;
-}
-
-export const importBulkResponses = protectedProcedure
-  .input(importBulkResponsesInputSchema)
+/**
+ * Повтор импорта неудачных записей из массового импорта
+ * Требование: 6.6, 14.2
+ */
+export const retryBulkImport = protectedProcedure
+  .input(retryBulkImportInputSchema)
   .mutation(async ({ input, ctx }) => {
     const errorHandler = createErrorHandler(
       ctx.auditLogger,
@@ -66,27 +69,17 @@ export const importBulkResponses = protectedProcedure
         });
       }
 
-      // Парсим текст
       const parser = new ResponseParser();
-      const parsedResponses = parser.parseBulk(input.rawText);
-
-      if (parsedResponses.length === 0) {
-        await errorHandler.handleValidationError(
-          "Не удалось распарсить отклики из предоставленного текста",
-          {
-            vacancyId: input.vacancyId,
-            textLength: input.rawText.length,
-          },
-        );
-      }
-
       const results: ImportResult[] = [];
       let successCount = 0;
       let failureCount = 0;
 
-      // Обрабатываем каждый распарсенный отклик
-      for (const parsed of parsedResponses) {
+      // Обрабатываем каждую неудачную запись
+      for (const failedRecord of input.failedRecords) {
         try {
+          // Парсим текст
+          const parsed = parser.parseSingle(failedRecord.rawText);
+
           // Валидация распарсенных данных
           const validation = parser.validateParsedData(parsed);
 
@@ -176,8 +169,8 @@ export const importBulkResponses = protectedProcedure
               error instanceof Error
                 ? error.message
                 : "Неизвестная ошибка при импорте",
-            freelancerName: parsed.freelancerName,
-            platformProfileUrl: parsed.contactInfo.platformProfile,
+            freelancerName: failedRecord.freelancerName,
+            platformProfileUrl: failedRecord.platformProfileUrl,
           });
           failureCount++;
 
@@ -186,12 +179,12 @@ export const importBulkResponses = protectedProcedure
             userId: ctx.session.user.id,
             category: "IMPORT",
             severity: "MEDIUM",
-            message: `Failed to import response: ${error instanceof Error ? error.message : "Unknown error"}`,
-            userMessage: "Ошибка при импорте отклика",
+            message: `Failed to retry import: ${error instanceof Error ? error.message : "Unknown error"}`,
+            userMessage: "Ошибка при повторном импорте отклика",
             context: {
               vacancyId: input.vacancyId,
-              freelancerName: parsed.freelancerName,
-              platformProfileUrl: parsed.contactInfo.platformProfile,
+              freelancerName: failedRecord.freelancerName,
+              platformProfileUrl: failedRecord.platformProfileUrl,
             },
             stack: error instanceof Error ? error.stack : undefined,
             ipAddress: ctx.ipAddress,
@@ -206,16 +199,33 @@ export const importBulkResponses = protectedProcedure
         importedBy: ctx.session.user.id,
         importMode: "BULK",
         platformSource: input.platformSource,
-        rawText: input.rawText,
-        parsedCount: parsedResponses.length,
+        rawText: `RETRY: ${input.failedRecords.length} записей`,
+        parsedCount: input.failedRecords.length,
         successCount,
         failureCount,
+      });
+
+      // Логируем действие
+      await ctx.auditLogger.logAccess({
+        userId: ctx.session.user.id,
+        action: "UPDATE",
+        resourceType: "VACANCY_RESPONSE",
+        resourceId: input.vacancyId,
+        metadata: {
+          action: "RETRY_BULK_IMPORT",
+          totalRecords: input.failedRecords.length,
+          successCount,
+          failureCount,
+          platformSource: input.platformSource,
+        },
+        ipAddress: ctx.ipAddress,
+        userAgent: ctx.userAgent,
       });
 
       return {
         results,
         summary: {
-          total: parsedResponses.length,
+          total: input.failedRecords.length,
           success: successCount,
           failed: failureCount,
         },
@@ -226,7 +236,7 @@ export const importBulkResponses = protectedProcedure
       }
       await errorHandler.handleDatabaseError(error as Error, {
         vacancyId: input.vacancyId,
-        operation: "import_bulk_responses",
+        operation: "retry_bulk_import",
       });
     }
   });

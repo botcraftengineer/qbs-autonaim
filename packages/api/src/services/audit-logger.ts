@@ -154,4 +154,44 @@ export class AuditLoggerService {
       userAgent: params.userAgent,
     });
   }
+
+  /**
+   * Логирует ошибку для отладки и мониторинга
+   */
+  async logError(params: {
+    userId?: string;
+    category: string;
+    severity: string;
+    message: string;
+    userMessage: string;
+    context?: Record<string, unknown>;
+    stack?: string;
+    ipAddress?: string;
+    userAgent?: string;
+  }): Promise<void> {
+    try {
+      await this.db.insert(auditLog).values({
+        userId: params.userId ?? "system",
+        action: "ACCESS",
+        resourceType: "VACANCY",
+        resourceId: "error",
+        metadata: {
+          category: params.category,
+          severity: params.severity,
+          message: params.message,
+          userMessage: params.userMessage,
+          context: params.context,
+          stack: params.stack,
+        },
+        ipAddress: params.ipAddress,
+        userAgent: params.userAgent,
+      });
+    } catch (error) {
+      // Логируем в консоль, если не удалось записать в БД
+      console.error("Failed to log error to audit log:", error);
+      console.error("Original error:", params);
+    }
+  }
 }
+
+export type AuditLogger = AuditLoggerService;

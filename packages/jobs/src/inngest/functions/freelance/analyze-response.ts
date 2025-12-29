@@ -11,15 +11,44 @@ export const analyzeFreelanceResponseFunction = inngest.createFunction(
     id: "freelance-response-analyze",
     name: "Analyze Freelance Response",
     retries: 3,
+    // Экспоненциальная задержка для повторов: 2s, 4s, 8s
+    onFailure: async ({ error, event, step }) => {
+      const { responseId } = event.data;
+
+      console.error("❌ Все попытки AI-анализа исчерпаны", {
+        responseId,
+        error: error.message,
+      });
+
+      // Отправляем уведомление работодателю о неудаче анализа
+      await step.sendEvent("notify-analysis-failure", {
+        name: "freelance/notification.send",
+        data: {
+          responseId,
+          notificationType: "ANALYSIS_FAILED",
+          error: error.message,
+        },
+      });
+    },
   },
   { event: "freelance/response.analyze" },
-  async ({ event, step }) => {
+  async ({ event, step, attempt }) => {
     const { responseId } = event.data;
 
     const result = await step.run("analyze-freelance-response", async () => {
       console.log("🎯 AI-анализ отклика фрилансера", {
         responseId,
+        attempt,
       });
+
+      // Экспоненциальная задержка перед повтором
+      if (attempt > 0) {
+        const delayMs = 2 ** attempt * 1000; // 2s, 4s, 8s
+        console.log(
+          `⏳ Задержка перед повтором: ${delayMs}ms (попытка ${attempt + 1}/3)`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+      }
 
       try {
         const resultWrapper = await screenResponse(responseId);
@@ -29,6 +58,7 @@ export const analyzeFreelanceResponseFunction = inngest.createFunction(
           responseId,
           score: result.score,
           detailedScore: result.detailedScore,
+          attempt: attempt + 1,
         });
 
         return {
@@ -40,6 +70,7 @@ export const analyzeFreelanceResponseFunction = inngest.createFunction(
         console.error("❌ Ошибка анализа отклика фрилансера", {
           responseId,
           error,
+          attempt: attempt + 1,
         });
         throw error;
       }

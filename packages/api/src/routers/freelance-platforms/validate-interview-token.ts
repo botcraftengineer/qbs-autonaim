@@ -1,7 +1,7 @@
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { InterviewLinkGenerator } from "../../services";
 import { publicProcedure } from "../../trpc";
+import { createErrorHandler } from "../../utils/error-handler";
 
 const validateInterviewTokenInputSchema = z.object({
   token: z.string().uuid(),
@@ -9,25 +9,42 @@ const validateInterviewTokenInputSchema = z.object({
 
 export const validateInterviewToken = publicProcedure
   .input(validateInterviewTokenInputSchema)
-  .query(async ({ input }) => {
-    // Валидируем токен через сервис
-    const linkGenerator = new InterviewLinkGenerator();
-    const interviewLink = await linkGenerator.validateLink(input.token);
+  .query(async ({ input, ctx }) => {
+    const errorHandler = createErrorHandler(
+      ctx.auditLogger,
+      undefined,
+      ctx.ipAddress,
+      ctx.userAgent,
+    );
 
-    if (!interviewLink) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Ссылка на интервью недействительна или истекла",
+    try {
+      // Валидируем токен через сервис
+      const linkGenerator = new InterviewLinkGenerator();
+      const interviewLink = await linkGenerator.validateLink(input.token);
+
+      if (!interviewLink) {
+        await errorHandler.handleNotFoundError("Ссылка на интервью", {
+          token: input.token,
+        });
+        return; // TypeScript не понимает, что handleNotFoundError выбрасывает исключение
+      }
+
+      return {
+        id: interviewLink.id,
+        vacancyId: interviewLink.vacancyId,
+        token: interviewLink.token,
+        url: interviewLink.url,
+        isActive: interviewLink.isActive,
+        createdAt: interviewLink.createdAt,
+        expiresAt: interviewLink.expiresAt,
+      };
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("TRPC")) {
+        throw error;
+      }
+      await errorHandler.handleInternalError(error as Error, {
+        token: input.token,
+        operation: "validate_interview_token",
       });
     }
-
-    return {
-      id: interviewLink.id,
-      vacancyId: interviewLink.vacancyId,
-      token: interviewLink.token,
-      url: interviewLink.url,
-      isActive: interviewLink.isActive,
-      createdAt: interviewLink.createdAt,
-      expiresAt: interviewLink.expiresAt,
-    };
   });

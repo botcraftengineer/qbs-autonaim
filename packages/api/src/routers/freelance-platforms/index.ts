@@ -18,6 +18,8 @@ import { getWebInterviewStatus } from "./get-web-interview-status";
 import { importBulkResponses } from "./import-bulk-responses";
 import { importSingleResponse } from "./import-single-response";
 import { previewBulkImport } from "./preview-bulk-import";
+import { retryAnalysis } from "./retry-analysis";
+import { retryBulkImport } from "./retry-bulk-import";
 import { sendChatMessage } from "./send-chat-message";
 import { startInterview } from "./start-interview";
 import { startWebInterview } from "./start-web-interview";
@@ -45,6 +47,8 @@ export const freelancePlatformsRouter = {
   importSingleResponse,
   importBulkResponses,
   previewBulkImport,
+  retryAnalysis,
+  retryBulkImport,
   // Web chat endpoints
   startWebInterview,
   sendChatMessage,

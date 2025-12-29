@@ -17,19 +17,13 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     id: "freelance-notification-send",
     name: "Send Freelance Notification",
     retries: 2,
-    // Группировка уведомлений в 5-минутном окне
-    debounce: {
-      key: "event.data.workspaceId",
-      period: "5m",
-    },
   },
   { event: "freelance/notification.send" },
   async ({ event, step }) => {
-    const { workspaceId, vacancyId, responseId, notificationType } = event.data;
+    const { responseId, notificationType } = event.data;
+    const error = (event.data as { error?: string }).error;
 
     console.log("📬 Обработка уведомления", {
-      workspaceId,
-      vacancyId,
       responseId,
       notificationType,
     });
@@ -39,7 +33,11 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
       const response = await db.query.vacancyResponse.findFirst({
         where: eq(vacancyResponse.id, responseId),
         with: {
-          vacancy: true,
+          vacancy: {
+            with: {
+              workspace: true,
+            },
+          },
         },
       });
 
@@ -55,6 +53,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
       return {
         response,
         scoring,
+        workspaceId: response.vacancy.workspaceId,
       };
     });
 
@@ -63,12 +62,12 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
       "get-workspace-members",
       async () => {
         const members = await db.query.workspaceMember.findMany({
-          where: eq(workspaceMember.workspaceId, workspaceId),
+          where: eq(workspaceMember.workspaceId, responseData.workspaceId),
         });
 
         if (members.length === 0) {
           console.warn("⚠️ Нет членов workspace для уведомления", {
-            workspaceId,
+            workspaceId: responseData.workspaceId,
           });
           return [];
         }
@@ -94,6 +93,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
       const candidateName = response.candidateName || "Кандидат без имени";
       const vacancyTitle = response.vacancy?.title || "Вакансия";
       const profileUrl = response.platformProfileUrl || response.resumeUrl;
+      const errorMessage = error; // Захватываем error из внешней области
 
       let message = "";
 
@@ -114,6 +114,18 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
 
         if (scoring) {
           message += `Оценка: ${scoring.detailedScore}/100 ⭐\n`;
+        }
+
+        message += `\nПрофиль: ${profileUrl}`;
+      } else if (notificationType === "ANALYSIS_FAILED") {
+        message = `❌ Ошибка AI-анализа отклика\n\n`;
+        message += `Кандидат: ${candidateName}\n`;
+        message += `Вакансия: ${vacancyTitle}\n`;
+        message += `\nВсе попытки автоматического анализа исчерпаны.\n`;
+        message += `Вы можете повторить анализ вручную в интерфейсе.\n`;
+
+        if (errorMessage) {
+          message += `\nОшибка: ${errorMessage}`;
         }
 
         message += `\nПрофиль: ${profileUrl}`;
@@ -177,7 +189,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     });
 
     console.log("✅ Уведомления отправлены", {
-      workspaceId,
+      workspaceId: responseData.workspaceId,
       sent: sendResults.length,
       type: notificationType,
     });
