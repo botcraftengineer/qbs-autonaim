@@ -43,10 +43,9 @@ export const startWebInterview = publicProcedure
       const interviewLink = await linkGenerator.validateLink(input.token);
 
       if (!interviewLink) {
-        await errorHandler.handleNotFoundError("Ссылка на интервью", {
+        throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
           token: input.token,
         });
-        return; // TypeScript не понимает, что handleNotFoundError выбрасывает исключение
       }
 
       // Проверяем, что вакансия активна
@@ -62,14 +61,13 @@ export const startWebInterview = publicProcedure
       });
 
       if (!vacancy) {
-        await errorHandler.handleNotFoundError("Вакансия", {
+        throw await errorHandler.handleNotFoundError("Вакансия", {
           vacancyId: interviewLink.vacancyId,
         });
-        return;
       }
 
       if (!vacancy.isActive) {
-        await errorHandler.handleValidationError("Вакансия закрыта", {
+        throw await errorHandler.handleValidationError("Вакансия закрыта", {
           vacancyId: interviewLink.vacancyId,
         });
       }
@@ -87,7 +85,7 @@ export const startWebInterview = publicProcedure
       });
 
       if (existingResponse) {
-        await errorHandler.handleConflictError(
+        throw await errorHandler.handleConflictError(
           "Вы уже откликнулись на эту вакансию",
           {
             vacancyId: interviewLink.vacancyId,
@@ -119,14 +117,13 @@ export const startWebInterview = publicProcedure
         .returning();
 
       if (!response) {
-        await errorHandler.handleInternalError(
+        throw await errorHandler.handleInternalError(
           new Error("Failed to create response"),
           {
             vacancyId: interviewLink.vacancyId,
             freelancerName: input.freelancerInfo.name,
           },
         );
-        return;
       }
 
       // Создаём conversation с source='WEB'
@@ -143,14 +140,13 @@ export const startWebInterview = publicProcedure
         .returning();
 
       if (!conv) {
-        await errorHandler.handleInternalError(
+        throw await errorHandler.handleInternalError(
           new Error("Failed to create conversation"),
           {
             responseId: response.id,
             freelancerName: input.freelancerInfo.name,
           },
         );
-        return;
       }
 
       // Генерируем приветственное сообщение
@@ -186,7 +182,7 @@ export const startWebInterview = publicProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleDatabaseError(error as Error, {
+      throw await errorHandler.handleDatabaseError(error as Error, {
         token: input.token,
         operation: "start_web_interview",
       });

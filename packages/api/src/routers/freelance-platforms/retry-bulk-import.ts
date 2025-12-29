@@ -49,10 +49,9 @@ export const retryBulkImport = protectedProcedure
       });
 
       if (!existingVacancy) {
-        await errorHandler.handleNotFoundError("Вакансия", {
+        throw await errorHandler.handleNotFoundError("Вакансия", {
           vacancyId: input.vacancyId,
         });
-        return;
       }
 
       // Проверка доступа к workspace вакансии
@@ -62,7 +61,7 @@ export const retryBulkImport = protectedProcedure
       );
 
       if (!hasAccess) {
-        await errorHandler.handleAuthorizationError("вакансии", {
+        throw await errorHandler.handleAuthorizationError("вакансии", {
           vacancyId: input.vacancyId,
           workspaceId: existingVacancy.workspaceId,
           userId: ctx.session.user.id,
@@ -234,7 +233,7 @@ export const retryBulkImport = protectedProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleDatabaseError(error as Error, {
+      throw await errorHandler.handleDatabaseError(error as Error, {
         vacancyId: input.vacancyId,
         operation: "retry_bulk_import",
       });

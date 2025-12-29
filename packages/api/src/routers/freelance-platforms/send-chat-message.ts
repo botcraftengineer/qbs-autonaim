@@ -32,15 +32,14 @@ export const sendChatMessage = publicProcedure
       });
 
       if (!conv) {
-        await errorHandler.handleNotFoundError("Разговор", {
+        throw await errorHandler.handleNotFoundError("Разговор", {
           conversationId: input.conversationId,
         });
-        return;
       }
 
       // Проверяем, что разговор активен
       if (conv.status !== "ACTIVE") {
-        await errorHandler.handleValidationError("Разговор завершён", {
+        throw await errorHandler.handleValidationError("Разговор завершён", {
           conversationId: input.conversationId,
           status: conv.status,
         });
@@ -68,13 +67,12 @@ export const sendChatMessage = publicProcedure
         .returning();
 
       if (!savedMessage) {
-        await errorHandler.handleInternalError(
+        throw await errorHandler.handleInternalError(
           new Error("Failed to save message"),
           {
             conversationId: input.conversationId,
           },
         );
-        return;
       }
 
       // Добавляем сообщение в буфер
@@ -132,7 +130,7 @@ export const sendChatMessage = publicProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleDatabaseError(error as Error, {
+      throw await errorHandler.handleDatabaseError(error as Error, {
         conversationId: input.conversationId,
         operation: "send_chat_message",
       });

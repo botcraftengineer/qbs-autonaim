@@ -23,10 +23,9 @@ export const validateInterviewToken = publicProcedure
       const interviewLink = await linkGenerator.validateLink(input.token);
 
       if (!interviewLink) {
-        await errorHandler.handleNotFoundError("Ссылка на интервью", {
+        throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
           token: input.token,
         });
-        return; // TypeScript не понимает, что handleNotFoundError выбрасывает исключение
       }
 
       return {
@@ -42,7 +41,7 @@ export const validateInterviewToken = publicProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleInternalError(error as Error, {
+      throw await errorHandler.handleInternalError(error as Error, {
         token: input.token,
         operation: "validate_interview_token",
       });

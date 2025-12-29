@@ -39,7 +39,7 @@ export const createVacancy = protectedProcedure
       );
 
       if (!access) {
-        await errorHandler.handleAuthorizationError("workspace", {
+        throw await errorHandler.handleAuthorizationError("workspace", {
           workspaceId: input.workspaceId,
           userId: ctx.session.user.id,
         });
@@ -59,14 +59,13 @@ export const createVacancy = protectedProcedure
         .returning();
 
       if (!createdVacancy) {
-        await errorHandler.handleInternalError(
+        throw await errorHandler.handleInternalError(
           new Error("Failed to create vacancy"),
           {
             workspaceId: input.workspaceId,
             title: input.title,
           },
         );
-        return;
       }
 
       // Генерируем ссылку на интервью
@@ -85,7 +84,7 @@ export const createVacancy = protectedProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleDatabaseError(error as Error, {
+      throw await errorHandler.handleDatabaseError(error as Error, {
         workspaceId: input.workspaceId,
         operation: "create_vacancy",
       });

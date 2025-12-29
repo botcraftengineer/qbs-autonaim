@@ -40,7 +40,7 @@ export const getVacancies = protectedProcedure
       );
 
       if (!access) {
-        await errorHandler.handleAuthorizationError("workspace", {
+        throw await errorHandler.handleAuthorizationError("workspace", {
           workspaceId: input.workspaceId,
           userId: ctx.session.user.id,
         });
@@ -95,7 +95,7 @@ export const getVacancies = protectedProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleDatabaseError(error as Error, {
+      throw await errorHandler.handleDatabaseError(error as Error, {
         workspaceId: input.workspaceId,
         operation: "get_vacancies",
       });

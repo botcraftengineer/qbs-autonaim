@@ -33,10 +33,9 @@ export const retryAnalysis = protectedProcedure
       });
 
       if (!response) {
-        await errorHandler.handleNotFoundError("Отклик", {
+        throw await errorHandler.handleNotFoundError("Отклик", {
           responseId: input.responseId,
         });
-        return;
       }
 
       // Проверка доступа к workspace вакансии
@@ -46,12 +45,11 @@ export const retryAnalysis = protectedProcedure
       );
 
       if (!hasAccess) {
-        await errorHandler.handleAuthorizationError("отклика", {
+        throw await errorHandler.handleAuthorizationError("отклика", {
           responseId: input.responseId,
           workspaceId: response.vacancy.workspaceId,
           userId: ctx.session.user.id,
         });
-        return;
       }
 
       // Запускаем повторный AI-анализ через Inngest
@@ -86,7 +84,7 @@ export const retryAnalysis = protectedProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleInternalError(error as Error, {
+      throw await errorHandler.handleInternalError(error as Error, {
         responseId: input.responseId,
         operation: "retry_analysis",
       });

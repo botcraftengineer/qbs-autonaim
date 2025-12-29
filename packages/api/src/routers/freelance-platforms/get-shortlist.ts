@@ -33,7 +33,7 @@ export const getShortlist = protectedProcedure
       );
 
       if (!hasAccess) {
-        await errorHandler.handleAuthorizationError("workspace", {
+        throw await errorHandler.handleAuthorizationError("workspace", {
           workspaceId: input.workspaceId,
           userId: ctx.session.user.id,
         });
@@ -49,7 +49,7 @@ export const getShortlist = protectedProcedure
       });
 
       if (!vacancy) {
-        await errorHandler.handleNotFoundError("Вакансия", {
+        throw await errorHandler.handleNotFoundError("Вакансия", {
           vacancyId: input.vacancyId,
           workspaceId: input.workspaceId,
         });
@@ -78,7 +78,7 @@ export const getShortlist = protectedProcedure
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
       }
-      await errorHandler.handleDatabaseError(error as Error, {
+      throw await errorHandler.handleDatabaseError(error as Error, {
         vacancyId: input.vacancyId,
         operation: "get_shortlist",
       });

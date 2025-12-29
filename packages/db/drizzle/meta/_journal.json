@@ -8,6 +8,13 @@
       "when": 1766857952890,
       "tag": "0000_motionless_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767009958850,
+      "tag": "0001_flat_morlun",
+      "breakpoints": true
     }
   ]
 }
