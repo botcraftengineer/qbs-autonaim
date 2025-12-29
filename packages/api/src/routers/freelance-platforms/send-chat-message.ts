@@ -61,7 +61,7 @@ export const sendChatMessage = publicProcedure
           conversationId: input.conversationId,
           sender: "CANDIDATE",
           contentType: "TEXT",
-          channel: "WEB",
+          channel: "TELEGRAM",
           content: input.message,
         })
         .returning();

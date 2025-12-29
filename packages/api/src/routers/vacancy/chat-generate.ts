@@ -1,4 +1,4 @@
-import { generateText } from "@qbs-autonaim/lib/ai";
+import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -118,7 +118,7 @@ export const chatGenerate = protectedProcedure
     );
 
     try {
-      const { text } = await generateText({
+      const result = await streamText({
         prompt,
         generationName: "vacancy-chat-generation",
         entityId: workspaceId,
@@ -128,7 +128,13 @@ export const chatGenerate = protectedProcedure
         },
       });
 
-      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      // Собираем весь текст из стрима
+      let fullText = "";
+      for await (const chunk of result.textStream) {
+        fullText += chunk;
+      }
+
+      const jsonMatch = fullText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error("Invalid JSON response from AI");
       }

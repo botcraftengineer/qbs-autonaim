@@ -99,7 +99,7 @@ export const startWebInterview = publicProcedure
         .insert(vacancyResponse)
         .values({
           vacancyId: interviewLink.vacancyId,
-          resumeId: `freelance_web_${Date.now()}`,
+          resumeId: `freelance_web_${crypto.randomUUID()}`,
           resumeUrl: input.freelancerInfo.platformProfileUrl,
           candidateName: input.freelancerInfo.name,
           platformProfileUrl: input.freelancerInfo.platformProfileUrl,
@@ -168,7 +168,7 @@ export const startWebInterview = publicProcedure
         conversationId: conv.id,
         sender: "BOT",
         contentType: "TEXT",
-        channel: "TELEGRAM",
+        channel: conv.source,
         content: welcomeMessage,
       });
 

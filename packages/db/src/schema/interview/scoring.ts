@@ -22,7 +22,9 @@ export const interviewScoring = pgTable("interview_scorings", {
   score: integer("score").notNull(), // Оценка от 0 до 5
   detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
   analysis: text("analysis"), // Анализ на основе интервью
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const CreateInterviewScoringSchema = createInsertSchema(

@@ -2,7 +2,7 @@ import { deepseek } from "@ai-sdk/deepseek";
 import { createOpenAI } from "@ai-sdk/openai";
 import { env } from "@qbs-autonaim/config";
 import type { LanguageModel } from "ai";
-import { generateText as aiGenerateText } from "ai";
+import { generateText as aiGenerateText, streamText as aiStreamText } from "ai";
 import { Langfuse } from "langfuse";
 
 const langfuse = new Langfuse({
@@ -211,5 +211,82 @@ export async function generateText(
         error: flushError,
       });
     }
+  }
+}
+
+interface StreamTextOptions {
+  model?: LanguageModel;
+  prompt: string;
+  generationName: string;
+  entityId?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export function streamText(
+  options: StreamTextOptions,
+): ReturnType<typeof aiStreamText> {
+  const {
+    model = getAIModel(),
+    prompt,
+    generationName,
+    entityId,
+    metadata = {},
+  } = options;
+
+  const modelName = getAIModelName();
+
+  const trace = langfuse.trace({
+    name: generationName,
+    userId: entityId,
+    metadata,
+  });
+
+  const generation = trace.generation({
+    name: generationName,
+    model: modelName,
+    input: prompt,
+    metadata,
+  });
+
+  try {
+    const result = aiStreamText({
+      model,
+      prompt,
+    });
+
+    // Собираем текст из стрима для логирования
+    (async () => {
+      try {
+        let fullText = "";
+        for await (const chunk of result.textStream) {
+          fullText += chunk;
+        }
+
+        generation.end({
+          output: fullText,
+        });
+
+        trace.update({
+          output: fullText,
+        });
+
+        await langfuse.flushAsync();
+      } catch (flushError) {
+        console.error("Не удалось сохранить трейс Langfuse", {
+          generationName,
+          traceId: trace.id,
+          entityId,
+          error: flushError,
+        });
+      }
+    })();
+
+    return result;
+  } catch (error) {
+    generation.end({
+      statusMessage: error instanceof Error ? error.message : String(error),
+    });
+
+    throw error;
   }
 }

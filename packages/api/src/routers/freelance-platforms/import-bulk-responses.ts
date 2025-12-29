@@ -100,40 +100,51 @@ export const importBulkResponses = protectedProcedure
             continue;
           }
 
-          // Проверка дубликатов по platformProfileUrl + vacancyId
-          if (parsed.contactInfo.platformProfile) {
-            const existingResponse =
-              await ctx.db.query.vacancyResponse.findFirst({
-                where: and(
-                  eq(vacancyResponse.vacancyId, input.vacancyId),
-                  eq(
-                    vacancyResponse.platformProfileUrl,
-                    parsed.contactInfo.platformProfile,
-                  ),
-                ),
-              });
+          // Проверка обязательного поля platformProfile
+          if (!parsed.contactInfo.platformProfile) {
+            results.push({
+              success: false,
+              error:
+                "Отсутствует ссылка на профиль фрилансера (platformProfile) - обязательное поле для импорта",
+              freelancerName: parsed.freelancerName,
+              platformProfileUrl: undefined,
+            });
+            failureCount++;
+            continue;
+          }
 
-            if (existingResponse) {
-              results.push({
-                success: false,
-                error: "Отклик от этого фрилансера уже существует",
-                freelancerName: parsed.freelancerName,
-                platformProfileUrl: parsed.contactInfo.platformProfile,
-              });
-              failureCount++;
-              continue;
-            }
+          // Проверка дубликатов по platformProfileUrl + vacancyId
+          const existingResponse = await ctx.db.query.vacancyResponse.findFirst(
+            {
+              where: and(
+                eq(vacancyResponse.vacancyId, input.vacancyId),
+                eq(
+                  vacancyResponse.platformProfileUrl,
+                  parsed.contactInfo.platformProfile,
+                ),
+              ),
+            },
+          );
+
+          if (existingResponse) {
+            results.push({
+              success: false,
+              error: "Отклик от этого фрилансера уже существует",
+              freelancerName: parsed.freelancerName,
+              platformProfileUrl: parsed.contactInfo.platformProfile,
+            });
+            failureCount++;
+            continue;
           }
 
           // Создаём запись отклика
+          // platformProfile гарантированно существует после валидации выше
           const [createdResponse] = await ctx.db
             .insert(vacancyResponse)
             .values({
               vacancyId: input.vacancyId,
-              resumeId:
-                parsed.contactInfo.platformProfile || crypto.randomUUID(),
-              resumeUrl:
-                parsed.contactInfo.platformProfile || "manual-import-no-url",
+              resumeId: parsed.contactInfo.platformProfile,
+              resumeUrl: parsed.contactInfo.platformProfile,
               candidateName: parsed.freelancerName,
               coverLetter: parsed.responseText,
               importSource: "FREELANCE_MANUAL",

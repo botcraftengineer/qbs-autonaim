@@ -1,8 +1,9 @@
 "use client";
 
 import { ScrollArea } from "@qbs-autonaim/ui";
-import { useMutation } from "@tanstack/react-query";
-import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useTRPC } from "~/trpc/react";
 import { VacancyChatInput } from "./vacancy-chat-input";
 import { VacancyChatMessage } from "./vacancy-chat-message";
@@ -25,28 +26,34 @@ interface VacancyDocument {
 
 interface VacancyCreatorContainerProps {
   workspaceId: string;
+  orgSlug: string;
+  workspaceSlug: string;
 }
 
 export function VacancyCreatorContainer({
   workspaceId,
+  orgSlug,
+  workspaceSlug,
 }: VacancyCreatorContainerProps) {
-  const trpc = useTRPC();
   const [messages, setMessages] = useState<Message[]>([]);
   const [document, setDocument] = useState<VacancyDocument>({});
+  const [isGenerating, setIsGenerating] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const router = useRouter();
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
-  const { mutate: generateVacancy, isPending } = useMutation(
-    trpc.vacancy.chatGenerate.mutationOptions({
-      onSuccess: (data: { document: VacancyDocument }) => {
-        setDocument(data.document);
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: Date.now().toString(),
-            role: "assistant",
-            content: "Документ обновлён",
-            timestamp: new Date(),
-          },
-        ]);
+  const { mutate: createVacancy, isPending: isCreatingVacancy } = useMutation(
+    trpc.vacancy.create.mutationOptions({
+      onSuccess: (vacancy: { id: string }) => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.vacancy.list.queryKey(),
+        });
+        router.push(
+          `/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`,
+        );
       },
       onError: (error: Error) => {
         setMessages((prev) => [
@@ -54,13 +61,117 @@ export function VacancyCreatorContainer({
           {
             id: Date.now().toString(),
             role: "assistant",
-            content: `Ошибка: ${error.message}`,
+            content: `Ошибка создания вакансии: ${error.message}`,
             timestamp: new Date(),
           },
         ]);
       },
     }),
   );
+
+  const handleVacancyCreated = () => {
+    if (!document.title) return;
+
+    createVacancy({
+      workspaceId,
+      title: document.title,
+      description: document.description,
+      requirements: document.requirements,
+      responsibilities: document.responsibilities,
+      conditions: document.conditions,
+    });
+  };
+
+  const generateVacancy = async (input: {
+    workspaceId: string;
+    message: string;
+    currentDocument: VacancyDocument;
+    conversationHistory: Array<{
+      role: "user" | "assistant";
+      content: string;
+    }>;
+  }) => {
+    setIsGenerating(true);
+    abortControllerRef.current = new AbortController();
+
+    try {
+      const response = await fetch("/api/vacancy/chat-generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(input),
+        signal: abortControllerRef.current.signal,
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Ошибка генерации");
+      }
+
+      if (!response.body) {
+        throw new Error("Нет тела ответа");
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            const data = JSON.parse(line.slice(6));
+
+            if (data.error) {
+              throw new Error(data.error);
+            }
+
+            if (data.document && data.done) {
+              setDocument(data.document);
+              setMessages((prev) => [
+                ...prev,
+                {
+                  id: Date.now().toString(),
+                  role: "assistant",
+                  content: "Документ обновлён",
+                  timestamp: new Date(),
+                },
+              ]);
+            }
+          }
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: `Ошибка: ${error instanceof Error ? error.message : "Неизвестная ошибка"}`,
+          timestamp: new Date(),
+        },
+      ]);
+    } finally {
+      setIsGenerating(false);
+      abortControllerRef.current = null;
+    }
+  };
+
+  // Автоскролл к новым сообщениям
+  useEffect(() => {
+    if (messages.length > 0 || isGenerating) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages.length, isGenerating]);
 
   const handleSendMessage = (message: string) => {
     const userMessage: Message = {
@@ -86,24 +197,34 @@ export function VacancyCreatorContainer({
   };
 
   return (
-    <div className="flex h-full gap-4">
+    <div className="flex h-full flex-col gap-4 md:flex-row">
       {/* Чат слева */}
-      <div className="flex w-1/2 flex-col border-r">
-        <div className="border-b p-4">
-          <h2 className="text-lg font-semibold">Чат с ассистентом</h2>
+      <section className="flex w-full flex-col border-b md:w-1/2 md:border-b-0 md:border-r">
+        <header className="border-b p-4">
+          <h2 className="text-lg font-semibold">Чат с&nbsp;ассистентом</h2>
           <p className="text-sm text-muted-foreground">
-            Опишите требования к вакансии
+            Опишите требования к&nbsp;вакансии
           </p>
-        </div>
+        </header>
 
-        <ScrollArea className="flex-1">
-          <div className="space-y-4 p-4">
+        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+          <div
+            className="space-y-4 p-4"
+            role="log"
+            aria-live="polite"
+            aria-atomic="false"
+            aria-relevant="additions"
+          >
             {messages.length === 0 ? (
-              <div className="flex h-full min-h-[300px] items-center justify-center">
+              <div
+                className="flex h-full min-h-[300px] items-center justify-center"
+                role="status"
+                aria-label="Пустое состояние чата"
+              >
                 <div className="text-center text-muted-foreground">
                   <p className="text-sm">Начните диалог</p>
                   <p className="mt-1 text-xs">
-                    Например: "Нужен React разработчик с опытом 3+ года"
+                    Например: "Нужен React разработчик с опытом 3+&nbsp;года"
                   </p>
                 </div>
               </div>
@@ -117,8 +238,12 @@ export function VacancyCreatorContainer({
                     timestamp={msg.timestamp}
                   />
                 ))}
-                {isPending && (
-                  <div className="flex gap-3 rounded-lg bg-muted/50 p-4">
+                {isGenerating && (
+                  <div
+                    className="flex gap-3 rounded-lg bg-muted/50 p-4"
+                    role="status"
+                    aria-label="Ассистент печатает"
+                  >
                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
                       <div className="h-4 w-4 animate-pulse" aria-hidden="true">
                         ⋯
@@ -132,6 +257,7 @@ export function VacancyCreatorContainer({
                     </div>
                   </div>
                 )}
+                <div ref={messagesEndRef} aria-hidden="true" />
               </>
             )}
           </div>
@@ -139,25 +265,30 @@ export function VacancyCreatorContainer({
 
         <VacancyChatInput
           onSendMessage={handleSendMessage}
-          disabled={isPending}
+          disabled={isGenerating}
         />
-      </div>
+      </section>
 
       {/* Документ справа */}
-      <div className="flex w-1/2 flex-col">
-        <div className="flex items-center justify-between border-b p-4">
+      <section className="flex w-full flex-col md:w-1/2">
+        <header className="flex items-center justify-between border-b p-4">
           <div>
             <h2 className="text-lg font-semibold">Документ вакансии</h2>
             <p className="text-sm text-muted-foreground">
-              Автоматически формируется на основе диалога
+              Автоматически формируется на&nbsp;основе диалога
             </p>
           </div>
-        </div>
+        </header>
 
         <div className="flex-1">
-          <VacancyDocumentPreview document={document} />
+          <VacancyDocumentPreview
+            document={document}
+            workspaceId={workspaceId}
+            onVacancyCreated={handleVacancyCreated}
+            isCreating={isCreatingVacancy}
+          />
         </div>
-      </div>
+      </section>
     </div>
   );
 }

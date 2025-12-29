@@ -202,11 +202,18 @@ export const getAnalytics = protectedProcedure
           .reduce((sum, v) => sum + (v.daysToShortlist ?? 0), 0) /
           timeToShortlist.filter((v) => v.daysToShortlist !== null).length || 0;
 
+      // Взвешенное среднее: учитываем количество откликов каждого источника
+      const totalCompleted = completionRates.reduce(
+        (sum, r) =>
+          sum + Number(r.completionRate ?? 0) * Number(r.totalResponses ?? 0),
+        0,
+      );
+      const totalResponses = completionRates.reduce(
+        (sum, r) => sum + Number(r.totalResponses ?? 0),
+        0,
+      );
       const overallCompletionRate =
-        completionRates.reduce(
-          (sum, r) => sum + Number(r.completionRate ?? 0),
-          0,
-        ) / (completionRates.length || 1);
+        totalResponses > 0 ? totalCompleted / totalResponses : 0;
 
       return {
         // Общая статистика

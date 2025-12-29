@@ -19,11 +19,12 @@ export function VacancyChatMessage({
   const isUser = role === "user";
 
   return (
-    <div
+    <article
       className={cn(
         "flex gap-3 rounded-lg p-4",
         isUser ? "bg-primary/5" : "bg-muted/50",
       )}
+      aria-label={`Сообщение от ${isUser ? "вас" : "ассистента"}`}
     >
       <div
         className={cn(
@@ -34,17 +35,22 @@ export function VacancyChatMessage({
       >
         {isUser ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
       </div>
-      <div className="flex-1 space-y-1">
+      <div className="min-w-0 flex-1 space-y-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-medium">
             {isUser ? "Вы" : "Ассистент"}
           </span>
-          <span className="text-xs text-muted-foreground">
+          <time
+            className="text-xs text-muted-foreground"
+            dateTime={timestamp.toISOString()}
+          >
             {format(timestamp, "HH:mm", { locale: ru })}
-          </span>
+          </time>
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed">{content}</p>
+        <p className="min-w-0 break-words whitespace-pre-wrap text-sm leading-relaxed">
+          {content}
+        </p>
       </div>
-    </div>
+    </article>
   );
 }
