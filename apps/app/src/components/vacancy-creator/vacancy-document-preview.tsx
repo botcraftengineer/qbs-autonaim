@@ -14,7 +14,7 @@ interface VacancyDocument {
 interface VacancyDocumentPreviewProps {
   document: VacancyDocument;
   workspaceId: string;
-  onVacancyCreated?: (vacancyId: string) => void;
+  onVacancyCreated?: () => void;
   isCreating?: boolean;
 }
 
@@ -112,10 +112,10 @@ export function VacancyDocumentPreview({
         </article>
       </ScrollArea>
 
-      {hasMinimalContent && (
+      {hasMinimalContent && onVacancyCreated && (
         <div className="border-t p-4">
           <Button
-            onClick={() => onVacancyCreated?.(workspaceId)}
+            onClick={onVacancyCreated}
             disabled={isCreating}
             className="w-full"
             size="lg"

@@ -39,7 +39,6 @@ export function VacancyCreatorContainer({
   const [document, setDocument] = useState<VacancyDocument>({});
   const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const router = useRouter();
   const trpc = useTRPC();
@@ -91,6 +90,8 @@ export function VacancyCreatorContainer({
       content: string;
     }>;
   }) => {
+    if (!isMountedRef.current) return;
+
     setIsGenerating(true);
     abortControllerRef.current = new AbortController();
 
@@ -125,29 +126,54 @@ export function VacancyCreatorContainer({
 
         for (const line of lines) {
           if (line.startsWith("data: ")) {
-            const data = JSON.parse(line.slice(6));
+            try {
+              const data = JSON.parse(line.slice(6));
 
-            if (data.error) {
-              throw new Error(data.error);
-            }
+              if (data.error) {
+                throw new Error(data.error);
+              }
 
-            if (data.document && data.done) {
-              setDocument(data.document);
+              if (data.document && data.done) {
+                if (!isMountedRef.current || !abortControllerRef.current) {
+                  return;
+                }
+
+                setDocument(data.document);
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: Date.now().toString(),
+                    role: "assistant",
+                    content: "Документ обновлён",
+                    timestamp: new Date(),
+                  },
+                ]);
+              }
+            } catch (parseError) {
+              console.error("Ошибка парсинга SSE:", parseError);
+              if (!isMountedRef.current || !abortControllerRef.current) {
+                return;
+              }
               setMessages((prev) => [
                 ...prev,
                 {
                   id: Date.now().toString(),
                   role: "assistant",
-                  content: "Документ обновлён",
+                  content: "Ошибка обработки данных от сервера",
                   timestamp: new Date(),
                 },
               ]);
+              break;
             }
           }
         }
       }
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") {
+        return;
+      }
+
+      if (!isMountedRef.current || !abortControllerRef.current) {
         return;
       }
 
@@ -161,10 +187,25 @@ export function VacancyCreatorContainer({
         },
       ]);
     } finally {
-      setIsGenerating(false);
+      if (isMountedRef.current) {
+        setIsGenerating(false);
+      }
       abortControllerRef.current = null;
     }
   };
+
+  // Cleanup при размонтировании
+  useEffect(() => {
+    isMountedRef.current = true;
+
+    return () => {
+      isMountedRef.current = false;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+      }
+    };
+  }, []);
 
   // Автоскролл к новым сообщениям
   useEffect(() => {
@@ -207,7 +248,7 @@ export function VacancyCreatorContainer({
           </p>
         </header>
 
-        <ScrollArea className="flex-1" ref={scrollAreaRef}>
+        <ScrollArea className="flex-1">
           <div
             className="space-y-4 p-4"
             role="log"

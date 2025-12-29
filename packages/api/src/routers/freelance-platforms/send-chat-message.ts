@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
 import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import type { BufferedMessage } from "@qbs-autonaim/shared";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
@@ -137,9 +138,11 @@ export const sendChatMessage = publicProcedure
         messageId: savedMessage.id,
       };
     } catch (error) {
-      if (error instanceof Error && error.message.includes("TRPC")) {
+      // Пробрасываем TRPC ошибки как есть
+      if (error instanceof TRPCError) {
         throw error;
       }
+      // Все остальные ошибки обрабатываем через errorHandler
       throw await errorHandler.handleDatabaseError(error as Error, {
         conversationId: input.conversationId,
         operation: "send_chat_message",

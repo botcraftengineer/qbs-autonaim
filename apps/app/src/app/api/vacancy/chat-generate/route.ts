@@ -1,9 +1,16 @@
 import { AuditLoggerService } from "@qbs-autonaim/api";
 import { db } from "@qbs-autonaim/db";
 import { workspace, workspaceMember } from "@qbs-autonaim/db/schema";
+import {
+  checkRateLimit,
+  sanitizeConversationMessage,
+  sanitizePromptText,
+  truncateText,
+} from "@qbs-autonaim/lib";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { getSession } from "~/auth/server";
 
 interface VacancyDocument {
@@ -13,6 +20,139 @@ interface VacancyDocument {
   responsibilities?: string;
   conditions?: string;
 }
+
+interface JSONExtractionResult {
+  success: boolean;
+  data?: VacancyDocument;
+  error?: string;
+  extractedText?: string;
+}
+
+/**
+ * Извлекает сбалансированный JSON-объект из текста
+ * Использует счётчик скобок для корректного определения границ объекта
+ */
+function extractBalancedJSON(text: string): JSONExtractionResult {
+  // Находим первую открывающую скобку
+  const startIndex = text.indexOf("{");
+  if (startIndex === -1) {
+    return {
+      success: false,
+      error: "JSON объект не найден в ответе AI",
+    };
+  }
+
+  // Используем счётчик для поиска соответствующей закрывающей скобки
+  let braceCount = 0;
+  let endIndex = -1;
+
+  for (let i = startIndex; i < text.length; i++) {
+    const char = text[i];
+    if (char === "{") {
+      braceCount++;
+    } else if (char === "}") {
+      braceCount--;
+      if (braceCount === 0) {
+        endIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (endIndex === -1) {
+    return {
+      success: false,
+      error: "Незавершённый JSON объект в ответе AI",
+    };
+  }
+
+  const jsonText = text.substring(startIndex, endIndex + 1);
+
+  // Пытаемся распарсить извлечённый JSON
+  try {
+    const parsed = JSON.parse(jsonText);
+    return {
+      success: true,
+      data: parsed,
+      extractedText: jsonText,
+    };
+  } catch (parseError) {
+    return {
+      success: false,
+      error: `Ошибка парсинга JSON: ${parseError instanceof Error ? parseError.message : "неизвестная ошибка"}`,
+      extractedText: jsonText,
+    };
+  }
+}
+
+/**
+ * Валидирует и нормализует документ вакансии
+ * Применяет значения по умолчанию и проверяет типы
+ */
+function validateAndNormalizeDocument(
+  parsed: unknown,
+  fallbackDocument?: VacancyDocument,
+): VacancyDocument {
+  // Проверяем, что parsed - это объект
+  if (!parsed || typeof parsed !== "object") {
+    return {
+      title: fallbackDocument?.title || "",
+      description: fallbackDocument?.description || "",
+      requirements: fallbackDocument?.requirements || "",
+      responsibilities: fallbackDocument?.responsibilities || "",
+      conditions: fallbackDocument?.conditions || "",
+    };
+  }
+
+  const data = parsed as Record<string, unknown>;
+
+  // Безопасно извлекаем строковые поля с fallback значениями
+  const getString = (key: string, fallback: string = ""): string => {
+    const value = data[key];
+    return typeof value === "string" ? value : fallback;
+  };
+
+  return {
+    title: getString("title", fallbackDocument?.title || ""),
+    description: getString("description", fallbackDocument?.description || ""),
+    requirements: getString(
+      "requirements",
+      fallbackDocument?.requirements || "",
+    ),
+    responsibilities: getString(
+      "responsibilities",
+      fallbackDocument?.responsibilities || "",
+    ),
+    conditions: getString("conditions", fallbackDocument?.conditions || ""),
+  };
+}
+
+// Zod схема для валидации входных данных
+const vacancyChatRequestSchema = z.object({
+  workspaceId: z.string().min(1, "workspaceId обязателен"),
+  message: z
+    .string()
+    .min(1, "Сообщение не может быть пустым")
+    .max(5000, "Сообщение не может превышать 5000 символов"),
+  currentDocument: z
+    .object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      requirements: z.string().optional(),
+      responsibilities: z.string().optional(),
+      conditions: z.string().optional(),
+    })
+    .optional(),
+  conversationHistory: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant"]),
+        content: z.string(),
+      }),
+    )
+    .max(10, "История диалога не может содержать более 10 сообщений")
+    .optional(),
+});
 
 function buildVacancyGenerationPrompt(
   message: string,
@@ -82,16 +222,53 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
     }
 
-    // Парсинг входных данных
+    // Парсинг и валидация входных данных
     const body = await request.json();
-    const { workspaceId, message, currentDocument, conversationHistory } = body;
+    const validationResult = vacancyChatRequestSchema.safeParse(body);
 
-    if (!workspaceId || !message) {
+    if (!validationResult.success) {
       return NextResponse.json(
-        { error: "Отсутствуют обязательные поля" },
+        {
+          error: "Ошибка валидации",
+          details: validationResult.error.flatten(),
+        },
         { status: 400 },
       );
     }
+
+    const { workspaceId, message, currentDocument, conversationHistory } =
+      validationResult.data;
+
+    // Rate limiting - проверяем до обращения к БД
+    const rateLimitResult = checkRateLimit(workspaceId, 10, 60_000);
+    if (!rateLimitResult.allowed) {
+      const resetInSeconds = Math.ceil(
+        (rateLimitResult.resetAt - Date.now()) / 1000,
+      );
+      return NextResponse.json(
+        {
+          error: "Превышен лимит запросов",
+          retryAfter: resetInSeconds,
+        },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": resetInSeconds.toString(),
+            "X-RateLimit-Limit": "10",
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": rateLimitResult.resetAt.toString(),
+          },
+        },
+      );
+    }
+
+    // Санитизация входных данных
+    const sanitizedMessage = truncateText(sanitizePromptText(message), 5000);
+    const sanitizedHistory = conversationHistory
+      ? conversationHistory
+          .slice(0, 10)
+          .map((msg) => sanitizeConversationMessage(msg))
+      : undefined;
 
     // Проверка доступа к workspace
     const workspaceData = await db.query.workspace.findFirst({
@@ -120,8 +297,8 @@ export async function POST(request: Request) {
         resourceId: workspaceId,
         metadata: {
           action: "vacancy_ai_generation_started",
-          messageLength: message.length,
-          hasConversationHistory: !!conversationHistory?.length,
+          messageLength: sanitizedMessage.length,
+          hasConversationHistory: !!sanitizedHistory?.length,
         },
       });
     } catch (auditError) {
@@ -129,11 +306,11 @@ export async function POST(request: Request) {
       console.error("Failed to log audit entry:", auditError);
     }
 
-    // Генерация промпта
+    // Генерация промпта с санитизированными данными
     const prompt = buildVacancyGenerationPrompt(
-      message,
+      sanitizedMessage,
       currentDocument,
-      conversationHistory,
+      sanitizedHistory,
     );
 
     // Запуск streaming генерации
@@ -148,12 +325,15 @@ export async function POST(request: Request) {
     });
 
     // Создание ReadableStream для передачи данных клиенту
+    // result.textStream уже является клоном, безопасным для потребления
     const encoder = new TextEncoder();
     let fullText = "";
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          // Потребляем только наш клон потока (callerStream из ai-client.ts)
+          // Второй клон (loggingStream) потребляется внутри streamText для Langfuse
           for await (const chunk of result.textStream) {
             fullText += chunk;
 
@@ -163,42 +343,50 @@ export async function POST(request: Request) {
             );
           }
 
-          // Парсим финальный JSON
-          const jsonMatch = fullText.match(/\{[\s\S]*\}/);
-          if (jsonMatch) {
-            const parsed = JSON.parse(jsonMatch[0]);
-            const document = {
-              title: parsed.title || currentDocument?.title || "",
-              description:
-                parsed.description || currentDocument?.description || "",
-              requirements:
-                parsed.requirements || currentDocument?.requirements || "",
-              responsibilities:
-                parsed.responsibilities ||
-                currentDocument?.responsibilities ||
-                "",
-              conditions:
-                parsed.conditions || currentDocument?.conditions || "",
-            };
+          // Извлекаем и парсим финальный JSON с надёжной обработкой
+          const extractionResult = extractBalancedJSON(fullText);
 
-            // Отправляем финальный документ
+          if (!extractionResult.success) {
+            // Отправляем частичные данные и информацию об ошибке
             controller.enqueue(
               encoder.encode(
-                `data: ${JSON.stringify({ document, done: true })}\n\n`,
+                `data: ${JSON.stringify({
+                  error: extractionResult.error,
+                  rawText: fullText,
+                  partialDocument: currentDocument || {},
+                  done: true,
+                })}\n\n`,
               ),
             );
-          } else {
-            throw new Error("Invalid JSON response from AI");
+            controller.close();
+            return;
           }
+
+          // Валидируем и нормализуем извлечённый документ
+          const document = validateAndNormalizeDocument(
+            extractionResult.data,
+            currentDocument,
+          );
+
+          // Отправляем финальный документ
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({ document, done: true })}\n\n`,
+            ),
+          );
 
           controller.close();
         } catch (error) {
           console.error("Streaming error:", error);
+          // Отправляем структурированную ошибку с контекстом
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
                 error:
                   error instanceof Error ? error.message : "Ошибка генерации",
+                rawText: fullText,
+                partialDocument: currentDocument || {},
+                done: true,
               })}\n\n`,
             ),
           );
