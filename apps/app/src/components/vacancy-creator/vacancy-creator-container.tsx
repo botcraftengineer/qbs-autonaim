@@ -55,8 +55,8 @@ export function VacancyCreatorContainer({
           `/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`,
         );
       },
-      onError: (error: Error) => {
-        setMessages((prev) => [
+      onError: (error) => {
+        return setMessages((prev) => [
           ...prev,
           {
             id: Date.now().toString(),

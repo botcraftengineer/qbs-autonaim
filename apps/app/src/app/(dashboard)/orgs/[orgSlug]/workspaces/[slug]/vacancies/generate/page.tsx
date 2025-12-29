@@ -8,7 +8,7 @@ interface PageProps {
 }
 
 export default async function VacancyGeneratePage({ params }: PageProps) {
-  const { slug } = await params;
+  const { orgSlug, slug } = await params;
 
   return (
     <div className="flex h-[calc(100vh-4rem)] flex-col">
@@ -19,7 +19,11 @@ export default async function VacancyGeneratePage({ params }: PageProps) {
         </p>
       </header>
       <main className="flex-1 overflow-hidden">
-        <VacancyCreatorContainer workspaceId={slug} />
+        <VacancyCreatorContainer
+          workspaceId={slug}
+          orgSlug={orgSlug}
+          workspaceSlug={slug}
+        />
       </main>
     </div>
   );
