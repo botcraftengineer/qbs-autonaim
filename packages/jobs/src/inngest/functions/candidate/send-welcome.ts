@@ -43,17 +43,6 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         throw new Error(`Отклик не найден: ${responseId}`);
       }
 
-      // Защита от дублирования: если приветствие уже отправлено, пропускаем
-      if (result.welcomeSentAt) {
-        console.log("⚠️ Приветствие уже было отправлено, пропускаем", {
-          responseId,
-          welcomeSentAt: result.welcomeSentAt,
-        });
-        throw new Error(
-          `Приветствие уже было отправлено ${result.welcomeSentAt.toISOString()}`,
-        );
-      }
-
       return result;
     });
 

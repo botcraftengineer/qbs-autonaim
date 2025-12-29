@@ -4,6 +4,7 @@ import { ScrollArea } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { z } from "zod";
 import { useTRPC } from "~/trpc/react";
 import { VacancyChatInput } from "./vacancy-chat-input";
 import { VacancyChatMessage } from "./vacancy-chat-message";
@@ -23,6 +24,21 @@ interface VacancyDocument {
   responsibilities?: string;
   conditions?: string;
 }
+
+// Zod schema for SSE response validation
+const vacancyDocumentSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  requirements: z.string().optional(),
+  responsibilities: z.string().optional(),
+  conditions: z.string().optional(),
+});
+
+const sseResponseSchema = z.object({
+  error: z.string().optional(),
+  document: vacancyDocumentSchema.optional(),
+  done: z.boolean().optional(),
+});
 
 interface VacancyCreatorContainerProps {
   workspaceId: string;
@@ -128,7 +144,30 @@ export function VacancyCreatorContainer({
         for (const line of lines) {
           if (line.startsWith("data: ")) {
             try {
-              const data = JSON.parse(line.slice(6));
+              const rawData = JSON.parse(line.slice(6));
+              const parseResult = sseResponseSchema.safeParse(rawData);
+
+              if (!parseResult.success) {
+                console.error(
+                  "Ошибка валидации SSE данных:",
+                  parseResult.error,
+                );
+                if (!isMountedRef.current || !abortControllerRef.current) {
+                  return;
+                }
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: Date.now().toString(),
+                    role: "assistant",
+                    content: "Ошибка валидации данных от сервера",
+                    timestamp: new Date(),
+                  },
+                ]);
+                continue;
+              }
+
+              const data = parseResult.data;
 
               if (data.error) {
                 throw new Error(data.error);
