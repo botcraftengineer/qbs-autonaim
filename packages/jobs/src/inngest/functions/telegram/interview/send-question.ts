@@ -119,6 +119,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
           sender: "BOT",
           contentType: "TEXT",
           content: question,
+          channel: "TELEGRAM",
         })
         .returning();
 

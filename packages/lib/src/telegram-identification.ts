@@ -277,6 +277,7 @@ export async function saveMessage(
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
   externalMessageId?: string,
+  channel: "TELEGRAM" | "HH" | "WEB" = "TELEGRAM",
 ): Promise<string | null> {
   try {
     const [message] = await db
@@ -287,6 +288,7 @@ export async function saveMessage(
         contentType,
         content,
         externalMessageId,
+        channel,
       })
       .returning();
 

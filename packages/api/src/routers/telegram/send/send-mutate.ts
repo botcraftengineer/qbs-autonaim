@@ -24,6 +24,7 @@ export const sendMutateRouter = protectedProcedure
         sender: "ADMIN",
         contentType: "TEXT",
         content: input.text,
+        channel: "WEB",
       })
       .returning();
 

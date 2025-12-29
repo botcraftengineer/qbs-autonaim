@@ -26,6 +26,7 @@ export const sendMessageRouter = protectedProcedure
         fileId: input.fileId,
         voiceDuration: input.voiceDuration,
         externalMessageId: input.externalMessageId,
+        channel: "WEB",
       })
       .returning();
 

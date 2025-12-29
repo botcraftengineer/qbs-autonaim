@@ -162,7 +162,10 @@ export const importBulkResponses = protectedProcedure
             })
             .returning();
 
-          // Drizzle .returning() всегда возвращает запись или выбрасывает ошибку
+          if (!createdResponse) {
+            throw new Error("Не удалось создать отклик");
+          }
+
           results.push({
             success: true,
             responseId: createdResponse.id,

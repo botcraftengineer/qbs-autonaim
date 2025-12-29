@@ -20,6 +20,8 @@ export async function parseFlVacancies(
 
   for (let i = 0; i < rawVacancies.length; i++) {
     const raw = rawVacancies[i];
+    if (!raw) continue;
+
     try {
       const normalized = normalizeFreelanceVacancy(raw, "fl");
       vacancies.push(normalized);
