@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { InterviewLandingForm } from "~/components/interview-landing-form";
 import { api } from "~/trpc/server";
-import { InterviewLandingForm } from "./_components/interview-landing-form";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -13,7 +13,8 @@ export async function generateMetadata({
   const { token } = await params;
 
   try {
-    const data = await api.freelancePlatforms.getVacancyByToken({ token });
+    const caller = await api();
+    const data = await caller.freelancePlatforms.getVacancyByToken({ token });
     return {
       title: `Интервью: ${data.vacancy.title}`,
       description: "Пройдите AI-интервью для отбора на вакансию",
@@ -30,7 +31,8 @@ export default async function InterviewLandingPage({ params }: PageProps) {
   const { token } = await params;
 
   try {
-    const data = await api.freelancePlatforms.getVacancyByToken({ token });
+    const caller = await api();
+    const data = await caller.freelancePlatforms.getVacancyByToken({ token });
 
     return (
       <main className="min-h-screen bg-gradient-to-b from-gray-50 to-white">

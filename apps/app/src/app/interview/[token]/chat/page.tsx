@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { WebChatInterface } from "./_components/web-chat-interface";
+import { WebChatInterface } from "~/components/web-chat-interface";
 
 interface PageProps {
   params: Promise<{ token: string }>;

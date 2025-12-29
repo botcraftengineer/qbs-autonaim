@@ -2,11 +2,11 @@
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+import { ChatHeader } from "~/components/chat-header";
+import { ChatInput } from "~/components/chat-input";
+import { ChatMessageList } from "~/components/chat-message-list";
+import { TypingIndicator } from "~/components/typing-indicator";
 import { useTRPC } from "~/trpc/react";
-import { ChatHeader } from "./chat-header";
-import { ChatInput } from "./chat-input";
-import { ChatMessageList } from "./chat-message-list";
-import { TypingIndicator } from "./typing-indicator";
 
 interface WebChatInterfaceProps {
   conversationId: string;
@@ -138,7 +138,7 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
         setIsProcessing(true);
         setIsBotTyping(true);
       },
-      onError: (error: Error) => {
+      onError: (error) => {
         console.error("Failed to send message:", error);
         setIsProcessing(false);
         setIsBotTyping(false);
