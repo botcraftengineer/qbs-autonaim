@@ -50,6 +50,13 @@ export const listActivities = protectedProcedure
       });
     }
 
+    if (!response.vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия для этого кандидата не найдена",
+      });
+    }
+
     if (response.vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -61,13 +68,7 @@ export const listActivities = protectedProcedure
     const activities = await ctx.db.query.vacancyResponseHistory.findMany({
       where: eq(vacancyResponseHistory.responseId, candidateId),
       with: {
-        user: {
-          columns: {
-            id: true,
-            name: true,
-            image: true,
-          },
-        },
+        user: true,
       },
       orderBy: (history, { desc }) => [desc(history.createdAt)],
     });

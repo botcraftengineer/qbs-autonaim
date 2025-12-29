@@ -13,7 +13,6 @@ interface VacancyDocument {
 
 interface VacancyDocumentPreviewProps {
   document: VacancyDocument;
-  workspaceId: string;
   onVacancyCreated?: () => void;
   isCreating?: boolean;
 }

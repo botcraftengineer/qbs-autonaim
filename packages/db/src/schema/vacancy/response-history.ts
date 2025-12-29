@@ -1,4 +1,4 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   jsonb,
   pgEnum,
@@ -74,3 +74,17 @@ export const CreateVacancyResponseHistorySchema = createInsertSchema(
 });
 
 export type VacancyResponseHistory = typeof vacancyResponseHistory.$inferSelect;
+
+export const vacancyResponseHistoryRelations = relations(
+  vacancyResponseHistory,
+  ({ one }) => ({
+    response: one(vacancyResponse, {
+      fields: [vacancyResponseHistory.responseId],
+      references: [vacancyResponse.id],
+    }),
+    user: one(user, {
+      fields: [vacancyResponseHistory.userId],
+      references: [user.id],
+    }),
+  }),
+);

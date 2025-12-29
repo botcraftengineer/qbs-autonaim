@@ -49,7 +49,7 @@ export function sanitizePromptText(text: string): string {
 
   // Ограничиваем длинные блоки кода (более 500 символов)
   sanitized = sanitized.replace(/```[\s\S]{500,}?```/g, (match) => {
-    return `${match.slice(0, 500)}... [код обрезан для безопасности]`;
+    return `${match.slice(0, 500)}... [код обрезан для безопасности]\n\`\`\``;
   });
 
   // Удаляем множественные переносы строк (более 3 подряд)

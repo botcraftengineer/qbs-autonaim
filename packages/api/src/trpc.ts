@@ -10,6 +10,7 @@
 import type { Auth } from "@qbs-autonaim/auth";
 import { OrganizationRepository, WorkspaceRepository } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError, z } from "zod";
@@ -58,6 +59,7 @@ export const createTRPCContext = async (opts: {
     auditLogger,
     ipAddress,
     userAgent,
+    inngest,
   };
 };
 /**

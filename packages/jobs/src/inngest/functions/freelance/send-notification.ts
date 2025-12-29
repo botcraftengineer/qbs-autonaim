@@ -10,6 +10,38 @@ import { sendEmailHtml } from "@qbs-autonaim/emails/send";
 import { inngest } from "../../client";
 
 /**
+ * Escapes HTML special characters to prevent XSS attacks
+ */
+function escapeHtml(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
+ * Sanitizes URLs to only allow http(s) protocols
+ * Returns a safe placeholder if URL is invalid or uses unsafe protocol
+ */
+function sanitizeUrl(url: string | null | undefined): string {
+  if (!url) return "#";
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return url;
+    }
+    return "#";
+  } catch {
+    // If URL parsing fails, return placeholder
+    return "#";
+  }
+}
+
+/**
  * Группировка уведомлений в пределах 5-минутного окна
  * Собирает все уведомления для workspace и отправляет их батчем
  */
@@ -98,6 +130,15 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
         const profileUrl = response.platformProfileUrl || response.resumeUrl;
         const errorMessage = error;
 
+        // Sanitize all user-controlled values
+        const safeCandidateName = escapeHtml(candidateName);
+        const safeVacancyTitle = escapeHtml(vacancyTitle);
+        const safeProfileUrl = sanitizeUrl(profileUrl);
+        const safeErrorMessage = escapeHtml(errorMessage);
+        const safeScore = scoring?.detailedScore
+          ? escapeHtml(String(scoring.detailedScore))
+          : null;
+
         let message = "";
         let htmlMessage = "";
         let subject = "";
@@ -109,16 +150,16 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           message += `Вакансия: ${vacancyTitle}\n`;
 
           htmlMessage = `<h2>✅ Интервью завершено</h2>`;
-          htmlMessage += `<p><strong>Кандидат:</strong> ${candidateName}</p>`;
-          htmlMessage += `<p><strong>Вакансия:</strong> ${vacancyTitle}</p>`;
+          htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
+          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
 
-          if (scoring) {
+          if (scoring && safeScore) {
             message += `Оценка: ${scoring.detailedScore}/100\n`;
-            htmlMessage += `<p><strong>Оценка:</strong> ${scoring.detailedScore}/100</p>`;
+            htmlMessage += `<p><strong>Оценка:</strong> ${safeScore}/100</p>`;
           }
 
           message += `\nПрофиль: ${profileUrl}`;
-          htmlMessage += `<p><a href="${profileUrl}">Открыть профиль</a></p>`;
+          htmlMessage += `<p><a href="${safeProfileUrl}">Открыть профиль</a></p>`;
         } else if (notificationType === "HIGH_SCORE_CANDIDATE") {
           subject = `🌟 Высокооценённый кандидат: ${candidateName}`;
           message = `🌟 Найден высокооценённый кандидат!\n\n`;
@@ -126,16 +167,16 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           message += `Вакансия: ${vacancyTitle}\n`;
 
           htmlMessage = `<h2>🌟 Найден высокооценённый кандидат!</h2>`;
-          htmlMessage += `<p><strong>Кандидат:</strong> ${candidateName}</p>`;
-          htmlMessage += `<p><strong>Вакансия:</strong> ${vacancyTitle}</p>`;
+          htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
+          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
 
-          if (scoring) {
+          if (scoring && safeScore) {
             message += `Оценка: ${scoring.detailedScore}/100 ⭐\n`;
-            htmlMessage += `<p><strong>Оценка:</strong> ${scoring.detailedScore}/100 ⭐</p>`;
+            htmlMessage += `<p><strong>Оценка:</strong> ${safeScore}/100 ⭐</p>`;
           }
 
           message += `\nПрофиль: ${profileUrl}`;
-          htmlMessage += `<p><a href="${profileUrl}">Открыть профиль</a></p>`;
+          htmlMessage += `<p><a href="${safeProfileUrl}">Открыть профиль</a></p>`;
         } else if (notificationType === "ANALYSIS_FAILED") {
           subject = `❌ Ошибка анализа: ${candidateName}`;
           message = `❌ Ошибка AI-анализа отклика\n\n`;
@@ -145,18 +186,18 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           message += `Вы можете повторить анализ вручную в интерфейсе.\n`;
 
           htmlMessage = `<h2>❌ Ошибка AI-анализа отклика</h2>`;
-          htmlMessage += `<p><strong>Кандидат:</strong> ${candidateName}</p>`;
-          htmlMessage += `<p><strong>Вакансия:</strong> ${vacancyTitle}</p>`;
+          htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
+          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
           htmlMessage += `<p>Все попытки автоматического анализа исчерпаны.</p>`;
           htmlMessage += `<p>Вы можете повторить анализ вручную в интерфейсе.</p>`;
 
           if (errorMessage) {
             message += `\nОшибка: ${errorMessage}`;
-            htmlMessage += `<p><strong>Ошибка:</strong> ${errorMessage}</p>`;
+            htmlMessage += `<p><strong>Ошибка:</strong> ${safeErrorMessage}</p>`;
           }
 
           message += `\nПрофиль: ${profileUrl}`;
-          htmlMessage += `<p><a href="${profileUrl}">Открыть профиль</a></p>`;
+          htmlMessage += `<p><a href="${safeProfileUrl}">Открыть профиль</a></p>`;
         }
 
         return {

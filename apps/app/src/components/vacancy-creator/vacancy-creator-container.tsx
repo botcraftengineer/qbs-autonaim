@@ -40,6 +40,7 @@ export function VacancyCreatorContainer({
   const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const isMountedRef = useRef<boolean>(false);
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -322,7 +323,6 @@ export function VacancyCreatorContainer({
         <div className="flex-1">
           <VacancyDocumentPreview
             document={document}
-            workspaceId={workspaceId}
             onVacancyCreated={handleVacancyCreated}
             isCreating={isCreatingVacancy}
           />
