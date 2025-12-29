@@ -44,8 +44,13 @@ export const refreshResume = protectedProcedure
       });
     }
 
-    // TODO: Интеграция с системой обновления резюме
-    // Здесь должна быть логика повторного парсинга резюме с HH.ru
+    // Отправляем событие в Inngest для обновления резюме
+    await ctx.inngest.send({
+      name: "response/resume.refresh",
+      data: {
+        responseId: candidateId,
+      },
+    });
 
     return { success: true };
   });

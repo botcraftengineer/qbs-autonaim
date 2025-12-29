@@ -46,15 +46,15 @@ export const sendGreeting = protectedProcedure
       });
     }
 
-    // TODO: Интеграция с системой отправки сообщений
-    // Здесь должна быть логика отправки приветственного сообщения через Telegram
-
-    await ctx.db
-      .update(vacancyResponse)
-      .set({
-        welcomeSentAt: new Date(),
-      })
-      .where(eq(vacancyResponse.id, candidateId));
+    // Отправляем событие в Inngest для отправки приветственного сообщения
+    await ctx.inngest.send({
+      name: "candidate/welcome",
+      data: {
+        responseId: candidateId,
+        username: candidate.telegramUsername || undefined,
+        phone: candidate.phone || undefined,
+      },
+    });
 
     return { success: true };
   });

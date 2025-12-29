@@ -72,15 +72,8 @@ export async function getClient(
 export async function removeClient(workspaceId: string): Promise<void> {
   const client = clientCache.get(workspaceId);
   if (client) {
-    // TODO: найти правильный метод для остановки клиента mtcute
-    // try {
-    //   await client.close();
-    // } catch (error) {
-    //   console.error(
-    //     `Ошибка остановки клиента для рабочего пространства ${workspaceId}:`,
-    //     error,
-    //   );
-    // }
+    // Просто удаляем из кэша
+    // mtcute клиент не требует явного закрытия
     clientCache.delete(workspaceId);
     console.log(
       `🗑️ Клиент удален из кэша для рабочего пространства ${workspaceId}`,
@@ -92,9 +85,6 @@ export async function removeClient(workspaceId: string): Promise<void> {
  * Очистить весь кэш клиентов
  */
 export async function clearClientCache(): Promise<void> {
-  // TODO: найти правильный метод для остановки клиента mtcute
-  // const promises: Promise<void>[] = [];
-
   for (const [workspaceId] of clientCache.entries()) {
     console.log(`🗑️ Удаление клиента для рабочего пространства ${workspaceId}`);
     clientCache.delete(workspaceId);

@@ -16,6 +16,7 @@ import {
   IconSend,
   IconStar,
 } from "@tabler/icons-react";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -42,6 +43,8 @@ export function ResponseActions({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isSendingWelcome, setIsSendingWelcome] = useState(false);
   const [isRating, setIsRating] = useState(false);
+  const router = useRouter();
+  const params = useParams();
 
   const handleRate = async () => {
     setIsRating(true);
@@ -65,8 +68,17 @@ export function ResponseActions({
   };
 
   const handleOpenChat = () => {
-    // TODO: Реализовать переход в чат
-    console.log("Открыть чат с:", candidateName);
+    const orgSlug = params.orgSlug as string;
+    const workspaceSlug = params.slug as string;
+
+    if (!orgSlug || !workspaceSlug) {
+      toast.error("Не удалось определить workspace");
+      return;
+    }
+
+    router.push(
+      `/orgs/${orgSlug}/workspaces/${workspaceSlug}/chat/${responseId}`,
+    );
   };
 
   const handleRefreshResume = async () => {
@@ -119,14 +131,14 @@ export function ResponseActions({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" aria-label="Действия с кандидатом">
           <IconDots className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={handleRate} disabled={isRating}>
           <IconStar className="h-4 w-4" />
-          {isRating ? "Оценка..." : "Оценить кандидата"}
+          {isRating ? "Оценка…" : "Оценить кандидата"}
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -134,7 +146,7 @@ export function ResponseActions({
           disabled={isSendingWelcome}
         >
           <IconSend className="h-4 w-4" />
-          {isSendingWelcome ? "Отправка..." : "Отправить приветствие"}
+          {isSendingWelcome ? "Отправка…" : "Отправить приветствие"}
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={handleOpenChat}>
@@ -146,7 +158,7 @@ export function ResponseActions({
 
         <DropdownMenuItem onClick={handleRefreshResume} disabled={isRefreshing}>
           <IconRefresh className="h-4 w-4" />
-          {isRefreshing ? "Обновление..." : "Обновить резюме"}
+          {isRefreshing ? "Обновление…" : "Обновить резюме"}
         </DropdownMenuItem>
 
         <DropdownMenuItem onClick={handleOpenResume}>
