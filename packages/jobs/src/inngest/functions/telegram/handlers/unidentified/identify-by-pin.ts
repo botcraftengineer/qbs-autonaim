@@ -72,8 +72,8 @@ export async function handlePinIdentification(params: {
       "CANDIDATE",
       trimmedText,
       "TEXT",
-      "TELEGRAM",
       messageId,
+      "TELEGRAM",
     );
 
     const interviewData = await getInterviewStartData(
