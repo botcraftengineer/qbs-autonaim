@@ -4,7 +4,7 @@ import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
 const validateInterviewTokenInputSchema = z.object({
-  token: z.string().uuid(),
+  token: z.string().min(1),
 });
 
 export const validateInterviewToken = publicProcedure
@@ -32,6 +32,7 @@ export const validateInterviewToken = publicProcedure
         id: interviewLink.id,
         vacancyId: interviewLink.vacancyId,
         token: interviewLink.token,
+        slug: interviewLink.slug,
         url: interviewLink.url,
         isActive: interviewLink.isActive,
         createdAt: interviewLink.createdAt,

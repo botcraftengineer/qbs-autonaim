@@ -4,7 +4,7 @@ import { InterviewLinkGenerator } from "../../services";
 import { publicProcedure } from "../../trpc";
 
 const getVacancyByTokenInputSchema = z.object({
-  token: z.string().uuid(),
+  token: z.string().min(1),
 });
 
 export const getVacancyByToken = publicProcedure
@@ -52,6 +52,7 @@ export const getVacancyByToken = publicProcedure
       interviewLink: {
         id: interviewLink.id,
         token: interviewLink.token,
+        slug: interviewLink.slug,
       },
     };
   });

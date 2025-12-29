@@ -17,6 +17,7 @@ export interface InterviewLink {
   id: string;
   vacancyId: string;
   token: string;
+  slug: string;
   url: string;
   isActive: boolean;
   createdAt: Date;
@@ -31,6 +32,97 @@ export class InterviewLinkGenerator {
 
   constructor(baseUrl = "https://qbs.app") {
     this.baseUrl = baseUrl;
+  }
+
+  /**
+   * Генерирует дружелюбный slug для ссылки на интервью
+   * Формат: прилагательное-существительное-число (например: quick-fox-42)
+   */
+  private generateSlug(): string {
+    const adjectives = [
+      "quick",
+      "bright",
+      "clever",
+      "smart",
+      "swift",
+      "bold",
+      "calm",
+      "cool",
+      "eager",
+      "fair",
+      "gentle",
+      "happy",
+      "jolly",
+      "kind",
+      "lively",
+      "merry",
+      "nice",
+      "proud",
+      "quiet",
+      "sharp",
+      "wise",
+      "witty",
+      "brave",
+      "fresh",
+    ];
+
+    const nouns = [
+      "fox",
+      "wolf",
+      "bear",
+      "lion",
+      "tiger",
+      "eagle",
+      "hawk",
+      "owl",
+      "deer",
+      "horse",
+      "panda",
+      "koala",
+      "otter",
+      "seal",
+      "whale",
+      "shark",
+      "dragon",
+      "phoenix",
+      "falcon",
+      "raven",
+      "lynx",
+      "jaguar",
+      "leopard",
+      "cheetah",
+    ];
+
+    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+    const noun = nouns[Math.floor(Math.random() * nouns.length)];
+    const number = Math.floor(Math.random() * 100);
+
+    return `${adjective}-${noun}-${number}`;
+  }
+
+  /**
+   * Проверяет уникальность slug и генерирует новый при необходимости
+   */
+  private async generateUniqueSlug(): Promise<string> {
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      const slug = this.generateSlug();
+
+      const existing = await db.query.interviewLink.findFirst({
+        where: eq(interviewLink.slug, slug),
+      });
+
+      if (!existing) {
+        return slug;
+      }
+
+      attempts++;
+    }
+
+    // Если не удалось сгенерировать уникальный slug, добавляем timestamp
+    return `${this.generateSlug()}-${Date.now()}`;
   }
 
   /**
@@ -54,8 +146,9 @@ export class InterviewLinkGenerator {
       return this.mapToInterviewLink(existingLink);
     }
 
-    // Генерируем уникальный токен
+    // Генерируем уникальный токен и slug
     const token = randomUUID();
+    const slug = await this.generateUniqueSlug();
 
     // Создаём запись в БД
     const [created] = await db
@@ -63,6 +156,7 @@ export class InterviewLinkGenerator {
       .values({
         vacancyId,
         token,
+        slug,
         isActive: true,
       })
       .returning();
@@ -75,14 +169,16 @@ export class InterviewLinkGenerator {
   }
 
   /**
-   * Валидирует токен ссылки на интервью
+   * Валидирует токен или slug ссылки на интервью
    *
-   * @param token - Токен для валидации
-   * @returns Ссылка на интервью если токен валиден и активен, иначе null
+   * @param identifier - Токен (UUID) или slug для валидации
+   * @returns Ссылка на интервью если идентификатор валиден и активен, иначе null
    */
-  async validateLink(token: string): Promise<InterviewLink | null> {
+  async validateLink(identifier: string): Promise<InterviewLink | null> {
+    // Пробуем найти по slug (приоритет) или по token
     const link = await db.query.interviewLink.findFirst({
-      where: eq(interviewLink.token, token),
+      where: (table, { or, eq }) =>
+        or(eq(table.slug, identifier), eq(table.token, identifier)),
     });
 
     if (!link) {
@@ -124,7 +220,8 @@ export class InterviewLinkGenerator {
       id: link.id,
       vacancyId: link.vacancyId,
       token: link.token,
-      url: `${this.baseUrl}/interview/${link.token}`,
+      slug: link.slug,
+      url: `${this.baseUrl}/interview/${link.slug}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
       expiresAt: link.expiresAt,
