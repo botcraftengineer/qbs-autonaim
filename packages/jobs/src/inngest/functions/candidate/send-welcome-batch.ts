@@ -280,6 +280,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   channel: "TELEGRAM",
                   content: removeNullBytes(actualSentMessage),
                   externalMessageId: sendResult.messageId,
+                  channel: "TELEGRAM",
                 });
               }
             }

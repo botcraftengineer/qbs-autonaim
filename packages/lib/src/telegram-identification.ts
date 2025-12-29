@@ -276,8 +276,8 @@ export async function saveMessage(
   sender: "CANDIDATE" | "BOT",
   content: string,
   contentType: "TEXT" | "VOICE" = "TEXT",
-  channel: "TELEGRAM" | "HH" | "WEB" = "TELEGRAM",
   externalMessageId?: string,
+  channel: "TELEGRAM" | "HH" | "WEB" = "TELEGRAM",
 ): Promise<string | null> {
   try {
     const [message] = await db
@@ -286,9 +286,9 @@ export async function saveMessage(
         conversationId,
         sender,
         contentType,
-        channel,
         content,
         externalMessageId,
+        channel,
       })
       .returning();
 

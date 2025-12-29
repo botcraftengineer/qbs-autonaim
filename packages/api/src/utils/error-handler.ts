@@ -123,8 +123,7 @@ export class ErrorHandler {
    */
   private async notifyAdministrators(details: ErrorDetails): Promise<void> {
     try {
-      // TODO: Интеграция с системой уведомлений (Inngest job)
-      // Пока просто логируем в консоль
+      // Логируем критическую ошибку
       console.error("CRITICAL ERROR - Admin notification required:", {
         category: details.category,
         severity: details.severity,
@@ -132,6 +131,23 @@ export class ErrorHandler {
         context: details.context,
         timestamp: new Date().toISOString(),
       });
+
+      // TODO: Отправить уведомление через Inngest
+      // await this.inngest.send({
+      //   name: "admin/error.notify",
+      //   data: {
+      //     category: details.category,
+      //     severity: details.severity,
+      //     message: details.message,
+      //     userMessage: details.userMessage,
+      //     context: details.context,
+      //     stack: details.originalError?.stack,
+      //     userId: this.userId,
+      //     ipAddress: this.ipAddress,
+      //     userAgent: this.userAgent,
+      //     timestamp: new Date().toISOString(),
+      //   },
+      // });
     } catch (notificationError) {
       console.error("Failed to notify administrators:", notificationError);
     }

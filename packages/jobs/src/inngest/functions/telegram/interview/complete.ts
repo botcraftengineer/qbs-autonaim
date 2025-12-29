@@ -376,6 +376,7 @@ export const completeInterviewFunction = inngest.createFunction(
           contentType: "TEXT",
           channel: "TELEGRAM",
           content: finalMessage.trim(),
+          channel: "TELEGRAM",
         })
         .returning();
 

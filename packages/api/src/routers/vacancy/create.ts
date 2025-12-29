@@ -38,7 +38,8 @@ export const create = protectedProcedure
       input.conditions ? `\n\nУсловия:\n${input.conditions}` : "",
     ]
       .filter(Boolean)
-      .join("");
+      .join("")
+      .trimStart();
 
     // Создание вакансии
     const [newVacancy] = await ctx.db

@@ -205,6 +205,7 @@ export async function generateAndSendBotResponse(params: {
         contentType: "TEXT",
         channel: "TELEGRAM",
         content: aiResponse,
+        channel: "TELEGRAM",
       })
       .returning();
 

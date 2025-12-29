@@ -120,6 +120,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
           contentType: "TEXT",
           channel: "TELEGRAM",
           content: question,
+          channel: "TELEGRAM",
         })
         .returning();
 

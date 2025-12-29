@@ -6,7 +6,40 @@ import {
   vacancyResponse,
   workspaceMember,
 } from "@qbs-autonaim/db/schema";
+import { sendEmailHtml } from "@qbs-autonaim/emails/send";
 import { inngest } from "../../client";
+
+/**
+ * Escapes HTML special characters to prevent XSS attacks
+ */
+function escapeHtml(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+/**
+ * Sanitizes URLs to only allow http(s) protocols
+ * Returns a safe placeholder if URL is invalid or uses unsafe protocol
+ */
+function sanitizeUrl(url: string | null | undefined): string {
+  if (!url) return "#";
+
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") {
+      return url;
+    }
+    return "#";
+  } catch {
+    // If URL parsing fails, return placeholder
+    return "#";
+  }
+}
 
 /**
  * Группировка уведомлений в пределах 5-минутного окна
@@ -88,97 +121,157 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     }
 
     // Формируем сообщение уведомления
-    const { message } = await step.run("format-notification", async () => {
-      const { response, scoring } = responseData;
-      const candidateName = response.candidateName || "Кандидат без имени";
-      const vacancyTitle = response.vacancy?.title || "Вакансия";
-      const profileUrl = response.platformProfileUrl || response.resumeUrl;
-      const errorMessage = error; // Захватываем error из внешней области
+    const { htmlMessage, subject } = await step.run(
+      "format-notification",
+      async () => {
+        const { response, scoring } = responseData;
+        const candidateName = response.candidateName || "Кандидат без имени";
+        const vacancyTitle = response.vacancy?.title || "Вакансия";
+        const profileUrl = response.platformProfileUrl || response.resumeUrl;
+        const errorMessage = error;
 
-      let message = "";
+        // Sanitize all user-controlled values
+        const safeCandidateName = escapeHtml(candidateName);
+        const safeVacancyTitle = escapeHtml(vacancyTitle);
+        const safeProfileUrl = sanitizeUrl(profileUrl);
+        const safeErrorMessage = escapeHtml(errorMessage);
+        const safeScore = scoring?.detailedScore
+          ? escapeHtml(String(scoring.detailedScore))
+          : null;
 
-      if (notificationType === "INTERVIEW_COMPLETED") {
-        message = `✅ Интервью завершено\n\n`;
-        message += `Кандидат: ${candidateName}\n`;
-        message += `Вакансия: ${vacancyTitle}\n`;
+        let message = "";
+        let htmlMessage = "";
+        let subject = "";
 
-        if (scoring) {
-          message += `Оценка: ${scoring.detailedScore}/100\n`;
+        if (notificationType === "INTERVIEW_COMPLETED") {
+          subject = `✅ Интервью завершено: ${candidateName}`;
+          message = `✅ Интервью завершено\n\n`;
+          message += `Кандидат: ${candidateName}\n`;
+          message += `Вакансия: ${vacancyTitle}\n`;
+
+          htmlMessage = `<h2>✅ Интервью завершено</h2>`;
+          htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
+          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
+
+          if (scoring && safeScore) {
+            message += `Оценка: ${scoring.detailedScore}/100\n`;
+            htmlMessage += `<p><strong>Оценка:</strong> ${safeScore}/100</p>`;
+          }
+
+          message += `\nПрофиль: ${profileUrl}`;
+          htmlMessage += `<p><a href="${safeProfileUrl}">Открыть профиль</a></p>`;
+        } else if (notificationType === "HIGH_SCORE_CANDIDATE") {
+          subject = `🌟 Высокооценённый кандидат: ${candidateName}`;
+          message = `🌟 Найден высокооценённый кандидат!\n\n`;
+          message += `Кандидат: ${candidateName}\n`;
+          message += `Вакансия: ${vacancyTitle}\n`;
+
+          htmlMessage = `<h2>🌟 Найден высокооценённый кандидат!</h2>`;
+          htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
+          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
+
+          if (scoring && safeScore) {
+            message += `Оценка: ${scoring.detailedScore}/100 ⭐\n`;
+            htmlMessage += `<p><strong>Оценка:</strong> ${safeScore}/100 ⭐</p>`;
+          }
+
+          message += `\nПрофиль: ${profileUrl}`;
+          htmlMessage += `<p><a href="${safeProfileUrl}">Открыть профиль</a></p>`;
+        } else if (notificationType === "ANALYSIS_FAILED") {
+          subject = `❌ Ошибка анализа: ${candidateName}`;
+          message = `❌ Ошибка AI-анализа отклика\n\n`;
+          message += `Кандидат: ${candidateName}\n`;
+          message += `Вакансия: ${vacancyTitle}\n`;
+          message += `\nВсе попытки автоматического анализа исчерпаны.\n`;
+          message += `Вы можете повторить анализ вручную в интерфейсе.\n`;
+
+          htmlMessage = `<h2>❌ Ошибка AI-анализа отклика</h2>`;
+          htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
+          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
+          htmlMessage += `<p>Все попытки автоматического анализа исчерпаны.</p>`;
+          htmlMessage += `<p>Вы можете повторить анализ вручную в интерфейсе.</p>`;
+
+          if (errorMessage) {
+            message += `\nОшибка: ${errorMessage}`;
+            htmlMessage += `<p><strong>Ошибка:</strong> ${safeErrorMessage}</p>`;
+          }
+
+          message += `\nПрофиль: ${profileUrl}`;
+          htmlMessage += `<p><a href="${safeProfileUrl}">Открыть профиль</a></p>`;
         }
 
-        message += `\nПрофиль: ${profileUrl}`;
-      } else if (notificationType === "HIGH_SCORE_CANDIDATE") {
-        message = `🌟 Найден высокооценённый кандидат!\n\n`;
-        message += `Кандидат: ${candidateName}\n`;
-        message += `Вакансия: ${vacancyTitle}\n`;
-
-        if (scoring) {
-          message += `Оценка: ${scoring.detailedScore}/100 ⭐\n`;
-        }
-
-        message += `\nПрофиль: ${profileUrl}`;
-      } else if (notificationType === "ANALYSIS_FAILED") {
-        message = `❌ Ошибка AI-анализа отклика\n\n`;
-        message += `Кандидат: ${candidateName}\n`;
-        message += `Вакансия: ${vacancyTitle}\n`;
-        message += `\nВсе попытки автоматического анализа исчерпаны.\n`;
-        message += `Вы можете повторить анализ вручную в интерфейсе.\n`;
-
-        if (errorMessage) {
-          message += `\nОшибка: ${errorMessage}`;
-        }
-
-        message += `\nПрофиль: ${profileUrl}`;
-      }
-
-      return {
-        message,
-        profileUrl,
-        candidateName,
-        vacancyTitle,
-        score: scoring?.detailedScore,
-      };
-    });
+        return {
+          message,
+          htmlMessage,
+          subject,
+          profileUrl,
+          candidateName,
+          vacancyTitle,
+          score: scoring?.detailedScore,
+        };
+      },
+    );
 
     // Отправляем уведомления всем членам workspace
     const sendResults = await step.run("send-notifications", async () => {
       const results = [];
 
       for (const member of workspaceMembers) {
-        // TODO: Здесь нужно проверить предпочтения пользователя по каналам уведомлений
-        // Пока отправляем только email (если есть)
-
+        // Email уведомление
         if (member.email) {
-          // Email уведомление
-          console.log("📧 Отправка email уведомления", {
-            to: member.email,
-            type: notificationType,
-            message,
-          });
+          try {
+            await sendEmailHtml({
+              to: [member.email],
+              subject,
+              html: htmlMessage,
+            });
 
-          // TODO: Интеграция с email сервисом
-          // await sendEmail({
-          //   to: member.email,
-          //   subject: `QBS: ${vacancyTitle}`,
-          //   body: message,
-          // });
+            console.log("📧 Email уведомление отправлено", {
+              to: member.email,
+              type: notificationType,
+            });
 
-          results.push({
-            userId: member.id,
-            channel: "EMAIL",
-            success: true,
-          });
+            results.push({
+              userId: member.id,
+              channel: "EMAIL",
+              success: true,
+            });
+          } catch (emailError) {
+            console.error("❌ Ошибка отправки email", {
+              to: member.email,
+              error: emailError,
+            });
+
+            results.push({
+              userId: member.id,
+              channel: "EMAIL",
+              success: false,
+              error:
+                emailError instanceof Error
+                  ? emailError.message
+                  : "Unknown error",
+            });
+          }
         }
 
         // TODO: In-app уведомление
-        // Создать запись в таблице notifications
+        // Создать запись в таблице notifications для отображения в UI
+        // await db.insert(notification).values({
+        //   userId: member.id,
+        //   workspaceId: responseData.workspaceId,
+        //   type: notificationType,
+        //   title: subject,
+        //   message: message,
+        //   link: `/responses/${responseId}`,
+        //   read: false,
+        // });
 
         // TODO: Telegram уведомление
         // Если у пользователя есть telegram username
         // await inngest.send({
         //   name: "telegram/message.send-by-username",
         //   data: {
-        //     workspaceId,
+        //     workspaceId: responseData.workspaceId,
         //     username: member.telegramUsername,
         //     content: message,
         //   },
@@ -190,13 +283,15 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
 
     console.log("✅ Уведомления отправлены", {
       workspaceId: responseData.workspaceId,
-      sent: sendResults.length,
+      sent: sendResults.filter((r) => r.success).length,
+      failed: sendResults.filter((r) => !r.success).length,
       type: notificationType,
     });
 
     return {
       success: true,
-      sent: sendResults.length,
+      sent: sendResults.filter((r) => r.success).length,
+      failed: sendResults.filter((r) => !r.success).length,
       notificationType,
     };
   },

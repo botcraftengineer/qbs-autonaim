@@ -29,6 +29,7 @@ export async function saveIdentifiedText(params: {
       channel: "TELEGRAM",
       content: text,
       externalMessageId: messageId,
+      channel: "TELEGRAM",
     })
     .returning();
 
@@ -166,6 +167,7 @@ export async function handleIdentifiedMedia(params: {
       fileId: downloadData.fileId,
       voiceDuration: downloadData.duration.toString(),
       externalMessageId: messageIdStr,
+      channel: "TELEGRAM",
     })
     .returning();
 

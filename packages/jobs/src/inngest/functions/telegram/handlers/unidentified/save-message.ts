@@ -50,6 +50,7 @@ export async function saveUnidentifiedMessage(params: {
         channel: "TELEGRAM",
         content: removeNullBytes(content),
         externalMessageId: messageId,
+        channel: "TELEGRAM",
       });
     }
   } catch (error) {
