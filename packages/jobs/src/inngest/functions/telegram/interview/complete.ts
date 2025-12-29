@@ -374,7 +374,6 @@ export const completeInterviewFunction = inngest.createFunction(
           conversationId,
           sender: "BOT",
           contentType: "TEXT",
-          channel: "TELEGRAM",
           content: finalMessage.trim(),
           channel: "TELEGRAM",
         })

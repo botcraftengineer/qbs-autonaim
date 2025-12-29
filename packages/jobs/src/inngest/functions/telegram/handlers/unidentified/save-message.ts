@@ -47,7 +47,6 @@ export async function saveUnidentifiedMessage(params: {
         conversationId,
         sender: "CANDIDATE",
         contentType,
-        channel: "TELEGRAM",
         content: removeNullBytes(content),
         externalMessageId: messageId,
         channel: "TELEGRAM",

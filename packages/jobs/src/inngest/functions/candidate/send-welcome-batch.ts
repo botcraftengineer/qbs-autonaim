@@ -277,7 +277,6 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   conversationId: conv.id,
                   sender: "BOT",
                   contentType: "TEXT",
-                  channel: "TELEGRAM",
                   content: removeNullBytes(actualSentMessage),
                   externalMessageId: sendResult.messageId,
                   channel: "TELEGRAM",

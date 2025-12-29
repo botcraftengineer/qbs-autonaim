@@ -1,13 +1,30 @@
+CREATE TYPE "public"."audit_action" AS ENUM('VIEW', 'EXPORT', 'UPDATE', 'DELETE', 'ACCESS');--> statement-breakpoint
+CREATE TYPE "public"."audit_resource_type" AS ENUM('VACANCY_RESPONSE', 'CONVERSATION', 'RESUME', 'CONTACT_INFO', 'VACANCY');--> statement-breakpoint
+CREATE TYPE "public"."conversation_source" AS ENUM('TELEGRAM', 'WEB');--> statement-breakpoint
 CREATE TYPE "public"."conversation_status" AS ENUM('ACTIVE', 'COMPLETED', 'CANCELLED');--> statement-breakpoint
-CREATE TYPE "public"."message_channel" AS ENUM('TELEGRAM', 'HH');--> statement-breakpoint
+CREATE TYPE "public"."message_channel" AS ENUM('TELEGRAM', 'HH', 'WEB');--> statement-breakpoint
 CREATE TYPE "public"."message_content_type" AS ENUM('TEXT', 'VOICE');--> statement-breakpoint
 CREATE TYPE "public"."message_sender" AS ENUM('CANDIDATE', 'BOT', 'ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."file_provider" AS ENUM('S3');--> statement-breakpoint
 CREATE TYPE "public"."temp_message_content_type" AS ENUM('TEXT', 'VOICE');--> statement-breakpoint
 CREATE TYPE "public"."temp_message_sender" AS ENUM('CANDIDATE', 'BOT');--> statement-breakpoint
+CREATE TYPE "public"."import_mode" AS ENUM('SINGLE', 'BULK');--> statement-breakpoint
 CREATE TYPE "public"."hr_selection_status" AS ENUM('INVITE', 'RECOMMENDED', 'NOT_RECOMMENDED', 'REJECTED', 'OFFER', 'SECURITY_PASSED', 'CONTRACT_SENT', 'ONBOARDING');--> statement-breakpoint
+CREATE TYPE "public"."import_source" AS ENUM('HH_API', 'FREELANCE_MANUAL', 'FREELANCE_LINK');--> statement-breakpoint
 CREATE TYPE "public"."response_status" AS ENUM('NEW', 'EVALUATED', 'INTERVIEW', 'COMPLETED', 'SKIPPED');--> statement-breakpoint
 CREATE TYPE "public"."response_event_type" AS ENUM('STATUS_CHANGED', 'HR_STATUS_CHANGED', 'TELEGRAM_USERNAME_ADDED', 'CHAT_ID_ADDED', 'PHONE_ADDED', 'RESUME_UPDATED', 'PHOTO_ADDED', 'WELCOME_SENT', 'OFFER_SENT', 'COMMENT_ADDED', 'SALARY_UPDATED', 'CONTACT_INFO_UPDATED', 'CREATED');--> statement-breakpoint
+CREATE TABLE "audit_logs" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"user_id" text NOT NULL,
+	"action" "audit_action" NOT NULL,
+	"resource_type" "audit_resource_type" NOT NULL,
+	"resource_id" uuid NOT NULL,
+	"metadata" jsonb,
+	"ip_address" varchar(45),
+	"user_agent" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "accounts" (
 	"id" text PRIMARY KEY NOT NULL,
 	"account_id" text NOT NULL,
@@ -94,6 +111,7 @@ CREATE TABLE "conversations" (
 	"candidate_name" varchar(500),
 	"username" varchar(100),
 	"status" "conversation_status" DEFAULT 'ACTIVE' NOT NULL,
+	"source" "conversation_source" DEFAULT 'TELEGRAM' NOT NULL,
 	"metadata" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -105,7 +123,7 @@ CREATE TABLE "conversation_messages" (
 	"conversation_id" uuid NOT NULL,
 	"sender" "message_sender" NOT NULL,
 	"content_type" "message_content_type" DEFAULT 'TEXT' NOT NULL,
-	"channel" "message_channel" DEFAULT 'TELEGRAM' NOT NULL,
+	"channel" "message_channel" NOT NULL,
 	"content" text NOT NULL,
 	"file_id" uuid,
 	"voice_duration" varchar(20),
@@ -139,6 +157,17 @@ CREATE TABLE "integrations" (
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "integrations_workspace_id_type_unique" UNIQUE("workspace_id","type")
+);
+--> statement-breakpoint
+CREATE TABLE "interview_scorings" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"conversation_id" uuid NOT NULL,
+	"response_id" uuid,
+	"score" integer NOT NULL,
+	"detailed_score" integer NOT NULL,
+	"analysis" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "interview_scorings_conversation_id_unique" UNIQUE("conversation_id")
 );
 --> statement-breakpoint
 CREATE TABLE "organizations" (
@@ -189,17 +218,6 @@ CREATE TABLE "buffered_temp_messages" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "telegram_interview_scorings" (
-	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
-	"conversation_id" uuid NOT NULL,
-	"response_id" uuid,
-	"score" integer NOT NULL,
-	"detailed_score" integer NOT NULL,
-	"analysis" text,
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "telegram_interview_scorings_conversation_id_unique" UNIQUE("conversation_id")
-);
---> statement-breakpoint
 CREATE TABLE "telegram_sessions" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
 	"workspace_id" text NOT NULL,
@@ -229,6 +247,49 @@ CREATE TABLE "temp_conversation_messages" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "freelance_import_history" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"vacancy_id" uuid NOT NULL,
+	"imported_by" uuid NOT NULL,
+	"import_mode" "import_mode" NOT NULL,
+	"platform_source" varchar(50) NOT NULL,
+	"raw_text" text,
+	"parsed_count" integer DEFAULT 0 NOT NULL,
+	"success_count" integer DEFAULT 0 NOT NULL,
+	"failure_count" integer DEFAULT 0 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "freelance_invitations" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"response_id" uuid NOT NULL,
+	"invitation_text" text NOT NULL,
+	"interview_url" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "interview_links" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"vacancy_id" uuid NOT NULL,
+	"token" varchar(100) NOT NULL,
+	"slug" varchar(100) NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"expires_at" timestamp with time zone,
+	CONSTRAINT "interview_links_token_unique" UNIQUE("token"),
+	CONSTRAINT "interview_links_slug_unique" UNIQUE("slug")
+);
+--> statement-breakpoint
+CREATE TABLE "platform_config" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"platform_code" varchar(50) NOT NULL,
+	"platform_name" varchar(200) NOT NULL,
+	"profile_url_pattern" text,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "platform_config_platform_code_unique" UNIQUE("platform_code")
+);
+--> statement-breakpoint
 CREATE TABLE "vacancy_responses" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
 	"vacancy_id" uuid NOT NULL,
@@ -240,6 +301,8 @@ CREATE TABLE "vacancy_responses" (
 	"cover_letter" text,
 	"status" "response_status" DEFAULT 'NEW' NOT NULL,
 	"hr_selection_status" "hr_selection_status",
+	"import_source" "import_source" DEFAULT 'HH_API',
+	"platform_profile_url" text,
 	"experience" text,
 	"contacts" jsonb,
 	"phone" varchar(50),
@@ -358,14 +421,17 @@ ALTER TABLE "conversations" ADD CONSTRAINT "conversations_response_id_vacancy_re
 ALTER TABLE "conversation_messages" ADD CONSTRAINT "conversation_messages_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "conversation_messages" ADD CONSTRAINT "conversation_messages_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "integrations" ADD CONSTRAINT "integrations_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "interview_scorings" ADD CONSTRAINT "interview_scorings_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "interview_scorings" ADD CONSTRAINT "interview_scorings_response_id_vacancy_responses_id_fk" FOREIGN KEY ("response_id") REFERENCES "public"."vacancy_responses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "organization_invites" ADD CONSTRAINT "organization_invites_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "organization_invites" ADD CONSTRAINT "organization_invites_invited_user_id_users_id_fk" FOREIGN KEY ("invited_user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "organization_invites" ADD CONSTRAINT "organization_invites_created_by_users_id_fk" FOREIGN KEY ("created_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "organization_members" ADD CONSTRAINT "organization_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "organization_members" ADD CONSTRAINT "organization_members_organization_id_organizations_id_fk" FOREIGN KEY ("organization_id") REFERENCES "public"."organizations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "telegram_interview_scorings" ADD CONSTRAINT "telegram_interview_scorings_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "telegram_interview_scorings" ADD CONSTRAINT "telegram_interview_scorings_response_id_vacancy_responses_id_fk" FOREIGN KEY ("response_id") REFERENCES "public"."vacancy_responses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "telegram_sessions" ADD CONSTRAINT "telegram_sessions_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "freelance_import_history" ADD CONSTRAINT "freelance_import_history_vacancy_id_vacancies_id_fk" FOREIGN KEY ("vacancy_id") REFERENCES "public"."vacancies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "freelance_invitations" ADD CONSTRAINT "freelance_invitations_response_id_vacancy_responses_id_fk" FOREIGN KEY ("response_id") REFERENCES "public"."vacancy_responses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "interview_links" ADD CONSTRAINT "interview_links_vacancy_id_vacancies_id_fk" FOREIGN KEY ("vacancy_id") REFERENCES "public"."vacancies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "vacancy_responses" ADD CONSTRAINT "vacancy_responses_vacancy_id_vacancies_id_fk" FOREIGN KEY ("vacancy_id") REFERENCES "public"."vacancies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "vacancy_responses" ADD CONSTRAINT "vacancy_responses_resume_pdf_file_id_files_id_fk" FOREIGN KEY ("resume_pdf_file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "vacancy_responses" ADD CONSTRAINT "vacancy_responses_photo_file_id_files_id_fk" FOREIGN KEY ("photo_file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -379,6 +445,11 @@ ALTER TABLE "workspaces" ADD CONSTRAINT "workspaces_organization_id_organization
 ALTER TABLE "workspace_invites" ADD CONSTRAINT "workspace_invites_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "audit_log_user_idx" ON "audit_logs" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "audit_log_resource_idx" ON "audit_logs" USING btree ("resource_type","resource_id");--> statement-breakpoint
+CREATE INDEX "audit_log_action_idx" ON "audit_logs" USING btree ("action");--> statement-breakpoint
+CREATE INDEX "audit_log_created_at_idx" ON "audit_logs" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "audit_log_user_created_at_idx" ON "audit_logs" USING btree ("user_id","created_at");--> statement-breakpoint
 CREATE INDEX "account_user_idx" ON "accounts" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "session_user_idx" ON "sessions" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "company_settings_workspace_idx" ON "company_settings" USING btree ("workspace_id");--> statement-breakpoint
@@ -407,10 +478,25 @@ CREATE INDEX "buffered_temp_message_conversation_idx" ON "buffered_temp_messages
 CREATE INDEX "buffered_temp_message_chat_idx" ON "buffered_temp_messages" USING btree ("chat_id");--> statement-breakpoint
 CREATE INDEX "buffered_temp_message_id_idx" ON "buffered_temp_messages" USING btree ("message_id");--> statement-breakpoint
 CREATE INDEX "buffered_temp_message_timestamp_idx" ON "buffered_temp_messages" USING btree ("timestamp");--> statement-breakpoint
+CREATE INDEX "freelance_import_vacancy_idx" ON "freelance_import_history" USING btree ("vacancy_id");--> statement-breakpoint
+CREATE INDEX "freelance_import_user_idx" ON "freelance_import_history" USING btree ("imported_by");--> statement-breakpoint
+CREATE INDEX "freelance_import_platform_idx" ON "freelance_import_history" USING btree ("platform_source");--> statement-breakpoint
+CREATE INDEX "freelance_import_created_idx" ON "freelance_import_history" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "invitation_response_idx" ON "freelance_invitations" USING btree ("response_id");--> statement-breakpoint
+CREATE INDEX "invitation_created_at_idx" ON "freelance_invitations" USING btree ("created_at");--> statement-breakpoint
+CREATE INDEX "interview_link_vacancy_idx" ON "interview_links" USING btree ("vacancy_id");--> statement-breakpoint
+CREATE INDEX "interview_link_token_idx" ON "interview_links" USING btree ("token");--> statement-breakpoint
+CREATE INDEX "interview_link_slug_idx" ON "interview_links" USING btree ("slug");--> statement-breakpoint
+CREATE INDEX "interview_link_active_idx" ON "interview_links" USING btree ("vacancy_id","is_active") WHERE "interview_links"."is_active" = true;--> statement-breakpoint
+CREATE INDEX "platform_config_code_idx" ON "platform_config" USING btree ("platform_code");--> statement-breakpoint
+CREATE INDEX "platform_config_active_idx" ON "platform_config" USING btree ("is_active") WHERE "platform_config"."is_active" = true;--> statement-breakpoint
 CREATE INDEX "response_vacancy_idx" ON "vacancy_responses" USING btree ("vacancy_id");--> statement-breakpoint
 CREATE INDEX "response_status_idx" ON "vacancy_responses" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "response_hr_status_idx" ON "vacancy_responses" USING btree ("hr_selection_status");--> statement-breakpoint
+CREATE INDEX "response_import_source_idx" ON "vacancy_responses" USING btree ("import_source");--> statement-breakpoint
+CREATE INDEX "response_platform_profile_idx" ON "vacancy_responses" USING btree ("platform_profile_url");--> statement-breakpoint
 CREATE INDEX "response_vacancy_status_idx" ON "vacancy_responses" USING btree ("vacancy_id","status");--> statement-breakpoint
+CREATE INDEX "response_vacancy_platform_idx" ON "vacancy_responses" USING btree ("vacancy_id","platform_profile_url");--> statement-breakpoint
 CREATE INDEX "screening_response_idx" ON "response_screenings" USING btree ("response_id");--> statement-breakpoint
 CREATE INDEX "screening_score_idx" ON "response_screenings" USING btree ("score");--> statement-breakpoint
 CREATE INDEX "screening_detailed_score_idx" ON "response_screenings" USING btree ("detailed_score");--> statement-breakpoint
