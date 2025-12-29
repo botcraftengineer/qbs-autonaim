@@ -37,6 +37,7 @@ Data Fetching:
 Best Practices:
 
 - Colocate components with routes when specific
-- Use private folders (_folder) for internal organization
+- NEVER create _components folders inside route directories
+- Use private folders (_folder) for internal organization at app level only
 - Use route groups ((folder)) for layout organization without URL changes
 - Optimize metadata for SEO

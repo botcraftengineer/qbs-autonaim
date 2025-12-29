@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -68,8 +69,8 @@ export function InterviewLandingForm({
 
   const platformProfileUrl = watch("platformProfileUrl");
 
-  const checkDuplicateMutation =
-    trpc.freelancePlatforms.checkDuplicateResponse.useQuery(
+  const checkDuplicateMutation = useQuery(
+    trpc.freelancePlatforms.checkDuplicateResponse.queryOptions(
       {
         vacancyId,
         platformProfileUrl: platformProfileUrl || "",
@@ -77,10 +78,11 @@ export function InterviewLandingForm({
       {
         enabled: false,
       },
-    );
+    ),
+  );
 
-  const startInterviewMutation =
-    trpc.freelancePlatforms.startWebInterview.useMutation({
+  const startInterviewMutation = useMutation(
+    trpc.freelancePlatforms.startWebInterview.mutationOptions({
       onSuccess: (data: {
         conversationId: string;
         responseId: string;
@@ -104,7 +106,8 @@ export function InterviewLandingForm({
           });
         }
       },
-    });
+    }),
+  );
 
   const onSubmit = async (data: FreelancerInfo) => {
     setIsSubmitting(true);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { useTRPC } from "~/trpc/react";
 import { ChatHeader } from "./chat-header";
@@ -30,14 +31,15 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Загружаем историю сообщений
-  const { data: chatHistory, isLoading } =
-    trpc.freelancePlatforms.getChatHistory.useQuery({
+  const { data: chatHistory, isLoading } = useQuery(
+    trpc.freelancePlatforms.getChatHistory.queryOptions({
       conversationId,
-    });
+    }),
+  );
 
   // Проверяем статус интервью с автоматическим переподключением
-  const { data: interviewStatus, error: statusError } =
-    trpc.freelancePlatforms.getWebInterviewStatus.useQuery(
+  const { data: interviewStatus, error: statusError } = useQuery(
+    trpc.freelancePlatforms.getWebInterviewStatus.queryOptions(
       {
         conversationId,
       },
@@ -47,11 +49,12 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
         retryDelay: (attemptIndex: number) =>
           Math.min(1000 * 2 ** attemptIndex, 30000),
       },
-    );
+    ),
+  );
 
   // Polling для новых сообщений с автоматическим переподключением
-  const { data: newMessages, error: messagesError } =
-    trpc.freelancePlatforms.getNewMessages.useQuery(
+  const { data: newMessages, error: messagesError } = useQuery(
+    trpc.freelancePlatforms.getNewMessages.queryOptions(
       {
         conversationId,
         lastMessageId,
@@ -63,7 +66,8 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
         retryDelay: (attemptIndex: number) =>
           Math.min(1000 * 2 ** attemptIndex, 30000),
       },
-    );
+    ),
+  );
 
   // Отслеживаем состояние подключения
   useEffect(() => {
@@ -128,8 +132,8 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  const sendMessageMutation =
-    trpc.freelancePlatforms?.sendChatMessage.useMutation({
+  const sendMessageMutation = useMutation(
+    trpc.freelancePlatforms?.sendChatMessage.mutationOptions({
       onSuccess: () => {
         setIsProcessing(true);
         setIsBotTyping(true);
@@ -139,7 +143,8 @@ export function WebChatInterface({ conversationId }: WebChatInterfaceProps) {
         setIsProcessing(false);
         setIsBotTyping(false);
       },
-    });
+    }),
+  );
 
   const handleSendMessage = async (message: string) => {
     if (!message.trim() || isProcessing) return;
