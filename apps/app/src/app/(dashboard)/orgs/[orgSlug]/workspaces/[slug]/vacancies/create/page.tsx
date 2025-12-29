@@ -160,12 +160,13 @@ export default function CreateVacancyPage() {
                   </Link>
                 </Button>
 
-                <div className="mb-6">
+                <div className="mb-8">
                   <h1 className="text-2xl font-semibold mb-2">
                     Создать вакансию
                   </h1>
-                  <p className="text-muted-foreground text-sm">
-                    Выберите способ создания вакансии
+                  <p className="text-muted-foreground">
+                    Выберите удобный способ создания вакансии для поиска
+                    исполнителей
                   </p>
                 </div>
               </div>
@@ -195,8 +196,29 @@ export default function CreateVacancyPage() {
                 </TabsList>
 
                 <TabsContent value="ai" className="mt-0">
+                  <div className="mb-6 rounded-lg border bg-muted/50 p-4">
+                    <div className="flex gap-3">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <Sparkles
+                          className="size-5 text-primary"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <h3 className="font-medium">
+                          AI-ассистент для создания вакансий
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Опишите задачу в свободной форме, и AI поможет
+                          сформулировать вакансию, подобрать требования и
+                          создать привлекательное описание для исполнителей.
+                          Просто общайтесь с ассистентом как с коллегой.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="rounded-lg border bg-card">
-                    <div className="h-[calc(100vh-16rem)]">
+                    <div className="h-[calc(100vh-20rem)]">
                       <VacancyCreatorContainer
                         workspaceId={workspace?.id ?? ""}
                         orgSlug={orgSlug ?? ""}
@@ -207,6 +229,26 @@ export default function CreateVacancyPage() {
                 </TabsContent>
 
                 <TabsContent value="manual" className="mt-0">
+                  <div className="mb-6 rounded-lg border bg-muted/50 p-4">
+                    <div className="flex gap-3">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                        <FileEdit
+                          className="size-5 text-primary"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="flex-1 space-y-1">
+                        <h3 className="font-medium">
+                          Ручное создание вакансии
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          Заполните форму самостоятельно, если у вас уже есть
+                          готовое описание вакансии или вы хотите полностью
+                          контролировать каждое поле.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="max-w-2xl">
                     <Form {...form}>
                       <form
