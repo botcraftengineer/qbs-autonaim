@@ -4,6 +4,7 @@ import { analytics } from "./analytics";
 import { chatGenerate } from "./chat-generate";
 import { create } from "./create";
 import { dashboardStats } from "./dashboard-stats";
+import { deleteVacancy } from "./delete";
 import { get } from "./get";
 import { improveInstructions } from "./improve-instructions";
 import { list } from "./list";
@@ -21,6 +22,7 @@ export const vacancyRouter = {
   dashboardStats,
   responsesChart,
   update,
+  delete: deleteVacancy,
   improveInstructions,
   chatGenerate,
   responses: responsesRouter,
