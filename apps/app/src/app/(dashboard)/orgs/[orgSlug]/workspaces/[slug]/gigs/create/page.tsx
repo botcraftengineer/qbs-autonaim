@@ -45,6 +45,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 const gigTypeOptions = [
@@ -169,6 +170,7 @@ export default function CreateGigPage({ params }: PageProps) {
 
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
 
   const [messages, setMessages] = React.useState<ChatMessage[]>([
     welcomeMessage,
@@ -233,7 +235,7 @@ export default function CreateGigPage({ params }: PageProps) {
     }),
   );
 
-  const { mutate: generateWithAi } = useMutation(
+  const { mutateAsync: generateWithAi } = useMutation(
     trpc.gig.chatGenerate.mutationOptions({
       onSuccess: (data) => {
         const doc = data.document;
@@ -257,9 +259,6 @@ export default function CreateGigPage({ params }: PageProps) {
             }));
           }
         }
-      },
-      onError: (error) => {
-        toast.error(error.message || "Не удалось сгенерировать");
       },
     }),
   );
@@ -403,18 +402,24 @@ export default function CreateGigPage({ params }: PageProps) {
       case "type":
       case "description": {
         setIsAiThinking(true);
-        generateWithAi({
-          workspaceId: workspaceSlug,
-          message: text,
-          currentDocument: {
-            title: draft.title,
-            description: draft.description,
-            deliverables: draft.deliverables,
-            requiredSkills: draft.requiredSkills,
-          },
-        });
-        await new Promise((r) => setTimeout(r, 1500));
-        setIsAiThinking(false);
+        try {
+          await generateWithAi({
+            workspaceId: workspace?.id ?? "",
+            message: text,
+            currentDocument: {
+              title: draft.title,
+              description: draft.description,
+              deliverables: draft.deliverables,
+              requiredSkills: draft.requiredSkills,
+            },
+          });
+        } catch (error) {
+          toast.error(
+            error instanceof Error ? error.message : "Не удалось сгенерировать",
+          );
+        } finally {
+          setIsAiThinking(false);
+        }
 
         if (currentStep === "type") {
           setDraft((prev) => ({ ...prev, description: text }));
@@ -484,7 +489,7 @@ export default function CreateGigPage({ params }: PageProps) {
       case "review": {
         setIsAiThinking(true);
         generateWithAi({
-          workspaceId: workspaceSlug,
+          workspaceId: workspace?.id ?? "",
           message: text,
           currentDocument: {
             title: draft.title,
@@ -528,7 +533,7 @@ export default function CreateGigPage({ params }: PageProps) {
       form.setValue("estimatedDuration", draft.estimatedDuration);
 
       createGig({
-        workspaceId: workspaceSlug,
+        workspaceId: workspace?.id ?? "",
         title: draft.title || "Новое задание",
         description: draft.description || undefined,
         type: draft.type as FormValues["type"],
@@ -552,7 +557,7 @@ export default function CreateGigPage({ params }: PageProps) {
     } else if (action === "ai-improve") {
       setIsAiThinking(true);
       generateWithAi({
-        workspaceId: workspaceSlug,
+        workspaceId: workspace?.id ?? "",
         message:
           "Улучши и структурируй описание задания, сделай его более профессиональным и понятным для исполнителя",
         currentDocument: {
@@ -587,7 +592,7 @@ export default function CreateGigPage({ params }: PageProps) {
       : undefined;
 
     createGig({
-      workspaceId: workspaceSlug,
+      workspaceId: workspace?.id ?? "",
       title: values.title,
       description: values.description || undefined,
       type: values.type,

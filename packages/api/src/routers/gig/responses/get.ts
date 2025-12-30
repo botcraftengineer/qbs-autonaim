@@ -8,7 +8,7 @@ import { protectedProcedure } from "../../../trpc";
 export const get = protectedProcedure
   .input(
     z.object({
-      responseId: z.string(),
+      responseId: z.string().uuid(),
       workspaceId: workspaceIdSchema,
     }),
   )

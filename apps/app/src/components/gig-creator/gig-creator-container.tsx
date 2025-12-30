@@ -56,6 +56,8 @@ export function GigCreatorContainer({
         );
       },
       onError: (error) => {
+        if (!isMountedRef.current) return;
+
         setMessages((prev) => [
           ...prev,
           {

@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+import { and, eq, sql } from "@qbs-autonaim/db";
 import {
   gig,
   gigImportSourceValues,
@@ -104,12 +104,12 @@ export const create = protectedProcedure
       });
     }
 
-    // Обновляем счётчик откликов
+    // Атомарно обновляем счётчик откликов
     await ctx.db
       .update(gig)
       .set({
-        responses: (existingGig.responses ?? 0) + 1,
-        newResponses: (existingGig.newResponses ?? 0) + 1,
+        responses: sql`COALESCE(${gig.responses}, 0) + 1`,
+        newResponses: sql`COALESCE(${gig.newResponses}, 0) + 1`,
       })
       .where(eq(gig.id, input.gigId));
 
