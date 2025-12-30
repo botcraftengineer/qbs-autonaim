@@ -67,7 +67,7 @@ export function VacancyHeader({
         setIsDeleteDialogOpen(false);
         router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`);
       },
-      onError: (error: Error) => {
+      onError: (error) => {
         toast.error(`Ошибка удаления: ${error.message}`);
       },
     }),
