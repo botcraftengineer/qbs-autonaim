@@ -288,15 +288,18 @@ export async function POST(request: Request) {
     }
 
     // Логирование начала AI генерации
+    // Примечание: auditLog.resourceId ожидает UUID, но workspaceId имеет формат prefixed ID (ws_...)
+    // Поэтому логируем в metadata, а resourceId оставляем пустым UUID
     try {
       const auditLogger = new AuditLoggerService(db);
       await auditLogger.logAccess({
         userId: session.user.id,
         action: "ACCESS",
         resourceType: "VACANCY",
-        resourceId: workspaceId,
+        resourceId: "00000000-0000-0000-0000-000000000000", // placeholder UUID для AI генерации
         metadata: {
           action: "vacancy_ai_generation_started",
+          workspaceId, // сохраняем prefixed ID в metadata
           messageLength: sanitizedMessage.length,
           hasConversationHistory: !!sanitizedHistory?.length,
         },
