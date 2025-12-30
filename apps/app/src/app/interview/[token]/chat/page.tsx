@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { WebChatInterface } from "~/components/web-chat-interface";
+import { InterviewChat } from "~/components/ai-chat";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -23,12 +23,9 @@ export default async function InterviewChatPage({
     redirect(`/interview/${token}`);
   }
 
-  // В реальном приложении здесь можно добавить проверку существования responseId
-  // Но для упрощения пропустим это, так как проверка будет в компоненте
-
   return (
     <main className="flex h-screen flex-col bg-gray-50">
-      <WebChatInterface conversationId={responseId} />
+      <InterviewChat conversationId={responseId} />
     </main>
   );
 }

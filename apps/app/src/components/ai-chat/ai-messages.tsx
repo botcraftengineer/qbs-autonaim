@@ -25,8 +25,9 @@ function PureAIMessages({
   isReadonly = false,
   emptyStateComponent,
 }: AIMessagesProps) {
-  const { containerRef, endRef, isAtBottom, scrollToBottom, hasSentMessage } =
-    useChatMessages({ status });
+  const { containerRef, endRef, isAtBottom, scrollToBottom } = useChatMessages({
+    status,
+  });
 
   const isStreaming = status === "streaming";
   const isSubmitted = status === "submitted";

@@ -1,7 +1,13 @@
 "use client";
 
 import type React from "react";
-import { createContext, useContext, useMemo, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+} from "react";
 
 /**
  * Типы данных для streaming чата
@@ -33,11 +39,11 @@ export function ChatStreamProvider({
 }) {
   const [dataStream, setDataStream] = useState<StreamDataPart[]>([]);
 
-  const clearStream = () => setDataStream([]);
+  const clearStream = useCallback(() => setDataStream([]), []);
 
   const value = useMemo(
     () => ({ dataStream, setDataStream, clearStream }),
-    [dataStream],
+    [dataStream, clearStream],
   );
 
   return (

@@ -8,8 +8,8 @@ import { Sparkles } from "lucide-react";
  */
 export function ThinkingIndicator() {
   return (
-    <div
-      className="group/message w-full animate-in fade-in duration-300"
+    <output
+      className="group/message block w-full animate-in fade-in duration-300"
       data-role="assistant"
       aria-live="polite"
       aria-label="Ассистент думает"
@@ -32,6 +32,6 @@ export function ThinkingIndicator() {
           </div>
         </div>
       </div>
-    </div>
+    </output>
   );
 }
