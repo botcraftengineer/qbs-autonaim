@@ -204,11 +204,14 @@ export function ResponsesChart() {
               content={
                 <ChartTooltipContent
                   labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString("ru-RU", {
-                      month: "long",
-                      day: "numeric",
-                      year: "numeric",
-                    });
+                    return new Date(value as string).toLocaleDateString(
+                      "ru-RU",
+                      {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      },
+                    );
                   }}
                   indicator="dot"
                 />
