@@ -1,8 +1,7 @@
 import {
   buildFullResumeScreeningPrompt,
   formatResumeForScreening,
-} from
-"@qbs-autonaim/ai
+} from "@qbs-autonaim/ai";
 
 import type {
   ResumeScreeningData,
