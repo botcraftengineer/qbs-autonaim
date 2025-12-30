@@ -15,11 +15,15 @@ export type MessagePartType =
 export interface TextPart {
   type: "text";
   text: string;
+  /** Уникальный идентификатор для стабильных React ключей */
+  id?: string;
 }
 
 export interface ReasoningPart {
   type: "reasoning";
   text: string;
+  /** Уникальный идентификатор для стабильных React ключей */
+  id?: string;
 }
 
 export interface FilePart {
@@ -27,6 +31,8 @@ export interface FilePart {
   url: string;
   filename?: string;
   mediaType: string;
+  /** Уникальный идентификатор для стабильных React ключей */
+  id?: string;
 }
 
 export interface ToolCallPart {
@@ -40,6 +46,37 @@ export interface ToolResultPart {
   type: "tool-result";
   toolCallId: string;
   result: unknown;
+}
+
+/**
+ * Генерирует стабильный ключ для MessagePart
+ * Использует id если есть, иначе создаёт хеш из контента
+ */
+export function getPartKey(part: MessagePart, messageId: string): string {
+  // Если есть id — используем его
+  if ("id" in part && part.id) {
+    return part.id;
+  }
+
+  // Для tool-call/tool-result используем toolCallId
+  if (part.type === "tool-call" || part.type === "tool-result") {
+    return `${messageId}-${part.type}-${part.toolCallId}`;
+  }
+
+  // Для file используем url
+  if (part.type === "file") {
+    return `${messageId}-file-${part.url}`;
+  }
+
+  // Для text/reasoning создаём хеш из контента
+  if (part.type === "text" || part.type === "reasoning") {
+    const content = part.text || "";
+    // Простой хеш: первые 20 символов + длина
+    const hash = `${content.slice(0, 20).replace(/\s/g, "_")}-${content.length}`;
+    return `${messageId}-${part.type}-${hash}`;
+  }
+
+  return `${messageId}-unknown`;
 }
 
 export type MessagePart =

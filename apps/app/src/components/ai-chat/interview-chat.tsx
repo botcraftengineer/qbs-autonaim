@@ -3,12 +3,22 @@
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, Loader2, Wifi, WifiOff } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import { useTRPC } from "~/trpc/react";
 import { convertLegacyMessage } from "~/types/ai-chat";
 import { AIChatInput } from "./ai-chat-input";
 import { AIMessages } from "./ai-messages";
+
+// Статичный компонент на уровне модуля для стабильной ссылки
+const INTERVIEW_EMPTY_STATE = (
+  <div className="flex min-h-[300px] items-center justify-center">
+    <div className="text-center text-muted-foreground">
+      <p className="text-sm">Начните диалог</p>
+      <p className="mt-1 text-xs">Напишите сообщение, чтобы начать интервью</p>
+    </div>
+  </div>
+);
 
 interface InterviewChatProps {
   /** ID разговора/response */
@@ -76,13 +86,22 @@ export function InterviewChat({
     },
   });
 
-  // Устанавливаем начальные сообщения после загрузки истории (только один раз)
+  // Отслеживаем текущий conversationId для сброса при смене
+  const currentConversationIdRef = useRef(conversationId);
+
+  // Устанавливаем начальные сообщения после загрузки истории
   useEffect(() => {
+    // Сбрасываем флаг при смене conversationId
+    if (currentConversationIdRef.current !== conversationId) {
+      isInitializedRef.current = false;
+      currentConversationIdRef.current = conversationId;
+    }
+
     if (!isInitializedRef.current && initialMessages.length > 0) {
       setMessages(initialMessages);
       isInitializedRef.current = true;
     }
-  }, [initialMessages, setMessages]);
+  }, [conversationId, initialMessages, setMessages]);
 
   // Отслеживаем онлайн статус
   useEffect(() => {
@@ -187,7 +206,7 @@ export function InterviewChat({
         messages={messages}
         status={chatStatus}
         isReadonly={isDisabled}
-        emptyStateComponent={<EmptyState />}
+        emptyStateComponent={INTERVIEW_EMPTY_STATE}
       />
 
       {/* Ввод */}
@@ -214,19 +233,6 @@ export function InterviewChat({
           {isCancelled && "Интервью было отменено."}
         </div>
       )}
-    </div>
-  );
-}
-
-function EmptyState() {
-  return (
-    <div className="flex min-h-[300px] items-center justify-center">
-      <div className="text-center text-muted-foreground">
-        <p className="text-sm">Начните диалог</p>
-        <p className="mt-1 text-xs">
-          Напишите сообщение, чтобы начать интервью
-        </p>
-      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
-import { env } from "@qbs-autonaim/config";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "~/env";
 
 export const runtime = "edge";
 
@@ -9,18 +9,10 @@ export async function POST(
 ) {
   const { path } = await params;
 
-  if (!env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY not configured" },
-      { status: 500 },
-    );
-  }
-
   try {
     const body = await request.json();
     const openaiPath = path.join("/");
 
-    // Преобразуем модель из формата "openai/whisper-1" в "whisper-1"
     if (body.model?.startsWith("openai/")) {
       body.model = body.model.replace("openai/", "");
     }
@@ -62,13 +54,6 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const { path } = await params;
-
-  if (!env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY not configured" },
-      { status: 500 },
-    );
-  }
 
   try {
     const openaiPath = path.join("/");

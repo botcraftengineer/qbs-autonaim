@@ -150,13 +150,14 @@ export function useAIChat({
           createdAt: new Date(),
         };
 
+        let updatedMessages: AIChatMessage[] = [];
         setMessages((prev) => {
-          const updatedMessages = prev.map((msg) =>
+          updatedMessages = prev.map((msg) =>
             msg.id === assistantMessageId ? finalMessage : msg,
           );
-          onFinish?.(updatedMessages);
           return updatedMessages;
         });
+        onFinish?.(updatedMessages);
 
         onMessage?.(finalMessage);
         setStatus("idle");

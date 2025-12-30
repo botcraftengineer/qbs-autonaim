@@ -2,7 +2,7 @@
 
 import { cn } from "@qbs-autonaim/ui";
 import { AlertCircle, Wifi, WifiOff } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import type { AIChatMessage } from "~/types/ai-chat";
 import { convertLegacyMessage } from "~/types/ai-chat";
@@ -101,6 +101,23 @@ export function StreamingChat({
   const isCancelled = status === "CANCELLED";
   const isDisabled = isCompleted || isCancelled || !isOnline;
 
+  // Мемоизируем emptyState для стабильной ссылки
+  const emptyStateComponent = useMemo(
+    () => (
+      <div className="flex min-h-[300px] items-center justify-center">
+        <div className="text-center text-muted-foreground">
+          <p className="text-sm">
+            {candidateName
+              ? `Начните диалог с ${candidateName}`
+              : "Начните диалог"}
+          </p>
+          <p className="mt-1 text-xs">Напишите сообщение, чтобы начать</p>
+        </div>
+      </div>
+    ),
+    [candidateName],
+  );
+
   return (
     <div className={cn("flex h-full flex-col", className)}>
       {/* Заголовок */}
@@ -160,7 +177,7 @@ export function StreamingChat({
         messages={messages}
         status={chatStatus}
         isReadonly={isDisabled}
-        emptyStateComponent={<EmptyState candidateName={candidateName} />}
+        emptyStateComponent={emptyStateComponent}
       />
 
       {/* Ввод */}
@@ -187,21 +204,6 @@ export function StreamingChat({
           {isCancelled && "Интервью было отменено."}
         </div>
       )}
-    </div>
-  );
-}
-
-function EmptyState({ candidateName }: { candidateName?: string }) {
-  return (
-    <div className="flex min-h-[300px] items-center justify-center">
-      <div className="text-center text-muted-foreground">
-        <p className="text-sm">
-          {candidateName
-            ? `Начните диалог с ${candidateName}`
-            : "Начните диалог"}
-        </p>
-        <p className="mt-1 text-xs">Напишите сообщение, чтобы начать</p>
-      </div>
     </div>
   );
 }

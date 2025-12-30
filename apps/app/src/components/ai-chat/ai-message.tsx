@@ -3,7 +3,12 @@
 import { cn } from "@qbs-autonaim/ui";
 import { ChevronDown, Sparkles, User } from "lucide-react";
 import { memo, useState } from "react";
-import type { AIChatMessage, MessagePart, TextPart } from "~/types/ai-chat";
+import {
+  type AIChatMessage,
+  getPartKey,
+  type MessagePart,
+  type TextPart,
+} from "~/types/ai-chat";
 
 interface AIMessageProps {
   message: AIChatMessage;
@@ -77,9 +82,9 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
           )}
 
           {/* Текстовые части */}
-          {textParts.map((part, index) => (
+          {textParts.map((part) => (
             <div
-              key={`${message.id}-text-${index}`}
+              key={getPartKey(part, message.id)}
               className={cn(
                 "wrap-break-word rounded-2xl px-3 py-2",
                 isUser
