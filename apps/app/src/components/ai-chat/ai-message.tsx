@@ -77,9 +77,9 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
           )}
 
           {/* Текстовые части */}
-          {textParts.map((part) => (
+          {textParts.map((part, index) => (
             <div
-              key={`${message.id}-${part.text.slice(0, 20)}`}
+              key={`${message.id}-text-${index}`}
               className={cn(
                 "wrap-break-word rounded-2xl px-3 py-2",
                 isUser

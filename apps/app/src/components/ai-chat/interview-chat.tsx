@@ -33,6 +33,7 @@ export function InterviewChat({
   const trpc = useTRPC();
   const [isOnline, setIsOnline] = useState(true);
   const recoveryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isInitializedRef = useRef(false);
 
   // Загружаем историю сообщений
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery(
@@ -75,12 +76,13 @@ export function InterviewChat({
     },
   });
 
-  // Устанавливаем начальные сообщения после загрузки истории
+  // Устанавливаем начальные сообщения после загрузки истории (только один раз)
   useEffect(() => {
-    if (initialMessages.length > 0 && messages.length === 0) {
+    if (!isInitializedRef.current && initialMessages.length > 0) {
       setMessages(initialMessages);
+      isInitializedRef.current = true;
     }
-  }, [initialMessages, messages.length, setMessages]);
+  }, [initialMessages, setMessages]);
 
   // Отслеживаем онлайн статус
   useEffect(() => {

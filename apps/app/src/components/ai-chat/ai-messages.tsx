@@ -98,5 +98,7 @@ export const AIMessages = memo(PureAIMessages, (prevProps, nextProps) => {
   if (prevProps.status !== nextProps.status) return false;
   if (prevProps.messages.length !== nextProps.messages.length) return false;
   if (prevProps.isReadonly !== nextProps.isReadonly) return false;
+  if (prevProps.emptyStateComponent !== nextProps.emptyStateComponent)
+    return false;
   return true;
 });

@@ -47,6 +47,8 @@ export function useAIChat({
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastUserMessageRef = useRef<string>("");
+  const messagesRef = useRef<AIChatMessage[]>(messages);
+  messagesRef.current = messages;
 
   const generateId = useCallback(
     () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
@@ -94,7 +96,7 @@ export function useAIChat({
           body: JSON.stringify({
             message: content,
             chatId,
-            messages: messages.map((m) => ({
+            messages: messagesRef.current.map((m) => ({
               role: m.role,
               content: m.parts
                 .filter((p): p is TextPart => p.type === "text")
@@ -148,14 +150,15 @@ export function useAIChat({
           createdAt: new Date(),
         };
 
-        setMessages((prev) =>
-          prev.map((msg) =>
+        setMessages((prev) => {
+          const updatedMessages = prev.map((msg) =>
             msg.id === assistantMessageId ? finalMessage : msg,
-          ),
-        );
+          );
+          onFinish?.(updatedMessages);
+          return updatedMessages;
+        });
 
         onMessage?.(finalMessage);
-        onFinish?.([...messages, userMessage, finalMessage]);
         setStatus("idle");
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
@@ -177,7 +180,7 @@ export function useAIChat({
         abortControllerRef.current = null;
       }
     },
-    [apiEndpoint, chatId, generateId, messages, onMessage, onError, onFinish],
+    [apiEndpoint, chatId, generateId, onMessage, onError, onFinish],
   );
 
   const stop = useCallback(() => {
