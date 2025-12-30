@@ -37,7 +37,6 @@ export default function FreelanceAnalyticsPage() {
     ],
     queryFn: async () => {
       if (!workspace?.id) return null;
-      // @ts-expect-error - новый эндпоинт, типы обновятся после перезапуска TS сервера
       return api.freelancePlatforms.getAnalytics.query({
         workspaceId: workspace.id,
         dateFrom,
@@ -50,7 +49,6 @@ export default function FreelanceAnalyticsPage() {
   const handleExport = async () => {
     if (!workspace?.id) return;
 
-    // @ts-expect-error - новый эндпоинт, типы обновятся после перезапуска TS сервера
     const result = await api.freelancePlatforms.exportAnalytics.query({
       workspaceId: workspace.id,
       dateFrom,

@@ -8,6 +8,27 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 
+/**
+ * Маппинг источников вакансий на читаемые названия платформ
+ */
+const SOURCE_LABELS: Record<string, string> = {
+  hh: "hh.ru",
+  avito: "Avito",
+  superjob: "SuperJob",
+  kwork: "Kwork",
+  fl: "FL.ru",
+  weblancer: "Weblancer",
+  upwork: "Upwork",
+};
+
+/**
+ * Возвращает читаемое название платформы по источнику
+ */
+function getSourceLabel(source: string | null | undefined): string {
+  if (!source) return "источнике";
+  return SOURCE_LABELS[source] ?? source;
+}
+
 interface VacancyHeaderProps {
   vacancyId: string;
   workspaceId: string;
@@ -17,6 +38,7 @@ interface VacancyHeaderProps {
   isActive: boolean | null;
   orgSlug: string;
   workspaceSlug: string;
+  source?: string | null;
 }
 
 export function VacancyHeader({
@@ -28,15 +50,14 @@ export function VacancyHeader({
   isActive,
   orgSlug,
   workspaceSlug,
+  source,
 }: VacancyHeaderProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  // @ts-expect-error - роут delete только что добавлен, типы обновятся после перезапуска dev сервера
   const { mutate: deleteVacancy, isPending: isDeleting } = useMutation(
-    // @ts-expect-error - роут delete только что добавлен
     trpc.vacancy.delete.mutationOptions({
       onSuccess: (data: { success: boolean; message: string }) => {
         toast.success(data.message);
@@ -102,7 +123,7 @@ export function VacancyHeader({
             <Button variant="outline" size="sm" asChild>
               <a href={url} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                Открыть на hh.ru
+                Открыть на {getSourceLabel(source)}
               </a>
             </Button>
           </div>

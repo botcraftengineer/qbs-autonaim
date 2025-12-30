@@ -63,6 +63,7 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
           isActive={vacancy.isActive}
           orgSlug={orgSlug}
           workspaceSlug={workspaceSlug}
+          source={vacancy.source}
         />
 
         <VacancyStats

@@ -44,34 +44,46 @@ export const deleteVacancy = protectedProcedure
 
     // Выполняем удаление в зависимости от выбора пользователя
     if (input.dataCleanupOption === "anonymize") {
-      // Анонимизируем персональные данные кандидатов
-      await ctx.db
-        .update(vacancyResponse)
-        .set({
-          candidateName: "Анонимный кандидат",
-          telegramUsername: null,
-          chatId: null,
-          phone: null,
-          contacts: null,
-          coverLetter: "Данные анонимизированы",
-          platformProfileUrl: null,
-          resumeUrl: "https://anonymized.url",
-        })
-        .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+      try {
+        await ctx.db.transaction(async (tx) => {
+          // Анонимизируем персональные данные кандидатов
+          await tx
+            .update(vacancyResponse)
+            .set({
+              candidateName: "Анонимный кандидат",
+              telegramUsername: null,
+              chatId: null,
+              phone: null,
+              contacts: null,
+              coverLetter: "Данные анонимизированы",
+              platformProfileUrl: null,
+              resumeUrl: "https://anonymized.url",
+              experience: null,
+              salaryExpectations: null,
+            })
+            .where(eq(vacancyResponse.vacancyId, input.vacancyId));
 
-      // Помечаем вакансию как неактивную
-      await ctx.db
-        .update(vacancy)
-        .set({
-          isActive: false,
-          updatedAt: new Date(),
-        })
-        .where(eq(vacancy.id, input.vacancyId));
+          // Помечаем вакансию как неактивную
+          await tx
+            .update(vacancy)
+            .set({
+              isActive: false,
+              updatedAt: new Date(),
+            })
+            .where(eq(vacancy.id, input.vacancyId));
+        });
 
-      return {
-        success: true,
-        message: "Вакансия архивирована, данные кандидатов анонимизированы",
-      };
+        return {
+          success: true,
+          message: "Вакансия архивирована, данные кандидатов анонимизированы",
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Ошибка при анонимизации данных вакансии",
+          cause: error,
+        });
+      }
     }
 
     // Полное удаление вакансии (каскадное удаление удалит и отклики)
