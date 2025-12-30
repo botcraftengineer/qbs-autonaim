@@ -12,6 +12,7 @@ import { listActive } from "./list-active";
 import { responsesRouter } from "./responses";
 import { responsesChart } from "./responses-chart";
 import { update } from "./update";
+import { updateDetails } from "./update-details";
 
 export const vacancyRouter = {
   list,
@@ -22,6 +23,7 @@ export const vacancyRouter = {
   dashboardStats,
   responsesChart,
   update,
+  updateDetails,
   delete: deleteVacancy,
   improveInstructions,
   chatGenerate,

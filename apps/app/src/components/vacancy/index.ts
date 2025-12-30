@@ -6,5 +6,6 @@ export { ResponseTable } from "./response-table";
 export { ScreeningHoverCard } from "./screening-hover-card";
 export { UpdateVacancyButton } from "./update-vacancy-button";
 export { VacancyAnalytics, VacancyRequirements } from "./vacancy-analytics";
+export { VacancyEditForm } from "./vacancy-edit-form";
 export { VacancyHeader } from "./vacancy-header";
 export { VacancyStats } from "./vacancy-stats";

@@ -37,6 +37,7 @@ const vacancyDocumentSchema = z.object({
 const sseResponseSchema = z.object({
   error: z.string().optional(),
   document: vacancyDocumentSchema.optional(),
+  partial: z.boolean().optional(),
   done: z.boolean().optional(),
 });
 
@@ -173,21 +174,26 @@ export function VacancyCreatorContainer({
                 throw new Error(data.error);
               }
 
-              if (data.document && data.done) {
+              // Обновляем документ при частичных и финальных данных
+              if (data.document) {
                 if (!isMountedRef.current || !abortControllerRef.current) {
                   return;
                 }
 
                 setDocument(data.document);
-                setMessages((prev) => [
-                  ...prev,
-                  {
-                    id: Date.now().toString(),
-                    role: "assistant",
-                    content: "Документ обновлён",
-                    timestamp: new Date(),
-                  },
-                ]);
+
+                // Добавляем сообщение только при финальном обновлении
+                if (data.done) {
+                  setMessages((prev) => [
+                    ...prev,
+                    {
+                      id: Date.now().toString(),
+                      role: "assistant",
+                      content: "Документ обновлён",
+                      timestamp: new Date(),
+                    },
+                  ]);
+                }
               }
             } catch (parseError) {
               console.error("Ошибка парсинга SSE:", parseError);

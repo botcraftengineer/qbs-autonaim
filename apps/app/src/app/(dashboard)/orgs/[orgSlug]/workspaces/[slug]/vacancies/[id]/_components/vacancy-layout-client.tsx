@@ -61,6 +61,7 @@ export function VacancyLayoutClient({
   const getActiveTab = () => {
     if (pathname.endsWith("/settings")) return "settings";
     if (pathname.endsWith("/responses")) return "responses";
+    if (pathname.endsWith("/edit")) return "edit";
     return "detail";
   };
 
@@ -196,6 +197,22 @@ export function VacancyLayoutClient({
                           Отклики ({responsesCount?.total ?? 0})
                         </span>
                         <span className="sm:hidden">Отклики</span>
+                      </Link>
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="edit"
+                      asChild
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                    >
+                      <Link
+                        href={paths.workspace.vacancies(
+                          orgSlug,
+                          workspaceSlug,
+                          vacancyId,
+                          "edit",
+                        )}
+                      >
+                        Редактировать
                       </Link>
                     </TabsTrigger>
                     <TabsTrigger

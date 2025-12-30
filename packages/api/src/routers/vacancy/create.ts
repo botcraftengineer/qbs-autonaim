@@ -4,7 +4,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const createVacancySchema = z.object({
-  workspaceId: z.string().uuid(),
+  workspaceId: z.string().min(1),
   title: z.string().min(1).max(500),
   description: z.string().optional(),
   requirements: z.string().optional(),
