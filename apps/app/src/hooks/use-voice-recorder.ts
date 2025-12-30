@@ -73,13 +73,25 @@ export function useVoiceRecorder({
       streamRef.current = stream;
 
       // Выбираем лучший доступный формат
-      const mimeType = MediaRecorder.isTypeSupported("audio/webm;codecs=opus")
-        ? "audio/webm;codecs=opus"
-        : MediaRecorder.isTypeSupported("audio/webm")
-          ? "audio/webm"
-          : MediaRecorder.isTypeSupported("audio/mp4")
-            ? "audio/mp4"
-            : "audio/ogg";
+      let mimeType: string | undefined;
+
+      if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+        mimeType = "audio/webm;codecs=opus";
+      } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+        mimeType = "audio/webm";
+      } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+        mimeType = "audio/mp4";
+      } else if (MediaRecorder.isTypeSupported("audio/ogg")) {
+        mimeType = "audio/ogg";
+      } else if (MediaRecorder.isTypeSupported("audio/wav")) {
+        mimeType = "audio/wav";
+      }
+
+      if (!mimeType) {
+        throw new Error(
+          "Ни один из поддерживаемых аудио форматов не доступен в этом браузере",
+        );
+      }
 
       const mediaRecorder = new MediaRecorder(stream, { mimeType });
       mediaRecorderRef.current = mediaRecorder;
@@ -95,6 +107,33 @@ export function useVoiceRecorder({
         onError?.(new Error("Ошибка записи"));
         cleanup();
         setStatus("idle");
+      };
+
+      // Set onstop handler immediately so it works for both manual and auto-stop
+      mediaRecorder.onstop = () => {
+        const recordedMimeType = mediaRecorder.mimeType || "audio/webm";
+        const blob = new Blob(chunksRef.current, { type: recordedMimeType });
+
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+        }
+
+        if (streamRef.current) {
+          for (const track of streamRef.current.getTracks()) {
+            track.stop();
+          }
+          streamRef.current = null;
+        }
+
+        mediaRecorderRef.current = null;
+        chunksRef.current = [];
+        setDuration(0);
+        setStatus("idle");
+
+        // Resolve promise if stopRecording was called
+        resolveRef.current?.(blob);
+        resolveRef.current = null;
       };
 
       mediaRecorder.start(100); // Собираем данные каждые 100мс
@@ -142,15 +181,7 @@ export function useVoiceRecorder({
       setStatus("processing");
       resolveRef.current = resolve;
 
-      mediaRecorder.onstop = () => {
-        const mimeType = mediaRecorder.mimeType || "audio/webm";
-        const blob = new Blob(chunksRef.current, { type: mimeType });
-        cleanup();
-        setStatus("idle");
-        resolveRef.current?.(blob);
-        resolveRef.current = null;
-      };
-
+      // onstop handler is already set during MediaRecorder creation
       mediaRecorder.stop();
     });
   }, [cleanup]);

@@ -1,5 +1,6 @@
 import { and, eq, sql } from "@qbs-autonaim/db";
 import {
+  type GigResponse,
   gig,
   gigImportSourceValues,
   gigResponse,
@@ -10,7 +11,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 const createResponseSchema = z.object({
-  gigId: z.string(),
+  gigId: z.string().uuid(),
   workspaceId: workspaceIdSchema,
   candidateId: z.string().max(100),
   candidateName: z.string().max(500).optional(),
@@ -74,28 +75,44 @@ export const create = protectedProcedure
       });
     }
 
-    const [newResponse] = await ctx.db
-      .insert(gigResponse)
-      .values({
-        gigId: input.gigId,
-        candidateId: input.candidateId,
-        candidateName: input.candidateName,
-        profileUrl: input.profileUrl,
-        telegramUsername: input.telegramUsername,
-        phone: input.phone,
-        email: input.email,
-        proposedPrice: input.proposedPrice,
-        proposedCurrency: input.proposedCurrency,
-        proposedDeliveryDays: input.proposedDeliveryDays,
-        coverLetter: input.coverLetter,
-        portfolioLinks: input.portfolioLinks,
-        experience: input.experience,
-        skills: input.skills,
-        rating: input.rating,
-        importSource: input.importSource,
-        respondedAt: new Date(),
-      })
-      .returning();
+    let newResponse: GigResponse;
+    try {
+      [newResponse] = await ctx.db
+        .insert(gigResponse)
+        .values({
+          gigId: input.gigId,
+          candidateId: input.candidateId,
+          candidateName: input.candidateName,
+          profileUrl: input.profileUrl,
+          telegramUsername: input.telegramUsername,
+          phone: input.phone,
+          email: input.email,
+          proposedPrice: input.proposedPrice,
+          proposedCurrency: input.proposedCurrency,
+          proposedDeliveryDays: input.proposedDeliveryDays,
+          coverLetter: input.coverLetter,
+          portfolioLinks: input.portfolioLinks,
+          experience: input.experience,
+          skills: input.skills,
+          rating: input.rating,
+          importSource: input.importSource,
+          respondedAt: new Date(),
+        })
+        .returning();
+    } catch (error) {
+      // Обработка race condition: параллельный запрос успел вставить дубликат
+      if (
+        error instanceof Error &&
+        (error.message.includes("unique constraint") ||
+          error.message.includes("duplicate key"))
+      ) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Отклик от этого кандидата уже существует",
+        });
+      }
+      throw error;
+    }
 
     if (!newResponse) {
       throw new TRPCError({

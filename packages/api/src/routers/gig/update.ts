@@ -8,7 +8,7 @@ import { protectedProcedure } from "../../trpc";
 export const update = protectedProcedure
   .input(
     z.object({
-      gigId: z.string(),
+      gigId: z.string().uuid(),
       workspaceId: workspaceIdSchema,
       settings: UpdateGigSettingsSchema,
     }),

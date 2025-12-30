@@ -146,11 +146,19 @@ function PreviewContent({
             Требуемые навыки
           </h4>
           <div className="flex flex-wrap gap-1.5">
-            {draft.requiredSkills.split(/[,;]/).map((s) => (
-              <Badge key={s.trim()} variant="outline" className="text-xs">
-                {s.trim()}
-              </Badge>
-            ))}
+            {draft.requiredSkills
+              .split(/[,;]/)
+              .map((s) => s.trim())
+              .filter((s) => s.length > 0)
+              .map((skill, i) => (
+                <Badge
+                  key={`${skill}-${i}`}
+                  variant="outline"
+                  className="text-xs"
+                >
+                  {skill}
+                </Badge>
+              ))}
           </div>
         </div>
       )}
@@ -159,11 +167,24 @@ function PreviewContent({
         <div className="flex items-center gap-2 pt-2 border-t">
           <span className="text-sm font-medium">💰 Бюджет:</span>
           <span className="text-sm tabular-nums">
-            {draft.budgetMin?.toLocaleString("ru-RU")}
-            {draft.budgetMax && draft.budgetMax !== draft.budgetMin && (
-              <> – {draft.budgetMax.toLocaleString("ru-RU")}</>
-            )}{" "}
-            ₽
+            {draft.budgetMin === draft.budgetMax
+              ? new Intl.NumberFormat("ru-RU", {
+                  style: "currency",
+                  currency: draft.budgetCurrency || "RUB",
+                  maximumFractionDigits: 0,
+                }).format(draft.budgetMin || 0)
+              : `${new Intl.NumberFormat("ru-RU", {
+                  style: "currency",
+                  currency: draft.budgetCurrency || "RUB",
+                  maximumFractionDigits: 0,
+                }).format(draft.budgetMin || 0)} – ${new Intl.NumberFormat(
+                  "ru-RU",
+                  {
+                    style: "currency",
+                    currency: draft.budgetCurrency || "RUB",
+                    maximumFractionDigits: 0,
+                  },
+                ).format(draft.budgetMax || 0)}`}
           </span>
         </div>
       )}

@@ -1,7 +1,16 @@
 "use client";
 
 import { Button, cn } from "@qbs-autonaim/ui";
-import { ArrowUp, Mic, Paperclip, Square, Trash2, X } from "lucide-react";
+import {
+  ArrowUp,
+  FileText,
+  Mic,
+  Music,
+  Paperclip,
+  Square,
+  Trash2,
+  X,
+} from "lucide-react";
 import {
   type ChangeEvent,
   type KeyboardEvent,
@@ -11,6 +20,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { toast } from "sonner";
 import { formatDuration, useVoiceRecorder } from "~/hooks/use-voice-recorder";
 import type { ChatStatus } from "~/types/ai-chat";
 
@@ -48,8 +58,10 @@ function PureAIChatInput({
   const [input, setInput] = useState("");
   const [audioAttachment, setAudioAttachment] =
     useState<AudioAttachment | null>(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const attachMenuRef = useRef<HTMLDivElement>(null);
 
   const {
     status: recordingStatus,
@@ -61,6 +73,9 @@ function PureAIChatInput({
   } = useVoiceRecorder({
     maxDuration: 300,
     onError: (err) => {
+      toast.error("Ошибка записи голоса", {
+        description: err.message,
+      });
       console.error("Voice recording error:", err.message);
     },
   });
@@ -89,6 +104,24 @@ function PureAIChatInput({
       }
     };
   }, [audioAttachment?.url]);
+
+  // Закрытие меню при клике вне его
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        attachMenuRef.current &&
+        !attachMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowAttachMenu(false);
+      }
+    };
+
+    if (showAttachMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () =>
+        document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showAttachMenu]);
 
   const resetHeight = useCallback(() => {
     if (textareaRef.current) {
@@ -166,12 +199,18 @@ function PureAIChatInput({
 
     // Проверяем что это аудио
     if (!file.type.startsWith("audio/")) {
+      toast.error("Неверный тип файла", {
+        description: "Пожалуйста, выберите аудиофайл",
+      });
       console.error("Invalid file type:", file.type);
       return;
     }
 
     // Лимит 25MB
     if (file.size > 25 * 1024 * 1024) {
+      toast.error("Файл слишком большой", {
+        description: "Максимальный размер файла — 25 МБ",
+      });
       console.error("File too large");
       return;
     }
@@ -185,7 +224,20 @@ function PureAIChatInput({
 
   const handleAttachClick = useCallback(() => {
     fileInputRef.current?.click();
+    setShowAttachMenu(false);
   }, []);
+
+  const handleAttachButtonClick = useCallback(() => {
+    // Если только одна опция доступна, сразу выполняем действие
+    if (showAttachments && !enableVoice) {
+      onAttach?.();
+    } else if (!showAttachments && enableVoice) {
+      handleAttachClick();
+    } else {
+      // Обе опции доступны - показываем меню
+      setShowAttachMenu((prev) => !prev);
+    }
+  }, [showAttachments, enableVoice, onAttach, handleAttachClick]);
 
   return (
     <form
@@ -279,35 +331,51 @@ function PureAIChatInput({
       </div>
 
       <div className="flex items-center justify-between pt-2">
-        <div className="flex items-center gap-1">
-          {/* Кнопка прикрепления файла */}
-          {showAttachments && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              disabled={disabled || isLoading || isRecording}
-              onClick={onAttach}
-              aria-label="Прикрепить файл"
-            >
-              <Paperclip className="size-4" />
-            </Button>
-          )}
+        <div className="relative flex items-center gap-1">
+          {/* Единая кнопка прикрепления */}
+          {(showAttachments || enableVoice) && (
+            <div className="relative" ref={attachMenuRef}>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="size-8 rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                disabled={disabled || isLoading || isRecording}
+                onClick={handleAttachButtonClick}
+                aria-label="Прикрепить"
+              >
+                <Paperclip className="size-4" />
+              </Button>
 
-          {/* Кнопка прикрепления аудио */}
-          {enableVoice && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="size-8 rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              disabled={disabled || isLoading || isRecording}
-              onClick={handleAttachClick}
-              aria-label="Прикрепить аудиофайл"
-            >
-              <Paperclip className="size-4" />
-            </Button>
+              {/* Меню прикрепления */}
+              {showAttachMenu && showAttachments && enableVoice && (
+                <div className="absolute bottom-full left-0 z-50 mb-2 w-48 overflow-hidden rounded-lg border bg-popover shadow-lg">
+                  {showAttachments && (
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                      onClick={() => {
+                        onAttach?.();
+                        setShowAttachMenu(false);
+                      }}
+                    >
+                      <FileText className="size-4 text-muted-foreground" />
+                      <span>Прикрепить файл</span>
+                    </button>
+                  )}
+                  {enableVoice && (
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-3 px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
+                      onClick={handleAttachClick}
+                    >
+                      <Music className="size-4 text-muted-foreground" />
+                      <span>Прикрепить аудио</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
           )}
 
           {/* Скрытый input для файлов */}

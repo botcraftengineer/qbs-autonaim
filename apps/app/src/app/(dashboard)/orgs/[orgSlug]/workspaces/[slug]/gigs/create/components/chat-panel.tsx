@@ -50,8 +50,10 @@ export function ChatPanel({
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      onSend();
+      if (inputValue.trim() && !isDisabled) {
+        e.preventDefault();
+        onSend();
+      }
     }
   };
 

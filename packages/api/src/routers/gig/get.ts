@@ -6,7 +6,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 export const get = protectedProcedure
-  .input(z.object({ id: z.string(), workspaceId: workspaceIdSchema }))
+  .input(z.object({ id: z.string().uuid(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,

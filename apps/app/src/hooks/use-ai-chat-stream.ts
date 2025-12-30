@@ -92,6 +92,8 @@ export function useAIChatStream({
           filename: audioFile.name,
           mediaType: audioFile.type || "audio/webm",
         });
+        // Запланировать очистку URL после использования
+        setTimeout(() => URL.revokeObjectURL(audioUrl), 60000);
       }
 
       // Добавляем текст если есть
