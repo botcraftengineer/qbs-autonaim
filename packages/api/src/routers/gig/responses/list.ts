@@ -1,0 +1,50 @@
+import { and, desc, eq } from "@qbs-autonaim/db";
+import { gig, gigResponse } from "@qbs-autonaim/db/schema";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { protectedProcedure } from "../../../trpc";
+
+export const list = protectedProcedure
+  .input(
+    z.object({
+      gigId: z.string(),
+      workspaceId: workspaceIdSchema,
+    }),
+  )
+  .query(async ({ ctx, input }) => {
+    const access = await ctx.workspaceRepository.checkAccess(
+      input.workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
+
+    // Проверяем что gig принадлежит workspace
+    const existingGig = await ctx.db.query.gig.findFirst({
+      where: and(
+        eq(gig.id, input.gigId),
+        eq(gig.workspaceId, input.workspaceId),
+      ),
+    });
+
+    if (!existingGig) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Задание не найдено",
+      });
+    }
+
+    return ctx.db.query.gigResponse.findMany({
+      where: eq(gigResponse.gigId, input.gigId),
+      with: {
+        screening: true,
+      },
+      orderBy: [desc(gigResponse.createdAt)],
+    });
+  });

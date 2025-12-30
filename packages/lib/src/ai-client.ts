@@ -76,35 +76,50 @@ function teeAsyncIterableStream<T>(
           return { value: undefined as unknown as T, done: true };
         }
 
-        // Если уже идёт чтение, подождать его завершения и проверить буфер снова
-        if (readingPromise) {
-          await readingPromise;
-          // После завершения чтения проверяем буфер снова
-          const bufferedValue = buffer.shift();
-          if (bufferedValue !== undefined) {
-            return { value: bufferedValue, done: false };
+        // Атомарно проверяем и устанавливаем readingPromise
+        // Если уже идёт чтение, ждём его завершения
+        while (true) {
+          if (readingPromise) {
+            // Другой вызов уже читает - ждём его завершения
+            await readingPromise;
+
+            // После завершения чтения проверяем буфер снова
+            const bufferedValue = buffer.shift();
+            if (bufferedValue !== undefined) {
+              return { value: bufferedValue, done: false };
+            }
+            if (sourceDone) {
+              return { value: undefined as unknown as T, done: true };
+            }
+            // Если буфер пуст и источник не завершён, пробуем снова
+            continue;
           }
-          if (sourceDone) {
-            return { value: undefined as unknown as T, done: true };
+
+          // readingPromise === null, атомарно устанавливаем его
+          const currentReadPromise = readFromSource();
+          readingPromise = currentReadPromise;
+
+          try {
+            const result = await currentReadPromise;
+
+            if (result.done) {
+              sourceDone = true;
+              return { value: undefined as unknown as T, done: true };
+            }
+
+            // Добавляем значение в буфер другого итератора
+            const otherIndex = index === 0 ? 1 : 0;
+            buffers[otherIndex].push(result.value);
+
+            // Возвращаем значение текущему итератору
+            return { value: result.value, done: false };
+          } finally {
+            // Очищаем readingPromise только если это наш промис
+            if (readingPromise === currentReadPromise) {
+              readingPromise = null;
+            }
           }
         }
-
-        // Читаем из источника
-        readingPromise = readFromSource();
-        const result = await readingPromise;
-        readingPromise = null;
-
-        if (result.done) {
-          sourceDone = true;
-          return { value: undefined as unknown as T, done: true };
-        }
-
-        // Добавляем значение в буфер другого итератора
-        const otherIndex = index === 0 ? 1 : 0;
-        buffers[otherIndex].push(result.value);
-
-        // Возвращаем значение текущему итератору
-        return { value: result.value, done: false };
       },
     };
   }

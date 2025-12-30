@@ -11,6 +11,7 @@ import {
   SidebarMenuItem,
 } from "@qbs-autonaim/ui";
 import {
+  IconBriefcase,
   IconDashboard,
   IconFileDescription,
   IconInnerShadowTop,
@@ -45,6 +46,14 @@ const getNavData = (orgSlug?: string, workspaceSlug?: string) => ({
           ? paths.workspace.vacancies(orgSlug, workspaceSlug)
           : "/vacancies",
       icon: IconFileDescription,
+    },
+    {
+      title: "Разовые задания",
+      url:
+        orgSlug && workspaceSlug
+          ? paths.workspace.gigs(orgSlug, workspaceSlug)
+          : "/gigs",
+      icon: IconBriefcase,
     },
     {
       title: "Кандидаты",
