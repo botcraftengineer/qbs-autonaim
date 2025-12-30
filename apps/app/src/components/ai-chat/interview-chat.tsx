@@ -3,7 +3,7 @@
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, Loader2, Wifi, WifiOff } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import { useTRPC } from "~/trpc/react";
 import { convertLegacyMessage } from "~/types/ai-chat";
@@ -32,6 +32,7 @@ export function InterviewChat({
 }: InterviewChatProps) {
   const trpc = useTRPC();
   const [isOnline, setIsOnline] = useState(true);
+  const recoveryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Загружаем историю сообщений
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery(
@@ -60,7 +61,17 @@ export function InterviewChat({
     onError: (err) => {
       console.error("Chat error:", err);
       setIsOnline(false);
-      setTimeout(() => setIsOnline(true), 5000);
+
+      // Очищаем предыдущий таймер, если есть
+      if (recoveryTimeoutRef.current) {
+        clearTimeout(recoveryTimeoutRef.current);
+      }
+
+      // Устанавливаем новый таймер восстановления
+      recoveryTimeoutRef.current = setTimeout(() => {
+        setIsOnline(true);
+        recoveryTimeoutRef.current = null;
+      }, 5000);
     },
   });
 
@@ -82,6 +93,15 @@ export function InterviewChat({
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
+  // Очищаем таймер восстановления при размонтировании
+  useEffect(() => {
+    return () => {
+      if (recoveryTimeoutRef.current) {
+        clearTimeout(recoveryTimeoutRef.current);
+      }
     };
   }, []);
 

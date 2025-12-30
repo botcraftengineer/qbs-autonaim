@@ -194,9 +194,12 @@ export function useAIChat({
   const regenerate = useCallback(async () => {
     if (!lastUserMessageRef.current) return;
 
-    // Удаляем последнее сообщение ассистента
+    // Удаляем последнее сообщение ассистента и предшествующее сообщение пользователя за один проход
     setMessages((prev) => {
       let lastAssistantIndex = -1;
+      let lastUserIndex = -1;
+
+      // Находим последнее сообщение ассистента
       for (let i = prev.length - 1; i >= 0; i--) {
         const msg = prev[i];
         if (msg && msg.role === "assistant") {
@@ -204,13 +207,8 @@ export function useAIChat({
           break;
         }
       }
-      if (lastAssistantIndex === -1) return prev;
-      return prev.slice(0, lastAssistantIndex);
-    });
 
-    // Удаляем последнее сообщение пользователя
-    setMessages((prev) => {
-      let lastUserIndex = -1;
+      // Находим последнее сообщение пользователя
       for (let i = prev.length - 1; i >= 0; i--) {
         const msg = prev[i];
         if (msg && msg.role === "user") {
@@ -218,8 +216,21 @@ export function useAIChat({
           break;
         }
       }
-      if (lastUserIndex === -1) return prev;
-      return prev.slice(0, lastUserIndex);
+
+      // Если ничего не найдено, возвращаем исходный массив
+      if (lastAssistantIndex === -1 && lastUserIndex === -1) return prev;
+
+      // Удаляем оба сообщения, обрезая до меньшего индекса
+      const cutIndex = Math.min(
+        lastAssistantIndex === -1
+          ? Number.POSITIVE_INFINITY
+          : lastAssistantIndex,
+        lastUserIndex === -1 ? Number.POSITIVE_INFINITY : lastUserIndex,
+      );
+
+      return cutIndex === Number.POSITIVE_INFINITY
+        ? prev
+        : prev.slice(0, cutIndex);
     });
 
     // Повторно отправляем

@@ -1,44 +1,64 @@
 import { conversation, db, eq } from "@qbs-autonaim/db";
-import { streamText } from "@qbs-autonaim/lib/ai";
+import { getAIModel } from "@qbs-autonaim/lib/ai";
+import {
+  createUIMessageStream,
+  JsonToSseTransformStream,
+  smoothStream,
+  streamText,
+} from "ai";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { getSession } from "~/auth/server";
+
+const textPartSchema = z.object({
+  type: z.literal("text"),
+  text: z.string().min(1).max(10000),
+});
+
+const messageSchema = z.object({
+  id: z.string(),
+  role: z.enum(["user", "assistant", "system"]),
+  parts: z.array(textPartSchema),
+});
 
 const requestSchema = z.object({
-  message: z.string().min(1),
-  chatId: z.string().optional(),
+  id: z.string().uuid().optional(),
+  message: messageSchema.optional(),
+  messages: z.array(messageSchema).optional(),
   conversationId: z.string().optional(),
-  messages: z
-    .array(
-      z.object({
-        role: z.enum(["user", "assistant", "system"]),
-        content: z.string(),
-      }),
-    )
-    .optional(),
 });
 
 export const maxDuration = 60;
 
-/**
- * API route для streaming AI чата
- * Адаптирован из ai-chatbot /api/chat/route.ts
- */
+function generateUUID(): string {
+  return crypto.randomUUID();
+}
+
 export async function POST(request: Request) {
+  let requestBody: z.infer<typeof requestSchema>;
+
   try {
     const json = await request.json();
-    const body = requestSchema.parse(json);
+    requestBody = requestSchema.parse(json);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request", details: error.issues },
+        { status: 400 },
+      );
+    }
+    return NextResponse.json({ error: "Bad request" }, { status: 400 });
+  }
 
-    const { message, conversationId, messages = [] } = body;
+  try {
+    const session = await getSession();
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    // Формируем контекст из истории сообщений
-    const historyContext = messages
-      .map(
-        (m) =>
-          `${m.role === "user" ? "Пользователь" : "Ассистент"}: ${m.content}`,
-      )
-      .join("\n\n");
+    const { message, messages, conversationId } = requestBody;
 
-    // Получаем контекст разговора если есть conversationId
+    // Проверка доступа к conversation
     let conversationContext = "";
     if (conversationId) {
       const conv = await db.query.conversation.findFirst({
@@ -52,62 +72,75 @@ export async function POST(request: Request) {
         },
       });
 
-      if (conv?.response?.vacancy) {
-        const vacancy = conv.response.vacancy;
+      if (!conv) {
+        return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
+
+      const workspaceId = conv.response?.vacancy?.workspaceId;
+      if (workspaceId) {
+        const member = await db.query.workspaceMember.findFirst({
+          where: (wm, { and }) =>
+            and(
+              eq(wm.workspaceId, workspaceId),
+              eq(wm.userId, session.user.id),
+            ),
+        });
+
+        if (!member) {
+          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+      }
+
+      if (conv.response?.vacancy) {
+        const vac = conv.response.vacancy;
         conversationContext = `
 Контекст вакансии:
-- Название: ${vacancy.title || "Не указано"}
-- Описание: ${vacancy.description || "Не указано"}
+- Название: ${vac.title || "Не указано"}
+- Описание: ${vac.description || "Не указано"}
 `;
       }
     }
 
-    // Формируем промпт
+    // Формируем сообщения для AI
+    const uiMessages = messages ?? (message ? [message] : []);
+
+    const historyContext = uiMessages
+      .map((m) => {
+        const text = m.parts
+          .filter((p) => p.type === "text")
+          .map((p) => p.text)
+          .join("\n");
+        return `${m.role === "user" ? "Пользователь" : "Ассистент"}: ${text}`;
+      })
+      .join("\n\n");
+
     const prompt = `${conversationContext}
 
 История диалога:
 ${historyContext}
 
-Пользователь: ${message}
+Ответь на последнее сообщение пользователя. Будь вежливым и профессиональным.`;
 
-Ответь на сообщение пользователя. Будь вежливым и профессиональным.`;
+    const stream = createUIMessageStream({
+      execute: async ({ writer }) => {
+        const result = streamText({
+          model: getAIModel(),
+          prompt,
+          experimental_transform: smoothStream({ chunking: "word" }),
+        });
 
-    // Запускаем streaming
-    const result = streamText({
-      prompt,
-      generationName: "ai-chat-stream",
-      entityId: conversationId,
-      metadata: {
-        conversationId,
-        messageCount: messages.length,
+        result.consumeStream();
+
+        writer.merge(result.toUIMessageStream());
+      },
+      generateId: generateUUID,
+      onError: (error) => {
+        console.error("Stream error:", error);
+        return error instanceof Error ? error.message : "Unknown error";
       },
     });
 
-    // Создаём SSE stream
-    const encoder = new TextEncoder();
-    const stream = new ReadableStream({
-      async start(controller) {
-        try {
-          for await (const chunk of result.textStream) {
-            const data = JSON.stringify({ type: "text-delta", data: chunk });
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-          }
-
-          controller.enqueue(
-            encoder.encode(`data: {"type":"done","data":null}\n\n`),
-          );
-          controller.close();
-        } catch (error) {
-          const errorMessage =
-            error instanceof Error ? error.message : "Unknown error";
-          const data = JSON.stringify({ type: "error", data: errorMessage });
-          controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-          controller.close();
-        }
-      },
-    });
-
-    return new Response(stream, {
+    return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
@@ -115,13 +148,6 @@ ${historyContext}
       },
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid request", details: error.issues },
-        { status: 400 },
-      );
-    }
-
     console.error("Chat stream error:", error);
     return NextResponse.json(
       { error: "Internal server error" },

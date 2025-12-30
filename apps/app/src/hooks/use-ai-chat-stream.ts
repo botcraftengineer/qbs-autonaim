@@ -9,24 +9,51 @@ import type {
 } from "~/types/ai-chat";
 
 interface UseAIChatStreamOptions {
-  /** API endpoint для SSE streaming */
   apiEndpoint: string;
-  /** Начальные сообщения */
   initialMessages?: AIChatMessage[];
-  /** ID чата/разговора */
   chatId?: string;
-  /** Callback при получении нового сообщения */
   onMessage?: (message: AIChatMessage) => void;
-  /** Callback при ошибке */
   onError?: (error: Error) => void;
-  /** Callback при завершении */
   onFinish?: (messages: AIChatMessage[]) => void;
 }
 
-/**
- * Хук для работы с AI чатом через SSE (Server-Sent Events)
- * Поддерживает формат ai-sdk createUIMessageStream
- */
+type StreamPartType =
+  | "0" // text-delta
+  | "2" // data
+  | "8" // message-start
+  | "d" // finish-message
+  | "e" // error
+  | "f" // finish-step
+  | "g" // reasoning
+  | "a" // tool-call
+  | "b"; // tool-result
+
+interface StreamPart {
+  type: StreamPartType;
+  value: unknown;
+}
+
+function generateId(): string {
+  return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function parseStreamLine(line: string): StreamPart | null {
+  if (!line.startsWith("data: ")) return null;
+
+  try {
+    const jsonStr = line.slice(6);
+    if (jsonStr === "[DONE]") return { type: "d", value: null };
+
+    const parsed = JSON.parse(jsonStr);
+    if (Array.isArray(parsed) && parsed.length >= 2) {
+      return { type: parsed[0] as StreamPartType, value: parsed[1] };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export function useAIChatStream({
   apiEndpoint,
   initialMessages = [],
@@ -41,26 +68,9 @@ export function useAIChatStream({
 
   const abortControllerRef = useRef<AbortController | null>(null);
   const lastUserMessageRef = useRef<string>("");
+  const messagesRef = useRef<AIChatMessage[]>(messages);
 
-  const generateId = useCallback(
-    () => `msg-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-    [],
-  );
-
-  const parseSSELine = useCallback(
-    (line: string): { type: string; data: unknown } | null => {
-      if (!line.startsWith("data: ")) return null;
-
-      try {
-        const jsonStr = line.slice(6);
-        if (jsonStr === "[DONE]") return { type: "done", data: null };
-        return JSON.parse(jsonStr);
-      } catch {
-        return null;
-      }
-    },
-    [],
-  );
+  messagesRef.current = messages;
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -70,14 +80,19 @@ export function useAIChatStream({
       setError(null);
       setStatus("submitted");
 
+      const userMessageId = generateId();
       const userMessage: AIChatMessage = {
-        id: generateId(),
+        id: userMessageId,
         role: "user",
         parts: [{ type: "text", text: content }],
         createdAt: new Date(),
       };
 
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => {
+        const updated = [...prev, userMessage];
+        messagesRef.current = updated;
+        return updated;
+      });
 
       const assistantMessageId = generateId();
       const assistantMessage: AIChatMessage = {
@@ -87,11 +102,16 @@ export function useAIChatStream({
         createdAt: new Date(),
       };
 
-      setMessages((prev) => [...prev, assistantMessage]);
+      setMessages((prev) => {
+        const updated = [...prev, assistantMessage];
+        messagesRef.current = updated;
+        return updated;
+      });
 
       abortControllerRef.current = new AbortController();
 
       try {
+        const currentMessages = messagesRef.current;
         const response = await fetch(apiEndpoint, {
           method: "POST",
           headers: {
@@ -99,15 +119,22 @@ export function useAIChatStream({
             Accept: "text/event-stream",
           },
           body: JSON.stringify({
-            message: content,
-            chatId,
-            messages: messages.map((m) => ({
-              role: m.role,
-              content: m.parts
-                .filter((p): p is TextPart => p.type === "text")
-                .map((p) => p.text)
-                .join("\n"),
-            })),
+            id: chatId,
+            message: {
+              id: userMessageId,
+              role: "user",
+              parts: [{ type: "text", text: content }],
+            },
+            messages: currentMessages
+              .filter((m) => m.role !== "assistant" || m.parts.length > 0)
+              .map((m) => ({
+                id: m.id,
+                role: m.role,
+                parts: m.parts
+                  .filter((p): p is TextPart => p.type === "text")
+                  .map((p) => ({ type: "text" as const, text: p.text })),
+              })),
+            conversationId: chatId,
           }),
           signal: abortControllerRef.current.signal,
         });
@@ -141,13 +168,14 @@ export function useAIChatStream({
             const trimmedLine = line.trim();
             if (!trimmedLine) continue;
 
-            const parsed = parseSSELine(trimmedLine);
+            const parsed = parseStreamLine(trimmedLine);
             if (!parsed) continue;
 
-            const { type, data } = parsed;
+            const { type, value: data } = parsed;
 
             switch (type) {
-              case "text-delta": {
+              case "0": {
+                // text-delta
                 if (!currentTextPart) {
                   currentTextPart = { type: "text", text: "" };
                   currentParts.push(currentTextPart);
@@ -156,7 +184,8 @@ export function useAIChatStream({
                 break;
               }
 
-              case "reasoning": {
+              case "g": {
+                // reasoning
                 currentParts.push({
                   type: "reasoning",
                   text: data as string,
@@ -164,42 +193,48 @@ export function useAIChatStream({
                 break;
               }
 
-              case "tool-call": {
+              case "a": {
+                // tool-call
                 const toolData = data as {
-                  id: string;
-                  name: string;
+                  toolCallId: string;
+                  toolName: string;
                   args: unknown;
                 };
                 currentParts.push({
                   type: "tool-call",
-                  toolCallId: toolData.id,
-                  toolName: toolData.name,
+                  toolCallId: toolData.toolCallId,
+                  toolName: toolData.toolName,
                   args: toolData.args,
                 });
                 break;
               }
 
-              case "tool-result": {
-                const resultData = data as { id: string; result: unknown };
+              case "b": {
+                // tool-result
+                const resultData = data as {
+                  toolCallId: string;
+                  result: unknown;
+                };
                 currentParts.push({
                   type: "tool-result",
-                  toolCallId: resultData.id,
+                  toolCallId: resultData.toolCallId,
                   result: resultData.result,
                 });
                 break;
               }
 
-              case "error": {
+              case "e": {
+                // error
                 throw new Error(data as string);
               }
 
-              case "done": {
-                // Stream завершён
+              case "d":
+              case "f": {
+                // finish
                 break;
               }
             }
 
-            // Обновляем сообщение
             setMessages((prev) =>
               prev.map((msg) =>
                 msg.id === assistantMessageId
@@ -210,7 +245,6 @@ export function useAIChatStream({
           }
         }
 
-        // Финальное обновление
         const finalMessage: AIChatMessage = {
           id: assistantMessageId,
           role: "assistant",
@@ -225,7 +259,10 @@ export function useAIChatStream({
         );
 
         onMessage?.(finalMessage);
-        onFinish?.([...messages, userMessage, finalMessage]);
+        setMessages((prev) => {
+          onFinish?.(prev);
+          return prev;
+        });
         setStatus("idle");
       } catch (err) {
         if (err instanceof Error && err.name === "AbortError") {
@@ -245,16 +282,7 @@ export function useAIChatStream({
         abortControllerRef.current = null;
       }
     },
-    [
-      apiEndpoint,
-      chatId,
-      generateId,
-      messages,
-      onMessage,
-      onError,
-      onFinish,
-      parseSSELine,
-    ],
+    [apiEndpoint, chatId, onMessage, onError, onFinish],
   );
 
   const stop = useCallback(() => {
@@ -273,28 +301,25 @@ export function useAIChatStream({
 
     setMessages((prev) => {
       let lastAssistantIndex = -1;
-      for (let i = prev.length - 1; i >= 0; i--) {
-        const msg = prev[i];
-        if (msg && msg.role === "assistant") {
-          lastAssistantIndex = i;
-          break;
-        }
-      }
-      if (lastAssistantIndex === -1) return prev;
-      return prev.slice(0, lastAssistantIndex);
-    });
-
-    setMessages((prev) => {
       let lastUserIndex = -1;
+
       for (let i = prev.length - 1; i >= 0; i--) {
         const msg = prev[i];
-        if (msg && msg.role === "user") {
-          lastUserIndex = i;
-          break;
+        if (msg) {
+          if (lastAssistantIndex === -1 && msg.role === "assistant") {
+            lastAssistantIndex = i;
+          }
+          if (lastUserIndex === -1 && msg.role === "user") {
+            lastUserIndex = i;
+          }
         }
+        if (lastAssistantIndex !== -1 && lastUserIndex !== -1) break;
       }
-      if (lastUserIndex === -1) return prev;
-      return prev.slice(0, lastUserIndex);
+
+      if (lastAssistantIndex === -1 || lastUserIndex === -1) return prev;
+
+      const cutIndex = Math.min(lastAssistantIndex, lastUserIndex);
+      return prev.slice(0, cutIndex);
     });
 
     await sendMessage(lastUserMessageRef.current);
