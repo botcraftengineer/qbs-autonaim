@@ -31,7 +31,7 @@
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
-    "@qbs-autonaim/prompts": "workspace:*",
+    "@qbs-autonaim/ai": "workspace:*",
     "@qbs-autonaim/shared": "workspace:*",
     "file-type": "21.2.0",
     "hono": "4.11.3",

@@ -1,8 +1,8 @@
+import { AgentFactory } from "@qbs-autonaim/ai";
 import { db } from "@qbs-autonaim/db/client";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
 import type { getInterviewStartData } from "@qbs-autonaim/lib";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { AgentFactory } from "@qbs-autonaim/prompts";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { inngest } from "../../client";
 import type { BotSettings, PromptStage } from "./types";

@@ -16,7 +16,7 @@
 Проводит интервью с кандидатом.
 
 ```typescript
-import { InterviewerAgentV2 } from "@qbs-autonaim/prompts";
+import { InterviewerAgentV2 } from "@qbs-autonaim/ai";
 
 const agent = new InterviewerAgentV2({ model: getAIModel() });
 
@@ -32,7 +32,7 @@ const result = await agent.execute({
 Определяет необходимость эскалации к человеку.
 
 ```typescript
-import { EscalationDetectorAgentV2 } from "@qbs-autonaim/prompts";
+import { EscalationDetectorAgentV2 } from "@qbs-autonaim/ai";
 
 const agent = new EscalationDetectorAgentV2({ model: getAIModel() });
 
@@ -46,7 +46,7 @@ const result = await agent.execute({
 Генерирует финальное сообщение после интервью.
 
 ```typescript
-import { InterviewCompletionAgentV2 } from "@qbs-autonaim/prompts";
+import { InterviewCompletionAgentV2 } from "@qbs-autonaim/ai";
 
 const agent = new InterviewCompletionAgentV2({ model: getAIModel() });
 
@@ -60,7 +60,7 @@ const result = await agent.execute({
 Координирует работу всех агентов.
 
 ```typescript
-import { InterviewOrchestratorV2 } from "@qbs-autonaim/prompts";
+import { InterviewOrchestratorV2 } from "@qbs-autonaim/ai";
 
 const orchestrator = new InterviewOrchestratorV2({
   model: getAIModel(),
@@ -86,7 +86,7 @@ interface ToolLoopAgentConfig {
 
 ```typescript
 import { getAIModel } from "@qbs-autonaim/lib";
-import { InterviewerAgentV2 } from "@qbs-autonaim/prompts";
+import { InterviewerAgentV2 } from "@qbs-autonaim/ai";
 
 const model = getAIModel();
 const agent = new InterviewerAgentV2({ model });
@@ -103,7 +103,7 @@ if (result.success) {
 ### С оркестратором
 
 ```typescript
-import { InterviewOrchestratorV2 } from "@qbs-autonaim/prompts";
+import { InterviewOrchestratorV2 } from "@qbs-autonaim/ai";
 
 const orchestrator = new InterviewOrchestratorV2({
   model: getAIModel(),

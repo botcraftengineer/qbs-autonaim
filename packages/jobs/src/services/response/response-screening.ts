@@ -1,3 +1,4 @@
+import { buildResponseScreeningPrompt } from "@qbs-autonaim/ai";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
@@ -6,7 +7,6 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
-import { buildResponseScreeningPrompt } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";
 import { extractJsonFromText } from "../../utils/json-extractor";
@@ -146,7 +146,7 @@ export async function screenResponse(
     // Обновляем статус и язык резюме
     await db
       .update(vacancyResponse)
-      .set({ 
+      .set({
         status: RESPONSE_STATUS.EVALUATED,
         resumeLanguage: result.resumeLanguage,
       })

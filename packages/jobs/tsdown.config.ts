@@ -5,9 +5,6 @@ const isProduction = process.env.NODE_ENV === "production";
 export default defineConfig({
   entry: ["src/**/*.ts", "src/**/*.tsx"],
   format: ["esm"],
-  dts: {
-    ignoreErrors: true,
-  },
   sourcemap: false,
   clean: true,
   minify: isProduction,
@@ -18,7 +15,7 @@ export default defineConfig({
     "@qbs-autonaim/emails",
     "@qbs-autonaim/db",
     "@qbs-autonaim/lib",
-    "@qbs-autonaim/prompts",
+    "@qbs-autonaim/ai",
     "@qbs-autonaim/tg-client",
   ],
 });

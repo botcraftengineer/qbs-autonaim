@@ -6,9 +6,6 @@ export default defineConfig({
     "sdk/client": "src/sdk/client.ts",
   },
   format: ["esm"],
-  dts: {
-    ignoreErrors: true,
-  },
   clean: true,
   outDir: "dist",
   sourcemap: false,
@@ -20,7 +17,7 @@ export default defineConfig({
     "@qbs-autonaim/config",
     "@qbs-autonaim/db",
     "@qbs-autonaim/lib",
-    "@qbs-autonaim/prompts",
+    "@qbs-autonaim/ai",
     "hono",
     "zod",
   ],

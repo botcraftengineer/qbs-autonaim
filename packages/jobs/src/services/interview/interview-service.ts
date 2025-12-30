@@ -1,8 +1,8 @@
+import { AgentFactory, InterviewOrchestrator } from "@qbs-autonaim/ai";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { conversation } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { AgentFactory, InterviewOrchestrator } from "@qbs-autonaim/prompts";
 import { stripHtml } from "string-strip-html";
 import type {
   InterviewAnalysis,

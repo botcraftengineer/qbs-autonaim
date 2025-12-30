@@ -1,5 +1,5 @@
+import { buildTelegramUsernameExtractionPrompt } from "@qbs-autonaim/ai";
 import { generateText } from "@qbs-autonaim/lib/ai";
-import { buildTelegramUsernameExtractionPrompt } from "@qbs-autonaim/prompts";
 import { createLogger, TELEGRAM } from "../base";
 
 const logger = createLogger("TelegramUsername");

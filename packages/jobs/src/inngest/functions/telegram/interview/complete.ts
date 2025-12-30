@@ -1,3 +1,4 @@
+import { AgentFactory } from "@qbs-autonaim/ai";
 import {
   and,
   conversation,
@@ -10,7 +11,6 @@ import {
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
-import { AgentFactory } from "@qbs-autonaim/prompts";
 import {
   createInterviewScoring,
   getInterviewContext,

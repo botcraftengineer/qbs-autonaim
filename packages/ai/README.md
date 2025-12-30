@@ -1,11 +1,11 @@
-# @qbs-autonaim/prompts
+# @qbs-autonaim/ai
 
 Пакет для управления промптами AI-ассистентов в проекте QBS Автонайм.
 
 ## Установка
 
 ```bash
-bun add @qbs-autonaim/prompts
+bun add @qbs-autonaim/ai
 ```
 
 ## Использование
@@ -13,7 +13,7 @@ bun add @qbs-autonaim/prompts
 ### Системные промпты
 
 ```typescript
-import { SYSTEM_PROMPTS } from "@qbs-autonaim/prompts";
+import { SYSTEM_PROMPTS } from "@qbs-autonaim/ai";
 
 const systemMessage = SYSTEM_PROMPTS.RESUME_ANALYZER;
 ```
@@ -21,7 +21,7 @@ const systemMessage = SYSTEM_PROMPTS.RESUME_ANALYZER;
 ### Промпты для вакансий
 
 ```typescript
-import { buildVacancyRequirementsExtractionPrompt } from "@qbs-autonaim/prompts";
+import { buildVacancyRequirementsExtractionPrompt } from "@qbs-autonaim/ai";
 
 const prompt = buildVacancyRequirementsExtractionPrompt(
   "Senior Frontend Developer",
@@ -35,7 +35,7 @@ const prompt = buildVacancyRequirementsExtractionPrompt(
 import { 
   buildResponseScreeningPrompt,
   buildFullResumeScreeningPrompt 
-} from "@qbs-autonaim/prompts";
+} from "@qbs-autonaim/ai";
 
 // Скрининг отклика
 const prompt = buildResponseScreeningPrompt(responseData, requirements);
@@ -50,7 +50,7 @@ const resumePrompt = buildFullResumeScreeningPrompt(requirements, resumeData);
 import { 
   buildInterviewQuestionPrompt,
   buildInterviewScoringPrompt 
-} from "@qbs-autonaim/prompts";
+} from "@qbs-autonaim/ai";
 
 // Генерация следующего вопроса
 const questionPrompt = buildInterviewQuestionPrompt(interviewContext);
@@ -65,7 +65,7 @@ const scoringPrompt = buildInterviewScoringPrompt(scoringContext);
 import { 
   buildCandidateWelcomePrompt,
   buildTelegramUsernameExtractionPrompt 
-} from "@qbs-autonaim/prompts";
+} from "@qbs-autonaim/ai";
 
 // Приветственное сообщение
 const welcomePrompt = buildCandidateWelcomePrompt(welcomeContext);
@@ -77,7 +77,7 @@ const extractPrompt = buildTelegramUsernameExtractionPrompt(contactsJson);
 ### Шаблоны промптов
 
 ```typescript
-import { PROMPT_TEMPLATES, formatPrompt } from "@qbs-autonaim/prompts";
+import { PROMPT_TEMPLATES, formatPrompt } from "@qbs-autonaim/ai";
 
 const template = PROMPT_TEMPLATES.TEXT_ANALYSIS.user;
 const prompt = formatPrompt(template, {

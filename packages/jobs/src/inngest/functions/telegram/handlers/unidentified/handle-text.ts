@@ -1,5 +1,5 @@
+import { AgentFactory } from "@qbs-autonaim/ai";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { AgentFactory } from "@qbs-autonaim/prompts";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
 import { createOrUpdateTempConversation, extractPinCode } from "../../utils";
