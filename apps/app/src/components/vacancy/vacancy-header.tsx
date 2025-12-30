@@ -1,9 +1,7 @@
 "use client";
 
-import type { AppRouter } from "@qbs-autonaim/api";
 import { Badge, Button, DeleteVacancyDialog } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { TRPCClientError } from "@trpc/client";
 import { ExternalLink, MapPin, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -69,7 +67,7 @@ export function VacancyHeader({
         setIsDeleteDialogOpen(false);
         router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`);
       },
-      onError: (error: TRPCClientError<AppRouter>) => {
+      onError: (error) => {
         toast.error(`Ошибка удаления: ${error.message}`);
       },
     }),

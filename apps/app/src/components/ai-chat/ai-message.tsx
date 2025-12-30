@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@qbs-autonaim/ui";
-import { ChevronDown, Sparkles, User } from "lucide-react";
+import { ChevronDown, Sparkles } from "lucide-react";
 import { memo, useState } from "react";
 import {
   type AIChatMessage,
@@ -16,10 +16,6 @@ interface AIMessageProps {
   isReadonly?: boolean;
 }
 
-/**
- * Компонент отображения сообщения AI чата
- * Адаптирован из ai-chatbot message.tsx
- */
 function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
   const isUser = message.role === "user";
   const [isReasoningExpanded, setIsReasoningExpanded] = useState(false);
@@ -38,7 +34,6 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
     <article
       className="group/message w-full animate-in fade-in duration-200"
       data-role={message.role}
-      aria-label={`Сообщение от ${isUser ? "вас" : "ассистента"}`}
     >
       <div
         className={cn("flex w-full items-start gap-2 md:gap-3", {
@@ -54,7 +49,8 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
         )}
 
         <div
-          className={cn("flex flex-col gap-2", {
+          className={cn("flex flex-col", {
+            "gap-2 md:gap-4": textParts.length > 0,
             "w-full": !isUser,
             "max-w-[calc(100%-2.5rem)] sm:max-w-[min(fit-content,80%)]": isUser,
           })}
@@ -71,7 +67,7 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
             </div>
           )}
 
-          {/* Reasoning (мышление модели) */}
+          {/* Reasoning */}
           {reasoningParts.length > 0 && (
             <ReasoningBlock
               parts={reasoningParts}
@@ -83,26 +79,27 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
 
           {/* Текстовые части */}
           {textParts.map((part) => (
-            <div
-              key={getPartKey(part, message.id)}
-              className={cn(
-                "wrap-break-word rounded-2xl px-3 py-2",
-                isUser
-                  ? "bg-primary text-primary-foreground text-right"
-                  : "bg-muted text-foreground text-left",
-              )}
-            >
-              <p className="whitespace-pre-wrap text-sm leading-relaxed">
-                {part.text}
-              </p>
+            <div key={getPartKey(part, message.id)}>
+              <div
+                className={cn(
+                  "wrap-break-word w-fit rounded-2xl px-3 py-2",
+                  isUser
+                    ? "bg-primary text-primary-foreground text-right"
+                    : "bg-transparent px-0 py-0 text-left text-foreground",
+                )}
+              >
+                <p className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {part.text}
+                </p>
+              </div>
             </div>
           ))}
 
           {/* Индикатор загрузки */}
           {isLoading && !isUser && textParts.length === 0 && (
-            <div className="flex items-center gap-1 text-muted-foreground text-sm">
+            <div className="flex items-center gap-1 p-0 text-muted-foreground text-sm">
               <span className="animate-pulse">Думаю</span>
-              <span className="inline-flex">
+              <span className="inline-flex" aria-hidden="true">
                 <span className="animate-bounce [animation-delay:0ms]">.</span>
                 <span className="animate-bounce [animation-delay:150ms]">
                   .
@@ -113,38 +110,12 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
               </span>
             </div>
           )}
-
-          {/* Время сообщения */}
-          <time
-            className={cn(
-              "text-xs",
-              isUser
-                ? "text-right text-muted-foreground"
-                : "text-muted-foreground",
-            )}
-            dateTime={message.createdAt.toISOString()}
-          >
-            {message.createdAt.toLocaleTimeString("ru-RU", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </time>
         </div>
-
-        {/* Аватар пользователя */}
-        {isUser && (
-          <div className="-mt-1 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
-            <User className="size-4" aria-hidden="true" />
-          </div>
-        )}
       </div>
     </article>
   );
 }
 
-/**
- * Компонент для отображения файлов
- */
 function FileAttachment({ part }: { part: MessagePart }) {
   if (part.type !== "file") return null;
 
@@ -192,9 +163,6 @@ function FileAttachment({ part }: { part: MessagePart }) {
   );
 }
 
-/**
- * Компонент для отображения reasoning (мышления модели)
- */
 function ReasoningBlock({
   parts,
   isExpanded,
@@ -216,7 +184,7 @@ function ReasoningBlock({
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between px-3 py-2 text-left text-sm text-muted-foreground hover:bg-muted/80"
+        className="flex w-full items-center justify-between px-3 py-2 text-left text-muted-foreground text-sm hover:bg-muted/80"
         aria-expanded={isExpanded}
       >
         <span className="flex items-center gap-2">
@@ -229,11 +197,12 @@ function ReasoningBlock({
             "size-4 transition-transform",
             isExpanded && "rotate-180",
           )}
+          aria-hidden="true"
         />
       </button>
       {isExpanded && (
         <div className="border-t px-3 py-2">
-          <p className="whitespace-pre-wrap text-xs text-muted-foreground">
+          <p className="whitespace-pre-wrap text-muted-foreground text-xs">
             {reasoningText}
           </p>
         </div>

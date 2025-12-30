@@ -20,7 +20,7 @@ const startWebInterviewInputSchema = z.object({
   token: z.string().min(1),
   freelancerInfo: z.object({
     name: z.string().min(1, "Имя обязательно").max(500),
-    email: z.string().email("Некорректный email"),
+    email: z.string().email("Некорректный email").optional(),
     platformProfileUrl: platformProfileUrlSchema,
     phone: z.string().max(50).optional(),
     telegram: z.string().max(100).optional(),

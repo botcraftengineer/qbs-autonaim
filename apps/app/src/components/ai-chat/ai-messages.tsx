@@ -15,10 +15,6 @@ interface AIMessagesProps {
   emptyStateComponent?: React.ReactNode;
 }
 
-/**
- * Компонент списка сообщений AI чата
- * Адаптирован из ai-chatbot messages.tsx
- */
 function PureAIMessages({
   messages,
   status,
@@ -36,14 +32,11 @@ function PureAIMessages({
     <div className="relative flex-1">
       <div
         ref={containerRef}
-        className="absolute inset-0 touch-pan-y overflow-y-auto overscroll-contain"
+        className="absolute inset-0 touch-pan-y overflow-y-auto"
       >
         <div className="mx-auto flex min-w-0 max-w-4xl flex-col gap-4 px-2 py-4 md:gap-6 md:px-4">
-          {/* Пустое состояние */}
-          {messages.length === 0 &&
-            (emptyStateComponent || <DefaultEmptyState />)}
+          {messages.length === 0 && emptyStateComponent}
 
-          {/* Сообщения */}
           {messages.map((message, index) => (
             <AIMessage
               key={message.id}
@@ -53,10 +46,8 @@ function PureAIMessages({
             />
           ))}
 
-          {/* Индикатор "думает" */}
           {isSubmitted && <ThinkingIndicator />}
 
-          {/* Якорь для скролла */}
           <div
             ref={endRef}
             className="min-h-[24px] min-w-[24px] shrink-0"
@@ -65,12 +56,11 @@ function PureAIMessages({
         </div>
       </div>
 
-      {/* Кнопка "Вниз" */}
       <button
         type="button"
         aria-label="Прокрутить вниз"
         className={cn(
-          "absolute bottom-4 left-1/2 z-10 -translate-x-1/2 rounded-full border bg-background p-2 shadow-lg transition-all hover:bg-muted",
+          "-translate-x-1/2 absolute bottom-4 left-1/2 z-10 rounded-full border bg-background p-2 shadow-lg transition-all hover:bg-muted",
           isAtBottom
             ? "pointer-events-none scale-0 opacity-0"
             : "pointer-events-auto scale-100 opacity-100",
@@ -79,17 +69,6 @@ function PureAIMessages({
       >
         <ArrowDown className="size-4" />
       </button>
-    </div>
-  );
-}
-
-function DefaultEmptyState() {
-  return (
-    <div className="flex min-h-[300px] items-center justify-center">
-      <div className="text-center text-muted-foreground">
-        <p className="text-sm">Начните диалог</p>
-        <p className="mt-1 text-xs">Напишите сообщение, чтобы начать</p>
-      </div>
     </div>
   );
 }

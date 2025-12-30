@@ -2,7 +2,8 @@
 
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, Loader2, Wifi, WifiOff } from "lucide-react";
+import { motion } from "framer-motion";
+import { AlertCircle, Loader2, Sparkles } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import { useTRPC } from "~/trpc/react";
@@ -10,49 +11,65 @@ import { convertLegacyMessage } from "~/types/ai-chat";
 import { AIChatInput } from "./ai-chat-input";
 import { AIMessages } from "./ai-messages";
 
-// Статичный компонент на уровне модуля для стабильной ссылки
-const INTERVIEW_EMPTY_STATE = (
-  <div className="flex min-h-[300px] items-center justify-center">
-    <div className="text-center text-muted-foreground">
-      <p className="text-sm">Начните диалог</p>
-      <p className="mt-1 text-xs">Напишите сообщение, чтобы начать интервью</p>
+function InterviewGreeting() {
+  return (
+    <div className="mx-auto mt-8 flex size-full max-w-3xl flex-col justify-center px-4 md:mt-16 md:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20"
+      >
+        <Sparkles className="size-6 text-primary" />
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="font-semibold text-xl md:text-2xl"
+      >
+        Добро пожаловать!
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="mt-1 text-muted-foreground text-xl md:text-2xl"
+      >
+        Готовы начать интервью?
+      </motion.div>
+      <motion.p
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mt-4 text-muted-foreground text-sm"
+      >
+        Напишите сообщение, чтобы начать диалог с AI-ассистентом
+      </motion.p>
     </div>
-  </div>
-);
+  );
+}
 
 interface InterviewChatProps {
-  /** ID разговора/response */
   conversationId: string;
-  /** API endpoint для streaming */
   apiEndpoint?: string;
-  /** Показывать статус подключения */
-  showConnectionStatus?: boolean;
-  /** CSS класс */
   className?: string;
 }
 
-/**
- * Компонент чата для интервью с загрузкой истории через tRPC
- */
 export function InterviewChat({
   conversationId,
   apiEndpoint = "/api/chat/stream",
-  showConnectionStatus = true,
   className,
 }: InterviewChatProps) {
   const trpc = useTRPC();
   const [isOnline, setIsOnline] = useState(true);
-  const recoveryTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isInitializedRef = useRef(false);
+  const currentConversationIdRef = useRef(conversationId);
 
-  // Загружаем историю сообщений
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery(
-    trpc.freelancePlatforms.getChatHistory.queryOptions({
-      conversationId,
-    }),
+    trpc.freelancePlatforms.getChatHistory.queryOptions({ conversationId }),
   );
 
-  // Конвертируем legacy сообщения в новый формат
   const initialMessages = useMemo(() => {
     if (!chatHistory?.messages) return [];
     return chatHistory.messages.map(convertLegacyMessage);
@@ -69,80 +86,47 @@ export function InterviewChat({
     apiEndpoint,
     initialMessages: [],
     chatId: conversationId,
-    onError: (err) => {
-      console.error("Chat error:", err);
-      setIsOnline(false);
-
-      // Очищаем предыдущий таймер, если есть
-      if (recoveryTimeoutRef.current) {
-        clearTimeout(recoveryTimeoutRef.current);
-      }
-
-      // Устанавливаем новый таймер восстановления
-      recoveryTimeoutRef.current = setTimeout(() => {
-        setIsOnline(true);
-        recoveryTimeoutRef.current = null;
-      }, 5000);
-    },
+    onError: () => setIsOnline(false),
   });
 
-  // Отслеживаем текущий conversationId для сброса при смене
-  const currentConversationIdRef = useRef(conversationId);
-
-  // Устанавливаем начальные сообщения после загрузки истории
+  // Синхронизация initialMessages
   useEffect(() => {
-    // Сбрасываем флаг при смене conversationId
     if (currentConversationIdRef.current !== conversationId) {
       isInitializedRef.current = false;
       currentConversationIdRef.current = conversationId;
     }
-
     if (!isInitializedRef.current && initialMessages.length > 0) {
       setMessages(initialMessages);
       isInitializedRef.current = true;
     }
   }, [conversationId, initialMessages, setMessages]);
 
-  // Отслеживаем онлайн статус
+  // Online/offline
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
-
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
-
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
 
-  // Очищаем таймер восстановления при размонтировании
-  useEffect(() => {
-    return () => {
-      if (recoveryTimeoutRef.current) {
-        clearTimeout(recoveryTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleSendMessage = async (content: string) => {
-    await sendMessage(content);
-  };
-
   const status = chatHistory?.status || "ACTIVE";
   const isCompleted = status === "COMPLETED";
   const isCancelled = status === "CANCELLED";
-  const isDisabled = isCompleted || isCancelled || !isOnline;
+  const isReadonly = isCompleted || isCancelled;
 
-  // Показываем загрузку
   if (isLoadingHistory) {
     return (
-      <div className={cn("flex h-full flex-col", className)}>
+      <div
+        className={cn("flex h-dvh min-w-0 flex-col bg-background", className)}
+      >
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="size-8 animate-spin" />
-            <p className="text-sm">Загрузка истории…</p>
+            <p className="text-sm">Загрузка…</p>
           </div>
         </div>
       </div>
@@ -150,85 +134,63 @@ export function InterviewChat({
   }
 
   return (
-    <div className={cn("flex h-full flex-col", className)}>
-      {/* Заголовок */}
-      <header className="shrink-0 border-b bg-background px-4 py-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-semibold text-foreground">AI Интервью</h1>
-            <p className="text-sm text-muted-foreground">
-              {isCompleted && "Интервью завершено"}
-              {isCancelled && "Интервью отменено"}
-              {!isCompleted && !isCancelled && "Активный диалог"}
-            </p>
-          </div>
-
-          {/* Статус подключения */}
-          {showConnectionStatus && (
-            <output
-              className={cn(
-                "flex items-center gap-1.5 rounded-full px-2 py-1 text-xs",
-                isOnline
-                  ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                  : "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-              )}
-              aria-live="polite"
-            >
-              {isOnline ? (
-                <>
-                  <Wifi className="size-3" aria-hidden="true" />
-                  <span>Онлайн</span>
-                </>
-              ) : (
-                <>
-                  <WifiOff className="size-3" aria-hidden="true" />
-                  <span>Переподключение…</span>
-                </>
-              )}
-            </output>
-          )}
+    <div
+      className={cn(
+        "flex h-dvh min-w-0 touch-pan-y flex-col bg-background",
+        className,
+      )}
+    >
+      <header className="sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b bg-background px-4 py-2">
+        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
+          <Sparkles className="size-4 text-primary" />
+        </div>
+        <div className="flex-1">
+          <h1 className="font-medium text-sm">AI Интервью</h1>
+          <p className="text-muted-foreground text-xs">
+            {isCompleted && "Завершено"}
+            {isCancelled && "Отменено"}
+            {!isReadonly && (isOnline ? "Онлайн" : "Переподключение…")}
+          </p>
         </div>
       </header>
 
-      {/* Ошибка */}
       {error && (
         <div
-          className="mx-4 mt-4 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+          className="mx-4 mt-4 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive text-sm"
           role="alert"
         >
-          <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
+          <AlertCircle className="size-4 shrink-0" />
           <p>{error.message}</p>
         </div>
       )}
 
-      {/* Сообщения */}
       <AIMessages
         messages={messages}
         status={chatStatus}
-        isReadonly={isDisabled}
-        emptyStateComponent={INTERVIEW_EMPTY_STATE}
+        isReadonly={isReadonly}
+        emptyStateComponent={<InterviewGreeting />}
       />
 
-      {/* Ввод */}
-      {!isCompleted && !isCancelled && (
-        <AIChatInput
-          onSendMessage={handleSendMessage}
-          onStop={stop}
-          status={chatStatus}
-          disabled={!isOnline}
-          placeholder={
-            !isOnline
-              ? "Переподключение…"
-              : chatStatus === "streaming"
-                ? "Ожидайте ответа…"
-                : "Напишите сообщение…"
-          }
-        />
-      )}
+      <div className="sticky bottom-0 z-10 mx-auto flex w-full max-w-4xl gap-2 bg-background px-2 pb-3 md:px-4 md:pb-4">
+        {!isReadonly && (
+          <AIChatInput
+            onSendMessage={sendMessage}
+            onStop={stop}
+            status={chatStatus}
+            disabled={!isOnline}
+            placeholder={
+              !isOnline
+                ? "Переподключение…"
+                : chatStatus === "streaming"
+                  ? "Ожидайте ответа…"
+                  : "Напишите сообщение…"
+            }
+          />
+        )}
+      </div>
 
-      {/* Сообщение о завершении */}
-      {(isCompleted || isCancelled) && (
-        <div className="border-t bg-muted/50 px-4 py-3 text-center text-sm text-muted-foreground">
+      {isReadonly && (
+        <div className="border-t bg-muted/30 px-4 py-3 text-center text-muted-foreground text-sm">
           {isCompleted && "Интервью завершено. Спасибо за участие!"}
           {isCancelled && "Интервью было отменено."}
         </div>

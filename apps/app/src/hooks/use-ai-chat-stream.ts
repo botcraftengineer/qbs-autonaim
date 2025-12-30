@@ -73,18 +73,36 @@ export function useAIChatStream({
   messagesRef.current = messages;
 
   const sendMessage = useCallback(
-    async (content: string) => {
-      if (!content.trim()) return;
+    async (content: string, audioFile?: File) => {
+      if (!content.trim() && !audioFile) return;
 
       lastUserMessageRef.current = content;
       setError(null);
       setStatus("submitted");
 
       const userMessageId = generateId();
+      const userParts: MessagePart[] = [];
+
+      // Добавляем аудио если есть
+      if (audioFile) {
+        const audioUrl = URL.createObjectURL(audioFile);
+        userParts.push({
+          type: "file",
+          url: audioUrl,
+          filename: audioFile.name,
+          mediaType: audioFile.type || "audio/webm",
+        });
+      }
+
+      // Добавляем текст если есть
+      if (content.trim()) {
+        userParts.push({ type: "text", text: content });
+      }
+
       const userMessage: AIChatMessage = {
         id: userMessageId,
         role: "user",
-        parts: [{ type: "text", text: content }],
+        parts: userParts,
         createdAt: new Date(),
       };
 
@@ -112,13 +130,49 @@ export function useAIChatStream({
 
       try {
         const currentMessages = messagesRef.current;
-        const response = await fetch(apiEndpoint, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
-          },
-          body: JSON.stringify({
+
+        // Формируем body - используем FormData если есть аудио
+        let body: BodyInit;
+        const headers: HeadersInit = {
+          Accept: "text/event-stream",
+        };
+
+        if (audioFile) {
+          const formData = new FormData();
+          formData.append("audio", audioFile);
+          formData.append(
+            "data",
+            JSON.stringify({
+              id: chatId,
+              message: {
+                id: userMessageId,
+                role: "user",
+                parts: userParts.map((p) =>
+                  p.type === "file"
+                    ? {
+                        type: "file",
+                        mediaType: p.mediaType,
+                        filename: p.filename,
+                      }
+                    : p,
+                ),
+              },
+              messages: currentMessages
+                .filter((m) => m.role !== "assistant" || m.parts.length > 0)
+                .map((m) => ({
+                  id: m.id,
+                  role: m.role,
+                  parts: m.parts
+                    .filter((p): p is TextPart => p.type === "text")
+                    .map((p) => ({ type: "text" as const, text: p.text })),
+                })),
+              conversationId: chatId,
+            }),
+          );
+          body = formData;
+        } else {
+          headers["Content-Type"] = "application/json";
+          body = JSON.stringify({
             id: chatId,
             message: {
               id: userMessageId,
@@ -135,7 +189,13 @@ export function useAIChatStream({
                   .map((p) => ({ type: "text" as const, text: p.text })),
               })),
             conversationId: chatId,
-          }),
+          });
+        }
+
+        const response = await fetch(apiEndpoint, {
+          method: "POST",
+          headers,
+          body,
           signal: abortControllerRef.current.signal,
         });
 
