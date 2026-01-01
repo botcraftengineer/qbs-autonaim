@@ -123,8 +123,9 @@ export default function CreateGigPage({ params }: PageProps) {
 
       // Обновляем draft из ответа AI
       // Нормализуем estimatedDuration к строке: приоритет AI-ответу, затем wizard
+      const rawDuration = doc.timeline ?? wizardState.timeline?.days;
       const estimatedDuration: string =
-        doc.timeline ?? wizardState.timeline?.days ?? "";
+        rawDuration != null ? String(rawDuration) : "";
 
       setDraft({
         title: doc.title || "",
