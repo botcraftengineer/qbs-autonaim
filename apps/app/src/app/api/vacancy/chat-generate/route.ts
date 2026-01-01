@@ -21,36 +21,92 @@ interface VacancyDocument {
   conditions?: string;
 }
 
-interface JSONExtractionResult {
-  success: boolean;
-  data?: VacancyDocument;
-  error?: string;
-  extractedText?: string;
+/**
+ * Извлекает частичные данные из незавершённого JSON-стрима
+ * Использует regex для извлечения завершённых полей
+ */
+function extractPartialDocument(
+  text: string,
+  fallback?: VacancyDocument,
+): VacancyDocument {
+  const result: VacancyDocument = { ...fallback };
+
+  // Убираем markdown-обёртку если есть
+  const cleanText = text
+    .replace(/^```json\s*/i, "")
+    .replace(/^```\s*/i, "")
+    .replace(/\s*```$/i, "");
+
+  // Извлекаем каждое поле отдельно с помощью regex
+  const fields = [
+    "title",
+    "description",
+    "requirements",
+    "responsibilities",
+    "conditions",
+  ] as const;
+
+  for (const field of fields) {
+    // Ищем паттерн "field": "value" или "field": "value...
+    // Поддерживаем многострочные значения
+    const regex = new RegExp(
+      `"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)(?:"|$)`,
+      "s",
+    );
+    const match = cleanText.match(regex);
+    if (match?.[1]) {
+      // Декодируем escape-последовательности
+      try {
+        result[field] = JSON.parse(`"${match[1]}"`);
+      } catch {
+        // Если не удалось распарсить, используем как есть
+        result[field] = match[1]
+          .replace(/\\n/g, "\n")
+          .replace(/\\"/g, '"')
+          .replace(/\\\\/g, "\\");
+      }
+    }
+  }
+
+  return result;
 }
 
 /**
- * Извлекает сбалансированный JSON-объект из текста
- * Использует счётчик скобок для корректного определения границ объекта
+ * Пытается распарсить полный JSON, с fallback на частичное извлечение
  */
-function extractBalancedJSON(text: string): JSONExtractionResult {
-  // Находим первую открывающую скобку
-  const startIndex = text.indexOf("{");
+function parseVacancyJSON(
+  text: string,
+  fallback?: VacancyDocument,
+): { document: VacancyDocument; isComplete: boolean } {
+  // Убираем markdown-обёртку
+  let cleanText = text.trim();
+  if (cleanText.startsWith("```json")) {
+    cleanText = cleanText.slice(7);
+  } else if (cleanText.startsWith("```")) {
+    cleanText = cleanText.slice(3);
+  }
+  if (cleanText.endsWith("```")) {
+    cleanText = cleanText.slice(0, -3);
+  }
+  cleanText = cleanText.trim();
+
+  // Находим JSON-объект
+  const startIndex = cleanText.indexOf("{");
   if (startIndex === -1) {
     return {
-      success: false,
-      error: "JSON объект не найден в ответе AI",
+      document: extractPartialDocument(text, fallback),
+      isComplete: false,
     };
   }
 
-  // Используем счётчик для поиска соответствующей закрывающей скобки
+  // Ищем закрывающую скобку
   let braceCount = 0;
   let endIndex = -1;
 
-  for (let i = startIndex; i < text.length; i++) {
-    const char = text[i];
-    if (char === "{") {
-      braceCount++;
-    } else if (char === "}") {
+  for (let i = startIndex; i < cleanText.length; i++) {
+    const char = cleanText[i];
+    if (char === "{") braceCount++;
+    else if (char === "}") {
       braceCount--;
       if (braceCount === 0) {
         endIndex = i;
@@ -59,28 +115,27 @@ function extractBalancedJSON(text: string): JSONExtractionResult {
     }
   }
 
+  // Если JSON не завершён, извлекаем частичные данные
   if (endIndex === -1) {
     return {
-      success: false,
-      error: "Незавершённый JSON объект в ответе AI",
+      document: extractPartialDocument(cleanText, fallback),
+      isComplete: false,
     };
   }
 
-  const jsonText = text.substring(startIndex, endIndex + 1);
+  const jsonText = cleanText.substring(startIndex, endIndex + 1);
 
-  // Пытаемся распарсить извлечённый JSON
   try {
     const parsed = JSON.parse(jsonText);
     return {
-      success: true,
-      data: parsed,
-      extractedText: jsonText,
+      document: validateAndNormalizeDocument(parsed, fallback),
+      isComplete: true,
     };
-  } catch (parseError) {
+  } catch {
+    // Если парсинг не удался, извлекаем частичные данные
     return {
-      success: false,
-      error: `Ошибка парсинга JSON: ${parseError instanceof Error ? parseError.message : "неизвестная ошибка"}`,
-      extractedText: jsonText,
+      document: extractPartialDocument(cleanText, fallback),
+      isComplete: false,
     };
   }
 }
@@ -288,15 +343,18 @@ export async function POST(request: Request) {
     }
 
     // Логирование начала AI генерации
+    // Примечание: auditLog.resourceId ожидает UUID, но workspaceId имеет формат prefixed ID (ws_...)
+    // Поэтому логируем в metadata, а resourceId оставляем пустым UUID
     try {
       const auditLogger = new AuditLoggerService(db);
       await auditLogger.logAccess({
         userId: session.user.id,
         action: "ACCESS",
         resourceType: "VACANCY",
-        resourceId: workspaceId,
+        resourceId: "00000000-0000-0000-0000-000000000000", // placeholder UUID для AI генерации
         metadata: {
           action: "vacancy_ai_generation_started",
+          workspaceId, // сохраняем prefixed ID в metadata
           messageLength: sanitizedMessage.length,
           hasConversationHistory: !!sanitizedHistory?.length,
         },
@@ -325,48 +383,49 @@ export async function POST(request: Request) {
     });
 
     // Создание ReadableStream для передачи данных клиенту
-    // result.textStream уже является клоном, безопасным для потребления
     const encoder = new TextEncoder();
     let fullText = "";
+    let lastSentDocument: VacancyDocument | null = null;
+    let chunkCounter = 0;
 
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // Потребляем только наш клон потока (callerStream из ai-client.ts)
-          // Второй клон (loggingStream) потребляется внутри streamText для Langfuse
           for await (const chunk of result.textStream) {
             fullText += chunk;
+            chunkCounter++;
 
-            // Отправляем chunk клиенту
-            controller.enqueue(
-              encoder.encode(`data: ${JSON.stringify({ chunk })}\n\n`),
-            );
+            // Каждые 3 чанка отправляем частичный документ для real-time обновления
+            if (chunkCounter % 3 === 0) {
+              const { document: partialDoc } = parseVacancyJSON(
+                fullText,
+                currentDocument,
+              );
+
+              // Отправляем только если документ изменился
+              const docString = JSON.stringify(partialDoc);
+              const lastDocString = JSON.stringify(lastSentDocument);
+
+              if (docString !== lastDocString) {
+                lastSentDocument = partialDoc;
+                controller.enqueue(
+                  encoder.encode(
+                    `data: ${JSON.stringify({ document: partialDoc, partial: true })}\n\n`,
+                  ),
+                );
+              }
+            }
           }
 
-          // Извлекаем и парсим финальный JSON с надёжной обработкой
-          const extractionResult = extractBalancedJSON(fullText);
-
-          if (!extractionResult.success) {
-            // Отправляем частичные данные и информацию об ошибке
-            controller.enqueue(
-              encoder.encode(
-                `data: ${JSON.stringify({
-                  error: extractionResult.error,
-                  rawText: fullText,
-                  partialDocument: currentDocument || {},
-                  done: true,
-                })}\n\n`,
-              ),
-            );
-            controller.close();
-            return;
-          }
-
-          // Валидируем и нормализуем извлечённый документ
-          const document = validateAndNormalizeDocument(
-            extractionResult.data,
+          // Финальный парсинг
+          const { document, isComplete } = parseVacancyJSON(
+            fullText,
             currentDocument,
           );
+
+          if (!isComplete) {
+            console.warn("JSON parsing incomplete, using partial data");
+          }
 
           // Отправляем финальный документ
           controller.enqueue(
@@ -378,14 +437,19 @@ export async function POST(request: Request) {
           controller.close();
         } catch (error) {
           console.error("Streaming error:", error);
-          // Отправляем структурированную ошибку с контекстом
+
+          // Пытаемся извлечь хоть что-то из накопленного текста
+          const { document: recoveredDoc } = parseVacancyJSON(
+            fullText,
+            currentDocument,
+          );
+
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
+                document: recoveredDoc,
                 error:
                   error instanceof Error ? error.message : "Ошибка генерации",
-                rawText: fullText,
-                partialDocument: currentDocument || {},
                 done: true,
               })}\n\n`,
             ),

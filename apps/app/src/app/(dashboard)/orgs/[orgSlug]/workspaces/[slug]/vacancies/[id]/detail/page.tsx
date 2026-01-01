@@ -13,11 +13,11 @@ import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
 interface VacancyDetailPageProps {
-  params: Promise<{ workspaceSlug: string; id: string }>;
+  params: Promise<{ orgSlug: string; slug: string; id: string }>;
 }
 
 export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
-  const { id } = use(params);
+  const { orgSlug, slug: workspaceSlug, id } = use(params);
   const trpc = useTRPC();
   const { workspaceId } = useWorkspaceContext();
 
@@ -55,10 +55,15 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
 
       <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-6">
         <VacancyHeader
+          vacancyId={vacancy.id}
+          workspaceId={workspaceId ?? ""}
           title={vacancy.title}
           region={vacancy.region}
           url={vacancy.url}
           isActive={vacancy.isActive}
+          orgSlug={orgSlug}
+          workspaceSlug={workspaceSlug}
+          source={vacancy.source}
         />
 
         <VacancyStats

@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
-import { inngest } from "../../../../jobs/src/inngest/client";
 import { protectedProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 

@@ -40,3 +40,11 @@ Best Practices:
 - NEVER create _components folders inside route directories
 - Use route groups ((folder)) for layout organization without URL changes
 - Optimize metadata for SEO
+
+Component Size:
+
+- NEVER create large monolithic components (>150 lines)
+- Split complex UI into small, focused components
+- Each component should have a single responsibility
+- Extract reusable logic into custom hooks
+- Keep render functions clean and readable

@@ -18,7 +18,7 @@ import {
   IconPercentage,
   IconTrendingUp,
 } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
@@ -26,36 +26,30 @@ import { useTRPC } from "~/trpc/react";
 export default function FreelanceAnalyticsPage() {
   const { workspace } = useWorkspace();
   const api = useTRPC();
+  const queryClient = useQueryClient();
 
   const [dateFrom] = useState<string | undefined>(undefined);
   const [dateTo] = useState<string | undefined>(undefined);
 
   const { data, isLoading } = useQuery({
-    queryKey: [
-      "freelancePlatforms.getAnalytics",
-      { workspaceId: workspace?.id ?? "", dateFrom, dateTo },
-    ],
-    queryFn: async () => {
-      if (!workspace?.id) return null;
-      // @ts-expect-error - новый эндпоинт, типы обновятся после перезапуска TS сервера
-      return api.freelancePlatforms.getAnalytics.query({
-        workspaceId: workspace.id,
-        dateFrom,
-        dateTo,
-      });
-    },
+    ...api.freelancePlatforms.getAnalytics.queryOptions({
+      workspaceId: workspace?.id ?? "",
+      dateFrom,
+      dateTo,
+    }),
     enabled: !!workspace?.id,
   });
 
   const handleExport = async () => {
     if (!workspace?.id) return;
 
-    // @ts-expect-error - новый эндпоинт, типы обновятся после перезапуска TS сервера
-    const result = await api.freelancePlatforms.exportAnalytics.query({
-      workspaceId: workspace.id,
-      dateFrom,
-      dateTo,
-    });
+    const result = await queryClient.fetchQuery(
+      api.freelancePlatforms.exportAnalytics.queryOptions({
+        workspaceId: workspace.id,
+        dateFrom,
+        dateTo,
+      }),
+    );
 
     // Создаем Blob с BOM для корректного отображения кириллицы в Excel
     const bom = "\uFEFF";

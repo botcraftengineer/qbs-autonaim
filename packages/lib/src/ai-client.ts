@@ -45,29 +45,27 @@ function teeAsyncIterableStream<T>(
   AsyncIterable<T> & ReadableStream<T>,
   AsyncIterable<T> & ReadableStream<T>,
 ] {
-  const readers: Array<Array<T>> = [[], []];
-  const promises: Array<Promise<IteratorResult<T>> | null> = [null, null];
+  // Буферы для каждого итератора - хранят значения, которые ещё не были прочитаны
+  const buffers: [T[], T[]] = [[], []];
   let sourceIterator: AsyncIterator<T> | null = null;
   let sourceDone = false;
+  // Mutex для предотвращения одновременного чтения из источника
+  let readingPromise: Promise<IteratorResult<T>> | null = null;
 
-  async function read() {
+  async function readFromSource(): Promise<IteratorResult<T>> {
     if (!sourceIterator) {
       sourceIterator = source[Symbol.asyncIterator]();
     }
-    return await sourceIterator.next();
+    return sourceIterator.next();
   }
 
   function makeIterator(index: 0 | 1): AsyncIterator<T> {
     return {
       async next(): Promise<IteratorResult<T>> {
-        const reader = readers[index];
-        const otherIndex = index === 0 ? 1 : 0;
-        const otherReader = readers[otherIndex];
-        const otherPromiseSlot = promises[otherIndex];
-
-        // Если есть буферизованные данные, вернуть их
-        if (reader && reader.length > 0) {
-          const value = reader.shift();
+        // Если есть буферизованные данные для этого итератора, вернуть их
+        const buffer = buffers[index];
+        if (buffer.length > 0) {
+          const value = buffer.shift();
           if (value !== undefined) {
             return { value, done: false };
           }
@@ -78,37 +76,50 @@ function teeAsyncIterableStream<T>(
           return { value: undefined as unknown as T, done: true };
         }
 
-        // Если другой итератор уже читает, подождать его результат
-        if (otherPromiseSlot !== null && otherPromiseSlot !== undefined) {
-          const result = await otherPromiseSlot;
-          promises[otherIndex] = null;
+        // Атомарно проверяем и устанавливаем readingPromise
+        // Если уже идёт чтение, ждём его завершения
+        while (true) {
+          if (readingPromise) {
+            // Другой вызов уже читает - ждём его завершения
+            await readingPromise;
 
-          if (result?.done) {
-            sourceDone = true;
-            return { value: undefined as unknown as T, done: true };
+            // После завершения чтения проверяем буфер снова
+            const bufferedValue = buffer.shift();
+            if (bufferedValue !== undefined) {
+              return { value: bufferedValue, done: false };
+            }
+            if (sourceDone) {
+              return { value: undefined as unknown as T, done: true };
+            }
+            // Если буфер пуст и источник не завершён, пробуем снова
+            continue;
           }
 
-          // Сохранить значение для текущего итератора
-          if (result) {
+          // readingPromise === null, атомарно устанавливаем его
+          const currentReadPromise = readFromSource();
+          readingPromise = currentReadPromise;
+
+          try {
+            const result = await currentReadPromise;
+
+            if (result.done) {
+              sourceDone = true;
+              return { value: undefined as unknown as T, done: true };
+            }
+
+            // Добавляем значение в буфер другого итератора
+            const otherIndex = index === 0 ? 1 : 0;
+            buffers[otherIndex].push(result.value);
+
+            // Возвращаем значение текущему итератору
             return { value: result.value, done: false };
+          } finally {
+            // Очищаем readingPromise только если это наш промис
+            if (readingPromise === currentReadPromise) {
+              readingPromise = null;
+            }
           }
         }
-
-        // Читать из источника
-        const readPromise = read();
-        promises[index] = readPromise;
-        const result = await readPromise;
-        promises[index] = null;
-
-        if (result.done) {
-          sourceDone = true;
-          return { value: undefined as unknown as T, done: true };
-        }
-
-        // Сохранить значение для другого итератора
-        otherReader?.push(result.value);
-
-        return { value: result.value, done: false };
       },
     };
   }

@@ -3,6 +3,7 @@ export * from "./auth";
 export * from "./company";
 export * from "./conversation";
 export * from "./file";
+export * from "./gig";
 export * from "./integration";
 export * from "./interview";
 export * from "./organization";

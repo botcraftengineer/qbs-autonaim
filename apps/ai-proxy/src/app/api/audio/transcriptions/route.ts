@@ -1,20 +1,12 @@
-import { env } from "@qbs-autonaim/config";
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "~/env";
 
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
-  if (!env.OPENAI_API_KEY) {
-    return NextResponse.json(
-      { error: "OPENAI_API_KEY not configured" },
-      { status: 500 },
-    );
-  }
-
   try {
     const formData = await request.formData();
 
-    // Проксируем запрос к OpenAI
     const openaiResponse = await fetch(
       "https://api.openai.com/v1/audio/transcriptions",
       {

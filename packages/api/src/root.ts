@@ -3,6 +3,7 @@ import { companyRouter } from "./routers/company";
 import { filesRouter } from "./routers/files";
 import { freelancePlatformsRouter } from "./routers/freelance-platforms";
 import { funnelRouter } from "./routers/funnel";
+import { gigRouter } from "./routers/gig";
 import { integrationRouter } from "./routers/integration";
 import { organizationRouter } from "./routers/organization";
 import { telegramRouter } from "./routers/telegram";
@@ -15,6 +16,7 @@ import { createTRPCRouter } from "./trpc";
 export const appRouter = createTRPCRouter({
   user: userRouter,
   vacancy: vacancyRouter,
+  gig: gigRouter,
   integration: integrationRouter,
   company: companyRouter,
   telegram: telegramRouter,

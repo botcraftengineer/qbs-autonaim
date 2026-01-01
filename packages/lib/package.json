@@ -30,14 +30,14 @@
     "typecheck": "tsc --noEmit --emitDeclarationOnly false"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "2.0.1",
-    "@ai-sdk/openai": "3.0.1",
+    "@ai-sdk/deepseek": "2.0.2",
+    "@ai-sdk/openai": "3.0.2",
     "@aws-sdk/client-s3": "3.958.0",
     "@aws-sdk/s3-request-presigner": "3.958.0",
     "@qbs-autonaim/config": "workspace:*",
     "@valibot/to-json-schema": "1.5.0",
-    "ai": "6.0.3",
-    "effect": "3.19.13",
+    "ai": "6.0.5",
+    "effect": "3.19.14",
     "langfuse": "3.38.6",
     "sharp": "0.34.5",
     "zod": "4.2.1"
@@ -45,7 +45,7 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/node": "25.0.3",
-    "tsdown": "0.18.3",
+    "tsdown": "0.18.4",
     "typescript": "5.9.3"
   }
 }

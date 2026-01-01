@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -18,10 +19,7 @@ const platformProfileUrlSchema = z
 
 const freelancerInfoSchema = z.object({
   name: z.string().min(1, "Имя обязательно").max(500, "Имя слишком длинное"),
-  email: z.string().email("Некорректный email"),
   platformProfileUrl: platformProfileUrlSchema,
-  phone: z.string().max(50).optional().or(z.literal("")),
-  telegram: z.string().max(100).optional().or(z.literal("")),
 });
 
 type FreelancerInfo = z.infer<typeof freelancerInfoSchema>;
@@ -35,15 +33,15 @@ interface InterviewLandingFormProps {
 const getPlatformPlaceholder = (source: string): string => {
   switch (source.toLowerCase()) {
     case "kwork":
-      return "https://kwork.ru/user/username";
+      return "https://kwork.ru/user/username…";
     case "fl":
-      return "https://fl.ru/users/username/";
+      return "https://fl.ru/users/username/…";
     case "weblancer":
-      return "https://weblancer.net/users/username/";
+      return "https://weblancer.net/users/username/…";
     case "upwork":
-      return "https://upwork.com/freelancers/username";
+      return "https://upwork.com/freelancers/username…";
     default:
-      return "https://kwork.ru/user/username";
+      return "https://kwork.ru/user/username…";
   }
 };
 
@@ -112,7 +110,6 @@ export function InterviewLandingForm({
   const onSubmit = async (data: FreelancerInfo) => {
     setIsSubmitting(true);
 
-    // Проверяем дубликаты
     const duplicateCheck = await checkDuplicateMutation.refetch();
     if (duplicateCheck.data?.isDuplicate) {
       setError("platformProfileUrl", {
@@ -123,13 +120,9 @@ export function InterviewLandingForm({
       return;
     }
 
-    // Trim значения
     const trimmedData = {
       name: data.name.trim(),
-      email: data.email.trim(),
       platformProfileUrl: data.platformProfileUrl.trim(),
-      phone: data.phone?.trim(),
-      telegram: data.telegram?.trim(),
     };
 
     startInterviewMutation.mutate({
@@ -139,10 +132,10 @@ export function InterviewLandingForm({
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       {errors.root && (
         <div
-          className="rounded-md bg-red-50 p-4 text-sm text-red-800"
+          className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"
           role="alert"
           aria-live="polite"
         >
@@ -150,62 +143,41 @@ export function InterviewLandingForm({
         </div>
       )}
 
-      <div>
+      <div className="space-y-1.5">
         <label
           htmlFor="name"
           className="block text-sm font-medium text-gray-700"
         >
-          Имя <span className="text-red-500">*</span>
+          Ваше имя
         </label>
         <input
           {...register("name")}
           id="name"
           type="text"
           autoComplete="name"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-base shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+          placeholder="Иван Иванов…"
           disabled={isSubmitting}
           aria-invalid={errors.name ? "true" : "false"}
           aria-describedby={errors.name ? "name-error" : undefined}
+          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         />
         {errors.name && (
-          <p id="name-error" className="mt-1 text-sm text-red-600">
+          <p
+            id="name-error"
+            className="text-sm text-red-600"
+            aria-live="polite"
+          >
             {errors.name.message}
           </p>
         )}
       </div>
 
-      <div>
-        <label
-          htmlFor="email"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Email <span className="text-red-500">*</span>
-        </label>
-        <input
-          {...register("email")}
-          id="email"
-          type="email"
-          autoComplete="email"
-          inputMode="email"
-          spellCheck={false}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-base shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-          disabled={isSubmitting}
-          aria-invalid={errors.email ? "true" : "false"}
-          aria-describedby={errors.email ? "email-error" : undefined}
-        />
-        {errors.email && (
-          <p id="email-error" className="mt-1 text-sm text-red-600">
-            {errors.email.message}
-          </p>
-        )}
-      </div>
-
-      <div>
+      <div className="space-y-1.5">
         <label
           htmlFor="platformProfileUrl"
           className="block text-sm font-medium text-gray-700"
         >
-          URL профиля на платформе <span className="text-red-500">*</span>
+          Ссылка на профиль
         </label>
         <input
           {...register("platformProfileUrl")}
@@ -215,7 +187,6 @@ export function InterviewLandingForm({
           inputMode="url"
           spellCheck={false}
           placeholder={getPlatformPlaceholder(platformSource)}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-base shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
           disabled={isSubmitting}
           aria-invalid={errors.platformProfileUrl ? "true" : "false"}
           aria-describedby={
@@ -223,73 +194,20 @@ export function InterviewLandingForm({
               ? "platformProfileUrl-error"
               : "platformProfileUrl-help"
           }
+          className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
         />
         {!errors.platformProfileUrl && (
-          <p
-            id="platformProfileUrl-help"
-            className="mt-1 text-sm text-gray-500"
-          >
-            Укажите ссылку на ваш профиль на фриланс-платформе
+          <p id="platformProfileUrl-help" className="text-xs text-gray-500">
+            Ваш профиль на фриланс-платформе
           </p>
         )}
         {errors.platformProfileUrl && (
           <p
             id="platformProfileUrl-error"
-            className="mt-1 text-sm text-red-600"
+            className="text-sm text-red-600"
+            aria-live="polite"
           >
             {errors.platformProfileUrl.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="phone"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Телефон
-        </label>
-        <input
-          {...register("phone")}
-          id="phone"
-          type="tel"
-          autoComplete="tel"
-          inputMode="tel"
-          placeholder="+7 (999) 123-45-67"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-base shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-          disabled={isSubmitting}
-          aria-invalid={errors.phone ? "true" : "false"}
-          aria-describedby={errors.phone ? "phone-error" : undefined}
-        />
-        {errors.phone && (
-          <p id="phone-error" className="mt-1 text-sm text-red-600">
-            {errors.phone.message}
-          </p>
-        )}
-      </div>
-
-      <div>
-        <label
-          htmlFor="telegram"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Telegram username
-        </label>
-        <input
-          {...register("telegram")}
-          id="telegram"
-          type="text"
-          autoComplete="username"
-          spellCheck={false}
-          placeholder="@username"
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-base shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-          disabled={isSubmitting}
-          aria-invalid={errors.telegram ? "true" : "false"}
-          aria-describedby={errors.telegram ? "telegram-error" : undefined}
-        />
-        {errors.telegram && (
-          <p id="telegram-error" className="mt-1 text-sm text-red-600">
-            {errors.telegram.message}
           </p>
         )}
       </div>
@@ -297,37 +215,13 @@ export function InterviewLandingForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center rounded-md bg-blue-600 px-4 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-400"
+        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         style={{ touchAction: "manipulation" }}
       >
-        {isSubmitting ? (
-          <>
-            <svg
-              className="mr-2 h-5 w-5 animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
-            </svg>
-            Начинаем интервью…
-          </>
-        ) : (
-          "Начать интервью"
+        {isSubmitting && (
+          <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
         )}
+        {isSubmitting ? "Загрузка…" : "Начать интервью"}
       </button>
     </form>
   );

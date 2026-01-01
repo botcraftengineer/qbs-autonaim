@@ -43,12 +43,23 @@ export const paths = {
       orgSlug: string,
       slug: string,
       vacancyId?: string,
-      section?: "detail" | "settings" | "responses",
+      section?: "detail" | "settings" | "responses" | "edit",
     ) => {
       const base = `/orgs/${orgSlug}/workspaces/${slug}/vacancies`;
       if (!vacancyId) return base;
       if (section) return `${base}/${vacancyId}/${section}`;
       return `${base}/${vacancyId}`;
+    },
+    gigs: (
+      orgSlug: string,
+      slug: string,
+      gigId?: string,
+      section?: "detail" | "settings" | "responses" | "edit",
+    ) => {
+      const base = `/orgs/${orgSlug}/workspaces/${slug}/gigs`;
+      if (!gigId) return base;
+      if (section) return `${base}/${gigId}/${section}`;
+      return `${base}/${gigId}`;
     },
     settings: {
       root: (orgSlug: string, slug: string) =>
