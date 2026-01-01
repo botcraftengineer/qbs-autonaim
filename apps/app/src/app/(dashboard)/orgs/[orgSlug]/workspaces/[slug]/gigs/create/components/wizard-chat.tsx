@@ -113,6 +113,7 @@ export function WizardChat({
 }: WizardChatProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
+  const prevIsGeneratingRef = React.useRef(isGenerating);
   const [state, setState] = React.useState<WizardState>(initialWizardState);
   const [showCustomInput, setShowCustomInput] = React.useState(false);
   const [chatInput, setChatInput] = React.useState("");
@@ -142,12 +143,33 @@ export function WizardChat({
     }
   }, [state.step, isGenerating]);
 
+  // Мемоизируем данные последнего сообщения для оптимизации useEffect
+  const lastMessageData = React.useMemo(() => {
+    const lastMessage =
+      conversationHistory.length > 0
+        ? conversationHistory[conversationHistory.length - 1]
+        : null;
+    return {
+      id: lastMessage?.id || null,
+      role: lastMessage?.role || null,
+      length: conversationHistory.length,
+    };
+  }, [conversationHistory]);
+
   // Добавляем ответ ассистента после завершения генерации
   React.useEffect(() => {
-    if (state.step === "chat" && !isGenerating && onAddAssistantMessage) {
-      // Проверяем, что последнее сообщение не от ассистента
-      const lastMessage = conversationHistory[conversationHistory.length - 1];
-      if (lastMessage && lastMessage.role === "user") {
+    const wasGenerating = prevIsGeneratingRef.current;
+    prevIsGeneratingRef.current = isGenerating;
+
+    // Только когда isGenerating переходит из true в false
+    if (
+      wasGenerating &&
+      !isGenerating &&
+      state.step === "chat" &&
+      onAddAssistantMessage
+    ) {
+      // Проверяем, что история не пустая и последнее сообщение от пользователя
+      if (lastMessageData.length > 0 && lastMessageData.role === "user") {
         setConversationHistory((prev) => [
           ...prev,
           {
@@ -158,7 +180,13 @@ export function WizardChat({
         ]);
       }
     }
-  }, [isGenerating, state.step, conversationHistory, onAddAssistantMessage]);
+  }, [
+    isGenerating,
+    state.step,
+    lastMessageData.length,
+    lastMessageData.role,
+    onAddAssistantMessage,
+  ]);
 
   // Автофокус на input в режиме чата
   React.useEffect(() => {

@@ -66,9 +66,5 @@ export const sendMessage = protectedProcedure
       .where(eq(gigResponse.id, input.responseId))
       .returning();
 
-    return {
-      success: true,
-      message: "Сообщение отправлено",
-      response: updated,
-    };
+    return updated;
   });

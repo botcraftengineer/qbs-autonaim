@@ -1,26 +1,5 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { 
-  ArrowLeft, 
-  Calendar, 
-  Clock, 
-  DollarSign, 
-  Edit, 
-  ExternalLink, 
-  Eye, 
-  MessageSquare, 
-  MoreHorizontal,
-  Settings,
-  Share2,
-  Trash2,
-  Users
-} from "lucide-react";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import React from "react";
-import { useTRPC } from "~/trpc/react";
-import { useWorkspace } from "~/hooks/use-workspace";
 import {
   Badge,
   Button,
@@ -34,9 +13,29 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  Separator,
   Skeleton,
 } from "@qbs-autonaim/ui";
+import { useQuery } from "@tanstack/react-query";
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  DollarSign,
+  Edit,
+  ExternalLink,
+  Eye,
+  MessageSquare,
+  MoreHorizontal,
+  Settings,
+  Share2,
+  Trash2,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import React from "react";
+import { useWorkspace } from "~/hooks/use-workspace";
+import { useTRPC } from "~/trpc/react";
 
 interface PageProps {
   params: Promise<{ orgSlug: string; slug: string; gigId: string }>;
@@ -48,7 +47,7 @@ function GigDetailSkeleton() {
       <div className="mb-6">
         <Skeleton className="h-4 w-32" />
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <Card>
@@ -60,7 +59,7 @@ function GigDetailSkeleton() {
               <Skeleton className="h-32 w-full" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <Skeleton className="h-6 w-32" />
@@ -70,7 +69,7 @@ function GigDetailSkeleton() {
             </CardContent>
           </Card>
         </div>
-        
+
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -88,31 +87,35 @@ function GigDetailSkeleton() {
   );
 }
 
-function formatBudget(min?: number | null, max?: number | null, currency = "RUB") {
+function formatBudget(
+  min?: number | null,
+  max?: number | null,
+  currency = "RUB",
+) {
   if (!min && !max) return "Не указан";
-  
+
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("ru-RU").format(amount);
   };
-  
+
   if (min && max) {
     return `${formatAmount(min)} - ${formatAmount(max)} ${currency}`;
   }
-  
+
   if (min) {
     return `от ${formatAmount(min)} ${currency}`;
   }
-  
+
   if (max) {
     return `до ${formatAmount(max)} ${currency}`;
   }
-  
+
   return "Не указан";
 }
 
 function formatDate(date: Date | null) {
   if (!date) return "Не указан";
-  
+
   return new Intl.DateTimeFormat("ru-RU", {
     day: "numeric",
     month: "long",
@@ -134,7 +137,7 @@ function getGigTypeLabel(type: string) {
     CONSULTING: "Консультации",
     OTHER: "Другое",
   };
-  
+
   return types[type] || type;
 }
 
@@ -143,7 +146,11 @@ export default function GigDetailPage({ params }: PageProps) {
   const trpc = useTRPC();
   const { workspace } = useWorkspace();
 
-  const { data: gig, isLoading, error } = useQuery({
+  const {
+    data: gig,
+    isLoading,
+    error,
+  } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId: workspace?.id ?? "",
@@ -196,7 +203,7 @@ export default function GigDetailPage({ params }: PageProps) {
                     )}
                   </CardDescription>
                 </div>
-                
+
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
@@ -206,7 +213,9 @@ export default function GigDetailPage({ params }: PageProps) {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}>
+                      <Link
+                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
+                      >
                         <Edit className="h-4 w-4 mr-2" />
                         Редактировать
                       </Link>
@@ -228,7 +237,7 @@ export default function GigDetailPage({ params }: PageProps) {
                 </DropdownMenu>
               </div>
             </CardHeader>
-            
+
             {gig.description && (
               <CardContent>
                 <div className="prose prose-sm max-w-none">
@@ -253,59 +262,63 @@ export default function GigDetailPage({ params }: PageProps) {
                     </p>
                   </div>
                 )}
-                
-                {gig.requirements.deliverables && gig.requirements.deliverables.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Что нужно сделать</h4>
-                    <ul className="text-sm text-muted-foreground space-y-1">
-                      {gig.requirements.deliverables.map((item, index) => (
-                        <li key={index} className="flex items-start gap-2">
-                          <span className="text-primary mt-1">•</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
-                {gig.requirements.required_skills && gig.requirements.required_skills.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Обязательные навыки</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {gig.requirements.required_skills.map((skill, index) => (
-                        <Badge key={index} variant="secondary">
-                          {skill}
-                        </Badge>
-                      ))}
+
+                {gig.requirements.deliverables &&
+                  gig.requirements.deliverables.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Что нужно сделать</h4>
+                      <ul className="text-sm text-muted-foreground space-y-1">
+                        {gig.requirements.deliverables.map((item) => (
+                          <li key={item} className="flex items-start gap-2">
+                            <span className="text-primary mt-1">•</span>
+                            <span>{item}</span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </div>
-                )}
-                
-                {gig.requirements.nice_to_have_skills && gig.requirements.nice_to_have_skills.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Желательные навыки</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {gig.requirements.nice_to_have_skills.map((skill, index) => (
-                        <Badge key={index} variant="outline">
-                          {skill}
-                        </Badge>
-                      ))}
+                  )}
+
+                {gig.requirements.required_skills &&
+                  gig.requirements.required_skills.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Обязательные навыки</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {gig.requirements.required_skills.map((skill) => (
+                          <Badge key={skill} variant="secondary">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-                
-                {gig.requirements.tech_stack && gig.requirements.tech_stack.length > 0 && (
-                  <div>
-                    <h4 className="font-medium mb-2">Технологии</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {gig.requirements.tech_stack.map((tech, index) => (
-                        <Badge key={index} variant="secondary">
-                          {tech}
-                        </Badge>
-                      ))}
+                  )}
+
+                {gig.requirements.nice_to_have_skills &&
+                  gig.requirements.nice_to_have_skills.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Желательные навыки</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {gig.requirements.nice_to_have_skills.map((skill) => (
+                          <Badge key={skill} variant="outline">
+                            {skill}
+                          </Badge>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                {gig.requirements.tech_stack &&
+                  gig.requirements.tech_stack.length > 0 && (
+                    <div>
+                      <h4 className="font-medium mb-2">Технологии</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {gig.requirements.tech_stack.map((tech) => (
+                          <Badge key={tech} variant="secondary">
+                            {tech}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
               </CardContent>
             </Card>
           )}
@@ -343,7 +356,7 @@ export default function GigDetailPage({ params }: PageProps) {
                 </div>
                 <span className="font-medium">{gig.views || 0}</span>
               </div>
-              
+
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MessageSquare className="h-4 w-4" />
@@ -351,7 +364,7 @@ export default function GigDetailPage({ params }: PageProps) {
                 </div>
                 <span className="font-medium">{gig.responses || 0}</span>
               </div>
-              
+
               {(gig.newResponses || 0) > 0 && (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -376,10 +389,14 @@ export default function GigDetailPage({ params }: PageProps) {
                   Бюджет
                 </div>
                 <p className="font-medium">
-                  {formatBudget(gig.budgetMin, gig.budgetMax, gig.budgetCurrency || "RUB")}
+                  {formatBudget(
+                    gig.budgetMin,
+                    gig.budgetMax,
+                    gig.budgetCurrency || "RUB",
+                  )}
                 </p>
               </div>
-              
+
               {gig.estimatedDuration && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -389,7 +406,7 @@ export default function GigDetailPage({ params }: PageProps) {
                   <p className="font-medium">{gig.estimatedDuration}</p>
                 </div>
               )}
-              
+
               {gig.deadline && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -409,19 +426,23 @@ export default function GigDetailPage({ params }: PageProps) {
             </CardHeader>
             <CardContent className="space-y-3">
               <Button asChild className="w-full">
-                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}>
+                <Link
+                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
+                >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Посмотреть отклики
                 </Link>
               </Button>
-              
+
               <Button variant="outline" asChild className="w-full">
-                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}>
+                <Link
+                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Редактировать
                 </Link>
               </Button>
-              
+
               <Button variant="outline" className="w-full">
                 <Share2 className="h-4 w-4 mr-2" />
                 Поделиться
