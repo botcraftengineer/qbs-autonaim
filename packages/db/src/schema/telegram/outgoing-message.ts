@@ -10,7 +10,15 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { user } from "../auth/user";
 import { gigResponse } from "../gig/response";
+
+export const outgoingMessageStatusValues = [
+  "PENDING_SEND",
+  "SENT",
+  "FAILED",
+  "CANCELLED",
+] as const;
 
 /**
  * Статус исходящего сообщения
@@ -36,13 +44,15 @@ export const outgoingMessage = pgTable(
       .references(() => gigResponse.id, { onDelete: "cascade" }),
 
     // Отправитель (ID пользователя из сессии)
-    senderId: uuid("sender_id").notNull(),
+    senderId: text("sender_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
 
     // Получатель
     recipientTelegramUsername: varchar("recipient_telegram_username", {
       length: 100,
     }).notNull(),
-    recipientChatId: varchar("recipient_chat_id", { length: 100 }),
+    recipientChatId: varchar("recipient_chat_id", { length: 100 }).nullable(),
 
     // Содержимое сообщения
     message: text("message").notNull(),
@@ -83,18 +93,11 @@ export const outgoingMessage = pgTable(
   }),
 );
 
-export const outgoingMessageStatusValues = [
-  "PENDING_SEND",
-  "SENT",
-  "FAILED",
-  "CANCELLED",
-] as const;
-
 export const CreateOutgoingMessageSchema = createInsertSchema(outgoingMessage, {
   gigResponseId: z.string().uuid(),
-  senderId: z.string().uuid(),
+  senderId: z.string().min(1),
   recipientTelegramUsername: z.string().min(1).max(100),
-  recipientChatId: z.string().max(100).optional(),
+  recipientChatId: z.string().max(100).nullable().optional(),
   message: z.string().min(1),
   status: z.enum(outgoingMessageStatusValues).default("PENDING_SEND"),
   failureReason: z.string().optional(),
