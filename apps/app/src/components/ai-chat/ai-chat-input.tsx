@@ -264,9 +264,7 @@ function PureAIChatInput({
             src={audioAttachment.url}
             className="h-8 max-w-[200px] flex-1"
             aria-label="Прикреплённое аудио"
-          >
-            <track kind="captions" />
-          </audio>
+          />
           <Button
             type="button"
             variant="ghost"

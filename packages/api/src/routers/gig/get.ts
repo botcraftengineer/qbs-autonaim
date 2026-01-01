@@ -20,7 +20,16 @@ export const get = protectedProcedure
       });
     }
 
-    return ctx.db.query.gig.findFirst({
+    const foundGig = await ctx.db.query.gig.findFirst({
       where: and(eq(gig.id, input.id), eq(gig.workspaceId, input.workspaceId)),
     });
+
+    if (!foundGig) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Gig not found",
+      });
+    }
+
+    return foundGig;
   });
