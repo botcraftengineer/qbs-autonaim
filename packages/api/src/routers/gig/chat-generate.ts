@@ -11,6 +11,7 @@ const aiResponseSchema = z.object({
   requiredSkills: z.string().optional(),
   budgetRange: z.string().optional(),
   timeline: z.string().optional(),
+  quickReplies: z.array(z.string()).optional(),
 });
 
 function extractJSON(text: string): string | null {
@@ -135,6 +136,13 @@ ${documentSection}
 - Используй чёткий, понятный язык
 - Структурируй списки с помощью маркеров или нумерации
 
+БЫСТРЫЕ ОТВЕТЫ (quickReplies):
+- Предложи 2-4 варианта кнопок для следующего шага
+- Кнопки должны быть короткими (2-5 слов)
+- Кнопки должны помогать заполнить недостающую информацию
+- Примеры: "Бюджет 10-20 тыс", "Срок 1 неделя", "Нужен дизайнер", "Добавить детали"
+- Если документ почти готов, предложи варианты уточнений или "Всё готово"
+
 ФОРМАТ ОТВЕТА (JSON):
 {
   "title": "Название задания",
@@ -142,7 +150,8 @@ ${documentSection}
   "deliverables": "Что нужно сделать (список результатов)",
   "requiredSkills": "Требуемые навыки и технологии",
   "budgetRange": "Бюджет (например: 5000-10000 руб)",
-  "timeline": "Сроки выполнения (например: 3-5 дней)"
+  "timeline": "Сроки выполнения (например: 3-5 дней)",
+  "quickReplies": ["Вариант 1", "Вариант 2", "Вариант 3"]
 }
 
 ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных пояснений.`;
@@ -231,6 +240,7 @@ export const chatGenerate = protectedProcedure
             validated.budgetRange ?? currentDocument?.budgetRange ?? "",
           timeline: validated.timeline ?? currentDocument?.timeline ?? "",
         },
+        quickReplies: validated.quickReplies ?? [],
       };
     } catch (error) {
       if (error instanceof TRPCError) throw error;

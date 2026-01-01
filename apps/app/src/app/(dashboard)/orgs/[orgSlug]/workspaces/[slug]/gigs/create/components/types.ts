@@ -20,6 +20,7 @@ export interface ChatMessage {
   id: string;
   role: "assistant" | "user";
   content: string;
+  quickReplies?: string[];
 }
 
 export interface GigDraft {

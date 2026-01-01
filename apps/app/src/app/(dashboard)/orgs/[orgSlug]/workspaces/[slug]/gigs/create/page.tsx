@@ -28,9 +28,14 @@ interface PageProps {
 
 const WELCOME = `Привет! 👋 Я помогу создать техническое задание для фрилансера.
 
-Просто опишите, что вам нужно сделать — я задам уточняющие вопросы и сформирую полное ТЗ.
+Выберите, что вам нужно, или опишите своими словами:`;
 
-Например: "Нужен лендинг для продажи курсов" или "Разработать мобильное приложение для доставки еды"`;
+const INITIAL_QUICK_REPLIES = [
+  "Разработка сайта",
+  "Дизайн логотипа",
+  "Написать текст",
+  "Другое",
+];
 
 export default function CreateGigPage({ params }: PageProps) {
   const router = useRouter();
@@ -40,7 +45,12 @@ export default function CreateGigPage({ params }: PageProps) {
   const { workspace } = useWorkspace();
 
   const [messages, setMessages] = React.useState<ChatMessage[]>([
-    { id: "welcome", role: "assistant", content: WELCOME },
+    {
+      id: "welcome",
+      role: "assistant",
+      content: WELCOME,
+      quickReplies: INITIAL_QUICK_REPLIES,
+    },
   ]);
   const [inputValue, setInputValue] = React.useState("");
   const [isAiThinking, setIsAiThinking] = React.useState(false);
@@ -94,13 +104,16 @@ export default function CreateGigPage({ params }: PageProps) {
       .filter((m) => m.id !== "welcome")
       .map((m) => ({ role: m.role, content: m.content }));
 
-  const handleSend = async () => {
-    const text = inputValue.trim();
-    if (!text || isAiThinking) return;
+  const handleSend = async (text?: string) => {
+    const messageText = text ?? inputValue.trim();
+    if (!messageText || isAiThinking) return;
+
+    // Очищаем quick replies у предыдущих сообщений
+    setMessages((p) => p.map((msg) => ({ ...msg, quickReplies: undefined })));
 
     setMessages((p) => [
       ...p,
-      { id: generateId(), role: "user", content: text },
+      { id: generateId(), role: "user", content: messageText },
     ]);
     setInputValue("");
     setIsAiThinking(true);
@@ -108,7 +121,7 @@ export default function CreateGigPage({ params }: PageProps) {
     try {
       const result = await generateWithAi({
         workspaceId: workspace?.id ?? "",
-        message: text,
+        message: messageText,
         currentDocument: {
           title: draft.title,
           description: draft.description,
@@ -169,7 +182,12 @@ export default function CreateGigPage({ params }: PageProps) {
 
       setMessages((p) => [
         ...p,
-        { id: generateId(), role: "assistant", content: reply },
+        {
+          id: generateId(),
+          role: "assistant",
+          content: reply,
+          quickReplies: result.quickReplies,
+        },
       ]);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ошибка генерации");
@@ -184,6 +202,10 @@ export default function CreateGigPage({ params }: PageProps) {
     } finally {
       setIsAiThinking(false);
     }
+  };
+
+  const handleQuickReply = (reply: string) => {
+    handleSend(reply);
   };
 
   const handleCreate = () => {
@@ -250,7 +272,8 @@ export default function CreateGigPage({ params }: PageProps) {
           messages={messages}
           inputValue={inputValue}
           onInputChange={setInputValue}
-          onSend={handleSend}
+          onSend={() => handleSend()}
+          onQuickReply={handleQuickReply}
           isThinking={isAiThinking}
           isDisabled={isAiThinking || isCreating}
         />
