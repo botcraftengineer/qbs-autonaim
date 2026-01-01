@@ -1,16 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Save } from "lucide-react";
-import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
-import React from "react";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod/v4";
-import { useWorkspace } from "~/hooks/use-workspace";
-import { useTRPC } from "~/trpc/react";
 import {
   Button,
   Card,
@@ -28,6 +18,16 @@ import {
   Skeleton,
   Textarea,
 } from "@qbs-autonaim/ui";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ArrowLeft, Save } from "lucide-react";
+import Link from "next/link";
+import { notFound, useRouter } from "next/navigation";
+import React from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useWorkspace } from "~/hooks/use-workspace";
+import { useTRPC } from "~/trpc/react";
 
 interface PageProps {
   params: Promise<{ orgSlug: string; slug: string; gigId: string }>;
@@ -61,7 +61,7 @@ function EditGigSkeleton() {
       <div className="mb-6">
         <Skeleton className="h-4 w-32" />
       </div>
-      
+
       <div className="space-y-6">
         <Card>
           <CardHeader>
@@ -129,14 +129,21 @@ export default function EditGigPage({ params }: PageProps) {
     trpc.gig.update.mutationOptions({
       onSuccess: () => {
         toast.success("Задание обновлено");
-        queryClient.invalidateQueries({ queryKey: trpc.gig.get.queryKey({ id: gigId, workspaceId: workspace?.id ?? "" }) });
+        queryClient.invalidateQueries({
+          queryKey: trpc.gig.get.queryKey({
+            id: gigId,
+            workspaceId: workspace?.id ?? "",
+          }),
+        });
         queryClient.invalidateQueries({ queryKey: trpc.gig.list.queryKey() });
-        router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`);
+        router.push(
+          `/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`,
+        );
       },
       onError: (error) => {
         toast.error(error.message || "Не удалось обновить задание");
       },
-    })
+    }),
   );
 
   const onSubmit = (values: FormValues) => {
@@ -187,36 +194,57 @@ export default function EditGigPage({ params }: PageProps) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Название</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Название
+                  </label>
                   <p className="text-sm">{gig.title}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Тип</label>
-                  <p className="text-sm">{gigTypeOptions.find(opt => opt.value === gig.type)?.label || gig.type}</p>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Тип
+                  </label>
+                  <p className="text-sm">
+                    {gigTypeOptions.find((opt) => opt.value === gig.type)
+                      ?.label || gig.type}
+                  </p>
                 </div>
               </div>
               {gig.description && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Описание</label>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Описание
+                  </label>
                   <p className="text-sm">{gig.description}</p>
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {gig.budgetMin && (
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Мин. бюджет</label>
-                    <p className="text-sm">{gig.budgetMin} {gig.budgetCurrency}</p>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Мин. бюджет
+                    </label>
+                    <p className="text-sm">
+                      {gig.budgetMin} {gig.budgetCurrency}
+                    </p>
                   </div>
                 )}
                 {gig.budgetMax && (
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">Макс. бюджет</label>
-                    <p className="text-sm">{gig.budgetMax} {gig.budgetCurrency}</p>
+                    <label className="text-sm font-medium text-muted-foreground">
+                      Макс. бюджет
+                    </label>
+                    <p className="text-sm">
+                      {gig.budgetMax} {gig.budgetCurrency}
+                    </p>
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">Статус</label>
-                  <p className="text-sm">{gig.isActive ? "Активное" : "Неактивное"}</p>
+                  <label className="text-sm font-medium text-muted-foreground">
+                    Статус
+                  </label>
+                  <p className="text-sm">
+                    {gig.isActive ? "Активное" : "Неактивное"}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -234,8 +262,9 @@ export default function EditGigPage({ params }: PageProps) {
                     <div className="space-y-1 text-muted-foreground">
                       {(companySettings.botName || companySettings.botRole) && (
                         <div>
-                          Бот: {companySettings.botName || "Не указано"} 
-                          {companySettings.botRole && ` (${companySettings.botRole})`}
+                          Бот: {companySettings.botName || "Не указано"}
+                          {companySettings.botRole &&
+                            ` (${companySettings.botRole})`}
                         </div>
                       )}
                       <div>Компания: {companySettings.name}</div>
@@ -262,12 +291,19 @@ export default function EditGigPage({ params }: PageProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Эти инструкции будут использоваться ботом при обработке откликов.
-                      {companySettings && (companySettings.botName || companySettings.botRole) && (
-                        <span className="block mt-1 text-xs">
-                          Бот будет представляться как {companySettings.botName || "бот"}{companySettings.botRole && ` - ${companySettings.botRole}`} компании "{companySettings.name}".
-                        </span>
-                      )}
+                      Эти инструкции будут использоваться ботом при обработке
+                      откликов.
+                      {companySettings &&
+                        (companySettings.botName ||
+                          companySettings.botRole) && (
+                          <span className="block mt-1 text-xs">
+                            Бот будет представляться как{" "}
+                            {companySettings.botName || "бот"}
+                            {companySettings.botRole &&
+                              ` - ${companySettings.botRole}`}{" "}
+                            компании "{companySettings.name}".
+                          </span>
+                        )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -329,7 +365,7 @@ export default function EditGigPage({ params }: PageProps) {
               <Save className="h-4 w-4 mr-2" />
               {isPending ? "Сохранение..." : "Сохранить изменения"}
             </Button>
-            
+
             <Button
               type="button"
               variant="outline"

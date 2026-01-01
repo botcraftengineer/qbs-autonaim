@@ -11,7 +11,6 @@ import {
   SelectValue,
   Skeleton,
 } from "@qbs-autonaim/ui";
-import { GigCard, EmptyState } from "./components";
 import { IconFilter, IconSearch, IconSparkles } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -20,6 +19,7 @@ import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
+import { EmptyState, GigCard } from "./components";
 
 const gigTypeLabels: Record<string, string> = {
   DEVELOPMENT: "Разработка",
@@ -317,17 +317,23 @@ export default function GigsPage() {
                   orgSlug={orgSlug!}
                   workspaceSlug={workspaceSlug!}
                   title={
-                    searchQuery || typeFilter !== "all" || statusFilter !== "all"
+                    searchQuery ||
+                    typeFilter !== "all" ||
+                    statusFilter !== "all"
                       ? "Ничего не найдено"
                       : "Нет заданий"
                   }
                   description={
-                    searchQuery || typeFilter !== "all" || statusFilter !== "all"
+                    searchQuery ||
+                    typeFilter !== "all" ||
+                    statusFilter !== "all"
                       ? "Попробуйте изменить параметры поиска"
                       : "Создайте первое разовое задание, чтобы начать поиск исполнителей"
                   }
                   showCreateButton={
-                    !searchQuery && typeFilter === "all" && statusFilter === "all"
+                    !searchQuery &&
+                    typeFilter === "all" &&
+                    statusFilter === "all"
                   }
                 />
               ) : (
@@ -338,7 +344,6 @@ export default function GigsPage() {
                       gig={{
                         ...gig,
                         isActive: gig.isActive ?? true,
-                        source: "MANUAL" // Default source since it's missing from the type
                       }}
                       orgSlug={orgSlug!}
                       workspaceSlug={workspaceSlug!}

@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -18,6 +18,7 @@ import { WizardChat } from "./components/wizard-chat";
 import type { WizardState } from "./components/wizard-types";
 
 interface ConversationMessage {
+  id: string;
   role: "user" | "assistant";
   content: string;
 }
@@ -46,9 +47,6 @@ export default function CreateGigPage({ params }: PageProps) {
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [showForm, setShowForm] = React.useState(false);
   const [quickReplies, setQuickReplies] = React.useState<string[]>([]);
-  const [conversationHistory, setConversationHistory] = React.useState<
-    ConversationMessage[]
-  >([]);
   const [wizardState, setWizardState] = React.useState<WizardState | null>(
     null,
   );
@@ -149,12 +147,9 @@ export default function CreateGigPage({ params }: PageProps) {
         conversationHistory: [],
       });
 
-      console.log("[gig.chatGenerate] result:", result);
-
       if (!isMountedRef.current) return;
 
       const doc = result.document;
-      console.log("[gig.chatGenerate] doc:", doc);
 
       // Сохраняем quick replies
       setQuickReplies(result.quickReplies || []);
@@ -217,7 +212,6 @@ export default function CreateGigPage({ params }: PageProps) {
     if (!workspace?.id) return;
 
     setIsGenerating(true);
-    setConversationHistory(history);
 
     try {
       const result = await generateWithAi({
@@ -234,19 +228,15 @@ export default function CreateGigPage({ params }: PageProps) {
               : undefined,
           timeline: draft.estimatedDuration,
         },
-        conversationHistory: history.slice(-10), // Последние 10 сообщений
+        conversationHistory: history
+          .slice(-10)
+          .map(({ role, content }) => ({ role, content })), // Последние 10 сообщений
       });
 
       if (!isMountedRef.current) return;
 
       const doc = result.document;
       setQuickReplies(result.quickReplies || []);
-
-      // Добавляем ответ ассистента в историю
-      setConversationHistory((prev) => [
-        ...prev,
-        { role: "assistant", content: "Обновил ТЗ по вашему запросу." },
-      ]);
 
       // Обновляем draft
       const parsed = aiDocumentSchema.safeParse(doc);
@@ -340,6 +330,7 @@ export default function CreateGigPage({ params }: PageProps) {
           isGenerating={isGenerating}
           onChatMessage={handleChatMessage}
           quickReplies={quickReplies}
+          onAddAssistantMessage={() => {}} // Enable assistant message handling
         />
 
         <div className="space-y-6">

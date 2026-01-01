@@ -116,14 +116,23 @@ export function GigForm({
               <FormItem>
                 <FormLabel>Бюджет от</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="50000" 
+                  <Input
+                    type="number"
+                    placeholder="50000"
                     {...field}
                     value={field.value ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      field.onChange(value === "" ? undefined : Number(value));
+                      if (value === "") {
+                        field.onChange(undefined);
+                        return;
+                      }
+                      const parsed = Number(value);
+                      if (Number.isNaN(parsed)) {
+                        field.onChange(undefined);
+                        return;
+                      }
+                      field.onChange(parsed);
                     }}
                   />
                 </FormControl>
@@ -138,14 +147,23 @@ export function GigForm({
               <FormItem>
                 <FormLabel>Бюджет до</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    placeholder="100000" 
+                  <Input
+                    type="number"
+                    placeholder="100000"
                     {...field}
                     value={field.value ?? ""}
                     onChange={(e) => {
                       const value = e.target.value;
-                      field.onChange(value === "" ? undefined : Number(value));
+                      if (value === "") {
+                        field.onChange(undefined);
+                        return;
+                      }
+                      const parsed = Number(value);
+                      if (Number.isNaN(parsed)) {
+                        field.onChange(undefined);
+                        return;
+                      }
+                      field.onChange(parsed);
                     }}
                   />
                 </FormControl>

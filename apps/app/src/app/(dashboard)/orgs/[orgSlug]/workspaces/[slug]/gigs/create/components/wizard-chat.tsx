@@ -36,6 +36,7 @@ import {
 } from "./wizard-types";
 
 interface ConversationMessage {
+  id: string;
   role: "user" | "assistant";
   content: string;
 }
@@ -45,6 +46,7 @@ interface WizardChatProps {
   isGenerating: boolean;
   onChatMessage?: (message: string, history: ConversationMessage[]) => void;
   quickReplies?: string[];
+  onAddAssistantMessage?: (content: string) => void;
 }
 
 const STEP_MESSAGES: Record<WizardStep, string> = {
@@ -107,6 +109,7 @@ export function WizardChat({
   isGenerating,
   onChatMessage,
   quickReplies = [],
+  onAddAssistantMessage,
 }: WizardChatProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
@@ -138,6 +141,24 @@ export function WizardChat({
       setState((s) => ({ ...s, step: "chat" }));
     }
   }, [state.step, isGenerating]);
+
+  // Добавляем ответ ассистента после завершения генерации
+  React.useEffect(() => {
+    if (state.step === "chat" && !isGenerating && onAddAssistantMessage) {
+      // Проверяем, что последнее сообщение не от ассистента
+      const lastMessage = conversationHistory[conversationHistory.length - 1];
+      if (lastMessage && lastMessage.role === "user") {
+        setConversationHistory((prev) => [
+          ...prev,
+          {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            content: "Обновил ТЗ по вашему запросу.",
+          },
+        ]);
+      }
+    }
+  }, [isGenerating, state.step, conversationHistory, onAddAssistantMessage]);
 
   // Автофокус на input в режиме чата
   React.useEffect(() => {
@@ -208,7 +229,13 @@ export function WizardChat({
     setState(finalState);
     // Добавляем начальное сообщение в историю
     if (details) {
-      setConversationHistory([{ role: "user", content: details }]);
+      setConversationHistory([
+        {
+          id: crypto.randomUUID(),
+          role: "user",
+          content: details,
+        },
+      ]);
     }
     onComplete(finalState);
   };
@@ -218,7 +245,11 @@ export function WizardChat({
 
     const newHistory: ConversationMessage[] = [
       ...conversationHistory,
-      { role: "user", content: message.trim() },
+      {
+        id: crypto.randomUUID(),
+        role: "user",
+        content: message.trim(),
+      },
     ];
     setConversationHistory(newHistory);
     setChatInput("");
@@ -316,7 +347,7 @@ export function WizardChat({
               <div className="space-y-2">
                 {conversationHistory.map((msg) => (
                   <div
-                    key={`${msg.role}-${msg.content.slice(0, 20)}`}
+                    key={msg.id}
                     className={`rounded-2xl px-4 py-2.5 text-sm max-w-[85%] ${
                       msg.role === "user"
                         ? "ml-auto bg-primary text-primary-foreground rounded-br-md"
