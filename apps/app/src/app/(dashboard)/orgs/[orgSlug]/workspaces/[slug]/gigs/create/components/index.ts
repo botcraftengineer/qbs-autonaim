@@ -5,3 +5,5 @@ export { GigPreview } from "./gig-preview";
 export { ProgressCard } from "./progress-card";
 export { QuickReplies } from "./quick-replies";
 export * from "./types";
+export { WizardChat } from "./wizard-chat";
+export * from "./wizard-types";

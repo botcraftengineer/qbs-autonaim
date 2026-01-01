@@ -11,31 +11,14 @@ import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
-import { ChatPanel, GigForm, GigPreview, ProgressCard } from "./components";
-import {
-  type ChatMessage,
-  type FormValues,
-  formSchema,
-  type GigDraft,
-  type GigType,
-  generateId,
-  typeKeywords,
-} from "./components/types";
+import { GigForm, GigPreview, ProgressCard } from "./components";
+import { type FormValues, formSchema, type GigDraft } from "./components/types";
+import { WizardChat } from "./components/wizard-chat";
+import type { WizardState } from "./components/wizard-types";
 
 interface PageProps {
   params: Promise<{ orgSlug: string; slug: string }>;
 }
-
-const WELCOME = `Привет! 👋 Я помогу создать техническое задание для фрилансера.
-
-Выберите, что вам нужно, или опишите своими словами:`;
-
-const INITIAL_QUICK_REPLIES = [
-  "Разработка сайта",
-  "Дизайн логотипа",
-  "Написать текст",
-  "Другое",
-];
 
 export default function CreateGigPage({ params }: PageProps) {
   const router = useRouter();
@@ -44,16 +27,7 @@ export default function CreateGigPage({ params }: PageProps) {
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
-  const [messages, setMessages] = React.useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      content: WELCOME,
-      quickReplies: INITIAL_QUICK_REPLIES,
-    },
-  ]);
-  const [inputValue, setInputValue] = React.useState("");
-  const [isAiThinking, setIsAiThinking] = React.useState(false);
+  const [isGenerating, setIsGenerating] = React.useState(false);
   const [showForm, setShowForm] = React.useState(false);
 
   const [draft, setDraft] = React.useState<GigDraft>({
@@ -99,113 +73,70 @@ export default function CreateGigPage({ params }: PageProps) {
     trpc.gig.chatGenerate.mutationOptions(),
   );
 
-  const getHistory = () =>
-    messages
-      .filter((m) => m.id !== "welcome")
-      .map((m) => ({ role: m.role, content: m.content }));
+  const handleWizardComplete = async (wizardState: WizardState) => {
+    setIsGenerating(true);
 
-  const handleSend = async (text?: string) => {
-    const messageText = text ?? inputValue.trim();
-    if (!messageText || isAiThinking) return;
+    // Собираем данные из wizard в текстовое описание для AI
+    const parts: string[] = [];
 
-    // Очищаем quick replies у предыдущих сообщений
-    setMessages((p) => p.map((msg) => ({ ...msg, quickReplies: undefined })));
+    if (wizardState.category) {
+      parts.push(`Категория: ${wizardState.category.label}`);
+    }
+    if (wizardState.subtype) {
+      parts.push(`Тип: ${wizardState.subtype.label}`);
+    }
+    if (wizardState.features.length > 0 && wizardState.subtype) {
+      const featureLabels = wizardState.features
+        .map(
+          (fId) =>
+            wizardState.subtype?.features.find((f) => f.id === fId)?.label,
+        )
+        .filter(Boolean);
+      parts.push(`Функции: ${featureLabels.join(", ")}`);
+    }
+    if (wizardState.budget) {
+      parts.push(`Бюджет: ${wizardState.budget.label}`);
+    }
+    if (wizardState.timeline) {
+      parts.push(
+        `Сроки: ${wizardState.timeline.label} (${wizardState.timeline.days})`,
+      );
+    }
+    if (wizardState.customDetails) {
+      parts.push(`Дополнительно: ${wizardState.customDetails}`);
+    }
 
-    setMessages((p) => [
-      ...p,
-      { id: generateId(), role: "user", content: messageText },
-    ]);
-    setInputValue("");
-    setIsAiThinking(true);
+    const message = parts.join("\n");
 
     try {
       const result = await generateWithAi({
         workspaceId: workspace?.id ?? "",
-        message: messageText,
-        currentDocument: {
-          title: draft.title,
-          description: draft.description,
-          deliverables: draft.deliverables,
-          requiredSkills: draft.requiredSkills,
-          budgetRange:
-            draft.budgetMin && draft.budgetMax
-              ? `${draft.budgetMin}-${draft.budgetMax}`
-              : undefined,
-          timeline: draft.estimatedDuration,
-        },
-        conversationHistory: getHistory(),
+        message,
+        currentDocument: {},
+        conversationHistory: [],
       });
 
       const doc = result.document;
-      setDraft((p) => ({
-        ...p,
-        title: doc.title || p.title,
-        description: doc.description || p.description,
-        deliverables: doc.deliverables || p.deliverables,
-        requiredSkills: doc.requiredSkills || p.requiredSkills,
-        estimatedDuration: doc.timeline || p.estimatedDuration,
-      }));
 
-      if (doc.budgetRange) {
-        const m = doc.budgetRange.match(/(\d+)[-–](\d+)/);
-        if (m?.[1] && m?.[2]) {
-          const min = Number.parseInt(m[1]);
-          const max = Number.parseInt(m[2]);
-          setDraft((p) => ({ ...p, budgetMin: min, budgetMax: max }));
-        }
-      }
+      // Обновляем draft из ответа AI
+      setDraft({
+        title: doc.title || "",
+        description: doc.description || "",
+        type: wizardState.category?.id || "OTHER",
+        deliverables: doc.deliverables || "",
+        requiredSkills: doc.requiredSkills || "",
+        budgetMin: wizardState.budget?.min,
+        budgetMax: wizardState.budget?.max,
+        budgetCurrency: "RUB",
+        estimatedDuration: doc.timeline || wizardState.timeline?.days || "",
+      });
 
-      const fullText = `${doc.title} ${doc.description}`.toLowerCase();
-      for (const [type, kws] of Object.entries(typeKeywords)) {
-        if (kws.some((kw) => fullText.includes(kw))) {
-          setDraft((p) => ({ ...p, type: type as GigType }));
-          break;
-        }
-      }
-
-      const missing: string[] = [];
-      if (!doc.title) missing.push("название");
-      if (!doc.description) missing.push("описание");
-      if (!doc.deliverables) missing.push("что сделать");
-      if (!doc.requiredSkills) missing.push("навыки");
-      if (!doc.budgetRange) missing.push("бюджет");
-      if (!doc.timeline) missing.push("сроки");
-
-      let reply: string;
-      if (missing.length === 0)
-        reply =
-          "Отлично! ТЗ готово. Можете отредактировать справа или создать задание.";
-      else if (missing.length <= 2)
-        reply = `Хорошо! Осталось уточнить: ${missing.join(", ")}.`;
-      else
-        reply = `Понял! Расскажите ещё:\n• ${missing.slice(0, 3).join("\n• ")}`;
-
-      setMessages((p) => [
-        ...p,
-        {
-          id: generateId(),
-          role: "assistant",
-          content: reply,
-          quickReplies: result.quickReplies,
-        },
-      ]);
+      toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Ошибка генерации");
-      setMessages((p) => [
-        ...p,
-        {
-          id: generateId(),
-          role: "assistant",
-          content: "Произошла ошибка. Попробуйте ещё раз.",
-        },
-      ]);
     } finally {
-      setIsAiThinking(false);
+      setIsGenerating(false);
     }
-  };
-
-  const handleQuickReply = (reply: string) => {
-    handleSend(reply);
   };
 
   const handleCreate = () => {
@@ -268,14 +199,9 @@ export default function CreateGigPage({ params }: PageProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ChatPanel
-          messages={messages}
-          inputValue={inputValue}
-          onInputChange={setInputValue}
-          onSend={() => handleSend()}
-          onQuickReply={handleQuickReply}
-          isThinking={isAiThinking}
-          isDisabled={isAiThinking || isCreating}
+        <WizardChat
+          onComplete={handleWizardComplete}
+          isGenerating={isGenerating}
         />
 
         <div className="space-y-6">
