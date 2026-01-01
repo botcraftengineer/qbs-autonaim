@@ -2,8 +2,8 @@
 
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
 import { AlertCircle, Loader2, Sparkles } from "lucide-react";
+import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import { useTRPC } from "~/trpc/react";

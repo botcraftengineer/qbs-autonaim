@@ -35,6 +35,7 @@
     "@trpc/tanstack-react-query": "^11.8.1",
     "better-auth": "1.4.9",
     "date-fns": "4.1.0",
+    "motion": "^12.23.26",
     "lucide-react": "0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
