@@ -1,6 +1,5 @@
-import { and, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import {
-  gig,
   gigHrSelectionStatusValues,
   gigResponse,
   gigResponseStatusValues,

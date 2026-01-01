@@ -20,6 +20,7 @@ interface ChatPanelProps {
   inputValue: string;
   onInputChange: (value: string) => void;
   onSend: () => void;
+  onQuickReply: (reply: string) => void;
   isThinking: boolean;
   isDisabled: boolean;
 }
@@ -29,6 +30,7 @@ export function ChatPanel({
   inputValue,
   onInputChange,
   onSend,
+  onQuickReply,
   isThinking,
   isDisabled,
 }: ChatPanelProps) {
@@ -75,7 +77,12 @@ export function ChatPanel({
       <ScrollArea ref={scrollRef} className="flex-1 p-4">
         <div className="space-y-4">
           {messages.map((msg) => (
-            <ChatMessage key={msg.id} message={msg} />
+            <ChatMessage
+              key={msg.id}
+              message={msg}
+              onQuickReply={onQuickReply}
+              isDisabled={isDisabled}
+            />
           ))}
           {isThinking && <TypingIndicator />}
         </div>

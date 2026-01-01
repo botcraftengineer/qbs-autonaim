@@ -150,12 +150,8 @@ function PreviewContent({
               .split(/[,;]/)
               .map((s) => s.trim())
               .filter((s) => s.length > 0)
-              .map((skill, i) => (
-                <Badge
-                  key={`${skill}-${i}`}
-                  variant="outline"
-                  className="text-xs"
-                >
+              .map((skill) => (
+                <Badge key={skill} variant="outline" className="text-xs">
                   {skill}
                 </Badge>
               ))}
