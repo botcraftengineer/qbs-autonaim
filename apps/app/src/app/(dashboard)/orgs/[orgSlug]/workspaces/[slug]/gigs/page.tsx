@@ -10,13 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
 } from "@qbs-autonaim/ui";
+import { GigCard, EmptyState } from "./components";
 import { IconFilter, IconSearch, IconSparkles } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
@@ -294,151 +289,59 @@ export default function GigsPage() {
                 </div>
               )}
 
-              <div className="rounded-lg border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Название</TableHead>
-                      <TableHead>Тип</TableHead>
-                      <TableHead className="hidden md:table-cell">
-                        Бюджет
-                      </TableHead>
-                      <TableHead className="hidden lg:table-cell">
-                        Дедлайн
-                      </TableHead>
-                      <TableHead className="text-right">Отклики</TableHead>
-                      <TableHead className="text-right">Новые</TableHead>
-                      <TableHead>Статус</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {isLoading ? (
-                      Array.from({ length: 5 }, (_, i) => i).map((id) => (
-                        <TableRow key={`skeleton-${id}`}>
-                          <TableCell>
-                            <Skeleton className="h-5 w-[200px]" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-6 w-[100px]" />
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            <Skeleton className="h-5 w-[120px]" />
-                          </TableCell>
-                          <TableCell className="hidden lg:table-cell">
-                            <Skeleton className="h-5 w-[80px]" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-5 w-[40px] ml-auto" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-6 w-[40px] ml-auto" />
-                          </TableCell>
-                          <TableCell>
-                            <Skeleton className="h-6 w-[80px]" />
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    ) : filteredAndSortedGigs.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={7} className="h-[400px]">
-                          <div className="flex items-center justify-center">
-                            <div className="text-center">
-                              <h2 className="mb-2 text-2xl font-semibold">
-                                {searchQuery ||
-                                typeFilter !== "all" ||
-                                statusFilter !== "all"
-                                  ? "Ничего не найдено"
-                                  : "Нет заданий"}
-                              </h2>
-                              <p className="text-muted-foreground">
-                                {searchQuery ||
-                                typeFilter !== "all" ||
-                                statusFilter !== "all"
-                                  ? "Попробуйте изменить параметры поиска"
-                                  : "Создайте первое разовое задание"}
-                              </p>
-                              {!searchQuery &&
-                                typeFilter === "all" &&
-                                statusFilter === "all" && (
-                                  <Button asChild className="mt-4">
-                                    <Link
-                                      href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/create`}
-                                    >
-                                      <IconSparkles
-                                        className="size-4"
-                                        aria-hidden="true"
-                                      />
-                                      Создать задание
-                                    </Link>
-                                  </Button>
-                                )}
-                            </div>
+              {isLoading ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {Array.from({ length: 6 }, (_, i) => (
+                    <div key={i} className="rounded-lg border p-6">
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2">
+                          <Skeleton className="h-5 w-20" />
+                          <Skeleton className="h-5 w-16" />
+                        </div>
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                        <Skeleton className="h-16 w-full" />
+                        <div className="flex items-center justify-between">
+                          <Skeleton className="h-4 w-24" />
+                          <div className="flex gap-2">
+                            <Skeleton className="h-4 w-8" />
+                            <Skeleton className="h-4 w-8" />
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredAndSortedGigs.map((gig) => (
-                        <TableRow key={gig.id} className="hover:bg-muted/50">
-                          <TableCell>
-                            <Link
-                              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
-                              className="font-medium hover:underline"
-                            >
-                              {gig.title}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline">
-                              {gigTypeLabels[gig.type] || gig.type}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="hidden tabular-nums md:table-cell">
-                            {formatBudget(
-                              gig.budgetMin,
-                              gig.budgetMax,
-                              gig.budgetCurrency,
-                            )}
-                          </TableCell>
-                          <TableCell className="hidden lg:table-cell">
-                            {gig.deadline
-                              ? new Date(gig.deadline).toLocaleDateString(
-                                  "ru-RU",
-                                )
-                              : "—"}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            <Link
-                              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
-                              className="font-medium text-primary hover:underline"
-                            >
-                              {gig.responses ?? 0}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {gig.newResponses && gig.newResponses > 0 ? (
-                              <Badge
-                                variant="default"
-                                className="bg-green-500 hover:bg-green-600"
-                              >
-                                {gig.newResponses}
-                              </Badge>
-                            ) : (
-                              <span className="text-muted-foreground">—</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {gig.isActive ? (
-                              <Badge variant="default">Активно</Badge>
-                            ) : (
-                              <Badge variant="secondary">Неактивно</Badge>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : filteredAndSortedGigs.length === 0 ? (
+                <EmptyState
+                  orgSlug={orgSlug}
+                  workspaceSlug={workspaceSlug}
+                  title={
+                    searchQuery || typeFilter !== "all" || statusFilter !== "all"
+                      ? "Ничего не найдено"
+                      : "Нет заданий"
+                  }
+                  description={
+                    searchQuery || typeFilter !== "all" || statusFilter !== "all"
+                      ? "Попробуйте изменить параметры поиска"
+                      : "Создайте первое разовое задание, чтобы начать поиск исполнителей"
+                  }
+                  showCreateButton={
+                    !searchQuery && typeFilter === "all" && statusFilter === "all"
+                  }
+                />
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {filteredAndSortedGigs.map((gig) => (
+                    <GigCard
+                      key={gig.id}
+                      gig={gig}
+                      orgSlug={orgSlug}
+                      workspaceSlug={workspaceSlug}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
