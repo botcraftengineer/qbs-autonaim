@@ -75,9 +75,9 @@ export const create = protectedProcedure
       });
     }
 
-    let newResponse: GigResponse;
+    let newResponse: GigResponse | undefined;
     try {
-      [newResponse] = await ctx.db
+      const result = await ctx.db
         .insert(gigResponse)
         .values({
           gigId: input.gigId,
@@ -99,6 +99,7 @@ export const create = protectedProcedure
           respondedAt: new Date(),
         })
         .returning();
+      newResponse = result[0];
     } catch (error) {
       // Обработка race condition: параллельный запрос успел вставить дубликат
       if (
