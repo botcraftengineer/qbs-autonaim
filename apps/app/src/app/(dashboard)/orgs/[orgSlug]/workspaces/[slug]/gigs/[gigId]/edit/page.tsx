@@ -25,14 +25,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Skeleton,
-  Switch,
   Textarea,
 } from "@qbs-autonaim/ui";
 
@@ -99,6 +92,14 @@ export default function EditGigPage({ params }: PageProps) {
   const { data: gig, isLoading } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
+
+  // Загружаем настройки компании для отображения
+  const { data: companySettings } = useQuery({
+    ...trpc.company.get.queryOptions({
       workspaceId: workspace?.id ?? "",
     }),
     enabled: !!workspace?.id,
@@ -227,6 +228,23 @@ export default function EditGigPage({ params }: PageProps) {
               <CardTitle>Настройки ИИ</CardTitle>
               <CardDescription>
                 Кастомные инструкции для автоматизации
+                {companySettings && (
+                  <div className="mt-2 p-3 bg-muted rounded-md text-sm">
+                    <div className="font-medium mb-1">Настройки компании:</div>
+                    <div className="space-y-1 text-muted-foreground">
+                      {(companySettings.botName || companySettings.botRole) && (
+                        <div>
+                          Бот: {companySettings.botName || "Не указано"} 
+                          {companySettings.botRole && ` (${companySettings.botRole})`}
+                        </div>
+                      )}
+                      <div>Компания: {companySettings.name}</div>
+                      {companySettings.description && (
+                        <div>Описание: {companySettings.description}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -244,7 +262,12 @@ export default function EditGigPage({ params }: PageProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Эти инструкции будут использоваться ботом при обработке откликов
+                      Эти инструкции будут использоваться ботом при обработке откликов.
+                      {companySettings && (companySettings.botName || companySettings.botRole) && (
+                        <span className="block mt-1 text-xs">
+                          Бот будет представляться как {companySettings.botName || "бот"}{companySettings.botRole && ` - ${companySettings.botRole}`} компании "{companySettings.name}".
+                        </span>
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -265,7 +288,12 @@ export default function EditGigPage({ params }: PageProps) {
                       />
                     </FormControl>
                     <FormDescription>
-                      Используется для автоматической оценки откликов
+                      Используется для автоматической оценки откликов.
+                      {companySettings && (
+                        <span className="block mt-1 text-xs">
+                          Учитывает специфику компании "{companySettings.name}".
+                        </span>
+                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

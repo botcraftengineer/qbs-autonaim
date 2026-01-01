@@ -3,6 +3,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+import type { CompanySettings } from "@qbs-autonaim/db/schema";
 
 const aiResponseSchema = z.object({
   title: z.string().optional(),
@@ -90,6 +91,7 @@ function buildGigGenerationPrompt(
     timeline?: string;
   },
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
+  companySettings?: CompanySettings | null,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -114,6 +116,18 @@ ${currentDocument.budgetRange ? `Бюджет: ${currentDocument.budgetRange}` :
 ${currentDocument.timeline ? `Сроки: ${currentDocument.timeline}` : ""}
 `
     : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто)";
+
+  // Настройки компании для персонализации
+  const companySection = companySettings
+    ? `
+НАСТРОЙКИ КОМПАНИИ:
+Название компании: ${companySettings.name}
+${companySettings.description ? `Описание компании: ${companySettings.description}` : ""}
+${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
+${companySettings.botName ? `Имя бота-рекрутера: ${companySettings.botName}` : ""}
+${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""}
+`
+    : "";
 
   // Detect project type for better context
   const fullContext =
@@ -150,10 +164,20 @@ ${currentDocument.timeline ? `Сроки: ${currentDocument.timeline}` : ""}
       "\nТИП ПРОЕКТА: Дизайн - предлагай дизайнерские задачи (прототип, фирменный стиль, анимации)";
   }
 
-  return `Ты — эксперт по созданию технических заданий для фрилансеров.
+  const botPersonality = companySettings?.botName && companySettings?.botRole
+    ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
+    : companySettings?.name
+    ? `Ты — эксперт по созданию технических заданий для компании "${companySettings.name}".`
+    : "Ты — эксперт по созданию технических заданий для фрилансеров.";
 
-ЗАДАЧА: На основе сообщения пользователя обнови документ разового задания (gig).${projectTypeHint}
-${historySection}
+  const companyContext = companySettings?.description
+    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${companySettings.description}\nУчитывай специфику и потребности этой компании при создании заданий.`
+    : "";
+
+  return `${botPersonality}
+
+ЗАДАЧА: На основе сообщения пользователя обнови документ разового задания (gig).${projectTypeHint}${companyContext}
+${companySection}${historySection}
 НОВОЕ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
 ${message}
 ${documentSection}
@@ -161,6 +185,7 @@ ${documentSection}
 ИНСТРУКЦИИ:
 - Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
 - Определи тип проекта (Telegram-бот, веб-сайт, мобильное приложение, дизайн и т.д.)
+- Учитывай специфику и потребности компании "${companySettings?.name || "клиента"}"
 - Обнови соответствующие разделы документа
 - Если пользователь указывает название задачи - обнови title
 - Если описывает проект/задачу - обнови description
@@ -216,10 +241,16 @@ export const chatGenerate = protectedProcedure
       });
     }
 
+    // Загружаем настройки компании для персонализации промпта
+    const companySettings = await ctx.db.query.companySettings.findFirst({
+      where: (companySettings, { eq }) => eq(companySettings.workspaceId, workspaceId),
+    });
+
     const prompt = buildGigGenerationPrompt(
       message,
       currentDocument,
       conversationHistory,
+      companySettings,
     );
 
     try {
