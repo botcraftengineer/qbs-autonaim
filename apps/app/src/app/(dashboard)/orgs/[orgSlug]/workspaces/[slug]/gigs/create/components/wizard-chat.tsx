@@ -6,10 +6,11 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Input,
   ScrollArea,
   Separator,
 } from "@qbs-autonaim/ui";
-import { Bot, Loader2, RotateCcw, Sparkles } from "lucide-react";
+import { Bot, Loader2, RotateCcw, Send, Sparkles } from "lucide-react";
 import React from "react";
 import {
   BudgetStep,
@@ -34,9 +35,16 @@ import {
   type WizardStep,
 } from "./wizard-types";
 
+interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 interface WizardChatProps {
   onComplete: (state: WizardState) => void;
   isGenerating: boolean;
+  onChatMessage?: (message: string, history: ConversationMessage[]) => void;
+  quickReplies?: string[];
 }
 
 const STEP_MESSAGES: Record<WizardStep, string> = {
@@ -47,7 +55,8 @@ const STEP_MESSAGES: Record<WizardStep, string> = {
   budget: "Понял! Какой бюджет планируете?",
   timeline: "Хорошо! Когда нужен результат?",
   details: "Почти готово! Хотите добавить детали?",
-  review: "Генерирую ТЗ...",
+  review: "Генерирую ТЗ…",
+  chat: "ТЗ готово! Можете уточнить детали или попросить изменения.",
 };
 
 function SelectionChip({ label, emoji }: { label: string; emoji?: string }) {
@@ -93,10 +102,20 @@ function SelectionHistory({ state }: { state: WizardState }) {
   );
 }
 
-export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
+export function WizardChat({
+  onComplete,
+  isGenerating,
+  onChatMessage,
+  quickReplies = [],
+}: WizardChatProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const [state, setState] = React.useState<WizardState>(initialWizardState);
   const [showCustomInput, setShowCustomInput] = React.useState(false);
+  const [chatInput, setChatInput] = React.useState("");
+  const [conversationHistory, setConversationHistory] = React.useState<
+    ConversationMessage[]
+  >([]);
 
   const scrollToBottom = React.useCallback(() => {
     const el = scrollRef.current?.querySelector(
@@ -111,7 +130,21 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: scrollToBottom должен вызываться при смене шага
   React.useEffect(() => {
     scrollToBottom();
-  }, [state.step, scrollToBottom]);
+  }, [state.step, conversationHistory.length, scrollToBottom]);
+
+  // Переход в chat после завершения генерации
+  React.useEffect(() => {
+    if (state.step === "review" && !isGenerating) {
+      setState((s) => ({ ...s, step: "chat" }));
+    }
+  }, [state.step, isGenerating]);
+
+  // Автофокус на input в режиме чата
+  React.useEffect(() => {
+    if (state.step === "chat" && !isGenerating) {
+      inputRef.current?.focus();
+    }
+  }, [state.step, isGenerating]);
 
   const goToStep = (step: WizardStep) => setState((s) => ({ ...s, step }));
   const handleReset = () => {
@@ -173,7 +206,27 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
       step: "review" as const,
     };
     setState(finalState);
+    // Добавляем начальное сообщение в историю
+    if (details) {
+      setConversationHistory([{ role: "user", content: details }]);
+    }
     onComplete(finalState);
+  };
+
+  const handleChatSubmit = (message: string) => {
+    if (!message.trim() || isGenerating) return;
+
+    const newHistory: ConversationMessage[] = [
+      ...conversationHistory,
+      { role: "user", content: message.trim() },
+    ];
+    setConversationHistory(newHistory);
+    setChatInput("");
+    onChatMessage?.(message.trim(), newHistory);
+  };
+
+  const handleQuickReply = (reply: string) => {
+    handleChatSubmit(reply);
   };
 
   const handleCustom = () => {
@@ -252,7 +305,54 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
         return (
           <div className="flex items-center gap-3 text-muted-foreground">
             <Loader2 className="h-5 w-5 animate-spin" />
-            <span>Генерирую ТЗ...</span>
+            <span>Генерирую ТЗ…</span>
+          </div>
+        );
+      case "chat":
+        return (
+          <div className="space-y-3">
+            {/* История сообщений */}
+            {conversationHistory.length > 0 && (
+              <div className="space-y-2">
+                {conversationHistory.map((msg) => (
+                  <div
+                    key={`${msg.role}-${msg.content.slice(0, 20)}`}
+                    className={`rounded-2xl px-4 py-2.5 text-sm max-w-[85%] ${
+                      msg.role === "user"
+                        ? "ml-auto bg-primary text-primary-foreground rounded-br-md"
+                        : "bg-muted rounded-bl-md"
+                    }`}
+                  >
+                    {msg.content}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Quick replies */}
+            {quickReplies.length > 0 && !isGenerating && (
+              <div className="flex flex-wrap gap-2">
+                {quickReplies.map((reply) => (
+                  <Button
+                    key={reply}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleQuickReply(reply)}
+                    className="h-8 text-xs"
+                  >
+                    {reply}
+                  </Button>
+                ))}
+              </div>
+            )}
+
+            {/* Индикатор генерации */}
+            {isGenerating && (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Обновляю ТЗ…</span>
+              </div>
+            )}
           </div>
         );
       default:
@@ -270,6 +370,7 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
       "timeline",
       "details",
       "review",
+      "chat",
     ];
     return Math.round(((steps.indexOf(state.step) + 1) / steps.length) * 100);
   };
@@ -318,10 +419,49 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
                 {STEP_MESSAGES[state.step]}
               </div>
               {!isGenerating && renderStep()}
+              {isGenerating && state.step !== "chat" && renderStep()}
             </div>
           </div>
         </div>
       </ScrollArea>
+
+      {/* Поле ввода для чата */}
+      {state.step === "chat" && (
+        <>
+          <Separator />
+          <div className="p-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleChatSubmit(chatInput);
+              }}
+              className="flex gap-2"
+            >
+              <Input
+                ref={inputRef}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Уточните детали или попросите изменения…"
+                disabled={isGenerating}
+                className="flex-1"
+                autoComplete="off"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!chatInput.trim() || isGenerating}
+                aria-label="Отправить сообщение"
+              >
+                {isGenerating ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+            </form>
+          </div>
+        </>
+      )}
     </Card>
   );
 }

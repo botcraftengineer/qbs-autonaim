@@ -8,7 +8,8 @@ export type WizardStep =
   | "budget"
   | "timeline"
   | "details"
-  | "review";
+  | "review"
+  | "chat";
 
 export interface CategoryOption {
   id: GigType;
