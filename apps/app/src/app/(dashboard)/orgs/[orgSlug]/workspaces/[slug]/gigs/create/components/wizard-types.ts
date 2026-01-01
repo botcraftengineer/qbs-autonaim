@@ -1,8 +1,9 @@
-import type { GigType } from "./types";
+﻿import type { GigType } from "./types";
 
 export type WizardStep =
   | "category"
   | "subtype"
+  | "stack"
   | "features"
   | "budget"
   | "timeline"
@@ -21,11 +22,19 @@ export interface SubtypeOption {
   id: string;
   label: string;
   features: FeatureOption[];
+  stacks?: TechStackOption[];
 }
 
 export interface FeatureOption {
   id: string;
   label: string;
+  popular?: boolean;
+}
+
+export interface TechStackOption {
+  id: string;
+  label: string;
+  description: string;
   popular?: boolean;
 }
 
@@ -53,6 +62,14 @@ export const CATEGORIES: CategoryOption[] = [
       {
         id: "landing",
         label: "Лендинг",
+        stacks: [
+          { id: "html-css", label: "HTML/CSS/JS", description: "Простой статичный сайт", popular: true },
+          { id: "react", label: "React", description: "Next.js, Gatsby" },
+          { id: "vue", label: "Vue", description: "Nuxt.js" },
+          { id: "wordpress", label: "WordPress", description: "Готовые темы и плагины", popular: true },
+          { id: "tilda", label: "Tilda/Конструктор", description: "Без кода" },
+          { id: "any", label: "На усмотрение", description: "Доверяю выбор исполнителю" },
+        ],
         features: [
           { id: "responsive", label: "Адаптивный дизайн", popular: true },
           { id: "animations", label: "Анимации" },
@@ -64,6 +81,13 @@ export const CATEGORIES: CategoryOption[] = [
       {
         id: "corporate",
         label: "Корпоративный сайт",
+        stacks: [
+          { id: "wordpress", label: "WordPress", description: "Популярная CMS", popular: true },
+          { id: "react-next", label: "React + Next.js", description: "Современный стек" },
+          { id: "php-laravel", label: "PHP/Laravel", description: "Классический backend" },
+          { id: "bitrix", label: "1С-Битрикс", description: "Для интеграции с 1С" },
+          { id: "any", label: "На усмотрение", description: "Доверяю выбор исполнителю" },
+        ],
         features: [
           { id: "cms", label: "Админ-панель (CMS)", popular: true },
           { id: "blog", label: "Блог" },
@@ -75,6 +99,13 @@ export const CATEGORIES: CategoryOption[] = [
       {
         id: "ecommerce",
         label: "Интернет-магазин",
+        stacks: [
+          { id: "shopify", label: "Shopify", description: "Готовое решение" },
+          { id: "woocommerce", label: "WooCommerce", description: "WordPress + магазин", popular: true },
+          { id: "bitrix", label: "1С-Битрикс", description: "Интеграция с 1С", popular: true },
+          { id: "react-next", label: "React + Next.js", description: "Кастомное решение" },
+          { id: "any", label: "На усмотрение", description: "Доверяю выбор исполнителю" },
+        ],
         features: [
           { id: "catalog", label: "Каталог товаров", popular: true },
           { id: "cart", label: "Корзина и оформление", popular: true },
@@ -86,6 +117,14 @@ export const CATEGORIES: CategoryOption[] = [
       {
         id: "webapp",
         label: "Веб-приложение",
+        stacks: [
+          { id: "react-node", label: "React + Node.js", description: "JavaScript fullstack", popular: true },
+          { id: "react-next", label: "Next.js", description: "React фреймворк", popular: true },
+          { id: "vue-nuxt", label: "Vue + Nuxt", description: "Vue фреймворк" },
+          { id: "python-django", label: "Python + Django", description: "Python backend" },
+          { id: "php-laravel", label: "PHP + Laravel", description: "PHP backend" },
+          { id: "any", label: "На усмотрение", description: "Доверяю выбор исполнителю" },
+        ],
         features: [
           { id: "auth", label: "Авторизация", popular: true },
           { id: "dashboard", label: "Личный кабинет" },
@@ -97,6 +136,13 @@ export const CATEGORIES: CategoryOption[] = [
       {
         id: "mobile",
         label: "Мобильное приложение",
+        stacks: [
+          { id: "react-native", label: "React Native", description: "Кроссплатформа JS", popular: true },
+          { id: "flutter", label: "Flutter", description: "Кроссплатформа Dart", popular: true },
+          { id: "swift", label: "Swift (iOS)", description: "Нативный iOS" },
+          { id: "kotlin", label: "Kotlin (Android)", description: "Нативный Android" },
+          { id: "any", label: "На усмотрение", description: "Доверяю выбор исполнителю" },
+        ],
         features: [
           { id: "ios", label: "iOS", popular: true },
           { id: "android", label: "Android", popular: true },
@@ -108,6 +154,12 @@ export const CATEGORIES: CategoryOption[] = [
       {
         id: "bot",
         label: "Telegram-бот",
+        stacks: [
+          { id: "python", label: "Python", description: "aiogram, python-telegram-bot", popular: true },
+          { id: "nodejs", label: "Node.js", description: "Telegraf, grammY", popular: true },
+          { id: "php", label: "PHP", description: "Telegram Bot API" },
+          { id: "any", label: "На усмотрение", description: "Доверяю выбор исполнителю" },
+        ],
         features: [
           { id: "commands", label: "Команды и меню", popular: true },
           { id: "payments", label: "Приём платежей" },
@@ -121,7 +173,7 @@ export const CATEGORIES: CategoryOption[] = [
   {
     id: "DESIGN",
     label: "Дизайн",
-    emoji: "🎨",
+    emoji: "",
     description: "Логотипы, UI/UX, графика",
     subtypes: [
       {
@@ -169,7 +221,7 @@ export const CATEGORIES: CategoryOption[] = [
   {
     id: "COPYWRITING",
     label: "Тексты",
-    emoji: "✍️",
+    emoji: "",
     description: "Статьи, копирайтинг, контент",
     subtypes: [
       {
@@ -207,7 +259,7 @@ export const CATEGORIES: CategoryOption[] = [
   {
     id: "MARKETING",
     label: "Маркетинг",
-    emoji: "📈",
+    emoji: "",
     description: "Реклама, SMM, продвижение",
     subtypes: [
       {
@@ -235,7 +287,7 @@ export const CATEGORIES: CategoryOption[] = [
   {
     id: "VIDEO",
     label: "Видео",
-    emoji: "🎬",
+    emoji: "",
     description: "Монтаж, анимация, ролики",
     subtypes: [
       {
@@ -263,7 +315,7 @@ export const CATEGORIES: CategoryOption[] = [
   {
     id: "OTHER",
     label: "Другое",
-    emoji: "📦",
+    emoji: "",
     description: "Опишите задачу своими словами",
     subtypes: [],
   },
@@ -271,24 +323,25 @@ export const CATEGORIES: CategoryOption[] = [
 
 export const BUDGET_OPTIONS: BudgetOption[] = [
   { id: "micro", label: "до 5 000 ₽", min: 0, max: 5000 },
-  { id: "small", label: "5 000 – 15 000 ₽", min: 5000, max: 15000 },
-  { id: "medium", label: "15 000 – 50 000 ₽", min: 15000, max: 50000 },
-  { id: "large", label: "50 000 – 150 000 ₽", min: 50000, max: 150000 },
+  { id: "small", label: "5 000  15 000 ₽", min: 5000, max: 15000 },
+  { id: "medium", label: "15 000  50 000 ₽", min: 15000, max: 50000 },
+  { id: "large", label: "50 000  150 000 ₽", min: 50000, max: 150000 },
   { id: "enterprise", label: "от 150 000 ₽", min: 150000, max: 500000 },
 ];
 
 export const TIMELINE_OPTIONS: TimelineOption[] = [
-  { id: "asap", label: "Срочно", emoji: "🔥", days: "1-3 дня" },
-  { id: "week", label: "Неделя", emoji: "📅", days: "5-7 дней" },
-  { id: "two-weeks", label: "2 недели", emoji: "📆", days: "10-14 дней" },
-  { id: "month", label: "Месяц", emoji: "🗓️", days: "3-4 недели" },
-  { id: "flexible", label: "Гибкие сроки", emoji: "🤝", days: "обсуждаемо" },
+  { id: "asap", label: "Срочно", emoji: "", days: "1-3 дня" },
+  { id: "week", label: "Неделя", emoji: "", days: "5-7 дней" },
+  { id: "two-weeks", label: "2 недели", emoji: "", days: "10-14 дней" },
+  { id: "month", label: "Месяц", emoji: "", days: "3-4 недели" },
+  { id: "flexible", label: "Гибкие сроки", emoji: "", days: "обсуждаемо" },
 ];
 
 export interface WizardState {
   step: WizardStep;
   category: CategoryOption | null;
   subtype: SubtypeOption | null;
+  stack: TechStackOption | null;
   features: string[];
   budget: BudgetOption | null;
   timeline: TimelineOption | null;
@@ -299,6 +352,7 @@ export const initialWizardState: WizardState = {
   step: "category",
   category: null,
   subtype: null,
+  stack: null,
   features: [],
   budget: null,
   timeline: null,

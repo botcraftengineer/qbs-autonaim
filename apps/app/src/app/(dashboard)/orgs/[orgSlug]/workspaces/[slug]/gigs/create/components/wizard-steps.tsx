@@ -6,6 +6,7 @@ import type {
   BudgetOption,
   CategoryOption,
   SubtypeOption,
+  TechStackOption,
   TimelineOption,
 } from "./wizard-types";
 
@@ -92,6 +93,70 @@ export function SubtypeStep({
         >
           Другое…
         </Button>
+      </div>
+    </div>
+  );
+}
+
+interface StackStepProps {
+  subtype: SubtypeOption;
+  selected: TechStackOption | null;
+  onSelect: (stack: TechStackOption) => void;
+  onBack: () => void;
+}
+
+export function StackStep({
+  subtype,
+  selected,
+  onSelect,
+  onBack,
+}: StackStepProps) {
+  const stacks = subtype.stacks || [];
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={onBack} className="h-8 px-2">
+          ← Назад
+        </Button>
+        <span className="text-sm text-muted-foreground">{subtype.label}</span>
+      </div>
+      <p className="text-sm text-muted-foreground">На чём делать?</p>
+      <div className="grid gap-2">
+        {stacks.map((stack) => {
+          const isSelected = selected?.id === stack.id;
+          return (
+            <button
+              key={stack.id}
+              type="button"
+              onClick={() => onSelect(stack)}
+              className={cn(
+                "flex items-center gap-3 rounded-xl border p-3 text-left transition-all",
+                "hover:border-primary hover:bg-primary/5",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                "min-h-[56px]",
+                isSelected && "border-primary bg-primary/5",
+                stack.popular && !isSelected && "border-primary/30",
+              )}
+              style={{ touchAction: "manipulation" }}
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-sm">{stack.label}</span>
+                  {stack.popular && (
+                    <span className="text-xs text-primary">популярно</span>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground">
+                  {stack.description}
+                </span>
+              </div>
+              {isSelected && (
+                <Check className="h-5 w-5 text-primary shrink-0" />
+              )}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

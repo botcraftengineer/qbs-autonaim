@@ -16,6 +16,7 @@ import {
   CategoryStep,
   DetailsStep,
   FeaturesStep,
+  StackStep,
   SubtypeStep,
   TimelineStep,
 } from "./wizard-steps";
@@ -26,6 +27,7 @@ import {
   type CategoryOption,
   initialWizardState,
   type SubtypeOption,
+  type TechStackOption,
   TIMELINE_OPTIONS,
   type TimelineOption,
   type WizardState,
@@ -40,6 +42,7 @@ interface WizardChatProps {
 const STEP_MESSAGES: Record<WizardStep, string> = {
   category: "Привет! Давайте создадим задание. Что вам нужно?",
   subtype: "Отлично! Уточните, что именно:",
+  stack: "На каких технологиях делать?",
   features: "Супер! Какие функции нужны?",
   budget: "Понял! Какой бюджет планируете?",
   timeline: "Хорошо! Когда нужен результат?",
@@ -60,6 +63,7 @@ function SelectionHistory({ state }: { state: WizardState }) {
   const chips: { label: string; emoji?: string }[] = [];
   if (state.category) chips.push({ label: state.category.label, emoji: state.category.emoji });
   if (state.subtype) chips.push({ label: state.subtype.label });
+  if (state.stack) chips.push({ label: state.stack.label });
   if (state.features.length > 0) {
     const count = state.features.length;
     const suffix = count === 1 ? "ия" : count < 5 ? "ии" : "ий";
@@ -93,13 +97,22 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
   const handleReset = () => { setState(initialWizardState); setShowCustomInput(false); };
 
   const handleCategorySelect = (category: CategoryOption) => {
-    setState((s) => ({ ...s, category, subtype: null, features: [] }));
+    setState((s) => ({ ...s, category, subtype: null, stack: null, features: [] }));
     if (category.subtypes.length === 0) { setShowCustomInput(true); goToStep("details"); }
     else goToStep("subtype");
   };
 
   const handleSubtypeSelect = (subtype: SubtypeOption) => {
-    setState((s) => ({ ...s, subtype, features: [] }));
+    setState((s) => ({ ...s, subtype, stack: null, features: [] }));
+    if (subtype.stacks && subtype.stacks.length > 0) {
+      goToStep("stack");
+    } else {
+      goToStep("features");
+    }
+  };
+
+  const handleStackSelect = (stack: TechStackOption) => {
+    setState((s) => ({ ...s, stack }));
     goToStep("features");
   };
 
@@ -138,9 +151,13 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
         return state.category ? (
           <SubtypeStep category={state.category} onSelect={handleSubtypeSelect} onBack={() => goToStep("category")} onCustom={handleCustom} />
         ) : null;
+      case "stack":
+        return state.subtype ? (
+          <StackStep subtype={state.subtype} selected={state.stack} onSelect={handleStackSelect} onBack={() => goToStep("subtype")} />
+        ) : null;
       case "features":
         return state.subtype ? (
-          <FeaturesStep subtype={state.subtype} selected={state.features} onToggle={handleFeatureToggle} onNext={() => goToStep("budget")} onBack={() => goToStep("subtype")} />
+          <FeaturesStep subtype={state.subtype} selected={state.features} onToggle={handleFeatureToggle} onNext={() => goToStep("budget")} onBack={() => state.subtype?.stacks?.length ? goToStep("stack") : goToStep("subtype")} />
         ) : null;
       case "budget":
         return <BudgetStep options={BUDGET_OPTIONS} selected={state.budget} onSelect={handleBudgetSelect} onBack={() => goToStep("features")} />;
@@ -161,7 +178,7 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
   };
 
   const getProgressPercent = () => {
-    const steps: WizardStep[] = ["category", "subtype", "features", "budget", "timeline", "details", "review"];
+    const steps: WizardStep[] = ["category", "subtype", "stack", "features", "budget", "timeline", "details", "review"];
     return Math.round(((steps.indexOf(state.step) + 1) / steps.length) * 100);
   };
 
