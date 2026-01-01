@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import {
   Button,
@@ -61,16 +61,28 @@ function SelectionChip({ label, emoji }: { label: string; emoji?: string }) {
 
 function SelectionHistory({ state }: { state: WizardState }) {
   const chips: { label: string; emoji?: string }[] = [];
-  if (state.category) chips.push({ label: state.category.label, emoji: state.category.emoji });
+  if (state.category)
+    chips.push({ label: state.category.label, emoji: state.category.emoji });
   if (state.subtype) chips.push({ label: state.subtype.label });
   if (state.stack) chips.push({ label: state.stack.label });
   if (state.features.length > 0) {
     const count = state.features.length;
-    const suffix = count === 1 ? "ия" : count < 5 ? "ии" : "ий";
-    chips.push({ label: count + " функц" + suffix });
+    const n = count % 100;
+    let suffix: string;
+    if (n >= 11 && n <= 14) {
+      suffix = "ий";
+    } else if (count % 10 === 1) {
+      suffix = "ия";
+    } else if (count % 10 >= 2 && count % 10 <= 4) {
+      suffix = "ии";
+    } else {
+      suffix = "ий";
+    }
+    chips.push({ label: `${count} функц${suffix}` });
   }
   if (state.budget) chips.push({ label: state.budget.label });
-  if (state.timeline) chips.push({ label: state.timeline.label, emoji: state.timeline.emoji });
+  if (state.timeline)
+    chips.push({ label: state.timeline.label, emoji: state.timeline.emoji });
   if (chips.length === 0) return null;
   return (
     <div className="flex flex-wrap gap-1.5 mb-3">
@@ -87,19 +99,38 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
   const [showCustomInput, setShowCustomInput] = React.useState(false);
 
   const scrollToBottom = React.useCallback(() => {
-    const el = scrollRef.current?.querySelector("[data-radix-scroll-area-viewport]");
-    if (el) requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
+    const el = scrollRef.current?.querySelector(
+      "[data-radix-scroll-area-viewport]",
+    );
+    if (el)
+      requestAnimationFrame(() => {
+        el.scrollTop = el.scrollHeight;
+      });
   }, []);
 
-  React.useEffect(() => { scrollToBottom(); }, [state.step, scrollToBottom]);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scrollToBottom должен вызываться при смене шага
+  React.useEffect(() => {
+    scrollToBottom();
+  }, [state.step, scrollToBottom]);
 
   const goToStep = (step: WizardStep) => setState((s) => ({ ...s, step }));
-  const handleReset = () => { setState(initialWizardState); setShowCustomInput(false); };
+  const handleReset = () => {
+    setState(initialWizardState);
+    setShowCustomInput(false);
+  };
 
   const handleCategorySelect = (category: CategoryOption) => {
-    setState((s) => ({ ...s, category, subtype: null, stack: null, features: [] }));
-    if (category.subtypes.length === 0) { setShowCustomInput(true); goToStep("details"); }
-    else goToStep("subtype");
+    setState((s) => ({
+      ...s,
+      category,
+      subtype: null,
+      stack: null,
+      features: [],
+    }));
+    if (category.subtypes.length === 0) {
+      setShowCustomInput(true);
+      goToStep("details");
+    } else goToStep("subtype");
   };
 
   const handleSubtypeSelect = (subtype: SubtypeOption) => {
@@ -136,35 +167,87 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
   };
 
   const handleDetailsSubmit = (details: string) => {
-    const finalState = { ...state, customDetails: details, step: "review" as const };
+    const finalState = {
+      ...state,
+      customDetails: details,
+      step: "review" as const,
+    };
     setState(finalState);
     onComplete(finalState);
   };
 
-  const handleCustom = () => { setShowCustomInput(true); goToStep("details"); };
+  const handleCustom = () => {
+    setShowCustomInput(true);
+    goToStep("details");
+  };
 
   const renderStep = () => {
     switch (state.step) {
       case "category":
-        return <CategoryStep categories={CATEGORIES} onSelect={handleCategorySelect} />;
+        return (
+          <CategoryStep
+            categories={CATEGORIES}
+            onSelect={handleCategorySelect}
+          />
+        );
       case "subtype":
         return state.category ? (
-          <SubtypeStep category={state.category} onSelect={handleSubtypeSelect} onBack={() => goToStep("category")} onCustom={handleCustom} />
+          <SubtypeStep
+            category={state.category}
+            onSelect={handleSubtypeSelect}
+            onBack={() => goToStep("category")}
+            onCustom={handleCustom}
+          />
         ) : null;
       case "stack":
         return state.subtype ? (
-          <StackStep subtype={state.subtype} selected={state.stack} onSelect={handleStackSelect} onBack={() => goToStep("subtype")} />
+          <StackStep
+            subtype={state.subtype}
+            selected={state.stack}
+            onSelect={handleStackSelect}
+            onBack={() => goToStep("subtype")}
+          />
         ) : null;
       case "features":
         return state.subtype ? (
-          <FeaturesStep subtype={state.subtype} selected={state.features} onToggle={handleFeatureToggle} onNext={() => goToStep("budget")} onBack={() => state.subtype?.stacks?.length ? goToStep("stack") : goToStep("subtype")} />
+          <FeaturesStep
+            subtype={state.subtype}
+            selected={state.features}
+            onToggle={handleFeatureToggle}
+            onNext={() => goToStep("budget")}
+            onBack={() =>
+              state.subtype?.stacks?.length
+                ? goToStep("stack")
+                : goToStep("subtype")
+            }
+          />
         ) : null;
       case "budget":
-        return <BudgetStep options={BUDGET_OPTIONS} selected={state.budget} onSelect={handleBudgetSelect} onBack={() => goToStep("features")} />;
+        return (
+          <BudgetStep
+            options={BUDGET_OPTIONS}
+            selected={state.budget}
+            onSelect={handleBudgetSelect}
+            onBack={() => goToStep("features")}
+          />
+        );
       case "timeline":
-        return <TimelineStep options={TIMELINE_OPTIONS} selected={state.timeline} onSelect={handleTimelineSelect} onBack={() => goToStep("budget")} />;
+        return (
+          <TimelineStep
+            options={TIMELINE_OPTIONS}
+            selected={state.timeline}
+            onSelect={handleTimelineSelect}
+            onBack={() => goToStep("budget")}
+          />
+        );
       case "details":
-        return <DetailsStep onSubmit={handleDetailsSubmit} onSkip={() => handleDetailsSubmit("")} onBack={() => goToStep(showCustomInput ? "category" : "timeline")} />;
+        return (
+          <DetailsStep
+            onSubmit={handleDetailsSubmit}
+            onSkip={() => handleDetailsSubmit("")}
+            onBack={() => goToStep(showCustomInput ? "category" : "timeline")}
+          />
+        );
       case "review":
         return (
           <div className="flex items-center gap-3 text-muted-foreground">
@@ -178,7 +261,16 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
   };
 
   const getProgressPercent = () => {
-    const steps: WizardStep[] = ["category", "subtype", "stack", "features", "budget", "timeline", "details", "review"];
+    const steps: WizardStep[] = [
+      "category",
+      "subtype",
+      "stack",
+      "features",
+      "budget",
+      "timeline",
+      "details",
+      "review",
+    ];
     return Math.round(((steps.indexOf(state.step) + 1) / steps.length) * 100);
   };
 
@@ -194,13 +286,23 @@ export function WizardChat({ onComplete, isGenerating }: WizardChatProps) {
             <CardDescription>Создание задания</CardDescription>
           </div>
           {state.step !== "category" && state.step !== "review" && (
-            <Button variant="ghost" size="sm" onClick={handleReset} className="h-8 px-2 text-muted-foreground" aria-label="Начать заново">
-              <RotateCcw className="h-4 w-4 mr-1" />Заново
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="h-8 px-2 text-muted-foreground"
+              aria-label="Начать заново"
+            >
+              <RotateCcw className="h-4 w-4 mr-1" />
+              Заново
             </Button>
           )}
         </div>
         <div className="h-1 bg-muted rounded-full overflow-hidden mt-2">
-          <div className="h-full bg-primary transition-all duration-300" style={{ width: getProgressPercent() + "%" }} />
+          <div
+            className="h-full bg-primary transition-all duration-300"
+            style={{ width: `${getProgressPercent()}%` }}
+          />
         </div>
       </CardHeader>
       <Separator />

@@ -102,6 +102,9 @@ export default function CreateGigPage({ params }: PageProps) {
         `Сроки: ${wizardState.timeline.label} (${wizardState.timeline.days})`,
       );
     }
+    if (wizardState.stack) {
+      parts.push(`Стек: ${wizardState.stack.label}`);
+    }
     if (wizardState.customDetails) {
       parts.push(`Дополнительно: ${wizardState.customDetails}`);
     }
@@ -119,6 +122,10 @@ export default function CreateGigPage({ params }: PageProps) {
       const doc = result.document;
 
       // Обновляем draft из ответа AI
+      // Нормализуем estimatedDuration к строке: приоритет AI-ответу, затем wizard
+      const estimatedDuration: string =
+        doc.timeline ?? wizardState.timeline?.days ?? "";
+
       setDraft({
         title: doc.title || "",
         description: doc.description || "",
@@ -128,7 +135,7 @@ export default function CreateGigPage({ params }: PageProps) {
         budgetMin: wizardState.budget?.min,
         budgetMax: wizardState.budget?.max,
         budgetCurrency: "RUB",
-        estimatedDuration: doc.timeline || wizardState.timeline?.days || "",
+        estimatedDuration,
       });
 
       toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
@@ -164,8 +171,8 @@ export default function CreateGigPage({ params }: PageProps) {
       title: v.title,
       description: v.description || undefined,
       type: v.type,
-      budgetMin: v.budgetMin ? Number.parseInt(v.budgetMin) : undefined,
-      budgetMax: v.budgetMax ? Number.parseInt(v.budgetMax) : undefined,
+      budgetMin: v.budgetMin ? Number.parseInt(v.budgetMin, 10) : undefined,
+      budgetMax: v.budgetMax ? Number.parseInt(v.budgetMax, 10) : undefined,
       budgetCurrency: v.budgetCurrency,
       deadline: v.deadline ? new Date(v.deadline).toISOString() : undefined,
       estimatedDuration: v.estimatedDuration || undefined,

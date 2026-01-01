@@ -259,6 +259,7 @@ function PureAIChatInput({
       {/* Превью аудио */}
       {audioAttachment && !isRecording && (
         <div className="mb-2 flex items-center gap-2 rounded-lg bg-muted p-2">
+          {/* biome-ignore lint/a11y/useMediaCaption: голосовое сообщение без субтитров */}
           <audio
             controls
             src={audioAttachment.url}
