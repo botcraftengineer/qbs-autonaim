@@ -35,19 +35,7 @@ export interface GigDraft {
   estimatedDuration: string;
 }
 
-// Схема для опционального положительного целого числа из строки
-const optionalPositiveInt = z
-  .string()
-  .transform((val) => (val.trim() === "" ? undefined : val))
-  .pipe(
-    z.union([
-      z.undefined(),
-      z.coerce
-        .number({ error: "Введите корректное число" })
-        .int("Бюджет должен быть целым числом")
-        .positive("Бюджет должен быть положительным"),
-    ]),
-  );
+// Remove the unused optionalPositiveInt schema
 
 export const formSchema = z.object({
   title: z.string().min(1, "Укажите название задания").max(500),
@@ -65,8 +53,8 @@ export const formSchema = z.object({
     "CONSULTING",
     "OTHER",
   ]),
-  budgetMin: optionalPositiveInt,
-  budgetMax: optionalPositiveInt,
+  budgetMin: z.number().optional(),
+  budgetMax: z.number().optional(),
   budgetCurrency: z.string().length(3),
   deadline: z.string(),
   estimatedDuration: z.string().max(100),

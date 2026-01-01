@@ -125,26 +125,22 @@ export default function GigResponsesPage({ params }: PageProps) {
   const [activeTab, setActiveTab] = React.useState("all");
 
   // Получаем информацию о gig
-  const { data: gig } = useQuery(
-    trpc.gig.get.queryOptions({
+  const { data: gig } = useQuery({
+    ...trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId: workspace?.id ?? "",
     }),
-    {
-      enabled: !!workspace?.id,
-    }
-  );
+    enabled: !!workspace?.id,
+  });
 
   // Получаем отклики
-  const { data: responses, isLoading } = useQuery(
-    trpc.gig.responses.list.queryOptions({
+  const { data: responses, isLoading } = useQuery({
+    ...trpc.gig.responses.list.queryOptions({
       gigId,
       workspaceId: workspace?.id ?? "",
     }),
-    {
-      enabled: !!workspace?.id,
-    }
-  );
+    enabled: !!workspace?.id,
+  });
 
   if (isLoading) {
     return <ResponsesSkeleton />;
@@ -306,10 +302,10 @@ export default function GigResponsesPage({ params }: PageProps) {
                             {formatDate(response.createdAt)}
                           </div>
                           
-                          {response.source && response.source !== "MANUAL" && (
+                          {(response as any).source && (response as any).source !== "MANUAL" && (
                             <div className="flex items-center gap-1">
                               <ExternalLink className="h-4 w-4" />
-                              {response.source}
+                              {(response as any).source}
                             </div>
                           )}
                         </div>
@@ -329,23 +325,23 @@ export default function GigResponsesPage({ params }: PageProps) {
                     </div>
                   </CardHeader>
                   
-                  {(response.message || response.portfolio || response.experience) && (
+                  {((response as any).message || (response as any).portfolio || (response as any).experience) && (
                     <CardContent>
                       <div className="space-y-3">
-                        {response.message && (
+                        {(response as any).message && (
                           <div>
                             <h4 className="text-sm font-medium mb-1">Сообщение</h4>
                             <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                              {response.message}
+                              {(response as any).message}
                             </p>
                           </div>
                         )}
                         
-                        {response.portfolio && (
+                        {(response as any).portfolio && (
                           <div>
                             <h4 className="text-sm font-medium mb-1">Портфолио</h4>
                             <Button variant="outline" size="sm" asChild>
-                              <a href={response.portfolio} target="_blank" rel="noopener noreferrer">
+                              <a href={(response as any).portfolio} target="_blank" rel="noopener noreferrer">
                                 <ExternalLink className="h-4 w-4 mr-2" />
                                 Посмотреть портфолио
                               </a>

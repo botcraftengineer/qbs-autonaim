@@ -55,28 +55,6 @@ const gigTypeOptions = [
 ];
 
 const formSchema = z.object({
-  title: z.string().min(1, "Название обязательно").max(500, "Максимум 500 символов"),
-  description: z.string().optional(),
-  type: z.enum([
-    "DEVELOPMENT",
-    "DESIGN", 
-    "COPYWRITING",
-    "MARKETING",
-    "TRANSLATION",
-    "VIDEO",
-    "AUDIO",
-    "DATA_ENTRY",
-    "RESEARCH",
-    "CONSULTING",
-    "OTHER"
-  ]),
-  budgetMin: z.string().optional(),
-  budgetMax: z.string().optional(),
-  budgetCurrency: z.string().default("RUB"),
-  deadline: z.string().optional(),
-  estimatedDuration: z.string().optional(),
-  url: z.string().url("Некорректный URL").optional().or(z.literal("")),
-  isActive: z.boolean().default(true),
   customBotInstructions: z.string().optional(),
   customScreeningPrompt: z.string().optional(),
   customInterviewQuestions: z.string().optional(),
@@ -118,29 +96,17 @@ export default function EditGigPage({ params }: PageProps) {
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
-  const { data: gig, isLoading } = useQuery(
-    trpc.gig.get.queryOptions({
+  const { data: gig, isLoading } = useQuery({
+    ...trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId: workspace?.id ?? "",
     }),
-    {
-      enabled: !!workspace?.id,
-    }
-  );
+    enabled: !!workspace?.id,
+  });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      type: "OTHER",
-      budgetMin: "",
-      budgetMax: "",
-      budgetCurrency: "RUB",
-      deadline: "",
-      estimatedDuration: "",
-      url: "",
-      isActive: true,
       customBotInstructions: "",
       customScreeningPrompt: "",
       customInterviewQuestions: "",
@@ -151,16 +117,6 @@ export default function EditGigPage({ params }: PageProps) {
   React.useEffect(() => {
     if (gig) {
       form.reset({
-        title: gig.title,
-        description: gig.description || "",
-        type: gig.type,
-        budgetMin: gig.budgetMin?.toString() || "",
-        budgetMax: gig.budgetMax?.toString() || "",
-        budgetCurrency: gig.budgetCurrency || "RUB",
-        deadline: gig.deadline ? gig.deadline.toISOString().split('T')[0] : "",
-        estimatedDuration: gig.estimatedDuration || "",
-        url: gig.url || "",
-        isActive: gig.isActive,
         customBotInstructions: gig.customBotInstructions || "",
         customScreeningPrompt: gig.customScreeningPrompt || "",
         customInterviewQuestions: gig.customInterviewQuestions || "",
@@ -186,21 +142,13 @@ export default function EditGigPage({ params }: PageProps) {
     if (!workspace?.id) return;
 
     updateGig({
-      id: gigId,
+      gigId: gigId,
       workspaceId: workspace.id,
-      title: values.title,
-      description: values.description || undefined,
-      type: values.type,
-      budgetMin: values.budgetMin ? parseInt(values.budgetMin) : undefined,
-      budgetMax: values.budgetMax ? parseInt(values.budgetMax) : undefined,
-      budgetCurrency: values.budgetCurrency,
-      deadline: values.deadline ? new Date(values.deadline) : undefined,
-      estimatedDuration: values.estimatedDuration || undefined,
-      url: values.url || undefined,
-      isActive: values.isActive,
-      customBotInstructions: values.customBotInstructions || undefined,
-      customScreeningPrompt: values.customScreeningPrompt || undefined,
-      customInterviewQuestions: values.customInterviewQuestions || undefined,
+      settings: {
+        customBotInstructions: values.customBotInstructions || null,
+        customScreeningPrompt: values.customScreeningPrompt || null,
+        customInterviewQuestions: values.customInterviewQuestions || null,
+      },
     });
   };
 
@@ -227,235 +175,53 @@ export default function EditGigPage({ params }: PageProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information */}
+          {/* Basic Information Display */}
           <Card>
             <CardHeader>
-              <CardTitle>Основная информация</CardTitle>
+              <CardTitle>Информация о задании</CardTitle>
               <CardDescription>
-                Основные детали задания
+                Основные детали задания (только для просмотра)
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Название задания</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Введите название задания..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Описание</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Подробное описание задания..."
-                        className="min-h-32"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Тип задания</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Выберите тип" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {gigTypeOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="isActive"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Активное задание</FormLabel>
-                        <FormDescription>
-                          Активные задания видны кандидатам
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Название</label>
+                  <p className="text-sm">{gig.title}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Тип</label>
+                  <p className="text-sm">{gigTypeOptions.find(opt => opt.value === gig.type)?.label || gig.type}</p>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Budget and Timeline */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Бюджет и сроки</CardTitle>
-              <CardDescription>
-                Финансовые условия и временные рамки
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              {gig.description && (
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Описание</label>
+                  <p className="text-sm">{gig.description}</p>
+                </div>
+              )}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="budgetMin"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Минимальный бюджет</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="budgetMax"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Максимальный бюджет</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="0"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="budgetCurrency"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Валюта</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="RUB">RUB</SelectItem>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="deadline"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Дедлайн</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="estimatedDuration"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ожидаемая длительность</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="например: 1-2 недели"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* External Link */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Внешняя ссылка</CardTitle>
-              <CardDescription>
-                Ссылка на задание на внешней платформе
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <FormField
-                control={form.control}
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="url"
-                        placeholder="https://example.com/job/123"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                {gig.budgetMin && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Мин. бюджет</label>
+                    <p className="text-sm">{gig.budgetMin} {gig.budgetCurrency}</p>
+                  </div>
                 )}
-              />
+                {gig.budgetMax && (
+                  <div>
+                    <label className="text-sm font-medium text-muted-foreground">Макс. бюджет</label>
+                    <p className="text-sm">{gig.budgetMax} {gig.budgetCurrency}</p>
+                  </div>
+                )}
+                <div>
+                  <label className="text-sm font-medium text-muted-foreground">Статус</label>
+                  <p className="text-sm">{gig.isActive ? "Активное" : "Неактивное"}</p>
+                </div>
+              </div>
             </CardContent>
           </Card>
 
-          {/* AI Settings */}
+          {/* AI Settings - Editable */}
           <Card>
             <CardHeader>
               <CardTitle>Настройки ИИ</CardTitle>

@@ -116,7 +116,16 @@ export function GigForm({
               <FormItem>
                 <FormLabel>Бюджет от</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="50000" {...field} />
+                  <Input 
+                    type="number" 
+                    placeholder="50000" 
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? undefined : Number(value));
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -129,7 +138,16 @@ export function GigForm({
               <FormItem>
                 <FormLabel>Бюджет до</FormLabel>
                 <FormControl>
-                  <Input type="number" placeholder="100000" {...field} />
+                  <Input 
+                    type="number" 
+                    placeholder="100000" 
+                    {...field}
+                    value={field.value ?? ""}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      field.onChange(value === "" ? undefined : Number(value));
+                    }}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

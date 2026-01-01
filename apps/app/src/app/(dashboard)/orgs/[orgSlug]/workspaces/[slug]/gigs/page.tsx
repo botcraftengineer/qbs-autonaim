@@ -314,8 +314,8 @@ export default function GigsPage() {
                 </div>
               ) : filteredAndSortedGigs.length === 0 ? (
                 <EmptyState
-                  orgSlug={orgSlug}
-                  workspaceSlug={workspaceSlug}
+                  orgSlug={orgSlug!}
+                  workspaceSlug={workspaceSlug!}
                   title={
                     searchQuery || typeFilter !== "all" || statusFilter !== "all"
                       ? "Ничего не найдено"
@@ -335,9 +335,13 @@ export default function GigsPage() {
                   {filteredAndSortedGigs.map((gig) => (
                     <GigCard
                       key={gig.id}
-                      gig={gig}
-                      orgSlug={orgSlug}
-                      workspaceSlug={workspaceSlug}
+                      gig={{
+                        ...gig,
+                        isActive: gig.isActive ?? true,
+                        source: "MANUAL" // Default source since it's missing from the type
+                      }}
+                      orgSlug={orgSlug!}
+                      workspaceSlug={workspaceSlug!}
                     />
                   ))}
                 </div>

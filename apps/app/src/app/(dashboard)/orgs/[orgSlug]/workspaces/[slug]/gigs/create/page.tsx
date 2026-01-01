@@ -77,8 +77,8 @@ export default function CreateGigPage({ params }: PageProps) {
       title: "",
       description: "",
       type: "OTHER",
-      budgetMin: "",
-      budgetMax: "",
+      budgetMin: undefined,
+      budgetMax: undefined,
       budgetCurrency: "RUB",
       deadline: "",
       estimatedDuration: "",
@@ -316,8 +316,8 @@ export default function CreateGigPage({ params }: PageProps) {
     form.setValue("type", draft.type);
     form.setValue("deliverables", draft.deliverables);
     form.setValue("requiredSkills", draft.requiredSkills);
-    form.setValue("budgetMin", draft.budgetMin?.toString() || "");
-    form.setValue("budgetMax", draft.budgetMax?.toString() || "");
+    form.setValue("budgetMin", draft.budgetMin);
+    form.setValue("budgetMax", draft.budgetMax);
     form.setValue("estimatedDuration", draft.estimatedDuration);
     setShowForm((prev) => !prev);
   };
