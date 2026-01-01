@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod/v4";
+import { z } from "zod";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -16,6 +16,12 @@ import { GigForm, GigPreview, ProgressCard } from "./components";
 import { type FormValues, formSchema, type GigDraft } from "./components/types";
 import { WizardChat } from "./components/wizard-chat";
 import type { WizardState } from "./components/wizard-types";
+
+interface ConversationMessage {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
 
 // Schema for validating AI response document
 const aiDocumentSchema = z.object({
@@ -40,6 +46,10 @@ export default function CreateGigPage({ params }: PageProps) {
   const isMountedRef = React.useRef(true);
   const [isGenerating, setIsGenerating] = React.useState(false);
   const [showForm, setShowForm] = React.useState(false);
+  const [quickReplies, setQuickReplies] = React.useState<string[]>([]);
+  const [wizardState, setWizardState] = React.useState<WizardState | null>(
+    null,
+  );
 
   React.useEffect(() => {
     return () => {
@@ -65,8 +75,8 @@ export default function CreateGigPage({ params }: PageProps) {
       title: "",
       description: "",
       type: "OTHER",
-      budgetMin: "",
-      budgetMax: "",
+      budgetMin: undefined,
+      budgetMax: undefined,
       budgetCurrency: "RUB",
       deadline: "",
       estimatedDuration: "",
@@ -90,40 +100,41 @@ export default function CreateGigPage({ params }: PageProps) {
     trpc.gig.chatGenerate.mutationOptions(),
   );
 
-  const handleWizardComplete = async (wizardState: WizardState) => {
+  const handleWizardComplete = async (wizardStateParam: WizardState) => {
     setIsGenerating(true);
+    setWizardState(wizardStateParam);
 
     // Собираем данные из wizard в текстовое описание для AI
     const parts: string[] = [];
 
-    if (wizardState.category) {
-      parts.push(`Категория: ${wizardState.category.label}`);
+    if (wizardStateParam.category) {
+      parts.push(`Категория: ${wizardStateParam.category.label}`);
     }
-    if (wizardState.subtype) {
-      parts.push(`Тип: ${wizardState.subtype.label}`);
+    if (wizardStateParam.subtype) {
+      parts.push(`Тип: ${wizardStateParam.subtype.label}`);
     }
-    if (wizardState.features.length > 0 && wizardState.subtype) {
-      const featureLabels = wizardState.features
+    if (wizardStateParam.features.length > 0 && wizardStateParam.subtype) {
+      const featureLabels = wizardStateParam.features
         .map(
           (fId) =>
-            wizardState.subtype?.features.find((f) => f.id === fId)?.label,
+            wizardStateParam.subtype?.features.find((f) => f.id === fId)?.label,
         )
         .filter(Boolean);
       parts.push(`Функции: ${featureLabels.join(", ")}`);
     }
-    if (wizardState.budget) {
-      parts.push(`Бюджет: ${wizardState.budget.label}`);
+    if (wizardStateParam.budget) {
+      parts.push(`Бюджет: ${wizardStateParam.budget.label}`);
     }
-    if (wizardState.timeline) {
+    if (wizardStateParam.timeline) {
       parts.push(
-        `Сроки: ${wizardState.timeline.label} (${wizardState.timeline.days})`,
+        `Сроки: ${wizardStateParam.timeline.label} (${wizardStateParam.timeline.days})`,
       );
     }
-    if (wizardState.stack) {
-      parts.push(`Стек: ${wizardState.stack.label}`);
+    if (wizardStateParam.stack) {
+      parts.push(`Стек: ${wizardStateParam.stack.label}`);
     }
-    if (wizardState.customDetails) {
-      parts.push(`Дополнительно: ${wizardState.customDetails}`);
+    if (wizardStateParam.customDetails) {
+      parts.push(`Дополнительно: ${wizardStateParam.customDetails}`);
     }
 
     const message = parts.join("\n");
@@ -140,6 +151,9 @@ export default function CreateGigPage({ params }: PageProps) {
 
       const doc = result.document;
 
+      // Сохраняем quick replies
+      setQuickReplies(result.quickReplies || []);
+
       // Validate AI response shape
       const parsed = aiDocumentSchema.safeParse(doc);
 
@@ -149,31 +163,32 @@ export default function CreateGigPage({ params }: PageProps) {
         setDraft({
           title: "",
           description: "",
-          type: wizardState.category?.id || "OTHER",
+          type: wizardStateParam.category?.id || "OTHER",
           deliverables: "",
           requiredSkills: "",
-          budgetMin: wizardState.budget?.min,
-          budgetMax: wizardState.budget?.max,
+          budgetMin: wizardStateParam.budget?.min,
+          budgetMax: wizardStateParam.budget?.max,
           budgetCurrency: "RUB",
-          estimatedDuration: wizardState.timeline?.days
-            ? String(wizardState.timeline.days)
+          estimatedDuration: wizardStateParam.timeline?.days
+            ? String(wizardStateParam.timeline.days)
             : "",
         });
       } else {
         const validDoc = parsed.data;
         // Нормализуем estimatedDuration к строке: приоритет AI-ответу, затем wizard
-        const rawDuration = validDoc.timeline ?? wizardState.timeline?.days;
+        const rawDuration =
+          validDoc.timeline ?? wizardStateParam.timeline?.days;
         const estimatedDuration: string =
           rawDuration != null ? String(rawDuration) : "";
 
         setDraft({
           title: validDoc.title || "",
           description: validDoc.description || "",
-          type: wizardState.category?.id || "OTHER",
+          type: wizardStateParam.category?.id || "OTHER",
           deliverables: validDoc.deliverables || "",
           requiredSkills: validDoc.requiredSkills || "",
-          budgetMin: wizardState.budget?.min,
-          budgetMax: wizardState.budget?.max,
+          budgetMin: wizardStateParam.budget?.min,
+          budgetMax: wizardStateParam.budget?.max,
           budgetCurrency: "RUB",
           estimatedDuration,
         });
@@ -183,6 +198,66 @@ export default function CreateGigPage({ params }: PageProps) {
     } catch (err) {
       if (!isMountedRef.current) return;
       toast.error(err instanceof Error ? err.message : "Ошибка генерации");
+    } finally {
+      if (isMountedRef.current) {
+        setIsGenerating(false);
+      }
+    }
+  };
+
+  const handleChatMessage = async (
+    message: string,
+    history: ConversationMessage[],
+  ) => {
+    if (!workspace?.id) return;
+
+    setIsGenerating(true);
+
+    try {
+      const result = await generateWithAi({
+        workspaceId: workspace.id,
+        message,
+        currentDocument: {
+          title: draft.title,
+          description: draft.description,
+          deliverables: draft.deliverables,
+          requiredSkills: draft.requiredSkills,
+          budgetRange:
+            draft.budgetMin && draft.budgetMax
+              ? `${draft.budgetMin}-${draft.budgetMax} ${draft.budgetCurrency}`
+              : undefined,
+          timeline: draft.estimatedDuration,
+        },
+        conversationHistory: history
+          .slice(-10)
+          .map(({ role, content }) => ({ role, content })), // Последние 10 сообщений
+      });
+
+      if (!isMountedRef.current) return;
+
+      const doc = result.document;
+      setQuickReplies(result.quickReplies || []);
+
+      // Обновляем draft
+      const parsed = aiDocumentSchema.safeParse(doc);
+      if (parsed.success) {
+        const validDoc = parsed.data;
+        const rawDuration = validDoc.timeline ?? wizardState?.timeline?.days;
+        const estimatedDuration: string =
+          rawDuration != null ? String(rawDuration) : "";
+
+        setDraft((prev) => ({
+          ...prev,
+          title: validDoc.title || prev.title,
+          description: validDoc.description || prev.description,
+          deliverables: validDoc.deliverables || prev.deliverables,
+          requiredSkills: validDoc.requiredSkills || prev.requiredSkills,
+          estimatedDuration: estimatedDuration || prev.estimatedDuration,
+        }));
+      }
+    } catch (err) {
+      if (!isMountedRef.current) return;
+      toast.error(err instanceof Error ? err.message : "Ошибка обновления");
     } finally {
       if (isMountedRef.current) {
         setIsGenerating(false);
@@ -231,8 +306,8 @@ export default function CreateGigPage({ params }: PageProps) {
     form.setValue("type", draft.type);
     form.setValue("deliverables", draft.deliverables);
     form.setValue("requiredSkills", draft.requiredSkills);
-    form.setValue("budgetMin", draft.budgetMin?.toString() || "");
-    form.setValue("budgetMax", draft.budgetMax?.toString() || "");
+    form.setValue("budgetMin", draft.budgetMin);
+    form.setValue("budgetMax", draft.budgetMax);
     form.setValue("estimatedDuration", draft.estimatedDuration);
     setShowForm((prev) => !prev);
   };
@@ -253,6 +328,9 @@ export default function CreateGigPage({ params }: PageProps) {
         <WizardChat
           onComplete={handleWizardComplete}
           isGenerating={isGenerating}
+          onChatMessage={handleChatMessage}
+          quickReplies={quickReplies}
+          onAddAssistantMessage={() => {}} // Enable assistant message handling
         />
 
         <div className="space-y-6">

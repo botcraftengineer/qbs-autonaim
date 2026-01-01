@@ -3,6 +3,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+import type { CompanySettings } from "@qbs-autonaim/db/schema";
 
 const aiResponseSchema = z.object({
   title: z.string().optional(),
@@ -90,6 +91,7 @@ function buildGigGenerationPrompt(
     timeline?: string;
   },
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
+  companySettings?: CompanySettings | null,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -115,16 +117,75 @@ ${currentDocument.timeline ? `Сроки: ${currentDocument.timeline}` : ""}
 `
     : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто)";
 
-  return `Ты — эксперт по созданию технических заданий для фрилансеров.
+  // Настройки компании для персонализации
+  const companySection = companySettings
+    ? `
+НАСТРОЙКИ КОМПАНИИ:
+Название компании: ${companySettings.name}
+${companySettings.description ? `Описание компании: ${companySettings.description}` : ""}
+${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
+${companySettings.botName ? `Имя бота-рекрутера: ${companySettings.botName}` : ""}
+${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""}
+`
+    : "";
 
-ЗАДАЧА: На основе сообщения пользователя обнови документ разового задания (gig).
-${historySection}
+  // Detect project type for better context
+  const fullContext =
+    `${message} ${currentDocument?.title || ""} ${currentDocument?.description || ""}`.toLowerCase();
+  let projectTypeHint = "";
+
+  if (
+    fullContext.includes("telegram") ||
+    fullContext.includes("бот") ||
+    fullContext.includes("bot")
+  ) {
+    projectTypeHint =
+      "\nТИП ПРОЕКТА: Telegram-бот - предлагай специфичные для ботов функции (платежи, базы данных, API интеграции, админ-панель)";
+  } else if (
+    fullContext.includes("сайт") ||
+    fullContext.includes("веб") ||
+    fullContext.includes("web")
+  ) {
+    projectTypeHint =
+      "\nТИП ПРОЕКТА: Веб-разработка - предлагай веб-специфичные функции (адаптивность, SEO, авторизация, CMS)";
+  } else if (
+    fullContext.includes("мобильн") ||
+    fullContext.includes("приложен") ||
+    fullContext.includes("app")
+  ) {
+    projectTypeHint =
+      "\nТИП ПРОЕКТА: Мобильное приложение - предлагай мобильные функции (push-уведомления, офлайн режим, геолокация)";
+  } else if (
+    fullContext.includes("дизайн") ||
+    fullContext.includes("ui") ||
+    fullContext.includes("ux")
+  ) {
+    projectTypeHint =
+      "\nТИП ПРОЕКТА: Дизайн - предлагай дизайнерские задачи (прототип, фирменный стиль, анимации)";
+  }
+
+  const botPersonality = companySettings?.botName && companySettings?.botRole
+    ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
+    : companySettings?.name
+    ? `Ты — эксперт по созданию технических заданий для компании "${companySettings.name}".`
+    : "Ты — эксперт по созданию технических заданий для фрилансеров.";
+
+  const companyContext = companySettings?.description
+    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${companySettings.description}\nУчитывай специфику и потребности этой компании при создании заданий.`
+    : "";
+
+  return `${botPersonality}
+
+ЗАДАЧА: На основе сообщения пользователя обнови документ разового задания (gig).${projectTypeHint}${companyContext}
+${companySection}${historySection}
 НОВОЕ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
 ${message}
 ${documentSection}
 
 ИНСТРУКЦИИ:
 - Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
+- Определи тип проекта (Telegram-бот, веб-сайт, мобильное приложение, дизайн и т.д.)
+- Учитывай специфику и потребности компании "${companySettings?.name || "клиента"}"
 - Обнови соответствующие разделы документа
 - Если пользователь указывает название задачи - обнови title
 - Если описывает проект/задачу - обнови description
@@ -139,9 +200,14 @@ ${documentSection}
 БЫСТРЫЕ ОТВЕТЫ (quickReplies):
 - Предложи 2-4 варианта кнопок для следующего шага
 - Кнопки должны быть короткими (2-5 слов)
-- Кнопки должны помогать заполнить недостающую информацию
-- Примеры: "Бюджет 10-20 тыс", "Срок 1 неделя", "Нужен дизайнер", "Добавить детали"
+- Кнопки должны быть КОНКРЕТНЫМИ и РЕЛЕВАНТНЫМИ для данного проекта
+- Анализируй тип проекта и предлагай специфичные для него варианты
+- Для Telegram-ботов: "Добавить платежи", "Настроить базу данных", "Интеграция с API"
+- Для веб-разработки: "Адаптивный дизайн", "SEO оптимизация", "Система авторизации"
+- Для мобильных приложений: "Push-уведомления", "Офлайн режим", "Интеграция с соцсетями"
+- Для дизайна: "Создать прототип", "Фирменный стиль", "Анимации и переходы"
 - Если документ почти готов, предложи варианты уточнений или "Всё готово"
+- Избегай общих фраз типа "Добавить детали" - будь конкретным
 
 ФОРМАТ ОТВЕТА (JSON):
 {
@@ -175,10 +241,16 @@ export const chatGenerate = protectedProcedure
       });
     }
 
+    // Загружаем настройки компании для персонализации промпта
+    const companySettings = await ctx.db.query.companySettings.findFirst({
+      where: (companySettings, { eq }) => eq(companySettings.workspaceId, workspaceId),
+    });
+
     const prompt = buildGigGenerationPrompt(
       message,
       currentDocument,
       conversationHistory,
+      companySettings,
     );
 
     try {
