@@ -6,64 +6,64 @@
 
 ## Tasks
 
-- [ ] 1. Создание схемы базы данных для преквалификации
-  - [ ] 1.1 Создать таблицу prequalification_sessions
+- [x] 1. Создание схемы базы данных для преквалификации
+  - [x] 1.1 Создать таблицу prequalification_sessions
     - Добавить файл `packages/db/src/schema/prequalification/session.ts`
     - Определить все поля: id, workspaceId, vacancyId, responseId, conversationId, status, source, parsedResume, fitScore, fitDecision, evaluation, candidateFeedback, consentGivenAt, userAgent, ipAddress, expiresAt, timestamps
     - Создать индексы для workspaceId, vacancyId, status, fitScore
     - Экспортировать схему и типы
     - _Requirements: 1.6, 2.4, 3.2, 3.3, 4.1, 8.1_
 
-  - [ ] 1.2 Создать таблицу widget_configs
+  - [x] 1.2 Создать таблицу widget_configs
     - Добавить файл `packages/db/src/schema/prequalification/widget-config.ts`
     - Определить поля брендинга: logo, primaryColor, secondaryColor, backgroundColor, textColor, fontFamily, assistantName, assistantAvatar, welcomeMessage, completionMessage
     - Определить поля поведения: passThreshold, mandatoryQuestions, tone, honestyLevel, maxDialogueTurns, sessionTimeoutMinutes
     - Определить поля legal: consentText, disclaimerText, privacyPolicyUrl, dataRetentionDays
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 1.3 Создать таблицу custom_domains
+  - [x] 1.3 Создать таблицу custom_domains
     - Добавить файл `packages/db/src/schema/prequalification/custom-domain.ts`
     - Определить поля: domain, cnameTarget, verified, verifiedAt, lastVerificationAttempt, verificationError, sslStatus, sslCertificateId, sslExpiresAt
     - Создать уникальный индекс на domain
     - _Requirements: 10.1, 10.2, 10.3, 10.7_
 
-  - [ ] 1.4 Создать таблицу analytics_events
+  - [x] 1.4 Создать таблицу analytics_events
     - Добавить файл `packages/db/src/schema/prequalification/analytics-event.ts`
     - Определить поля: workspaceId, vacancyId, sessionId, eventType, metadata, timestamp
     - Создать индексы для эффективных запросов аналитики
     - _Requirements: 9.1, 9.4_
 
-  - [ ] 1.5 Создать index.ts и relations для prequalification схемы
+  - [x] 1.5 Создать index.ts и relations для prequalification схемы
     - Экспортировать все таблицы из `packages/db/src/schema/prequalification/index.ts`
     - Определить relations между таблицами
     - Обновить `packages/db/src/schema/index.ts` для экспорта prequalification
     - _Requirements: 7.1_
 
-- [ ] 2. Checkpoint - Проверка схемы БД
+- [x] 2. Checkpoint - Проверка схемы БД
   - Убедиться, что все таблицы созданы корректно
   - Проверить типы и индексы
   - Спросить пользователя, если возникнут вопросы
 
-- [ ] 3. Реализация Resume Parser Service
-  - [ ] 3.1 Создать интерфейсы и типы для Resume Parser
+- [x] 3. Реализация Resume Parser Service
+  - [x] 3.1 Создать интерфейсы и типы для Resume Parser
     - Добавить файл `packages/api/src/services/resume-parser/types.ts`
     - Определить ResumeInput, ParsedResume, StructuredResume, WorkExperience, Education, Language
     - Определить ValidationResult и ParserError типы
     - _Requirements: 1.1, 1.2_
 
-  - [ ] 3.2 Реализовать PDF парсер
+  - [x] 3.2 Реализовать PDF парсер
     - Добавить файл `packages/api/src/services/resume-parser/pdf-parser.ts`
     - Использовать pdf-parse для извлечения текста
     - Реализовать структурирование данных с помощью AI
     - _Requirements: 1.1_
 
-  - [ ] 3.3 Реализовать DOCX парсер
+  - [x] 3.3 Реализовать DOCX парсер
     - Добавить файл `packages/api/src/services/resume-parser/docx-parser.ts`
     - Использовать mammoth для извлечения текста
     - Реализовать структурирование данных с помощью AI
     - _Requirements: 1.2_
 
-  - [ ] 3.4 Реализовать основной Resume Parser Service
+  - [x] 3.4 Реализовать основной Resume Parser Service
     - Добавить файл `packages/api/src/services/resume-parser/index.ts`
     - Реализовать validateFormat для проверки расширения файла
     - Реализовать parse с выбором парсера по типу файла
@@ -75,35 +75,35 @@
     - **Property 2: Invalid File Format Rejection**
     - **Validates: Requirements 1.1, 1.2, 1.4**
 
-- [ ] 4. Реализация Prequalification Service
-  - [ ] 4.1 Создать интерфейсы и типы для Prequalification Service
+- [x] 4. Реализация Prequalification Service
+  - [x] 4.1 Создать интерфейсы и типы для Prequalification Service
     - Добавить файл `packages/api/src/services/prequalification/types.ts`
     - Определить CreateSessionInput, PrequalificationSession, SessionStatus
     - Определить AIResponse, EvaluationInput, EvaluationResult
     - _Requirements: 1.6, 2.4, 3.1_
 
-  - [ ] 4.2 Реализовать управление сессиями
+  - [x] 4.2 Реализовать управление сессиями
     - Добавить файл `packages/api/src/services/prequalification/session-manager.ts`
     - Реализовать createSession с проверкой consent
     - Реализовать getSession с проверкой tenant ownership
     - Реализовать updateSessionStatus с валидацией state machine
     - _Requirements: 1.6, 7.2, 8.1_
 
-  - [ ] 4.3 Написать property tests для Session State Machine (MANDATORY - Security/Compliance)
+  - [x] 4.3 Написать property tests для Session State Machine (MANDATORY - Security/Compliance)
     - **Property 3: Session State Machine Transitions**
     - **Validates: Requirements 1.6, 2.4**
     - **Property 11: Consent Requirement Enforcement**
     - **Validates: Requirements 8.1**
     - _Note: These properties are mandatory for MVP sign-off as they enforce security and compliance requirements_
 
-  - [ ] 4.4 Реализовать обработку резюме в сессии
+  - [x] 4.4 Реализовать обработку резюме в сессии
     - Добавить метод uploadResume в session-manager.ts
     - Интегрировать с Resume Parser Service
     - Сохранить parsedResume в сессию
     - Обновить статус на dialogue_active
     - _Requirements: 1.6_
 
-  - [ ] 4.5 Реализовать обработку сообщений диалога
+  - [x] 4.5 Реализовать обработку сообщений диалога
     - Добавить файл `packages/api/src/services/prequalification/dialogue-handler.ts`
     - Интегрировать с существующим InterviewOrchestrator
     - Передавать контекст вакансии и резюме в AI

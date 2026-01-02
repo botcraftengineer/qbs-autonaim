@@ -15,6 +15,7 @@ import { InterviewScoringAgent } from "./interview-scoring";
 import { InterviewStartAgent } from "./interview-start";
 import { InterviewerAgent } from "./interviewer";
 import { PinHandlerAgent } from "./pin-handler";
+import { ResumeStructurerAgent } from "./resume-structurer";
 import { SalaryExtractionAgent } from "./salary-extraction";
 import { WelcomeAgent } from "./welcome";
 
@@ -110,6 +111,10 @@ export class AgentFactory {
 
   createPinHandler(overrides?: Partial<AgentConfig>) {
     return new PinHandlerAgent(this.getAgentConfig(overrides));
+  }
+
+  createResumeStructurer(overrides?: Partial<AgentConfig>) {
+    return new ResumeStructurerAgent(this.getAgentConfig(overrides));
   }
 
   createSalaryExtraction(overrides?: Partial<AgentConfig>) {

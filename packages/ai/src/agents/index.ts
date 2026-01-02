@@ -67,6 +67,11 @@ export {
   type PinHandlerOutput,
 } from "./pin-handler";
 export {
+  ResumeStructurerAgent,
+  type ResumeStructurerInput,
+  type ResumeStructurerOutput,
+} from "./resume-structurer";
+export {
   SalaryExtractionAgent,
   type SalaryExtractionInput,
   type SalaryExtractionOutput,

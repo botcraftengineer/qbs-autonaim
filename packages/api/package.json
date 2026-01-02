@@ -16,22 +16,30 @@
     "format": "biome format .",
     "lint": "biome lint .",
     "check": "biome check .",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@qbs-autonaim/ai": "workspace:*",
     "@qbs-autonaim/auth": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/jobs": "workspace:*",
     "@qbs-autonaim/validators": "workspace:*",
     "@trpc/server": "^11.8.1",
+    "mammoth": "^1.9.0",
+    "pdf-parse": "^1.1.1",
     "sanitize-html": "^2.17.0",
     "superjson": "2.2.6",
     "zod": "4.3.4"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
+    "@types/pdf-parse": "^1.1.4",
     "@types/sanitize-html": "^2.16.0",
+    "fast-check": "^4.1.1",
     "tsdown": "^0.18.4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^3.2.4"
   }
 }
