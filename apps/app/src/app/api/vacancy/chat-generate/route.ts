@@ -432,8 +432,11 @@ export async function POST(request: Request) {
       : undefined;
 
     // Проверка доступа к workspace (Requirements 12.2)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let workspaceData: any;
+    let workspaceData:
+      | (typeof workspace.$inferSelect & {
+          members: (typeof workspaceMember.$inferSelect)[];
+        })
+      | undefined;
     try {
       workspaceData = await db.query.workspace.findFirst({
         where: eq(workspace.id, workspaceId),
@@ -506,8 +509,7 @@ export async function POST(request: Request) {
     );
 
     // Запуск streaming генерации
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let result: any;
+    let result: ReturnType<typeof streamText>;
     try {
       result = streamText({
         prompt,

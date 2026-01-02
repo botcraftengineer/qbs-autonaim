@@ -299,7 +299,8 @@
     - Тест rate limiting
     - _Requirements: 8.2, 12.1_
 
-  - [ ]* 13.3 Test responsive design
+  - [ ] 13.3 Test responsive design
+
     - Тест на мобильном размере экрана
     - Тест на планшетном размере экрана
     - Тест на desktop размере экрана
