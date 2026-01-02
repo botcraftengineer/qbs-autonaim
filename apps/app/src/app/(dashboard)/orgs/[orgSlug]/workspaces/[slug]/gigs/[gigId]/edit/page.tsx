@@ -135,7 +135,11 @@ export default function EditGigPage({ params }: PageProps) {
             workspaceId: workspace?.id ?? "",
           }),
         });
-        queryClient.invalidateQueries({ queryKey: trpc.gig.list.queryKey() });
+        queryClient.invalidateQueries({
+          queryKey: trpc.gig.list.queryKey({
+            workspaceId: workspace?.id ?? "",
+          }),
+        });
         router.push(
           `/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`,
         );
@@ -194,15 +198,15 @@ export default function EditGigPage({ params }: PageProps) {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <div className="text-sm font-medium text-muted-foreground">
                     Название
-                  </label>
+                  </div>
                   <p className="text-sm">{gig.title}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <div className="text-sm font-medium text-muted-foreground">
                     Тип
-                  </label>
+                  </div>
                   <p className="text-sm">
                     {gigTypeOptions.find((opt) => opt.value === gig.type)
                       ?.label || gig.type}
@@ -211,18 +215,18 @@ export default function EditGigPage({ params }: PageProps) {
               </div>
               {gig.description && (
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <div className="text-sm font-medium text-muted-foreground">
                     Описание
-                  </label>
+                  </div>
                   <p className="text-sm">{gig.description}</p>
                 </div>
               )}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {gig.budgetMin && (
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <div className="text-sm font-medium text-muted-foreground">
                       Мин. бюджет
-                    </label>
+                    </div>
                     <p className="text-sm">
                       {gig.budgetMin} {gig.budgetCurrency}
                     </p>
@@ -230,18 +234,18 @@ export default function EditGigPage({ params }: PageProps) {
                 )}
                 {gig.budgetMax && (
                   <div>
-                    <label className="text-sm font-medium text-muted-foreground">
+                    <div className="text-sm font-medium text-muted-foreground">
                       Макс. бюджет
-                    </label>
+                    </div>
                     <p className="text-sm">
                       {gig.budgetMax} {gig.budgetCurrency}
                     </p>
                   </div>
                 )}
                 <div>
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <div className="text-sm font-medium text-muted-foreground">
                     Статус
-                  </label>
+                  </div>
                   <p className="text-sm">
                     {gig.isActive ? "Активное" : "Неактивное"}
                   </p>

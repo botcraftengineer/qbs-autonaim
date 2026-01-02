@@ -36,8 +36,9 @@ Data Fetching:
 
 Best Practices:
 
-- Colocate components with routes when specific
+- NEVER store components in route directories - keep components separate from routes
 - NEVER create _components folders inside route directories
+- Store shared components in src/components or dedicated component directories
 - Use route groups ((folder)) for layout organization without URL changes
 - Optimize metadata for SEO
 

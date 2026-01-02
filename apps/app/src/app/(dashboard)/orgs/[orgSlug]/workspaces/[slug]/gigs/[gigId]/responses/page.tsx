@@ -185,9 +185,9 @@ export default function GigResponsesPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  // Mutations - using existing updateStatus for now, TODO: use dedicated accept/reject/sendMessage mutations
+  // Specialized mutations for accept, reject, and sendMessage
   const acceptMutation = useMutation(
-    trpc.gig.responses.updateStatus.mutationOptions({
+    trpc.gig.responses.accept.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.responses.list.queryKey({
@@ -205,7 +205,7 @@ export default function GigResponsesPage({ params }: PageProps) {
   );
 
   const rejectMutation = useMutation(
-    trpc.gig.responses.updateStatus.mutationOptions({
+    trpc.gig.responses.reject.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.responses.list.queryKey({
@@ -222,9 +222,8 @@ export default function GigResponsesPage({ params }: PageProps) {
     }),
   );
 
-  // TODO: Replace with actual sendMessage mutation when available
   const sendMessageMutation = useMutation(
-    trpc.gig.responses.updateStatus.mutationOptions({
+    trpc.gig.responses.sendMessage.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.responses.list.queryKey({
@@ -242,7 +241,7 @@ export default function GigResponsesPage({ params }: PageProps) {
   );
 
   // Action handlers
-  const handleAccept = (responseId: string, candidateName?: string) => {
+  const _handleAccept = (responseId: string, candidateName?: string) => {
     setConfirmDialog({
       open: true,
       responseId,
@@ -251,7 +250,7 @@ export default function GigResponsesPage({ params }: PageProps) {
     });
   };
 
-  const handleReject = (responseId: string, candidateName?: string) => {
+  const _handleReject = (responseId: string, candidateName?: string) => {
     setConfirmDialog({
       open: true,
       responseId,
@@ -260,7 +259,7 @@ export default function GigResponsesPage({ params }: PageProps) {
     });
   };
 
-  const handleMessage = (responseId: string, candidateName?: string) => {
+  const _handleMessage = (responseId: string, candidateName?: string) => {
     setMessageModal({
       open: true,
       responseId,
@@ -268,34 +267,29 @@ export default function GigResponsesPage({ params }: PageProps) {
     });
   };
 
-  const handleConfirmAction = () => {
+  const _handleConfirmAction = () => {
     if (!workspace?.id) return;
 
     if (confirmDialog.action === "accept") {
       acceptMutation.mutate({
         responseId: confirmDialog.responseId,
         workspaceId: workspace.id,
-        status: "EVALUATED",
-        hrSelectionStatus: "RECOMMENDED",
       });
     } else {
       rejectMutation.mutate({
         responseId: confirmDialog.responseId,
         workspaceId: workspace.id,
-        status: "EVALUATED",
-        hrSelectionStatus: "REJECTED",
       });
     }
   };
 
-  const handleSendMessage = (message: string) => {
-    if (!workspace?.id) return;
+  const _handleSendMessage = (message: string) => {
+    if (!workspace?.id || !message.trim()) return;
 
-    // TODO: Implement actual message sending
     sendMessageMutation.mutate({
       responseId: messageModal.responseId,
       workspaceId: workspace.id,
-      status: "EVALUATED",
+      message: message.trim(),
     });
   };
 

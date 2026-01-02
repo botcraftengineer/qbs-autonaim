@@ -31,17 +31,21 @@ export function MessageModal({
 }: MessageModalProps) {
   const [message, setMessage] = React.useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const submitMessage = () => {
     if (message.trim() && !isLoading) {
       onSend(message.trim());
     }
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    submitMessage();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
       e.preventDefault();
-      handleSubmit(e);
+      submitMessage();
     }
   };
 
@@ -52,7 +56,15 @@ export function MessageModal({
   }, [open]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={(newOpen) => {
+        // Only allow closing when not loading, or when opening the dialog
+        if (!isLoading || newOpen) {
+          onOpenChange(newOpen);
+        }
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit}>
           <DialogHeader>

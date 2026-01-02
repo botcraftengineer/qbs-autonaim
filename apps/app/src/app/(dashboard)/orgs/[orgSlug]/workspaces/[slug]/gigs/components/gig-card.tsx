@@ -1,16 +1,3 @@
-import { 
-  Calendar, 
-  Clock, 
-  DollarSign, 
-  Eye, 
-  MessageSquare, 
-  MoreHorizontal,
-  ExternalLink,
-  Edit,
-  Trash2
-} from "lucide-react";
-import Link from "next/link";
-import React from "react";
 import {
   Badge,
   Button,
@@ -25,6 +12,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@qbs-autonaim/ui";
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  Edit,
+  ExternalLink,
+  Eye,
+  MessageSquare,
+  MoreHorizontal,
+  Trash2,
+} from "lucide-react";
+import Link from "next/link";
 
 interface GigCardProps {
   gig: {
@@ -52,33 +51,39 @@ interface GigCardProps {
   onDelete?: (gigId: string) => void;
 }
 
-function formatBudget(min?: number | null, max?: number | null, currency?: string | null) {
+function formatBudget(
+  min?: number | null,
+  max?: number | null,
+  currency?: string | null,
+) {
   if (!min && !max) return null;
-  
+
   const curr = currency || "RUB";
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("ru-RU").format(amount);
   };
-  
+
   if (min && max) {
     return `${formatAmount(min)} - ${formatAmount(max)} ${curr}`;
   }
-  
+
   if (min) {
     return `от ${formatAmount(min)} ${curr}`;
   }
-  
+
   if (max) {
     return `до ${formatAmount(max)} ${curr}`;
   }
-  
+
   return null;
 }
 
 function formatDate(date: Date) {
   const now = new Date();
-  const diffInDays = Math.floor((date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-  
+  const diffInDays = Math.floor(
+    (date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
   if (diffInDays === 0) {
     return "Сегодня";
   } else if (diffInDays === 1) {
@@ -90,7 +95,7 @@ function formatDate(date: Date) {
   } else if (diffInDays < 0 && diffInDays >= -7) {
     return `${Math.abs(diffInDays)} дн. назад`;
   }
-  
+
   return new Intl.DateTimeFormat("ru-RU", {
     day: "numeric",
     month: "short",
@@ -111,14 +116,19 @@ function getGigTypeLabel(type: string) {
     CONSULTING: "Консультации",
     OTHER: "Другое",
   };
-  
+
   return types[type] || type;
 }
 
-export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCardProps) {
+export function GigCard({
+  gig,
+  orgSlug,
+  workspaceSlug,
+  onDelete,
+}: GigCardProps) {
   const budget = formatBudget(gig.budgetMin, gig.budgetMax, gig.budgetCurrency);
   const isOverdue = gig.deadline && gig.deadline < new Date();
-  
+
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardHeader className="pb-3">
@@ -128,27 +138,27 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
               <Badge variant="secondary" className="text-xs">
                 {getGigTypeLabel(gig.type)}
               </Badge>
-              
+
               {!gig.isActive && (
                 <Badge variant="outline" className="text-xs">
                   Неактивно
                 </Badge>
               )}
-              
+
               {gig.source !== "manual" && (
                 <Badge variant="outline" className="text-xs">
                   {gig.source}
                 </Badge>
               )}
-              
+
               {(gig.newResponses || 0) > 0 && (
                 <Badge variant="default" className="text-xs">
                   +{gig.newResponses}
                 </Badge>
               )}
             </div>
-            
-            <Link 
+
+            <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
               className="block"
             >
@@ -156,7 +166,7 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
                 {gig.title}
               </CardTitle>
             </Link>
-            
+
             <CardDescription className="text-sm">
               Создано {formatDate(gig.createdAt)}
               {gig.updatedAt && gig.updatedAt !== gig.createdAt && (
@@ -164,7 +174,7 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
               )}
             </CardDescription>
           </div>
-          
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
@@ -174,19 +184,25 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem asChild>
-                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}>
+                <Link
+                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
+                >
                   <Eye className="h-4 w-4 mr-2" />
                   Посмотреть
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/edit`}>
+                <Link
+                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/edit`}
+                >
                   <Edit className="h-4 w-4 mr-2" />
                   Редактировать
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}>
+                <Link
+                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
+                >
                   <MessageSquare className="h-4 w-4 mr-2" />
                   Отклики ({gig.responses || 0})
                 </Link>
@@ -200,7 +216,7 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
                 </DropdownMenuItem>
               )}
               <DropdownMenuSeparator />
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 className="text-destructive"
                 onClick={() => onDelete?.(gig.id)}
               >
@@ -211,7 +227,7 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
           </DropdownMenu>
         </div>
       </CardHeader>
-      
+
       {gig.description && (
         <CardContent className="pt-0 pb-3">
           <p className="text-sm text-muted-foreground line-clamp-2">
@@ -219,7 +235,7 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
           </p>
         </CardContent>
       )}
-      
+
       <CardContent className="pt-0">
         <div className="flex items-center justify-between text-sm">
           <div className="flex items-center gap-4">
@@ -229,29 +245,31 @@ export function GigCard({ gig, orgSlug, workspaceSlug, onEdit, onDelete }: GigCa
                 <span className="font-medium text-foreground">{budget}</span>
               </div>
             )}
-            
+
             {gig.estimatedDuration && (
               <div className="flex items-center gap-1 text-muted-foreground">
                 <Clock className="h-4 w-4" />
                 <span>{gig.estimatedDuration}</span>
               </div>
             )}
-            
+
             {gig.deadline && (
-              <div className={`flex items-center gap-1 ${isOverdue ? 'text-destructive' : 'text-muted-foreground'}`}>
+              <div
+                className={`flex items-center gap-1 ${isOverdue ? "text-destructive" : "text-muted-foreground"}`}
+              >
                 <Calendar className="h-4 w-4" />
                 <span>{formatDate(gig.deadline)}</span>
               </div>
             )}
           </div>
-          
+
           <div className="flex items-center gap-3 text-muted-foreground">
             <div className="flex items-center gap-1">
               <Eye className="h-4 w-4" />
               <span>{gig.views || 0}</span>
             </div>
-            
-            <Link 
+
+            <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
               className="flex items-center gap-1 hover:text-foreground transition-colors"
             >

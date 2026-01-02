@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  Badge,
   Button,
   Input,
   Select,
@@ -114,7 +113,7 @@ export default function GigsPage() {
     };
   }, [gigs]);
 
-  const formatBudget = (
+  const _formatBudget = (
     min?: number | null,
     max?: number | null,
     currency?: string | null,
@@ -291,8 +290,11 @@ export default function GigsPage() {
 
               {isLoading ? (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {Array.from({ length: 6 }, (_, i) => (
-                    <div key={i} className="rounded-lg border p-6">
+                  {Array.from({ length: 6 }).map((_) => (
+                    <div
+                      key={crypto.randomUUID()}
+                      className="rounded-lg border p-6"
+                    >
                       <div className="space-y-3">
                         <div className="flex items-center gap-2">
                           <Skeleton className="h-5 w-20" />
@@ -314,8 +316,8 @@ export default function GigsPage() {
                 </div>
               ) : filteredAndSortedGigs.length === 0 ? (
                 <EmptyState
-                  orgSlug={orgSlug!}
-                  workspaceSlug={workspaceSlug!}
+                  orgSlug={orgSlug || ""}
+                  workspaceSlug={workspaceSlug || ""}
                   title={
                     searchQuery ||
                     typeFilter !== "all" ||
@@ -345,8 +347,8 @@ export default function GigsPage() {
                         ...gig,
                         isActive: gig.isActive ?? true,
                       }}
-                      orgSlug={orgSlug!}
-                      workspaceSlug={workspaceSlug!}
+                      orgSlug={orgSlug || ""}
+                      workspaceSlug={workspaceSlug || ""}
                     />
                   ))}
                 </div>
