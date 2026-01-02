@@ -107,6 +107,9 @@ export function useVacancyChat({
   // Ref to track last message for retry functionality
   const lastMessageRef = useRef<string | null>(null);
 
+  // Ref to track if abort was due to timeout
+  const wasTimedOutRef = useRef<boolean>(false);
+
   /**
    * Creates a structured error object based on error type
    * Requirements: 8.1, 8.2, 8.3
@@ -261,6 +264,9 @@ export function useVacancyChat({
       // Store message for retry functionality
       lastMessageRef.current = content;
 
+      // Reset timeout flag
+      wasTimedOutRef.current = false;
+
       // Clear previous error
       setError(null);
       setStatus("loading");
@@ -282,6 +288,7 @@ export function useVacancyChat({
 
       // Create timeout controller
       const timeoutId = setTimeout(() => {
+        wasTimedOutRef.current = true;
         abortControllerRef.current?.abort();
       }, timeout);
 
@@ -406,7 +413,7 @@ export function useVacancyChat({
         // Handle abort (don't show error for user cancellation)
         if (err instanceof Error && err.name === "AbortError") {
           // Check if it was a timeout
-          if (abortControllerRef.current?.signal.aborted) {
+          if (wasTimedOutRef.current) {
             const timeoutError = handleError(new Error("Request timeout"));
             setError(timeoutError);
             setStatus("error");
@@ -424,6 +431,7 @@ export function useVacancyChat({
       } finally {
         clearTimeout(timeoutId);
         abortControllerRef.current = null;
+        wasTimedOutRef.current = false;
       }
     },
     [workspaceId, document, messages, apiEndpoint, timeout, handleError],
