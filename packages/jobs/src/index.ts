@@ -1,4 +1,19 @@
 // ==================== Inngest ====================
+
+export type {
+  BufferedMessage,
+  BufferValue,
+  ConversationMetadata,
+  MessageBufferService,
+  QuestionAnswer,
+} from "@qbs-autonaim/shared";
+
+// Re-export from shared package
+export {
+  getConversationMetadata,
+  getQuestionCount,
+  updateConversationMetadata,
+} from "@qbs-autonaim/shared";
 export {
   extractVacancyRequirementsFunction,
   inngest,
@@ -90,26 +105,8 @@ export {
   uploadResumePdf,
   validateScreeningResult,
 } from "./services";
-
-// Re-export from shared package
-export {
-  getConversationMetadata,
-  getQuestionCount,
-  updateConversationMetadata,
-} from "@qbs-autonaim/shared";
-
-export type {
-  ConversationMetadata,
-  QuestionAnswer,
-} from "@qbs-autonaim/shared";
-
 // ==================== Buffer Service ====================
 export { messageBufferService } from "./services/buffer";
-export type {
-  BufferedMessage,
-  BufferValue,
-  MessageBufferService,
-} from "@qbs-autonaim/shared";
 
 export type {
   ExtractedContacts,

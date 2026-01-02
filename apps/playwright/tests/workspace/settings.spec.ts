@@ -22,8 +22,6 @@ test.describe("Настройки воркспейса", () => {
     await deleteTestUser(testUser.email);
   });
 
-
-
   test.describe("Общая навигация", () => {
     test("отображает страницу настроек воркспейса", async ({ page }) => {
       await page.goto(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/settings`);

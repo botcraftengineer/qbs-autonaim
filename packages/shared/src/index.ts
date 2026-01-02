@@ -1,6 +1,6 @@
 /**
  * Главный экспорт пакета @qbs-autonaim/shared
- * 
+ *
  * Предоставляет общие типы и утилиты для использования
  * в пакетах @qbs-autonaim/jobs и @qbs-autonaim/tg-client
  */

@@ -1,9 +1,9 @@
+import type { CompanySettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import type { CompanySettings } from "@qbs-autonaim/db/schema";
 
 const aiResponseSchema = z.object({
   title: z.string().optional(),
@@ -164,11 +164,12 @@ ${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""
       "\nТИП ПРОЕКТА: Дизайн - предлагай дизайнерские задачи (прототип, фирменный стиль, анимации)";
   }
 
-  const botPersonality = companySettings?.botName && companySettings?.botRole
-    ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
-    : companySettings?.name
-    ? `Ты — эксперт по созданию технических заданий для компании "${companySettings.name}".`
-    : "Ты — эксперт по созданию технических заданий для фрилансеров.";
+  const botPersonality =
+    companySettings?.botName && companySettings?.botRole
+      ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
+      : companySettings?.name
+        ? `Ты — эксперт по созданию технических заданий для компании "${companySettings.name}".`
+        : "Ты — эксперт по созданию технических заданий для фрилансеров.";
 
   const companyContext = companySettings?.description
     ? `\n\nКОНТЕКСТ КОМПАНИИ: ${companySettings.description}\nУчитывай специфику и потребности этой компании при создании заданий.`
@@ -243,7 +244,8 @@ export const chatGenerate = protectedProcedure
 
     // Загружаем настройки компании для персонализации промпта
     const companySettings = await ctx.db.query.companySettings.findFirst({
-      where: (companySettings, { eq }) => eq(companySettings.workspaceId, workspaceId),
+      where: (companySettings, { eq }) =>
+        eq(companySettings.workspaceId, workspaceId),
     });
 
     const prompt = buildGigGenerationPrompt(

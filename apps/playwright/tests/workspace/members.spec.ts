@@ -22,8 +22,6 @@ test.describe("Управление участниками воркспейса"
     await deleteTestUser(testUser.email);
   });
 
-
-
   test.describe("Общая навигация", () => {
     test("отображает страницу управления участниками", async ({ page }) => {
       await page.goto(

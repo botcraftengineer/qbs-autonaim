@@ -1,5 +1,12 @@
 import { sql } from "drizzle-orm";
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 import { workspace } from "../workspace/workspace";
 
 export const companySettings = pgTable(
@@ -20,6 +27,20 @@ export const companySettings = pgTable(
     // Настройки бота
     botName: text("bot_name").default("Дмитрий"),
     botRole: text("bot_role").default("рекрутер"),
+
+    // Настройки онбординга
+    onboardingCompleted: boolean("onboarding_completed").default(false),
+    onboardingCompletedAt: timestamp("onboarding_completed_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    dismissedGettingStarted: boolean("dismissed_getting_started").default(
+      false,
+    ),
+    dismissedGettingStartedAt: timestamp("dismissed_getting_started_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
 
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()

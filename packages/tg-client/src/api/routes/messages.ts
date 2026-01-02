@@ -262,9 +262,7 @@ messages.post("/send-by-phone", async (c) => {
     // Удаляем импортированный контакт после операции
     if (userIdToDelete) {
       try {
-        const client = botManager.getClient(
-          (await c.req.json()).workspaceId,
-        );
+        const client = botManager.getClient((await c.req.json()).workspaceId);
         if (client) {
           await client.call({
             _: "contacts.deleteContacts",

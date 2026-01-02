@@ -1,6 +1,6 @@
 /**
  * Типы сервиса буферизации сообщений
- * 
+ *
  * Определяет интерфейсы и типы для системы буферизации сообщений,
  * используемой в интервью для агрегации ответов кандидатов.
  */
@@ -11,16 +11,16 @@
 export interface BufferedMessage {
   /** Уникальный идентификатор сообщения */
   id: string;
-  
+
   /** Содержимое сообщения (текст или транскрипция) */
   content: string;
-  
+
   /** Тип содержимого */
   contentType: "TEXT" | "VOICE";
-  
+
   /** Unix timestamp получения сообщения */
   timestamp: number;
-  
+
   /** Вопрос, который был задан (контекст для ответа) */
   questionContext?: string;
 }
@@ -31,27 +31,27 @@ export interface BufferedMessage {
 export interface BufferValue {
   /** Массив буферизованных сообщений в порядке получения */
   messages: BufferedMessage[];
-  
+
   /** Unix timestamp создания буфера */
   createdAt: number;
-  
+
   /** Unix timestamp последнего обновления буфера */
   lastUpdatedAt: number;
-  
+
   /** Уникальный идентификатор flush операции (для идемпотентности) */
   flushId?: string;
 }
 
 /**
  * Интерфейс сервиса буферизации сообщений
- * 
+ *
  * Управляет буферизацией сообщений кандидатов во время интервью.
  * Буферы изолированы по userId, conversationId и interviewStep.
  */
 export interface MessageBufferService {
   /**
    * Добавить сообщение в буфер
-   * 
+   *
    * @param params - Параметры для добавления сообщения
    * @param params.userId - ID пользователя
    * @param params.conversationId - ID разговора
@@ -68,7 +68,7 @@ export interface MessageBufferService {
 
   /**
    * Получить все сообщения из буфера
-   * 
+   *
    * @param params - Параметры для получения сообщений
    * @param params.userId - ID пользователя
    * @param params.conversationId - ID разговора
@@ -83,7 +83,7 @@ export interface MessageBufferService {
 
   /**
    * Очистить буфер для конкретного шага интервью
-   * 
+   *
    * @param params - Параметры для очистки буфера
    * @param params.userId - ID пользователя
    * @param params.conversationId - ID разговора
@@ -98,7 +98,7 @@ export interface MessageBufferService {
 
   /**
    * Проверить существование буфера для конкретного шага интервью
-   * 
+   *
    * @param params - Параметры для проверки существования буфера
    * @param params.userId - ID пользователя
    * @param params.conversationId - ID разговора

@@ -20,8 +20,6 @@ test.describe("Настройки организации", () => {
     await deleteTestUser(testUser.email);
   });
 
-
-
   test.describe("Общая навигация", () => {
     test("отображает страницу настроек организации", async ({ page }) => {
       await page.goto(`/orgs/${orgSlug}/settings`);

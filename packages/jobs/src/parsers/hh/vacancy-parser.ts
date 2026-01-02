@@ -106,7 +106,7 @@ async function collectVacancies(page: Page): Promise<VacancyData[]> {
           ),
           region: getText('[data-qa="table-flexible-cell-area"]'),
           description: "",
-          source: 'hh' as const
+          source: "hh" as const,
         };
       });
     },

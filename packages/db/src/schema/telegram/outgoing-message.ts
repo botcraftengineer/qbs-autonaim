@@ -52,7 +52,7 @@ export const outgoingMessage = pgTable(
     recipientTelegramUsername: varchar("recipient_telegram_username", {
       length: 100,
     }).notNull(),
-    recipientChatId: varchar("recipient_chat_id", { length: 100 }).nullable(),
+    recipientChatId: varchar("recipient_chat_id", { length: 100 }),
 
     // Содержимое сообщения
     message: text("message").notNull(),
