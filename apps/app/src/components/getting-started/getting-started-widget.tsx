@@ -115,7 +115,7 @@ export function GettingStartedWidget() {
                   id="getting-started-title"
                   className="text-lg font-semibold"
                 >
-                  Getting Started
+                  Начало работы
                 </CardTitle>
                 <CardDescription
                   id="getting-started-description"
@@ -354,7 +354,7 @@ export function GettingStartedWidget() {
                       Прогресс: {progressPercentage} процентов
                     </span>
                   </div>
-                  <span className="text-sm font-medium">Getting Started</span>
+                  <span className="text-sm font-medium">Начало работы</span>
                 </div>
                 <span
                   className="text-xs text-muted-foreground"

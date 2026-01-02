@@ -2,7 +2,7 @@ import { SidebarInset, SidebarProvider } from "@qbs-autonaim/ui";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
-import { GettingStartedWidget } from "~/components/getting-started/getting-started-widget";
+import { GettingStartedContainer } from "~/components/getting-started";
 import { AppSidebarWrapper } from "~/components/sidebar";
 import { WorkspaceProvider } from "~/contexts/workspace-context";
 import { api } from "~/trpc/server";
@@ -64,7 +64,7 @@ export default async function DashboardLayout({
           }}
         />
         <SidebarInset>{children}</SidebarInset>
-        <GettingStartedWidget />
+        <GettingStartedContainer />
       </SidebarProvider>
     </WorkspaceProvider>
   );

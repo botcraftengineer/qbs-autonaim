@@ -70,7 +70,7 @@ export async function handleIncomingMessage(
   if (!bufferEnabled) {
     return {
       buffered: false,
-      reason: "buffer disabled by feature flag",
+      reason: "буфер отключен через feature flag",
     };
   }
 
@@ -78,7 +78,7 @@ export async function handleIncomingMessage(
   if (!conversationId) {
     return {
       buffered: false,
-      reason: "candidate not identified",
+      reason: "кандидат не идентифицирован",
     };
   }
 
@@ -110,12 +110,12 @@ export async function handleIncomingMessage(
     return {
       buffered: false,
       reason:
-        "voice message - buffering happens after transcription in transcribe-voice.ts",
+        "голосовое сообщение — буферизация происходит после транскрипции в transcribe-voice.ts",
     };
   } else {
     return {
       buffered: false,
-      reason: "unsupported message type",
+      reason: "неподдерживаемый тип сообщения",
     };
   }
 
@@ -144,7 +144,7 @@ export async function handleIncomingMessage(
     console.error("❌ Ошибка добавления сообщения в буфер:", error);
     return {
       buffered: false,
-      reason: "buffer service error",
+      reason: "ошибка сервиса буферизации",
     };
   }
 

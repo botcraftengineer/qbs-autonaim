@@ -18,29 +18,46 @@ export function useGettingStarted() {
   const { workspace } = useWorkspaces();
 
   // Получаем настройки компании
-  const { data: companySettings, isLoading } = useQuery({
+  const { data: companySettings, isLoading: isLoadingCompany } = useQuery({
     ...trpc.company.get.queryOptions({ workspaceId: workspace?.id ?? "" }),
     enabled: !!workspace?.id,
   });
 
-  // Мутация для обновления статуса онбординга
-  const updateOnboardingMutation = useMutation({
-    mutationFn: async (_data: {
-      workspaceId: string;
-      dismissedGettingStarted?: boolean;
-      onboardingCompleted?: boolean;
-    }) => {
-      // TODO: Реализовать после исправления типов
-      return Promise.resolve();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.company.get.queryKey({
-          workspaceId: workspace?.id ?? "",
-        }),
-      });
-    },
+  // Получаем список вакансий
+  const { data: vacancies, isLoading: isLoadingVacancies } = useQuery({
+    ...trpc.vacancy.list.queryOptions({ workspaceId: workspace?.id ?? "" }),
+    enabled: !!workspace?.id,
   });
+
+  // Получаем список интеграций
+  const { data: integrations, isLoading: isLoadingIntegrations } = useQuery({
+    ...trpc.integration.list.queryOptions({ workspaceId: workspace?.id ?? "" }),
+    enabled: !!workspace?.id,
+  });
+
+  // Получаем Telegram сессии
+  const { data: sessions, isLoading: isLoadingSessions } = useQuery({
+    ...trpc.telegram.getSessions.queryOptions({
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
+
+  // Мутация для обновления статуса онбординга
+  const updateOnboardingMutation = useMutation(
+    trpc.company.updateOnboarding.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.company.get.queryKey({
+            workspaceId: workspace?.id ?? "",
+          }),
+        });
+      },
+      onError: (error) => {
+        console.error("Failed to update onboarding status:", error);
+      },
+    }),
+  );
 
   // Проверяем localStorage для скрытия виджета
   const getLocalStorageKey = () => `gettingStartedDismissed_${workspace?.id}`;
@@ -49,6 +66,12 @@ export function useGettingStarted() {
     if (typeof window === "undefined" || !workspace?.id) return false;
     return localStorage.getItem(getLocalStorageKey()) === "true";
   };
+
+  const isLoading =
+    isLoadingCompany ||
+    isLoadingVacancies ||
+    isLoadingIntegrations ||
+    isLoadingSessions;
 
   // Определяем шаги онбординга
   const steps: GettingStartedStep[] = [
@@ -64,19 +87,23 @@ export function useGettingStarted() {
       id: "create-vacancy",
       title: "Создать первую вакансию",
       description: "Добавьте вакансию для поиска кандидатов",
-      completed: false, // TODO: проверить наличие вакансий
+      completed: !!(vacancies && vacancies.length > 0),
     },
     {
       id: "hh-integration",
       title: "Подключить HH.ru",
       description: "Интегрируйтесь с HeadHunter для автоматического поиска",
-      completed: false, // TODO: проверить интеграцию
+      completed: !!integrations?.some((i) => i.type === "hh"),
     },
     {
       id: "telegram-setup",
       title: "Настроить Telegram",
       description: "Подключите бота для уведомлений и интервью",
-      completed: false, // TODO: проверить Telegram интеграцию
+      completed: !!(
+        sessions &&
+        sessions.length > 0 &&
+        !sessions.some((s) => s.authError)
+      ),
     },
   ];
 
