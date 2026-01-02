@@ -25,7 +25,7 @@ export function useGettingStarted() {
 
   // Мутация для обновления статуса онбординга
   const updateOnboardingMutation = useMutation({
-    mutationFn: async (data: {
+    mutationFn: async (_data: {
       workspaceId: string;
       dismissedGettingStarted?: boolean;
       onboardingCompleted?: boolean;

@@ -31,7 +31,7 @@ export const updateOnboarding = protectedProcedure
       where: eq(companySettings.workspaceId, input.workspaceId),
     });
 
-    const updateData: Record<string, any> = {
+    const updateData: Record<string, Date | boolean> = {
       updatedAt: new Date(),
     };
 
