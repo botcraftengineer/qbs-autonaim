@@ -8,6 +8,7 @@ import {
   Textarea,
   toast,
 } from "@qbs-autonaim/ui";
+import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, Bot, FileText, Loader2, Send, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -54,25 +55,26 @@ export function VacancyChatInterface({
   const trpc = useTRPC();
 
   // Subtask 5.2: Implement vacancy save mutation
-  // @ts-expect-error - createFromChat is newly added and types need to be regenerated
-  const createVacancyMutation = trpc.vacancy.createFromChat.useMutation({
-    onSuccess: (vacancy: { id: string }) => {
-      // Subtask 5.3: Post-save navigation
-      toast.success("Вакансия создана", {
-        description: "Вакансия успешно сохранена",
-      });
-      router.push(
-        `/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`,
-      );
-    },
-    onError: (error: Error) => {
-      // Subtask 5.4: Handle save errors
-      toast.error("Ошибка сохранения", {
-        description: error.message,
-      });
-      console.error("Failed to save vacancy:", error);
-    },
-  });
+  const createVacancyMutation = useMutation(
+    trpc.vacancy.createFromChat.mutationOptions({
+      onSuccess: (vacancy) => {
+        // Subtask 5.3: Post-save navigation
+        toast.success("Вакансия создана", {
+          description: "Вакансия успешно сохранена",
+        });
+        router.push(
+          `/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancy.id}`,
+        );
+      },
+      onError: (error) => {
+        // Subtask 5.4: Handle save errors
+        toast.error("Ошибка сохранения", {
+          description: error.message,
+        });
+        console.error("Failed to save vacancy:", error);
+      },
+    }),
+  );
 
   // Autofocus on desktop (Requirement 11.2)
   useEffect(() => {
