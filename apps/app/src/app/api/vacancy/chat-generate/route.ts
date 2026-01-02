@@ -1,6 +1,10 @@
 import { AuditLoggerService } from "@qbs-autonaim/api";
 import { db } from "@qbs-autonaim/db";
-import { workspace, workspaceMember } from "@qbs-autonaim/db/schema";
+import {
+  companySettings,
+  workspace,
+  workspaceMember,
+} from "@qbs-autonaim/db/schema";
 import {
   checkRateLimit,
   sanitizeConversationMessage,
@@ -19,6 +23,10 @@ interface VacancyDocument {
   requirements?: string;
   responsibilities?: string;
   conditions?: string;
+  customBotInstructions?: string;
+  customScreeningPrompt?: string;
+  customInterviewQuestions?: string;
+  customOrganizationalQuestions?: string;
 }
 
 /**
@@ -44,6 +52,10 @@ function extractPartialDocument(
     "requirements",
     "responsibilities",
     "conditions",
+    "customBotInstructions",
+    "customScreeningPrompt",
+    "customInterviewQuestions",
+    "customOrganizationalQuestions",
   ] as const;
 
   for (const field of fields) {
@@ -179,6 +191,22 @@ function validateAndNormalizeDocument(
       fallbackDocument?.responsibilities || "",
     ),
     conditions: getString("conditions", fallbackDocument?.conditions || ""),
+    customBotInstructions: getString(
+      "customBotInstructions",
+      fallbackDocument?.customBotInstructions || "",
+    ),
+    customScreeningPrompt: getString(
+      "customScreeningPrompt",
+      fallbackDocument?.customScreeningPrompt || "",
+    ),
+    customInterviewQuestions: getString(
+      "customInterviewQuestions",
+      fallbackDocument?.customInterviewQuestions || "",
+    ),
+    customOrganizationalQuestions: getString(
+      "customOrganizationalQuestions",
+      fallbackDocument?.customOrganizationalQuestions || "",
+    ),
   };
 }
 
@@ -196,6 +224,10 @@ const vacancyChatRequestSchema = z.object({
       requirements: z.string().optional(),
       responsibilities: z.string().optional(),
       conditions: z.string().optional(),
+      customBotInstructions: z.string().optional(),
+      customScreeningPrompt: z.string().optional(),
+      customInterviewQuestions: z.string().optional(),
+      customOrganizationalQuestions: z.string().optional(),
     })
     .optional(),
   conversationHistory: z
@@ -213,6 +245,13 @@ function buildVacancyGenerationPrompt(
   message: string,
   currentDocument?: VacancyDocument,
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
+  companySettings?: {
+    name: string;
+    description?: string | null;
+    website?: string | null;
+    botName?: string | null;
+    botRole?: string | null;
+  } | null,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -234,28 +273,66 @@ ${currentDocument.description ? `Описание: ${currentDocument.description
 ${currentDocument.requirements ? `Требования:\n${currentDocument.requirements}` : ""}
 ${currentDocument.responsibilities ? `Обязанности:\n${currentDocument.responsibilities}` : ""}
 ${currentDocument.conditions ? `Условия:\n${currentDocument.conditions}` : ""}
+${currentDocument.customBotInstructions ? `Инструкции для бота:\n${currentDocument.customBotInstructions}` : ""}
+${currentDocument.customScreeningPrompt ? `Промпт для скрининга:\n${currentDocument.customScreeningPrompt}` : ""}
+${currentDocument.customInterviewQuestions ? `Вопросы для интервью:\n${currentDocument.customInterviewQuestions}` : ""}
+${currentDocument.customOrganizationalQuestions ? `Организационные вопросы:\n${currentDocument.customOrganizationalQuestions}` : ""}
 `
     : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто)";
 
-  return `Ты — эксперт по подбору персонала и созданию вакансий.
+  // Настройки компании для персонализации (Requirements 1.5, 7.1, 7.2)
+  const companySection = companySettings
+    ? `
+НАСТРОЙКИ КОМПАНИИ:
+Название компании: ${companySettings.name}
+${companySettings.description ? `Описание компании: ${companySettings.description}` : ""}
+${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
+${companySettings.botName ? `Имя бота-рекрутера: ${companySettings.botName}` : ""}
+${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""}
+`
+    : "";
 
-ЗАДАЧА: На основе сообщения пользователя обнови документ вакансии.
-${historySection}
+  const botPersonality =
+    companySettings?.botName && companySettings?.botRole
+      ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
+      : companySettings?.name
+        ? `Ты — эксперт по подбору персонала для компании "${companySettings.name}".`
+        : "Ты — эксперт по подбору персонала и созданию вакансий.";
+
+  const companyContext = companySettings?.description
+    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${companySettings.description}\nУчитывай специфику и потребности этой компании при создании вакансий.`
+    : "";
+
+  return `${botPersonality}
+
+ЗАДАЧА: На основе сообщения пользователя обнови документ вакансии.${companyContext}
+${companySection}${historySection}
 НОВОЕ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
 ${message}
 ${documentSection}
 
 ИНСТРУКЦИИ:
 - Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
+${companySettings?.name ? `- Учитывай специфику и потребности компании "${companySettings.name}"` : ""}
 - Обнови соответствующие разделы документа
 - Если пользователь указывает название должности - обнови title
 - Если описывает компанию/проект - обнови description
 - Если перечисляет требования к кандидату - обнови requirements
 - Если описывает обязанности - обнови responsibilities
 - Если говорит о зарплате/условиях - обнови conditions
+- Если просит настроить бота для интервью - обнови customBotInstructions (Requirements 5.1)
+- Если просит настроить скрининг - обнови customScreeningPrompt (Requirements 5.2)
+- Если просит добавить вопросы для интервью - обнови customInterviewQuestions (Requirements 5.3)
+- Если просит добавить организационные вопросы - обнови customOrganizationalQuestions (Requirements 5.4)
 - Сохрани существующую информацию, если пользователь не просит её изменить
 - Используй профессиональный язык
 - Структурируй списки с помощью маркеров или нумерации
+
+НАСТРОЙКИ БОТА (когда пользователь просит):
+- customBotInstructions: Инструкции для бота-интервьюера (как вести себя, на что обращать внимание, стиль общения)
+- customScreeningPrompt: Промпт для первичного скрининга кандидатов (критерии отбора, что проверять в первую очередь)
+- customInterviewQuestions: Вопросы для технического/профессионального интервью (конкретные вопросы по навыкам и опыту)
+- customOrganizationalQuestions: Вопросы об организационных моментах (график работы, удалёнка, релокация, командировки)
 
 ФОРМАТ ОТВЕТА (JSON):
 {
@@ -263,25 +340,48 @@ ${documentSection}
   "description": "Описание компании и проекта",
   "requirements": "Требования к кандидату (список)",
   "responsibilities": "Обязанности (список)",
-  "conditions": "Условия работы и зарплата"
+  "conditions": "Условия работы и зарплата",
+  "customBotInstructions": "Инструкции для бота (если запрошено)",
+  "customScreeningPrompt": "Промпт для скрининга (если запрошено)",
+  "customInterviewQuestions": "Вопросы для интервью (если запрошено)",
+  "customOrganizationalQuestions": "Организационные вопросы (если запрошено)"
 }
 
 ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных пояснений.`;
 }
 
 export async function POST(request: Request) {
+  let workspaceId: string | undefined;
+  let userId: string | undefined;
+
   try {
-    // Проверка авторизации
+    // Проверка авторизации (Requirements 12.1)
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
     }
 
-    // Парсинг и валидация входных данных
-    const body = await request.json();
+    userId = session.user.id;
+
+    // Парсинг и валидация входных данных (Requirements 12.3, 12.4)
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      return NextResponse.json(
+        {
+          error: "Ошибка парсинга запроса",
+          details:
+            parseError instanceof Error ? parseError.message : "Invalid JSON",
+        },
+        { status: 400 },
+      );
+    }
+
     const validationResult = vacancyChatRequestSchema.safeParse(body);
 
     if (!validationResult.success) {
+      // Validation error (Requirements 8.3)
       return NextResponse.json(
         {
           error: "Ошибка валидации",
@@ -291,10 +391,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const { workspaceId, message, currentDocument, conversationHistory } =
-      validationResult.data;
+    const {
+      workspaceId: wsId,
+      message,
+      currentDocument,
+      conversationHistory,
+    } = validationResult.data;
 
-    // Rate limiting - проверяем до обращения к БД
+    workspaceId = wsId;
+
+    // Rate limiting - проверяем до обращения к БД (Requirements 12.2)
     const rateLimitResult = checkRateLimit(workspaceId, 10, 60_000);
     if (!rateLimitResult.allowed) {
       const resetInSeconds = Math.ceil(
@@ -325,24 +431,51 @@ export async function POST(request: Request) {
           .map((msg) => sanitizeConversationMessage(msg))
       : undefined;
 
-    // Проверка доступа к workspace
-    const workspaceData = await db.query.workspace.findFirst({
-      where: eq(workspace.id, workspaceId),
-      with: {
-        members: {
-          where: eq(workspaceMember.userId, session.user.id),
+    // Проверка доступа к workspace (Requirements 12.2)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let workspaceData: any;
+    try {
+      workspaceData = await db.query.workspace.findFirst({
+        where: eq(workspace.id, workspaceId),
+        with: {
+          members: {
+            where: eq(workspaceMember.userId, session.user.id),
+          },
         },
-      },
-    });
+      });
+    } catch (dbError) {
+      console.error("Database error checking workspace access:", dbError);
+      return NextResponse.json(
+        { error: "Внутренняя ошибка сервера" },
+        { status: 500 },
+      );
+    }
 
-    if (!workspaceData || workspaceData.members.length === 0) {
+    if (
+      !workspaceData ||
+      !workspaceData.members ||
+      workspaceData.members.length === 0
+    ) {
+      // Authorization error (Requirements 12.2)
       return NextResponse.json(
         { error: "Нет доступа к workspace" },
         { status: 403 },
       );
     }
 
-    // Логирование начала AI генерации
+    // Загружаем настройки компании для персонализации промпта (Requirements 1.5, 7.1)
+    let companySettingsData = null;
+    try {
+      companySettingsData = await db.query.companySettings.findFirst({
+        where: eq(companySettings.workspaceId, workspaceId),
+      });
+    } catch (dbError) {
+      console.error("Database error loading company settings:", dbError);
+      // Continue without company settings - not critical
+      companySettingsData = null;
+    }
+
+    // Логирование начала AI генерации (Requirements 10.1)
     // Примечание: auditLog.resourceId ожидает UUID, но workspaceId имеет формат prefixed ID (ws_...)
     // Поэтому логируем в metadata, а resourceId оставляем пустым UUID
     try {
@@ -364,23 +497,55 @@ export async function POST(request: Request) {
       console.error("Failed to log audit entry:", auditError);
     }
 
-    // Генерация промпта с санитизированными данными
+    // Генерация промпта с санитизированными данными и настройками компании
     const prompt = buildVacancyGenerationPrompt(
       sanitizedMessage,
       currentDocument,
       sanitizedHistory,
+      companySettingsData,
     );
 
     // Запуск streaming генерации
-    const result = streamText({
-      prompt,
-      generationName: "vacancy-chat-streaming",
-      entityId: workspaceId,
-      metadata: {
-        workspaceId,
-        userId: session.user.id,
-      },
-    });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let result: any;
+    try {
+      result = streamText({
+        prompt,
+        generationName: "vacancy-chat-streaming",
+        entityId: workspaceId,
+        metadata: {
+          workspaceId,
+          userId: session.user.id,
+        },
+      });
+    } catch (aiError) {
+      // AI generation error (Requirements 12.2)
+      console.error("AI generation error:", aiError);
+
+      // Log error to audit
+      try {
+        const auditLogger = new AuditLoggerService(db);
+        await auditLogger.logAccess({
+          userId: session.user.id,
+          action: "ACCESS",
+          resourceType: "VACANCY",
+          resourceId: "00000000-0000-0000-0000-000000000000",
+          metadata: {
+            action: "vacancy_ai_generation_error",
+            workspaceId,
+            error:
+              aiError instanceof Error ? aiError.message : "Unknown AI error",
+          },
+        });
+      } catch (auditLogError) {
+        console.error("Failed to log AI error:", auditLogError);
+      }
+
+      return NextResponse.json(
+        { error: "Не удалось сгенерировать вакансию. Попробуйте позже." },
+        { status: 500 },
+      );
+    }
 
     // Создание ReadableStream для передачи данных клиенту
     const encoder = new TextEncoder();
@@ -434,9 +599,53 @@ export async function POST(request: Request) {
             ),
           );
 
+          // Log successful completion (Requirements 10.2)
+          if (userId && workspaceId) {
+            try {
+              const auditLogger = new AuditLoggerService(db);
+              await auditLogger.logAccess({
+                userId,
+                action: "ACCESS",
+                resourceType: "VACANCY",
+                resourceId: "00000000-0000-0000-0000-000000000000",
+                metadata: {
+                  action: "vacancy_ai_generation_completed",
+                  workspaceId,
+                  documentComplete: isComplete,
+                  responseLength: fullText.length,
+                },
+              });
+            } catch (auditLogError) {
+              console.error("Failed to log completion:", auditLogError);
+            }
+          }
+
           controller.close();
-        } catch (error) {
-          console.error("Streaming error:", error);
+        } catch (streamError) {
+          console.error("Streaming error:", streamError);
+
+          // Log streaming error (Requirements 10.3)
+          if (userId && workspaceId) {
+            try {
+              const auditLogger = new AuditLoggerService(db);
+              await auditLogger.logAccess({
+                userId,
+                action: "ACCESS",
+                resourceType: "VACANCY",
+                resourceId: "00000000-0000-0000-0000-000000000000",
+                metadata: {
+                  action: "vacancy_ai_generation_stream_error",
+                  workspaceId,
+                  error:
+                    streamError instanceof Error
+                      ? streamError.message
+                      : "Unknown streaming error",
+                },
+              });
+            } catch (auditLogError) {
+              console.error("Failed to log streaming error:", auditLogError);
+            }
+          }
 
           // Пытаемся извлечь хоть что-то из накопленного текста
           const { document: recoveredDoc } = parseVacancyJSON(
@@ -449,7 +658,9 @@ export async function POST(request: Request) {
               `data: ${JSON.stringify({
                 document: recoveredDoc,
                 error:
-                  error instanceof Error ? error.message : "Ошибка генерации",
+                  streamError instanceof Error
+                    ? streamError.message
+                    : "Ошибка генерации",
                 done: true,
               })}\n\n`,
             ),
@@ -467,7 +678,30 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    // Catch-all error handler (Requirements 12.2)
     console.error("API error:", error);
+
+    // Log unexpected error (Requirements 10.3)
+    if (userId && workspaceId) {
+      try {
+        const auditLogger = new AuditLoggerService(db);
+        await auditLogger.logAccess({
+          userId,
+          action: "ACCESS",
+          resourceType: "VACANCY",
+          resourceId: "00000000-0000-0000-0000-000000000000",
+          metadata: {
+            action: "vacancy_ai_generation_unexpected_error",
+            workspaceId,
+            error: error instanceof Error ? error.message : "Unknown error",
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        });
+      } catch (auditLogError) {
+        console.error("Failed to log unexpected error:", auditLogError);
+      }
+    }
+
     return NextResponse.json(
       { error: "Внутренняя ошибка сервера" },
       { status: 500 },
