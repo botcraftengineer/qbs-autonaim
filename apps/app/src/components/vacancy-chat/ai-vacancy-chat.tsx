@@ -76,6 +76,8 @@ export function AIVacancyChat({
 
   // Автоскролл к новым сообщениям внутри ScrollArea
   useEffect(() => {
+    // Trigger scroll when messages array changes
+    void messages.length;
     const scrollArea = scrollAreaRef.current;
     if (scrollArea) {
       const viewport = scrollArea.querySelector(
@@ -85,7 +87,7 @@ export function AIVacancyChat({
         viewport.scrollTop = viewport.scrollHeight;
       }
     }
-  });
+  }, [messages.length]);
 
   // Автофокус на десктопе
   useEffect(() => {
@@ -125,10 +127,11 @@ export function AIVacancyChat({
       requirements: document.requirements ?? "",
       responsibilities: document.responsibilities ?? "",
       conditions: document.conditions ?? "",
-      customBotInstructions: document.customBotInstructions,
-      customScreeningPrompt: document.customScreeningPrompt,
-      customInterviewQuestions: document.customInterviewQuestions,
-      customOrganizationalQuestions: document.customOrganizationalQuestions,
+      customBotInstructions: document.customBotInstructions ?? "",
+      customScreeningPrompt: document.customScreeningPrompt ?? "",
+      customInterviewQuestions: document.customInterviewQuestions ?? "",
+      customOrganizationalQuestions:
+        document.customOrganizationalQuestions ?? "",
     });
   };
 

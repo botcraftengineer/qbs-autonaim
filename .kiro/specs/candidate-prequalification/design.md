@@ -609,7 +609,9 @@ export const analyticsEvent = pgTable(
 - `evaluating` → `completed` (only after evaluation)
 - `completed` → `submitted` (only if fitDecision is strong_fit or potential_fit)
 
-**Validates: Requirements 1.6, 2.4, 8.1**
+**Validates: Requirements 1.6, 2.4**
+
+**Classification: MANDATORY (Security/Compliance)** - Ensures correct session lifecycle
 
 ### Property 4: Mandatory Questions Inclusion
 
@@ -647,6 +649,8 @@ export const analyticsEvent = pgTable(
 
 **Validates: Requirements 5.3, 5.4, 7.1, 7.2**
 
+**Classification: MANDATORY (Security)** - Critical security property preventing cross-tenant data leakage
+
 ### Property 10: Widget Configuration Persistence Round-Trip
 
 *For any* valid WidgetConfiguration object, saving and then loading the configuration SHALL produce an equivalent object (all fields match).
@@ -658,6 +662,8 @@ export const analyticsEvent = pgTable(
 *For any* PrequalificationSession, the status SHALL NOT progress beyond 'consent_pending' until consentGivenAt is set to a non-null timestamp.
 
 **Validates: Requirements 8.1**
+
+**Classification: MANDATORY (Compliance)** - GDPR/privacy compliance requirement
 
 ### Property 12: Audit Log Completeness
 

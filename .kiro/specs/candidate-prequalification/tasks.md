@@ -89,10 +89,12 @@
     - Реализовать updateSessionStatus с валидацией state machine
     - _Requirements: 1.6, 7.2, 8.1_
 
-  - [ ]* 4.3 Написать property test для Session State Machine
+  - [ ] 4.3 Написать property tests для Session State Machine (MANDATORY - Security/Compliance)
     - **Property 3: Session State Machine Transitions**
+    - **Validates: Requirements 1.6, 2.4**
     - **Property 11: Consent Requirement Enforcement**
-    - **Validates: Requirements 1.6, 2.4, 8.1**
+    - **Validates: Requirements 8.1**
+    - _Note: These properties are mandatory for MVP sign-off as they enforce security and compliance requirements_
 
   - [ ] 4.4 Реализовать обработку резюме в сессии
     - Добавить метод uploadResume в session-manager.ts
@@ -115,6 +117,7 @@
 - [ ] 5. Checkpoint - Проверка базовой функциональности
   - Убедиться, что сессии создаются и управляются корректно
   - Проверить интеграцию с Resume Parser
+  - **MANDATORY: Property 3 (Session State Machine) and Property 11 (Consent Enforcement) must pass**
   - Спросить пользователя, если возникнут вопросы
 
 - [ ] 6. Реализация Evaluation Service
@@ -171,13 +174,15 @@
     - Добавить logging для audit
     - _Requirements: 7.1, 7.2_
 
-  - [ ]* 8.2 Написать property test для Tenant Isolation
+  - [ ] 8.2 Написать property test для Tenant Isolation (MANDATORY - Security)
     - **Property 9: Tenant Data Isolation**
     - **Validates: Requirements 5.3, 5.4, 7.1, 7.2**
+    - _Note: This property is mandatory for MVP sign-off as it enforces tenant data isolation security_
 
 - [ ] 9. Checkpoint - Проверка core services
   - Убедиться, что все сервисы работают корректно
   - Проверить tenant isolation
+  - **MANDATORY: Property 9 (Tenant Data Isolation) must pass**
   - Спросить пользователя, если возникнут вопросы
 
 - [ ] 10. Реализация tRPC Router для Prequalification
@@ -292,14 +297,48 @@
 
 - [ ] 16. Final Checkpoint - Полная проверка
   - Убедиться, что все тесты проходят
+  - **MANDATORY: All security/compliance properties must pass (Property 3, 9, 11)**
   - Проверить интеграцию всех компонентов
   - Спросить пользователя, если возникнут вопросы
 
 ## Notes
 
-- Задачи с `*` являются опциональными (property-based тесты) и могут быть пропущены для быстрого MVP
-- Каждая задача ссылается на конкретные требования для трaceability
+### Property-Based Test Classification
+
+Property-based tests are split into two categories:
+
+#### Requirement-Dependent (Mandatory)
+These properties MUST pass before MVP sign-off as they enforce security and compliance requirements:
+
+- **Property 3: Session State Machine Transitions** (Task 4.3)
+  - Validates: Requirements 1.6, 2.4
+  - Reason: Ensures correct session lifecycle and prevents invalid state transitions
+
+- **Property 9: Tenant Data Isolation** (Task 8.2)
+  - Validates: Requirements 5.3, 5.4, 7.1, 7.2
+  - Reason: Critical security property preventing cross-tenant data leakage
+
+- **Property 11: Consent Requirement Enforcement** (Task 4.3)
+  - Validates: Requirements 8.1
+  - Reason: Compliance requirement ensuring GDPR/privacy consent is obtained
+
+#### Timeline-Dependent (Optional)
+These properties are marked with `*` and can be deferred for faster MVP delivery:
+
+- **Property 1, 2**: Resume Parsing (Task 3.5)
+- **Property 4**: Mandatory Questions (Task 4.6)
+- **Property 5, 6, 7**: Evaluation Scores (Task 6.3)
+- **Property 8**: Feedback Generation (Task 6.5)
+- **Property 10**: Widget Config Round-Trip (Task 7.3)
+- **Property 12**: Audit Log Completeness (Task 14.2)
+- **Property 13**: Analytics Funnel Metrics (Task 11.4)
+- **Property 14**: Custom Domain Uniqueness (Task 12.5)
+
+### General Notes
+
+- Каждая задача ссылается на конкретные требования для traceability
 - Checkpoints обеспечивают инкрементальную валидацию
 - Property tests валидируют универсальные свойства корректности
 - Unit tests валидируют конкретные примеры и edge cases
 - Используется `fast-check` для property-based тестирования
+- **MVP Sign-off requires all mandatory property tests to pass**
