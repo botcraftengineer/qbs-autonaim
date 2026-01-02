@@ -29,15 +29,27 @@ interface VacancyDocument {
   customOrganizationalQuestions?: string;
 }
 
+interface QuickReply {
+  id: string;
+  label: string;
+  value: string;
+}
+
+interface AIResponse {
+  message?: string;
+  quickReplies?: QuickReply[];
+  document?: VacancyDocument;
+}
+
 /**
  * Извлекает частичные данные из незавершённого JSON-стрима
  * Использует regex для извлечения завершённых полей
  */
-function extractPartialDocument(
+function extractPartialResponse(
   text: string,
   fallback?: VacancyDocument,
-): VacancyDocument {
-  const result: VacancyDocument = { ...fallback };
+): AIResponse {
+  const result: AIResponse = { document: { ...fallback } };
 
   // Убираем markdown-обёртку если есть
   const cleanText = text
@@ -45,34 +57,57 @@ function extractPartialDocument(
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "");
 
-  // Извлекаем каждое поле отдельно с помощью regex
-  const fields = [
+  // Извлекаем message
+  const messageMatch = cleanText.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+  if (messageMatch?.[1]) {
+    try {
+      result.message = JSON.parse(`"${messageMatch[1]}"`);
+    } catch {
+      result.message = messageMatch[1]
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, '"');
+    }
+  }
+
+  // Извлекаем quickReplies
+  const quickRepliesMatch = cleanText.match(
+    /"quickReplies"\s*:\s*\[([\s\S]*?)\]/,
+  );
+  if (quickRepliesMatch?.[1]) {
+    try {
+      const repliesText = `[${quickRepliesMatch[1]}]`;
+      result.quickReplies = JSON.parse(repliesText);
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
+  // Извлекаем поля документа
+  const docFields = [
     "title",
     "description",
     "requirements",
     "responsibilities",
     "conditions",
-    "customBotInstructions",
-    "customScreeningPrompt",
-    "customInterviewQuestions",
-    "customOrganizationalQuestions",
   ] as const;
 
-  for (const field of fields) {
-    // Ищем паттерн "field": "value" или "field": "value...
-    // Поддерживаем многострочные значения
+  // Ищем вложенный document объект
+  const docMatch = cleanText.match(
+    /"document"\s*:\s*\{([\s\S]*?)(?:\}(?=\s*[,}])|$)/,
+  );
+  const docText = docMatch?.[1] || cleanText;
+
+  for (const field of docFields) {
     const regex = new RegExp(
       `"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)(?:"|$)`,
       "s",
     );
-    const match = cleanText.match(regex);
+    const match = docText.match(regex);
     if (match?.[1]) {
-      // Декодируем escape-последовательности
       try {
-        result[field] = JSON.parse(`"${match[1]}"`);
+        result.document![field] = JSON.parse(`"${match[1]}"`);
       } catch {
-        // Если не удалось распарсить, используем как есть
-        result[field] = match[1]
+        result.document![field] = match[1]
           .replace(/\\n/g, "\n")
           .replace(/\\"/g, '"')
           .replace(/\\\\/g, "\\");
@@ -86,10 +121,10 @@ function extractPartialDocument(
 /**
  * Пытается распарсить полный JSON, с fallback на частичное извлечение
  */
-function parseVacancyJSON(
+function parseAIResponse(
   text: string,
   fallback?: VacancyDocument,
-): { document: VacancyDocument; isComplete: boolean } {
+): { response: AIResponse; isComplete: boolean } {
   // Убираем markdown-обёртку
   let cleanText = text.trim();
   if (cleanText.startsWith("```json")) {
@@ -106,7 +141,7 @@ function parseVacancyJSON(
   const startIndex = cleanText.indexOf("{");
   if (startIndex === -1) {
     return {
-      document: extractPartialDocument(text, fallback),
+      response: extractPartialResponse(text, fallback),
       isComplete: false,
     };
   }
@@ -130,7 +165,7 @@ function parseVacancyJSON(
   // Если JSON не завершён, извлекаем частичные данные
   if (endIndex === -1) {
     return {
-      document: extractPartialDocument(cleanText, fallback),
+      response: extractPartialResponse(cleanText, fallback),
       isComplete: false,
     };
   }
@@ -140,46 +175,62 @@ function parseVacancyJSON(
   try {
     const parsed = JSON.parse(jsonText);
     return {
-      document: validateAndNormalizeDocument(parsed, fallback),
+      response: validateAndNormalizeResponse(parsed, fallback),
       isComplete: true,
     };
   } catch {
     // Если парсинг не удался, извлекаем частичные данные
     return {
-      document: extractPartialDocument(cleanText, fallback),
+      response: extractPartialResponse(cleanText, fallback),
       isComplete: false,
     };
   }
 }
 
 /**
- * Валидирует и нормализует документ вакансии
- * Применяет значения по умолчанию и проверяет типы
+ * Валидирует и нормализует ответ AI
  */
-function validateAndNormalizeDocument(
+function validateAndNormalizeResponse(
   parsed: unknown,
   fallbackDocument?: VacancyDocument,
-): VacancyDocument {
-  // Проверяем, что parsed - это объект
+): AIResponse {
   if (!parsed || typeof parsed !== "object") {
-    return {
-      title: fallbackDocument?.title || "",
-      description: fallbackDocument?.description || "",
-      requirements: fallbackDocument?.requirements || "",
-      responsibilities: fallbackDocument?.responsibilities || "",
-      conditions: fallbackDocument?.conditions || "",
-    };
+    return { document: fallbackDocument || {} };
   }
 
   const data = parsed as Record<string, unknown>;
+  const result: AIResponse = {};
 
-  // Безопасно извлекаем строковые поля с fallback значениями
+  // Извлекаем message
+  if (typeof data.message === "string") {
+    result.message = data.message;
+  }
+
+  // Извлекаем quickReplies
+  if (Array.isArray(data.quickReplies)) {
+    result.quickReplies = data.quickReplies
+      .filter((r): r is Record<string, unknown> => r && typeof r === "object")
+      .map((r) => ({
+        id: String(r.id || ""),
+        label: String(r.label || ""),
+        value: String(r.value || ""),
+      }))
+      .filter((r) => r.label && r.value);
+  }
+
+  // Извлекаем document
+  const docData =
+    data.document && typeof data.document === "object"
+      ? (data.document as Record<string, unknown>)
+      : data;
+
   const getString = (key: string, fallback: string = ""): string => {
-    const value = data[key];
+    const value = docData[key];
+    if (value === null || value === undefined) return fallback;
     return typeof value === "string" ? value : fallback;
   };
 
-  return {
+  result.document = {
     title: getString("title", fallbackDocument?.title || ""),
     description: getString("description", fallbackDocument?.description || ""),
     requirements: getString(
@@ -191,23 +242,14 @@ function validateAndNormalizeDocument(
       fallbackDocument?.responsibilities || "",
     ),
     conditions: getString("conditions", fallbackDocument?.conditions || ""),
-    customBotInstructions: getString(
-      "customBotInstructions",
-      fallbackDocument?.customBotInstructions || "",
-    ),
-    customScreeningPrompt: getString(
-      "customScreeningPrompt",
-      fallbackDocument?.customScreeningPrompt || "",
-    ),
-    customInterviewQuestions: getString(
-      "customInterviewQuestions",
-      fallbackDocument?.customInterviewQuestions || "",
-    ),
-    customOrganizationalQuestions: getString(
-      "customOrganizationalQuestions",
+    customBotInstructions: fallbackDocument?.customBotInstructions || "",
+    customScreeningPrompt: fallbackDocument?.customScreeningPrompt || "",
+    customInterviewQuestions: fallbackDocument?.customInterviewQuestions || "",
+    customOrganizationalQuestions:
       fallbackDocument?.customOrganizationalQuestions || "",
-    ),
   };
+
+  return result;
 }
 
 // Zod схема для валидации входных данных
@@ -268,27 +310,20 @@ ${conversationHistory
   const documentSection = currentDocument
     ? `
 ТЕКУЩИЙ ДОКУМЕНТ ВАКАНСИИ:
-${currentDocument.title ? `Название: ${currentDocument.title}` : ""}
-${currentDocument.description ? `Описание: ${currentDocument.description}` : ""}
-${currentDocument.requirements ? `Требования:\n${currentDocument.requirements}` : ""}
-${currentDocument.responsibilities ? `Обязанности:\n${currentDocument.responsibilities}` : ""}
-${currentDocument.conditions ? `Условия:\n${currentDocument.conditions}` : ""}
-${currentDocument.customBotInstructions ? `Инструкции для бота:\n${currentDocument.customBotInstructions}` : ""}
-${currentDocument.customScreeningPrompt ? `Промпт для скрининга:\n${currentDocument.customScreeningPrompt}` : ""}
-${currentDocument.customInterviewQuestions ? `Вопросы для интервью:\n${currentDocument.customInterviewQuestions}` : ""}
-${currentDocument.customOrganizationalQuestions ? `Организационные вопросы:\n${currentDocument.customOrganizationalQuestions}` : ""}
+${currentDocument.title ? `Название: ${currentDocument.title}` : "(не заполнено)"}
+${currentDocument.description ? `Описание: ${currentDocument.description}` : "(не заполнено)"}
+${currentDocument.requirements ? `Требования:\n${currentDocument.requirements}` : "(не заполнено)"}
+${currentDocument.responsibilities ? `Обязанности:\n${currentDocument.responsibilities}` : "(не заполнено)"}
+${currentDocument.conditions ? `Условия:\n${currentDocument.conditions}` : "(не заполнено)"}
 `
-    : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто)";
+    : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто - ничего не заполнено)";
 
-  // Настройки компании для персонализации (Requirements 1.5, 7.1, 7.2)
   const companySection = companySettings
     ? `
 НАСТРОЙКИ КОМПАНИИ:
 Название компании: ${companySettings.name}
 ${companySettings.description ? `Описание компании: ${companySettings.description}` : ""}
 ${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
-${companySettings.botName ? `Имя бота-рекрутера: ${companySettings.botName}` : ""}
-${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""}
 `
     : "";
 
@@ -296,58 +331,59 @@ ${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""
     companySettings?.botName && companySettings?.botRole
       ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
       : companySettings?.name
-        ? `Ты — эксперт по подбору персонала для компании "${companySettings.name}".`
-        : "Ты — эксперт по подбору персонала и созданию вакансий.";
-
-  const companyContext = companySettings?.description
-    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${companySettings.description}\nУчитывай специфику и потребности этой компании при создании вакансий.`
-    : "";
+        ? `Ты — дружелюбный HR-ассистент компании "${companySettings.name}".`
+        : "Ты — дружелюбный HR-ассистент, помогающий создавать вакансии.";
 
   return `${botPersonality}
 
-ЗАДАЧА: На основе сообщения пользователя обнови документ вакансии.${companyContext}
+ЗАДАЧА: Помоги пользователю создать вакансию в интерактивном режиме. Веди диалог, задавай уточняющие вопросы, предлагай варианты для выбора.
 ${companySection}${historySection}
-НОВОЕ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
+СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
 ${message}
 ${documentSection}
 
-ИНСТРУКЦИИ:
-- Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
-${companySettings?.name ? `- Учитывай специфику и потребности компании "${companySettings.name}"` : ""}
-- Обнови соответствующие разделы документа
-- Если пользователь указывает название должности - обнови title
-- Если описывает компанию/проект - обнови description
-- Если перечисляет требования к кандидату - обнови requirements
-- Если описывает обязанности - обнови responsibilities
-- Если говорит о зарплате/условиях - обнови conditions
-- Если просит настроить бота для интервью - обнови customBotInstructions (Requirements 5.1)
-- Если просит настроить скрининг - обнови customScreeningPrompt (Requirements 5.2)
-- Если просит добавить вопросы для интервью - обнови customInterviewQuestions (Requirements 5.3)
-- Если просит добавить организационные вопросы - обнови customOrganizationalQuestions (Requirements 5.4)
-- Сохрани существующую информацию, если пользователь не просит её изменить
-- Используй профессиональный язык
-- Структурируй списки с помощью маркеров или нумерации
+ПРАВИЛА ДИАЛОГА:
+1. Будь дружелюбным и помогающим
+2. Если пользователь дал информацию — обнови соответствующие поля документа
+3. После обновления документа — задай следующий логичный вопрос
+4. Предлагай 3-5 вариантов для быстрого выбора (quickReplies)
+5. Варианты должны быть релевантны текущему этапу создания вакансии
+6. Если документ почти готов — предложи финальные штрихи или подтверждение
 
-НАСТРОЙКИ БОТА (когда пользователь просит):
-- customBotInstructions: Инструкции для бота-интервьюера (как вести себя, на что обращать внимание, стиль общения)
-- customScreeningPrompt: Промпт для первичного скрининга кандидатов (критерии отбора, что проверять в первую очередь)
-- customInterviewQuestions: Вопросы для технического/профессионального интервью (конкретные вопросы по навыкам и опыту)
-- customOrganizationalQuestions: Вопросы об организационных моментах (график работы, удалёнка, релокация, командировки)
+ЛОГИКА ЗАПОЛНЕНИЯ:
+- Сначала узнай должность (title) — предложи популярные варианты
+- Затем требования (requirements) — предложи уровни опыта, навыки
+- Потом обязанности (responsibilities) — предложи типичные задачи
+- Далее условия (conditions) — формат работы, зарплата
+- В конце описание компании (description) — если нужно
 
-ФОРМАТ ОТВЕТА (JSON):
+ФОРМАТ ОТВЕТА (строго JSON):
 {
-  "title": "Название должности",
-  "description": "Описание компании и проекта",
-  "requirements": "Требования к кандидату (список)",
-  "responsibilities": "Обязанности (список)",
-  "conditions": "Условия работы и зарплата",
-  "customBotInstructions": "Инструкции для бота (если запрошено)",
-  "customScreeningPrompt": "Промпт для скрининга (если запрошено)",
-  "customInterviewQuestions": "Вопросы для интервью (если запрошено)",
-  "customOrganizationalQuestions": "Организационные вопросы (если запрошено)"
+  "message": "Твой ответ пользователю. Задай вопрос или подтверди изменения.",
+  "quickReplies": [
+    {"id": "1", "label": "Краткий текст кнопки", "value": "Полный текст который отправится как сообщение"},
+    {"id": "2", "label": "Другой вариант", "value": "Текст варианта"}
+  ],
+  "document": {
+    "title": "Название должности или null если не определено",
+    "description": "Описание или null",
+    "requirements": "Требования или null",
+    "responsibilities": "Обязанности или null",
+    "conditions": "Условия или null"
+  }
 }
 
-ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных пояснений.`;
+ПРИМЕРЫ quickReplies по этапам:
+- Для выбора должности: [{"id":"1","label":"Frontend","value":"Frontend-разработчик"},{"id":"2","label":"Backend","value":"Backend-разработчик"}]
+- Для уровня: [{"id":"1","label":"Junior","value":"Уровень Junior, 1-2 года опыта"},{"id":"2","label":"Middle","value":"Уровень Middle, 2-4 года опыта"}]
+- Для формата: [{"id":"1","label":"🏠 Удалёнка","value":"Удалённая работа"},{"id":"2","label":"🏢 Офис","value":"Работа в офисе"}]
+- Для завершения: [{"id":"1","label":"✅ Всё верно","value":"Вакансия готова, сохраняем"},{"id":"2","label":"✏️ Изменить","value":"Хочу что-то изменить"}]
+
+ВАЖНО: 
+- Верни ТОЛЬКО валидный JSON
+- quickReplies должен содержать 3-5 релевантных вариантов
+- message должен быть коротким и понятным (1-2 предложения)
+- Сохраняй уже заполненные поля документа, не обнуляй их`;
 }
 
 export async function POST(request: Request) {
@@ -552,7 +588,7 @@ export async function POST(request: Request) {
     // Создание ReadableStream для передачи данных клиенту
     const encoder = new TextEncoder();
     let fullText = "";
-    let lastSentDocument: VacancyDocument | null = null;
+    let lastSentResponse: AIResponse | null = null;
     let chunkCounter = 0;
 
     const stream = new ReadableStream({
@@ -562,22 +598,26 @@ export async function POST(request: Request) {
             fullText += chunk;
             chunkCounter++;
 
-            // Каждые 3 чанка отправляем частичный документ для real-time обновления
+            // Каждые 3 чанка отправляем частичные данные для real-time обновления
             if (chunkCounter % 3 === 0) {
-              const { document: partialDoc } = parseVacancyJSON(
+              const { response: partialResponse } = parseAIResponse(
                 fullText,
                 currentDocument,
               );
 
-              // Отправляем только если документ изменился
-              const docString = JSON.stringify(partialDoc);
-              const lastDocString = JSON.stringify(lastSentDocument);
+              // Отправляем только если данные изменились
+              const responseString = JSON.stringify(partialResponse);
+              const lastResponseString = JSON.stringify(lastSentResponse);
 
-              if (docString !== lastDocString) {
-                lastSentDocument = partialDoc;
+              if (responseString !== lastResponseString) {
+                lastSentResponse = partialResponse;
                 controller.enqueue(
                   encoder.encode(
-                    `data: ${JSON.stringify({ document: partialDoc, partial: true })}\n\n`,
+                    `data: ${JSON.stringify({
+                      document: partialResponse.document,
+                      message: partialResponse.message,
+                      partial: true,
+                    })}\n\n`,
                   ),
                 );
               }
@@ -585,7 +625,7 @@ export async function POST(request: Request) {
           }
 
           // Финальный парсинг
-          const { document, isComplete } = parseVacancyJSON(
+          const { response: finalResponse, isComplete } = parseAIResponse(
             fullText,
             currentDocument,
           );
@@ -594,10 +634,15 @@ export async function POST(request: Request) {
             console.warn("JSON parsing incomplete, using partial data");
           }
 
-          // Отправляем финальный документ
+          // Отправляем финальный ответ с message и quickReplies
           controller.enqueue(
             encoder.encode(
-              `data: ${JSON.stringify({ document, done: true })}\n\n`,
+              `data: ${JSON.stringify({
+                document: finalResponse.document,
+                message: finalResponse.message,
+                quickReplies: finalResponse.quickReplies,
+                done: true,
+              })}\n\n`,
             ),
           );
 
@@ -650,7 +695,7 @@ export async function POST(request: Request) {
           }
 
           // Пытаемся извлечь хоть что-то из накопленного текста
-          const { document: recoveredDoc } = parseVacancyJSON(
+          const { response: recoveredResponse } = parseAIResponse(
             fullText,
             currentDocument,
           );
@@ -658,7 +703,8 @@ export async function POST(request: Request) {
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
-                document: recoveredDoc,
+                document: recoveredResponse.document,
+                message: recoveredResponse.message,
                 error:
                   streamError instanceof Error
                     ? streamError.message

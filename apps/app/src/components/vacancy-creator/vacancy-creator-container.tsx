@@ -1,6 +1,6 @@
 "use client";
 
-import { VacancyChatInterface } from "~/components/vacancy-chat-interface";
+import { AIVacancyChat } from "~/components/vacancy-chat";
 
 interface VacancyCreatorContainerProps {
   workspaceId: string;
@@ -14,7 +14,7 @@ export function VacancyCreatorContainer({
   workspaceSlug,
 }: VacancyCreatorContainerProps) {
   return (
-    <VacancyChatInterface
+    <AIVacancyChat
       workspaceId={workspaceId}
       orgSlug={orgSlug}
       workspaceSlug={workspaceSlug}
