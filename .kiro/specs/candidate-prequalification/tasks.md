@@ -1,0 +1,305 @@
+# Implementation Plan: Candidate Prequalification System
+
+## Overview
+
+Реализация системы преквалификации кандидатов через white-label виджет. План разбит на инкрементальные задачи, каждая из которых строится на предыдущих. Используется TypeScript, tRPC, Drizzle ORM, fast-check для property-based тестирования.
+
+## Tasks
+
+- [ ] 1. Создание схемы базы данных для преквалификации
+  - [ ] 1.1 Создать таблицу prequalification_sessions
+    - Добавить файл `packages/db/src/schema/prequalification/session.ts`
+    - Определить все поля: id, workspaceId, vacancyId, responseId, conversationId, status, source, parsedResume, fitScore, fitDecision, evaluation, candidateFeedback, consentGivenAt, userAgent, ipAddress, expiresAt, timestamps
+    - Создать индексы для workspaceId, vacancyId, status, fitScore
+    - Экспортировать схему и типы
+    - _Requirements: 1.6, 2.4, 3.2, 3.3, 4.1, 8.1_
+
+  - [ ] 1.2 Создать таблицу widget_configs
+    - Добавить файл `packages/db/src/schema/prequalification/widget-config.ts`
+    - Определить поля брендинга: logo, primaryColor, secondaryColor, backgroundColor, textColor, fontFamily, assistantName, assistantAvatar, welcomeMessage, completionMessage
+    - Определить поля поведения: passThreshold, mandatoryQuestions, tone, honestyLevel, maxDialogueTurns, sessionTimeoutMinutes
+    - Определить поля legal: consentText, disclaimerText, privacyPolicyUrl, dataRetentionDays
+    - _Requirements: 6.1, 6.2, 6.3_
+
+  - [ ] 1.3 Создать таблицу custom_domains
+    - Добавить файл `packages/db/src/schema/prequalification/custom-domain.ts`
+    - Определить поля: domain, cnameTarget, verified, verifiedAt, lastVerificationAttempt, verificationError, sslStatus, sslCertificateId, sslExpiresAt
+    - Создать уникальный индекс на domain
+    - _Requirements: 10.1, 10.2, 10.3, 10.7_
+
+  - [ ] 1.4 Создать таблицу analytics_events
+    - Добавить файл `packages/db/src/schema/prequalification/analytics-event.ts`
+    - Определить поля: workspaceId, vacancyId, sessionId, eventType, metadata, timestamp
+    - Создать индексы для эффективных запросов аналитики
+    - _Requirements: 9.1, 9.4_
+
+  - [ ] 1.5 Создать index.ts и relations для prequalification схемы
+    - Экспортировать все таблицы из `packages/db/src/schema/prequalification/index.ts`
+    - Определить relations между таблицами
+    - Обновить `packages/db/src/schema/index.ts` для экспорта prequalification
+    - _Requirements: 7.1_
+
+- [ ] 2. Checkpoint - Проверка схемы БД
+  - Убедиться, что все таблицы созданы корректно
+  - Проверить типы и индексы
+  - Спросить пользователя, если возникнут вопросы
+
+- [ ] 3. Реализация Resume Parser Service
+  - [ ] 3.1 Создать интерфейсы и типы для Resume Parser
+    - Добавить файл `packages/api/src/services/resume-parser/types.ts`
+    - Определить ResumeInput, ParsedResume, StructuredResume, WorkExperience, Education, Language
+    - Определить ValidationResult и ParserError типы
+    - _Requirements: 1.1, 1.2_
+
+  - [ ] 3.2 Реализовать PDF парсер
+    - Добавить файл `packages/api/src/services/resume-parser/pdf-parser.ts`
+    - Использовать pdf-parse для извлечения текста
+    - Реализовать структурирование данных с помощью AI
+    - _Requirements: 1.1_
+
+  - [ ] 3.3 Реализовать DOCX парсер
+    - Добавить файл `packages/api/src/services/resume-parser/docx-parser.ts`
+    - Использовать mammoth для извлечения текста
+    - Реализовать структурирование данных с помощью AI
+    - _Requirements: 1.2_
+
+  - [ ] 3.4 Реализовать основной Resume Parser Service
+    - Добавить файл `packages/api/src/services/resume-parser/index.ts`
+    - Реализовать validateFormat для проверки расширения файла
+    - Реализовать parse с выбором парсера по типу файла
+    - Обработать ошибки и edge cases
+    - _Requirements: 1.1, 1.2, 1.4, 1.5_
+
+  - [ ]* 3.5 Написать property test для Resume Parser
+    - **Property 1: Resume Parsing Produces Structured Output**
+    - **Property 2: Invalid File Format Rejection**
+    - **Validates: Requirements 1.1, 1.2, 1.4**
+
+- [ ] 4. Реализация Prequalification Service
+  - [ ] 4.1 Создать интерфейсы и типы для Prequalification Service
+    - Добавить файл `packages/api/src/services/prequalification/types.ts`
+    - Определить CreateSessionInput, PrequalificationSession, SessionStatus
+    - Определить AIResponse, EvaluationInput, EvaluationResult
+    - _Requirements: 1.6, 2.4, 3.1_
+
+  - [ ] 4.2 Реализовать управление сессиями
+    - Добавить файл `packages/api/src/services/prequalification/session-manager.ts`
+    - Реализовать createSession с проверкой consent
+    - Реализовать getSession с проверкой tenant ownership
+    - Реализовать updateSessionStatus с валидацией state machine
+    - _Requirements: 1.6, 7.2, 8.1_
+
+  - [ ]* 4.3 Написать property test для Session State Machine
+    - **Property 3: Session State Machine Transitions**
+    - **Property 11: Consent Requirement Enforcement**
+    - **Validates: Requirements 1.6, 2.4, 8.1**
+
+  - [ ] 4.4 Реализовать обработку резюме в сессии
+    - Добавить метод uploadResume в session-manager.ts
+    - Интегрировать с Resume Parser Service
+    - Сохранить parsedResume в сессию
+    - Обновить статус на dialogue_active
+    - _Requirements: 1.6_
+
+  - [ ] 4.5 Реализовать обработку сообщений диалога
+    - Добавить файл `packages/api/src/services/prequalification/dialogue-handler.ts`
+    - Интегрировать с существующим InterviewOrchestrator
+    - Передавать контекст вакансии и резюме в AI
+    - Проверять mandatory questions
+    - _Requirements: 2.1, 2.3, 2.5, 2.6_
+
+  - [ ]* 4.6 Написать property test для Mandatory Questions
+    - **Property 4: Mandatory Questions Inclusion**
+    - **Validates: Requirements 2.6**
+
+- [ ] 5. Checkpoint - Проверка базовой функциональности
+  - Убедиться, что сессии создаются и управляются корректно
+  - Проверить интеграцию с Resume Parser
+  - Спросить пользователя, если возникнут вопросы
+
+- [ ] 6. Реализация Evaluation Service
+  - [ ] 6.1 Создать интерфейсы для Evaluation Service
+    - Добавить файл `packages/api/src/services/evaluation/types.ts`
+    - Определить EvaluationInput, EvaluationResult, DimensionScore
+    - Определить FeedbackConfig и FitDecision
+    - _Requirements: 3.1, 3.2, 3.3_
+
+  - [ ] 6.2 Реализовать оценку кандидата
+    - Добавить файл `packages/api/src/services/evaluation/evaluator.ts`
+    - Реализовать evaluate с использованием AI для анализа
+    - Рассчитать scores по dimensions: hardSkills, softSkills, cultureFit, salaryAlignment
+    - Рассчитать общий fitScore и определить fitDecision на основе threshold
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+  - [ ]* 6.3 Написать property tests для Evaluation
+    - **Property 5: Evaluation Score Validity**
+    - **Property 6: Threshold Determines Fit Decision**
+    - **Property 7: Evaluation Contains All Dimensions**
+    - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
+
+  - [ ] 6.4 Реализовать генерацию feedback для кандидата
+    - Добавить файл `packages/api/src/services/evaluation/feedback-generator.ts`
+    - Реализовать generateFeedback с учётом honestyLevel
+    - Генерировать конструктивный feedback для not_fit
+    - _Requirements: 4.2, 4.4, 4.5_
+
+  - [ ]* 6.5 Написать property test для Feedback Generation
+    - **Property 8: Candidate Feedback Generation**
+    - **Validates: Requirements 4.2, 4.4**
+
+- [ ] 7. Реализация Widget Config Service
+  - [ ] 7.1 Создать интерфейсы для Widget Config
+    - Добавить файл `packages/api/src/services/widget-config/types.ts`
+    - Определить WidgetConfiguration, BrandingConfig, BehaviorConfig, LegalConfig
+    - _Requirements: 6.1, 6.2, 6.3_
+
+  - [ ] 7.2 Реализовать CRUD для Widget Config
+    - Добавить файл `packages/api/src/services/widget-config/index.ts`
+    - Реализовать getConfig с tenant isolation
+    - Реализовать updateConfig с валидацией
+    - Реализовать getDefaultConfig для новых workspaces
+    - _Requirements: 6.1, 6.2, 6.3, 7.2_
+
+  - [ ]* 7.3 Написать property test для Widget Config
+    - **Property 10: Widget Configuration Persistence Round-Trip**
+    - **Validates: Requirements 6.1, 6.2, 6.3**
+
+- [ ] 8. Реализация Tenant Isolation
+  - [ ] 8.1 Создать middleware для tenant verification
+    - Добавить файл `packages/api/src/middleware/tenant-guard.ts`
+    - Реализовать проверку workspaceId для всех операций
+    - Добавить logging для audit
+    - _Requirements: 7.1, 7.2_
+
+  - [ ]* 8.2 Написать property test для Tenant Isolation
+    - **Property 9: Tenant Data Isolation**
+    - **Validates: Requirements 5.3, 5.4, 7.1, 7.2**
+
+- [ ] 9. Checkpoint - Проверка core services
+  - Убедиться, что все сервисы работают корректно
+  - Проверить tenant isolation
+  - Спросить пользователя, если возникнут вопросы
+
+- [ ] 10. Реализация tRPC Router для Prequalification
+  - [ ] 10.1 Создать prequalification router
+    - Добавить файл `packages/api/src/router/prequalification.ts`
+    - Реализовать createSession procedure
+    - Реализовать uploadResume procedure
+    - Реализовать sendMessage procedure
+    - Реализовать getResult procedure
+    - Реализовать submitApplication procedure
+    - _Requirements: 1.1, 1.6, 2.1, 4.1, 5.1_
+
+  - [ ] 10.2 Создать widget-config router
+    - Добавить файл `packages/api/src/router/widget-config.ts`
+    - Реализовать getConfig procedure (public)
+    - Реализовать updateConfig procedure (admin only)
+    - _Requirements: 6.1, 6.2, 6.3_
+
+  - [ ] 10.3 Интегрировать routers в appRouter
+    - Обновить `packages/api/src/root.ts`
+    - Добавить prequalification и widgetConfig routers
+    - _Requirements: все_
+
+- [ ] 11. Реализация Analytics Service
+  - [ ] 11.1 Создать интерфейсы для Analytics
+    - Добавить файл `packages/api/src/services/analytics/types.ts`
+    - Определить AnalyticsEvent, EventType, DashboardData, FunnelMetrics
+    - _Requirements: 9.1, 9.4_
+
+  - [ ] 11.2 Реализовать tracking событий
+    - Добавить файл `packages/api/src/services/analytics/tracker.ts`
+    - Реализовать trackEvent для записи событий
+    - Интегрировать с prequalification service
+    - _Requirements: 9.4_
+
+  - [ ] 11.3 Реализовать агрегацию метрик
+    - Добавить файл `packages/api/src/services/analytics/aggregator.ts`
+    - Реализовать getDashboard с расчётом всех метрик
+    - Реализовать getVacancyAnalytics
+    - Реализовать getFunnelMetrics
+    - _Requirements: 9.1, 9.2, 9.3, 9.4_
+
+  - [ ]* 11.4 Написать property test для Analytics Funnel
+    - **Property 13: Analytics Funnel Metrics Consistency**
+    - **Validates: Requirements 9.4**
+
+  - [ ] 11.5 Реализовать экспорт данных
+    - Добавить файл `packages/api/src/services/analytics/exporter.ts`
+    - Реализовать exportData в CSV и JSON форматах
+    - _Requirements: 9.5_
+
+  - [ ] 11.6 Создать analytics router
+    - Добавить файл `packages/api/src/router/analytics.ts`
+    - Реализовать getDashboard, getVacancyAnalytics, exportData procedures
+    - _Requirements: 9.1, 9.2, 9.5_
+
+- [ ] 12. Реализация Custom Domain Service
+  - [ ] 12.1 Создать интерфейсы для Custom Domain
+    - Добавить файл `packages/api/src/services/custom-domain/types.ts`
+    - Определить CustomDomainConfig, DomainValidationResult, SSLProvisionResult
+    - _Requirements: 10.1, 10.2, 10.3_
+
+  - [ ] 12.2 Реализовать DNS verification
+    - Добавить файл `packages/api/src/services/custom-domain/dns-verifier.ts`
+    - Реализовать verifyDNS с проверкой CNAME записи
+    - Генерировать понятные сообщения об ошибках
+    - _Requirements: 10.2, 10.4_
+
+  - [ ] 12.3 Реализовать SSL provisioning
+    - Добавить файл `packages/api/src/services/custom-domain/ssl-provisioner.ts`
+    - Интегрировать с Yandex Cloud Certificate Manager API
+    - Реализовать provisionSSL и checkSSLStatus
+    - _Requirements: 10.3_
+
+  - [ ] 12.4 Реализовать Custom Domain Service
+    - Добавить файл `packages/api/src/services/custom-domain/index.ts`
+    - Реализовать registerDomain с проверкой уникальности
+    - Реализовать verifyAndProvision workflow
+    - _Requirements: 10.1, 10.2, 10.3, 10.7_
+
+  - [ ]* 12.5 Написать property test для Custom Domain Uniqueness
+    - **Property 14: Custom Domain Uniqueness**
+    - **Validates: Requirements 10.7**
+
+  - [ ] 12.6 Создать custom-domain router
+    - Добавить файл `packages/api/src/router/custom-domain.ts`
+    - Реализовать registerDomain, verifyDomain, getStatus procedures
+    - _Requirements: 10.1, 10.2, 10.4_
+
+- [ ] 13. Checkpoint - Проверка всех сервисов
+  - Убедиться, что все сервисы интегрированы
+  - Проверить все routers
+  - Спросить пользователя, если возникнут вопросы
+
+- [ ] 14. Реализация Audit Logging
+  - [ ] 14.1 Расширить AuditLoggerService для prequalification
+    - Обновить `packages/api/src/services/audit-logger.ts`
+    - Добавить типы событий для prequalification
+    - Реализовать логирование всех state-changing операций
+    - _Requirements: 7.3, 8.4_
+
+  - [ ]* 14.2 Написать property test для Audit Logging
+    - **Property 12: Audit Log Completeness**
+    - **Validates: Requirements 7.3, 8.4**
+
+- [ ] 15. Реализация Zod валидаторов
+  - [ ] 15.1 Создать валидаторы для prequalification
+    - Добавить файл `packages/validators/src/prequalification.ts`
+    - Создать схемы для CreateSessionInput, UploadResumeInput, SendMessageInput
+    - Создать схемы для WidgetConfigUpdate, CustomDomainRegister
+    - _Requirements: все_
+
+- [ ] 16. Final Checkpoint - Полная проверка
+  - Убедиться, что все тесты проходят
+  - Проверить интеграцию всех компонентов
+  - Спросить пользователя, если возникнут вопросы
+
+## Notes
+
+- Задачи с `*` являются опциональными (property-based тесты) и могут быть пропущены для быстрого MVP
+- Каждая задача ссылается на конкретные требования для трaceability
+- Checkpoints обеспечивают инкрементальную валидацию
+- Property tests валидируют универсальные свойства корректности
+- Unit tests валидируют конкретные примеры и edge cases
+- Используется `fast-check` для property-based тестирования
