@@ -50,6 +50,8 @@ export const paths = {
       if (section) return `${base}/${vacancyId}/${section}`;
       return `${base}/${vacancyId}`;
     },
+    createVacancy: (orgSlug: string, slug: string) =>
+      `/orgs/${orgSlug}/workspaces/${slug}/vacancies/create`,
     gigs: (
       orgSlug: string,
       slug: string,
@@ -64,6 +66,10 @@ export const paths = {
     settings: {
       root: (orgSlug: string, slug: string) =>
         `/orgs/${orgSlug}/workspaces/${slug}/settings`,
+      company: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings/company`,
+      integrations: (orgSlug: string, slug: string) =>
+        `/orgs/${orgSlug}/workspaces/${slug}/settings/integrations`,
       members: (orgSlug: string, slug: string) =>
         `/orgs/${orgSlug}/workspaces/${slug}/settings/members`,
       telegram: (orgSlug: string, slug: string) =>

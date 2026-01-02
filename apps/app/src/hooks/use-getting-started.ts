@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useWorkspaces } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
@@ -64,8 +65,14 @@ export function useGettingStarted() {
   const getLocalStorageKey = () => `gettingStartedDismissed_${workspace?.id}`;
 
   const isLocallyDismissed = () => {
-    if (typeof window === "undefined" || !workspace?.id) return false;
-    return localStorage.getItem(getLocalStorageKey()) === "true";
+    if (typeof window === "undefined" || !workspace?.id || !window.localStorage)
+      return false;
+    try {
+      return localStorage.getItem(getLocalStorageKey()) === "true";
+    } catch (error) {
+      console.warn("Failed to read dismiss state from localStorage:", error);
+      return false;
+    }
   };
 
   const isLoading =
@@ -80,7 +87,10 @@ export function useGettingStarted() {
       id: "company-setup",
       title: "Настроить компанию",
       description: "Добавьте название, описание и настройки бота",
-      href: `/${workspace?.slug || ""}/settings/general`,
+      href: paths.workspace.settings.company(
+        workspace?.organizationSlug || "",
+        workspace?.slug || "",
+      ),
       completed: !!(
         companySettings?.name && companySettings.name !== "Моя компания"
       ),
@@ -89,21 +99,30 @@ export function useGettingStarted() {
       id: "create-vacancy",
       title: "Создать первую вакансию",
       description: "Добавьте вакансию для поиска кандидатов",
-      href: `/${workspace?.slug || ""}/vacancies/new`,
+      href: paths.workspace.createVacancy(
+        workspace?.organizationSlug || "",
+        workspace?.slug || "",
+      ),
       completed: !!(vacancies && vacancies.length > 0),
     },
     {
       id: "hh-integration",
       title: "Подключить HH.ru",
       description: "Интегрируйтесь с HeadHunter для автоматического поиска",
-      href: `/${workspace?.slug || ""}/settings/integrations`,
+      href: paths.workspace.settings.integrations(
+        workspace?.organizationSlug || "",
+        workspace?.slug || "",
+      ),
       completed: !!integrations?.some((i) => i.type === "hh"),
     },
     {
       id: "telegram-setup",
       title: "Настроить Telegram",
       description: "Подключите бота для уведомлений и интервью",
-      href: `/${workspace?.slug || ""}/settings/telegram`,
+      href: paths.workspace.settings.telegram(
+        workspace?.organizationSlug || "",
+        workspace?.slug || "",
+      ),
       completed: !!(
         sessions &&
         sessions.length > 0 &&
@@ -120,7 +139,7 @@ export function useGettingStarted() {
   const shouldShowWidget =
     !isLoading &&
     workspace?.id &&
-    // !companySettings?.dismissedGettingStarted && // TODO: добавить после обновления схемы
+    !companySettings?.dismissedGettingStarted &&
     !isLocallyDismissed() &&
     progressPercentage < 100;
 
@@ -136,7 +155,11 @@ export function useGettingStarted() {
       });
     } else {
       // Сохраняем только в localStorage
-      localStorage.setItem(getLocalStorageKey(), "true");
+      try {
+        localStorage.setItem(getLocalStorageKey(), "true");
+      } catch (error) {
+        console.warn("Failed to save dismiss state to localStorage:", error);
+      }
     }
   };
 

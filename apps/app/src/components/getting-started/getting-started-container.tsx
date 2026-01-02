@@ -1,7 +1,10 @@
 "use client";
 
 import {
-  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -105,11 +108,11 @@ export function GettingStartedContainer() {
               </div>
               <div className="flex items-center gap-1">
                 {/* Dismiss Menu */}
-                <Popover
+                <DropdownMenu
                   open={showDismissMenu}
                   onOpenChange={setShowDismissMenu}
                 >
-                  <PopoverTrigger asChild>
+                  <DropdownMenuTrigger asChild>
                     <button
                       type="button"
                       className="rounded-md px-1 py-1 text-neutral-400 transition-colors hover:bg-white/20 active:text-white dark:text-neutral-600 dark:hover:bg-black/10"
@@ -117,27 +120,25 @@ export function GettingStartedContainer() {
                     >
                       <IconDots className="size-4" />
                     </button>
-                  </PopoverTrigger>
-                  <PopoverContent
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
                     align="end"
-                    className="w-auto p-1"
+                    className="w-auto"
                     sideOffset={8}
                   >
-                    <Button
+                    <DropdownMenuItem
                       onClick={() => {
                         dismissWidget(true);
                         setShowDismissMenu(false);
                         setIsOpen(false);
                       }}
                       disabled={isUpdating}
-                      variant="outline"
-                      size="sm"
-                      className="h-9 w-full whitespace-nowrap"
+                      className="cursor-pointer"
                     >
                       Не показывать больше
-                    </Button>
-                  </PopoverContent>
-                </Popover>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
                 {/* Close Button */}
                 <button
