@@ -9,6 +9,7 @@ export interface GettingStartedStep {
   title: string;
   description: string;
   completed: boolean;
+  href: string;
   action?: () => void;
 }
 
@@ -79,6 +80,7 @@ export function useGettingStarted() {
       id: "company-setup",
       title: "Настроить компанию",
       description: "Добавьте название, описание и настройки бота",
+      href: `/${workspace?.slug || ""}/settings/general`,
       completed: !!(
         companySettings?.name && companySettings.name !== "Моя компания"
       ),
@@ -87,18 +89,21 @@ export function useGettingStarted() {
       id: "create-vacancy",
       title: "Создать первую вакансию",
       description: "Добавьте вакансию для поиска кандидатов",
+      href: `/${workspace?.slug || ""}/vacancies/new`,
       completed: !!(vacancies && vacancies.length > 0),
     },
     {
       id: "hh-integration",
       title: "Подключить HH.ru",
       description: "Интегрируйтесь с HeadHunter для автоматического поиска",
+      href: `/${workspace?.slug || ""}/settings/integrations`,
       completed: !!integrations?.some((i) => i.type === "hh"),
     },
     {
       id: "telegram-setup",
       title: "Настроить Telegram",
       description: "Подключите бота для уведомлений и интервью",
+      href: `/${workspace?.slug || ""}/settings/telegram`,
       completed: !!(
         sessions &&
         sessions.length > 0 &&
