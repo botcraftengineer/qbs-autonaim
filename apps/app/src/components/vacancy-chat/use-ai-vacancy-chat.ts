@@ -22,7 +22,8 @@ interface UseAIVacancyChatReturn {
   status: ChatStatus;
   error: ChatError | null;
   sendMessage: (content: string) => Promise<void>;
-  selectQuickReply: (value: string) => Promise<void>;
+  selectQuickReply: (value: string) => void;
+  selectMultipleReplies: (values: string[]) => Promise<void>;
   clearChat: () => void;
   retry: () => Promise<void>;
 }
@@ -189,6 +190,7 @@ export function useAIVacancyChat({
                           ...m,
                           content: latestMessage || "Готово!",
                           quickReplies: latestQuickReplies,
+                          isMultiSelect: data.isMultiSelect ?? false,
                           isStreaming: false,
                         }
                       : m,
@@ -236,8 +238,17 @@ export function useAIVacancyChat({
   );
 
   const selectQuickReply = useCallback(
-    async (value: string) => {
-      await sendMessage(value);
+    (value: string) => {
+      sendMessage(value);
+    },
+    [sendMessage],
+  );
+
+  const selectMultipleReplies = useCallback(
+    async (values: string[]) => {
+      if (values.length === 0) return;
+      const combined = values.join(", ");
+      await sendMessage(combined);
     },
     [sendMessage],
   );
@@ -263,6 +274,7 @@ export function useAIVacancyChat({
     error,
     sendMessage,
     selectQuickReply,
+    selectMultipleReplies,
     clearChat,
     retry,
   };

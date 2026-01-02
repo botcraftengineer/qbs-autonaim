@@ -18,6 +18,8 @@ export interface QuickReply {
   id: string;
   label: string;
   value: string;
+  /** Если true, можно выбрать несколько вариантов */
+  multiSelect?: boolean;
 }
 
 export interface ConversationMessage {
@@ -25,6 +27,8 @@ export interface ConversationMessage {
   role: "user" | "assistant";
   content: string;
   quickReplies?: QuickReply[];
+  /** Если true, quick replies поддерживают мультивыбор */
+  isMultiSelect?: boolean;
   isStreaming?: boolean;
   timestamp: Date;
 }

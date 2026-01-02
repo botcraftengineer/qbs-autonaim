@@ -12,6 +12,7 @@ import { useMutation } from "@tanstack/react-query";
 import {
   AlertCircle,
   Bot,
+  Check,
   FileText,
   Loader2,
   RefreshCw,
@@ -20,9 +21,9 @@ import {
   User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTRPC } from "~/trpc/react";
-import type { ConversationMessage, VacancyDocument } from "./types";
+import type { ConversationMessage, QuickReply, VacancyDocument } from "./types";
 import { useAIVacancyChat } from "./use-ai-vacancy-chat";
 
 interface AIVacancyChatProps {
@@ -43,14 +44,14 @@ export function AIVacancyChat({
     error,
     sendMessage,
     selectQuickReply,
+    selectMultipleReplies,
     clearChat,
     retry,
   } = useAIVacancyChat({ workspaceId });
 
   const [inputValue, setInputValue] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const trpc = useTRPC();
 
@@ -73,13 +74,17 @@ export function AIVacancyChat({
     }),
   );
 
-  // Автоскролл к новым сообщениям
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, []);
-
+  // Автоскролл к новым сообщениям внутри ScrollArea
   useEffect(() => {
-    scrollToBottom();
+    const scrollArea = scrollAreaRef.current;
+    if (scrollArea) {
+      const viewport = scrollArea.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      );
+      if (viewport) {
+        viewport.scrollTop = viewport.scrollHeight;
+      }
+    }
   });
 
   // Автофокус на десктопе
@@ -163,8 +168,8 @@ export function AIVacancyChat({
 
         {/* Messages */}
         <ScrollArea
-          className="flex-1"
-          ref={chatContainerRef}
+          className="min-h-0 flex-1"
+          ref={scrollAreaRef}
           style={{ overscrollBehavior: "contain" }}
         >
           <div
@@ -177,14 +182,13 @@ export function AIVacancyChat({
                 key={msg.id}
                 message={msg}
                 onQuickReplySelect={selectQuickReply}
+                onMultiSelectSubmit={selectMultipleReplies}
                 isLatest={msg.id === lastMessage?.id}
                 disabled={isGenerating}
               />
             ))}
 
             {isGenerating && !lastMessage?.isStreaming && <TypingIndicator />}
-
-            <div ref={messagesEndRef} aria-hidden="true" />
           </div>
         </ScrollArea>
 
@@ -280,17 +284,20 @@ export function AIVacancyChat({
 function ChatMessage({
   message,
   onQuickReplySelect,
+  onMultiSelectSubmit,
   isLatest,
   disabled,
 }: {
   message: ConversationMessage;
   onQuickReplySelect: (value: string) => void;
+  onMultiSelectSubmit: (values: string[]) => Promise<void>;
   isLatest: boolean;
   disabled: boolean;
 }) {
   const isUser = message.role === "user";
   const showQuickReplies =
     isLatest && !isUser && message.quickReplies && !disabled;
+  const isMultiSelect = message.isMultiSelect && showQuickReplies;
 
   return (
     <article
@@ -331,25 +338,114 @@ function ChatMessage({
         </div>
 
         {/* Quick Replies */}
-        {showQuickReplies && (
-          <div className="flex flex-wrap gap-2 pt-2">
-            {message.quickReplies?.map((reply) => (
-              <Button
-                key={reply.id}
-                variant="outline"
-                size="sm"
-                onClick={() => onQuickReplySelect(reply.value)}
-                disabled={disabled}
-                className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                style={{ touchAction: "manipulation" }}
-              >
-                {reply.label}
-              </Button>
-            ))}
-          </div>
-        )}
+        {showQuickReplies &&
+          message.quickReplies &&
+          (isMultiSelect ? (
+            <MultiSelectReplies
+              replies={message.quickReplies}
+              onSubmit={onMultiSelectSubmit}
+              disabled={disabled}
+            />
+          ) : (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {message.quickReplies.map((reply) => (
+                <Button
+                  key={reply.id}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onQuickReplySelect(reply.value)}
+                  disabled={disabled}
+                  className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                  style={{ touchAction: "manipulation" }}
+                >
+                  {reply.label}
+                </Button>
+              ))}
+            </div>
+          ))}
       </div>
     </article>
+  );
+}
+
+function MultiSelectReplies({
+  replies,
+  onSubmit,
+  disabled,
+}: {
+  replies: QuickReply[];
+  onSubmit: (values: string[]) => Promise<void>;
+  disabled: boolean;
+}) {
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+
+  const toggleSelection = (value: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(value)) {
+        next.delete(value);
+      } else {
+        next.add(value);
+      }
+      return next;
+    });
+  };
+
+  const handleSubmit = () => {
+    if (selected.size === 0) return;
+    onSubmit(Array.from(selected));
+  };
+
+  return (
+    <div className="space-y-3 pt-2">
+      <p className="text-xs text-muted-foreground">
+        Выберите один или несколько вариантов:
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {replies.map((reply) => {
+          const isSelected = selected.has(reply.value);
+          return (
+            <button
+              key={reply.id}
+              type="button"
+              onClick={() => toggleSelection(reply.value)}
+              disabled={disabled}
+              className={cn(
+                "flex items-center gap-2 rounded-md border px-3 py-2 text-xs transition-all",
+                "hover:scale-[1.02] active:scale-[0.98]",
+                isSelected
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background hover:bg-muted/50",
+                disabled && "cursor-not-allowed opacity-50",
+              )}
+              style={{ touchAction: "manipulation" }}
+              aria-pressed={isSelected}
+            >
+              <div
+                className={cn(
+                  "flex h-4 w-4 items-center justify-center rounded border transition-colors",
+                  isSelected
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-muted-foreground/30",
+                )}
+              >
+                {isSelected && <Check className="h-3 w-3" />}
+              </div>
+              {reply.label}
+            </button>
+          );
+        })}
+      </div>
+      <Button
+        onClick={handleSubmit}
+        disabled={disabled || selected.size === 0}
+        size="sm"
+        className="transition-all hover:scale-[1.02] active:scale-[0.98]"
+        style={{ touchAction: "manipulation" }}
+      >
+        Подтвердить выбор ({selected.size})
+      </Button>
+    </div>
   );
 }
 
