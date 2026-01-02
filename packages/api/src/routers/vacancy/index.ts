@@ -3,6 +3,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { analytics } from "./analytics";
 import { chatGenerate } from "./chat-generate";
 import { create } from "./create";
+import { createFromChat } from "./create-from-chat";
 import { dashboardStats } from "./dashboard-stats";
 import { deleteVacancy } from "./delete";
 import { get } from "./get";
@@ -19,6 +20,7 @@ export const vacancyRouter = {
   listActive,
   get,
   create,
+  createFromChat,
   analytics,
   dashboardStats,
   responsesChart,
