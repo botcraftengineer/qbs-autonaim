@@ -269,12 +269,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -361,12 +357,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -376,9 +368,7 @@
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -472,12 +462,8 @@
           "name": "users_last_active_organization_id_organizations_id_fk",
           "tableFrom": "users",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "last_active_organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["last_active_organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -485,12 +471,8 @@
           "name": "users_last_active_workspace_id_workspaces_id_fk",
           "tableFrom": "users",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "last_active_workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["last_active_workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -500,9 +482,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -646,12 +626,8 @@
           "name": "company_settings_workspace_id_workspaces_id_fk",
           "tableFrom": "company_settings",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -661,9 +637,7 @@
         "company_settings_workspace_id_unique": {
           "name": "company_settings_workspace_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "workspace_id"
-          ]
+          "columns": ["workspace_id"]
         }
       },
       "policies": {},
@@ -816,12 +790,8 @@
           "name": "buffered_messages_conversation_id_conversations_id_fk",
           "tableFrom": "buffered_messages",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -936,12 +906,8 @@
           "name": "conversations_response_id_vacancy_responses_id_fk",
           "tableFrom": "conversations",
           "tableTo": "vacancy_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -951,9 +917,7 @@
         "conversations_response_id_unique": {
           "name": "conversations_response_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "response_id"
-          ]
+          "columns": ["response_id"]
         }
       },
       "policies": {},
@@ -1110,12 +1074,8 @@
           "name": "conversation_messages_conversation_id_conversations_id_fk",
           "tableFrom": "conversation_messages",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1123,12 +1083,8 @@
           "name": "conversation_messages_file_id_files_id_fk",
           "tableFrom": "conversation_messages",
           "tableTo": "files",
-          "columnsFrom": [
-            "file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["file_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1497,12 +1453,8 @@
           "name": "gigs_workspace_id_workspaces_id_fk",
           "tableFrom": "gigs",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1798,12 +1750,8 @@
           "name": "gig_responses_gig_id_gigs_id_fk",
           "tableFrom": "gig_responses",
           "tableTo": "gigs",
-          "columnsFrom": [
-            "gig_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["gig_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1811,12 +1759,8 @@
           "name": "gig_responses_portfolio_file_id_files_id_fk",
           "tableFrom": "gig_responses",
           "tableTo": "files",
-          "columnsFrom": [
-            "portfolio_file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["portfolio_file_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -1824,12 +1768,8 @@
           "name": "gig_responses_photo_file_id_files_id_fk",
           "tableFrom": "gig_responses",
           "tableTo": "files",
-          "columnsFrom": [
-            "photo_file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["photo_file_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1839,10 +1779,7 @@
         "gig_responses_gig_id_candidate_id_unique": {
           "name": "gig_responses_gig_id_candidate_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "gig_id",
-            "candidate_id"
-          ]
+          "columns": ["gig_id", "candidate_id"]
         }
       },
       "policies": {},
@@ -1963,12 +1900,8 @@
           "name": "gig_response_screenings_response_id_gig_responses_id_fk",
           "tableFrom": "gig_response_screenings",
           "tableTo": "gig_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2122,12 +2055,8 @@
           "name": "integrations_workspace_id_workspaces_id_fk",
           "tableFrom": "integrations",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2137,10 +2066,7 @@
         "integrations_workspace_id_type_unique": {
           "name": "integrations_workspace_id_type_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "workspace_id",
-            "type"
-          ]
+          "columns": ["workspace_id", "type"]
         }
       },
       "policies": {},
@@ -2202,12 +2128,8 @@
           "name": "interview_scorings_conversation_id_conversations_id_fk",
           "tableFrom": "interview_scorings",
           "tableTo": "conversations",
-          "columnsFrom": [
-            "conversation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["conversation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2215,12 +2137,8 @@
           "name": "interview_scorings_response_id_vacancy_responses_id_fk",
           "tableFrom": "interview_scorings",
           "tableTo": "vacancy_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2230,9 +2148,7 @@
         "interview_scorings_conversation_id_unique": {
           "name": "interview_scorings_conversation_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "conversation_id"
-          ]
+          "columns": ["conversation_id"]
         }
       },
       "policies": {},
@@ -2308,9 +2224,7 @@
         "organizations_slug_unique": {
           "name": "organizations_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -2431,12 +2345,8 @@
           "name": "organization_invites_organization_id_organizations_id_fk",
           "tableFrom": "organization_invites",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2444,12 +2354,8 @@
           "name": "organization_invites_invited_user_id_users_id_fk",
           "tableFrom": "organization_invites",
           "tableTo": "users",
-          "columnsFrom": [
-            "invited_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invited_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2457,12 +2363,8 @@
           "name": "organization_invites_created_by_users_id_fk",
           "tableFrom": "organization_invites",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2472,9 +2374,7 @@
         "organization_invites_token_unique": {
           "name": "organization_invites_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -2571,12 +2471,8 @@
           "name": "organization_members_user_id_users_id_fk",
           "tableFrom": "organization_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2584,12 +2480,8 @@
           "name": "organization_members_organization_id_organizations_id_fk",
           "tableFrom": "organization_members",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2597,10 +2489,7 @@
       "compositePrimaryKeys": {
         "organization_members_user_id_organization_id_pk": {
           "name": "organization_members_user_id_organization_id_pk",
-          "columns": [
-            "user_id",
-            "organization_id"
-          ]
+          "columns": ["user_id", "organization_id"]
         }
       },
       "uniqueConstraints": {},
@@ -2846,12 +2735,8 @@
           "name": "telegram_sessions_workspace_id_workspaces_id_fk",
           "tableFrom": "telegram_sessions",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2861,9 +2746,7 @@
         "telegram_sessions_workspace_id_unique": {
           "name": "telegram_sessions_workspace_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "workspace_id"
-          ]
+          "columns": ["workspace_id"]
         }
       },
       "policies": {},
@@ -3074,12 +2957,8 @@
           "name": "freelance_import_history_vacancy_id_vacancies_id_fk",
           "tableFrom": "freelance_import_history",
           "tableTo": "vacancies",
-          "columnsFrom": [
-            "vacancy_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["vacancy_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3164,12 +3043,8 @@
           "name": "freelance_invitations_response_id_vacancy_responses_id_fk",
           "tableFrom": "freelance_invitations",
           "tableTo": "vacancy_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3304,12 +3179,8 @@
           "name": "interview_links_vacancy_id_vacancies_id_fk",
           "tableFrom": "interview_links",
           "tableTo": "vacancies",
-          "columnsFrom": [
-            "vacancy_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["vacancy_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3319,16 +3190,12 @@
         "interview_links_token_unique": {
           "name": "interview_links_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         },
         "interview_links_slug_unique": {
           "name": "interview_links_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -3418,9 +3285,7 @@
         "platform_config_platform_code_unique": {
           "name": "platform_config_platform_code_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "platform_code"
-          ]
+          "columns": ["platform_code"]
         }
       },
       "policies": {},
@@ -3709,12 +3574,8 @@
           "name": "vacancy_responses_vacancy_id_vacancies_id_fk",
           "tableFrom": "vacancy_responses",
           "tableTo": "vacancies",
-          "columnsFrom": [
-            "vacancy_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["vacancy_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3722,12 +3583,8 @@
           "name": "vacancy_responses_resume_pdf_file_id_files_id_fk",
           "tableFrom": "vacancy_responses",
           "tableTo": "files",
-          "columnsFrom": [
-            "resume_pdf_file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resume_pdf_file_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -3735,12 +3592,8 @@
           "name": "vacancy_responses_photo_file_id_files_id_fk",
           "tableFrom": "vacancy_responses",
           "tableTo": "files",
-          "columnsFrom": [
-            "photo_file_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["photo_file_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3750,10 +3603,7 @@
         "vacancy_responses_vacancy_id_resume_id_unique": {
           "name": "vacancy_responses_vacancy_id_resume_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "vacancy_id",
-            "resume_id"
-          ]
+          "columns": ["vacancy_id", "resume_id"]
         }
       },
       "policies": {},
@@ -3816,12 +3666,8 @@
           "name": "vacancy_response_comments_response_id_vacancy_responses_id_fk",
           "tableFrom": "vacancy_response_comments",
           "tableTo": "vacancy_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3829,12 +3675,8 @@
           "name": "vacancy_response_comments_author_id_users_id_fk",
           "tableFrom": "vacancy_response_comments",
           "tableTo": "users",
-          "columnsFrom": [
-            "author_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["author_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3907,12 +3749,8 @@
           "name": "vacancy_response_history_response_id_vacancy_responses_id_fk",
           "tableFrom": "vacancy_response_history",
           "tableTo": "vacancy_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3920,12 +3758,8 @@
           "name": "vacancy_response_history_user_id_users_id_fk",
           "tableFrom": "vacancy_response_history",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -4038,12 +3872,8 @@
           "name": "response_screenings_response_id_vacancy_responses_id_fk",
           "tableFrom": "response_screenings",
           "tableTo": "vacancy_responses",
-          "columnsFrom": [
-            "response_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["response_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4269,12 +4099,8 @@
           "name": "vacancies_workspace_id_workspaces_id_fk",
           "tableFrom": "vacancies",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4375,12 +4201,8 @@
           "name": "workspaces_organization_id_organizations_id_fk",
           "tableFrom": "workspaces",
           "tableTo": "organizations",
-          "columnsFrom": [
-            "organization_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4390,10 +4212,7 @@
         "workspaces_organization_id_slug_unique": {
           "name": "workspaces_organization_id_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "organization_id",
-            "slug"
-          ]
+          "columns": ["organization_id", "slug"]
         }
       },
       "policies": {},
@@ -4514,12 +4333,8 @@
           "name": "workspace_invites_workspace_id_workspaces_id_fk",
           "tableFrom": "workspace_invites",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4529,9 +4344,7 @@
         "workspace_invites_token_unique": {
           "name": "workspace_invites_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -4628,12 +4441,8 @@
           "name": "workspace_members_user_id_users_id_fk",
           "tableFrom": "workspace_members",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -4641,12 +4450,8 @@
           "name": "workspace_members_workspace_id_workspaces_id_fk",
           "tableFrom": "workspace_members",
           "tableTo": "workspaces",
-          "columnsFrom": [
-            "workspace_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["workspace_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -4654,10 +4459,7 @@
       "compositePrimaryKeys": {
         "workspace_members_user_id_workspace_id_pk": {
           "name": "workspace_members_user_id_workspace_id_pk",
-          "columns": [
-            "user_id",
-            "workspace_id"
-          ]
+          "columns": ["user_id", "workspace_id"]
         }
       },
       "uniqueConstraints": {},
@@ -4670,13 +4472,7 @@
     "public.audit_action": {
       "name": "audit_action",
       "schema": "public",
-      "values": [
-        "VIEW",
-        "EXPORT",
-        "UPDATE",
-        "DELETE",
-        "ACCESS"
-      ]
+      "values": ["VIEW", "EXPORT", "UPDATE", "DELETE", "ACCESS"]
     },
     "public.audit_resource_type": {
       "name": "audit_resource_type",
@@ -4692,52 +4488,32 @@
     "public.conversation_source": {
       "name": "conversation_source",
       "schema": "public",
-      "values": [
-        "TELEGRAM",
-        "WEB"
-      ]
+      "values": ["TELEGRAM", "WEB"]
     },
     "public.conversation_status": {
       "name": "conversation_status",
       "schema": "public",
-      "values": [
-        "ACTIVE",
-        "COMPLETED",
-        "CANCELLED"
-      ]
+      "values": ["ACTIVE", "COMPLETED", "CANCELLED"]
     },
     "public.message_channel": {
       "name": "message_channel",
       "schema": "public",
-      "values": [
-        "TELEGRAM",
-        "HH",
-        "WEB"
-      ]
+      "values": ["TELEGRAM", "HH", "WEB"]
     },
     "public.message_content_type": {
       "name": "message_content_type",
       "schema": "public",
-      "values": [
-        "TEXT",
-        "VOICE"
-      ]
+      "values": ["TEXT", "VOICE"]
     },
     "public.message_sender": {
       "name": "message_sender",
       "schema": "public",
-      "values": [
-        "CANDIDATE",
-        "BOT",
-        "ADMIN"
-      ]
+      "values": ["CANDIDATE", "BOT", "ADMIN"]
     },
     "public.file_provider": {
       "name": "file_provider",
       "schema": "public",
-      "values": [
-        "S3"
-      ]
+      "values": ["S3"]
     },
     "public.gig_type": {
       "name": "gig_type",
@@ -4798,26 +4574,17 @@
     "public.temp_message_content_type": {
       "name": "temp_message_content_type",
       "schema": "public",
-      "values": [
-        "TEXT",
-        "VOICE"
-      ]
+      "values": ["TEXT", "VOICE"]
     },
     "public.temp_message_sender": {
       "name": "temp_message_sender",
       "schema": "public",
-      "values": [
-        "CANDIDATE",
-        "BOT"
-      ]
+      "values": ["CANDIDATE", "BOT"]
     },
     "public.import_mode": {
       "name": "import_mode",
       "schema": "public",
-      "values": [
-        "SINGLE",
-        "BULK"
-      ]
+      "values": ["SINGLE", "BULK"]
     },
     "public.hr_selection_status": {
       "name": "hr_selection_status",
@@ -4836,22 +4603,12 @@
     "public.import_source": {
       "name": "import_source",
       "schema": "public",
-      "values": [
-        "HH_API",
-        "FREELANCE_MANUAL",
-        "FREELANCE_LINK"
-      ]
+      "values": ["HH_API", "FREELANCE_MANUAL", "FREELANCE_LINK"]
     },
     "public.response_status": {
       "name": "response_status",
       "schema": "public",
-      "values": [
-        "NEW",
-        "EVALUATED",
-        "INTERVIEW",
-        "COMPLETED",
-        "SKIPPED"
-      ]
+      "values": ["NEW", "EVALUATED", "INTERVIEW", "COMPLETED", "SKIPPED"]
     },
     "public.response_event_type": {
       "name": "response_event_type",

@@ -13,7 +13,11 @@ import { createLogger } from "../base";
 const logger = createLogger("ConversationMetadata");
 
 // Re-export функций из shared для обратной совместимости
-export { getConversationMetadata, getQuestionCount, updateConversationMetadata };
+export {
+  getConversationMetadata,
+  getQuestionCount,
+  updateConversationMetadata,
+};
 export type { ConversationMetadata };
 
 /**

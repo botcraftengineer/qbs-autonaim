@@ -1,31 +1,31 @@
 /**
  * PostgreSQL-based реализация сервиса буферизации сообщений
- * 
+ *
  * Использует отдельную таблицу buffered_messages для хранения сообщений.
  * Каждое сообщение в отдельной строке для предотвращения затирания.
  */
 
+import { and, asc, eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { bufferedMessage } from "@qbs-autonaim/db/schema";
 import type {
   BufferedMessage,
   MessageBufferService,
 } from "@qbs-autonaim/shared";
-import { and, asc, eq } from "@qbs-autonaim/db";
-import { db } from "@qbs-autonaim/db/client";
-import { bufferedMessage } from "@qbs-autonaim/db/schema";
 import { createLogger } from "../base";
 
 const logger = createLogger("PostgresMessageBufferService");
 
 /**
  * PostgreSQL-based реализация MessageBufferService
- * 
+ *
  * Хранит каждое сообщение в отдельной строке таблицы buffered_messages.
  * Предотвращает затирание сообщений при конкурентных операциях.
  */
 export class PostgresMessageBufferService implements MessageBufferService {
   /**
    * Добавить сообщение в буфер
-   * 
+   *
    * Валидирует сообщение (отклоняет пустые) и добавляет его как отдельную строку.
    * Каждое сообщение независимо, что предотвращает затирание при конкурентных операциях.
    */
@@ -73,7 +73,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
 
   /**
    * Получить все сообщения из буфера
-   * 
+   *
    * Возвращает массив сообщений для указанного interviewStep,
    * отсортированных по timestamp.
    */
@@ -118,7 +118,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
 
   /**
    * Очистить буфер для конкретного шага интервью
-   * 
+   *
    * Удаляет все сообщения для указанного interviewStep.
    */
   async clearBuffer(params: {
@@ -152,7 +152,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
 
   /**
    * Проверить существование буфера
-   * 
+   *
    * Возвращает true если существует хотя бы одно сообщение для указанного interviewStep.
    */
   async hasBuffer(params: {

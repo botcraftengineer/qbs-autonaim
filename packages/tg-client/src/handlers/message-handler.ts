@@ -1,6 +1,6 @@
 /**
  * Обработчик входящих сообщений с поддержкой буферизации
- * 
+ *
  * Интегрирует систему буферизации сообщений для интервью-бота.
  * Добавляет сообщения в буфер и отправляет события в Inngest для debounce.
  */
@@ -17,16 +17,16 @@ import { getCurrentInterviewStep } from "../utils/interview-helpers";
 export interface HandleMessageParams {
   /** Данные сообщения от Telegram */
   messageData: MessageData;
-  
+
   /** ID workspace */
   workspaceId: string;
-  
+
   /** ID разговора (если кандидат идентифицирован) */
   conversationId?: string;
-  
+
   /** ID пользователя Telegram */
   userId: string;
-  
+
   /** Сервис буферизации сообщений */
   bufferService: MessageBufferService;
 }
@@ -37,25 +37,25 @@ export interface HandleMessageParams {
 export interface HandleMessageResult {
   /** Было ли сообщение добавлено в буфер */
   buffered: boolean;
-  
+
   /** Причина, если сообщение не было буферизовано */
   reason?: string;
-  
+
   /** Текущий шаг интервью */
   interviewStep?: number;
 }
 
 /**
  * Обработать входящее сообщение с буферизацией
- * 
+ *
  * Если буферизация включена и кандидат идентифицирован:
  * 1. Определяет текущий шаг интервью
  * 2. Добавляет сообщение в буфер
  * 3. Отправляет событие в Inngest для debounce
- * 
+ *
  * Если буферизация выключена или кандидат не идентифицирован:
  * - Возвращает результат с buffered: false
- * 
+ *
  * @param params - Параметры обработки сообщения
  * @returns Promise с результатом обработки
  */
@@ -66,7 +66,7 @@ export async function handleIncomingMessage(
 
   // Проверяем feature flag
   const bufferEnabled = env.INTERVIEW_BUFFER_ENABLED ?? false;
-  
+
   if (!bufferEnabled) {
     return {
       buffered: false,
@@ -101,12 +101,16 @@ export async function handleIncomingMessage(
   if (messageData.text) {
     content = messageData.text;
     contentType = "TEXT";
-  } else if (messageData.media?.type === "voice" || messageData.media?.type === "audio") {
+  } else if (
+    messageData.media?.type === "voice" ||
+    messageData.media?.type === "audio"
+  ) {
     // Голосовые сообщения буферизуются после транскрипции в transcribe-voice.ts
     // Здесь пропускаем, так как контент (транскрипция) еще не готов
     return {
       buffered: false,
-      reason: "voice message - buffering happens after transcription in transcribe-voice.ts",
+      reason:
+        "voice message - buffering happens after transcription in transcribe-voice.ts",
     };
   } else {
     return {
@@ -154,22 +158,25 @@ export async function handleIncomingMessage(
       };
     }
 
-    await fetch(`${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: "interview/message.buffered",
-        data: {
-          userId,
-          conversationId,
-          interviewStep,
-          messageId: messageData.id.toString(),
-          timestamp: Date.now(),
+    await fetch(
+      `${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      }),
-    });
+        body: JSON.stringify({
+          name: "interview/message.buffered",
+          data: {
+            userId,
+            conversationId,
+            interviewStep,
+            messageId: messageData.id.toString(),
+            timestamp: Date.now(),
+          },
+        }),
+      },
+    );
 
     console.log("✅ Событие interview/message.buffered отправлено", {
       conversationId,

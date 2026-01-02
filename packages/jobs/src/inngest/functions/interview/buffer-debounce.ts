@@ -1,5 +1,5 @@
-import { env } from "@qbs-autonaim/config";
 import { randomUUID } from "node:crypto";
+import { env } from "@qbs-autonaim/config";
 import { messageBufferService } from "../../../services/buffer";
 import { inngest } from "../../client";
 
