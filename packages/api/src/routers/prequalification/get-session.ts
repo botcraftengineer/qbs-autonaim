@@ -49,7 +49,10 @@ export const getSession = publicProcedure
     } catch (error) {
       if (error instanceof PrequalificationError) {
         // Маппинг кодов ошибок PrequalificationError на TRPC коды
-        const codeMap: Record<string, "NOT_FOUND" | "FORBIDDEN" | "BAD_REQUEST"> = {
+        const codeMap: Record<
+          string,
+          "NOT_FOUND" | "FORBIDDEN" | "BAD_REQUEST" | "INTERNAL_SERVER_ERROR"
+        > = {
           SESSION_NOT_FOUND: "NOT_FOUND",
           SESSION_EXPIRED: "BAD_REQUEST",
           TENANT_MISMATCH: "FORBIDDEN",
