@@ -43,7 +43,7 @@ export const widgetConfig = pgTable("widget_configs", {
   textColor: varchar("text_color", { length: 7 }).default("#1F2937"),
   fontFamily: varchar("font_family", { length: 100 }).default("Inter"),
   assistantName: varchar("assistant_name", { length: 100 }).default(
-    "AI Assistant",
+    "ИИ Ассистент",
   ),
   assistantAvatar: text("assistant_avatar"),
   welcomeMessage: text("welcome_message"),

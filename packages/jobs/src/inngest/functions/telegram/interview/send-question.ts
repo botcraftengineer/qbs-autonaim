@@ -79,6 +79,10 @@ export const sendNextQuestionFunction = inngest.createFunction(
         throw new Error("Conversation не найден");
       }
 
+      if (!conv.responseId) {
+        throw new Error("ResponseId не найден в conversation");
+      }
+
       const response = await db.query.vacancyResponse.findFirst({
         where: eq(vacancyResponse.id, conv.responseId),
       });

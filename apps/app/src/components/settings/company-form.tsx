@@ -24,7 +24,7 @@ import { useTRPC } from "~/trpc/react";
 
 function useAutoSave(
   value: CompanyFormValues,
-  onSave: (data: CompanyPartialValues) => void,
+  onSave: (data: CompanyPartialValues) => Promise<void>,
   delay = 800,
 ) {
   const prevValue = useRef<CompanyFormValues>(value);
@@ -44,8 +44,14 @@ function useAutoSave(
     if (hasChanges) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
-        onSave(changedFields);
-        prevValue.current = value;
+        onSave(changedFields)
+          .then(() => {
+            prevValue.current = value;
+          })
+          .catch(() => {
+            // Error is already handled by mutation's onError
+            // Don't update prevValue on failure
+          });
       }, delay);
     }
 
@@ -93,9 +99,17 @@ export function CompanyForm({
 
   const handleAutoSave = useCallback(
     (changedData: CompanyPartialValues) => {
-      updateCompany.mutate({
-        workspaceId,
-        data: changedData,
+      return new Promise<void>((resolve, reject) => {
+        updateCompany.mutate(
+          {
+            workspaceId,
+            data: changedData,
+          },
+          {
+            onSuccess: () => resolve(),
+            onError: (error) => reject(error),
+          },
+        );
       });
     },
     [updateCompany, workspaceId],

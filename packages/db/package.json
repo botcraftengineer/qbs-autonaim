@@ -55,12 +55,14 @@
     "drizzle-zod": "0.8.3",
     "nanoid": "^5.1.6",
     "pg": "^8.16.3",
+    "validator": "^13.15.26",
     "ws": "^8.18.3",
     "zod": "4.3.4"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/pg": "^8.16.0",
+    "@types/validator": "^13.15.10",
     "@types/ws": "^8.18.1",
     "drizzle-kit": "^0.31.8",
     "postgres": "^3.4.7",

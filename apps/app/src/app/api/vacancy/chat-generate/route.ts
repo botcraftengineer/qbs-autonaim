@@ -112,11 +112,11 @@ function extractPartialResponse(
       "s",
     );
     const match = docText.match(regex);
-    if (match?.[1]) {
+    if (match?.[1] && result.document) {
       try {
-        result.document![field] = JSON.parse(`"${match[1]}"`);
+        result.document[field] = JSON.parse(`"${match[1]}"`);
       } catch {
-        result.document![field] = match[1]
+        result.document[field] = match[1]
           .replace(/\\n/g, "\n")
           .replace(/\\"/g, '"')
           .replace(/\\\\/g, "\\");

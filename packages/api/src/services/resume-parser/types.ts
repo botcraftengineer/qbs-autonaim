@@ -19,7 +19,7 @@ export type {
 /**
  * Поддерживаемые форматы файлов резюме
  */
-export type ResumeFileType = "pdf" | "docx";
+export type ResumeFileType = "pdf" | "docx" | "doc" | "txt" | "rtf" | "odt";
 
 /**
  * Входные данные для парсера резюме
@@ -105,7 +105,7 @@ export const DEFAULT_PARSER_CONFIG: ResumeParserConfig = {
  */
 export interface FormatParser {
   /** Извлекает текст из файла */
-  extractText(content: Buffer): Promise<string>;
+  extractText(content: Buffer, filename?: string): Promise<string>;
 }
 
 /**
