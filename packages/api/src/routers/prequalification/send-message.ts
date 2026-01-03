@@ -133,7 +133,8 @@ export const sendMessage = publicProcedure
       const dialogueComplete = isSufficient && mandatoryCheck.allAsked;
 
       // If dialogue is complete, transition to evaluating
-      let newStatus = session.status;
+      let newStatus: "dialogue_active" | "evaluating" =
+        session.status as "dialogue_active";
       if (dialogueComplete) {
         await sessionManager.updateSessionStatus(
           input.sessionId,
@@ -160,7 +161,7 @@ export const sendMessage = publicProcedure
       if (error instanceof PrequalificationError) {
         const codeMap: Record<
           string,
-          "BAD_REQUEST" | "NOT_FOUND" | "FORBIDDEN"
+          "BAD_REQUEST" | "NOT_FOUND" | "FORBIDDEN" | "INTERNAL_SERVER_ERROR"
         > = {
           SESSION_NOT_FOUND: "NOT_FOUND",
           INVALID_STATE_TRANSITION: "BAD_REQUEST",

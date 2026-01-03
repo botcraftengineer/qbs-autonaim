@@ -1,6 +1,7 @@
 import { analyticsRouter } from "./routers/analytics";
 import { candidatesRouter } from "./routers/candidates";
 import { companyRouter } from "./routers/company";
+import { customDomainRouter } from "./routers/custom-domain";
 import { filesRouter } from "./routers/files";
 import { freelancePlatformsRouter } from "./routers/freelance-platforms";
 import { funnelRouter } from "./routers/funnel";
@@ -31,6 +32,7 @@ export const appRouter = createTRPCRouter({
   freelancePlatforms: freelancePlatformsRouter,
   prequalification: prequalificationRouter,
   widgetConfig: widgetConfigRouter,
+  customDomain: customDomainRouter,
   analytics: analyticsRouter,
   ...(process.env.NODE_ENV !== "production" && { test: testRouter }),
 });

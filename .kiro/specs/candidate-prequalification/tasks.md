@@ -239,25 +239,25 @@
     - Реализовать getDashboard, getVacancyAnalytics, exportData procedures
     - _Requirements: 9.1, 9.2, 9.5_
 
-- [ ] 12. Реализация Custom Domain Service
-  - [ ] 12.1 Создать интерфейсы для Custom Domain
+- [x] 12. Реализация Custom Domain Service
+  - [x] 12.1 Создать интерфейсы для Custom Domain
     - Добавить файл `packages/api/src/services/custom-domain/types.ts`
     - Определить CustomDomainConfig, DomainValidationResult, SSLProvisionResult
     - _Requirements: 10.1, 10.2, 10.3_
 
-  - [ ] 12.2 Реализовать DNS verification
+  - [x] 12.2 Реализовать DNS verification
     - Добавить файл `packages/api/src/services/custom-domain/dns-verifier.ts`
     - Реализовать verifyDNS с проверкой CNAME записи
     - Генерировать понятные сообщения об ошибках
     - _Requirements: 10.2, 10.4_
 
-  - [ ] 12.3 Реализовать SSL provisioning
+  - [x] 12.3 Реализовать SSL provisioning
     - Добавить файл `packages/api/src/services/custom-domain/ssl-provisioner.ts`
     - Интегрировать с Yandex Cloud Certificate Manager API
     - Реализовать provisionSSL и checkSSLStatus
     - _Requirements: 10.3_
 
-  - [ ] 12.4 Реализовать Custom Domain Service
+  - [x] 12.4 Реализовать Custom Domain Service
     - Добавить файл `packages/api/src/services/custom-domain/index.ts`
     - Реализовать registerDomain с проверкой уникальности
     - Реализовать verifyAndProvision workflow
@@ -267,18 +267,18 @@
     - **Property 14: Custom Domain Uniqueness**
     - **Validates: Requirements 10.7**
 
-  - [ ] 12.6 Создать custom-domain router
+  - [x] 12.6 Создать custom-domain router
     - Добавить файл `packages/api/src/router/custom-domain.ts`
     - Реализовать registerDomain, verifyDomain, getStatus procedures
     - _Requirements: 10.1, 10.2, 10.4_
 
-- [ ] 13. Checkpoint - Проверка всех сервисов
+- [x] 13. Checkpoint - Проверка всех сервисов
   - Убедиться, что все сервисы интегрированы
   - Проверить все routers
   - Спросить пользователя, если возникнут вопросы
 
-- [ ] 14. Реализация Audit Logging
-  - [ ] 14.1 Расширить AuditLoggerService для prequalification
+- [x] 14. Реализация Audit Logging
+  - [x] 14.1 Расширить AuditLoggerService для prequalification
     - Обновить `packages/api/src/services/audit-logger.ts`
     - Добавить типы событий для prequalification
     - Реализовать логирование всех state-changing операций
@@ -288,14 +288,14 @@
     - **Property 12: Audit Log Completeness**
     - **Validates: Requirements 7.3, 8.4**
 
-- [ ] 15. Реализация Zod валидаторов
-  - [ ] 15.1 Создать валидаторы для prequalification
+- [x] 15. Реализация Zod валидаторов
+  - [x] 15.1 Создать валидаторы для prequalification
     - Добавить файл `packages/validators/src/prequalification.ts`
     - Создать схемы для CreateSessionInput, UploadResumeInput, SendMessageInput
     - Создать схемы для WidgetConfigUpdate, CustomDomainRegister
     - _Requirements: все_
 
-- [ ] 16. Final Checkpoint - Полная проверка
+- [x] 16. Final Checkpoint - Полная проверка
   - Убедиться, что все тесты проходят
   - **MANDATORY: All security/compliance properties must pass (Property 3, 9, 11)**
   - Проверить интеграцию всех компонентов

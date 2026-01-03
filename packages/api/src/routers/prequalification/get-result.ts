@@ -115,6 +115,21 @@ export const getResult = publicProcedure
         );
       }
 
+      // Transform DB vacancy requirements to evaluation service format
+      const transformedRequirements = vacancyData.requirements
+        ? {
+            hardSkills: [
+              ...(vacancyData.requirements.mandatory_requirements ?? []),
+              ...(vacancyData.requirements.tech_stack ?? []),
+            ],
+            softSkills: vacancyData.requirements.nice_to_have_skills ?? [],
+            minExperience:
+              vacancyData.requirements.experience_years?.min ?? undefined,
+            education: [],
+            other: vacancyData.requirements.keywords_for_matching ?? [],
+          }
+        : undefined;
+
       // Run evaluation
       const evaluationResult = await evaluatorService.evaluate({
         parsedResume: session.parsedResume,
@@ -123,7 +138,7 @@ export const getResult = publicProcedure
           id: vacancyData.id,
           title: vacancyData.title,
           description: vacancyData.description ?? undefined,
-          requirements: vacancyData.requirements ?? undefined,
+          requirements: transformedRequirements,
         },
         workspaceConfig: {
           passThreshold: config.passThreshold,

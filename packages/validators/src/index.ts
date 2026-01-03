@@ -6,5 +6,6 @@ export * from "./data-table";
 export * from "./login";
 export * from "./organization";
 export * from "./otp";
+export * from "./prequalification";
 export * from "./vacancy";
 export * from "./workspace";

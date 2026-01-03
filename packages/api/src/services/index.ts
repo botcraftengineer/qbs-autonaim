@@ -23,6 +23,26 @@ export {
   AnalyticsExporter,
   AnalyticsTracker,
 } from "./analytics";
+// Custom Domain Service
+export type {
+  CustomDomainConfig,
+  CustomDomainErrorCode,
+  DNSInstructions,
+  DNSVerificationResult,
+  DomainStatus,
+  DomainValidationResult,
+  RegisterDomainInput,
+  SSLProvisionResult,
+  SSLStatusResult,
+} from "./custom-domain";
+export {
+  BASE_CNAME_TARGET,
+  CustomDomainError,
+  CustomDomainService,
+  generateDNSInstructions,
+  MIN_VERIFICATION_INTERVAL_MS,
+  SSL_RENEWAL_WARNING_DAYS,
+} from "./custom-domain";
 export type {
   DialogueMessage,
   DimensionScore,
