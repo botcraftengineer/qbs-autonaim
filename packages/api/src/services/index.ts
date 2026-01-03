@@ -18,10 +18,9 @@ export type {
 } from "./resume-parser";
 export {
   DEFAULT_PARSER_CONFIG,
-  DocxParser,
-  PdfParser,
   ResumeParserError,
   ResumeParserService,
+  UnstructuredParser,
 } from "./resume-parser";
 
 export type {

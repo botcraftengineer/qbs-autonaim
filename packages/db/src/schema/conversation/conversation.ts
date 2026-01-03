@@ -30,7 +30,6 @@ export const conversation = pgTable(
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
     responseId: uuid("response_id")
-      .notNull()
       .unique()
       .references(() => vacancyResponse.id, {
         onDelete: "cascade",
@@ -58,7 +57,7 @@ export const conversation = pgTable(
 );
 
 export const CreateConversationSchema = createInsertSchema(conversation, {
-  responseId: uuidv7Schema,
+  responseId: uuidv7Schema.nullable(),
   candidateName: z.string().max(500).optional(),
   username: z.string().max(100).optional(),
   status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),

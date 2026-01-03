@@ -27,15 +27,12 @@
     "@qbs-autonaim/jobs": "workspace:*",
     "@qbs-autonaim/validators": "workspace:*",
     "@trpc/server": "^11.8.1",
-    "mammoth": "^1.9.0",
-    "pdf-parse": "^1.1.1",
     "sanitize-html": "^2.17.0",
     "superjson": "2.2.6",
     "zod": "4.3.4"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
-    "@types/pdf-parse": "^1.1.4",
     "@types/sanitize-html": "^2.16.0",
     "fast-check": "^4.1.1",
     "tsdown": "^0.18.4",

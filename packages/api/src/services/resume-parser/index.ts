@@ -9,9 +9,6 @@ import { AgentFactory, type ResumeStructurerOutput } from "@qbs-autonaim/ai";
 import type { ParsedResume, StructuredResume } from "@qbs-autonaim/db";
 import type { LanguageModel } from "ai";
 import type { Langfuse } from "langfuse";
-
-import { DocxParser } from "./docx-parser";
-import { PdfParser } from "./pdf-parser";
 import {
   DEFAULT_PARSER_CONFIG,
   type FormatValidationResult,
@@ -20,11 +17,11 @@ import {
   type ResumeParserConfig,
   ResumeParserError,
 } from "./types";
+import { UnstructuredParser } from "./unstructured-parser";
 
-export { DocxParser } from "./docx-parser";
-export { PdfParser } from "./pdf-parser";
 // Re-export types for convenience
 export * from "./types";
+export { UnstructuredParser } from "./unstructured-parser";
 
 /**
  * Поддерживаемые расширения файлов
@@ -32,14 +29,17 @@ export * from "./types";
 const SUPPORTED_EXTENSIONS: Record<string, ResumeFileType> = {
   ".pdf": "pdf",
   ".docx": "docx",
+  ".doc": "doc",
+  ".txt": "txt",
+  ".rtf": "rtf",
+  ".odt": "odt",
 };
 
 /**
  * Сервис для парсинга резюме
  */
 export class ResumeParserService {
-  private readonly pdfParser: PdfParser;
-  private readonly docxParser: DocxParser;
+  private readonly parser: UnstructuredParser;
   private readonly config: ResumeParserConfig;
   private readonly model: LanguageModel;
   private readonly langfuse?: Langfuse;
@@ -48,9 +48,22 @@ export class ResumeParserService {
     model: LanguageModel;
     langfuse?: Langfuse;
     config?: Partial<ResumeParserConfig>;
+    unstructuredApiUrl?: string;
+    unstructuredApiKey?: string;
   }) {
-    this.pdfParser = new PdfParser();
-    this.docxParser = new DocxParser();
+    const apiUrl =
+      options.unstructuredApiUrl ||
+      process.env.UNSTRUCTURED_API_URL ||
+      "http://localhost:8001";
+    const apiKey =
+      options.unstructuredApiKey || process.env.UNSTRUCTURED_API_KEY;
+
+    this.parser = new UnstructuredParser({
+      apiUrl,
+      apiKey,
+      timeout: options.config?.aiTimeoutMs || DEFAULT_PARSER_CONFIG.aiTimeoutMs,
+    });
+
     this.config = { ...DEFAULT_PARSER_CONFIG, ...options.config };
     this.model = options.model;
     this.langfuse = options.langfuse;
@@ -168,21 +181,10 @@ export class ResumeParserService {
   }
 
   /**
-   * Извлекает текст из файла в зависимости от типа
+   * Извлекает текст из файла через Unstructured API
    */
   private async extractText(input: ResumeInput): Promise<string> {
-    switch (input.type) {
-      case "pdf":
-        return this.pdfParser.extractText(input.content);
-      case "docx":
-        return this.docxParser.extractText(input.content);
-      default:
-        throw new ResumeParserError(
-          "UNSUPPORTED_FORMAT",
-          `Неподдерживаемый тип файла: ${input.type}`,
-          { supportedFormats: ["pdf", "docx"] },
-        );
-    }
+    return this.parser.extractText(input.content, input.filename);
   }
 
   /**

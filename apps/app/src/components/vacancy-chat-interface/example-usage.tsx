@@ -11,8 +11,22 @@ import { VacancyChatInterface } from "./index";
 /**
  * Example 1: Basic usage with workspace ID
  */
-export function BasicExample({ workspaceId }: { workspaceId: string }) {
-  return <VacancyChatInterface workspaceId={workspaceId} />;
+export function BasicExample({
+  workspaceId,
+  orgSlug,
+  workspaceSlug,
+}: {
+  workspaceId: string;
+  orgSlug: string;
+  workspaceSlug: string;
+}) {
+  return (
+    <VacancyChatInterface
+      workspaceId={workspaceId}
+      orgSlug={orgSlug}
+      workspaceSlug={workspaceSlug}
+    />
+  );
 }
 
 /**
@@ -20,8 +34,12 @@ export function BasicExample({ workspaceId }: { workspaceId: string }) {
  */
 export function WithInitialDocumentExample({
   workspaceId,
+  orgSlug,
+  workspaceSlug,
 }: {
   workspaceId: string;
+  orgSlug: string;
+  workspaceSlug: string;
 }) {
   const initialDocument: VacancyDocument = {
     title: "Senior TypeScript Developer",
@@ -31,6 +49,8 @@ export function WithInitialDocumentExample({
   return (
     <VacancyChatInterface
       workspaceId={workspaceId}
+      orgSlug={orgSlug}
+      workspaceSlug={workspaceSlug}
       initialDocument={initialDocument}
     />
   );
@@ -41,9 +61,13 @@ export function WithInitialDocumentExample({
  */
 export function WithSaveHandlerExample({
   workspaceId,
+  orgSlug,
+  workspaceSlug,
   onNavigate,
 }: {
   workspaceId: string;
+  orgSlug: string;
+  workspaceSlug: string;
   onNavigate: (vacancyId: string) => void;
 }) {
   const handleSave = async (document: VacancyDocument) => {
@@ -65,7 +89,14 @@ export function WithSaveHandlerExample({
     onNavigate(id);
   };
 
-  return <VacancyChatInterface workspaceId={workspaceId} onSave={handleSave} />;
+  return (
+    <VacancyChatInterface
+      workspaceId={workspaceId}
+      orgSlug={orgSlug}
+      workspaceSlug={workspaceSlug}
+      onSave={handleSave}
+    />
+  );
 }
 
 /**
@@ -102,7 +133,12 @@ export function FullPageExample({
 
   return (
     <div className="h-screen">
-      <VacancyChatInterface workspaceId={workspaceId} onSave={handleSave} />
+      <VacancyChatInterface
+        workspaceId={workspaceId}
+        orgSlug={orgSlug}
+        workspaceSlug={workspaceSlug}
+        onSave={handleSave}
+      />
     </div>
   );
 }

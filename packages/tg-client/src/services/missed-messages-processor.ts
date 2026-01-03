@@ -145,9 +145,15 @@ export async function processMissedMessages(
   let skippedCount = 0;
 
   for (const conversation of conversations) {
+    // Пропускаем беседы без responseId или chatId
+    if (!conversation.responseId || !conversation.chatId) {
+      skippedCount++;
+      continue;
+    }
+
     try {
       const result = await processConversationMissedMessages(
-        conversation,
+        conversation as ConversationWithChatId,
         config.getClient,
       );
       processedCount += result.processed;
@@ -170,7 +176,7 @@ export async function processMissedMessages(
         // Повторная попытка после ожидания
         try {
           const result = await processConversationMissedMessages(
-            conversation,
+            conversation as ConversationWithChatId,
             config.getClient,
           );
           processedCount += result.processed;

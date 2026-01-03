@@ -10,6 +10,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
+import validator from "validator";
 import { z } from "zod";
 
 import { workspace } from "../workspace/workspace";
@@ -77,10 +78,9 @@ export const CreateCustomDomainSchema = createInsertSchema(customDomain, {
     .string()
     .min(1)
     .max(255)
-    .regex(
-      /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
-      "Invalid domain format",
-    ),
+    .refine((val) => validator.isFQDN(val), {
+      message: "Invalid domain format",
+    }),
   cnameTarget: z.string().min(1).max(255),
 }).omit({
   id: true,

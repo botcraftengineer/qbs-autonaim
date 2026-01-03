@@ -172,7 +172,8 @@ export type PrequalificationErrorCode =
   | "RESUME_REQUIRED"
   | "INSUFFICIENT_DIALOGUE"
   | "EVALUATION_FAILED"
-  | "ALREADY_SUBMITTED";
+  | "ALREADY_SUBMITTED"
+  | "CONVERSATION_CREATION_FAILED";
 
 /**
  * Ошибка сервиса преквалификации

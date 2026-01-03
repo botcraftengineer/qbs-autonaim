@@ -199,7 +199,7 @@ export class DialogueHandler {
       .insert(conversation)
       .values({
         // responseId будет null до создания response
-        responseId: null as unknown as string, // Временно, пока не создан response
+        responseId: null,
         candidateName: candidateName ?? null,
         status: "ACTIVE",
         source: "WEB",
@@ -212,7 +212,7 @@ export class DialogueHandler {
 
     if (!newConversation) {
       throw new PrequalificationError(
-        "SESSION_NOT_FOUND",
+        "CONVERSATION_CREATION_FAILED",
         "Не удалось создать разговор",
         { sessionId },
       );
