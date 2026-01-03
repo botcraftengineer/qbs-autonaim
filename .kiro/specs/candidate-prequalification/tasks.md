@@ -114,20 +114,20 @@
     - **Property 4: Mandatory Questions Inclusion**
     - **Validates: Requirements 2.6**
 
-- [ ] 5. Checkpoint - Проверка базовой функциональности
+- [x] 5. Checkpoint - Проверка базовой функциональности
   - Убедиться, что сессии создаются и управляются корректно
   - Проверить интеграцию с Resume Parser
   - **MANDATORY: Property 3 (Session State Machine) and Property 11 (Consent Enforcement) must pass**
   - Спросить пользователя, если возникнут вопросы
 
-- [ ] 6. Реализация Evaluation Service
-  - [ ] 6.1 Создать интерфейсы для Evaluation Service
+- [-] 6. Реализация Evaluation Service
+  - [x] 6.1 Создать интерфейсы для Evaluation Service
     - Добавить файл `packages/api/src/services/evaluation/types.ts`
     - Определить EvaluationInput, EvaluationResult, DimensionScore
     - Определить FeedbackConfig и FitDecision
     - _Requirements: 3.1, 3.2, 3.3_
 
-  - [ ] 6.2 Реализовать оценку кандидата
+  - [x] 6.2 Реализовать оценку кандидата
     - Добавить файл `packages/api/src/services/evaluation/evaluator.ts`
     - Реализовать evaluate с использованием AI для анализа
     - Рассчитать scores по dimensions: hardSkills, softSkills, cultureFit, salaryAlignment
@@ -140,7 +140,7 @@
     - **Property 7: Evaluation Contains All Dimensions**
     - **Validates: Requirements 3.1, 3.2, 3.3, 3.4**
 
-  - [ ] 6.4 Реализовать генерацию feedback для кандидата
+  - [x] 6.4 Реализовать генерацию feedback для кандидата
     - Добавить файл `packages/api/src/services/evaluation/feedback-generator.ts`
     - Реализовать generateFeedback с учётом honestyLevel
     - Генерировать конструктивный feedback для not_fit
@@ -150,13 +150,13 @@
     - **Property 8: Candidate Feedback Generation**
     - **Validates: Requirements 4.2, 4.4**
 
-- [ ] 7. Реализация Widget Config Service
-  - [ ] 7.1 Создать интерфейсы для Widget Config
+- [x] 7. Реализация Widget Config Service
+  - [x] 7.1 Создать интерфейсы для Widget Config
     - Добавить файл `packages/api/src/services/widget-config/types.ts`
     - Определить WidgetConfiguration, BrandingConfig, BehaviorConfig, LegalConfig
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 7.2 Реализовать CRUD для Widget Config
+  - [x] 7.2 Реализовать CRUD для Widget Config
     - Добавить файл `packages/api/src/services/widget-config/index.ts`
     - Реализовать getConfig с tenant isolation
     - Реализовать updateConfig с валидацией
@@ -167,26 +167,26 @@
     - **Property 10: Widget Configuration Persistence Round-Trip**
     - **Validates: Requirements 6.1, 6.2, 6.3**
 
-- [ ] 8. Реализация Tenant Isolation
-  - [ ] 8.1 Создать middleware для tenant verification
+- [x] 8. Реализация Tenant Isolation
+  - [x] 8.1 Создать middleware для tenant verification
     - Добавить файл `packages/api/src/middleware/tenant-guard.ts`
     - Реализовать проверку workspaceId для всех операций
     - Добавить logging для audit
     - _Requirements: 7.1, 7.2_
 
-  - [ ] 8.2 Написать property test для Tenant Isolation (MANDATORY - Security)
+  - [x] 8.2 Написать property test для Tenant Isolation (MANDATORY - Security)
     - **Property 9: Tenant Data Isolation**
     - **Validates: Requirements 5.3, 5.4, 7.1, 7.2**
     - _Note: This property is mandatory for MVP sign-off as it enforces tenant data isolation security_
 
-- [ ] 9. Checkpoint - Проверка core services
+- [x] 9. Checkpoint - Проверка core services
   - Убедиться, что все сервисы работают корректно
   - Проверить tenant isolation
   - **MANDATORY: Property 9 (Tenant Data Isolation) must pass**
   - Спросить пользователя, если возникнут вопросы
 
-- [ ] 10. Реализация tRPC Router для Prequalification
-  - [ ] 10.1 Создать prequalification router
+- [x] 10.  Реализация tRPC Router для Prequalification
+  - [x] 10.1 Создать prequalification router
     - Добавить файл `packages/api/src/router/prequalification.ts`
     - Реализовать createSession procedure
     - Реализовать uploadResume procedure
@@ -195,30 +195,30 @@
     - Реализовать submitApplication procedure
     - _Requirements: 1.1, 1.6, 2.1, 4.1, 5.1_
 
-  - [ ] 10.2 Создать widget-config router
+  - [x] 10.2 Создать widget-config router
     - Добавить файл `packages/api/src/router/widget-config.ts`
     - Реализовать getConfig procedure (public)
     - Реализовать updateConfig procedure (admin only)
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 10.3 Интегрировать routers в appRouter
+  - [x] 10.3 Интегрировать routers в appRouter
     - Обновить `packages/api/src/root.ts`
     - Добавить prequalification и widgetConfig routers
     - _Requirements: все_
 
-- [ ] 11. Реализация Analytics Service
-  - [ ] 11.1 Создать интерфейсы для Analytics
+- [x] 11. Реализация Analytics Service
+  - [x] 11.1 Создать интерфейсы для Analytics
     - Добавить файл `packages/api/src/services/analytics/types.ts`
     - Определить AnalyticsEvent, EventType, DashboardData, FunnelMetrics
     - _Requirements: 9.1, 9.4_
 
-  - [ ] 11.2 Реализовать tracking событий
+  - [x] 11.2 Реализовать tracking событий
     - Добавить файл `packages/api/src/services/analytics/tracker.ts`
     - Реализовать trackEvent для записи событий
     - Интегрировать с prequalification service
     - _Requirements: 9.4_
 
-  - [ ] 11.3 Реализовать агрегацию метрик
+  - [x] 11.3 Реализовать агрегацию метрик
     - Добавить файл `packages/api/src/services/analytics/aggregator.ts`
     - Реализовать getDashboard с расчётом всех метрик
     - Реализовать getVacancyAnalytics
@@ -229,12 +229,12 @@
     - **Property 13: Analytics Funnel Metrics Consistency**
     - **Validates: Requirements 9.4**
 
-  - [ ] 11.5 Реализовать экспорт данных
+  - [x] 11.5 Реализовать экспорт данных
     - Добавить файл `packages/api/src/services/analytics/exporter.ts`
     - Реализовать exportData в CSV и JSON форматах
     - _Requirements: 9.5_
 
-  - [ ] 11.6 Создать analytics router
+  - [x] 11.6 Создать analytics router
     - Добавить файл `packages/api/src/router/analytics.ts`
     - Реализовать getDashboard, getVacancyAnalytics, exportData procedures
     - _Requirements: 9.1, 9.2, 9.5_
