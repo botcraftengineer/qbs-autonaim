@@ -124,7 +124,7 @@ export const uploadResume = publicProcedure
 
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: "Internal server error",
+        message: "Внутренняя ошибка сервера",
         cause: error,
       });
     }
