@@ -150,6 +150,30 @@ export const submitApplication = publicProcedure
           ),
         );
 
+      // Log audit event
+      try {
+        await ctx.auditLogger.logAccess({
+          workspaceId: input.workspaceId,
+          userId: ctx.session?.user?.id ?? "anonymous",
+          action: "CREATE",
+          resourceType: "VACANCY_RESPONSE",
+          resourceId: newResponse.id,
+          metadata: {
+            sessionId: input.sessionId,
+            responseId: newResponse.id,
+            status: "submitted",
+            fitScore: session.fitScore,
+            fitDecision: session.fitDecision,
+            importSource: "FREELANCE_MANUAL",
+            candidateName: candidateInfo?.name,
+            candidateEmail: candidateInfo?.email,
+          },
+        });
+      } catch (auditError) {
+        // Log audit error but don't block the main flow
+        console.error("Failed to log audit event:", auditError);
+      }
+
       return {
         success: true,
         responseId: newResponse.id,

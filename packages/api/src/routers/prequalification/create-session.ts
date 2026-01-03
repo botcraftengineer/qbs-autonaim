@@ -55,6 +55,12 @@ export const createSession = publicProcedure
           cause: error,
         });
       }
-      throw error;
+
+      // Wrap unknown errors to prevent leaking implementation details
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Внутренняя ошибка сервера",
+        cause: error,
+      });
     }
   });

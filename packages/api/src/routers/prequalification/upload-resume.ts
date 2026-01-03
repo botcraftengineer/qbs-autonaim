@@ -20,7 +20,10 @@ const uploadResumeInputSchema = z.object({
   sessionId: z.string().uuid("sessionId должен быть UUID"),
   workspaceId: z.string().min(1, "workspaceId обязателен"),
   /** Base64-encoded file content */
-  fileContent: z.string().min(1, "fileContent обязателен"),
+  fileContent: z
+    .string()
+    .min(1, "fileContent обязателен")
+    .max(28_000_000, "fileContent слишком велик"),
   /** Original filename with extension */
   filename: z.string().min(1, "filename обязателен"),
 });
@@ -119,6 +122,10 @@ export const uploadResume = publicProcedure
         });
       }
 
-      throw error;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Internal server error",
+        cause: error,
+      });
     }
   });
