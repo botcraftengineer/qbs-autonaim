@@ -79,7 +79,7 @@ export const CreateCustomDomainSchema = createInsertSchema(customDomain, {
     .min(1)
     .max(255)
     .refine((val) => validator.isFQDN(val), {
-      message: "Неверный формат домена",
+      error: "Неверный формат домена",
     }),
   cnameTarget: z.string().min(1).max(255),
 }).omit({
