@@ -9,6 +9,22 @@ export type {
 export { ResponseParser } from "./response-parser";
 
 export type {
+  FormatParser,
+  FormatValidationResult,
+  ResumeFileType,
+  ResumeInput,
+  ResumeParserConfig,
+  ResumeStructurer,
+} from "./resume-parser";
+export {
+  DEFAULT_PARSER_CONFIG,
+  DocxParser,
+  PdfParser,
+  ResumeParserError,
+  ResumeParserService,
+} from "./resume-parser";
+
+export type {
   ContactInfo as ShortlistContactInfo,
   Shortlist,
   ShortlistCandidate,

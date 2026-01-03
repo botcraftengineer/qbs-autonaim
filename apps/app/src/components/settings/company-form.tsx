@@ -2,7 +2,6 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Button,
   Form,
   FormField,
   FormItem,
@@ -13,13 +12,48 @@ import {
 } from "@qbs-autonaim/ui";
 import {
   type CompanyFormValues,
+  type CompanyPartialValues,
   companyFormSchema,
 } from "@qbs-autonaim/validators";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useTRPC } from "~/trpc/react";
+
+function useAutoSave(
+  value: CompanyFormValues,
+  onSave: (data: CompanyPartialValues) => void,
+  delay = 800,
+) {
+  const prevValue = useRef<CompanyFormValues>(value);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const changedFields: CompanyPartialValues = {};
+    let hasChanges = false;
+
+    for (const key of Object.keys(value) as (keyof CompanyFormValues)[]) {
+      if (value[key] !== prevValue.current[key]) {
+        (changedFields as Record<string, unknown>)[key] = value[key];
+        hasChanges = true;
+      }
+    }
+
+    if (hasChanges) {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => {
+        onSave(changedFields);
+        prevValue.current = value;
+      }, delay);
+    }
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [value, onSave, delay]);
+}
 
 export function CompanyForm({
   initialData,
@@ -47,23 +81,28 @@ export function CompanyForm({
   });
 
   const updateCompany = useMutation(
-    trpc.company.update.mutationOptions({
+    trpc.company.updatePartial.mutationOptions({
       onSuccess: async () => {
-        toast.success("Компания успешно обновлена");
         await queryClient.invalidateQueries(trpc.company.pathFilter());
       },
       onError: (err) => {
-        toast.error(err.message || "Не удалось обновить компанию");
+        toast.error(err.message || "Не удалось сохранить");
       },
     }),
   );
 
-  function onSubmit(data: CompanyFormValues) {
-    updateCompany.mutate({
-      workspaceId,
-      data,
-    });
-  }
+  const handleAutoSave = useCallback(
+    (changedData: CompanyPartialValues) => {
+      updateCompany.mutate({
+        workspaceId,
+        data: changedData,
+      });
+    },
+    [updateCompany, workspaceId],
+  );
+
+  const watchedValues = form.watch();
+  useAutoSave(watchedValues, handleAutoSave);
 
   if (!canEdit) {
     return (
@@ -78,7 +117,7 @@ export function CompanyForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form className="space-y-6">
         <FormField
           control={form.control}
           name="name"
@@ -171,13 +210,9 @@ export function CompanyForm({
           />
         </div>
 
-        <Button
-          type="submit"
-          className="bg-foreground text-background hover:bg-foreground/90"
-          disabled={updateCompany.isPending}
-        >
-          {updateCompany.isPending ? "Сохранение..." : "Сохранить"}
-        </Button>
+        {updateCompany.isPending && (
+          <p className="text-xs text-muted-foreground">Сохранение...</p>
+        )}
       </form>
     </Form>
   );
