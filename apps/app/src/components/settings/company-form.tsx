@@ -44,9 +44,14 @@ function useAutoSave(
     if (hasChanges) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = setTimeout(() => {
-        onSave(changedFields).then(() => {
-          prevValue.current = value;
-        });
+        onSave(changedFields)
+          .then(() => {
+            prevValue.current = value;
+          })
+          .catch(() => {
+            // Error is already handled by mutation's onError
+            // Don't update prevValue on failure
+          });
       }, delay);
     }
 
