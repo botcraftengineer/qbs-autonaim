@@ -44,7 +44,7 @@ export interface Education {
 }
 
 export interface Language {
-  language: string;
+  name: string;
   level: string;
 }
 

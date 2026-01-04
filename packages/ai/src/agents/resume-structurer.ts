@@ -30,7 +30,7 @@ const educationSchema = z.object({
 });
 
 const languageSchema = z.object({
-  language: z.string(),
+  name: z.string(),
   level: z.string(),
 });
 

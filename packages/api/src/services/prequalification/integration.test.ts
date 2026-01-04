@@ -7,7 +7,6 @@
 import type { ParsedResume } from "@qbs-autonaim/db";
 import { describe, expect, it } from "vitest";
 
-import { SessionManager } from "./session-manager";
 import type { CreateSessionInput } from "./types";
 
 describe("Prequalification Integration", () => {
@@ -69,7 +68,7 @@ describe("Prequalification Integration", () => {
           skills: ["JavaScript", "TypeScript", "React"],
           languages: [
             {
-              language: "English",
+              name: "English",
               level: "Native",
             },
           ],

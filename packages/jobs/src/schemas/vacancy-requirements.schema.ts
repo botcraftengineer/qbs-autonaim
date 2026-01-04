@@ -12,7 +12,7 @@ const experienceYearsSchema = z.object({
  * Zod схема для языковых требований
  */
 const languageSchema = z.object({
-  language: z.string(),
+  name: z.string(),
   level: z.string(),
 });
 
