@@ -75,9 +75,17 @@ export const uploadResume = publicProcedure
       // Decode base64 content
       const fileBuffer = Buffer.from(input.fileContent, "base64");
 
+      // fileType is guaranteed to exist when isValid is true
+      if (!validation.fileType) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Не удалось определить тип файла",
+        });
+      }
+
       // Parse resume
       const parsedResume = await resumeParser.parse({
-        type: validation.fileType!,
+        type: validation.fileType,
         content: fileBuffer,
         filename: input.filename,
       });

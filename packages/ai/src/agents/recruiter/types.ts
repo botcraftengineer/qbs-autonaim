@@ -1,0 +1,239 @@
+/**
+ * Типы для AI-ассистента рекрутера
+ */
+
+import type { BaseAgentContext } from "../types";
+
+/**
+ * Намерения пользователя для Intent Classifier
+ */
+export type RecruiterIntent =
+  | "SEARCH_CANDIDATES"
+  | "ANALYZE_VACANCY"
+  | "GENERATE_CONTENT"
+  | "COMMUNICATE"
+  | "CONFIGURE_RULES"
+  | "GENERAL_QUESTION";
+
+/**
+ * Сообщение в истории диалога
+ */
+export interface ConversationMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+  metadata?: {
+    intent?: RecruiterIntent;
+    actions?: string[];
+  };
+}
+
+/**
+ * Настройки компании для рекрутера
+ */
+export interface RecruiterCompanySettings {
+  botName?: string;
+  botRole?: string;
+  name?: string;
+  description?: string;
+  communicationStyle?: "formal" | "casual" | "professional";
+  defaultAutonomyLevel?: "advise" | "confirm" | "autonomous";
+}
+
+/**
+ * Контекст диалога рекрутера
+ */
+export interface RecruiterConversationContext {
+  workspaceId: string;
+  userId: string;
+  currentVacancyId?: string;
+  conversationHistory: ConversationMessage[];
+  companySettings: RecruiterCompanySettings;
+  recentDecisions: RecruiterDecision[];
+}
+
+/**
+ * Решение рекрутера (для обучения)
+ */
+export interface RecruiterDecision {
+  id: string;
+  type: "accept" | "reject" | "modify";
+  originalRecommendation: string;
+  userAction?: string;
+  timestamp: Date;
+}
+
+/**
+ * Вход для оркестратора рекрутера
+ */
+export interface RecruiterOrchestratorInput {
+  message: string;
+  workspaceId: string;
+  vacancyId?: string;
+  conversationHistory: ConversationMessage[];
+}
+
+/**
+ * Выполненное действие
+ */
+export interface ExecutedAction {
+  id: string;
+  type: string;
+  params: Record<string, unknown>;
+  result: "success" | "failed" | "pending_approval";
+  explanation: string;
+  timestamp: Date;
+  canUndo: boolean;
+  undoDeadline?: Date;
+}
+
+/**
+ * Рекомендация агента
+ */
+export interface Recommendation {
+  type: string;
+  title: string;
+  description: string;
+  priority: number;
+  action?: {
+    type: string;
+    params: Record<string, unknown>;
+  };
+}
+
+/**
+ * Результат поиска кандидата
+ */
+export interface CandidateResult {
+  id: string;
+  name: string;
+  fitScore: number;
+  resumeScore: number;
+  interviewScore?: number;
+  whySelected: string;
+  availability: {
+    status: "immediate" | "2_weeks" | "1_month" | "unknown";
+    confirmedAt?: Date;
+  };
+  riskFactors: Array<{
+    type: string;
+    description: string;
+    severity: "low" | "medium" | "high";
+  }>;
+  recommendation: {
+    action: "invite" | "clarify" | "reject";
+    reason: string;
+    confidence: number;
+  };
+  contacts?: {
+    telegram?: string;
+    phone?: string;
+    email?: string;
+  };
+}
+
+/**
+ * Аналитика вакансии
+ */
+export interface VacancyAnalytics {
+  vacancyId: string;
+  metrics: {
+    totalResponses: number;
+    processedResponses: number;
+    highScoreResponses: number;
+    avgScore: number;
+    conversionRate: number;
+  };
+  marketComparison: {
+    salaryPercentile: number;
+    requirementsComplexity: number;
+    competitorVacancies: number;
+    avgMarketSalary: number;
+  };
+  issues: VacancyIssue[];
+  recommendations: VacancyRecommendation[];
+}
+
+/**
+ * Проблема вакансии
+ */
+export interface VacancyIssue {
+  type: "salary" | "requirements" | "description" | "timing" | "competition";
+  severity: "low" | "medium" | "high";
+  title: string;
+  description: string;
+  impact: string;
+}
+
+/**
+ * Рекомендация по вакансии
+ */
+export interface VacancyRecommendation {
+  type:
+    | "change_title"
+    | "adjust_salary"
+    | "simplify_requirements"
+    | "improve_description";
+  title: string;
+  description: string;
+  expectedImpact: string;
+  priority: number;
+}
+
+/**
+ * Запись трассировки агента
+ */
+export interface AgentTraceEntry {
+  agent: string;
+  decision: string;
+  timestamp: Date;
+}
+
+/**
+ * Выход оркестратора рекрутера
+ */
+export interface RecruiterOrchestratorOutput {
+  response: string;
+  intent: RecruiterIntent;
+  actions: ExecutedAction[];
+  recommendations?: Recommendation[];
+  candidates?: CandidateResult[];
+  analytics?: VacancyAnalytics;
+  agentTrace: AgentTraceEntry[];
+}
+
+/**
+ * Расширенный контекст для агентов рекрутера
+ */
+export interface RecruiterAgentContext extends BaseAgentContext {
+  workspaceId: string;
+  userId: string;
+  currentVacancyId?: string;
+  recruiterConversationHistory: ConversationMessage[];
+  recruiterCompanySettings: RecruiterCompanySettings;
+  recentDecisions: RecruiterDecision[];
+}
+
+/**
+ * Конфигурация оркестратора рекрутера
+ */
+export interface RecruiterOrchestratorConfig {
+  maxSteps?: number;
+  maxConversationHistory?: number;
+  enableStreaming?: boolean;
+}
+
+/**
+ * Результат классификации намерения
+ */
+export interface IntentClassificationResult {
+  intent: RecruiterIntent;
+  confidence: number;
+  extractedEntities: {
+    candidateCount?: number;
+    availability?: string;
+    skills?: string[];
+    vacancyId?: string;
+    messageType?: string;
+  };
+}

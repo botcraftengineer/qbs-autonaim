@@ -121,6 +121,11 @@ class MockAuditLogger {
   }
 }
 
+// Type aliases for test mocks
+type MockRepo = MockWorkspaceRepository & Record<string, unknown>;
+type MockLogger = MockAuditLogger & Record<string, unknown>;
+type MockDb = Record<string, unknown>;
+
 describe("Tenant Data Isolation", () => {
   /**
    * Property 9: Tenant Data Isolation
@@ -146,13 +151,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as Parameters<
-                typeof TenantGuard.prototype.verifyAccess
-              >[0] extends TenantVerificationParams
-                ? never
-                : any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Should throw TenantIsolationError for mismatched IDs
@@ -186,9 +187,9 @@ describe("Tenant Data Isolation", () => {
           const mockRepo = new MockWorkspaceRepository();
           const mockLogger = new MockAuditLogger();
           const guard = new TenantGuard(
-            mockRepo as unknown as any,
-            mockLogger as unknown as any,
-            {} as any,
+            mockRepo as unknown as MockRepo,
+            mockLogger as unknown as MockLogger,
+            {} as MockDb,
           );
 
           // Should not throw for matching IDs
@@ -206,9 +207,9 @@ describe("Tenant Data Isolation", () => {
           const mockRepo = new MockWorkspaceRepository();
           const mockLogger = new MockAuditLogger();
           const guard = new TenantGuard(
-            mockRepo as unknown as any,
-            mockLogger as unknown as any,
-            {} as any,
+            mockRepo as unknown as MockRepo,
+            mockLogger as unknown as MockLogger,
+            {} as MockDb,
           );
 
           // Workspace doesn't exist, should throw
@@ -239,9 +240,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Add workspace but don't grant access
@@ -282,9 +283,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Add workspace and grant access
@@ -319,9 +320,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Add workspace
@@ -351,9 +352,9 @@ describe("Tenant Data Isolation", () => {
           const mockRepo = new MockWorkspaceRepository();
           const mockLogger = new MockAuditLogger();
           const guard = new TenantGuard(
-            mockRepo as unknown as any,
-            mockLogger as unknown as any,
-            {} as any,
+            mockRepo as unknown as MockRepo,
+            mockLogger as unknown as MockLogger,
+            {} as MockDb,
           );
 
           const filter = guard.createTenantFilter(workspaceId);
@@ -374,9 +375,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Add workspace and grant access
@@ -415,9 +416,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Add workspace but don't grant access
@@ -457,9 +458,9 @@ describe("Tenant Data Isolation", () => {
         const mockRepo = new MockWorkspaceRepository();
         const mockLogger = new MockAuditLogger();
         const guard = new TenantGuard(
-          mockRepo as unknown as any,
-          mockLogger as unknown as any,
-          {} as any,
+          mockRepo as unknown as MockRepo,
+          mockLogger as unknown as MockLogger,
+          {} as MockDb,
         );
 
         const params = {
@@ -498,9 +499,9 @@ describe("Tenant Data Isolation", () => {
             const mockRepo = new MockWorkspaceRepository();
             const mockLogger = new MockAuditLogger();
             const guard = new TenantGuard(
-              mockRepo as unknown as any,
-              mockLogger as unknown as any,
-              {} as any,
+              mockRepo as unknown as MockRepo,
+              mockLogger as unknown as MockLogger,
+              {} as MockDb,
             );
 
             // Add both workspaces

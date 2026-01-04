@@ -107,7 +107,7 @@ export class TenantGuard {
   constructor(
     private workspaceRepository: WorkspaceRepository,
     private auditLogger: AuditLoggerService,
-    private db: DbClient,
+    _db: DbClient,
   ) {}
 
   /**

@@ -6,8 +6,8 @@
 
 ## Tasks
 
-- [ ] 1. Create RecruiterAgentOrchestrator
-  - [ ] 1.1 Create base orchestrator structure
+- [x] 1. Create RecruiterAgentOrchestrator
+  - [x] 1.1 Create base orchestrator structure
     - Создать файл `packages/ai/src/agents/recruiter/orchestrator.ts`
     - Расширить паттерн из существующего `orchestrator.ts`
     - Добавить Intent Classifier для определения намерения пользователя
@@ -18,7 +18,7 @@
     - **Property 1: Intent Classification Accuracy**
     - **Validates: Requirements 1.1**
 
-  - [ ] 1.2 Implement conversation context management
+  - [x] 1.2 Implement conversation context management
     - Создать `packages/ai/src/agents/recruiter/context.ts`
     - Реализовать загрузку контекста (workspace, vacancy, company settings)
     - Реализовать накопление conversation history (max 20 messages)
@@ -29,7 +29,7 @@
     - **Property 5: Conversation History Accumulation**
     - **Validates: Requirements 1.2, 1.5, 7.1, 7.2, 7.3**
 
-  - [ ] 1.3 Implement streaming response with action chain
+  - [x] 1.3 Implement streaming response with action chain
     - Реализовать streaming через SSE
     - Добавить промежуточные обновления для multi-step actions
     - Добавить explanation к каждому действию
@@ -40,18 +40,18 @@
     - **Property 4: Explanation Presence**
     - **Validates: Requirements 1.3, 1.4**
 
-- [ ] 2. Checkpoint - Ensure orchestrator works
+- [x] 2. Checkpoint - Ensure orchestrator works
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Create CandidateSearchAgent
-  - [ ] 3.1 Implement candidate search agent
+- [x] 3. Create CandidateSearchAgent
+  - [x] 3.1 Implement candidate search agent
     - Создать файл `packages/ai/src/agents/recruiter/candidate-search.ts`
     - Расширить BaseAgent
     - Реализовать поиск с фильтрами (availability, fitScore, experience, skills)
     - Интегрировать с существующим candidates router
     - _Requirements: 2.1_
 
-  - [ ] 3.2 Implement fit score calculation
+  - [x] 3.2 Implement fit score calculation
     - Создать `packages/ai/src/agents/recruiter/fit-score.ts`
     - Реализовать расчёт fitScore на основе resumeScore и interviewScore
     - Добавить валидацию диапазона [0, 100]
@@ -61,7 +61,7 @@
     - **Property 7: Fit Score Range Invariant**
     - **Validates: Requirements 2.5**
 
-  - [ ] 3.3 Implement candidate result formatting
+  - [x] 3.3 Implement candidate result formatting
     - Добавить whySelected explanation для каждого кандидата
     - Добавить availability detection
     - Добавить riskFactors analysis
