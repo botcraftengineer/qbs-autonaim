@@ -66,7 +66,7 @@ export {
   type PinHandlerInput,
   type PinHandlerOutput,
 } from "./pin-handler";
-// Recruiter Agent
+// Агент-рекрутер
 export {
   ActionChainBuilder,
   type ActionCompleteEvent,
@@ -122,7 +122,7 @@ export {
   type RecruiterAgentContext,
   RecruiterAgentOrchestrator,
   type RecruiterCompanySettings,
-  // Context Management
+  // Управление контекстом
   RecruiterContextManager,
   type RecruiterConversationContext,
   type RecruiterDecision,
@@ -135,7 +135,7 @@ export {
   type RecruiterOrchestratorInput,
   type RecruiterOrchestratorOutput,
   type RecruiterStreamEvent,
-  // Streaming
+  // Потоковая передача
   RecruiterStreamingResponse,
   type RuleAction,
   type RuleActionType,
