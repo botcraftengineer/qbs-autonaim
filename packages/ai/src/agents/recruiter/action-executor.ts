@@ -168,6 +168,7 @@ export class ActionExecutor {
         candidate.id,
         rule.action,
         executedAction.explanation,
+        workspaceId,
       );
 
       this.executedActions.set(executedAction.id, executedAction);
@@ -228,9 +229,9 @@ export class ActionExecutor {
     this.logToAudit(executedAction, workspaceId, userId);
 
     // Обновляем статистику правила
-    ruleEngine.updateRuleStats(rule.id, {
-      executed: rule.stats.executed + 1,
-    });
+    ruleEngine.updateRuleStats(rule.id, (prev) => ({
+      executed: prev.executed + 1,
+    }));
 
     // Увеличиваем счётчик действий
     ruleEngine.incrementActionCount(workspaceId);
@@ -290,9 +291,9 @@ export class ActionExecutor {
     this.logToAudit(executedAction, workspaceId, userId);
 
     if (result.success) {
-      ruleEngine.updateRuleStats(rule.id, {
-        executed: rule.stats.executed + 1,
-      });
+      ruleEngine.updateRuleStats(rule.id, (prev) => ({
+        executed: prev.executed + 1,
+      }));
       ruleEngine.incrementActionCount(workspaceId);
     }
 
@@ -356,9 +357,9 @@ export class ActionExecutor {
     const ruleEngine = getRuleEngine();
     const rule = ruleEngine.getRule(executedAction.ruleId);
     if (rule) {
-      ruleEngine.updateRuleStats(rule.id, {
-        undone: rule.stats.undone + 1,
-      });
+      ruleEngine.updateRuleStats(rule.id, (prev) => ({
+        undone: prev.undone + 1,
+      }));
     }
 
     // Логируем отмену
@@ -436,8 +437,8 @@ export class ActionExecutor {
   /**
    * Получает pending approvals
    */
-  getPendingApprovals(): PendingApproval[] {
-    return this.autonomyHandler.getPendingApprovals();
+  getPendingApprovals(workspaceId?: string): PendingApproval[] {
+    return this.autonomyHandler.getPendingApprovals(workspaceId);
   }
 
   /**

@@ -232,6 +232,9 @@ export function useRecruiterAgent({
       actionsRef.current = [];
       traceRef.current = [];
 
+      // Захватываем историю до добавления нового сообщения
+      const priorHistory = history.slice(-maxHistoryLength);
+
       // Добавляем сообщение пользователя в историю
       const userMessage: ConversationMessage = {
         role: "user",
@@ -263,7 +266,7 @@ export function useRecruiterAgent({
               workspaceId,
               message: content,
               vacancyId,
-              conversationHistory: history.slice(-maxHistoryLength),
+              conversationHistory: priorHistory,
             },
           }),
           signal: abortControllerRef.current.signal,

@@ -7,6 +7,8 @@
  * Requirements: 7.5 - THE AI_Agent SHALL адаптировать стиль общения под настройки компании
  */
 
+import { z } from "zod";
+
 import type { CompanySettingsData } from "./context";
 import type { RecruiterCompanySettings } from "./types";
 
@@ -144,6 +146,41 @@ export function generateCompanyContextForPrompt(
 }
 
 /**
+ * Zod-схема для валидации настроек компании рекрутера
+ */
+const RecruiterCompanySettingsSchema = z.object({
+  name: z
+    .string({ required_error: "Название компании обязательно" })
+    .trim()
+    .min(1, "Название компании обязательно"),
+  description: z.string().optional(),
+  botName: z
+    .string()
+    .max(50, "Имя бота не должно превышать 50 символов")
+    .optional(),
+  botRole: z
+    .string()
+    .max(100, "Роль бота не должна превышать 100 символов")
+    .optional(),
+  communicationStyle: z
+    .enum(["formal", "casual", "professional"], {
+      errorMap: () => ({
+        message:
+          "Стиль коммуникации должен быть: formal, casual или professional",
+      }),
+    })
+    .optional(),
+  defaultAutonomyLevel: z
+    .enum(["advise", "confirm", "autonomous"], {
+      errorMap: () => ({
+        message:
+          "Уровень автономности должен быть: advise, confirm или autonomous",
+      }),
+    })
+    .optional(),
+});
+
+/**
  * Валидирует настройки компании
  *
  * @param settings - Настройки для валидации
@@ -153,40 +190,14 @@ export function validateCompanySettings(settings: RecruiterCompanySettings): {
   valid: boolean;
   errors: string[];
 } {
-  const errors: string[] = [];
+  const result = RecruiterCompanySettingsSchema.safeParse(settings);
 
-  if (!settings.name || settings.name.trim().length === 0) {
-    errors.push("Название компании обязательно");
-  }
-
-  if (settings.botName && settings.botName.length > 50) {
-    errors.push("Имя бота не должно превышать 50 символов");
-  }
-
-  if (settings.botRole && settings.botRole.length > 100) {
-    errors.push("Роль бота не должна превышать 100 символов");
-  }
-
-  if (
-    settings.communicationStyle &&
-    !["formal", "casual", "professional"].includes(settings.communicationStyle)
-  ) {
-    errors.push(
-      "Стиль коммуникации должен быть: formal, casual или professional",
-    );
-  }
-
-  if (
-    settings.defaultAutonomyLevel &&
-    !["advise", "confirm", "autonomous"].includes(settings.defaultAutonomyLevel)
-  ) {
-    errors.push(
-      "Уровень автономности должен быть: advise, confirm или autonomous",
-    );
+  if (result.success) {
+    return { valid: true, errors: [] };
   }
 
   return {
-    valid: errors.length === 0,
-    errors,
+    valid: false,
+    errors: result.error.errors.map((e) => e.message),
   };
 }

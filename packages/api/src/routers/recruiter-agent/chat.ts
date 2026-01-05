@@ -7,11 +7,8 @@
 
 import {
   type ConversationMessage,
-  createFeedbackHistory,
   mapDBSettingsToRecruiterSettings,
   RecruiterAgentOrchestrator,
-  type RecruiterFeedbackEntry,
-  type RecruiterFeedbackStats,
   type RecruiterStreamEvent,
 } from "@qbs-autonaim/ai";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
@@ -19,10 +16,6 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import {
-  calculateUserFeedbackStats,
-  loadUserFeedbackHistory,
-} from "./feedback";
 import { checkRateLimit, checkWorkspaceAccess } from "./middleware";
 
 /**
@@ -112,17 +105,8 @@ export const chat = protectedProcedure
         : null,
     );
 
-    // Загружаем историю feedback для влияния на рекомендации (Requirements: 10.2)
-    const [feedbackEntries, feedbackStats] = await Promise.all([
-      loadUserFeedbackHistory(ctx.db, workspaceId, ctx.session.user.id, 50),
-      calculateUserFeedbackStats(ctx.db, workspaceId, ctx.session.user.id),
-    ]);
-
-    // Преобразуем в формат для агента
-    const feedbackHistory = createFeedbackHistory(
-      feedbackEntries as RecruiterFeedbackEntry[],
-      feedbackStats as RecruiterFeedbackStats,
-    );
+    // TODO: Загрузка и использование feedback истории (Requirements: 10.2)
+    // Требует обновления интерфейса RecruiterOrchestratorInput
 
     // Создаём оркестратор
     const model = getAIModel();
@@ -141,11 +125,45 @@ export const chat = protectedProcedure
       metadata: msg.metadata,
     }));
 
-    // Выполняем запрос с streaming
-    const events: RecruiterStreamEvent[] = [];
+    // Выполняем запрос с streaming в реальном времени
+    // Используем async queue для передачи событий из callback в generator
+    const eventQueue: RecruiterStreamEvent[] = [];
+    let resolveNext: ((value: RecruiterStreamEvent | null) => void) | null =
+      null;
+    let isComplete = false;
 
-    try {
-      const output = await orchestrator.executeWithStreaming(
+    // Функция для добавления события в очередь
+    const enqueueEvent = (event: RecruiterStreamEvent) => {
+      if (resolveNext) {
+        // Если есть ожидающий consumer, отдаем событие сразу
+        resolveNext(event);
+        resolveNext = null;
+      } else {
+        // Иначе добавляем в очередь
+        eventQueue.push(event);
+      }
+    };
+
+    // Функция для получения следующего события
+    const dequeueEvent = (): Promise<RecruiterStreamEvent | null> => {
+      if (eventQueue.length > 0) {
+        // Если в очереди есть события, возвращаем первое
+        const nextEvent = eventQueue.shift();
+        return Promise.resolve(nextEvent ?? null);
+      }
+      if (isComplete) {
+        // Если streaming завершен и очередь пуста, возвращаем null
+        return Promise.resolve(null);
+      }
+      // Иначе ждем следующего события
+      return new Promise((resolve) => {
+        resolveNext = resolve;
+      });
+    };
+
+    // Запускаем executeWithStreaming асинхронно
+    const executionPromise = orchestrator
+      .executeWithStreaming(
         {
           message,
           workspaceId,
@@ -153,15 +171,36 @@ export const chat = protectedProcedure
           conversationHistory: history,
         },
         recruiterCompanySettings,
-        (event: RecruiterStreamEvent) => {
-          events.push(event);
-        },
-      );
+        enqueueEvent,
+      )
+      .then((output) => {
+        isComplete = true;
+        // Если есть ожидающий consumer, сигнализируем о завершении
+        if (resolveNext) {
+          resolveNext(null);
+          resolveNext = null;
+        }
+        return output;
+      })
+      .catch((error) => {
+        isComplete = true;
+        // Если есть ожидающий consumer, сигнализируем о завершении
+        if (resolveNext) {
+          resolveNext(null);
+          resolveNext = null;
+        }
+        throw error;
+      });
 
-      // Отправляем все события
-      for (const event of events) {
+    try {
+      // Стримим события в реальном времени
+      let event: RecruiterStreamEvent | null;
+      while ((event = await dequeueEvent()) !== null) {
         yield event;
       }
+
+      // Ждем завершения выполнения
+      const output = await executionPromise;
 
       // Логируем в audit log
       await ctx.auditLogger.logAccess({

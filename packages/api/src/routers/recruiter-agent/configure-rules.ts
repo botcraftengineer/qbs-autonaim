@@ -201,7 +201,7 @@ export const createRule = protectedProcedure
       userId: ctx.session.user.id,
       workspaceId,
       action: "CREATE",
-      resourceType: "VACANCY",
+      resourceType: "RULE",
       resourceId: rule.id,
       metadata: {
         type: "recruiter_agent_create_rule",
@@ -300,7 +300,7 @@ export const updateRule = protectedProcedure
       userId: ctx.session.user.id,
       workspaceId,
       action: "UPDATE",
-      resourceType: "VACANCY",
+      resourceType: "RULE",
       resourceId: ruleId,
       metadata: {
         type: "recruiter_agent_update_rule",
@@ -397,7 +397,7 @@ export const deleteRule = protectedProcedure
       userId: ctx.session.user.id,
       workspaceId,
       action: "DELETE",
-      resourceType: "VACANCY",
+      resourceType: "RULE",
       resourceId: ruleId,
       metadata: {
         type: "recruiter_agent_delete_rule",
@@ -535,7 +535,7 @@ export const toggleRule = protectedProcedure
       userId: ctx.session.user.id,
       workspaceId,
       action: "UPDATE",
-      resourceType: "VACANCY",
+      resourceType: "RULE",
       resourceId: ruleId,
       metadata: {
         type: enabled

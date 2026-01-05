@@ -27,24 +27,27 @@ import { VacancyAnalyticsAgent } from "./vacancy-analytics";
 export interface RecruiterOrchestratorFullConfig
   extends RecruiterOrchestratorConfig {
   model: LanguageModel;
-  langfuse?: Langfuse;
+  langfuse?: Langfuse | undefined;
 }
 
-let globalLangfuse: Langfuse | null = null;
+let globalLangfuse: Langfuse | undefined;
 
 /**
  * Получает или создает singleton инстанс Langfuse
+ * Возвращает undefined если ключи не настроены (graceful degradation)
  */
-function getLangfuseInstance(): Langfuse {
-  if (!globalLangfuse) {
+function getLangfuseInstance(): Langfuse | undefined {
+  if (globalLangfuse === undefined) {
     const secretKey = process.env.LANGFUSE_SECRET_KEY;
     const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
     const baseUrl = process.env.LANGFUSE_BASE_URL;
 
     if (!secretKey || !publicKey) {
-      throw new Error(
-        "LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY must be set",
+      console.warn(
+        "[Langfuse] LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY are not set. Tracing will be disabled.",
       );
+      globalLangfuse = undefined;
+      return undefined;
     }
 
     globalLangfuse = new Langfuse({
@@ -71,14 +74,14 @@ export class RecruiterAgentOrchestrator {
   private model: LanguageModel;
   private maxSteps: number;
   private maxConversationHistory: number;
-  private langfuse: Langfuse;
+  private langfuse: Langfuse | undefined;
   private enableStreaming: boolean;
 
   constructor(config: RecruiterOrchestratorFullConfig) {
     this.model = config.model;
     this.maxSteps = config.maxSteps || 10;
     this.maxConversationHistory = config.maxConversationHistory || 20;
-    this.langfuse = config.langfuse || getLangfuseInstance();
+    this.langfuse = config.langfuse ?? getLangfuseInstance();
     this.enableStreaming = config.enableStreaming ?? true;
   }
 
@@ -92,8 +95,8 @@ export class RecruiterAgentOrchestrator {
     const agentTrace: AgentTraceEntry[] = [];
     const actions: ExecutedAction[] = [];
 
-    // Создаем trace в Langfuse
-    const trace = this.langfuse.trace({
+    // Создаем trace в Langfuse (если доступен)
+    const trace = this.langfuse?.trace({
       name: "recruiter-agent-orchestrator",
       userId: input.workspaceId,
       metadata: {
@@ -150,7 +153,7 @@ export class RecruiterAgentOrchestrator {
         },
       });
 
-      await this.langfuse.flushAsync();
+      await this.langfuse?.flushAsync();
 
       return output;
     } catch (error) {
@@ -180,7 +183,7 @@ export class RecruiterAgentOrchestrator {
         },
       });
 
-      await this.langfuse.flushAsync();
+      await this.langfuse?.flushAsync();
 
       return output;
     }
@@ -204,8 +207,8 @@ export class RecruiterAgentOrchestrator {
       message: "Обрабатываю ваш запрос...",
     });
 
-    // Создаем trace в Langfuse
-    const trace = this.langfuse.trace({
+    // Создаем trace в Langfuse (если доступен)
+    const trace = this.langfuse?.trace({
       name: "recruiter-agent-orchestrator-streaming",
       userId: input.workspaceId,
       metadata: {
@@ -280,7 +283,7 @@ export class RecruiterAgentOrchestrator {
         },
       });
 
-      await this.langfuse.flushAsync();
+      await this.langfuse?.flushAsync();
 
       return output;
     } catch (error) {
@@ -319,7 +322,7 @@ export class RecruiterAgentOrchestrator {
         },
       });
 
-      await this.langfuse.flushAsync();
+      await this.langfuse?.flushAsync();
 
       return output;
     }
@@ -959,7 +962,7 @@ ${candidatesList}
     );
 
     // Парсим запрос для определения типа сообщения
-    const messageRequest = this.parseMessageRequest(input.message);
+    const messageRequest = this.parseMessageRequest(input.message, context);
 
     const result = await communicationAgent.execute(
       {
@@ -996,7 +999,10 @@ ${candidatesList}
   /**
    * Парсит запрос на генерацию сообщения
    */
-  private parseMessageRequest(message: string): {
+  private parseMessageRequest(
+    message: string,
+    context: RecruiterAgentContext,
+  ): {
     type: "greeting" | "clarification" | "invite" | "followup" | "rejection";
     candidate: { id: string; name: string };
     channel: "telegram" | "email" | "sms";
@@ -1050,10 +1056,36 @@ ${candidatesList}
     );
     const candidateName = nameMatch?.[1] || "Кандидат";
 
+    // Извлекаем ID кандидата из сообщения или контекста
+    let candidateId: string | undefined;
+
+    // Пытаемся найти UUID в сообщении
+    const uuidMatch = message.match(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i,
+    );
+    if (uuidMatch) {
+      candidateId = uuidMatch[0];
+    }
+
+    // Если не нашли в сообщении, пытаемся извлечь из контекста
+    if (!candidateId && context.candidateId) {
+      candidateId = context.candidateId;
+    }
+
+    // Если ID не найден, логируем предупреждение
+    if (!candidateId) {
+      console.warn(
+        "[RecruiterOrchestrator] candidateId not found in message or context. Message generation may fail.",
+        { message: message.substring(0, 100) },
+      );
+      // Используем временный ID с префиксом для отладки
+      candidateId = "missing-candidate-id";
+    }
+
     return {
       type,
       candidate: {
-        id: "candidate-from-context",
+        id: candidateId,
         name: candidateName,
       },
       channel,

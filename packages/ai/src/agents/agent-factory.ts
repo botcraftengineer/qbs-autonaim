@@ -21,27 +21,30 @@ import { WelcomeAgent } from "./welcome";
 
 export interface AgentFactoryConfig {
   model: LanguageModel;
-  langfuse?: Langfuse;
+  langfuse?: Langfuse | undefined;
   traceId?: string;
   maxSteps?: number;
 }
 
-let globalLangfuse: Langfuse | null = null;
+let globalLangfuse: Langfuse | undefined;
 
 /**
  * Получает или создает singleton инстанс Langfuse
+ * Возвращает undefined если ключи не настроены (graceful degradation)
  */
-function getLangfuseInstance(): Langfuse {
-  if (!globalLangfuse) {
+function getLangfuseInstance(): Langfuse | undefined {
+  if (globalLangfuse === undefined) {
     // Проверяем наличие переменных окружения
     const secretKey = env.LANGFUSE_SECRET_KEY;
     const publicKey = env.LANGFUSE_PUBLIC_KEY;
     const baseUrl = env.LANGFUSE_BASE_URL;
 
     if (!secretKey || !publicKey) {
-      throw new Error(
-        "LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY must be set in environment variables",
+      console.warn(
+        "[Langfuse] LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY are not set. Tracing will be disabled.",
       );
+      globalLangfuse = undefined;
+      return undefined;
     }
 
     globalLangfuse = new Langfuse({
@@ -59,12 +62,12 @@ function getLangfuseInstance(): Langfuse {
  */
 export class AgentFactory {
   private config: AgentFactoryConfig;
-  private langfuse: Langfuse;
+  private langfuse: Langfuse | undefined;
 
   constructor(config: AgentFactoryConfig) {
     this.config = config;
     // Используем переданный langfuse или создаем глобальный singleton
-    this.langfuse = config.langfuse || getLangfuseInstance();
+    this.langfuse = config.langfuse ?? getLangfuseInstance();
   }
 
   private getAgentConfig(overrides?: Partial<AgentConfig>): AgentConfig {

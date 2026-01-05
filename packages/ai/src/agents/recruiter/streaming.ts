@@ -295,10 +295,11 @@ export function createSSEStream(
   response: RecruiterStreamingResponse,
 ): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder();
+  let unsubscribe: (() => void) | undefined;
 
   return new ReadableStream({
     start(controller) {
-      const unsubscribe = response.subscribe((event) => {
+      unsubscribe = response.subscribe((event) => {
         const data = JSON.stringify(event);
         const sseMessage = `data: ${data}\n\n`;
         controller.enqueue(encoder.encode(sseMessage));
@@ -307,11 +308,9 @@ export function createSSEStream(
           controller.close();
         }
       });
-
-      // Cleanup при закрытии
-      return () => {
-        unsubscribe();
-      };
+    },
+    cancel() {
+      unsubscribe?.();
     },
   });
 }

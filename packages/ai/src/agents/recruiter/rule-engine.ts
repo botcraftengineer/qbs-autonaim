@@ -158,9 +158,14 @@ export interface CandidateRuleData {
 
 /**
  * Конвертирует CandidateResult в CandidateRuleData
+ * @param candidate - результат кандидата
+ * @param extra - дополнительные поля (salaryExpectation, experience, skills)
  */
 export function candidateResultToRuleData(
   candidate: CandidateResult,
+  extra?: Partial<
+    Pick<CandidateRuleData, "salaryExpectation" | "experience" | "skills">
+  >,
 ): CandidateRuleData {
   return {
     id: candidate.id,
@@ -168,6 +173,9 @@ export function candidateResultToRuleData(
     resumeScore: candidate.resumeScore,
     interviewScore: candidate.interviewScore,
     availability: candidate.availability.status,
+    salaryExpectation: extra?.salaryExpectation,
+    experience: extra?.experience,
+    skills: extra?.skills,
   };
 }
 
@@ -568,11 +576,15 @@ export class RuleEngine {
    */
   updateRuleStats(
     ruleId: string,
-    update: Partial<AutomationRule["stats"]>,
+    update:
+      | Partial<AutomationRule["stats"]>
+      | ((prev: AutomationRule["stats"]) => Partial<AutomationRule["stats"]>),
   ): void {
     const rule = this.rules.find((r) => r.id === ruleId);
     if (rule) {
-      rule.stats = { ...rule.stats, ...update };
+      const statsUpdate =
+        typeof update === "function" ? update(rule.stats) : update;
+      rule.stats = { ...rule.stats, ...statsUpdate };
       rule.updatedAt = new Date();
     }
   }
@@ -631,6 +643,7 @@ export class RuleEngine {
  */
 export interface PendingApproval {
   id: string;
+  workspaceId: string;
   ruleId: string;
   ruleName: string;
   candidateId: string;
@@ -650,6 +663,20 @@ export class AutonomyLevelHandler {
 
   constructor(approvalExpirationMinutes: number = 60) {
     this.approvalExpirationMinutes = approvalExpirationMinutes;
+  }
+
+  /**
+   * Обновляет время истечения для pending approvals
+   */
+  setApprovalExpirationMinutes(minutes: number): void {
+    this.approvalExpirationMinutes = minutes;
+  }
+
+  /**
+   * Получает текущее время истечения для pending approvals
+   */
+  getApprovalExpirationMinutes(): number {
+    return this.approvalExpirationMinutes;
   }
 
   /**
@@ -699,6 +726,7 @@ export class AutonomyLevelHandler {
     candidateId: string,
     action: RuleAction,
     explanation: string,
+    workspaceId: string,
   ): PendingApproval {
     const now = new Date();
     const expiresAt = new Date(now);
@@ -708,6 +736,7 @@ export class AutonomyLevelHandler {
 
     const approval: PendingApproval = {
       id: crypto.randomUUID(),
+      workspaceId,
       ruleId,
       ruleName,
       candidateId,
@@ -736,11 +765,17 @@ export class AutonomyLevelHandler {
   /**
    * Получает все pending approvals для workspace
    */
-  getPendingApprovals(): PendingApproval[] {
+  getPendingApprovals(workspaceId?: string): PendingApproval[] {
     this.cleanupExpired();
-    return Array.from(this.pendingApprovals.values()).filter(
+    const pendingApprovals = Array.from(this.pendingApprovals.values()).filter(
       (a) => a.status === "pending",
     );
+
+    if (workspaceId) {
+      return pendingApprovals.filter((a) => a.workspaceId === workspaceId);
+    }
+
+    return pendingApprovals;
   }
 
   /**
@@ -796,6 +831,7 @@ export class AutonomyLevelHandler {
     for (const [id, approval] of this.pendingApprovals) {
       if (this.isExpired(approval)) {
         approval.status = "expired";
+        this.pendingApprovals.delete(id);
       }
     }
   }
@@ -835,6 +871,11 @@ export function getAutonomyHandler(
 ): AutonomyLevelHandler {
   if (!autonomyHandlerInstance) {
     autonomyHandlerInstance = new AutonomyLevelHandler(
+      approvalExpirationMinutes,
+    );
+  } else if (approvalExpirationMinutes !== undefined) {
+    // Update the expiration time if a new value is provided
+    autonomyHandlerInstance.setApprovalExpirationMinutes(
       approvalExpirationMinutes,
     );
   }

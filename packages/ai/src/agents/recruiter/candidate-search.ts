@@ -395,17 +395,17 @@ ${historyText}
     }
 
     // Проверяем низкий resumeScore
-    if (candidate.resumeScore < 50) {
-      risks.push({
-        type: "low_resume_score",
-        description: "Низкая оценка резюме",
-        severity: "medium",
-      });
-    } else if (candidate.resumeScore < 30) {
+    if (candidate.resumeScore < 30) {
       risks.push({
         type: "very_low_resume_score",
         description: "Очень низкая оценка резюме",
         severity: "high",
+      });
+    } else if (candidate.resumeScore < 50) {
+      risks.push({
+        type: "low_resume_score",
+        description: "Низкая оценка резюме",
+        severity: "medium",
       });
     }
 

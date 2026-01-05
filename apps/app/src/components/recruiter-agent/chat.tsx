@@ -109,9 +109,9 @@ export function RecruiterAgentChat({
       {/* Сообщения */}
       <RecruiterMessages
         history={history}
-        document={document}
         status={status}
         currentAction={currentAction}
+        sendMessage={sendMessage}
       />
 
       {/* Ввод */}
@@ -127,15 +127,16 @@ export function RecruiterAgentChat({
 
 interface RecruiterMessagesProps {
   history: ConversationMessage[];
-  document: RecruiterAgentDocument | null;
   status: RecruiterAgentStatus;
   currentAction: { id: string; type: string; progress: number } | null;
+  sendMessage?: (message: string) => Promise<void>;
 }
 
 function RecruiterMessages({
   history,
   status,
   currentAction,
+  sendMessage,
 }: RecruiterMessagesProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isStreaming = status === "streaming" || status === "submitted";
@@ -145,7 +146,7 @@ function RecruiterMessages({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  });
+  }, [history]);
 
   if (history.length === 0) {
     return (
@@ -161,9 +162,20 @@ function RecruiterMessages({
           описание или написать сообщение кандидату. Просто спросите!
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
-          <SuggestionChip text="Найди 5 кандидатов, готовых выйти за 2 недели" />
-          <SuggestionChip text="Почему у вакансии мало откликов?" />
-          <SuggestionChip text="Напиши приглашение на интервью" />
+          <SuggestionChip
+            text="Найди 5 кандидатов, готовых выйти за 2 недели"
+            onClick={() =>
+              sendMessage?.("Найди 5 кандидатов, готовых выйти за 2 недели")
+            }
+          />
+          <SuggestionChip
+            text="Почему у вакансии мало откликов?"
+            onClick={() => sendMessage?.("Почему у вакансии мало откликов?")}
+          />
+          <SuggestionChip
+            text="Напиши приглашение на интервью"
+            onClick={() => sendMessage?.("Напиши приглашение на интервью")}
+          />
         </div>
       </div>
     );
@@ -317,10 +329,17 @@ function ActionProgressIndicator({
   );
 }
 
-function SuggestionChip({ text }: { text: string }) {
+function SuggestionChip({
+  text,
+  onClick,
+}: {
+  text: string;
+  onClick?: () => void;
+}) {
   return (
     <button
       type="button"
+      onClick={onClick}
       className="rounded-full border bg-background px-3 py-1.5 text-sm transition-colors hover:bg-muted"
     >
       {text}

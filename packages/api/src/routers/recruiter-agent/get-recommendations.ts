@@ -155,7 +155,7 @@ export const getPendingApprovals = protectedProcedure
 
     const actionExecutor = getActionExecutor();
     const pendingApprovals: PendingApproval[] =
-      actionExecutor.getPendingApprovals();
+      actionExecutor.getPendingApprovals(workspaceId);
 
     return {
       approvals: pendingApprovals.map((approval: PendingApproval) => ({

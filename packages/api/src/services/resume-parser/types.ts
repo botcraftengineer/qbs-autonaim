@@ -36,16 +36,27 @@ export interface ResumeInput {
 /**
  * Результат валидации формата файла
  */
-export interface FormatValidationResult {
-  /** Валиден ли формат */
-  isValid: boolean;
-  /** Определённый тип файла (если валиден) */
-  fileType?: ResumeFileType;
-  /** Сообщение об ошибке (если невалиден) */
-  error?: string;
-  /** Список поддерживаемых форматов */
-  supportedFormats: ResumeFileType[];
-}
+export type FormatValidationResult =
+  | {
+      /** Валиден ли формат */
+      isValid: true;
+      /** Определённый тип файла */
+      fileType: ResumeFileType;
+      /** Сообщение об ошибке отсутствует */
+      error?: never;
+      /** Список поддерживаемых форматов */
+      supportedFormats: ResumeFileType[];
+    }
+  | {
+      /** Валиден ли формат */
+      isValid: false;
+      /** Тип файла не определён */
+      fileType?: never;
+      /** Сообщение об ошибке */
+      error: string;
+      /** Список поддерживаемых форматов */
+      supportedFormats: ResumeFileType[];
+    };
 
 /**
  * Коды ошибок парсера резюме

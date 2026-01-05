@@ -36,24 +36,27 @@ export interface OrchestratorOutput {
 export interface OrchestratorConfig {
   model: LanguageModel;
   maxSteps?: number;
-  langfuse?: Langfuse;
+  langfuse?: Langfuse | undefined;
 }
 
-let globalLangfuse: Langfuse | null = null;
+let globalLangfuse: Langfuse | undefined;
 
 /**
  * Получает или создает singleton инстанс Langfuse для оркестратора
+ * Возвращает undefined если ключи не настроены (graceful degradation)
  */
-function getLangfuseInstance(): Langfuse {
-  if (!globalLangfuse) {
+function getLangfuseInstance(): Langfuse | undefined {
+  if (globalLangfuse === undefined) {
     const secretKey = process.env.LANGFUSE_SECRET_KEY;
     const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
     const baseUrl = process.env.LANGFUSE_BASE_URL;
 
     if (!secretKey || !publicKey) {
-      throw new Error(
-        "LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY must be set in environment variables",
+      console.warn(
+        "[Langfuse] LANGFUSE_SECRET_KEY and LANGFUSE_PUBLIC_KEY are not set. Tracing will be disabled.",
       );
+      globalLangfuse = undefined;
+      return undefined;
     }
 
     globalLangfuse = new Langfuse({
@@ -74,12 +77,12 @@ function getLangfuseInstance(): Langfuse {
 export class InterviewOrchestrator {
   private model: LanguageModel;
   private maxSteps: number;
-  private langfuse: Langfuse;
+  private langfuse: Langfuse | undefined;
 
   constructor(config: OrchestratorConfig) {
     this.model = config.model;
     this.maxSteps = config.maxSteps || 10;
-    this.langfuse = config.langfuse || getLangfuseInstance();
+    this.langfuse = config.langfuse ?? getLangfuseInstance();
   }
 
   async execute(
@@ -88,7 +91,7 @@ export class InterviewOrchestrator {
   ): Promise<OrchestratorOutput> {
     const agentTrace: OrchestratorOutput["agentTrace"] = [];
 
-    const trace = this.langfuse.trace({
+    const trace = this.langfuse?.trace({
       name: "interview-orchestrator",
       userId: context.candidateId,
       metadata: {
@@ -277,7 +280,7 @@ export class InterviewOrchestrator {
         },
       });
 
-      await this.langfuse.flushAsync();
+      await this.langfuse?.flushAsync();
 
       return output;
     }
