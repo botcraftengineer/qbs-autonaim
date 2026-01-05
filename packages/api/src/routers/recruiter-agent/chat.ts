@@ -2,14 +2,14 @@
  * Chat procedure для AI-ассистента рекрутера
  *
  * Реализует streaming диалог с агентом через SSE
- * Requirements: 1.1, 1.2, 1.3, 10.2
+ * Requirements: 1.1, 1.2, 1.3, 7.5, 10.2
  */
 
 import {
   type ConversationMessage,
   createFeedbackHistory,
+  mapDBSettingsToRecruiterSettings,
   RecruiterAgentOrchestrator,
-  type RecruiterCompanySettings,
   type RecruiterFeedbackEntry,
   type RecruiterFeedbackStats,
   type RecruiterStreamEvent,
@@ -92,18 +92,25 @@ export const chat = protectedProcedure
       });
     }
 
-    // Загружаем настройки компании
+    // Загружаем настройки компании (Requirements: 7.5)
     const companySettings = await ctx.db.query.companySettings.findFirst({
       where: (cs, { eq }) => eq(cs.workspaceId, workspaceId),
     });
 
-    const recruiterCompanySettings: RecruiterCompanySettings = {
-      botName: companySettings?.botName ?? undefined,
-      botRole: companySettings?.botRole ?? undefined,
-      name: companySettings?.name ?? undefined,
-      description: companySettings?.description ?? undefined,
-      communicationStyle: "professional",
-    };
+    // Преобразуем настройки из БД в формат для агентов
+    const recruiterCompanySettings = mapDBSettingsToRecruiterSettings(
+      companySettings
+        ? {
+            id: companySettings.id,
+            workspaceId: companySettings.workspaceId,
+            name: companySettings.name,
+            website: companySettings.website,
+            description: companySettings.description,
+            botName: companySettings.botName,
+            botRole: companySettings.botRole,
+          }
+        : null,
+    );
 
     // Загружаем историю feedback для влияния на рекомендации (Requirements: 10.2)
     const [feedbackEntries, feedbackStats] = await Promise.all([

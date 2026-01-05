@@ -235,7 +235,7 @@
     - Добавить визуализацию market comparison
     - _Requirements: 3.2, 3.4_
 
-- [-] 13. Implement Feedback System
+- [x] 13. Implement Feedback System
   - [x] 13.1 Create feedback API
     - Добавить submitFeedback procedure в router
     - Реализовать сохранение feedback в БД
@@ -245,7 +245,7 @@
     - **Property 21: Feedback Persistence**
     - **Validates: Requirements 10.1**
 
-  - [ ] 13.2 Implement feedback influence
+  - [x] 13.2 Implement feedback influence
     - Добавить загрузку feedback history в контекст агента
     - Модифицировать recommendations на основе feedback
     - _Requirements: 10.2_
@@ -254,7 +254,7 @@
     - **Property 22: Feedback Influence**
     - **Validates: Requirements 10.2**
 
-  - [ ] 13.3 Implement quality metrics
+  - [x] 13.3 Implement quality metrics
     - Добавить расчёт acceptance/rejection rate
     - Добавить API для получения метрик
     - _Requirements: 10.4_
@@ -263,8 +263,8 @@
     - **Property 23: Quality Metrics Calculation**
     - **Validates: Requirements 10.4**
 
-- [ ] 14. Implement Company Settings Integration
-  - [ ] 14.1 Load company settings in orchestrator
+- [x] 14. Implement Company Settings Integration
+  - [x] 14.1 Load company settings in orchestrator
     - Загружать companySettings из БД
     - Передавать в контекст всех агентов
     - _Requirements: 7.5_
@@ -273,7 +273,7 @@
     - **Property 17: Company Settings Adaptation**
     - **Validates: Requirements 7.5**
 
-- [ ] 15. Final checkpoint - Integration testing
+- [x] 15. Final checkpoint - Integration testing
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ]* 16. Write E2E tests
