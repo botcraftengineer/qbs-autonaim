@@ -1207,7 +1207,7 @@ ${candidatesList}
 
     return {
       // BaseAgentContext fields
-      candidateId: undefined,
+      candidateId: input.candidateId,
       conversationId: input.workspaceId,
       conversationHistory: limitedHistory.map((msg) => ({
         sender: msg.role === "user" ? ("CANDIDATE" as const) : ("BOT" as const),

@@ -146,9 +146,10 @@ export class MarketAnalyticsService {
     }
 
     const salaryDiff = vacancySalary - marketData.medianSalary;
-    const salaryDiffPercent = marketData.medianSalary > 0
-      ? Math.round((salaryDiff / marketData.medianSalary) * 100)
-      : 0;
+    const salaryDiffPercent =
+      marketData.medianSalary > 0
+        ? Math.round((salaryDiff / marketData.medianSalary) * 100)
+        : 0;
     const salaryPercentile = this.calculatePercentile(
       vacancySalary,
       marketData.salary,
@@ -567,6 +568,11 @@ export class MarketAnalyticsService {
         salary >= current.salary &&
         salary <= next.salary
       ) {
+        // Guard against division by zero when salaries are equal
+        if (next.salary === current.salary) {
+          return Math.round((current.percentile + next.percentile) / 2);
+        }
+
         const ratio =
           (salary - current.salary) / (next.salary - current.salary);
         return Math.round(

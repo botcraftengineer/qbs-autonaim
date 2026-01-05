@@ -7,6 +7,7 @@
  * - Три уровня автономности: advise, confirm, autonomous
  */
 
+import { v4 as uuidv4 } from "uuid";
 import type { CandidateResult } from "./types";
 
 /**
@@ -388,6 +389,9 @@ export class RuleEngine {
    * Добавляет правило
    */
   addRule(rule: AutomationRule): void {
+    // Валидируем правило перед добавлением
+    this.validateRule(rule);
+
     // Проверяем, что правило с таким ID не существует
     const existingIndex = this.rules.findIndex((r) => r.id === rule.id);
     if (existingIndex >= 0) {
@@ -397,6 +401,235 @@ export class RuleEngine {
     }
     // Сортируем по приоритету (высший приоритет первым)
     this.rules.sort((a, b) => b.priority - a.priority);
+  }
+
+  /**
+   * Валидирует правило перед добавлением
+   */
+  private validateRule(rule: AutomationRule): void {
+    // Валидируем условие
+    this.validateCondition(rule.condition);
+
+    // Валидируем действие
+    this.validateAction(rule.action);
+  }
+
+  /**
+   * Валидирует условие (простое или составное)
+   */
+  private validateCondition(
+    condition: RuleCondition | CompositeCondition,
+  ): void {
+    if (isCompositeCondition(condition)) {
+      // Валидируем составное условие
+      if (!condition.conditions || condition.conditions.length === 0) {
+        throw new Error(
+          `Composite condition (${condition.type}) must have at least one condition`,
+        );
+      }
+
+      // Рекурсивно валидируем вложенные условия
+      for (const subCondition of condition.conditions) {
+        this.validateCondition(subCondition);
+      }
+    } else {
+      // Валидируем простое условие
+      this.validateSimpleCondition(condition);
+    }
+  }
+
+  /**
+   * Валидирует простое условие
+   */
+  private validateSimpleCondition(condition: RuleCondition): void {
+    const { field, operator, value } = condition;
+
+    // Определяем числовые поля
+    const numericFields: RuleConditionField[] = [
+      "fitScore",
+      "resumeScore",
+      "interviewScore",
+      "salaryExpectation",
+      "experience",
+    ];
+
+    // Определяем строковые поля
+    const stringFields: RuleConditionField[] = ["availability"];
+
+    // Определяем поля-массивы
+    const arrayFields: RuleConditionField[] = ["skills"];
+
+    // Числовые операторы
+    const numericOperators: RuleConditionOperator[] = [
+      ">",
+      "<",
+      "=",
+      ">=",
+      "<=",
+      "!=",
+    ];
+
+    // Строковые операторы
+    const stringOperators: RuleConditionOperator[] = [
+      "=",
+      "!=",
+      "contains",
+      "not_contains",
+    ];
+
+    // Операторы для массивов
+    const arrayOperators: RuleConditionOperator[] = [
+      "contains",
+      "not_contains",
+    ];
+
+    // Валидация числовых полей
+    if (numericFields.includes(field)) {
+      if (!numericOperators.includes(operator)) {
+        throw new Error(
+          `Field "${field}" requires a numeric operator (>, <, =, >=, <=, !=), got "${operator}"`,
+        );
+      }
+
+      if (typeof value !== "number") {
+        throw new Error(
+          `Field "${field}" requires a numeric value, got ${typeof value}`,
+        );
+      }
+
+      // Дополнительная валидация для fitScore и resumeScore (0-100)
+      if (
+        (field === "fitScore" || field === "resumeScore") &&
+        (value < 0 || value > 100)
+      ) {
+        throw new Error(
+          `Field "${field}" must be between 0 and 100, got ${value}`,
+        );
+      }
+    }
+
+    // Валидация строковых полей
+    if (stringFields.includes(field)) {
+      if (!stringOperators.includes(operator)) {
+        throw new Error(
+          `Field "${field}" requires a string operator (=, !=, contains, not_contains), got "${operator}"`,
+        );
+      }
+
+      if (typeof value !== "string") {
+        throw new Error(
+          `Field "${field}" requires a string value, got ${typeof value}`,
+        );
+      }
+
+      // Валидация availability значений
+      if (field === "availability") {
+        const validAvailability = [
+          "immediate",
+          "2_weeks",
+          "1_month",
+          "unknown",
+        ];
+        if (!validAvailability.includes(value)) {
+          throw new Error(
+            `Field "availability" must be one of: ${validAvailability.join(", ")}, got "${value}"`,
+          );
+        }
+      }
+    }
+
+    // Валидация полей-массивов
+    if (arrayFields.includes(field)) {
+      if (!arrayOperators.includes(operator)) {
+        throw new Error(
+          `Field "${field}" requires an array operator (contains, not_contains), got "${operator}"`,
+        );
+      }
+
+      if (typeof value !== "string" && !Array.isArray(value)) {
+        throw new Error(
+          `Field "${field}" requires a string or array value, got ${typeof value}`,
+        );
+      }
+
+      if (Array.isArray(value) && value.length === 0) {
+        throw new Error(`Field "${field}" array value cannot be empty`);
+      }
+    }
+  }
+
+  /**
+   * Валидирует действие правила
+   */
+  private validateAction(action: RuleAction): void {
+    const { type, params } = action;
+
+    // Валидация параметров для каждого типа действия
+    switch (type) {
+      case "tag":
+        if (!params?.tag) {
+          throw new Error(
+            'Action type "tag" requires params.tag to be specified',
+          );
+        }
+        if (typeof params.tag !== "string" || params.tag.trim() === "") {
+          throw new Error(
+            'Action type "tag" requires params.tag to be a non-empty string',
+          );
+        }
+        break;
+
+      case "notify": {
+        if (!params?.notificationChannel) {
+          throw new Error(
+            'Action type "notify" requires params.notificationChannel to be specified',
+          );
+        }
+        const validChannels = ["email", "telegram", "sms"];
+        if (!validChannels.includes(params.notificationChannel)) {
+          throw new Error(
+            `Action type "notify" requires params.notificationChannel to be one of: ${validChannels.join(", ")}, got "${params.notificationChannel}"`,
+          );
+        }
+        break;
+      }
+
+      case "invite":
+      case "clarify":
+        // Опциональная валидация messageTemplate
+        if (params?.messageTemplate !== undefined) {
+          if (
+            typeof params.messageTemplate !== "string" ||
+            params.messageTemplate.trim() === ""
+          ) {
+            throw new Error(
+              `Action type "${type}" params.messageTemplate must be a non-empty string if provided`,
+            );
+          }
+        }
+        break;
+
+      case "reject":
+        // Опциональная валидация reason
+        if (params?.reason !== undefined) {
+          if (
+            typeof params.reason !== "string" ||
+            params.reason.trim() === ""
+          ) {
+            throw new Error(
+              'Action type "reject" params.reason must be a non-empty string if provided',
+            );
+          }
+        }
+        break;
+
+      case "pause_vacancy":
+        // Нет обязательных параметров
+        break;
+
+      default:
+        throw new Error(`Unknown action type: ${type}`);
+    }
   }
 
   /**
@@ -597,7 +830,7 @@ export class RuleEngine {
   ): AutomationRule {
     return {
       ...params,
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       stats: {
         triggered: 0,
         executed: 0,
@@ -660,9 +893,17 @@ export interface PendingApproval {
 export class AutonomyLevelHandler {
   private pendingApprovals: Map<string, PendingApproval> = new Map();
   private approvalExpirationMinutes: number;
+  private cleanupIntervalId?: ReturnType<typeof setInterval>;
 
   constructor(approvalExpirationMinutes: number = 60) {
     this.approvalExpirationMinutes = approvalExpirationMinutes;
+    // Run cleanup every 5 minutes
+    this.cleanupIntervalId = setInterval(
+      () => {
+        this.cleanupExpired();
+      },
+      5 * 60 * 1000,
+    );
   }
 
   /**
@@ -735,7 +976,7 @@ export class AutonomyLevelHandler {
     );
 
     const approval: PendingApproval = {
-      id: crypto.randomUUID(),
+      id: uuidv4(),
       workspaceId,
       ruleId,
       ruleName,
@@ -758,6 +999,8 @@ export class AutonomyLevelHandler {
     const approval = this.pendingApprovals.get(approvalId);
     if (approval && this.isExpired(approval)) {
       approval.status = "expired";
+      this.pendingApprovals.delete(approvalId);
+      return undefined;
     }
     return approval;
   }
@@ -848,6 +1091,16 @@ export class AutonomyLevelHandler {
    */
   clearAll(): void {
     this.pendingApprovals.clear();
+  }
+
+  /**
+   * Останавливает периодическую очистку (для тестов и cleanup)
+   */
+  destroy(): void {
+    if (this.cleanupIntervalId) {
+      clearInterval(this.cleanupIntervalId);
+      this.cleanupIntervalId = undefined;
+    }
   }
 }
 

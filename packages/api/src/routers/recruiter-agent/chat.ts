@@ -49,6 +49,7 @@ const chatInputSchema = z.object({
   workspaceId: workspaceIdSchema,
   message: z.string().min(1).max(5000),
   vacancyId: z.string().optional(),
+  candidateId: z.string().optional(),
   conversationHistory: z.array(conversationMessageSchema).max(20).default([]),
 });
 
@@ -58,7 +59,13 @@ const chatInputSchema = z.object({
 export const chat = protectedProcedure
   .input(chatInputSchema)
   .subscription(async function* ({ input, ctx }) {
-    const { workspaceId, message, vacancyId, conversationHistory } = input;
+    const {
+      workspaceId,
+      message,
+      vacancyId,
+      candidateId,
+      conversationHistory,
+    } = input;
 
     // Проверка доступа к workspace
     const hasAccess = await checkWorkspaceAccess(
@@ -168,6 +175,7 @@ export const chat = protectedProcedure
           message,
           workspaceId,
           vacancyId,
+          candidateId,
           conversationHistory: history,
         },
         recruiterCompanySettings,

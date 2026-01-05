@@ -24,11 +24,13 @@
     "ai": "6.0.5",
     "langfuse": "3.38.6",
     "string-strip-html": "^13.5.0",
+    "uuid": "^13.0.0",
     "zod": "4.3.4"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/node": "25.0.3",
+    "@types/uuid": "^11.0.0",
     "tsdown": "0.18.4",
     "typescript": "5.9.3"
   }

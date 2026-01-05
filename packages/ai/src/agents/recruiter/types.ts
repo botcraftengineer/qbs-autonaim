@@ -104,6 +104,7 @@ export interface RecruiterOrchestratorInput {
   message: string;
   workspaceId: string;
   vacancyId?: string;
+  candidateId?: string;
   conversationHistory: ConversationMessage[];
 }
 
