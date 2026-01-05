@@ -9,6 +9,25 @@ export {
   type CandidateSearchInput,
   type CandidateSearchOutput,
 } from "./candidate-search";
+// Communication Agent
+export {
+  CommunicationAgent,
+  type CommunicationInput,
+  type CommunicationOutput,
+  type GeneratedMessage,
+  type MessageChannel,
+  type MessageLog,
+  MessageLogger,
+  type MessageType,
+} from "./communication";
+// Content Generator Agent
+export {
+  ContentGeneratorAgent,
+  type ContentGeneratorInput,
+  type ContentGeneratorOutput,
+  type ContentType,
+  type ContentVariant,
+} from "./content-generator";
 // Context Management
 export {
   type CompanySettingsData,
@@ -38,13 +57,24 @@ export {
   type IntentClassifierInput,
   type IntentClassifierOutput,
 } from "./intent-classifier";
-
+// Market Analytics
+export {
+  type CompetitorVacancy,
+  compareSalaryWithMarket,
+  type FullMarketData,
+  getMarketAnalyticsService,
+  getMarketDataForVacancy,
+  MarketAnalyticsService,
+  type MarketComparisonResult,
+  type MarketDataQuery,
+  type MarketTrend,
+  type SalaryMarketData,
+} from "./market-analytics";
 // Orchestrator
 export {
   RecruiterAgentOrchestrator,
   type RecruiterOrchestratorFullConfig,
 } from "./orchestrator";
-
 // Streaming
 export {
   ActionChainBuilder,
@@ -65,7 +95,6 @@ export {
   type StreamEventType,
   type TextChunkEvent,
 } from "./streaming";
-
 // Types
 export type {
   AgentTraceEntry,
@@ -86,3 +115,12 @@ export type {
   VacancyIssue,
   VacancyRecommendation,
 } from "./types";
+// Vacancy Analytics Agent
+export {
+  type MarketData,
+  VacancyAnalyticsAgent,
+  type VacancyAnalyticsInput,
+  type VacancyAnalyticsOutput,
+  type VacancyData as VacancyAnalyticsVacancyData,
+  type VacancyMetricsData,
+} from "./vacancy-analytics";

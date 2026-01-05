@@ -7,6 +7,8 @@ import type { LanguageModel } from "ai";
 import { Langfuse } from "langfuse";
 import type { AgentConfig } from "../base-agent";
 import { CandidateSearchAgent } from "./candidate-search";
+import { CommunicationAgent } from "./communication";
+import { ContentGeneratorAgent } from "./content-generator";
 import { IntentClassifierAgent } from "./intent-classifier";
 import type { RecruiterStreamEvent as StreamEvent } from "./streaming";
 import type {
@@ -18,7 +20,9 @@ import type {
   RecruiterOrchestratorConfig,
   RecruiterOrchestratorInput,
   RecruiterOrchestratorOutput,
+  VacancyAnalytics,
 } from "./types";
+import { VacancyAnalyticsAgent } from "./vacancy-analytics";
 
 export interface RecruiterOrchestratorFullConfig
   extends RecruiterOrchestratorConfig {
@@ -598,7 +602,7 @@ export class RecruiterAgentOrchestrator {
 
     // Извлекаем количество кандидатов
     const countMatch = message.match(/(\d+)\s*(кандидат|человек|специалист)/i);
-    if (countMatch && countMatch[1]) {
+    if (countMatch?.[1]) {
       limit = Math.min(parseInt(countMatch[1], 10), 50);
     }
 
@@ -613,7 +617,7 @@ export class RecruiterAgentOrchestrator {
 
     // Извлекаем минимальный fitScore
     const scoreMatch = message.match(/score\s*[>>=]\s*(\d+)/i);
-    if (scoreMatch && scoreMatch[1]) {
+    if (scoreMatch?.[1]) {
       filters.minFitScore = parseInt(scoreMatch[1], 10);
     }
 
@@ -671,62 +675,440 @@ ${candidatesList}
 
   /**
    * Обработчик анализа вакансии
-   * TODO: Будет реализован в задаче 4 (VacancyAnalyticsAgent)
+   * Использует VacancyAnalyticsAgent для анализа эффективности вакансии
    */
   private async handleAnalyzeVacancy(
-    _input: RecruiterOrchestratorInput,
-    _context: RecruiterAgentContext,
-    _traceId: string | undefined,
+    input: RecruiterOrchestratorInput,
+    context: RecruiterAgentContext,
+    traceId: string | undefined,
     agentTrace: AgentTraceEntry[],
     _actions: ExecutedAction[],
   ): Promise<string> {
     agentTrace.push({
       agent: "VacancyAnalyticsAgent",
-      decision: "placeholder - agent not implemented yet",
+      decision: "executing vacancy analysis",
       timestamp: new Date(),
     });
 
-    return "Функция анализа вакансий будет доступна в следующем обновлении. Пока вы можете посмотреть статистику в разделе аналитики.";
+    const analyticsAgent = new VacancyAnalyticsAgent(
+      this.getAgentConfig(traceId),
+    );
+
+    // Определяем ID вакансии
+    const vacancyId = input.vacancyId || context.currentVacancyId;
+
+    if (!vacancyId) {
+      agentTrace.push({
+        agent: "VacancyAnalyticsAgent",
+        decision: "no vacancy ID provided",
+        timestamp: new Date(),
+      });
+
+      return "Для анализа вакансии необходимо указать вакансию. Пожалуйста, выберите вакансию или укажите её в запросе.";
+    }
+
+    const result = await analyticsAgent.execute(
+      {
+        vacancyId,
+        question: input.message,
+      },
+      context,
+    );
+
+    if (result.success && result.data) {
+      agentTrace.push({
+        agent: "VacancyAnalyticsAgent",
+        decision: `analysis complete: ${result.data.analysis.issues.length} issues found`,
+        timestamp: new Date(),
+      });
+
+      return this.formatAnalyticsResults(result.data);
+    }
+
+    agentTrace.push({
+      agent: "VacancyAnalyticsAgent",
+      decision: `analysis failed: ${result.error}`,
+      timestamp: new Date(),
+    });
+
+    return "Не удалось выполнить анализ вакансии. Пожалуйста, попробуйте еще раз или уточните запрос.";
+  }
+
+  /**
+   * Форматирует результаты анализа вакансии для отображения
+   */
+  private formatAnalyticsResults(data: {
+    analysis: VacancyAnalytics;
+    summary: string;
+    suggestions: string[];
+  }): string {
+    const parts: string[] = [];
+
+    // Summary уже содержит форматированный текст
+    parts.push(data.summary);
+
+    // Добавляем детальные рекомендации, если есть
+    if (data.suggestions.length > 0) {
+      parts.push("");
+      parts.push("**Что можно сделать:**");
+      data.suggestions.slice(0, 3).forEach((suggestion, index) => {
+        parts.push(`${index + 1}. ${suggestion}`);
+      });
+    }
+
+    parts.push("");
+    parts.push(
+      "Хотите узнать подробнее о какой-то проблеме или получить помощь с исправлением?",
+    );
+
+    return parts.join("\n");
   }
 
   /**
    * Обработчик генерации контента
-   * TODO: Будет реализован в задаче 6 (ContentGeneratorAgent)
+   * Использует ContentGeneratorAgent для создания текстов вакансий
    */
   private async handleGenerateContent(
-    _input: RecruiterOrchestratorInput,
-    _context: RecruiterAgentContext,
-    _traceId: string | undefined,
+    input: RecruiterOrchestratorInput,
+    context: RecruiterAgentContext,
+    traceId: string | undefined,
     agentTrace: AgentTraceEntry[],
     _actions: ExecutedAction[],
   ): Promise<string> {
     agentTrace.push({
       agent: "ContentGeneratorAgent",
-      decision: "placeholder - agent not implemented yet",
+      decision: "executing content generation",
       timestamp: new Date(),
     });
 
-    return "Функция генерации контента будет доступна в следующем обновлении.";
+    const contentAgent = new ContentGeneratorAgent(
+      this.getAgentConfig(traceId),
+    );
+
+    // Парсим запрос для определения типа контента
+    const contentRequest = this.parseContentRequest(input.message);
+
+    const result = await contentAgent.execute(
+      {
+        type: contentRequest.type,
+        position: contentRequest.position || "Специалист",
+        context: contentRequest.context,
+        tone:
+          context.recruiterCompanySettings?.communicationStyle ??
+          "professional",
+        generateVariants: contentRequest.variants,
+      },
+      context,
+    );
+
+    if (result.success && result.data) {
+      agentTrace.push({
+        agent: "ContentGeneratorAgent",
+        decision: `generated ${contentRequest.type} content`,
+        timestamp: new Date(),
+      });
+
+      return this.formatContentResults(result.data, contentRequest.type);
+    }
+
+    agentTrace.push({
+      agent: "ContentGeneratorAgent",
+      decision: `generation failed: ${result.error}`,
+      timestamp: new Date(),
+    });
+
+    return "Не удалось сгенерировать контент. Пожалуйста, уточните, что именно нужно создать (заголовок, описание, требования).";
+  }
+
+  /**
+   * Парсит запрос на генерацию контента
+   */
+  private parseContentRequest(message: string): {
+    type:
+      | "title"
+      | "description"
+      | "requirements"
+      | "benefits"
+      | "full_vacancy";
+    position?: string;
+    context?: Record<string, unknown>;
+    variants?: number;
+  } {
+    const messageLower = message.toLowerCase();
+
+    // Определяем тип контента
+    let type:
+      | "title"
+      | "description"
+      | "requirements"
+      | "benefits"
+      | "full_vacancy" = "full_vacancy";
+
+    if (messageLower.includes("заголов") || messageLower.includes("название")) {
+      type = "title";
+    } else if (messageLower.includes("описани")) {
+      type = "description";
+    } else if (messageLower.includes("требовани")) {
+      type = "requirements";
+    } else if (
+      messageLower.includes("преимуществ") ||
+      messageLower.includes("условия")
+    ) {
+      type = "benefits";
+    }
+
+    // Извлекаем позицию
+    const positionMatch = message.match(
+      /(?:для|на позицию|вакансию)\s+["«]?([^"»\n]+)["»]?/i,
+    );
+    const position = positionMatch?.[1]?.trim();
+
+    // Проверяем нужны ли варианты
+    const variantsMatch = message.match(/(\d+)\s*вариант/i);
+    const variants = variantsMatch?.[1]
+      ? parseInt(variantsMatch[1], 10)
+      : undefined;
+
+    return { type, position, variants };
+  }
+
+  /**
+   * Форматирует результаты генерации контента
+   */
+  private formatContentResults(
+    data: {
+      primary: {
+        title?: string;
+        description?: string;
+        requirements?: string;
+        benefits?: string;
+      };
+      variants?: Array<{
+        id: string;
+        content: string;
+        style: string;
+      }>;
+      seoKeywords: string[];
+      suggestions: string[];
+    },
+    _type: string,
+  ): string {
+    const parts: string[] = [];
+
+    parts.push("✨ **Сгенерированный контент:**\n");
+
+    // Основной контент
+    if (data.primary.title) {
+      parts.push(`**Заголовок:**\n${data.primary.title}\n`);
+    }
+    if (data.primary.description) {
+      parts.push(`**Описание:**\n${data.primary.description}\n`);
+    }
+    if (data.primary.requirements) {
+      parts.push(`**Требования:**\n${data.primary.requirements}\n`);
+    }
+    if (data.primary.benefits) {
+      parts.push(`**Преимущества:**\n${data.primary.benefits}\n`);
+    }
+
+    // Варианты для A/B
+    if (data.variants && data.variants.length > 0) {
+      parts.push("\n**Варианты для A/B тестирования:**");
+      for (const [i, variant] of data.variants.entries()) {
+        parts.push(`\n${i + 1}. (${variant.style})\n${variant.content}`);
+      }
+    }
+
+    // SEO ключевые слова
+    if (data.seoKeywords.length > 0) {
+      parts.push(`\n**SEO ключевые слова:** ${data.seoKeywords.join(", ")}`);
+    }
+
+    // Рекомендации
+    if (data.suggestions.length > 0) {
+      parts.push("\n**Рекомендации:**");
+      for (const s of data.suggestions) {
+        parts.push(`• ${s}`);
+      }
+    }
+
+    parts.push("\nХотите что-то изменить или сгенерировать другой вариант?");
+
+    return parts.join("\n");
   }
 
   /**
    * Обработчик коммуникации с кандидатами
-   * TODO: Будет реализован в задаче 7 (CommunicationAgent)
+   * Использует CommunicationAgent для генерации персонализированных сообщений
    */
   private async handleCommunicate(
-    _input: RecruiterOrchestratorInput,
-    _context: RecruiterAgentContext,
-    _traceId: string | undefined,
+    input: RecruiterOrchestratorInput,
+    context: RecruiterAgentContext,
+    traceId: string | undefined,
     agentTrace: AgentTraceEntry[],
     _actions: ExecutedAction[],
   ): Promise<string> {
     agentTrace.push({
       agent: "CommunicationAgent",
-      decision: "placeholder - agent not implemented yet",
+      decision: "executing message generation",
       timestamp: new Date(),
     });
 
-    return "Функция автоматической коммуникации будет доступна в следующем обновлении.";
+    const communicationAgent = new CommunicationAgent(
+      this.getAgentConfig(traceId),
+    );
+
+    // Парсим запрос для определения типа сообщения
+    const messageRequest = this.parseMessageRequest(input.message);
+
+    const result = await communicationAgent.execute(
+      {
+        type: messageRequest.type,
+        candidate: messageRequest.candidate,
+        vacancy: input.vacancyId
+          ? { id: input.vacancyId, title: "Текущая вакансия" }
+          : undefined,
+        channel: messageRequest.channel,
+        context: messageRequest.context,
+      },
+      context,
+    );
+
+    if (result.success && result.data) {
+      agentTrace.push({
+        agent: "CommunicationAgent",
+        decision: `generated ${messageRequest.type} message for ${messageRequest.channel}`,
+        timestamp: new Date(),
+      });
+
+      return this.formatMessageResults(result.data);
+    }
+
+    agentTrace.push({
+      agent: "CommunicationAgent",
+      decision: `generation failed: ${result.error}`,
+      timestamp: new Date(),
+    });
+
+    return "Не удалось сгенерировать сообщение. Пожалуйста, уточните тип сообщения и данные кандидата.";
+  }
+
+  /**
+   * Парсит запрос на генерацию сообщения
+   */
+  private parseMessageRequest(message: string): {
+    type: "greeting" | "clarification" | "invite" | "followup" | "rejection";
+    candidate: { id: string; name: string };
+    channel: "telegram" | "email" | "sms";
+    context?: Record<string, unknown>;
+  } {
+    const messageLower = message.toLowerCase();
+
+    // Определяем тип сообщения
+    let type:
+      | "greeting"
+      | "clarification"
+      | "invite"
+      | "followup"
+      | "rejection" = "greeting";
+
+    if (messageLower.includes("приглаш") || messageLower.includes("интервью")) {
+      type = "invite";
+    } else if (
+      messageLower.includes("отказ") ||
+      messageLower.includes("отклон")
+    ) {
+      type = "rejection";
+    } else if (
+      messageLower.includes("уточн") ||
+      messageLower.includes("вопрос")
+    ) {
+      type = "clarification";
+    } else if (
+      messageLower.includes("напомн") ||
+      messageLower.includes("follow")
+    ) {
+      type = "followup";
+    }
+
+    // Определяем канал
+    let channel: "telegram" | "email" | "sms" = "telegram";
+
+    if (
+      messageLower.includes("email") ||
+      messageLower.includes("почт") ||
+      messageLower.includes("письмо")
+    ) {
+      channel = "email";
+    } else if (messageLower.includes("sms") || messageLower.includes("смс")) {
+      channel = "sms";
+    }
+
+    // Извлекаем имя кандидата (упрощённо)
+    const nameMatch = message.match(
+      /(?:для|кандидату?)\s+([А-ЯЁа-яё]+(?:\s+[А-ЯЁа-яё]+)?)/i,
+    );
+    const candidateName = nameMatch?.[1] || "Кандидат";
+
+    return {
+      type,
+      candidate: {
+        id: "candidate-from-context",
+        name: candidateName,
+      },
+      channel,
+    };
+  }
+
+  /**
+   * Форматирует результаты генерации сообщения
+   */
+  private formatMessageResults(data: {
+    message: {
+      type: string;
+      channel: string;
+      subject?: string;
+      body: string;
+      personalizationFactors: string[];
+    };
+    alternatives?: Array<{
+      body: string;
+    }>;
+    warnings?: string[];
+  }): string {
+    const parts: string[] = [];
+
+    parts.push("📨 **Сгенерированное сообщение:**\n");
+
+    if (data.message.subject) {
+      parts.push(`**Тема:** ${data.message.subject}\n`);
+    }
+
+    parts.push(`**Текст:**\n${data.message.body}\n`);
+
+    if (data.message.personalizationFactors.length > 0) {
+      parts.push(
+        `\n**Персонализация:** ${data.message.personalizationFactors.join(", ")}`,
+      );
+    }
+
+    if (data.alternatives && data.alternatives.length > 0) {
+      parts.push("\n**Альтернативные варианты:**");
+      for (const [i, alt] of data.alternatives.entries()) {
+        parts.push(`\n${i + 1}. ${alt.body.slice(0, 100)}...`);
+      }
+    }
+
+    if (data.warnings && data.warnings.length > 0) {
+      parts.push("\n⚠️ **Предупреждения:**");
+      for (const w of data.warnings) {
+        parts.push(`• ${w}`);
+      }
+    }
+
+    parts.push("\nОтправить это сообщение или внести изменения?");
+
+    return parts.join("\n");
   }
 
   /**

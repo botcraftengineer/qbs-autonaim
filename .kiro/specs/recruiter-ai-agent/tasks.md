@@ -72,15 +72,15 @@
     - **Property 6: Candidate Search Result Completeness**
     - **Validates: Requirements 2.1, 2.2, 2.3, 2.4, 2.5**
 
-- [ ] 4. Create VacancyAnalyticsAgent
-  - [ ] 4.1 Implement vacancy analytics agent
+- [x] 4. Create VacancyAnalyticsAgent
+  - [x] 4.1 Implement vacancy analytics agent
     - Создать файл `packages/ai/src/agents/recruiter/vacancy-analytics.ts`
     - Расширить BaseAgent
     - Интегрировать с существующим vacancy/analytics.ts
     - Добавить анализ описания, зарплаты, требований
     - _Requirements: 3.1, 3.2_
 
-  - [ ] 4.2 Implement market comparison
+  - [x] 4.2 Implement market comparison
     - Создать `packages/ai/src/agents/recruiter/market-analytics.ts`
     - Реализовать сравнение с рынком (salaryPercentile, competitorVacancies)
     - Добавить интеграцию с hh.ru API (если доступно) или mock data
@@ -90,7 +90,7 @@
     - **Property 8: Vacancy Analytics Completeness**
     - **Validates: Requirements 3.2, 3.5**
 
-  - [ ] 4.3 Implement issue detection and recommendations
+  - [x] 4.3 Implement issue detection and recommendations
     - Реализовать выявление проблем (salary, requirements, description, timing)
     - Добавить причинно-следственные объяснения
     - Добавить конкретные рекомендации для каждой проблемы
@@ -100,11 +100,11 @@
     - **Property 9: Issue-Recommendation Pairing**
     - **Validates: Requirements 3.3, 3.4**
 
-- [ ] 5. Checkpoint - Ensure search and analytics work
+- [x] 5. Checkpoint - Ensure search and analytics work
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Create ContentGeneratorAgent
-  - [ ] 6.1 Implement content generator agent
+- [x] 6. Create ContentGeneratorAgent
+  - [x] 6.1 Implement content generator agent
     - Создать файл `packages/ai/src/agents/recruiter/content-generator.ts`
     - Расширить BaseAgent
     - Реализовать генерацию vacancy content (title, description, requirements)
@@ -115,7 +115,7 @@
     - **Property 10: Content Generation Completeness**
     - **Validates: Requirements 4.1, 4.2**
 
-  - [ ] 6.2 Implement A/B variants generation
+  - [x] 6.2 Implement A/B variants generation
     - Добавить генерацию нескольких вариантов заголовка
     - Реализовать структуру для A/B тестирования
     - _Requirements: 4.3_
@@ -124,8 +124,8 @@
     - **Property 11: A/B Variants Generation**
     - **Validates: Requirements 4.3**
 
-- [ ] 7. Create CommunicationAgent
-  - [ ] 7.1 Implement communication agent
+- [x] 7. Create CommunicationAgent
+  - [x] 7.1 Implement communication agent
     - Создать файл `packages/ai/src/agents/recruiter/communication.ts`
     - Расширить BaseAgent
     - Реализовать генерацию персонализированных сообщений
@@ -137,7 +137,7 @@
     - **Property 13: Message Type Coverage**
     - **Validates: Requirements 5.1, 5.2, 5.3**
 
-  - [ ] 7.2 Implement message logging
+  - [x] 7.2 Implement message logging
     - Добавить логирование всех отправленных сообщений
     - Интегрировать с audit logger
     - _Requirements: 5.5_
@@ -146,7 +146,7 @@
     - **Property 14: Message Logging**
     - **Validates: Requirements 5.5, 9.3**
 
-- [ ] 8. Checkpoint - Ensure content and communication work
+- [x] 8. Checkpoint - Ensure content and communication work
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 9. Create RuleEngine
