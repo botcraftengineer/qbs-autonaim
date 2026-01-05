@@ -32,6 +32,7 @@ export const auditResourceTypeEnum = pgEnum("audit_resource_type", [
   "PREQUALIFICATION_SESSION",
   "WIDGET_CONFIG",
   "CUSTOM_DOMAIN",
+  "RULE",
 ]);
 
 export const auditLog = pgTable(

@@ -55,7 +55,6 @@ export function RecruiterAgentChat({
   onError,
 }: RecruiterAgentChatProps) {
   const {
-    document,
     history,
     status,
     error,
@@ -146,7 +145,7 @@ function RecruiterMessages({
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [history]);
+  }, []);
 
   if (history.length === 0) {
     return (

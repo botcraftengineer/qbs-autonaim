@@ -247,7 +247,7 @@ export class ResumeParserService {
       })),
       skills: output.skills,
       languages: output.languages.map((lang) => ({
-        language: lang.language,
+        name: lang.name,
         level: lang.level,
       })),
       summary: output.summary,

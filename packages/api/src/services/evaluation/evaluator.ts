@@ -203,7 +203,7 @@ ${educationText || "Не указано"}
 
 Навыки: ${structured.skills.join(", ") || "Не указаны"}
 
-Языки: ${structured.languages.map((l) => `${l.language} (${l.level})`).join(", ") || "Не указаны"}
+Языки: ${structured.languages.map((l) => `${l.name} (${l.level})`).join(", ") || "Не указаны"}
 
 ${structured.summary ? `О себе: ${structured.summary}` : ""}
 

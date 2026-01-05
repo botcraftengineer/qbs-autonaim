@@ -931,7 +931,6 @@ export class AutonomyLevelHandler {
         return "executed";
       case "confirm":
         return "pending_approval";
-      case "advise":
       default:
         return "advised";
     }

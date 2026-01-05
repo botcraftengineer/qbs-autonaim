@@ -442,7 +442,7 @@ ${historyText}
     // Проверяем зарплатные ожидания (если указаны и слишком высокие)
     if (candidate.salaryExpectations) {
       const salaryMatch = candidate.salaryExpectations.match(/(\d+)/);
-      if (salaryMatch && salaryMatch[1]) {
+      if (salaryMatch?.[1]) {
         const salary = parseInt(salaryMatch[1], 10);
         // Примерная проверка - можно настроить под конкретные требования
         if (salary > 500000) {

@@ -14,9 +14,10 @@
  * tenant data isolation security.
  */
 
+import type { DbClient, WorkspaceRepository } from "@qbs-autonaim/db";
 import * as fc from "fast-check";
 import { describe, expect, it } from "vitest";
-
+import type { AuditLogger } from "../services/audit-logger";
 import {
   TenantGuard,
   TenantIsolationError,
@@ -122,9 +123,9 @@ class MockAuditLogger {
 }
 
 // Type aliases for test mocks
-type MockRepo = MockWorkspaceRepository & Record<string, unknown>;
-type MockLogger = MockAuditLogger & Record<string, unknown>;
-type MockDb = Record<string, unknown>;
+type MockRepo = WorkspaceRepository;
+type MockLogger = AuditLogger;
+type MockDb = DbClient;
 
 describe("Tenant Data Isolation", () => {
   /**

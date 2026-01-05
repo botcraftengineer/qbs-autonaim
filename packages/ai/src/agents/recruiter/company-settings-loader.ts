@@ -150,7 +150,7 @@ export function generateCompanyContextForPrompt(
  */
 const RecruiterCompanySettingsSchema = z.object({
   name: z
-    .string({ required_error: "Название компании обязательно" })
+    .string({ message: "Название компании обязательно" })
     .trim()
     .min(1, "Название компании обязательно"),
   description: z.string().optional(),
@@ -164,18 +164,14 @@ const RecruiterCompanySettingsSchema = z.object({
     .optional(),
   communicationStyle: z
     .enum(["formal", "casual", "professional"], {
-      errorMap: () => ({
-        message:
-          "Стиль коммуникации должен быть: formal, casual или professional",
-      }),
+      message:
+        "Стиль коммуникации должен быть: formal, casual или professional",
     })
     .optional(),
   defaultAutonomyLevel: z
     .enum(["advise", "confirm", "autonomous"], {
-      errorMap: () => ({
-        message:
-          "Уровень автономности должен быть: advise, confirm или autonomous",
-      }),
+      message:
+        "Уровень автономности должен быть: advise, confirm или autonomous",
     })
     .optional(),
 });
@@ -198,6 +194,6 @@ export function validateCompanySettings(settings: RecruiterCompanySettings): {
 
   return {
     valid: false,
-    errors: result.error.errors.map((e) => e.message),
+    errors: result.error.issues.map((e) => e.message),
   };
 }
