@@ -9,6 +9,7 @@ import { gigRouter } from "./routers/gig";
 import { integrationRouter } from "./routers/integration";
 import { organizationRouter } from "./routers/organization";
 import { prequalificationRouter } from "./routers/prequalification";
+import { recruiterAgentRouter } from "./routers/recruiter-agent";
 import { telegramRouter } from "./routers/telegram";
 import { testRouter } from "./routers/test";
 import { userRouter } from "./routers/user";
@@ -34,6 +35,7 @@ export const appRouter = createTRPCRouter({
   widgetConfig: widgetConfigRouter,
   customDomain: customDomainRouter,
   analytics: analyticsRouter,
+  recruiterAgent: recruiterAgentRouter,
   ...(process.env.NODE_ENV !== "production" && { test: testRouter }),
 });
 

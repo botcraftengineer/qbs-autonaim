@@ -149,8 +149,8 @@
 - [x] 8. Checkpoint - Ensure content and communication work
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 9. Create RuleEngine
-  - [ ] 9.1 Implement rule engine core
+- [x] 9. Create RuleEngine
+  - [x] 9.1 Implement rule engine core
     - Создать файл `packages/ai/src/agents/recruiter/rule-engine.ts`
     - Реализовать структуру правил (condition, action, priority)
     - Реализовать evaluation условий
@@ -160,7 +160,7 @@
     - **Property 15: Rule Application Consistency**
     - **Validates: Requirements 6.1, 6.2**
 
-  - [ ] 9.2 Implement autonomy levels
+  - [x] 9.2 Implement autonomy levels
     - Реализовать три уровня: advise, confirm, autonomous
     - Добавить pending_approval статус для confirm level
     - _Requirements: 6.4_
@@ -169,7 +169,7 @@
     - **Property 16: Autonomy Level Enforcement**
     - **Validates: Requirements 6.4**
 
-  - [ ] 9.3 Implement action executor with undo
+  - [x] 9.3 Implement action executor with undo
     - Создать `packages/ai/src/agents/recruiter/action-executor.ts`
     - Реализовать выполнение действий с логированием
     - Добавить undo window для отмены действий
@@ -179,15 +179,15 @@
     - **Property 19: Action Undo Window**
     - **Validates: Requirements 9.4**
 
-- [ ] 10. Create tRPC Router
-  - [ ] 10.1 Create recruiterAgent router
+- [x] 10. Create tRPC Router
+  - [x] 10.1 Create recruiterAgent router
     - Создать файл `packages/api/src/routers/recruiter-agent/index.ts`
     - Добавить chat procedure (streaming)
     - Добавить executeAction procedure
     - Добавить getRecommendations procedure
     - _Requirements: 1.1, 1.2, 1.3_
 
-  - [ ] 10.2 Implement authorization checks
+  - [x] 10.2 Implement authorization checks
     - Добавить проверку workspace access
     - Добавить проверку прав на действия
     - _Requirements: 9.1_
@@ -196,7 +196,7 @@
     - **Property 18: Authorization Check**
     - **Validates: Requirements 9.1**
 
-  - [ ] 10.3 Implement rate limiting
+  - [x] 10.3 Implement rate limiting
     - Добавить rate limiter для chat (30/min)
     - Добавить rate limiter для actions (100/hour)
     - _Requirements: 9.5_
@@ -205,38 +205,38 @@
     - **Property 20: Rate Limiting**
     - **Validates: Requirements 9.5**
 
-- [ ] 11. Checkpoint - Ensure API works
+- [x] 11. Checkpoint - Ensure API works
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 12. Create React Components
-  - [ ] 12.1 Create useRecruiterAgent hook
+- [x] 12. Create React Components
+  - [x] 12.1 Create useRecruiterAgent hook
     - Создать файл `apps/app/src/hooks/use-recruiter-agent.ts`
     - Реализовать state management для document и history
     - Реализовать sendMessage с streaming
     - Реализовать error handling
     - _Requirements: 1.1, 1.5_
 
-  - [ ] 12.2 Create RecruiterAgentChat component
+  - [x] 12.2 Create RecruiterAgentChat component
     - Создать файл `apps/app/src/components/recruiter-agent/chat.tsx`
     - Реализовать chat UI с messages container
     - Добавить input field и send button
     - Добавить loading indicator
     - _Requirements: 1.1, 1.3_
 
-  - [ ] 12.3 Create CandidateResultCard component
+  - [x] 12.3 Create CandidateResultCard component
     - Создать компонент для отображения результатов поиска кандидатов
     - Показывать fitScore, whySelected, recommendation
     - Добавить action buttons (invite, clarify, reject)
     - _Requirements: 2.2, 2.4_
 
-  - [ ] 12.4 Create VacancyAnalyticsPanel component
+  - [x] 12.4 Create VacancyAnalyticsPanel component
     - Создать компонент для отображения аналитики вакансии
     - Показывать metrics, issues, recommendations
     - Добавить визуализацию market comparison
     - _Requirements: 3.2, 3.4_
 
-- [ ] 13. Implement Feedback System
-  - [ ] 13.1 Create feedback API
+- [-] 13. Implement Feedback System
+  - [x] 13.1 Create feedback API
     - Добавить submitFeedback procedure в router
     - Реализовать сохранение feedback в БД
     - _Requirements: 10.1_

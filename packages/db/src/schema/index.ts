@@ -8,6 +8,7 @@ export * from "./integration";
 export * from "./interview";
 export * from "./organization";
 export * from "./prequalification";
+export * from "./recruiter-agent";
 export * from "./telegram";
 export * from "./vacancy";
 export * from "./workspace";

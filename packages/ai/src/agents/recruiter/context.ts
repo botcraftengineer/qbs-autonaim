@@ -10,6 +10,9 @@ import type {
   RecruiterCompanySettings,
   RecruiterConversationContext,
   RecruiterDecision,
+  RecruiterFeedbackEntry,
+  RecruiterFeedbackHistory,
+  RecruiterFeedbackStats,
 } from "./types";
 
 /**
@@ -80,6 +83,8 @@ export interface ContextBuilderInput {
   vacancy?: VacancyData | null;
   conversationHistory?: ConversationMessage[];
   recentDecisions?: RecruiterDecision[];
+  /** История feedback для влияния на рекомендации */
+  feedbackHistory?: RecruiterFeedbackHistory;
 }
 
 /**
@@ -137,6 +142,7 @@ export class RecruiterContextManager {
       recruiterConversationHistory: conversationHistory,
       recruiterCompanySettings: companySettings,
       recentDecisions: input.recentDecisions || [],
+      feedbackHistory: input.feedbackHistory,
     };
   }
 
@@ -158,6 +164,7 @@ export class RecruiterContextManager {
       conversationHistory: this.limitHistory(input.conversationHistory || []),
       companySettings,
       recentDecisions: input.recentDecisions || [],
+      feedbackHistory: input.feedbackHistory,
     };
   }
 
@@ -389,4 +396,189 @@ export function deserializeContext(json: string): RecruiterConversationContext {
     }
     return value;
   });
+}
+
+/**
+ * Создаёт пустую историю feedback
+ */
+export function createEmptyFeedbackHistory(): RecruiterFeedbackHistory {
+  return {
+    entries: [],
+    stats: {
+      total: 0,
+      accepted: 0,
+      rejected: 0,
+      modified: 0,
+      acceptanceRate: 0,
+      rejectionRate: 0,
+    },
+  };
+}
+
+/**
+ * Создаёт историю feedback из данных БД
+ */
+export function createFeedbackHistory(
+  entries: RecruiterFeedbackEntry[],
+  stats: RecruiterFeedbackStats,
+): RecruiterFeedbackHistory {
+  return { entries, stats };
+}
+
+/**
+ * Рассчитывает модификатор уверенности на основе feedback history
+ *
+ * Если рекрутер часто отклоняет рекомендации определённого типа,
+ * уверенность в таких рекомендациях снижается.
+ *
+ * @param feedbackHistory - История feedback пользователя
+ * @param recommendationType - Тип рекомендации (invite, clarify, reject)
+ * @returns Модификатор уверенности (0.5 - 1.5)
+ */
+export function calculateConfidenceModifier(
+  feedbackHistory: RecruiterFeedbackHistory | undefined,
+  _recommendationType: "invite" | "clarify" | "reject",
+): number {
+  if (!feedbackHistory || feedbackHistory.stats.total === 0) {
+    return 1.0; // Нет истории - базовая уверенность
+  }
+
+  const { stats } = feedbackHistory;
+
+  // Базовый модификатор на основе общего acceptance rate
+  let modifier = 1.0;
+
+  // Если acceptance rate высокий (> 70%), увеличиваем уверенность
+  if (stats.acceptanceRate > 70) {
+    modifier = 1.0 + (stats.acceptanceRate - 70) / 100; // max 1.3
+  }
+  // Если acceptance rate низкий (< 50%), снижаем уверенность
+  else if (stats.acceptanceRate < 50) {
+    modifier = 0.5 + stats.acceptanceRate / 100; // min 0.5
+  }
+
+  // Анализируем последние отклонения для конкретного типа рекомендации
+  const recentRejections = feedbackHistory.entries
+    .filter((e) => e.feedbackType === "rejected")
+    .slice(0, 10);
+
+  // Если много недавних отклонений, дополнительно снижаем уверенность
+  if (recentRejections.length >= 5) {
+    modifier *= 0.9;
+  }
+
+  // Ограничиваем модификатор диапазоном [0.5, 1.5]
+  return Math.max(0.5, Math.min(1.5, modifier));
+}
+
+/**
+ * Анализирует паттерны отклонений для улучшения рекомендаций
+ *
+ * @param feedbackHistory - История feedback пользователя
+ * @returns Паттерны отклонений с причинами
+ */
+export function analyzeRejectionPatterns(
+  feedbackHistory: RecruiterFeedbackHistory | undefined,
+): {
+  commonReasons: string[];
+  rejectionRate: number;
+  recentTrend: "improving" | "stable" | "declining";
+} {
+  if (!feedbackHistory || feedbackHistory.stats.total === 0) {
+    return {
+      commonReasons: [],
+      rejectionRate: 0,
+      recentTrend: "stable",
+    };
+  }
+
+  const { entries, stats } = feedbackHistory;
+
+  // Собираем причины отклонений
+  const reasons = entries
+    .filter((e) => e.feedbackType === "rejected" && e.reason)
+    .map((e) => e.reason as string);
+
+  // Находим наиболее частые причины
+  const reasonCounts = new Map<string, number>();
+  for (const reason of reasons) {
+    const normalized = reason.toLowerCase().trim();
+    reasonCounts.set(normalized, (reasonCounts.get(normalized) || 0) + 1);
+  }
+
+  const commonReasons = Array.from(reasonCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([reason]) => reason);
+
+  // Анализируем тренд (последние 10 vs предыдущие 10)
+  const recent = entries.slice(0, 10);
+  const previous = entries.slice(10, 20);
+
+  const recentAcceptance =
+    recent.filter((e) => e.feedbackType === "accepted").length / recent.length;
+  const previousAcceptance =
+    previous.length > 0
+      ? previous.filter((e) => e.feedbackType === "accepted").length /
+        previous.length
+      : recentAcceptance;
+
+  let recentTrend: "improving" | "stable" | "declining" = "stable";
+  if (recentAcceptance > previousAcceptance + 0.1) {
+    recentTrend = "improving";
+  } else if (recentAcceptance < previousAcceptance - 0.1) {
+    recentTrend = "declining";
+  }
+
+  return {
+    commonReasons,
+    rejectionRate: stats.rejectionRate,
+    recentTrend,
+  };
+}
+
+/**
+ * Генерирует подсказку для LLM на основе feedback history
+ *
+ * @param feedbackHistory - История feedback пользователя
+ * @returns Строка с подсказкой для включения в промпт
+ */
+export function generateFeedbackPromptHint(
+  feedbackHistory: RecruiterFeedbackHistory | undefined,
+): string {
+  if (!feedbackHistory || feedbackHistory.stats.total < 5) {
+    return ""; // Недостаточно данных для подсказки
+  }
+
+  const patterns = analyzeRejectionPatterns(feedbackHistory);
+  const hints: string[] = [];
+
+  // Добавляем информацию о acceptance rate
+  if (feedbackHistory.stats.acceptanceRate < 50) {
+    hints.push(
+      `Рекрутер часто отклоняет рекомендации (acceptance rate: ${feedbackHistory.stats.acceptanceRate}%). Будь более консервативен в рекомендациях.`,
+    );
+  } else if (feedbackHistory.stats.acceptanceRate > 80) {
+    hints.push(
+      `Рекрутер обычно принимает рекомендации (acceptance rate: ${feedbackHistory.stats.acceptanceRate}%). Можно быть более уверенным.`,
+    );
+  }
+
+  // Добавляем информацию о частых причинах отклонений
+  if (patterns.commonReasons.length > 0) {
+    hints.push(
+      `Частые причины отклонений: ${patterns.commonReasons.join(", ")}. Учитывай это при формировании рекомендаций.`,
+    );
+  }
+
+  // Добавляем информацию о тренде
+  if (patterns.recentTrend === "declining") {
+    hints.push(
+      "Качество рекомендаций снижается. Обрати особое внимание на точность.",
+    );
+  }
+
+  return hints.length > 0
+    ? `\n\n[Контекст на основе истории решений рекрутера]\n${hints.join("\n")}`
+    : "";
 }

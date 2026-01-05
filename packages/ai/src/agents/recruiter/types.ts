@@ -50,6 +50,8 @@ export interface RecruiterConversationContext {
   conversationHistory: ConversationMessage[];
   companySettings: RecruiterCompanySettings;
   recentDecisions: RecruiterDecision[];
+  /** История feedback для влияния на рекомендации */
+  feedbackHistory?: RecruiterFeedbackHistory;
 }
 
 /**
@@ -61,6 +63,38 @@ export interface RecruiterDecision {
   originalRecommendation: string;
   userAction?: string;
   timestamp: Date;
+}
+
+/**
+ * Запись feedback от рекрутера
+ */
+export interface RecruiterFeedbackEntry {
+  id: string;
+  feedbackType: "accepted" | "rejected" | "modified" | "error_report";
+  originalRecommendation: string | null;
+  userAction: string | null;
+  reason: string | null;
+  createdAt: Date;
+}
+
+/**
+ * Статистика feedback пользователя
+ */
+export interface RecruiterFeedbackStats {
+  total: number;
+  accepted: number;
+  rejected: number;
+  modified: number;
+  acceptanceRate: number;
+  rejectionRate: number;
+}
+
+/**
+ * История feedback для влияния на рекомендации
+ */
+export interface RecruiterFeedbackHistory {
+  entries: RecruiterFeedbackEntry[];
+  stats: RecruiterFeedbackStats;
 }
 
 /**
@@ -212,6 +246,8 @@ export interface RecruiterAgentContext extends BaseAgentContext {
   recruiterConversationHistory: ConversationMessage[];
   recruiterCompanySettings: RecruiterCompanySettings;
   recentDecisions: RecruiterDecision[];
+  /** История feedback для влияния на рекомендации */
+  feedbackHistory?: RecruiterFeedbackHistory;
 }
 
 /**

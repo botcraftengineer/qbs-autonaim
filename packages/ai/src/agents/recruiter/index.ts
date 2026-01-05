@@ -2,6 +2,17 @@
  * AI-ассистент рекрутера - экспорты модуля
  */
 
+// Action Executor
+export {
+  ActionExecutor,
+  type ActionExecutorConfig,
+  type ActionHandler,
+  type AuditLogEntry,
+  type ExecutedActionRecord,
+  getActionExecutor,
+  resetActionExecutor,
+  type UndoHandler,
+} from "./action-executor";
 // Candidate Search Agent
 export {
   type CandidateData,
@@ -30,10 +41,15 @@ export {
 } from "./content-generator";
 // Context Management
 export {
+  analyzeRejectionPatterns,
   type CompanySettingsData,
   type ContextBuilderInput,
+  calculateConfidenceModifier,
   createEmptyContext,
+  createEmptyFeedbackHistory,
+  createFeedbackHistory,
   deserializeContext,
+  generateFeedbackPromptHint,
   MAX_CONVERSATION_HISTORY,
   RecruiterContextManager,
   recruiterContextManager,
@@ -75,6 +91,30 @@ export {
   RecruiterAgentOrchestrator,
   type RecruiterOrchestratorFullConfig,
 } from "./orchestrator";
+// Rule Engine
+export {
+  type AutomationRule,
+  type AutonomyLevel,
+  AutonomyLevelHandler,
+  type CandidateRuleData,
+  type CompositeCondition,
+  candidateResultToRuleData,
+  evaluateCondition,
+  getAutonomyHandler,
+  getRuleEngine,
+  type PendingApproval,
+  type RuleAction,
+  type RuleActionType,
+  type RuleApplicationResult,
+  type RuleCondition,
+  type RuleConditionField,
+  type RuleConditionOperator,
+  RuleEngine,
+  type RuleEngineConfig,
+  type RuleExecutionResult,
+  resetAutonomyHandler,
+  resetRuleEngine,
+} from "./rule-engine";
 // Streaming
 export {
   ActionChainBuilder,
@@ -107,6 +147,9 @@ export type {
   RecruiterCompanySettings,
   RecruiterConversationContext,
   RecruiterDecision,
+  RecruiterFeedbackEntry,
+  RecruiterFeedbackHistory,
+  RecruiterFeedbackStats,
   RecruiterIntent,
   RecruiterOrchestratorConfig,
   RecruiterOrchestratorInput,
