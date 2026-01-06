@@ -5,7 +5,7 @@ import { InterviewLinkGenerator } from "../../services";
 import { protectedProcedure } from "../../trpc";
 
 const generateInterviewLinkInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   workspaceId: workspaceIdSchema,
 });
 

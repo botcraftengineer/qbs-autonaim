@@ -19,7 +19,7 @@ const createVacancyInputSchema = z.object({
     "freelancer",
     "fiverr",
   ]),
-  platformUrl: z.string().url().optional(),
+  platformUrl: z.url().optional(),
 });
 
 export const createVacancy = protectedProcedure

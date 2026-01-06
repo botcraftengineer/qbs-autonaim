@@ -8,7 +8,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const importSingleResponseInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   platformSource: z.enum([
     "kwork",
     "fl",
@@ -20,7 +20,7 @@ const importSingleResponseInputSchema = z.object({
   freelancerName: z.string().min(1).max(500).optional(),
   contactInfo: z
     .object({
-      email: z.string().email().optional(),
+      email: z.email().optional(),
       phone: z.string().max(50).optional(),
       telegram: z.string().max(100).optional(),
       platformProfileUrl: z.string().optional(),

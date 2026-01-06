@@ -36,7 +36,7 @@ function generateInvitationText(
 export const generateInvitation = protectedProcedure
   .input(
     z.object({
-      responseId: z.string().uuid(),
+      responseId: z.uuid(),
       workspaceId: workspaceIdSchema,
     }),
   )

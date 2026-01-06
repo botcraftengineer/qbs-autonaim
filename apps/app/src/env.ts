@@ -13,7 +13,7 @@ export const env = createEnv({
     VERCEL_URL: z.string().optional(),
   },
   client: {
-    NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
+    NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
     NEXT_PUBLIC_APP_NAME: z.string().default("QBS Автонайм"),
   },
   experimental__runtimeEnv: {

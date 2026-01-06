@@ -10,7 +10,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const getVacancyByIdInputSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   workspaceId: workspaceIdSchema,
 });
 

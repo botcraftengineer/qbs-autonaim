@@ -9,7 +9,7 @@ import { protectedProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
 const importBulkResponsesInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   platformSource: z.enum([
     "kwork",
     "fl",

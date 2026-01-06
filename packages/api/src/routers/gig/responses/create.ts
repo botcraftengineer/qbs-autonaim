@@ -11,19 +11,19 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 const createResponseSchema = z.object({
-  gigId: z.string().uuid(),
+  gigId: z.uuid(),
   workspaceId: workspaceIdSchema,
   candidateId: z.string().max(100),
   candidateName: z.string().max(500).optional(),
-  profileUrl: z.string().url().optional(),
+  profileUrl: z.url().optional(),
   telegramUsername: z.string().max(100).optional(),
   phone: z.string().max(50).optional(),
-  email: z.string().email().max(255).optional(),
+  email: z.email().max(255).optional(),
   proposedPrice: z.number().int().positive().optional(),
   proposedCurrency: z.string().length(3).default("RUB"),
   proposedDeliveryDays: z.number().int().positive().optional(),
   coverLetter: z.string().optional(),
-  portfolioLinks: z.array(z.string().url()).optional(),
+  portfolioLinks: z.array(z.url()).optional(),
   experience: z.string().optional(),
   skills: z.array(z.string()).optional(),
   rating: z.string().max(20).optional(),

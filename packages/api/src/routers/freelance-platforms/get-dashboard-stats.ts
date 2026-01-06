@@ -12,8 +12,8 @@ import { createErrorHandler } from "../../utils/error-handler";
 
 const getDashboardStatsInputSchema = z.object({
   workspaceId: workspaceIdSchema,
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
   status: z.enum(["active", "inactive", "all"]).optional().default("all"),
   platformSource: z
     .enum(["kwork", "fl", "weblancer", "upwork", "freelancer", "fiverr"])

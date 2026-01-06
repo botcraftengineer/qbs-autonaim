@@ -13,8 +13,8 @@ import { publicProcedure } from "../../trpc";
 
 const trackEventInputSchema = z.object({
   workspaceId: z.string().min(1, "workspaceId обязателен"),
-  vacancyId: z.string().uuid().optional(),
-  sessionId: z.string().uuid().optional(),
+  vacancyId: z.uuid().optional(),
+  sessionId: z.uuid().optional(),
   eventType: z.enum([
     "widget_view",
     "session_start",

@@ -6,7 +6,7 @@ import { protectedProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
 const retryAnalysisInputSchema = z.object({
-  responseId: z.string().uuid(),
+  responseId: z.uuid(),
 });
 
 /**

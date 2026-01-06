@@ -11,8 +11,8 @@ import { protectedProcedure } from "../../trpc";
 
 const exportAnalyticsInputSchema = z.object({
   workspaceId: workspaceIdSchema,
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
 });
 
 export const exportAnalytics = protectedProcedure

@@ -13,7 +13,7 @@ import { protectedProcedure } from "../../trpc";
 
 const getVacancyAnalyticsInputSchema = z.object({
   workspaceId: z.string().min(1, "workspaceId обязателен"),
-  vacancyId: z.string().uuid("Некорректный ID вакансии"),
+  vacancyId: z.uuid("Некорректный ID вакансии"),
   period: z.object({
     from: z.coerce.date(),
     to: z.coerce.date(),

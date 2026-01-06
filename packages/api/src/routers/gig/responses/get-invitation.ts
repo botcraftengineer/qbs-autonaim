@@ -8,7 +8,7 @@ import { protectedProcedure } from "../../../trpc";
 export const getInvitation = protectedProcedure
   .input(
     z.object({
-      responseId: z.string().uuid(),
+      responseId: z.uuid(),
       workspaceId: workspaceIdSchema,
     }),
   )
