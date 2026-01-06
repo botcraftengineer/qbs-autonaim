@@ -18,6 +18,20 @@ type RouterInputs = inferRouterInputs<AppRouter>;
  */
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
+export type {
+  TenantErrorCode,
+  TenantOperation,
+  TenantResourceType,
+  TenantVerificationParams,
+  TenantVerificationResult,
+} from "./middleware";
+export {
+  createTenantGuard,
+  TenantGuard,
+  TenantIsolationError,
+  toTRPCError,
+  withTenantGuard,
+} from "./middleware";
 export { type AppRouter, appRouter } from "./root";
 export { AuditLoggerService } from "./services/audit-logger";
 export { createTRPCContext } from "./trpc";

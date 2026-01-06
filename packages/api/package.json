@@ -16,9 +16,12 @@
     "format": "biome format .",
     "lint": "biome lint .",
     "check": "biome check .",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
+    "@qbs-autonaim/ai": "workspace:*",
     "@qbs-autonaim/auth": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/jobs": "workspace:*",
@@ -31,7 +34,9 @@
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
     "@types/sanitize-html": "^2.16.0",
+    "fast-check": "^4.5.3",
     "tsdown": "^0.18.4",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.16"
   }
 }

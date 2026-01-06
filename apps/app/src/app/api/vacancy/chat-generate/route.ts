@@ -1,6 +1,10 @@
 import { AuditLoggerService } from "@qbs-autonaim/api";
 import { db } from "@qbs-autonaim/db";
-import { workspace, workspaceMember } from "@qbs-autonaim/db/schema";
+import {
+  companySettings,
+  workspace,
+  workspaceMember,
+} from "@qbs-autonaim/db/schema";
 import {
   checkRateLimit,
   sanitizeConversationMessage,
@@ -19,17 +23,34 @@ interface VacancyDocument {
   requirements?: string;
   responsibilities?: string;
   conditions?: string;
+  customBotInstructions?: string;
+  customScreeningPrompt?: string;
+  customInterviewQuestions?: string;
+  customOrganizationalQuestions?: string;
+}
+
+interface QuickReply {
+  id: string;
+  label: string;
+  value: string;
+}
+
+interface AIResponse {
+  message?: string;
+  quickReplies?: QuickReply[];
+  isMultiSelect?: boolean;
+  document?: VacancyDocument;
 }
 
 /**
  * Извлекает частичные данные из незавершённого JSON-стрима
  * Использует regex для извлечения завершённых полей
  */
-function extractPartialDocument(
+function extractPartialResponse(
   text: string,
   fallback?: VacancyDocument,
-): VacancyDocument {
-  const result: VacancyDocument = { ...fallback };
+): AIResponse {
+  const result: AIResponse = { document: { ...fallback } };
 
   // Убираем markdown-обёртку если есть
   const cleanText = text
@@ -37,8 +58,41 @@ function extractPartialDocument(
     .replace(/^```\s*/i, "")
     .replace(/\s*```$/i, "");
 
-  // Извлекаем каждое поле отдельно с помощью regex
-  const fields = [
+  // Извлекаем message
+  const messageMatch = cleanText.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/s);
+  if (messageMatch?.[1]) {
+    try {
+      result.message = JSON.parse(`"${messageMatch[1]}"`);
+    } catch {
+      result.message = messageMatch[1]
+        .replace(/\\n/g, "\n")
+        .replace(/\\"/g, '"');
+    }
+  }
+
+  // Извлекаем quickReplies
+  const quickRepliesMatch = cleanText.match(
+    /"quickReplies"\s*:\s*\[([\s\S]*?)\]/,
+  );
+  if (quickRepliesMatch?.[1]) {
+    try {
+      const repliesText = `[${quickRepliesMatch[1]}]`;
+      result.quickReplies = JSON.parse(repliesText);
+    } catch {
+      // Ignore parse errors
+    }
+  }
+
+  // Извлекаем isMultiSelect
+  const multiSelectMatch = cleanText.match(
+    /"isMultiSelect"\s*:\s*(true|false)/,
+  );
+  if (multiSelectMatch?.[1]) {
+    result.isMultiSelect = multiSelectMatch[1] === "true";
+  }
+
+  // Извлекаем поля документа
+  const docFields = [
     "title",
     "description",
     "requirements",
@@ -46,21 +100,23 @@ function extractPartialDocument(
     "conditions",
   ] as const;
 
-  for (const field of fields) {
-    // Ищем паттерн "field": "value" или "field": "value...
-    // Поддерживаем многострочные значения
+  // Ищем вложенный document объект
+  const docMatch = cleanText.match(
+    /"document"\s*:\s*\{([\s\S]*?)(?:\}(?=\s*[,}])|$)/,
+  );
+  const docText = docMatch?.[1] || cleanText;
+
+  for (const field of docFields) {
     const regex = new RegExp(
       `"${field}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)(?:"|$)`,
       "s",
     );
-    const match = cleanText.match(regex);
-    if (match?.[1]) {
-      // Декодируем escape-последовательности
+    const match = docText.match(regex);
+    if (match?.[1] && result.document) {
       try {
-        result[field] = JSON.parse(`"${match[1]}"`);
+        result.document[field] = JSON.parse(`"${match[1]}"`);
       } catch {
-        // Если не удалось распарсить, используем как есть
-        result[field] = match[1]
+        result.document[field] = match[1]
           .replace(/\\n/g, "\n")
           .replace(/\\"/g, '"')
           .replace(/\\\\/g, "\\");
@@ -74,10 +130,10 @@ function extractPartialDocument(
 /**
  * Пытается распарсить полный JSON, с fallback на частичное извлечение
  */
-function parseVacancyJSON(
+function parseAIResponse(
   text: string,
   fallback?: VacancyDocument,
-): { document: VacancyDocument; isComplete: boolean } {
+): { response: AIResponse; isComplete: boolean } {
   // Убираем markdown-обёртку
   let cleanText = text.trim();
   if (cleanText.startsWith("```json")) {
@@ -94,7 +150,7 @@ function parseVacancyJSON(
   const startIndex = cleanText.indexOf("{");
   if (startIndex === -1) {
     return {
-      document: extractPartialDocument(text, fallback),
+      response: extractPartialResponse(text, fallback),
       isComplete: false,
     };
   }
@@ -118,7 +174,7 @@ function parseVacancyJSON(
   // Если JSON не завершён, извлекаем частичные данные
   if (endIndex === -1) {
     return {
-      document: extractPartialDocument(cleanText, fallback),
+      response: extractPartialResponse(cleanText, fallback),
       isComplete: false,
     };
   }
@@ -128,46 +184,67 @@ function parseVacancyJSON(
   try {
     const parsed = JSON.parse(jsonText);
     return {
-      document: validateAndNormalizeDocument(parsed, fallback),
+      response: validateAndNormalizeResponse(parsed, fallback),
       isComplete: true,
     };
   } catch {
     // Если парсинг не удался, извлекаем частичные данные
     return {
-      document: extractPartialDocument(cleanText, fallback),
+      response: extractPartialResponse(cleanText, fallback),
       isComplete: false,
     };
   }
 }
 
 /**
- * Валидирует и нормализует документ вакансии
- * Применяет значения по умолчанию и проверяет типы
+ * Валидирует и нормализует ответ AI
  */
-function validateAndNormalizeDocument(
+function validateAndNormalizeResponse(
   parsed: unknown,
   fallbackDocument?: VacancyDocument,
-): VacancyDocument {
-  // Проверяем, что parsed - это объект
+): AIResponse {
   if (!parsed || typeof parsed !== "object") {
-    return {
-      title: fallbackDocument?.title || "",
-      description: fallbackDocument?.description || "",
-      requirements: fallbackDocument?.requirements || "",
-      responsibilities: fallbackDocument?.responsibilities || "",
-      conditions: fallbackDocument?.conditions || "",
-    };
+    return { document: fallbackDocument || {} };
   }
 
   const data = parsed as Record<string, unknown>;
+  const result: AIResponse = {};
 
-  // Безопасно извлекаем строковые поля с fallback значениями
+  // Извлекаем message
+  if (typeof data.message === "string") {
+    result.message = data.message;
+  }
+
+  // Извлекаем quickReplies
+  if (Array.isArray(data.quickReplies)) {
+    result.quickReplies = data.quickReplies
+      .filter((r): r is Record<string, unknown> => r && typeof r === "object")
+      .map((r) => ({
+        id: String(r.id || ""),
+        label: String(r.label || ""),
+        value: String(r.value || ""),
+      }))
+      .filter((r) => r.label && r.value);
+  }
+
+  // Извлекаем isMultiSelect
+  if (typeof data.isMultiSelect === "boolean") {
+    result.isMultiSelect = data.isMultiSelect;
+  }
+
+  // Извлекаем document
+  const docData =
+    data.document && typeof data.document === "object"
+      ? (data.document as Record<string, unknown>)
+      : data;
+
   const getString = (key: string, fallback: string = ""): string => {
-    const value = data[key];
+    const value = docData[key];
+    if (value === null || value === undefined) return fallback;
     return typeof value === "string" ? value : fallback;
   };
 
-  return {
+  result.document = {
     title: getString("title", fallbackDocument?.title || ""),
     description: getString("description", fallbackDocument?.description || ""),
     requirements: getString(
@@ -179,7 +256,14 @@ function validateAndNormalizeDocument(
       fallbackDocument?.responsibilities || "",
     ),
     conditions: getString("conditions", fallbackDocument?.conditions || ""),
+    customBotInstructions: fallbackDocument?.customBotInstructions || "",
+    customScreeningPrompt: fallbackDocument?.customScreeningPrompt || "",
+    customInterviewQuestions: fallbackDocument?.customInterviewQuestions || "",
+    customOrganizationalQuestions:
+      fallbackDocument?.customOrganizationalQuestions || "",
   };
+
+  return result;
 }
 
 // Zod схема для валидации входных данных
@@ -196,6 +280,10 @@ const vacancyChatRequestSchema = z.object({
       requirements: z.string().optional(),
       responsibilities: z.string().optional(),
       conditions: z.string().optional(),
+      customBotInstructions: z.string().optional(),
+      customScreeningPrompt: z.string().optional(),
+      customInterviewQuestions: z.string().optional(),
+      customOrganizationalQuestions: z.string().optional(),
     })
     .optional(),
   conversationHistory: z
@@ -213,6 +301,13 @@ function buildVacancyGenerationPrompt(
   message: string,
   currentDocument?: VacancyDocument,
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
+  companySettings?: {
+    name: string;
+    description?: string | null;
+    website?: string | null;
+    botName?: string | null;
+    botRole?: string | null;
+  } | null,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -229,59 +324,118 @@ ${conversationHistory
   const documentSection = currentDocument
     ? `
 ТЕКУЩИЙ ДОКУМЕНТ ВАКАНСИИ:
-${currentDocument.title ? `Название: ${currentDocument.title}` : ""}
-${currentDocument.description ? `Описание: ${currentDocument.description}` : ""}
-${currentDocument.requirements ? `Требования:\n${currentDocument.requirements}` : ""}
-${currentDocument.responsibilities ? `Обязанности:\n${currentDocument.responsibilities}` : ""}
-${currentDocument.conditions ? `Условия:\n${currentDocument.conditions}` : ""}
+${currentDocument.title ? `Название: ${currentDocument.title}` : "(не заполнено)"}
+${currentDocument.description ? `Описание: ${currentDocument.description}` : "(не заполнено)"}
+${currentDocument.requirements ? `Требования:\n${currentDocument.requirements}` : "(не заполнено)"}
+${currentDocument.responsibilities ? `Обязанности:\n${currentDocument.responsibilities}` : "(не заполнено)"}
+${currentDocument.conditions ? `Условия:\n${currentDocument.conditions}` : "(не заполнено)"}
 `
-    : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто)";
+    : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто - ничего не заполнено)";
 
-  return `Ты — эксперт по подбору персонала и созданию вакансий.
+  const companySection = companySettings
+    ? `
+НАСТРОЙКИ КОМПАНИИ:
+Название компании: ${companySettings.name}
+${companySettings.description ? `Описание компании: ${companySettings.description}` : ""}
+${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
+`
+    : "";
 
-ЗАДАЧА: На основе сообщения пользователя обнови документ вакансии.
-${historySection}
-НОВОЕ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
+  const botPersonality =
+    companySettings?.botName && companySettings?.botRole
+      ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
+      : companySettings?.name
+        ? `Ты — дружелюбный HR-ассистент компании "${companySettings.name}".`
+        : "Ты — дружелюбный HR-ассистент, помогающий создавать вакансии.";
+
+  return `${botPersonality}
+
+ЗАДАЧА: Помоги пользователю создать вакансию в интерактивном режиме. Веди диалог, задавай уточняющие вопросы, предлагай варианты для выбора.
+${companySection}${historySection}
+СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
 ${message}
 ${documentSection}
 
-ИНСТРУКЦИИ:
-- Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
-- Обнови соответствующие разделы документа
-- Если пользователь указывает название должности - обнови title
-- Если описывает компанию/проект - обнови description
-- Если перечисляет требования к кандидату - обнови requirements
-- Если описывает обязанности - обнови responsibilities
-- Если говорит о зарплате/условиях - обнови conditions
-- Сохрани существующую информацию, если пользователь не просит её изменить
-- Используй профессиональный язык
-- Структурируй списки с помощью маркеров или нумерации
+ПРАВИЛА ДИАЛОГА:
+1. Будь дружелюбным и помогающим
+2. Если пользователь дал информацию — обнови соответствующие поля документа
+3. После обновления документа — задай следующий логичный вопрос
+4. Предлагай 3-5 вариантов для быстрого выбора (quickReplies)
+5. Варианты должны быть релевантны текущему этапу создания вакансии
+6. Если документ почти готов — предложи финальные штрихи или подтверждение
+7. Используй isMultiSelect: true когда пользователь может выбрать НЕСКОЛЬКО вариантов (навыки, технологии, бенефиты)
+8. Используй isMultiSelect: false для одиночного выбора (должность, уровень, формат работы)
 
-ФОРМАТ ОТВЕТА (JSON):
+ЛОГИКА ЗАПОЛНЕНИЯ:
+- Сначала узнай должность (title) — предложи популярные варианты (одиночный выбор)
+- Затем требования (requirements) — предложи навыки и технологии (МУЛЬТИВЫБОР)
+- Потом обязанности (responsibilities) — предложи типичные задачи (МУЛЬТИВЫБОР)
+- Далее условия (conditions) — формат работы, бенефиты (МУЛЬТИВЫБОР для бенефитов)
+- В конце описание компании (description) — если нужно
+
+ФОРМАТ ОТВЕТА (строго JSON):
 {
-  "title": "Название должности",
-  "description": "Описание компании и проекта",
-  "requirements": "Требования к кандидату (список)",
-  "responsibilities": "Обязанности (список)",
-  "conditions": "Условия работы и зарплата"
+  "message": "Твой ответ пользователю. Задай вопрос или подтверди изменения.",
+  "isMultiSelect": false,
+  "quickReplies": [
+    {"id": "1", "label": "Краткий текст кнопки", "value": "Полный текст который отправится как сообщение"},
+    {"id": "2", "label": "Другой вариант", "value": "Текст варианта"}
+  ],
+  "document": {
+    "title": "Название должности или null если не определено",
+    "description": "Описание или null",
+    "requirements": "Требования или null",
+    "responsibilities": "Обязанности или null",
+    "conditions": "Условия или null"
+  }
 }
 
-ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных пояснений.`;
+ПРИМЕРЫ quickReplies по этапам:
+- Для выбора должности (isMultiSelect: false): [{"id":"1","label":"Frontend","value":"Frontend-разработчик"},{"id":"2","label":"Backend","value":"Backend-разработчик"}]
+- Для уровня (isMultiSelect: false): [{"id":"1","label":"Junior","value":"Уровень Junior, 1-2 года опыта"},{"id":"2","label":"Middle","value":"Уровень Middle, 2-4 года опыта"}]
+- Для навыков (isMultiSelect: true): [{"id":"1","label":"React","value":"React"},{"id":"2","label":"TypeScript","value":"TypeScript"},{"id":"3","label":"Node.js","value":"Node.js"}]
+- Для бенефитов (isMultiSelect: true): [{"id":"1","label":"🏠 Удалёнка","value":"Удалённая работа"},{"id":"2","label":"💰 ДМС","value":"ДМС"},{"id":"3","label":"📚 Обучение","value":"Оплата обучения"}]
+- Для завершения (isMultiSelect: false): [{"id":"1","label":"✅ Всё верно","value":"Вакансия готова, сохраняем"},{"id":"2","label":"✏️ Изменить","value":"Хочу что-то изменить"}]
+
+ВАЖНО: 
+- Верни ТОЛЬКО валидный JSON
+- quickReplies должен содержать 3-5 релевантных вариантов
+- message должен быть коротким и понятным (1-2 предложения)
+- Сохраняй уже заполненные поля документа, не обнуляй их`;
 }
 
 export async function POST(request: Request) {
+  let workspaceId: string | undefined;
+  let userId: string | undefined;
+
   try {
-    // Проверка авторизации
+    // Проверка авторизации (Requirements 12.1)
     const session = await getSession();
     if (!session?.user) {
       return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
     }
 
-    // Парсинг и валидация входных данных
-    const body = await request.json();
+    userId = session.user.id;
+
+    // Парсинг и валидация входных данных (Requirements 12.3, 12.4)
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch (parseError) {
+      return NextResponse.json(
+        {
+          error: "Ошибка парсинга запроса",
+          details:
+            parseError instanceof Error ? parseError.message : "Invalid JSON",
+        },
+        { status: 400 },
+      );
+    }
+
     const validationResult = vacancyChatRequestSchema.safeParse(body);
 
     if (!validationResult.success) {
+      // Validation error (Requirements 8.3)
       return NextResponse.json(
         {
           error: "Ошибка валидации",
@@ -291,10 +445,16 @@ export async function POST(request: Request) {
       );
     }
 
-    const { workspaceId, message, currentDocument, conversationHistory } =
-      validationResult.data;
+    const {
+      workspaceId: wsId,
+      message,
+      currentDocument,
+      conversationHistory,
+    } = validationResult.data;
 
-    // Rate limiting - проверяем до обращения к БД
+    workspaceId = wsId;
+
+    // Rate limiting - проверяем до обращения к БД (Requirements 12.2)
     const rateLimitResult = checkRateLimit(workspaceId, 10, 60_000);
     if (!rateLimitResult.allowed) {
       const resetInSeconds = Math.ceil(
@@ -325,24 +485,54 @@ export async function POST(request: Request) {
           .map((msg) => sanitizeConversationMessage(msg))
       : undefined;
 
-    // Проверка доступа к workspace
-    const workspaceData = await db.query.workspace.findFirst({
-      where: eq(workspace.id, workspaceId),
-      with: {
-        members: {
-          where: eq(workspaceMember.userId, session.user.id),
+    // Проверка доступа к workspace (Requirements 12.2)
+    let workspaceData:
+      | (typeof workspace.$inferSelect & {
+          members: (typeof workspaceMember.$inferSelect)[];
+        })
+      | undefined;
+    try {
+      workspaceData = await db.query.workspace.findFirst({
+        where: eq(workspace.id, workspaceId),
+        with: {
+          members: {
+            where: eq(workspaceMember.userId, session.user.id),
+          },
         },
-      },
-    });
+      });
+    } catch (dbError) {
+      console.error("Database error checking workspace access:", dbError);
+      return NextResponse.json(
+        { error: "Внутренняя ошибка сервера" },
+        { status: 500 },
+      );
+    }
 
-    if (!workspaceData || workspaceData.members.length === 0) {
+    if (
+      !workspaceData ||
+      !workspaceData.members ||
+      workspaceData.members.length === 0
+    ) {
+      // Authorization error (Requirements 12.2)
       return NextResponse.json(
         { error: "Нет доступа к workspace" },
         { status: 403 },
       );
     }
 
-    // Логирование начала AI генерации
+    // Загружаем настройки компании для персонализации промпта (Requirements 1.5, 7.1)
+    let companySettingsData = null;
+    try {
+      companySettingsData = await db.query.companySettings.findFirst({
+        where: eq(companySettings.workspaceId, workspaceId),
+      });
+    } catch (dbError) {
+      console.error("Database error loading company settings:", dbError);
+      // Continue without company settings - not critical
+      companySettingsData = null;
+    }
+
+    // Логирование начала AI генерации (Requirements 10.1)
     // Примечание: auditLog.resourceId ожидает UUID, но workspaceId имеет формат prefixed ID (ws_...)
     // Поэтому логируем в metadata, а resourceId оставляем пустым UUID
     try {
@@ -364,28 +554,59 @@ export async function POST(request: Request) {
       console.error("Failed to log audit entry:", auditError);
     }
 
-    // Генерация промпта с санитизированными данными
+    // Генерация промпта с санитизированными данными и настройками компании
     const prompt = buildVacancyGenerationPrompt(
       sanitizedMessage,
       currentDocument,
       sanitizedHistory,
+      companySettingsData,
     );
 
     // Запуск streaming генерации
-    const result = streamText({
-      prompt,
-      generationName: "vacancy-chat-streaming",
-      entityId: workspaceId,
-      metadata: {
-        workspaceId,
-        userId: session.user.id,
-      },
-    });
+    let result: ReturnType<typeof streamText>;
+    try {
+      result = streamText({
+        prompt,
+        generationName: "vacancy-chat-streaming",
+        entityId: workspaceId,
+        metadata: {
+          workspaceId,
+          userId: session.user.id,
+        },
+      });
+    } catch (aiError) {
+      // AI generation error (Requirements 12.2)
+      console.error("AI generation error:", aiError);
+
+      // Log error to audit
+      try {
+        const auditLogger = new AuditLoggerService(db);
+        await auditLogger.logAccess({
+          userId: session.user.id,
+          action: "ACCESS",
+          resourceType: "VACANCY",
+          resourceId: "00000000-0000-0000-0000-000000000000",
+          metadata: {
+            action: "vacancy_ai_generation_error",
+            workspaceId,
+            error:
+              aiError instanceof Error ? aiError.message : "Unknown AI error",
+          },
+        });
+      } catch (auditLogError) {
+        console.error("Failed to log AI error:", auditLogError);
+      }
+
+      return NextResponse.json(
+        { error: "Не удалось сгенерировать вакансию. Попробуйте позже." },
+        { status: 500 },
+      );
+    }
 
     // Создание ReadableStream для передачи данных клиенту
     const encoder = new TextEncoder();
     let fullText = "";
-    let lastSentDocument: VacancyDocument | null = null;
+    let lastSentResponse: AIResponse | null = null;
     let chunkCounter = 0;
 
     const stream = new ReadableStream({
@@ -395,22 +616,26 @@ export async function POST(request: Request) {
             fullText += chunk;
             chunkCounter++;
 
-            // Каждые 3 чанка отправляем частичный документ для real-time обновления
+            // Каждые 3 чанка отправляем частичные данные для real-time обновления
             if (chunkCounter % 3 === 0) {
-              const { document: partialDoc } = parseVacancyJSON(
+              const { response: partialResponse } = parseAIResponse(
                 fullText,
                 currentDocument,
               );
 
-              // Отправляем только если документ изменился
-              const docString = JSON.stringify(partialDoc);
-              const lastDocString = JSON.stringify(lastSentDocument);
+              // Отправляем только если данные изменились
+              const responseString = JSON.stringify(partialResponse);
+              const lastResponseString = JSON.stringify(lastSentResponse);
 
-              if (docString !== lastDocString) {
-                lastSentDocument = partialDoc;
+              if (responseString !== lastResponseString) {
+                lastSentResponse = partialResponse;
                 controller.enqueue(
                   encoder.encode(
-                    `data: ${JSON.stringify({ document: partialDoc, partial: true })}\n\n`,
+                    `data: ${JSON.stringify({
+                      document: partialResponse.document,
+                      message: partialResponse.message,
+                      partial: true,
+                    })}\n\n`,
                   ),
                 );
               }
@@ -418,7 +643,7 @@ export async function POST(request: Request) {
           }
 
           // Финальный парсинг
-          const { document, isComplete } = parseVacancyJSON(
+          const { response: finalResponse, isComplete } = parseAIResponse(
             fullText,
             currentDocument,
           );
@@ -427,19 +652,69 @@ export async function POST(request: Request) {
             console.warn("JSON parsing incomplete, using partial data");
           }
 
-          // Отправляем финальный документ
+          // Отправляем финальный ответ с message и quickReplies
           controller.enqueue(
             encoder.encode(
-              `data: ${JSON.stringify({ document, done: true })}\n\n`,
+              `data: ${JSON.stringify({
+                document: finalResponse.document,
+                message: finalResponse.message,
+                quickReplies: finalResponse.quickReplies,
+                isMultiSelect: finalResponse.isMultiSelect ?? false,
+                done: true,
+              })}\n\n`,
             ),
           );
 
+          // Log successful completion (Requirements 10.2)
+          if (userId && workspaceId) {
+            try {
+              const auditLogger = new AuditLoggerService(db);
+              await auditLogger.logAccess({
+                userId,
+                action: "ACCESS",
+                resourceType: "VACANCY",
+                resourceId: "00000000-0000-0000-0000-000000000000",
+                metadata: {
+                  action: "vacancy_ai_generation_completed",
+                  workspaceId,
+                  documentComplete: isComplete,
+                  responseLength: fullText.length,
+                },
+              });
+            } catch (auditLogError) {
+              console.error("Failed to log completion:", auditLogError);
+            }
+          }
+
           controller.close();
-        } catch (error) {
-          console.error("Streaming error:", error);
+        } catch (streamError) {
+          console.error("Streaming error:", streamError);
+
+          // Log streaming error (Requirements 10.3)
+          if (userId && workspaceId) {
+            try {
+              const auditLogger = new AuditLoggerService(db);
+              await auditLogger.logAccess({
+                userId,
+                action: "ACCESS",
+                resourceType: "VACANCY",
+                resourceId: "00000000-0000-0000-0000-000000000000",
+                metadata: {
+                  action: "vacancy_ai_generation_stream_error",
+                  workspaceId,
+                  error:
+                    streamError instanceof Error
+                      ? streamError.message
+                      : "Unknown streaming error",
+                },
+              });
+            } catch (auditLogError) {
+              console.error("Failed to log streaming error:", auditLogError);
+            }
+          }
 
           // Пытаемся извлечь хоть что-то из накопленного текста
-          const { document: recoveredDoc } = parseVacancyJSON(
+          const { response: recoveredResponse } = parseAIResponse(
             fullText,
             currentDocument,
           );
@@ -447,9 +722,12 @@ export async function POST(request: Request) {
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
-                document: recoveredDoc,
+                document: recoveredResponse.document,
+                message: recoveredResponse.message,
                 error:
-                  error instanceof Error ? error.message : "Ошибка генерации",
+                  streamError instanceof Error
+                    ? streamError.message
+                    : "Ошибка генерации",
                 done: true,
               })}\n\n`,
             ),
@@ -467,7 +745,30 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    // Catch-all error handler (Requirements 12.2)
     console.error("API error:", error);
+
+    // Log unexpected error (Requirements 10.3)
+    if (userId && workspaceId) {
+      try {
+        const auditLogger = new AuditLoggerService(db);
+        await auditLogger.logAccess({
+          userId,
+          action: "ACCESS",
+          resourceType: "VACANCY",
+          resourceId: "00000000-0000-0000-0000-000000000000",
+          metadata: {
+            action: "vacancy_ai_generation_unexpected_error",
+            workspaceId,
+            error: error instanceof Error ? error.message : "Unknown error",
+            stack: error instanceof Error ? error.stack : undefined,
+          },
+        });
+      } catch (auditLogError) {
+        console.error("Failed to log unexpected error:", auditLogError);
+      }
+    }
+
     return NextResponse.json(
       { error: "Внутренняя ошибка сервера" },
       { status: 500 },

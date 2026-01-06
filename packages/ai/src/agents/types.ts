@@ -57,6 +57,13 @@ export enum AgentType {
   EVALUATOR = "evaluator",
   ESCALATION_DETECTOR = "escalation_detector",
   CONTEXT_ANALYZER = "context_analyzer",
+  // Recruiter agent types
+  CANDIDATE_SEARCH = "candidate_search",
+  VACANCY_ANALYTICS = "vacancy_analytics",
+  CONTENT_GENERATOR = "content_generator",
+  COMMUNICATION = "communication",
+  RULE_ENGINE = "rule_engine",
+  INTENT_CLASSIFIER = "intent_classifier",
 }
 
 /**

@@ -18,6 +18,9 @@ export const auditActionEnum = pgEnum("audit_action", [
   "UPDATE",
   "DELETE",
   "ACCESS",
+  "CREATE",
+  "EVALUATE",
+  "SUBMIT",
 ]);
 
 export const auditResourceTypeEnum = pgEnum("audit_resource_type", [
@@ -26,6 +29,10 @@ export const auditResourceTypeEnum = pgEnum("audit_resource_type", [
   "RESUME",
   "CONTACT_INFO",
   "VACANCY",
+  "PREQUALIFICATION_SESSION",
+  "WIDGET_CONFIG",
+  "CUSTOM_DOMAIN",
+  "RULE",
 ]);
 
 export const auditLog = pgTable(
@@ -36,6 +43,9 @@ export const auditLog = pgTable(
     // Пользователь, выполнивший действие
     userId: text("user_id").notNull(),
 
+    // Workspace для tenant isolation (опционально для обратной совместимости)
+    workspaceId: text("workspace_id"),
+
     // Действие
     action: auditActionEnum("action").notNull(),
 
@@ -43,7 +53,7 @@ export const auditLog = pgTable(
     resourceType: auditResourceTypeEnum("resource_type").notNull(),
 
     // ID ресурса
-    resourceId: uuid("resource_id").notNull(),
+    resourceId: text("resource_id").notNull(),
 
     // Дополнительные метаданные (опционально)
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
@@ -60,6 +70,7 @@ export const auditLog = pgTable(
   },
   (table) => ({
     userIdx: index("audit_log_user_idx").on(table.userId),
+    workspaceIdx: index("audit_log_workspace_idx").on(table.workspaceId),
     resourceIdx: index("audit_log_resource_idx").on(
       table.resourceType,
       table.resourceId,
@@ -69,6 +80,11 @@ export const auditLog = pgTable(
     // Composite index для поиска по пользователю и времени
     userCreatedAtIdx: index("audit_log_user_created_at_idx").on(
       table.userId,
+      table.createdAt,
+    ),
+    // Composite index для поиска по workspace и времени
+    workspaceCreatedAtIdx: index("audit_log_workspace_created_at_idx").on(
+      table.workspaceId,
       table.createdAt,
     ),
   }),

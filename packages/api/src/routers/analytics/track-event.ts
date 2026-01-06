@@ -1,0 +1,58 @@
+/**
+ * Track Event Procedure
+ *
+ * Записывает событие аналитики.
+ * Публичная процедура - используется виджетом на внешних сайтах.
+ */
+
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+
+import { AnalyticsError, AnalyticsTracker } from "../../services/analytics";
+import { publicProcedure } from "../../trpc";
+
+const trackEventInputSchema = z.object({
+  workspaceId: z.string().min(1, "workspaceId обязателен"),
+  vacancyId: z.string().uuid().optional(),
+  sessionId: z.string().uuid().optional(),
+  eventType: z.enum([
+    "widget_view",
+    "session_start",
+    "resume_upload",
+    "dialogue_message",
+    "dialogue_complete",
+    "evaluation_complete",
+    "application_submit",
+  ]),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+});
+
+export const trackEvent = publicProcedure
+  .input(trackEventInputSchema)
+  .mutation(async ({ ctx, input }) => {
+    const analyticsTracker = new AnalyticsTracker(ctx.db);
+
+    try {
+      const event = await analyticsTracker.trackEvent({
+        workspaceId: input.workspaceId,
+        vacancyId: input.vacancyId,
+        sessionId: input.sessionId,
+        eventType: input.eventType,
+        metadata: input.metadata,
+      });
+
+      return {
+        success: true,
+        eventId: event.id,
+      };
+    } catch (error) {
+      if (error instanceof AnalyticsError) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: error.userMessage,
+          cause: error,
+        });
+      }
+      throw error;
+    }
+  });

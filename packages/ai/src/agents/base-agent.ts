@@ -11,7 +11,7 @@ import type { AgentType } from "./types";
 export interface AgentConfig {
   model: LanguageModel;
   maxSteps?: number;
-  langfuse?: Langfuse;
+  langfuse?: Langfuse | undefined;
   traceId?: string;
   tools?: ToolSet;
 }
