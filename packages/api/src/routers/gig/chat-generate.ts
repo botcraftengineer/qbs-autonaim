@@ -271,8 +271,14 @@ export const chatGenerate = protectedProcedure
         fullText += chunk;
       }
 
+      console.log("[gig-chat-generate] AI response length:", fullText.length);
+
       const jsonString = extractJSON(fullText);
       if (!jsonString) {
+        console.error(
+          "[gig-chat-generate] No JSON found in response:",
+          fullText.substring(0, 500),
+        );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
@@ -280,10 +286,16 @@ export const chatGenerate = protectedProcedure
         });
       }
 
+      console.log(
+        "[gig-chat-generate] Extracted JSON:",
+        jsonString.substring(0, 300),
+      );
+
       let parsed: unknown;
       try {
         parsed = JSON.parse(jsonString);
-      } catch {
+      } catch (parseError) {
+        console.error("[gig-chat-generate] JSON parse error:", parseError);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Не удалось распарсить ответ от AI. Попробуйте ещё раз.",
@@ -292,6 +304,10 @@ export const chatGenerate = protectedProcedure
 
       const validationResult = aiResponseSchema.safeParse(parsed);
       if (!validationResult.success) {
+        console.error(
+          "[gig-chat-generate] Validation error:",
+          validationResult.error,
+        );
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message:
@@ -300,6 +316,12 @@ export const chatGenerate = protectedProcedure
       }
 
       const validated = validationResult.data;
+      console.log("[gig-chat-generate] Validated document:", {
+        hasTitle: !!validated.title,
+        hasDescription: !!validated.description,
+        hasDeliverables: !!validated.deliverables,
+        quickRepliesCount: validated.quickReplies?.length ?? 0,
+      });
 
       return {
         document: {
@@ -317,6 +339,7 @@ export const chatGenerate = protectedProcedure
         quickReplies: validated.quickReplies ?? [],
       };
     } catch (error) {
+      console.error("[gig-chat-generate] Error:", error);
       if (error instanceof TRPCError) throw error;
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",

@@ -155,12 +155,13 @@ export function AppSidebar({
   const { workspaces, organizations } = useWorkspaces();
   const activeWorkspace = workspaces?.find((w) => w.id === activeWorkspaceId);
 
-  const stats = useSidebarStats(activeWorkspaceId);
+  const { isError, isLoading, error, ...stats } =
+    useSidebarStats(activeWorkspaceId);
 
   const navSections = getNavSections(
     activeWorkspace?.organizationSlug,
     activeWorkspace?.slug,
-    stats,
+    isError ? undefined : stats,
   );
 
   const navSecondaryItems = getNavSecondaryItems(
@@ -191,9 +192,12 @@ export function AppSidebar({
                       )
                     : paths.dashboard.root
                 }
+                className="overflow-hidden"
               >
-                <IconInnerShadowTop className="size-5!" />
-                <span className="text-base font-semibold">QBS Автонайм</span>
+                <IconInnerShadowTop className="size-5 shrink-0!" />
+                <span className="text-base font-semibold truncate">
+                  QBS Автонайм
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -204,9 +208,14 @@ export function AppSidebar({
             activeOrganizationId={activeOrganizationId}
           />
         )}
+        {isError && (
+          <div className="px-2 py-1.5 text-xs text-destructive truncate">
+            Не удалось загрузить статистику
+          </div>
+        )}
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="overflow-x-hidden">
         {quickActions.length > 0 && (
           <>
             <NavQuickActions actions={quickActions} />

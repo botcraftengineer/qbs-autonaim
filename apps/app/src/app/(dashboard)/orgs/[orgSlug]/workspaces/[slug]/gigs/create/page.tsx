@@ -41,7 +41,7 @@ export default function CreateGigPage({ params }: PageProps) {
   const { orgSlug, slug: workspaceSlug } = React.use(params);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
-  const { workspace } = useWorkspace();
+  const { workspace, isLoading: isWorkspaceLoading } = useWorkspace();
 
   const isMountedRef = React.useRef(true);
   const [isGenerating, setIsGenerating] = React.useState(false);
@@ -101,6 +101,12 @@ export default function CreateGigPage({ params }: PageProps) {
   );
 
   const handleWizardComplete = async (wizardStateParam: WizardState) => {
+    // Проверяем наличие workspace перед генерацией
+    if (!workspace?.id) {
+      toast.error("Workspace не загружен. Попробуйте обновить страницу.");
+      return;
+    }
+
     setIsGenerating(true);
     setWizardState(wizardStateParam);
 
@@ -140,11 +146,21 @@ export default function CreateGigPage({ params }: PageProps) {
     const message = parts.join("\n");
 
     try {
+      console.log(
+        "[gig-create] Calling generateWithAi with workspaceId:",
+        workspace.id,
+      );
       const result = await generateWithAi({
-        workspaceId: workspace?.id ?? "",
+        workspaceId: workspace.id,
         message,
         currentDocument: {},
         conversationHistory: [],
+      });
+
+      console.log("[gig-create] AI result received:", {
+        hasDocument: !!result.document,
+        documentTitle: result.document?.title,
+        quickRepliesCount: result.quickReplies?.length,
       });
 
       if (!isMountedRef.current) return;
@@ -158,7 +174,10 @@ export default function CreateGigPage({ params }: PageProps) {
       const parsed = aiDocumentSchema.safeParse(doc);
 
       if (!parsed.success) {
-        console.error("AI response validation failed:", parsed.error);
+        console.error(
+          "[gig-create] AI response validation failed:",
+          parsed.error,
+        );
         // Use safe defaults from wizard state
         setDraft({
           title: "",
@@ -209,11 +228,15 @@ export default function CreateGigPage({ params }: PageProps) {
     message: string,
     history: ConversationMessage[],
   ) => {
-    if (!workspace?.id) return;
+    if (!workspace?.id) {
+      console.warn("[gig-create] handleChatMessage called without workspace");
+      return;
+    }
 
     setIsGenerating(true);
 
     try {
+      console.log("[gig-create] handleChatMessage calling AI");
       const result = await generateWithAi({
         workspaceId: workspace.id,
         message,
@@ -231,6 +254,11 @@ export default function CreateGigPage({ params }: PageProps) {
         conversationHistory: history
           .slice(-10)
           .map(({ role, content }) => ({ role, content })), // Последние 10 сообщений
+      });
+
+      console.log("[gig-create] handleChatMessage result:", {
+        hasDocument: !!result.document,
+        documentTitle: result.document?.title,
       });
 
       if (!isMountedRef.current) return;
@@ -266,12 +294,16 @@ export default function CreateGigPage({ params }: PageProps) {
   };
 
   const handleCreate = () => {
+    if (!workspace?.id) {
+      toast.error("Workspace не загружен");
+      return;
+    }
     if (!draft.title) {
       toast.error("Укажите название задания");
       return;
     }
     createGig({
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspace.id,
       title: draft.title,
       description: draft.description || undefined,
       type: draft.type,
@@ -285,8 +317,12 @@ export default function CreateGigPage({ params }: PageProps) {
   };
 
   const onSubmit = (v: FormValues) => {
+    if (!workspace?.id) {
+      toast.error("Workspace не загружен");
+      return;
+    }
     createGig({
-      workspaceId: workspace?.id ?? "",
+      workspaceId: workspace.id,
       title: v.title,
       description: v.description || undefined,
       type: v.type,
@@ -327,7 +363,7 @@ export default function CreateGigPage({ params }: PageProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <WizardChat
           onComplete={handleWizardComplete}
-          isGenerating={isGenerating}
+          isGenerating={isGenerating || isWorkspaceLoading}
           onChatMessage={handleChatMessage}
           quickReplies={quickReplies}
           onAddAssistantMessage={() => {}} // Enable assistant message handling

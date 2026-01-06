@@ -31,13 +31,13 @@ export function NavQuickActions({ actions }: { actions: QuickAction[] }) {
                 className="bg-primary/5 hover:bg-primary/10 border-primary/20"
                 asChild
               >
-                <Link href={action.url}>
+                <Link href={action.url} className="overflow-hidden">
                   {action.icon ? (
-                    <action.icon className="size-4" />
+                    <action.icon className="size-4 shrink-0" />
                   ) : (
-                    <IconPlus className="size-4" />
+                    <IconPlus className="size-4 shrink-0" />
                   )}
-                  <span>{action.title}</span>
+                  <span className="truncate">{action.title}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

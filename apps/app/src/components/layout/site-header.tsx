@@ -2,16 +2,19 @@
 
 import { Button, Input, Separator, SidebarTrigger } from "@qbs-autonaim/ui";
 import { Command, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface SiteHeaderProps {
-  title?: string;
   children?: React.ReactNode;
 }
 
-export function SiteHeader({
-  title = "Панель управления",
-  children,
-}: SiteHeaderProps) {
+export function SiteHeader({ children }: SiteHeaderProps) {
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    setIsMac(navigator.platform.toUpperCase().includes("MAC"));
+  }, []);
+
   return (
     <header className="bg-background/40 sticky top-0 z-50 flex h-(--header-height) shrink-0 items-center gap-2 border-b backdrop-blur-md transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) md:rounded-tl-xl md:rounded-tr-xl">
       <div className="flex w-full items-center gap-1 px-4 py-3 lg:gap-2 lg:px-6 lg:py-4">
@@ -28,16 +31,30 @@ export function SiteHeader({
             />
             <Input
               type="search"
-              placeholder="Поиск..."
-              className="h-9 w-full cursor-pointer rounded-md border pr-4 pl-10 text-sm shadow-xs"
+              placeholder="Поиск (скоро)…"
+              disabled
+              aria-label="Поиск (функция в разработке)"
+              className="h-9 w-full cursor-not-allowed rounded-md border pr-4 pl-10 text-sm shadow-xs"
             />
-            <div className="absolute top-1/2 right-2 hidden -translate-y-1/2 items-center gap-0.5 rounded-sm bg-zinc-200 p-1 font-mono text-xs font-medium sm:flex dark:bg-neutral-700">
-              <Command className="size-3" aria-hidden="true" />
-              <span>k</span>
+            <div className="absolute top-1/2 right-2 hidden -translate-y-1/2 items-center gap-0.5 rounded-sm bg-zinc-200 p-1 font-mono text-xs font-medium opacity-50 sm:flex dark:bg-neutral-700">
+              {isMac ? (
+                <>
+                  <Command className="size-3" aria-hidden="true" />
+                  <span>K</span>
+                </>
+              ) : (
+                <span>Ctrl+K</span>
+              )}
             </div>
           </div>
           <div className="block lg:hidden">
-            <Button variant="ghost" size="icon" className="size-9">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-9"
+              disabled
+              aria-label="Поиск (функция в разработке)"
+            >
               <Search className="h-4 w-4" aria-hidden="true" />
             </Button>
           </div>
