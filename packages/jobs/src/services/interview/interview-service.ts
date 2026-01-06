@@ -172,7 +172,7 @@ export async function analyzeAndGenerateNextQuestion(
 export async function getInterviewContext(
   conversationId: string,
 ): Promise<InterviewContext | null> {
-  const conv = await db.query.conversation.findFirst({
+  const conv = (await db.query.conversation.findFirst({
     where: eq(conversation.id, conversationId),
     with: {
       messages: {
@@ -191,6 +191,7 @@ export async function getInterviewContext(
           },
         },
       },
+      // @ts-expect-error - Drizzle type inference limitation with deep nesting
       gigResponse: {
         with: {
           gig: {
@@ -205,7 +206,7 @@ export async function getInterviewContext(
         },
       },
     },
-  });
+  })) as any; // Type assertion needed due to Drizzle's deep nesting inference limitations
 
   if (!conv) {
     return null;
@@ -216,8 +217,8 @@ export async function getInterviewContext(
 
   // Формируем историю диалога с правильными типами
   const conversationHistory = conv.messages
-    .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
-    .map((msg) => ({
+    .filter((msg: any) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
+    .map((msg: any) => ({
       sender: msg.sender as "CANDIDATE" | "BOT",
       content:
         msg.contentType === "VOICE" && msg.voiceTranscription
@@ -246,7 +247,8 @@ export async function getInterviewContext(
         : null,
     questionNumber: questionAnswers.length + 1,
     responseId: isGig ? conv.gigResponseId : conv.responseId || null,
-    resumeLanguage: isGig ? "ru" : conv.response?.resumeLanguage || "ru",
+    resumeLanguage:
+      conv.response?.resumeLanguage || conv.gigResponse?.resumeLanguage || "ru",
     conversationHistory,
     companySettings: workspace?.companySettings
       ? {

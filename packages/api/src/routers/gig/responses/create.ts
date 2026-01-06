@@ -27,6 +27,7 @@ const createResponseSchema = z.object({
   experience: z.string().optional(),
   skills: z.array(z.string()).optional(),
   rating: z.string().max(20).optional(),
+  resumeLanguage: z.string().max(10).default("ru").optional(),
   importSource: z.enum(gigImportSourceValues).default("MANUAL"),
 });
 
@@ -95,6 +96,7 @@ export const create = protectedProcedure
           experience: input.experience,
           skills: input.skills,
           rating: input.rating,
+          resumeLanguage: input.resumeLanguage || "ru",
           importSource: input.importSource,
           respondedAt: new Date(),
         })

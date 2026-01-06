@@ -62,24 +62,43 @@ export const generateInterviewLink = protectedProcedure
 
     let slug = generateSlug();
     let attempts = 0;
-    while (attempts < 10) {
-      const existing = await ctx.db.query.gigInterviewLink.findFirst({
-        where: eq(gigInterviewLink.slug, slug),
-      });
-      if (!existing) break;
-      slug = `${generateSlug()}-${Date.now()}`;
-      attempts++;
-    }
+    let created: typeof gigInterviewLink.$inferSelect | undefined;
 
-    const [created] = await ctx.db
-      .insert(gigInterviewLink)
-      .values({
-        gigId: input.gigId,
-        token: randomUUID(),
-        slug,
-        isActive: true,
-      })
-      .returning();
+    while (attempts < 10) {
+      try {
+        [created] = await ctx.db
+          .insert(gigInterviewLink)
+          .values({
+            gigId: input.gigId,
+            token: randomUUID(),
+            slug,
+            isActive: true,
+          })
+          .returning();
+
+        break;
+      } catch (error) {
+        // Detect unique constraint violation
+        const isUniqueError =
+          error &&
+          typeof error === "object" &&
+          "code" in error &&
+          (error.code === "23505" || // Postgres unique violation
+            (error.code === "SQLITE_CONSTRAINT" &&
+              "message" in error &&
+              typeof error.message === "string" &&
+              error.message.includes("UNIQUE")));
+
+        if (isUniqueError) {
+          slug = `${generateSlug()}-${Date.now()}`;
+          attempts++;
+          continue;
+        }
+
+        // Non-unique error, rethrow
+        throw error;
+      }
+    }
 
     if (!created) {
       throw new TRPCError({
