@@ -1,6 +1,14 @@
 "use client";
 
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -14,6 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Skeleton,
+  toast,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -33,6 +42,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { useState } from "react";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { useTRPC } from "~/trpc/react";
@@ -151,6 +161,7 @@ export function GigDetailClient({
   workspaceId,
 }: GigDetailClientProps) {
   const trpc = useTRPC();
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
     data: gig,
@@ -162,6 +173,48 @@ export function GigDetailClient({
       workspaceId,
     }),
   );
+
+  const handleShare = () => {
+    // TODO: Implement share functionality
+    const url = `${window.location.origin}/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`;
+    navigator.clipboard
+      .writeText(url)
+      .then(() => {
+        toast.success("Ссылка скопирована в буфер обмена");
+      })
+      .catch(() => {
+        toast.error("Не удалось скопировать ссылку");
+      });
+  };
+
+  const handleSettings = () => {
+    // TODO: Implement settings functionality
+    toast.info("Функция «Настройки» скоро будет доступна");
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    // TODO: Implement delete mutation using tRPC
+    // Example:
+    // const { mutate: deleteGig } = useMutation(
+    //   trpc.gig.delete.mutationOptions({
+    //     onSuccess: () => {
+    //       toast.success("Задание удалено");
+    //       router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`);
+    //     },
+    //     onError: (error) => {
+    //       toast.error(error.message);
+    //     },
+    //   })
+    // );
+    // deleteGig({ id: gigId, workspaceId });
+
+    setShowDeleteDialog(false);
+    toast.info("Функция удаления скоро будет доступна");
+  };
 
   if (isPending) {
     return <GigDetailSkeleton />;
@@ -211,7 +264,11 @@ export function GigDetailClient({
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Открыть меню"
+                    >
                       <MoreHorizontal className="h-4 w-4" />
                       <span className="sr-only">Открыть меню</span>
                     </Button>
@@ -225,16 +282,19 @@ export function GigDetailClient({
                         Редактировать
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleShare}>
                       <Share2 className="h-4 w-4 mr-2" />
                       Поделиться
                     </DropdownMenuItem>
-                    <DropdownMenuItem>
+                    <DropdownMenuItem onSelect={handleSettings}>
                       <Settings className="h-4 w-4 mr-2" />
                       Настройки
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="text-destructive">
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onSelect={handleDeleteClick}
+                    >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Удалить
                     </DropdownMenuItem>
@@ -458,7 +518,11 @@ export function GigDetailClient({
                 </Link>
               </Button>
 
-              <Button variant="outline" className="w-full">
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handleShare}
+              >
                 <Share2 className="h-4 w-4 mr-2" />
                 Поделиться
               </Button>
@@ -466,6 +530,28 @@ export function GigDetailClient({
           </Card>
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Удалить задание?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Вы собираетесь удалить задание "{gig.title}". Это действие нельзя
+              отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Удалить задание
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

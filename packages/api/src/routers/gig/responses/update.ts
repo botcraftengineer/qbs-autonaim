@@ -58,6 +58,14 @@ export const update = protectedProcedure
 
     const { responseId, workspaceId, ...updateData } = input;
 
+    // Guard against empty updates
+    if (Object.keys(updateData).length === 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Не указаны поля для обновления",
+      });
+    }
+
     const [updated] = await ctx.db
       .update(gigResponse)
       .set({
