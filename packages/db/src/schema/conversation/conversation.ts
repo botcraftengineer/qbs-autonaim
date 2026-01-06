@@ -12,6 +12,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
 
 export const conversationStatusEnum = pgEnum("conversation_status", [
@@ -34,6 +35,11 @@ export const conversation = pgTable(
       .references(() => vacancyResponse.id, {
         onDelete: "cascade",
       }),
+    gigResponseId: uuid("gig_response_id")
+      .unique()
+      .references(() => gigResponse.id, {
+        onDelete: "cascade",
+      }),
     candidateName: varchar("candidate_name", { length: 500 }),
     username: varchar("username", { length: 100 }),
     status: conversationStatusEnum("status").default("ACTIVE").notNull(),
@@ -53,11 +59,15 @@ export const conversation = pgTable(
     activeConversationsIdx: index("conversation_active_idx")
       .on(table.status)
       .where(sql`${table.status} = 'ACTIVE'`),
+    gigResponseIdx: index("conversation_gig_response_idx").on(
+      table.gigResponseId,
+    ),
   }),
 );
 
 export const CreateConversationSchema = createInsertSchema(conversation, {
   responseId: uuidv7Schema.nullable(),
+  gigResponseId: uuidv7Schema.nullable(),
   candidateName: z.string().max(500).optional(),
   username: z.string().max(100).optional(),
   status: z.enum(["ACTIVE", "COMPLETED", "CANCELLED"]).default("ACTIVE"),

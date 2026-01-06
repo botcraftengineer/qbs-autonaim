@@ -5,67 +5,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-
-const adjectives = [
-  "quick",
-  "bright",
-  "clever",
-  "smart",
-  "swift",
-  "bold",
-  "calm",
-  "cool",
-  "eager",
-  "fair",
-  "gentle",
-  "happy",
-  "jolly",
-  "kind",
-  "lively",
-  "merry",
-  "nice",
-  "proud",
-  "quiet",
-  "sharp",
-  "wise",
-  "witty",
-  "brave",
-  "fresh",
-];
-
-const nouns = [
-  "fox",
-  "wolf",
-  "bear",
-  "lion",
-  "tiger",
-  "eagle",
-  "hawk",
-  "owl",
-  "deer",
-  "horse",
-  "panda",
-  "koala",
-  "otter",
-  "seal",
-  "whale",
-  "shark",
-  "dragon",
-  "phoenix",
-  "falcon",
-  "raven",
-  "lynx",
-  "jaguar",
-  "leopard",
-  "cheetah",
-];
-
-function generateSlug(): string {
-  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const number = Math.floor(Math.random() * 100);
-  return `${adjective}-${noun}-${number}`;
-}
+import { generateSlug } from "../../utils/slug-generator";
 
 export const generateInterviewLink = protectedProcedure
   .input(

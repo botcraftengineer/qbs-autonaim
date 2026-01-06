@@ -44,6 +44,7 @@ export const gigInterviewLink = pgTable(
 export const CreateGigInterviewLinkSchema = createInsertSchema(
   gigInterviewLink,
   {
+    gigId: z.string().uuid(),
     token: z.string().max(100),
     slug: z.string().max(100),
     isActive: z.boolean().default(true),

@@ -9,67 +9,7 @@ import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
-
-const adjectives = [
-  "quick",
-  "bright",
-  "clever",
-  "smart",
-  "swift",
-  "bold",
-  "calm",
-  "cool",
-  "eager",
-  "fair",
-  "gentle",
-  "happy",
-  "jolly",
-  "kind",
-  "lively",
-  "merry",
-  "nice",
-  "proud",
-  "quiet",
-  "sharp",
-  "wise",
-  "witty",
-  "brave",
-  "fresh",
-];
-
-const nouns = [
-  "fox",
-  "wolf",
-  "bear",
-  "lion",
-  "tiger",
-  "eagle",
-  "hawk",
-  "owl",
-  "deer",
-  "horse",
-  "panda",
-  "koala",
-  "otter",
-  "seal",
-  "whale",
-  "shark",
-  "dragon",
-  "phoenix",
-  "falcon",
-  "raven",
-  "lynx",
-  "jaguar",
-  "leopard",
-  "cheetah",
-];
-
-function generateSlug(): string {
-  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  const number = Math.floor(Math.random() * 100);
-  return `${adjective}-${noun}-${number}`;
-}
+import { generateSlug } from "../../../utils/slug-generator";
 
 function generateInvitationText(
   candidateName: string | null,
@@ -158,36 +98,65 @@ export const generateInvitation = protectedProcedure
     });
 
     if (!link) {
-      // Создаём новую ссылку
-      let slug = generateSlug();
-      let attempts = 0;
-      while (attempts < 10) {
-        const existing = await ctx.db.query.gigInterviewLink.findFirst({
-          where: eq(gigInterviewLink.slug, slug),
-        });
-        if (!existing) break;
-        slug = `${generateSlug()}-${Date.now()}`;
-        attempts++;
+      // Создаём новую ссылку с retry механизмом для обработки race condition
+      const MAX_ATTEMPTS = 5;
+      let lastError: unknown;
+
+      for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        try {
+          const slug = generateSlug();
+          const token = randomUUID();
+
+          const [created] = await ctx.db
+            .insert(gigInterviewLink)
+            .values({
+              gigId: response.gigId,
+              token,
+              slug,
+              isActive: true,
+            })
+            .returning();
+
+          if (created) {
+            link = created;
+            break;
+          }
+        } catch (error) {
+          lastError = error;
+
+          // Проверяем, является ли ошибка нарушением уникального ограничения
+          const isUniqueViolation =
+            error &&
+            typeof error === "object" &&
+            "code" in error &&
+            (error.code === "23505" || error.code === "SQLITE_CONSTRAINT");
+
+          if (!isUniqueViolation) {
+            // Если это не ошибка уникальности, пробрасываем её сразу
+            throw error;
+          }
+
+          // Если это последняя попытка, выбрасываем ошибку
+          if (attempt === MAX_ATTEMPTS - 1) {
+            throw new TRPCError({
+              code: "INTERNAL_SERVER_ERROR",
+              message:
+                "Не удалось создать уникальную ссылку на интервью после нескольких попыток",
+              cause: lastError,
+            });
+          }
+
+          // Иначе повторяем попытку с новым slug и token
+        }
       }
 
-      const [created] = await ctx.db
-        .insert(gigInterviewLink)
-        .values({
-          gigId: response.gigId,
-          token: randomUUID(),
-          slug,
-          isActive: true,
-        })
-        .returning();
-
-      if (!created) {
+      if (!link) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Не удалось создать ссылку на интервью",
+          cause: lastError,
         });
       }
-
-      link = created;
     }
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";

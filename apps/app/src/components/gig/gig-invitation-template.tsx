@@ -16,7 +16,12 @@ import {
   IconLink,
   IconLoader2,
 } from "@tabler/icons-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  skipToken,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -36,13 +41,14 @@ export function GigInvitationTemplate({
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
-  const { data: interviewLink, isLoading: isLoadingLink } = useQuery({
-    ...trpc.gig.responses.getInvitation.queryOptions({
-      responseId: gigId,
-      workspaceId: workspace?.id ?? "",
-    }),
-    enabled: false, // Не загружаем автоматически
-  });
+  const { data: interviewLink, isLoading: isLoadingLink } = useQuery(
+    workspace?.id
+      ? trpc.gig.getInterviewLink.queryOptions({
+          gigId,
+          workspaceId: workspace.id,
+        })
+      : skipToken,
+  );
 
   const { mutate: generateLink, isPending: isGenerating } = useMutation({
     ...trpc.gig.generateInterviewLink.mutationOptions({
