@@ -37,8 +37,8 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/deepseek": "2.0.2",
-    "@ai-sdk/openai": "3.0.2",
+    "@ai-sdk/deepseek": "2.0.4",
+    "@ai-sdk/openai": "3.0.7",
     "@inngest/realtime": "0.4.5",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
