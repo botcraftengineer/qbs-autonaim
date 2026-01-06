@@ -4,6 +4,12 @@
  * Извлекает структурированные данные из сырого текста резюме.
  */
 
+import {
+  educationSchema,
+  languageSchema,
+  personalInfoSchema,
+  workExperienceSchema,
+} from "@tecno/validators/prequalification";
 import { z } from "zod";
 import { type AgentConfig, BaseAgent } from "./base-agent";
 import { AgentType } from "./types";
@@ -12,42 +18,13 @@ export interface ResumeStructurerInput {
   rawText: string;
 }
 
-const workExperienceSchema = z.object({
-  company: z.string(),
-  position: z.string(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-  description: z.string().optional(),
-  isCurrent: z.boolean(),
-});
-
-const educationSchema = z.object({
-  institution: z.string(),
-  degree: z.string().optional(),
-  field: z.string().optional(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
-});
-
-const languageSchema = z.object({
-  name: z.string(),
-  level: z.string(),
-});
-
-const personalInfoSchema = z.object({
-  name: z.string().optional(),
-  email: z.string().optional(),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-});
-
 const resumeStructurerOutputSchema = z.object({
   personalInfo: personalInfoSchema,
   experience: z.array(workExperienceSchema),
   education: z.array(educationSchema),
-  skills: z.array(z.string()),
+  skills: z.array(z.string().max(100)),
   languages: z.array(languageSchema),
-  summary: z.string().optional(),
+  summary: z.string().max(5000).optional(),
 });
 
 export type ResumeStructurerOutput = z.infer<
