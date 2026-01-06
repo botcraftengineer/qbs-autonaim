@@ -1051,6 +1051,11 @@ export class AutonomyLevelHandler {
       return null;
     }
 
+    if (this.isExpired(approval)) {
+      approval.status = "expired";
+      return null;
+    }
+
     if (approval.status !== "pending") {
       return null;
     }
@@ -1145,5 +1150,8 @@ export function resetRuleEngine(): void {
  * Сбрасывает autonomy handler (для тестов)
  */
 export function resetAutonomyHandler(): void {
+  if (autonomyHandlerInstance) {
+    autonomyHandlerInstance.destroy();
+  }
   autonomyHandlerInstance = null;
 }

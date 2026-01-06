@@ -164,14 +164,28 @@ const RecruiterCompanySettingsSchema = z.object({
     .optional(),
   communicationStyle: z
     .enum(["formal", "casual", "professional"], {
-      message:
-        "Стиль коммуникации должен быть: formal, casual или professional",
+      errorMap: (issue, ctx) => {
+        if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+          return {
+            message:
+              "Стиль коммуникации должен быть: formal, casual или professional",
+          };
+        }
+        return { message: ctx.defaultError };
+      },
     })
     .optional(),
   defaultAutonomyLevel: z
     .enum(["advise", "confirm", "autonomous"], {
-      message:
-        "Уровень автономности должен быть: advise, confirm или autonomous",
+      errorMap: (issue, ctx) => {
+        if (issue.code === z.ZodIssueCode.invalid_enum_value) {
+          return {
+            message:
+              "Уровень автономности должен быть: advise, confirm или autonomous",
+          };
+        }
+        return { message: ctx.defaultError };
+      },
     })
     .optional(),
 });

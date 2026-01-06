@@ -92,7 +92,7 @@ export class ResumeStructurerAgent extends BaseAgent<
 
 5. ЯЗЫКИ (languages):
    Для каждого языка:
-   - language: название языка
+   - name: название языка
    - level: уровень владения (родной, свободный, продвинутый, средний, базовый)
 
 6. КРАТКОЕ ОПИСАНИЕ (summary):
