@@ -55,9 +55,10 @@ function NavCollapsibleSection({
   section: NavSection;
   pathname: string;
 }) {
-  const hasActiveItem = section.items.some(
-    (item) => pathname === item.url || pathname.startsWith(`${item.url}/`),
-  );
+  const isItemActive = (itemUrl: string) =>
+    pathname === itemUrl || pathname.startsWith(`${itemUrl}/`);
+
+  const hasActiveItem = section.items.some((item) => isItemActive(item.url));
   const [isOpen, setIsOpen] = useState(section.defaultOpen ?? hasActiveItem);
 
   return (
@@ -80,9 +81,7 @@ function NavCollapsibleSection({
                 <NavCollapsibleItem
                   key={item.title}
                   item={item}
-                  isActive={
-                    pathname === item.url || pathname.startsWith(`${item.url}/`)
-                  }
+                  isActive={isItemActive(item.url)}
                 />
               ))}
             </SidebarMenu>
@@ -103,9 +102,9 @@ function NavCollapsibleItem({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton tooltip={item.title} isActive={isActive} asChild>
-        <Link href={item.url}>
-          {item.icon && <item.icon />}
-          <span>{item.title}</span>
+        <Link href={item.url} className="overflow-hidden">
+          {item.icon && <item.icon className="shrink-0" />}
+          <span className="truncate">{item.title}</span>
         </Link>
       </SidebarMenuButton>
       {item.badge !== undefined && item.badge > 0 && (

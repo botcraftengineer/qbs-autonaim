@@ -6,7 +6,12 @@ import { useTRPC } from "~/trpc/react";
 export function useSidebarStats(workspaceId: string | undefined) {
   const trpc = useTRPC();
 
-  const { data: dashboardStats } = useQuery({
+  const {
+    data: dashboardStats,
+    error,
+    isError,
+    isLoading,
+  } = useQuery({
     ...trpc.vacancy.dashboardStats.queryOptions({
       workspaceId: workspaceId ?? "",
     }),
@@ -15,10 +20,20 @@ export function useSidebarStats(workspaceId: string | undefined) {
     refetchInterval: 60_000, // Обновляем каждую минуту
   });
 
+  if (isError) {
+    console.error(
+      `[useSidebarStats] Failed to fetch stats for workspace ${workspaceId}:`,
+      error?.message ?? error,
+    );
+  }
+
   return {
     newResponses: dashboardStats?.newResponses ?? 0,
     totalResponses: dashboardStats?.totalResponses ?? 0,
     activeVacancies: dashboardStats?.activeVacancies ?? 0,
     highScoreResponses: dashboardStats?.highScoreResponses ?? 0,
+    error,
+    isError,
+    isLoading,
   };
 }

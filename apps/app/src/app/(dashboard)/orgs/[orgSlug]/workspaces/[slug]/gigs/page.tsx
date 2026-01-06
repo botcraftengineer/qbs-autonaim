@@ -9,16 +9,17 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  toast,
 } from "@qbs-autonaim/ui";
 import { IconFilter, IconSearch, IconSparkles } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
-import { EmptyState, GigCard } from "./components";
+import { DeleteGigDialog, EmptyState, GigCard } from "./components";
 
 const gigTypeLabels: Record<string, string> = {
   DEVELOPMENT: "Разработка",
@@ -37,11 +38,19 @@ const gigTypeLabels: Record<string, string> = {
 export default function GigsPage() {
   const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const api = useTRPC();
+  const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("createdAt");
+
+  // Delete dialog state
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [gigToDelete, setGigToDelete] = useState<{
+    id: string;
+    title: string;
+  } | null>(null);
 
   const { data: gigs, isLoading } = useQuery({
     ...api.gig.list.queryOptions({
@@ -49,6 +58,42 @@ export default function GigsPage() {
     }),
     enabled: !!workspace?.id,
   });
+
+  const deleteMutation = useMutation(
+    api.gig.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success("Задание удалено");
+        queryClient.invalidateQueries({
+          queryKey: api.gig.list.queryKey(),
+        });
+        setDeleteDialogOpen(false);
+        setGigToDelete(null);
+      },
+      onError: (error) => {
+        toast.error(error.message || "Не удалось удалить задание");
+      },
+    }),
+  );
+
+  const handleDeleteClick = useCallback(
+    (gigId: string) => {
+      const gig = gigs?.find((g) => g.id === gigId);
+      if (gig) {
+        setGigToDelete({ id: gig.id, title: gig.title });
+        setDeleteDialogOpen(true);
+      }
+    },
+    [gigs],
+  );
+
+  const handleDeleteConfirm = useCallback(() => {
+    if (gigToDelete && workspace?.id) {
+      deleteMutation.mutate({
+        gigId: gigToDelete.id,
+        workspaceId: workspace.id,
+      });
+    }
+  }, [gigToDelete, workspace?.id, deleteMutation]);
 
   const filteredAndSortedGigs = useMemo(() => {
     if (!gigs) return [];
@@ -349,6 +394,7 @@ export default function GigsPage() {
                       }}
                       orgSlug={orgSlug || ""}
                       workspaceSlug={workspaceSlug || ""}
+                      onDelete={handleDeleteClick}
                     />
                   ))}
                 </div>
@@ -357,6 +403,14 @@ export default function GigsPage() {
           </div>
         </div>
       </div>
+
+      <DeleteGigDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDeleteConfirm}
+        gigTitle={gigToDelete?.title ?? ""}
+        isLoading={deleteMutation.isPending}
+      />
     </>
   );
 }

@@ -65,7 +65,7 @@ export function OrganizationSettingsAppSidebar({
 
   return (
     <Sidebar variant="floating" collapsible="offcanvas">
-      <SidebarContent>
+      <SidebarContent className="overflow-x-hidden">
         <SidebarGroup>
           <SidebarMenu>
             <SidebarMenuItem>

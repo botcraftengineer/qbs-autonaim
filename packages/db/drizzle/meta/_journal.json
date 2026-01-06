@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1767038649441,
-      "tag": "0000_faulty_kylun",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1767097749812,
-      "tag": "0001_heavy_cobalt_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1767342437861,
-      "tag": "0002_rich_bloodstrike",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1767686839788,
-      "tag": "0003_tense_cammi",
+      "when": 1767694644442,
+      "tag": "0000_medical_robbie_robertson",
       "breakpoints": true
     }
   ]
