@@ -8,8 +8,7 @@ export const updateVacancyDetailsSchema = z.object({
   description: z
     .string()
     .max(50000, { message: "Описание не должно превышать 50000 символов" })
-    .optional()
-    .nullable(),
+    .nullish(),
 });
 
 export type UpdateVacancyDetailsInput = z.infer<
@@ -20,23 +19,19 @@ export const updateVacancySettingsSchema = z.object({
   customBotInstructions: z
     .string()
     .max(5000, { message: "Инструкции не должны превышать 5000 символов" })
-    .optional()
-    .nullable(),
+    .nullish(),
   customScreeningPrompt: z
     .string()
     .max(5000, { message: "Промпт не должен превышать 5000 символов" })
-    .optional()
-    .nullable(),
+    .nullish(),
   customInterviewQuestions: z
     .string()
     .max(5000, { message: "Вопросы не должны превышать 5000 символов" })
-    .optional()
-    .nullable(),
+    .nullish(),
   customOrganizationalQuestions: z
     .string()
     .max(5000, { message: "Вопросы не должны превышать 5000 символов" })
-    .optional()
-    .nullable(),
+    .nullish(),
 });
 
 export type UpdateVacancySettingsInput = z.infer<

@@ -7,7 +7,7 @@ export const cancel = protectedProcedure
   .input(
     z.object({
       workspaceId: workspaceIdSchema,
-      email: z.string().email(),
+      email: z.email(),
     }),
   )
   .mutation(async ({ input, ctx }) => {

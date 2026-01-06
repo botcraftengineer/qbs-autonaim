@@ -47,7 +47,7 @@ export const vacancyResponseHistory = pgTable("vacancy_response_history", {
 export const CreateVacancyResponseHistorySchema = createInsertSchema(
   vacancyResponseHistory,
   {
-    responseId: z.string().uuid(),
+    responseId: z.uuid(),
     eventType: z.enum([
       "STATUS_CHANGED",
       "HR_STATUS_CHANGED",

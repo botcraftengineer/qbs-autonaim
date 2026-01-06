@@ -29,9 +29,9 @@ export const freelanceInvitation = pgTable(
 export const CreateFreelanceInvitationSchema = createInsertSchema(
   freelanceInvitation,
   {
-    responseId: z.string().uuid(),
+    responseId: z.uuid(),
     invitationText: z.string().min(1),
-    interviewUrl: z.string().url(),
+    interviewUrl: z.url(),
   },
 ).omit({
   id: true,

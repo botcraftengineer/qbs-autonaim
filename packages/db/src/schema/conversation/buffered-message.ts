@@ -53,7 +53,7 @@ export const bufferedMessage = pgTable(
  */
 export const CreateBufferedMessageSchema = createInsertSchema(bufferedMessage, {
   messageId: z.string().min(1),
-  conversationId: z.string().uuid(),
+  conversationId: z.uuid(),
   userId: z.string().min(1),
   interviewStep: z.number().int().min(0),
   content: z.string().min(1),

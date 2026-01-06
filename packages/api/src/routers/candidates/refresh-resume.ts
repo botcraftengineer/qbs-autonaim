@@ -5,7 +5,7 @@ import { protectedProcedure } from "../../trpc";
 export const refreshResume = protectedProcedure
   .input(
     z.object({
-      candidateId: z.string().uuid(),
+      candidateId: z.uuid(),
       workspaceId: z.string(),
     }),
   )

@@ -138,11 +138,11 @@ export const CreateGigSchema = createInsertSchema(gig, {
   budgetMin: z.number().int().positive().optional(),
   budgetMax: z.number().int().positive().optional(),
   budgetCurrency: z.string().length(3).default("RUB"),
-  deadline: z.date().optional(),
+  deadline: z.coerce.date().optional(),
   estimatedDuration: z.string().max(100).optional(),
   source: z.string().default("manual"),
   externalId: z.string().max(100).optional(),
-  url: z.string().url().optional(),
+  url: z.url().optional(),
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),
   customInterviewQuestions: z.string().max(5000).optional(),
@@ -156,9 +156,9 @@ export const CreateGigSchema = createInsertSchema(gig, {
 });
 
 export const UpdateGigSettingsSchema = z.object({
-  customBotInstructions: z.string().max(5000).optional().nullable(),
-  customScreeningPrompt: z.string().max(5000).optional().nullable(),
-  customInterviewQuestions: z.string().max(5000).optional().nullable(),
+  customBotInstructions: z.string().max(5000).nullish(),
+  customScreeningPrompt: z.string().max(5000).nullish(),
+  customInterviewQuestions: z.string().max(5000).nullish(),
 });
 
 export type Gig = typeof gig.$inferSelect;

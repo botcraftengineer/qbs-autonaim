@@ -7,7 +7,7 @@ import { protectedProcedure } from "../../trpc";
 export const rejectCandidate = protectedProcedure
   .input(
     z.object({
-      candidateId: z.string().uuid(),
+      candidateId: z.uuid(),
       workspaceId: z.string(),
     }),
   )

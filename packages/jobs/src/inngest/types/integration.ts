@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const verifyHHCredentialsDataSchema = z.object({
-  email: z.string().email(),
+  email: z.email(),
   password: z.string(),
   workspaceId: z.string(),
 });

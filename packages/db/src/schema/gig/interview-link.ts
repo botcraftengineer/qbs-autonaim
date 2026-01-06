@@ -44,11 +44,11 @@ export const gigInterviewLink = pgTable(
 export const CreateGigInterviewLinkSchema = createInsertSchema(
   gigInterviewLink,
   {
-    gigId: z.string().uuid(),
+    gigId: z.uuid(),
     token: z.string().max(100),
     slug: z.string().max(100),
     isActive: z.boolean().default(true),
-    expiresAt: z.date().optional(),
+    expiresAt: z.coerce.date().optional(),
   },
 ).omit({
   id: true,

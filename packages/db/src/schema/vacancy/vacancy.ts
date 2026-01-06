@@ -103,8 +103,8 @@ export const CreateVacancySchema = createInsertSchema(vacancy, {
 });
 
 export const UpdateVacancySettingsSchema = z.object({
-  customBotInstructions: z.string().max(5000).optional().nullable(),
-  customScreeningPrompt: z.string().max(5000).optional().nullable(),
-  customInterviewQuestions: z.string().max(5000).optional().nullable(),
-  customOrganizationalQuestions: z.string().max(5000).optional().nullable(),
+  customBotInstructions: z.string().max(5000).nullish(),
+  customScreeningPrompt: z.string().max(5000).nullish(),
+  customInterviewQuestions: z.string().max(5000).nullish(),
+  customOrganizationalQuestions: z.string().max(5000).nullish(),
 });

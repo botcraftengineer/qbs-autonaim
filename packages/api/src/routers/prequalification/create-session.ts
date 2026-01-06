@@ -13,7 +13,7 @@ import { publicProcedure } from "../../trpc";
 
 const createSessionInputSchema = z.object({
   workspaceId: z.string().min(1, "workspaceId обязателен"),
-  vacancyId: z.string().uuid("vacancyId должен быть UUID"),
+  vacancyId: z.uuid("vacancyId должен быть UUID"),
   candidateConsent: z.boolean(),
   source: z.enum(["widget", "direct"]).default("widget"),
 });

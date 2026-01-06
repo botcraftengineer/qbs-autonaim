@@ -28,9 +28,9 @@ export const gigInvitation = pgTable(
 );
 
 export const CreateGigInvitationSchema = createInsertSchema(gigInvitation, {
-  responseId: z.string().uuid(),
+  responseId: z.uuid(),
   invitationText: z.string().min(1),
-  interviewUrl: z.string().url(),
+  interviewUrl: z.url(),
 }).omit({
   id: true,
   createdAt: true,

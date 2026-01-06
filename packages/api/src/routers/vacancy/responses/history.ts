@@ -9,9 +9,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
 export const getHistory = protectedProcedure
-  .input(
-    z.object({ responseId: z.string().uuid(), workspaceId: workspaceIdSchema }),
-  )
+  .input(z.object({ responseId: z.uuid(), workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
     const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,

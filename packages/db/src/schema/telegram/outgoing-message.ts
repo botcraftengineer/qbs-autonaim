@@ -94,10 +94,10 @@ export const outgoingMessage = pgTable(
 );
 
 export const CreateOutgoingMessageSchema = createInsertSchema(outgoingMessage, {
-  gigResponseId: z.string().uuid(),
+  gigResponseId: z.uuid(),
   senderId: z.string().min(1),
   recipientTelegramUsername: z.string().min(1).max(100),
-  recipientChatId: z.string().max(100).nullable().optional(),
+  recipientChatId: z.string().max(100).nullish(),
   message: z.string().min(1),
   status: z.enum(outgoingMessageStatusValues).default("PENDING_SEND"),
   failureReason: z.string().optional(),

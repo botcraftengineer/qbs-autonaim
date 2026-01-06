@@ -15,7 +15,7 @@ import { protectedProcedure } from "../../trpc";
 
 const brandingConfigSchema = z
   .object({
-    logo: z.string().url().nullable().optional(),
+    logo: z.url().nullish(),
     primaryColor: z
       .string()
       .regex(/^#[0-9A-Fa-f]{6}$/, "Некорректный цвет")
@@ -34,9 +34,9 @@ const brandingConfigSchema = z
       .optional(),
     fontFamily: z.string().max(100).optional(),
     assistantName: z.string().max(100).optional(),
-    assistantAvatar: z.string().url().nullable().optional(),
-    welcomeMessage: z.string().max(1000).nullable().optional(),
-    completionMessage: z.string().max(1000).nullable().optional(),
+    assistantAvatar: z.url().nullish(),
+    welcomeMessage: z.string().max(1000).nullish(),
+    completionMessage: z.string().max(1000).nullish(),
   })
   .optional();
 
@@ -53,9 +53,9 @@ const behaviorConfigSchema = z
 
 const legalConfigSchema = z
   .object({
-    consentText: z.string().max(5000).nullable().optional(),
-    disclaimerText: z.string().max(5000).nullable().optional(),
-    privacyPolicyUrl: z.string().url().nullable().optional(),
+    consentText: z.string().max(5000).nullish(),
+    disclaimerText: z.string().max(5000).nullish(),
+    privacyPolicyUrl: z.url().nullish(),
     dataRetentionDays: z.number().min(1).max(365).optional(),
   })
   .optional();

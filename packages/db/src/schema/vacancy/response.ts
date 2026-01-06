@@ -140,8 +140,8 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
     .default("HH_API")
     .optional(),
   platformProfileUrl: z.string().optional(),
-  respondedAt: z.date().optional(),
-  welcomeSentAt: z.date().optional(),
+  respondedAt: z.coerce.date().optional(),
+  welcomeSentAt: z.coerce.date().optional(),
 }).omit({
   id: true,
   createdAt: true,
