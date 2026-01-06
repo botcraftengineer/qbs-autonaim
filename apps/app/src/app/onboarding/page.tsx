@@ -45,7 +45,6 @@ export default function OnboardingPage() {
   const [workspaceName, setWorkspaceName] = useState("");
   const [workspaceSlug, setWorkspaceSlug] = useState("");
   const [workspaceDescription, setWorkspaceDescription] = useState("");
-  const [workspaceWebsite, setWorkspaceWebsite] = useState("");
   const [isGeneratingWorkspaceSlug, setIsGeneratingWorkspaceSlug] =
     useState(true);
 
@@ -162,7 +161,6 @@ export default function OnboardingPage() {
         name: workspaceName,
         slug: workspaceSlug,
         description: workspaceDescription || undefined,
-        website: workspaceWebsite || undefined,
       },
     });
   };
@@ -435,20 +433,6 @@ export default function OnboardingPage() {
                   rows={3}
                   maxLength={500}
                   className="resize-none"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="workspace-website">
-                  Веб-сайт (опционально)
-                </Label>
-                <Input
-                  id="workspace-website"
-                  type="url"
-                  placeholder="https://example.com"
-                  value={workspaceWebsite}
-                  onChange={(e) => setWorkspaceWebsite(e.target.value)}
-                  maxLength={200}
                 />
               </div>
 

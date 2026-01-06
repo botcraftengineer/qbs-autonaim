@@ -29,8 +29,34 @@ const aiDocumentSchema = z.object({
   description: z.string().optional(),
   deliverables: z.string().optional(),
   requiredSkills: z.string().optional(),
+  budgetRange: z.string().optional(),
   timeline: z.union([z.string(), z.number()]).optional(),
 });
+
+// Парсинг budgetRange в budgetMin/budgetMax
+function parseBudgetRange(budgetRange?: string): {
+  budgetMin?: number;
+  budgetMax?: number;
+} {
+  if (!budgetRange) return {};
+
+  // Ищем паттерн "5000 – 15000" или "5000-15000"
+  const match = budgetRange.match(/(\d[\d\s]*?)[\s–-]+(\d[\d\s]*)/);
+  if (match) {
+    const min = Number.parseInt(match[1].replace(/\s/g, ""), 10);
+    const max = Number.parseInt(match[2].replace(/\s/g, ""), 10);
+    return { budgetMin: min, budgetMax: max };
+  }
+
+  // Если только одно число
+  const singleMatch = budgetRange.match(/(\d[\d\s]*)/);
+  if (singleMatch) {
+    const value = Number.parseInt(singleMatch[1].replace(/\s/g, ""), 10);
+    return { budgetMin: value, budgetMax: value };
+  }
+
+  return {};
+}
 
 interface PageProps {
   params: Promise<{ orgSlug: string; slug: string }>;
@@ -160,7 +186,10 @@ export default function CreateGigPage({ params }: PageProps) {
       console.log("[gig-create] AI result received:", {
         hasDocument: !!result.document,
         documentTitle: result.document?.title,
+        documentDescription: result.document?.description,
+        documentDeliverables: result.document?.deliverables,
         quickRepliesCount: result.quickReplies?.length,
+        fullDocument: result.document,
       });
 
       if (!isMountedRef.current) return;
@@ -178,6 +207,7 @@ export default function CreateGigPage({ params }: PageProps) {
           "[gig-create] AI response validation failed:",
           parsed.error,
         );
+        console.error("[gig-create] Document that failed validation:", doc);
         // Use safe defaults from wizard state
         setDraft({
           title: "",
@@ -200,20 +230,31 @@ export default function CreateGigPage({ params }: PageProps) {
         const estimatedDuration: string =
           rawDuration != null ? String(rawDuration) : "";
 
-        setDraft({
+        // Парсим budgetRange из AI или используем данные wizard
+        const budgetFromAI = parseBudgetRange(validDoc.budgetRange);
+        const budgetMin =
+          budgetFromAI.budgetMin ?? wizardStateParam.budget?.min;
+        const budgetMax =
+          budgetFromAI.budgetMax ?? wizardStateParam.budget?.max;
+
+        const newDraft = {
           title: validDoc.title || "",
           description: validDoc.description || "",
           type: wizardStateParam.category?.id || "OTHER",
           deliverables: validDoc.deliverables || "",
           requiredSkills: validDoc.requiredSkills || "",
-          budgetMin: wizardStateParam.budget?.min,
-          budgetMax: wizardStateParam.budget?.max,
+          budgetMin,
+          budgetMax,
           budgetCurrency: "RUB",
           estimatedDuration,
-        });
+        };
+
+        console.log("[gig-create] Setting draft to:", newDraft);
+        setDraft(newDraft);
       }
 
       toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
+      console.log("[gig-create] Draft state after generation:", draft);
     } catch (err) {
       if (!isMountedRef.current) return;
       toast.error(err instanceof Error ? err.message : "Ошибка генерации");
@@ -259,6 +300,7 @@ export default function CreateGigPage({ params }: PageProps) {
       console.log("[gig-create] handleChatMessage result:", {
         hasDocument: !!result.document,
         documentTitle: result.document?.title,
+        fullDocument: result.document,
       });
 
       if (!isMountedRef.current) return;
@@ -274,14 +316,45 @@ export default function CreateGigPage({ params }: PageProps) {
         const estimatedDuration: string =
           rawDuration != null ? String(rawDuration) : "";
 
-        setDraft((prev) => ({
-          ...prev,
-          title: validDoc.title || prev.title,
-          description: validDoc.description || prev.description,
-          deliverables: validDoc.deliverables || prev.deliverables,
-          requiredSkills: validDoc.requiredSkills || prev.requiredSkills,
-          estimatedDuration: estimatedDuration || prev.estimatedDuration,
-        }));
+        setDraft((prev) => {
+          // Парсим budgetRange из AI или оставляем текущие значения
+          const budgetFromAI = parseBudgetRange(validDoc.budgetRange);
+
+          const updatedDraft = {
+            ...prev,
+            title: validDoc.title || prev.title,
+            description: validDoc.description || prev.description,
+            deliverables: validDoc.deliverables || prev.deliverables,
+            requiredSkills: validDoc.requiredSkills || prev.requiredSkills,
+            estimatedDuration: estimatedDuration || prev.estimatedDuration,
+            budgetMin: budgetFromAI.budgetMin ?? prev.budgetMin,
+            budgetMax: budgetFromAI.budgetMax ?? prev.budgetMax,
+          };
+
+          console.log(
+            "[gig-create] Updating draft from:",
+            prev,
+            "to:",
+            updatedDraft,
+          );
+
+          // Показываем уведомление, если есть изменения
+          if (
+            updatedDraft.title !== prev.title ||
+            updatedDraft.description !== prev.description ||
+            updatedDraft.deliverables !== prev.deliverables
+          ) {
+            toast.success("Документ обновлён");
+          }
+
+          return updatedDraft;
+        });
+      } else {
+        console.error(
+          "[gig-create] Chat message validation failed:",
+          parsed.error,
+        );
+        console.error("[gig-create] Document that failed:", doc);
       }
     } catch (err) {
       if (!isMountedRef.current) return;

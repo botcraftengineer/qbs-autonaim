@@ -125,16 +125,22 @@ export function WizardChat({
     const el = scrollRef.current?.querySelector(
       "[data-radix-scroll-area-viewport]",
     );
-    if (el)
-      requestAnimationFrame(() => {
-        el.scrollTop = el.scrollHeight;
-      });
+    if (el) {
+      // Используем setTimeout для гарантии, что DOM обновился
+      setTimeout(() => {
+        el.scrollTo({
+          top: el.scrollHeight,
+          behavior: "smooth",
+        });
+      }, 50);
+    }
   }, []);
 
+  // Автоскролл при изменении истории, шага или статуса генерации
   // biome-ignore lint/correctness/useExhaustiveDependencies: scrollToBottom должен вызываться при смене шага
   React.useEffect(() => {
     scrollToBottom();
-  }, [state.step, conversationHistory.length, scrollToBottom]);
+  }, [state.step, conversationHistory.length, isGenerating, scrollToBottom]);
 
   // Переход в chat после завершения генерации
   React.useEffect(() => {
@@ -199,6 +205,8 @@ export function WizardChat({
   const handleReset = () => {
     setState(initialWizardState);
     setShowCustomInput(false);
+    setConversationHistory([]);
+    setChatInput("");
   };
 
   const handleCategorySelect = (category: CategoryOption) => {
@@ -255,8 +263,8 @@ export function WizardChat({
       step: "review" as const,
     };
     setState(finalState);
-    // Добавляем начальное сообщение в историю
-    if (details) {
+    // Добавляем начальное сообщение в историю только если история пустая
+    if (details && conversationHistory.length === 0) {
       setConversationHistory([
         {
           id: crypto.randomUUID(),
@@ -372,17 +380,28 @@ export function WizardChat({
           <div className="space-y-3">
             {/* История сообщений */}
             {conversationHistory.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {conversationHistory.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`rounded-2xl px-4 py-2.5 text-sm max-w-[85%] ${
-                      msg.role === "user"
-                        ? "ml-auto bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted rounded-bl-md"
+                    className={`flex gap-2 ${
+                      msg.role === "user" ? "justify-end" : "justify-start"
                     }`}
                   >
-                    {msg.content}
+                    {msg.role === "assistant" && (
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
+                        <Bot className="h-4 w-4" />
+                      </div>
+                    )}
+                    <div
+                      className={`rounded-2xl px-4 py-2.5 text-sm max-w-[75%] ${
+                        msg.role === "user"
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-muted rounded-bl-md"
+                      }`}
+                    >
+                      {msg.content}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -390,7 +409,7 @@ export function WizardChat({
 
             {/* Quick replies */}
             {quickReplies.length > 0 && !isGenerating && (
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-2 mt-3">
                 {quickReplies.map((reply) => (
                   <Button
                     key={reply}
@@ -407,11 +426,19 @@ export function WizardChat({
 
             {/* Индикатор генерации */}
             {isGenerating && (
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Обновляю ТЗ…</span>
+              <div className="flex gap-2 items-start">
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
+                  <Bot className="h-4 w-4" />
+                </div>
+                <div className="flex items-center gap-2 text-muted-foreground text-sm bg-muted rounded-2xl rounded-bl-md px-4 py-2.5">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Обновляю ТЗ…</span>
+                </div>
               </div>
             )}
+
+            {/* Якорь для автоскролла */}
+            <div aria-hidden="true" />
           </div>
         );
       default:
@@ -435,8 +462,8 @@ export function WizardChat({
   };
 
   return (
-    <Card className="flex flex-col h-[calc(100vh-12rem)]">
-      <CardHeader className="pb-3">
+    <Card className="flex flex-col h-[calc(100vh-12rem)] overflow-hidden">
+      <CardHeader className="pb-3 shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -451,10 +478,14 @@ export function WizardChat({
               size="sm"
               onClick={handleReset}
               className="h-8 px-2 text-muted-foreground"
-              aria-label="Начать заново"
+              aria-label={
+                state.step === "chat"
+                  ? "Очистить чат и начать заново"
+                  : "Начать заново"
+              }
             >
               <RotateCcw className="h-4 w-4 mr-1" />
-              Заново
+              {state.step === "chat" ? "Очистить" : "Заново"}
             </Button>
           )}
         </div>
@@ -465,9 +496,9 @@ export function WizardChat({
           />
         </div>
       </CardHeader>
-      <Separator />
-      <ScrollArea ref={scrollRef} className="flex-1 p-4">
-        <div className="space-y-4">
+      <Separator className="shrink-0" />
+      <ScrollArea ref={scrollRef} className="flex-1 min-h-0">
+        <div className="space-y-4 p-4">
           <SelectionHistory state={state} />
           <div className="flex gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
@@ -487,8 +518,8 @@ export function WizardChat({
       {/* Поле ввода для чата */}
       {state.step === "chat" && (
         <>
-          <Separator />
-          <div className="p-4">
+          <Separator className="shrink-0" />
+          <div className="p-4 shrink-0">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
