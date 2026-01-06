@@ -174,7 +174,7 @@ export function AppSidebar({
   );
 
   return (
-    <Sidebar variant="floating" collapsible="offcanvas" {...props}>
+    <Sidebar variant="inset" collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

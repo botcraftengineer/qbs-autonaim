@@ -9,7 +9,7 @@ import {
   languageSchema,
   personalInfoSchema,
   workExperienceSchema,
-} from "@tecno/validators/prequalification";
+} from "@qbs-autonaim/validators";
 import { z } from "zod";
 import { type AgentConfig, BaseAgent } from "./base-agent";
 import { AgentType } from "./types";
