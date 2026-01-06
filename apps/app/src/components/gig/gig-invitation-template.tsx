@@ -52,11 +52,11 @@ export function GigInvitationTemplate({
 
   const { mutate: generateLink, isPending: isGenerating } = useMutation({
     ...trpc.gig.generateInterviewLink.mutationOptions({
-      onSuccess: () => {
+      onSuccess: (_data, variables) => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.getInterviewLink.queryKey({
             gigId,
-            workspaceId: workspace?.id ?? "",
+            workspaceId: variables.workspaceId,
           }),
         });
         toast.success("Ссылка на интервью создана");

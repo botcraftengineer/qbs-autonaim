@@ -78,6 +78,7 @@ export const gigResponse = pgTable(
     phone: varchar("phone", { length: 50 }),
     email: varchar("email", { length: 255 }),
     contacts: jsonb("contacts").$type<Record<string, unknown>>(),
+    resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
 
     // Предложение кандидата
     proposedPrice: integer("proposed_price"),
@@ -190,6 +191,7 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   experience: z.string().optional(),
   skills: z.array(z.string()).optional(),
   rating: z.string().max(20).optional(),
+  resumeLanguage: z.string().max(10).default("ru").optional(),
   status: z.enum(gigResponseStatusValues).default("NEW"),
   hrSelectionStatus: z.enum(gigHrSelectionStatusValues).optional(),
   importSource: z.enum(gigImportSourceValues).default("MANUAL"),
