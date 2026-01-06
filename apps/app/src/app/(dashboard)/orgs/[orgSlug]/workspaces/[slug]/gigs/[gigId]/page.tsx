@@ -34,6 +34,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
+import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -339,6 +340,9 @@ export default function GigDetailPage({ params }: PageProps) {
               </CardContent>
             </Card>
           )}
+
+          {/* Invitation Template */}
+          <GigInvitationTemplate gigId={gigId} gigTitle={gig.title} />
         </div>
 
         {/* Sidebar */}

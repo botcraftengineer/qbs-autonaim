@@ -37,6 +37,7 @@ import {
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
+import { ResponseInvitationButton } from "~/components/gig/response-invitation-button";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -543,6 +544,11 @@ export default function GigResponsesPage({ params }: PageProps) {
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Принять
                         </Button>
+
+                        <ResponseInvitationButton
+                          responseId={response.id}
+                          candidateName={response.candidateName}
+                        />
 
                         <Button size="sm" variant="outline">
                           <MessageSquare className="h-4 w-4 mr-2" />
