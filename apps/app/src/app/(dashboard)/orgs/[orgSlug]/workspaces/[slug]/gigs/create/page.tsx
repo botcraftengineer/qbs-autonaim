@@ -45,6 +45,17 @@ function parseBudgetRange(budgetRange?: string): {
   if (match) {
     const min = Number.parseInt(match[1].replace(/\s/g, ""), 10);
     const max = Number.parseInt(match[2].replace(/\s/g, ""), 10);
+
+    // Validate both parsed numbers
+    if (!Number.isFinite(min) || !Number.isFinite(max)) {
+      return {};
+    }
+
+    // Swap if min > max to ensure sensible range
+    if (min > max) {
+      return { budgetMin: max, budgetMax: min };
+    }
+
     return { budgetMin: min, budgetMax: max };
   }
 
@@ -52,6 +63,12 @@ function parseBudgetRange(budgetRange?: string): {
   const singleMatch = budgetRange.match(/(\d[\d\s]*)/);
   if (singleMatch) {
     const value = Number.parseInt(singleMatch[1].replace(/\s/g, ""), 10);
+
+    // Validate parsed number
+    if (!Number.isFinite(value)) {
+      return {};
+    }
+
     return { budgetMin: value, budgetMax: value };
   }
 

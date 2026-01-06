@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file/file";
+import { gigResponse } from "../gig/response";
 import { interviewScoring } from "../interview/scoring";
 import { vacancyResponse } from "../vacancy/response";
 import { conversation } from "./conversation";
@@ -16,6 +17,10 @@ export const conversationRelations = relations(
     response: one(vacancyResponse, {
       fields: [conversation.responseId],
       references: [vacancyResponse.id],
+    }),
+    gigResponse: one(gigResponse, {
+      fields: [conversation.gigResponseId],
+      references: [gigResponse.id],
     }),
   }),
 );

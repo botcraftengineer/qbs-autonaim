@@ -191,6 +191,19 @@ export async function getInterviewContext(
           },
         },
       },
+      gigResponse: {
+        with: {
+          gig: {
+            with: {
+              workspace: {
+                with: {
+                  companySettings: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
@@ -215,38 +228,43 @@ export async function getInterviewContext(
         : undefined) as "TEXT" | "VOICE" | undefined,
     }));
 
+  // Определяем источник: vacancy или gig
+  const isGig = !!conv.gigResponse;
+  const vacancy = conv.response?.vacancy;
+  const gig = conv.gigResponse?.gig;
+  const workspace = isGig ? gig?.workspace : vacancy?.workspace;
+
   // Передаем обе группы вопросов, AI сам решит что спрашивать на основе истории
   const result: InterviewContext = {
     conversationId: conv.id,
     candidateName: conv.candidateName,
-    vacancyTitle: conv.response?.vacancy?.title || null,
-    vacancyDescription: conv.response?.vacancy?.description
-      ? stripHtml(conv.response.vacancy.description).result
-      : null,
+    vacancyTitle: isGig ? gig?.title || null : vacancy?.title || null,
+    vacancyDescription: isGig
+      ? gig?.description || null
+      : vacancy?.description
+        ? stripHtml(vacancy.description).result
+        : null,
     questionNumber: questionAnswers.length + 1,
-    responseId: conv.responseId || null,
-    resumeLanguage: conv.response?.resumeLanguage || "ru",
+    responseId: isGig ? conv.gigResponseId : conv.responseId || null,
+    resumeLanguage: isGig ? "ru" : conv.response?.resumeLanguage || "ru",
     conversationHistory,
-    companySettings: conv.response?.vacancy?.workspace?.companySettings
+    companySettings: workspace?.companySettings
       ? {
-          botName:
-            conv.response.vacancy.workspace.companySettings.botName ||
-            undefined,
-          botRole:
-            conv.response.vacancy.workspace.companySettings.botRole ||
-            undefined,
-          name: conv.response.vacancy.workspace.companySettings.name,
-          description:
-            conv.response.vacancy.workspace.companySettings.description ||
-            undefined,
+          botName: workspace.companySettings.botName || undefined,
+          botRole: workspace.companySettings.botRole || undefined,
+          name: workspace.companySettings.name,
+          description: workspace.companySettings.description || undefined,
         }
       : undefined,
-    customBotInstructions:
-      conv.response?.vacancy?.customBotInstructions || null,
-    customOrganizationalQuestions:
-      conv.response?.vacancy?.customOrganizationalQuestions || null,
-    customInterviewQuestions:
-      conv.response?.vacancy?.customInterviewQuestions || null,
+    customBotInstructions: isGig
+      ? gig?.customBotInstructions || null
+      : vacancy?.customBotInstructions || null,
+    customOrganizationalQuestions: isGig
+      ? null
+      : vacancy?.customOrganizationalQuestions || null,
+    customInterviewQuestions: isGig
+      ? gig?.customInterviewQuestions || null
+      : vacancy?.customInterviewQuestions || null,
   };
 
   return result;
