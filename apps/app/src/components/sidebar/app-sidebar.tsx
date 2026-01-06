@@ -9,88 +9,134 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@qbs-autonaim/ui";
 import {
   IconBriefcase,
+  IconChartBar,
   IconDashboard,
   IconFileDescription,
+  IconInbox,
   IconInnerShadowTop,
   IconMessage,
+  IconPlus,
   IconSettings,
   IconUsersGroup,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import type * as React from "react";
+import { NavSecondary, NavUser, WorkspaceSwitcher } from "~/components/sidebar";
 import {
-  NavMain,
-  NavSecondary,
-  NavUser,
-  WorkspaceSwitcher,
-} from "~/components/sidebar";
+  NavCollapsible,
+  type NavSection,
+} from "~/components/sidebar/nav-collapsible";
+import { NavQuickActions } from "~/components/sidebar/nav-quick-actions";
+import { useSidebarStats } from "~/components/sidebar/use-sidebar-stats";
 import { useWorkspaces } from "~/contexts/workspace-context";
 
-const getNavData = (orgSlug?: string, workspaceSlug?: string) => ({
-  navMain: [
+function getNavSections(
+  orgSlug?: string,
+  workspaceSlug?: string,
+  stats?: {
+    newResponses: number;
+    activeVacancies: number;
+    highScoreResponses: number;
+  },
+): NavSection[] {
+  const baseUrl =
+    orgSlug && workspaceSlug
+      ? `/orgs/${orgSlug}/workspaces/${workspaceSlug}`
+      : "";
+
+  return [
     {
-      title: "Панель управления",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.root(orgSlug, workspaceSlug)
-          : paths.dashboard.root,
-      icon: IconDashboard,
+      title: "Обзор",
+      defaultOpen: true,
+      items: [
+        {
+          title: "Панель управления",
+          url: baseUrl || paths.dashboard.root,
+          icon: IconDashboard,
+        },
+      ],
     },
     {
-      title: "Вакансии",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.vacancies(orgSlug, workspaceSlug)
-          : "/vacancies",
-      icon: IconFileDescription,
+      title: "Рекрутинг",
+      defaultOpen: true,
+      items: [
+        {
+          title: "Вакансии",
+          url: baseUrl ? `${baseUrl}/vacancies` : "/vacancies",
+          icon: IconFileDescription,
+          badge: stats?.activeVacancies,
+          badgeVariant: "default" as const,
+        },
+        {
+          title: "Разовые задания",
+          url: baseUrl ? `${baseUrl}/gigs` : "/gigs",
+          icon: IconBriefcase,
+        },
+        {
+          title: "Отклики",
+          url: baseUrl ? `${baseUrl}/responses` : "/responses",
+          icon: IconInbox,
+          badge: stats?.newResponses,
+          badgeVariant: stats?.newResponses
+            ? ("destructive" as const)
+            : undefined,
+        },
+        {
+          title: "Кандидаты",
+          url: baseUrl ? `${baseUrl}/candidates` : "/candidates",
+          icon: IconUsersGroup,
+          badge: stats?.highScoreResponses,
+          badgeVariant: stats?.highScoreResponses
+            ? ("success" as const)
+            : undefined,
+        },
+      ],
     },
     {
-      title: "Разовые задания",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.gigs(orgSlug, workspaceSlug)
-          : "/gigs",
-      icon: IconBriefcase,
+      title: "Коммуникации",
+      defaultOpen: true,
+      items: [
+        {
+          title: "Чаты",
+          url: baseUrl ? `${baseUrl}/chat` : "/chat",
+          icon: IconMessage,
+        },
+        {
+          title: "Воронка найма",
+          url: baseUrl ? `${baseUrl}/funnel` : "/funnel",
+          icon: IconChartBar,
+        },
+      ],
     },
+  ];
+}
+
+const getNavSecondaryItems = (orgSlug?: string, workspaceSlug?: string) => [
+  {
+    title: "Настройки",
+    url:
+      orgSlug && workspaceSlug
+        ? paths.workspace.settings.root(orgSlug, workspaceSlug)
+        : "/settings",
+    icon: IconSettings,
+  },
+];
+
+const getQuickActions = (orgSlug?: string, workspaceSlug?: string) => {
+  if (!orgSlug || !workspaceSlug) return [];
+
+  return [
     {
-      title: "Кандидаты",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.candidates(orgSlug, workspaceSlug)
-          : "/candidates",
-      icon: IconUsersGroup,
+      title: "Создать вакансию",
+      url: paths.workspace.createVacancy(orgSlug, workspaceSlug),
+      icon: IconPlus,
     },
-    {
-      title: "Воронка найма",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.funnel(orgSlug, workspaceSlug)
-          : "/funnel",
-      icon: IconInnerShadowTop,
-    },
-    {
-      title: "Чаты",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.chat(orgSlug, workspaceSlug)
-          : "/chat",
-      icon: IconMessage,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Настройки",
-      url:
-        orgSlug && workspaceSlug
-          ? paths.workspace.settings.root(orgSlug, workspaceSlug)
-          : "/settings",
-      icon: IconSettings,
-    },
-  ],
-});
+  ];
+};
 
 export function AppSidebar({
   user,
@@ -108,13 +154,27 @@ export function AppSidebar({
 }) {
   const { workspaces, organizations } = useWorkspaces();
   const activeWorkspace = workspaces?.find((w) => w.id === activeWorkspaceId);
-  const data = getNavData(
+
+  const stats = useSidebarStats(activeWorkspaceId);
+
+  const navSections = getNavSections(
+    activeWorkspace?.organizationSlug,
+    activeWorkspace?.slug,
+    stats,
+  );
+
+  const navSecondaryItems = getNavSecondaryItems(
+    activeWorkspace?.organizationSlug,
+    activeWorkspace?.slug,
+  );
+
+  const quickActions = getQuickActions(
     activeWorkspace?.organizationSlug,
     activeWorkspace?.slug,
   );
 
   return (
-    <Sidebar variant="floating" collapsible="offcanvas" {...props}>
+    <Sidebar variant="inset" collapsible="offcanvas" {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
@@ -145,10 +205,20 @@ export function AppSidebar({
           />
         )}
       </SidebarHeader>
+
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        {quickActions.length > 0 && (
+          <>
+            <NavQuickActions actions={quickActions} />
+            <SidebarSeparator />
+          </>
+        )}
+
+        <NavCollapsible sections={navSections} />
+
+        <NavSecondary items={navSecondaryItems} className="mt-auto" />
       </SidebarContent>
+
       <SidebarFooter>
         <NavUser user={user} />
       </SidebarFooter>

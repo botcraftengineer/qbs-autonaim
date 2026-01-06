@@ -487,13 +487,13 @@ export class RuleEngine {
     if (numericFields.includes(field)) {
       if (!numericOperators.includes(operator)) {
         throw new Error(
-          `Field "${field}" requires a numeric operator (>, <, =, >=, <=, !=), got "${operator}"`,
+          `Поле "${field}" требует числовой оператор (>, <, =, >=, <=, !=), получен "${operator}"`,
         );
       }
 
       if (typeof value !== "number") {
         throw new Error(
-          `Field "${field}" requires a numeric value, got ${typeof value}`,
+          `Поле "${field}" требует числовое значение, получен тип ${typeof value}`,
         );
       }
 
@@ -503,7 +503,7 @@ export class RuleEngine {
         (value < 0 || value > 100)
       ) {
         throw new Error(
-          `Field "${field}" must be between 0 and 100, got ${value}`,
+          `Поле "${field}" должно быть в диапазоне от 0 до 100, получено ${value}`,
         );
       }
     }
@@ -512,13 +512,13 @@ export class RuleEngine {
     if (stringFields.includes(field)) {
       if (!stringOperators.includes(operator)) {
         throw new Error(
-          `Field "${field}" requires a string operator (=, !=, contains, not_contains), got "${operator}"`,
+          `Поле "${field}" требует строковый оператор (=, !=, contains, not_contains), получен "${operator}"`,
         );
       }
 
       if (typeof value !== "string") {
         throw new Error(
-          `Field "${field}" requires a string value, got ${typeof value}`,
+          `Поле "${field}" требует строковое значение, получен тип ${typeof value}`,
         );
       }
 
@@ -532,7 +532,7 @@ export class RuleEngine {
         ];
         if (!validAvailability.includes(value)) {
           throw new Error(
-            `Field "availability" must be one of: ${validAvailability.join(", ")}, got "${value}"`,
+            `Поле "availability" должно быть одним из: ${validAvailability.join(", ")}, получено "${value}"`,
           );
         }
       }
@@ -542,18 +542,18 @@ export class RuleEngine {
     if (arrayFields.includes(field)) {
       if (!arrayOperators.includes(operator)) {
         throw new Error(
-          `Field "${field}" requires an array operator (contains, not_contains), got "${operator}"`,
+          `Поле "${field}" требует оператор для массивов (contains, not_contains), получен "${operator}"`,
         );
       }
 
       if (typeof value !== "string" && !Array.isArray(value)) {
         throw new Error(
-          `Field "${field}" requires a string or array value, got ${typeof value}`,
+          `Поле "${field}" требует строковое значение или массив, получен тип ${typeof value}`,
         );
       }
 
       if (Array.isArray(value) && value.length === 0) {
-        throw new Error(`Field "${field}" array value cannot be empty`);
+        throw new Error(`Поле "${field}" не может содержать пустой массив`);
       }
     }
   }
@@ -568,13 +568,11 @@ export class RuleEngine {
     switch (type) {
       case "tag":
         if (!params?.tag) {
-          throw new Error(
-            'Action type "tag" requires params.tag to be specified',
-          );
+          throw new Error('Тип действия "tag" требует указания params.tag');
         }
         if (typeof params.tag !== "string" || params.tag.trim() === "") {
           throw new Error(
-            'Action type "tag" requires params.tag to be a non-empty string',
+            'Тип действия "tag" требует, чтобы params.tag был непустой строкой',
           );
         }
         break;
@@ -582,13 +580,13 @@ export class RuleEngine {
       case "notify": {
         if (!params?.notificationChannel) {
           throw new Error(
-            'Action type "notify" requires params.notificationChannel to be specified',
+            'Тип действия "notify" требует указания params.notificationChannel',
           );
         }
         const validChannels = ["email", "telegram", "sms"];
         if (!validChannels.includes(params.notificationChannel)) {
           throw new Error(
-            `Action type "notify" requires params.notificationChannel to be one of: ${validChannels.join(", ")}, got "${params.notificationChannel}"`,
+            `Тип действия "notify" требует, чтобы params.notificationChannel был одним из: ${validChannels.join(", ")}, получено "${params.notificationChannel}"`,
           );
         }
         break;
@@ -603,7 +601,7 @@ export class RuleEngine {
             params.messageTemplate.trim() === ""
           ) {
             throw new Error(
-              `Action type "${type}" params.messageTemplate must be a non-empty string if provided`,
+              `Тип действия "${type}" требует, чтобы params.messageTemplate был непустой строкой, если указан`,
             );
           }
         }
@@ -617,7 +615,7 @@ export class RuleEngine {
             params.reason.trim() === ""
           ) {
             throw new Error(
-              'Action type "reject" params.reason must be a non-empty string if provided',
+              'Тип действия "reject" требует, чтобы params.reason был непустой строкой, если указан',
             );
           }
         }
@@ -628,7 +626,7 @@ export class RuleEngine {
         break;
 
       default:
-        throw new Error(`Unknown action type: ${type}`);
+        throw new Error(`Неизвестный тип действия: ${type}`);
     }
   }
 
