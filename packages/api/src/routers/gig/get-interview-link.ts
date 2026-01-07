@@ -56,8 +56,8 @@ export const getInterviewLink = protectedProcedure
     return {
       id: link.id,
       gigId: link.gigId,
-      slug: link.slug,
-      url: `${baseUrl}${paths.interview(link.slug)}`,
+      token: link.token,
+      url: `${baseUrl}${paths.interview(link.token)}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
     };

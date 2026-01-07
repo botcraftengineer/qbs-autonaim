@@ -3,6 +3,7 @@
  * Использует Orchestrator-Worker pattern для координации специализированных агентов
  */
 
+import { env } from "@qbs-autonaim/config";
 import type { LanguageModel } from "ai";
 import { Langfuse } from "langfuse";
 import type { AgentConfig } from "../base-agent";

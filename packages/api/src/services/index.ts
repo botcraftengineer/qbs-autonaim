@@ -60,6 +60,8 @@ export {
   EvaluatorService,
   evaluatorService,
 } from "./evaluation";
+export type { GigInterviewLink } from "./gig-interview-link-generator";
+export { GigInterviewLinkGenerator } from "./gig-interview-link-generator";
 export type { InterviewLink } from "./interview-link-generator";
 export { InterviewLinkGenerator } from "./interview-link-generator";
 export type {

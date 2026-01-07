@@ -14,15 +14,16 @@ export async function generateMetadata({
 
   try {
     const caller = await api();
-    const data = await caller.freelancePlatforms.getVacancyByToken({ token });
+    const data = await caller.freelancePlatforms.getInterviewByToken({ token });
+    const typeLabel = data.type === "vacancy" ? "вакансию" : "задание";
     return {
-      title: `Интервью: ${data.vacancy.title}`,
-      description: "Пройдите AI-интервью для отбора на вакансию",
+      title: `Интервью: ${data.data.title}`,
+      description: `Пройдите AI-интервью для отбора на ${typeLabel}`,
     };
   } catch {
     return {
       title: "Интервью",
-      description: "Пройдите AI-интервью для отбора на вакансию",
+      description: "Пройдите AI-интервью для отбора",
     };
   }
 }
@@ -32,7 +33,11 @@ export default async function InterviewLandingPage({ params }: PageProps) {
 
   try {
     const caller = await api();
-    const data = await caller.freelancePlatforms.getVacancyByToken({ token });
+    const data = await caller.freelancePlatforms.getInterviewByToken({ token });
+    const subtitle =
+      data.type === "vacancy"
+        ? "Пройдите короткое AI-интервью за 10–15\u00A0минут"
+        : "Пройдите короткое AI-интервью на задание за 10–15\u00A0минут";
 
     return (
       <main className="relative flex min-h-screen flex-col items-center justify-center px-4">
@@ -91,19 +96,18 @@ export default async function InterviewLandingPage({ params }: PageProps) {
           {/* Title */}
           <div className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-gray-900">
-              {data.vacancy.title}
+              {data.data.title}
             </h1>
-            <p className="mt-2 text-sm text-gray-500">
-              Пройдите короткое AI-интервью за 10–15&nbsp;минут
-            </p>
+            <p className="mt-2 text-sm text-gray-500">{subtitle}</p>
           </div>
 
           {/* Form Card */}
           <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
             <InterviewLandingForm
               token={token}
-              vacancyId={data.vacancy.id}
-              platformSource={data.vacancy.source}
+              entityId={data.data.id}
+              entityType={data.type}
+              platformSource={data.data.source}
             />
           </div>
 

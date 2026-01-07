@@ -1,4 +1,3 @@
-import { randomUUID } from "node:crypto";
 import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import {
@@ -105,15 +104,13 @@ export const generateInvitation = protectedProcedure
 
       for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         try {
-          const slug = generateSlug();
-          const token = randomUUID();
+          const token = generateSlug();
 
           const [created] = await ctx.db
             .insert(gigInterviewLink)
             .values({
               gigId: response.gigId,
               token,
-              slug,
               isActive: true,
             })
             .returning();
@@ -147,7 +144,7 @@ export const generateInvitation = protectedProcedure
             });
           }
 
-          // Иначе повторяем попытку с новым slug и token
+          // Иначе повторяем попытку с новым token
         }
       }
 
@@ -161,7 +158,7 @@ export const generateInvitation = protectedProcedure
     }
 
     const baseUrl = env.NEXT_PUBLIC_APP_URL;
-    const interviewUrl = `${baseUrl}${paths.interview(link.slug)}`;
+    const interviewUrl = `${baseUrl}${paths.interview(link.token)}`;
 
     // Генерируем текст приглашения
     const invitationText = generateInvitationText(

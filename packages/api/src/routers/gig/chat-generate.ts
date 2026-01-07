@@ -316,6 +316,20 @@ export const chatGenerate = protectedProcedure
       }
 
       const validated = validationResult.data;
+
+      const finalDocument = {
+        title: validated.title ?? currentDocument?.title ?? "",
+        description:
+          validated.description ?? currentDocument?.description ?? "",
+        deliverables:
+          validated.deliverables ?? currentDocument?.deliverables ?? "",
+        requiredSkills:
+          validated.requiredSkills ?? currentDocument?.requiredSkills ?? "",
+        budgetRange:
+          validated.budgetRange ?? currentDocument?.budgetRange ?? "",
+        timeline: validated.timeline ?? currentDocument?.timeline ?? "",
+      };
+
       console.log("[gig-chat-generate] Validated document:", {
         hasTitle: !!validated.title,
         hasDescription: !!validated.description,
@@ -323,19 +337,13 @@ export const chatGenerate = protectedProcedure
         quickRepliesCount: validated.quickReplies?.length ?? 0,
       });
 
+      console.log(
+        "[gig-chat-generate] Final document being returned:",
+        finalDocument,
+      );
+
       return {
-        document: {
-          title: validated.title ?? currentDocument?.title ?? "",
-          description:
-            validated.description ?? currentDocument?.description ?? "",
-          deliverables:
-            validated.deliverables ?? currentDocument?.deliverables ?? "",
-          requiredSkills:
-            validated.requiredSkills ?? currentDocument?.requiredSkills ?? "",
-          budgetRange:
-            validated.budgetRange ?? currentDocument?.budgetRange ?? "",
-          timeline: validated.timeline ?? currentDocument?.timeline ?? "",
-        },
+        document: finalDocument,
         quickReplies: validated.quickReplies ?? [],
       };
     } catch (error) {

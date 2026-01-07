@@ -42,7 +42,7 @@ function parseBudgetRange(budgetRange?: string): {
 
   // Ищем паттерн "5000 – 15000" или "5000-15000"
   const match = budgetRange.match(/(\d[\d\s]*?)[\s–-]+(\d[\d\s]*)/);
-  if (match) {
+  if (match?.[1] && match[2]) {
     const min = Number.parseInt(match[1].replace(/\s/g, ""), 10);
     const max = Number.parseInt(match[2].replace(/\s/g, ""), 10);
 
@@ -61,7 +61,7 @@ function parseBudgetRange(budgetRange?: string): {
 
   // Если только одно число
   const singleMatch = budgetRange.match(/(\d[\d\s]*)/);
-  if (singleMatch) {
+  if (singleMatch?.[1]) {
     const value = Number.parseInt(singleMatch[1].replace(/\s/g, ""), 10);
 
     // Validate parsed number
@@ -93,6 +93,13 @@ export default function CreateGigPage({ params }: PageProps) {
   const [wizardState, setWizardState] = React.useState<WizardState | null>(
     null,
   );
+  const [pendingAssistantMessage, setPendingAssistantMessage] = React.useState<
+    string | null
+  >(null);
+
+  const handleAssistantMessageConsumed = React.useCallback(() => {
+    setPendingAssistantMessage(null);
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -111,6 +118,11 @@ export default function CreateGigPage({ params }: PageProps) {
     budgetCurrency: "RUB",
     estimatedDuration: "",
   });
+
+  // Debug: отслеживаем изменения draft
+  React.useEffect(() => {
+    console.log("[gig-create] Draft state changed:", draft);
+  }, [draft]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -206,7 +218,7 @@ export default function CreateGigPage({ params }: PageProps) {
         documentDescription: result.document?.description,
         documentDeliverables: result.document?.deliverables,
         quickRepliesCount: result.quickReplies?.length,
-        fullDocument: result.document,
+        fullDocument: JSON.stringify(result.document, null, 2),
       });
 
       if (!isMountedRef.current) return;
@@ -217,7 +229,13 @@ export default function CreateGigPage({ params }: PageProps) {
       setQuickReplies(result.quickReplies || []);
 
       // Validate AI response shape
+      console.log("[gig-create] Validating document:", doc);
       const parsed = aiDocumentSchema.safeParse(doc);
+      console.log(
+        "[gig-create] Validation result:",
+        parsed.success,
+        parsed.error?.message,
+      );
 
       if (!parsed.success) {
         console.error(
@@ -241,6 +259,7 @@ export default function CreateGigPage({ params }: PageProps) {
         });
       } else {
         const validDoc = parsed.data;
+        console.log("[gig-create] Validated doc:", validDoc);
         // Нормализуем estimatedDuration к строке: приоритет AI-ответу, затем wizard
         const rawDuration =
           validDoc.timeline ?? wizardStateParam.timeline?.days;
@@ -269,6 +288,10 @@ export default function CreateGigPage({ params }: PageProps) {
         console.log("[gig-create] Setting draft to:", newDraft);
         setDraft(newDraft);
       }
+
+      // Формируем сообщение ассистента для чата
+      const assistantMessage = `Готово! Сгенерировал ТЗ${parsed.success && parsed.data.title ? ` "${parsed.data.title}"` : ""}. Можете уточнить детали или попросить изменения.`;
+      setPendingAssistantMessage(assistantMessage);
 
       toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
       console.log("[gig-create] Draft state after generation:", draft);
@@ -355,17 +378,23 @@ export default function CreateGigPage({ params }: PageProps) {
             updatedDraft,
           );
 
-          // Показываем уведомление, если есть изменения
-          if (
-            updatedDraft.title !== prev.title ||
-            updatedDraft.description !== prev.description ||
-            updatedDraft.deliverables !== prev.deliverables
-          ) {
-            toast.success("Документ обновлён");
-          }
-
           return updatedDraft;
         });
+
+        // Формируем сообщение ассистента о том, что изменилось
+        const changes: string[] = [];
+        if (validDoc.title) changes.push("название");
+        if (validDoc.description) changes.push("описание");
+        if (validDoc.deliverables) changes.push("результаты");
+        if (validDoc.requiredSkills) changes.push("навыки");
+        if (validDoc.budgetRange) changes.push("бюджет");
+        if (validDoc.timeline) changes.push("сроки");
+
+        const assistantMessage =
+          changes.length > 0
+            ? `Обновил ${changes.join(", ")}. Что-то ещё?`
+            : "Готово! Что-то ещё уточнить?";
+        setPendingAssistantMessage(assistantMessage);
       } else {
         console.error(
           "[gig-create] Chat message validation failed:",
@@ -456,7 +485,8 @@ export default function CreateGigPage({ params }: PageProps) {
           isGenerating={isGenerating || isWorkspaceLoading}
           onChatMessage={handleChatMessage}
           quickReplies={quickReplies}
-          onAddAssistantMessage={() => {}} // Enable assistant message handling
+          pendingAssistantMessage={pendingAssistantMessage}
+          onAssistantMessageConsumed={handleAssistantMessageConsumed}
         />
 
         <div className="space-y-6">

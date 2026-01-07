@@ -24,7 +24,6 @@ export const gigInterviewLink = pgTable(
       .notNull()
       .references(() => gig.id, { onDelete: "cascade" }),
     token: varchar("token", { length: 100 }).notNull().unique(),
-    slug: varchar("slug", { length: 100 }).notNull().unique(),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
@@ -34,7 +33,6 @@ export const gigInterviewLink = pgTable(
   (table) => ({
     gigIdx: index("gig_interview_link_gig_idx").on(table.gigId),
     tokenIdx: index("gig_interview_link_token_idx").on(table.token),
-    slugIdx: index("gig_interview_link_slug_idx").on(table.slug),
     activeIdx: index("gig_interview_link_active_idx")
       .on(table.gigId, table.isActive)
       .where(sql`${table.isActive} = true`),
@@ -46,7 +44,6 @@ export const CreateGigInterviewLinkSchema = createInsertSchema(
   {
     gigId: z.uuid(),
     token: z.string().max(100),
-    slug: z.string().max(100),
     isActive: z.boolean().default(true),
     expiresAt: z.coerce.date().optional(),
   },

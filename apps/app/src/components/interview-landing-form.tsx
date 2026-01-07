@@ -27,7 +27,8 @@ type FreelancerInfo = z.infer<typeof freelancerInfoSchema>;
 
 interface InterviewLandingFormProps {
   token: string;
-  vacancyId: string;
+  entityId: string;
+  entityType: "vacancy" | "gig";
   platformSource: string;
 }
 
@@ -48,7 +49,8 @@ const getPlatformPlaceholder = (source: string): string => {
 
 export function InterviewLandingForm({
   token,
-  vacancyId,
+  entityId,
+  entityType,
   platformSource,
 }: InterviewLandingFormProps) {
   const router = useRouter();
@@ -68,10 +70,11 @@ export function InterviewLandingForm({
 
   const platformProfileUrl = watch("platformProfileUrl");
 
-  const checkDuplicateMutation = useQuery(
+  // Проверка дубликатов только для вакансий
+  const checkDuplicateQuery = useQuery(
     trpc.freelancePlatforms.checkDuplicateResponse.queryOptions(
       {
-        vacancyId,
+        vacancyId: entityId,
         platformProfileUrl: platformProfileUrl || "",
       },
       {
@@ -82,21 +85,22 @@ export function InterviewLandingForm({
 
   const startInterviewMutation = useMutation(
     trpc.freelancePlatforms.startWebInterview.mutationOptions({
-      onSuccess: (data: {
-        conversationId: string;
-        responseId: string;
-        vacancyId: string;
-      }) => {
+      onSuccess: (data) => {
         router.push(
           `${paths.interview(token)}/chat?responseId=${data.conversationId}`,
         );
       },
       onError: (error: { message: string }) => {
         setIsSubmitting(false);
+        const duplicateMessage =
+          entityType === "vacancy"
+            ? "Вы уже откликнулись на эту вакансию"
+            : "Вы уже откликнулись на это задание";
+
         if (error.message.includes("откликнулись")) {
           setError("platformProfileUrl", {
             type: "manual",
-            message: "Вы уже откликнулись на эту вакансию",
+            message: duplicateMessage,
           });
         } else {
           setError("root", {
@@ -111,20 +115,23 @@ export function InterviewLandingForm({
   const onSubmit = async (data: FreelancerInfo) => {
     setIsSubmitting(true);
 
-    const duplicateCheck = await checkDuplicateMutation.refetch();
-    if (duplicateCheck.data?.isDuplicate) {
-      setError("platformProfileUrl", {
-        type: "manual",
-        message: "Вы уже откликнулись на эту вакансию",
-      });
-      setIsSubmitting(false);
-      return;
-    }
-
     const trimmedData = {
       name: data.name.trim(),
       platformProfileUrl: data.platformProfileUrl.trim(),
     };
+
+    // Проверка дубликатов только для вакансий (на бэкенде тоже проверяется)
+    if (entityType === "vacancy") {
+      const duplicateCheck = await checkDuplicateQuery.refetch();
+      if (duplicateCheck.data?.isDuplicate) {
+        setError("platformProfileUrl", {
+          type: "manual",
+          message: "Вы уже откликнулись на эту вакансию",
+        });
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     startInterviewMutation.mutate({
       token,

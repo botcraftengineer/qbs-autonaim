@@ -46,7 +46,8 @@ interface WizardChatProps {
   isGenerating: boolean;
   onChatMessage?: (message: string, history: ConversationMessage[]) => void;
   quickReplies?: string[];
-  onAddAssistantMessage?: (content: string) => void;
+  pendingAssistantMessage?: string | null;
+  onAssistantMessageConsumed?: () => void;
 }
 
 const STEP_MESSAGES: Record<WizardStep, string> = {
@@ -109,11 +110,11 @@ export function WizardChat({
   isGenerating,
   onChatMessage,
   quickReplies = [],
-  onAddAssistantMessage,
+  pendingAssistantMessage,
+  onAssistantMessageConsumed,
 }: WizardChatProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const prevIsGeneratingRef = React.useRef(isGenerating);
   const [state, setState] = React.useState<WizardState>(initialWizardState);
   const [showCustomInput, setShowCustomInput] = React.useState(false);
   const [chatInput, setChatInput] = React.useState("");
@@ -149,50 +150,20 @@ export function WizardChat({
     }
   }, [state.step, isGenerating]);
 
-  // Мемоизируем данные последнего сообщения для оптимизации useEffect
-  const lastMessageData = React.useMemo(() => {
-    const lastMessage =
-      conversationHistory.length > 0
-        ? conversationHistory[conversationHistory.length - 1]
-        : null;
-    return {
-      id: lastMessage?.id || null,
-      role: lastMessage?.role || null,
-      length: conversationHistory.length,
-    };
-  }, [conversationHistory]);
-
-  // Добавляем ответ ассистента после завершения генерации
+  // Добавляем ответ ассистента когда приходит pendingAssistantMessage
   React.useEffect(() => {
-    const wasGenerating = prevIsGeneratingRef.current;
-    prevIsGeneratingRef.current = isGenerating;
-
-    // Только когда isGenerating переходит из true в false
-    if (
-      wasGenerating &&
-      !isGenerating &&
-      state.step === "chat" &&
-      onAddAssistantMessage
-    ) {
-      // Проверяем, что история не пустая и последнее сообщение от пользователя
-      if (lastMessageData.length > 0 && lastMessageData.role === "user") {
-        setConversationHistory((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content: "Обновил ТЗ по вашему запросу.",
-          },
-        ]);
-      }
+    if (pendingAssistantMessage && state.step === "chat") {
+      setConversationHistory((prev) => [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: pendingAssistantMessage,
+        },
+      ]);
+      onAssistantMessageConsumed?.();
     }
-  }, [
-    isGenerating,
-    state.step,
-    lastMessageData.length,
-    lastMessageData.role,
-    onAddAssistantMessage,
-  ]);
+  }, [pendingAssistantMessage, state.step, onAssistantMessageConsumed]);
 
   // Автофокус на input в режиме чата
   React.useEffect(() => {

@@ -1,10 +1,10 @@
 import {
   conversation,
   conversationMessage,
+  gigResponse,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
-import { InterviewLinkGenerator } from "../../services";
 import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
@@ -38,146 +38,54 @@ export const startWebInterview = publicProcedure
     );
 
     try {
-      // Валидируем токен
-      const linkGenerator = new InterviewLinkGenerator();
-      const interviewLink = await linkGenerator.validateLink(input.token);
-
-      if (!interviewLink) {
-        throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
-          token: input.token,
-        });
-      }
-
-      // Проверяем, что вакансия активна
-      const vacancy = await ctx.db.query.vacancy.findFirst({
-        where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.vacancyId),
-        with: {
-          workspace: {
-            with: {
-              companySettings: true,
-            },
-          },
-        },
+      // 1. Ищем токен в таблице vacancy interview links
+      const vacancyLink = await ctx.db.query.interviewLink.findFirst({
+        where: (link, { eq, and }) =>
+          and(eq(link.token, input.token), eq(link.isActive, true)),
       });
 
-      if (!vacancy) {
-        throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: interviewLink.vacancyId,
-        });
-      }
+      if (vacancyLink) {
+        // Проверяем срок действия
+        if (vacancyLink.expiresAt && vacancyLink.expiresAt < new Date()) {
+          throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
+            token: input.token,
+          });
+        }
 
-      if (!vacancy.isActive) {
-        throw await errorHandler.handleValidationError("Вакансия закрыта", {
-          vacancyId: interviewLink.vacancyId,
-        });
-      }
-
-      // Проверяем дубликаты по platformProfileUrl + vacancyId
-      const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
-        where: (response, { and, eq }) =>
-          and(
-            eq(response.vacancyId, interviewLink.vacancyId),
-            eq(
-              response.platformProfileUrl,
-              input.freelancerInfo.platformProfileUrl,
-            ),
-          ),
-      });
-
-      if (existingResponse) {
-        throw await errorHandler.handleConflictError(
-          "Вы уже откликнулись на эту вакансию",
-          {
-            vacancyId: interviewLink.vacancyId,
-            platformProfileUrl: input.freelancerInfo.platformProfileUrl,
-          },
+        return await handleVacancyInterview(
+          ctx,
+          vacancyLink,
+          input.freelancerInfo,
+          errorHandler,
         );
       }
 
-      // Создаём отклик
-      const [response] = await ctx.db
-        .insert(vacancyResponse)
-        .values({
-          vacancyId: interviewLink.vacancyId,
-          resumeId: `freelance_web_${crypto.randomUUID()}`,
-          resumeUrl: input.freelancerInfo.platformProfileUrl,
-          candidateName: input.freelancerInfo.name,
-          platformProfileUrl: input.freelancerInfo.platformProfileUrl,
-          phone: input.freelancerInfo.phone,
-          telegramUsername: input.freelancerInfo.telegram,
-          contacts: {
-            email: input.freelancerInfo.email,
-            phone: input.freelancerInfo.phone,
-            telegram: input.freelancerInfo.telegram,
-          },
-          importSource: "FREELANCE_LINK",
-          status: "NEW",
-          respondedAt: new Date(),
-        })
-        .returning();
-
-      if (!response) {
-        throw await errorHandler.handleInternalError(
-          new Error("Failed to create response"),
-          {
-            vacancyId: interviewLink.vacancyId,
-            freelancerName: input.freelancerInfo.name,
-          },
-        );
-      }
-
-      // Создаём conversation с source='WEB'
-      const [conv] = await ctx.db
-        .insert(conversation)
-        .values({
-          responseId: response.id,
-          candidateName: input.freelancerInfo.name,
-          username: input.freelancerInfo.email,
-          status: "ACTIVE",
-          source: "WEB",
-          metadata: {},
-        })
-        .returning();
-
-      if (!conv) {
-        throw await errorHandler.handleInternalError(
-          new Error("Failed to create conversation"),
-          {
-            responseId: response.id,
-            freelancerName: input.freelancerInfo.name,
-          },
-        );
-      }
-
-      // Генерируем приветственное сообщение
-      const botName =
-        vacancy.workspace?.companySettings?.botName || "Ассистент по найму";
-      const companyName =
-        vacancy.workspace?.companySettings?.name || "нашей компании";
-
-      const welcomeMessage = `Здравствуйте, ${input.freelancerInfo.name}! 👋
-
-Меня зовут ${botName}, я помогаю ${companyName} в подборе кандидатов на вакансию "${vacancy.title}".
-
-Я проведу с вами короткое интервью, чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
-
-Готовы начать?`;
-
-      // Сохраняем приветственное сообщение
-      await ctx.db.insert(conversationMessage).values({
-        conversationId: conv.id,
-        sender: "BOT",
-        contentType: "TEXT",
-        channel: conv.source,
-        content: welcomeMessage,
+      // 2. Ищем токен в таблице gig interview links
+      const gigLink = await ctx.db.query.gigInterviewLink.findFirst({
+        where: (link, { eq, and }) =>
+          and(eq(link.token, input.token), eq(link.isActive, true)),
       });
 
-      return {
-        conversationId: conv.id,
-        responseId: response.id,
-        vacancyId: response.vacancyId,
-        welcomeMessage,
-      };
+      if (gigLink) {
+        // Проверяем срок действия
+        if (gigLink.expiresAt && gigLink.expiresAt < new Date()) {
+          throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
+            token: input.token,
+          });
+        }
+
+        return await handleGigInterview(
+          ctx,
+          gigLink,
+          input.freelancerInfo,
+          errorHandler,
+        );
+      }
+
+      // 3. Токен не найден
+      throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
+        token: input.token,
+      });
     } catch (error) {
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
@@ -188,3 +96,298 @@ export const startWebInterview = publicProcedure
       });
     }
   });
+
+/**
+ * Обработка интервью для вакансии
+ */
+async function handleVacancyInterview(
+  ctx: Parameters<
+    Parameters<typeof publicProcedure.mutation>[0]
+  >[0]["ctx"] extends infer T
+    ? T
+    : never,
+  vacancyLink: { id: string; vacancyId: string },
+  freelancerInfo: {
+    name: string;
+    email?: string;
+    platformProfileUrl: string;
+    phone?: string;
+    telegram?: string;
+  },
+  errorHandler: ReturnType<typeof createErrorHandler>,
+) {
+  // Получаем вакансию
+  const vacancy = await ctx.db.query.vacancy.findFirst({
+    where: (v, { eq }) => eq(v.id, vacancyLink.vacancyId),
+    with: {
+      workspace: {
+        with: {
+          companySettings: true,
+        },
+      },
+    },
+  });
+
+  if (!vacancy) {
+    throw await errorHandler.handleNotFoundError("Вакансия", {
+      vacancyId: vacancyLink.vacancyId,
+    });
+  }
+
+  if (!vacancy.isActive) {
+    throw await errorHandler.handleValidationError("Вакансия закрыта", {
+      vacancyId: vacancyLink.vacancyId,
+    });
+  }
+
+  // Проверяем дубликаты
+  const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
+    where: (response, { and, eq }) =>
+      and(
+        eq(response.vacancyId, vacancyLink.vacancyId),
+        eq(response.platformProfileUrl, freelancerInfo.platformProfileUrl),
+      ),
+  });
+
+  if (existingResponse) {
+    throw await errorHandler.handleConflictError(
+      "Вы уже откликнулись на эту вакансию",
+      {
+        vacancyId: vacancyLink.vacancyId,
+        platformProfileUrl: freelancerInfo.platformProfileUrl,
+      },
+    );
+  }
+
+  // Создаём отклик
+  const [response] = await ctx.db
+    .insert(vacancyResponse)
+    .values({
+      vacancyId: vacancyLink.vacancyId,
+      resumeId: `freelance_web_${crypto.randomUUID()}`,
+      resumeUrl: freelancerInfo.platformProfileUrl,
+      candidateName: freelancerInfo.name,
+      platformProfileUrl: freelancerInfo.platformProfileUrl,
+      phone: freelancerInfo.phone,
+      telegramUsername: freelancerInfo.telegram,
+      contacts: {
+        email: freelancerInfo.email,
+        phone: freelancerInfo.phone,
+        telegram: freelancerInfo.telegram,
+      },
+      importSource: "FREELANCE_LINK",
+      status: "NEW",
+      respondedAt: new Date(),
+    })
+    .returning();
+
+  if (!response) {
+    throw await errorHandler.handleInternalError(
+      new Error("Failed to create response"),
+      {
+        vacancyId: vacancyLink.vacancyId,
+        freelancerName: freelancerInfo.name,
+      },
+    );
+  }
+
+  // Создаём conversation
+  const [conv] = await ctx.db
+    .insert(conversation)
+    .values({
+      responseId: response.id,
+      candidateName: freelancerInfo.name,
+      username: freelancerInfo.email,
+      status: "ACTIVE",
+      source: "WEB",
+      metadata: {},
+    })
+    .returning();
+
+  if (!conv) {
+    throw await errorHandler.handleInternalError(
+      new Error("Failed to create conversation"),
+      {
+        responseId: response.id,
+        freelancerName: freelancerInfo.name,
+      },
+    );
+  }
+
+  // Генерируем приветственное сообщение
+  const botName =
+    vacancy.workspace?.companySettings?.botName || "Ассистент по найму";
+  const companyName =
+    vacancy.workspace?.companySettings?.name || "нашей компании";
+
+  const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
+
+Меня зовут ${botName}, я помогаю ${companyName} в подборе кандидатов на вакансию "${vacancy.title}".
+
+Я проведу с вами короткое интервью, чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
+
+Готовы начать?`;
+
+  await ctx.db.insert(conversationMessage).values({
+    conversationId: conv.id,
+    sender: "BOT",
+    contentType: "TEXT",
+    channel: conv.source,
+    content: welcomeMessage,
+  });
+
+  return {
+    type: "vacancy" as const,
+    conversationId: conv.id,
+    responseId: response.id,
+    entityId: response.vacancyId,
+    welcomeMessage,
+  };
+}
+
+/**
+ * Обработка интервью для гига
+ */
+async function handleGigInterview(
+  ctx: Parameters<
+    Parameters<typeof publicProcedure.mutation>[0]
+  >[0]["ctx"] extends infer T
+    ? T
+    : never,
+  gigLink: { id: string; gigId: string },
+  freelancerInfo: {
+    name: string;
+    email?: string;
+    platformProfileUrl: string;
+    phone?: string;
+    telegram?: string;
+  },
+  errorHandler: ReturnType<typeof createErrorHandler>,
+) {
+  // Получаем гиг
+  const gig = await ctx.db.query.gig.findFirst({
+    where: (g, { eq }) => eq(g.id, gigLink.gigId),
+    with: {
+      workspace: {
+        with: {
+          companySettings: true,
+        },
+      },
+    },
+  });
+
+  if (!gig) {
+    throw await errorHandler.handleNotFoundError("Задание", {
+      gigId: gigLink.gigId,
+    });
+  }
+
+  if (!gig.isActive) {
+    throw await errorHandler.handleValidationError("Задание закрыто", {
+      gigId: gigLink.gigId,
+    });
+  }
+
+  // Проверяем дубликаты по profileUrl + gigId
+  const existingResponse = await ctx.db.query.gigResponse.findFirst({
+    where: (response, { and, eq }) =>
+      and(
+        eq(response.gigId, gigLink.gigId),
+        eq(response.profileUrl, freelancerInfo.platformProfileUrl),
+      ),
+  });
+
+  if (existingResponse) {
+    throw await errorHandler.handleConflictError(
+      "Вы уже откликнулись на это задание",
+      {
+        gigId: gigLink.gigId,
+        profileUrl: freelancerInfo.platformProfileUrl,
+      },
+    );
+  }
+
+  // Создаём отклик для гига
+  const [response] = await ctx.db
+    .insert(gigResponse)
+    .values({
+      gigId: gigLink.gigId,
+      candidateId: `web_${crypto.randomUUID()}`,
+      candidateName: freelancerInfo.name,
+      profileUrl: freelancerInfo.platformProfileUrl,
+      phone: freelancerInfo.phone,
+      email: freelancerInfo.email,
+      telegramUsername: freelancerInfo.telegram,
+      contacts: {
+        email: freelancerInfo.email,
+        phone: freelancerInfo.phone,
+        telegram: freelancerInfo.telegram,
+      },
+      importSource: "WEB_LINK",
+      status: "NEW",
+      respondedAt: new Date(),
+    })
+    .returning();
+
+  if (!response) {
+    throw await errorHandler.handleInternalError(
+      new Error("Failed to create gig response"),
+      {
+        gigId: gigLink.gigId,
+        freelancerName: freelancerInfo.name,
+      },
+    );
+  }
+
+  // Создаём conversation для гига
+  const [conv] = await ctx.db
+    .insert(conversation)
+    .values({
+      gigResponseId: response.id,
+      candidateName: freelancerInfo.name,
+      username: freelancerInfo.email,
+      status: "ACTIVE",
+      source: "WEB",
+      metadata: {},
+    })
+    .returning();
+
+  if (!conv) {
+    throw await errorHandler.handleInternalError(
+      new Error("Failed to create conversation"),
+      {
+        responseId: response.id,
+        freelancerName: freelancerInfo.name,
+      },
+    );
+  }
+
+  // Генерируем приветственное сообщение
+  const botName =
+    gig.workspace?.companySettings?.botName || "Ассистент по найму";
+  const companyName = gig.workspace?.companySettings?.name || "нашей компании";
+
+  const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
+
+Меня зовут ${botName}, я помогаю ${companyName} в подборе исполнителей на задание "${gig.title}".
+
+Я проведу с вами короткое интервью, чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
+
+Готовы начать?`;
+
+  await ctx.db.insert(conversationMessage).values({
+    conversationId: conv.id,
+    sender: "BOT",
+    contentType: "TEXT",
+    channel: conv.source,
+    content: welcomeMessage,
+  });
+
+  return {
+    type: "gig" as const,
+    conversationId: conv.id,
+    responseId: response.id,
+    entityId: response.gigId,
+    welcomeMessage,
+  };
+}
