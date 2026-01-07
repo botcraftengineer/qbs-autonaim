@@ -8,6 +8,7 @@ import { generateInterviewLink } from "./generate-interview-link";
 import { getAnalytics } from "./get-analytics";
 import { getChatHistory } from "./get-chat-history";
 import { getDashboardStats } from "./get-dashboard-stats";
+import { getInterviewByToken } from "./get-interview-by-token";
 import { getInterviewLink } from "./get-interview-link";
 import { getNewMessages } from "./get-new-messages";
 import { getShortlist } from "./get-shortlist";
@@ -38,6 +39,7 @@ export const freelancePlatformsRouter = {
   updateVacancyStatus,
   deleteVacancy,
   generateInterviewLink,
+  getInterviewByToken,
   getInterviewLink,
   validateInterviewToken,
   checkDuplicateResponse,

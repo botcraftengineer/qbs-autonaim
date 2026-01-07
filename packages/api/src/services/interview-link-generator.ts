@@ -110,7 +110,6 @@ export class InterviewLinkGenerator {
     const link = await db.query.interviewLink.findFirst({
       where: eq(interviewLink.token, token),
     });
-    console.log(token);
 
     if (!link) {
       return null;
