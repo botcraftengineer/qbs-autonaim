@@ -2,8 +2,13 @@
  * Публичный endpoint для AI-чата интервью
  * Доступен без авторизации, но защищён проверкой conversationId
  * Только для WEB интервью (source = 'WEB')
+ *
+ * Использует Vercel AI SDK для нативного стриминга
+ * Трассировка через Langfuse
  */
+import { env } from "@qbs-autonaim/config";
 import { db, eq } from "@qbs-autonaim/db";
+import { conversationMessage } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
@@ -11,26 +16,41 @@ import {
   smoothStream,
   streamText,
 } from "ai";
+import { Langfuse } from "langfuse";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-const textPartSchema = z.object({
-  type: z.literal("text"),
-  text: z.string().min(1).max(10000),
+// Langfuse для трассировки
+const langfuse = new Langfuse({
+  secretKey: env.LANGFUSE_SECRET_KEY,
+  publicKey: env.LANGFUSE_PUBLIC_KEY,
+  baseUrl: env.LANGFUSE_BASE_URL,
 });
 
-const messageSchema = z.object({
-  id: z.string(),
-  role: z.enum(["user", "assistant", "system"]),
-  parts: z.array(textPartSchema),
-});
+// Гибкая схема для parts — AI SDK отправляет разные типы
+const partSchema = z
+  .object({
+    type: z.string(),
+    text: z.string().optional(),
+  })
+  .passthrough();
 
-const requestSchema = z.object({
-  id: z.uuid().optional(),
-  message: messageSchema.optional(),
-  messages: z.array(messageSchema).optional(),
-  conversationId: z.string(),
-});
+const messageSchema = z
+  .object({
+    id: z.string(),
+    role: z.enum(["user", "assistant", "system"]),
+    content: z.string().optional(),
+    parts: z.array(partSchema).optional(),
+  })
+  .passthrough();
+
+const requestSchema = z
+  .object({
+    id: z.string().optional(),
+    messages: z.array(messageSchema),
+    conversationId: z.string().uuid(),
+  })
+  .passthrough();
 
 export const maxDuration = 60;
 
@@ -45,6 +65,7 @@ export async function POST(request: Request) {
     const json = await request.json();
     requestBody = requestSchema.parse(json);
   } catch (error) {
+    console.error("[Interview Stream] Parse error:", error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request", details: error.issues },
@@ -55,25 +76,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { message, messages, conversationId } = requestBody;
-
-    if (!conversationId) {
-      return NextResponse.json(
-        { error: "conversationId is required" },
-        { status: 400 },
-      );
-    }
+    const { messages, conversationId } = requestBody;
 
     // Проверяем что conversation существует и это WEB интервью
     const conv = await db.query.conversation.findFirst({
       where: (c, { and }) => and(eq(c.id, conversationId), eq(c.source, "WEB")),
-      with: {
-        response: {
-          with: {
-            vacancy: true,
-          },
-        },
-      },
     });
 
     if (!conv) {
@@ -83,7 +90,6 @@ export async function POST(request: Request) {
       );
     }
 
-    // Проверяем что интервью активно
     if (conv.status !== "ACTIVE") {
       return NextResponse.json(
         { error: "Interview is not active" },
@@ -91,52 +97,151 @@ export async function POST(request: Request) {
       );
     }
 
-    // Формируем контекст вакансии
+    // Загружаем контекст вакансии/задания
+    let vacancy = null;
+    let gig = null;
+
+    if (conv.responseId) {
+      const response = await db.query.vacancyResponse.findFirst({
+        where: (r, { eq }) => eq(r.id, conv.responseId as string),
+        with: { vacancy: true },
+      });
+      vacancy = response?.vacancy;
+    }
+
+    if (conv.gigResponseId) {
+      const gigResp = await db.query.gigResponse.findFirst({
+        where: (r, { eq }) => eq(r.id, conv.gigResponseId as string),
+        with: { gig: true },
+      });
+      gig = gigResp?.gig;
+    }
+
+    // Формируем контекст
     let conversationContext = "";
-    if (conv.response?.vacancy) {
-      const vac = conv.response.vacancy;
+    if (vacancy) {
       conversationContext = `
 Контекст вакансии:
-- Название: ${vac.title || "Не указано"}
-- Описание: ${vac.description || "Не указано"}
+- Название: ${vacancy.title || "Не указано"}
+- Описание: ${vacancy.description || "Не указано"}
+`;
+    } else if (gig) {
+      conversationContext = `
+Контекст задания:
+- Название: ${gig.title || "Не указано"}
+- Описание: ${gig.description || "Не указано"}
 `;
     }
 
-    // Формируем сообщения для AI
-    const uiMessages = messages ?? (message ? [message] : []);
+    // Получаем последнее сообщение пользователя для сохранения
+    const lastUserMessage = messages.filter((m) => m.role === "user").pop();
+    const userMessageText =
+      lastUserMessage?.parts
+        ?.filter((p) => p.type === "text")
+        .map((p) => p.text)
+        .join("\n") ||
+      lastUserMessage?.content ||
+      "";
 
-    const historyContext = uiMessages
+    // Сохраняем сообщение пользователя в БД
+    if (lastUserMessage && userMessageText) {
+      await db.insert(conversationMessage).values({
+        conversationId,
+        sender: "CANDIDATE",
+        contentType: "TEXT",
+        channel: "WEB",
+        content: userMessageText,
+      });
+    }
+
+    // Формируем историю диалога
+    const historyContext = messages
       .map((m) => {
-        const text = m.parts
-          .filter((p) => p.type === "text")
-          .map((p) => p.text)
-          .join("\n");
+        const text = m.parts?.map((p) => p.text).join("\n") || m.content || "";
         return `${m.role === "user" ? "Кандидат" : "Интервьюер"}: ${text}`;
       })
       .join("\n\n");
 
-    const prompt = `${conversationContext}
+    const systemPrompt = `${conversationContext}
+
+Ты — AI-интервьюер. Веди профессиональное интервью с кандидатом.
+Будь вежливым, задавай уточняющие вопросы, оценивай ответы.
 
 История диалога:
-${historyContext}
+${historyContext}`;
 
-Ты — AI-интервьюер. Ответь на последнее сообщение кандидата. Будь вежливым и профессиональным.`;
+    // Создаём trace в Langfuse
+    const trace = langfuse.trace({
+      name: "interview-chat",
+      userId: conversationId,
+      metadata: {
+        source: "WEB",
+        vacancyId: vacancy?.id,
+        gigId: gig?.id,
+      },
+    });
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
+        const model = getAIModel();
+
+        const generation = trace.generation({
+          name: "interview-response",
+          model: env.AI_MODEL || "default",
+          input: {
+            system: systemPrompt,
+            messages: messages.map((m) => ({
+              role: m.role,
+              content:
+                m.parts?.map((p) => p.text).join("\n") || m.content || "",
+            })),
+          },
+        });
+
         const result = streamText({
-          model: getAIModel(),
-          prompt,
+          model,
+          system: systemPrompt,
+          messages: messages.map((m) => ({
+            role: m.role as "user" | "assistant" | "system",
+            content: m.parts?.map((p) => p.text).join("\n") || m.content || "",
+          })),
           experimental_transform: smoothStream({ chunking: "word" }),
+          onFinish: async ({ text }) => {
+            generation.end({ output: text });
+            trace.update({ output: text });
+            await langfuse.flushAsync();
+          },
         });
 
         result.consumeStream();
-
         writer.merge(result.toUIMessageStream());
       },
       generateId: generateUUID,
+      onFinish: async ({ messages: finishedMessages }) => {
+        // Сохраняем ответ AI в БД
+        const assistantMessages = finishedMessages.filter(
+          (m) => m.role === "assistant",
+        );
+        for (const msg of assistantMessages) {
+          const textParts = msg.parts?.filter(
+            (p): p is { type: "text"; text: string } =>
+              p.type === "text" && "text" in p,
+          );
+          const content = textParts?.map((p) => p.text).join("\n") || "";
+
+          if (content) {
+            await db.insert(conversationMessage).values({
+              conversationId,
+              sender: "BOT",
+              contentType: "TEXT",
+              channel: "WEB",
+              content,
+            });
+          }
+        }
+      },
       onError: (error) => {
-        console.error("Interview stream error:", error);
+        console.error("[Interview Stream] Error:", error);
         return error instanceof Error ? error.message : "Unknown error";
       },
     });
@@ -149,7 +254,7 @@ ${historyContext}
       },
     });
   } catch (error) {
-    console.error("Interview chat stream error:", error);
+    console.error("[Interview Stream] Error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },

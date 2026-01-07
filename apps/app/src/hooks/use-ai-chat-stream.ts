@@ -45,9 +45,26 @@ function parseStreamLine(line: string): StreamPart | null {
     if (jsonStr === "[DONE]") return { type: "d", value: null };
 
     const parsed = JSON.parse(jsonStr);
+
+    // Новый формат от Vercel AI SDK
+    if (parsed.type === "text-delta") {
+      return { type: "0", value: parsed.delta };
+    }
+    if (parsed.type === "text-end") {
+      return { type: "d", value: null };
+    }
+    if (parsed.type === "finish-step") {
+      return { type: "f", value: null };
+    }
+    if (parsed.type === "finish") {
+      return { type: "d", value: null };
+    }
+
+    // Старый формат [type, value]
     if (Array.isArray(parsed) && parsed.length >= 2) {
       return { type: parsed[0] as StreamPartType, value: parsed[1] };
     }
+
     return null;
   } catch {
     return null;
@@ -75,6 +92,9 @@ export function useAIChatStream({
   const sendMessage = useCallback(
     async (content: string, audioFile?: File) => {
       if (!content.trim() && !audioFile) return;
+
+      console.log("[useAIChatStream] Sending message to:", apiEndpoint);
+      console.log("[useAIChatStream] chatId:", chatId);
 
       lastUserMessageRef.current = content;
       setError(null);
@@ -201,7 +221,11 @@ export function useAIChatStream({
           signal: abortControllerRef.current.signal,
         });
 
+        console.log("[useAIChatStream] Response status:", response.status);
+
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error("[useAIChatStream] Error response:", errorText);
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
@@ -216,12 +240,22 @@ export function useAIChatStream({
         let buffer = "";
         const currentParts: MessagePart[] = [];
         let currentTextPart: TextPart | null = null;
+        let chunkCount = 0;
+
+        console.log("[useAIChatStream] Starting to read stream");
 
         while (true) {
           const { done, value } = await reader.read();
 
-          if (done) break;
+          if (done) {
+            console.log(
+              "[useAIChatStream] Stream done, total chunks:",
+              chunkCount,
+            );
+            break;
+          }
 
+          chunkCount++;
           buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
           buffer = lines.pop() || "";
@@ -230,10 +264,22 @@ export function useAIChatStream({
             const trimmedLine = line.trim();
             if (!trimmedLine) continue;
 
+            console.log(
+              "[useAIChatStream] Received line:",
+              trimmedLine.substring(0, 100),
+            );
+
             const parsed = parseStreamLine(trimmedLine);
-            if (!parsed) continue;
+            if (!parsed) {
+              console.warn(
+                "[useAIChatStream] Failed to parse line:",
+                trimmedLine,
+              );
+              continue;
+            }
 
             const { type, value: data } = parsed;
+            console.log("[useAIChatStream] Parsed type:", type);
 
             switch (type) {
               case "0": {
