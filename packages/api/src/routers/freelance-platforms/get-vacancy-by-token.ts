@@ -13,7 +13,6 @@ export const getVacancyByToken = publicProcedure
     // Валидируем токен через сервис
     const linkGenerator = new InterviewLinkGenerator();
     const interviewLink = await linkGenerator.validateLink(input.token);
-
     if (!interviewLink) {
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -52,7 +51,6 @@ export const getVacancyByToken = publicProcedure
       interviewLink: {
         id: interviewLink.id,
         token: interviewLink.token,
-        slug: interviewLink.slug,
       },
     };
   });

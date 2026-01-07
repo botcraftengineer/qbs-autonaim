@@ -24,7 +24,7 @@ import {
   Skeleton,
   toast,
 } from "@qbs-autonaim/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Calendar,
@@ -41,7 +41,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
 import { useState } from "react";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
@@ -161,6 +161,8 @@ export function GigDetailClient({
   workspaceId,
 }: GigDetailClientProps) {
   const trpc = useTRPC();
+  const router = useRouter();
+  const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
@@ -171,6 +173,21 @@ export function GigDetailClient({
     trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId,
+    }),
+  );
+
+  const deleteMutation = useMutation(
+    trpc.gig.delete.mutationOptions({
+      onSuccess: () => {
+        toast.success("Задание удалено");
+        queryClient.invalidateQueries({
+          queryKey: trpc.gig.list.queryKey(),
+        });
+        router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`);
+      },
+      onError: (error) => {
+        toast.error(error.message || "Не удалось удалить задание");
+      },
     }),
   );
 
@@ -197,23 +214,7 @@ export function GigDetailClient({
   };
 
   const handleDeleteConfirm = () => {
-    // TODO: Implement delete mutation using tRPC
-    // Example:
-    // const { mutate: deleteGig } = useMutation(
-    //   trpc.gig.delete.mutationOptions({
-    //     onSuccess: () => {
-    //       toast.success("Задание удалено");
-    //       router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`);
-    //     },
-    //     onError: (error) => {
-    //       toast.error(error.message);
-    //     },
-    //   })
-    // );
-    // deleteGig({ id: gigId, workspaceId });
-
-    setShowDeleteDialog(false);
-    toast.info("Функция удаления скоро будет доступна");
+    deleteMutation.mutate({ gigId, workspaceId });
   };
 
   if (isPending) {
@@ -537,17 +538,20 @@ export function GigDetailClient({
           <AlertDialogHeader>
             <AlertDialogTitle>Удалить задание?</AlertDialogTitle>
             <AlertDialogDescription>
-              Вы собираетесь удалить задание "{gig.title}". Это действие нельзя
-              отменить.
+              Вы собираетесь удалить задание «{gig.title}». Все отклики на это
+              задание также будут удалены. Это действие нельзя отменить.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogCancel disabled={deleteMutation.isPending}>
+              Отмена
+            </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
+              disabled={deleteMutation.isPending}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Удалить задание
+              {deleteMutation.isPending ? "Удаление…" : "Удалить задание"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

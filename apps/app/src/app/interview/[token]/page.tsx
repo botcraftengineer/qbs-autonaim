@@ -33,7 +33,6 @@ export default async function InterviewLandingPage({ params }: PageProps) {
   try {
     const caller = await api();
     const data = await caller.freelancePlatforms.getVacancyByToken({ token });
-
     return (
       <main className="relative flex min-h-screen flex-col items-center justify-center px-4">
         {/* Grid background */}

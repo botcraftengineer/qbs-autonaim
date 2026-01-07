@@ -49,7 +49,6 @@ export const generateInterviewLink = protectedProcedure
       id: interviewLink.id,
       vacancyId: interviewLink.vacancyId,
       token: interviewLink.token,
-      slug: interviewLink.slug,
       url: interviewLink.url,
       isActive: interviewLink.isActive,
       createdAt: interviewLink.createdAt,

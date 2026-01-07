@@ -78,7 +78,6 @@ export const createVacancy = protectedProcedure
         interviewLink: {
           url: interviewLink.url,
           token: interviewLink.token,
-          slug: interviewLink.slug,
           isActive: interviewLink.isActive,
         },
       };

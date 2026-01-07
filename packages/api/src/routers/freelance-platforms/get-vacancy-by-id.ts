@@ -82,9 +82,8 @@ export const getVacancyById = protectedProcedure
       responseStats: stats,
       interviewLink: activeInterviewLink
         ? {
-            url: `${env.NEXT_PUBLIC_APP_URL}${paths.interview(activeInterviewLink.slug)}`,
+            url: `${env.NEXT_PUBLIC_APP_URL}${paths.interview(activeInterviewLink.token)}`,
             token: activeInterviewLink.token,
-            slug: activeInterviewLink.slug,
             isActive: activeInterviewLink.isActive,
             createdAt: activeInterviewLink.createdAt,
           }

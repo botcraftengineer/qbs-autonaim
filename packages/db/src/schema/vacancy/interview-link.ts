@@ -20,7 +20,6 @@ export const interviewLink = pgTable(
       .notNull()
       .references(() => vacancy.id, { onDelete: "cascade" }),
     token: varchar("token", { length: 100 }).notNull().unique(),
-    slug: varchar("slug", { length: 100 }).notNull().unique(),
     isActive: boolean("is_active").default(true).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
@@ -30,7 +29,6 @@ export const interviewLink = pgTable(
   (table) => ({
     vacancyIdx: index("interview_link_vacancy_idx").on(table.vacancyId),
     tokenIdx: index("interview_link_token_idx").on(table.token),
-    slugIdx: index("interview_link_slug_idx").on(table.slug),
     activeIdx: index("interview_link_active_idx")
       .on(table.vacancyId, table.isActive)
       .where(sql`${table.isActive} = true`),
@@ -39,7 +37,6 @@ export const interviewLink = pgTable(
 
 export const CreateInterviewLinkSchema = createInsertSchema(interviewLink, {
   token: z.string().max(100),
-  slug: z.string().max(100),
   isActive: z.boolean().default(true),
   expiresAt: z.date().optional(),
 }).omit({
