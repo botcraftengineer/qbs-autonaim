@@ -1,95 +1,123 @@
+"use client"
+
+import { Briefcase, Building2, Rocket, TrendingUp, ArrowRight, Sparkles } from "lucide-react"
+import Link from "next/link"
+import { motion } from "framer-motion"
+
 export function TargetAudienceSection() {
   const audiences = [
     {
-      icon: "👔",
+      icon: Briefcase,
       title: "HR-менеджеры",
       description: "Автоматизируйте рутинные задачи и сфокусируйтесь на стратегических решениях",
-      stats: "Экономия 20+ часов в неделю",
-      gradient: "from-blue-500 to-blue-600",
+      stat: "20+ ч/нед",
+      statLabel: "экономия времени",
+      link: "/audiences/hr-managers",
+      color: "text-violet-500",
+      bgColor: "bg-violet-500",
     },
     {
-      icon: "🏢",
-      title: "Руководители компаний",
+      icon: Building2,
+      title: "Руководители",
       description: "Масштабируйте найм без увеличения HR-команды",
-      stats: "Рост на 300% без доп. затрат",
-      gradient: "from-purple-500 to-purple-600",
+      stat: "300%",
+      statLabel: "рост без затрат",
+      link: "/audiences/company-leaders",
+      color: "text-blue-500",
+      bgColor: "bg-blue-500",
     },
     {
-      icon: "🚀",
+      icon: Rocket,
       title: "Стартапы",
       description: "Быстро находите таланты для роста вашего бизнеса",
-      stats: "Первый найм за 48 часов",
-      gradient: "from-cyan-500 to-cyan-600",
+      stat: "48 ч",
+      statLabel: "первый найм",
+      link: "/audiences/startups",
+      color: "text-amber-500",
+      bgColor: "bg-amber-500",
     },
     {
-      icon: "📈",
-      title: "Рекрутинговые агентства",
+      icon: TrendingUp,
+      title: "Агентства",
       description: "Увеличивайте количество успешных размещений",
-      stats: "До 5x больше кандидатов",
-      gradient: "from-violet-500 to-violet-600",
+      stat: "5x",
+      statLabel: "больше кандидатов",
+      link: "/audiences/recruitment-agencies",
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-500",
     },
   ]
 
   return (
-    <section className="relative py-24 md:py-32 overflow-hidden">
-      {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-muted/20 to-background" />
+    <section className="relative py-20 md:py-28 overflow-hidden bg-muted/30">
+      {/* Background */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_50%,oklch(0.96_0.01_265/0.3),transparent_70%)]" />
 
       <div className="container relative mx-auto px-4">
-        <div className="mx-auto max-w-3xl text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 mb-6">
-            <span className="text-sm font-medium text-blue-600">Для кого это решение</span>
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mx-auto max-w-3xl text-center mb-14"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-border bg-card text-sm mb-6">
+            <Sparkles className="h-4 w-4 text-foreground" />
+            <span className="text-muted-foreground">Для кого</span>
           </div>
 
-          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-balance mb-6">
-            Создано для тех, кто{" "}
-            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 bg-clip-text text-transparent">
-              ценит своё время
-            </span>
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-balance mb-4">
+            Создано для тех, кто <span className="text-muted-foreground">ценит своё время</span>
           </h2>
 
-          <p className="text-lg md:text-xl text-muted-foreground text-balance">
-            Независимо от размера вашей команды или отрасли, QBS Автонайм помогает находить лучших кандидатов быстрее
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Независимо от размера команды, QBS помогает находить лучших кандидатов быстрее
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-          {audiences.map((audience, index) => (
-            <div
-              key={index}
-              className="group relative rounded-2xl border border-border bg-card p-8 hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-300"
-            >
-              {/* Gradient hover effect */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        {/* Compact 4-column grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 max-w-6xl mx-auto">
+          {audiences.map((audience, index) => {
+            const Icon = audience.icon
 
-              <div className="relative">
-                {/* Icon with gradient background */}
-                <div
-                  className={`inline-flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br ${audience.gradient} mb-6 text-2xl`}
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+              >
+                <Link
+                  href={audience.link}
+                  className="group block h-full bg-card border border-border rounded-2xl p-6 hover:border-foreground/20 hover:shadow-lg transition-all"
                 >
-                  {audience.icon}
-                </div>
-
-                <h3 className="text-2xl font-bold mb-3">{audience.title}</h3>
-
-                <p className="text-muted-foreground mb-4 leading-relaxed">{audience.description}</p>
-
-                <div className="flex items-center gap-2 pt-4 border-t border-border">
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">{audience.stats}</p>
+                  {/* Icon */}
+                  <div className={`w-12 h-12 rounded-xl ${audience.bgColor}/10 flex items-center justify-center mb-4`}>
+                    <Icon className={`w-6 h-6 ${audience.color}`} />
                   </div>
-                  <svg
-                    className="w-5 h-5 text-muted-foreground group-hover:text-blue-600 group-hover:translate-x-1 transition-all duration-300"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          ))}
+
+                  {/* Title */}
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{audience.title}</h3>
+
+                  {/* Description */}
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{audience.description}</p>
+
+                  {/* Stat */}
+                  <div className="pt-4 border-t border-border">
+                    <div className={`text-2xl font-bold ${audience.color}`}>{audience.stat}</div>
+                    <div className="text-xs text-muted-foreground">{audience.statLabel}</div>
+                  </div>
+
+                  {/* Arrow */}
+                  <div className="mt-4 flex items-center gap-1 text-sm font-medium text-foreground/70 group-hover:text-foreground transition-colors">
+                    Подробнее
+                    <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </Link>
+              </motion.div>
+            )
+          })}
         </div>
       </div>
     </section>

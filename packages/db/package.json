@@ -57,7 +57,7 @@
     "pg": "^8.16.3",
     "validator": "^13.15.26",
     "ws": "^8.19.0",
-    "zod": "4.3.4"
+    "zod": "4.3.5"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",

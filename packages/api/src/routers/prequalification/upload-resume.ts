@@ -54,6 +54,14 @@ export const uploadResume = publicProcedure
       });
     }
 
+    // Validate OpenAI API key is available
+    if (!env.OPENAI_API_KEY) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "OpenAI API key не настроен",
+      });
+    }
+
     // Initialize resume parser
     const openai = createOpenAI({
       apiKey: env.OPENAI_API_KEY,

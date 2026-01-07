@@ -80,9 +80,11 @@ export const env = createEnv({
       .default("true")
       .transform((val) => val === "true"),
 
-    UNSTRUCTURED_API_KEY: z.string().optional().default("default"),
-    UNSTRUCTURED_API_URL: z.url(),
-    ENCRYPTION_KEY: z.string().optional().default("default"),
+    UNSTRUCTURED_API_KEY: z.string(),
+    UNSTRUCTURED_API_URL: z.url().optional().default("http://localhost:8001"),
+    ENCRYPTION_KEY: z
+      .string()
+      .length(64, "ENCRYPTION_KEY должен быть 64 символа (32 байта в hex)"),
     TG_CLIENT_PORT: z.string().optional().default("8001").transform(Number),
   },
   client: {
@@ -144,3 +146,17 @@ export const env = createEnv({
   skipValidation:
     !!process.env.CI || process.env.npm_lifecycle_event === "lint",
 });
+// Runtime guards for security-sensitive environment variables
+if (env.NODE_ENV !== "development") {
+  if (env.UNSTRUCTURED_API_KEY === "default") {
+    throw new Error(
+      "UNSTRUCTURED_API_KEY cannot be 'default' in non-development environments",
+    );
+  }
+
+  if (env.ENCRYPTION_KEY === "default") {
+    throw new Error(
+      "ENCRYPTION_KEY cannot be 'default' in non-development environments",
+    );
+  }
+}

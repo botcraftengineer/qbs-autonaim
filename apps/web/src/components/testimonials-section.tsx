@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button"
 const testimonials = [
   {
     id: 1,
+    name: "Иван Петров",
+    role: "HR Director",
+    company: "TechCorp",
+    avatar: "/professional-man-hr-director.jpg",
+    rating: 5,
+    text: "QBS кардинально изменил наш процесс найма. Мы обрабатываем тысячи откликов ежемесячно — с QBS мы легко находим лучших кандидатов и экономим 90% времени рекрутеров.",
+    metric: "90% экономия времени",
+  },
+  {
+    id: 2,
     name: "Анна Петрова",
     role: "HR-директор",
     company: "ТехноСофт",
@@ -16,7 +26,7 @@ const testimonials = [
     metric: "Сократили время найма на 80%",
   },
   {
-    id: 2,
+    id: 3,
     name: "Дмитрий Козлов",
     role: "CEO",
     company: "StartupHub",
@@ -26,7 +36,7 @@ const testimonials = [
     metric: "15 наймов за 3 месяца",
   },
   {
-    id: 3,
+    id: 4,
     name: "Елена Сидорова",
     role: "Руководитель подбора",
     company: "РитейлПро",
@@ -36,7 +46,7 @@ const testimonials = [
     metric: "3x конверсия в отклики",
   },
   {
-    id: 4,
+    id: 5,
     name: "Михаил Новиков",
     role: "HRD",
     company: "ФинТех Банк",

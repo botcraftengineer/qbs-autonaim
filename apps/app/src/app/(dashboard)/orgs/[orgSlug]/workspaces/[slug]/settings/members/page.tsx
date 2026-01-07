@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
 import { WorkspaceMembersClient } from "~/components/settings/workspace-members-client";
@@ -12,7 +13,7 @@ export default async function MembersPage({
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect(paths.auth.signin);
   }
 
   const caller = await api();

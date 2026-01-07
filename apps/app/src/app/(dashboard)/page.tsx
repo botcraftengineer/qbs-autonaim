@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
 import { api } from "~/trpc/server";
@@ -18,7 +19,10 @@ export default async function Page() {
   // Если есть последний активный воркспейс, редирект на него
   if (userData?.lastActiveWorkspace && userData?.lastActiveOrganization) {
     redirect(
-      `/orgs/${userData.lastActiveOrganization.slug}/workspaces/${userData.lastActiveWorkspace.slug}`,
+      paths.workspace.root(
+        userData.lastActiveOrganization.slug,
+        userData.lastActiveWorkspace.slug,
+      ),
     );
   }
 
@@ -27,18 +31,21 @@ export default async function Page() {
 
   // Если есть workspaces, редирект на первый
   const firstWorkspace = userWorkspaces[0];
-  if (firstWorkspace) {
+  if (firstWorkspace && firstWorkspace.workspace.organization?.slug) {
     redirect(
-      `/orgs/${firstWorkspace.workspace.organization?.slug}/workspaces/${firstWorkspace.workspace.slug}`,
+      paths.workspace.root(
+        firstWorkspace.workspace.organization.slug,
+        firstWorkspace.workspace.slug,
+      ),
     );
   }
 
   // Проверяем наличие pending invitations
   const pendingInvites = await caller.workspace.invites.pending();
   if (pendingInvites.length > 0) {
-    redirect("/invitations");
+    redirect(paths.invitations.root);
   }
 
   // Если нет workspaces и нет приглашений, редирект на создание
-  redirect("/onboarding");
+  redirect(paths.onboarding.root);
 }

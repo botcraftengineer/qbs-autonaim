@@ -52,10 +52,7 @@ export class ResumeParserService {
     unstructuredApiUrl?: string;
     unstructuredApiKey?: string;
   }) {
-    const apiUrl =
-      options.unstructuredApiUrl ||
-      env.UNSTRUCTURED_API_URL ||
-      "http://localhost:8001";
+    const apiUrl = options.unstructuredApiUrl || env.UNSTRUCTURED_API_URL;
     const apiKey = options.unstructuredApiKey || env.UNSTRUCTURED_API_KEY;
 
     this.parser = new UnstructuredParser({

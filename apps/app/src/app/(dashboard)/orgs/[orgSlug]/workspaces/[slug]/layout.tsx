@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { notFound, redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
@@ -13,7 +14,7 @@ export default async function WorkspaceLayout({
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect(paths.auth.signin);
   }
 
   const { orgSlug, slug } = await params;

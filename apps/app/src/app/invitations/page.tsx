@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
 import { api } from "~/trpc/server";
@@ -7,7 +8,7 @@ export default async function InvitationsPage() {
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect(paths.auth.signin);
   }
 
   const caller = await api();
@@ -15,7 +16,7 @@ export default async function InvitationsPage() {
 
   // Если нет приглашений, редиректим на главную
   if (invites.length === 0) {
-    redirect("/");
+    redirect(paths.dashboard.root);
   }
 
   return <InvitationsClient invites={invites} />;

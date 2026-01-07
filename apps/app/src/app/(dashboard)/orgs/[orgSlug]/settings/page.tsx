@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
@@ -13,14 +14,14 @@ export default async function OrganizationSettingsPage({
 }) {
   const session = await getSession();
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect(paths.auth.signin);
   }
 
   const { orgSlug } = await params;
 
   const organization = await organizationRepository.findBySlug(orgSlug);
   if (!organization) {
-    redirect("/");
+    redirect(paths.dashboard.root);
   }
 
   const access = await organizationRepository.checkAccess(
@@ -29,14 +30,19 @@ export default async function OrganizationSettingsPage({
   );
 
   if (!access) {
-    redirect("/access-denied");
+    redirect(paths.accessDenied);
   }
 
   return (
     <>
-      <SiteHeader title="Общие настройки" />
+      <SiteHeader />
       <div className="flex-1 overflow-auto p-6">
         <div className="mx-auto max-w-2xl pl-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Общие настройки
+            </h1>
+          </div>
           <OrganizationGeneralForm
             initialData={{
               name: organization.name,

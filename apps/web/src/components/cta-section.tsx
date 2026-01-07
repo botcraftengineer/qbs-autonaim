@@ -1,8 +1,4 @@
-import { ArrowRight, Sparkles, Star } from "lucide-react";
-import Link from "next/link";
-import { paths } from "@qbs-autonaim/config";
-import { Button } from "@/components/ui/button";
-import { env } from "@/env";
+import { ArrowRight, Star, Sparkles, Shield, Award } from "lucide-react"
 
 export function CTASection() {
   return (
@@ -10,22 +6,24 @@ export function CTASection() {
       {/* Vertical grid lines - full width */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px)] bg-[size:80px_100%]" />
 
-      {/* Subtle gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-neutral-800/50 via-transparent to-neutral-900" />
+      <div className="absolute inset-0 bg-gradient-to-b from-amber-900/30 via-amber-950/20 to-neutral-900" />
+
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-amber-400/20 via-amber-600/10 to-transparent" />
+
+      <div className="absolute top-0 left-0 w-16 h-16 bg-background rounded-br-[2.5rem]" />
+      <div className="absolute top-0 right-0 w-16 h-16 bg-background rounded-bl-[2.5rem]" />
 
       {/* Top rounded corners overlay to create the "card" effect from light bg */}
       <div className="absolute top-0 left-0 right-0 h-8 bg-background" />
-      <div className="absolute top-0 left-0 w-16 h-16 bg-background rounded-br-[2.5rem]" />
-      <div className="absolute top-0 right-0 w-16 h-16 bg-background rounded-bl-[2.5rem]" />
 
       {/* Top rounded "notch" decoration */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[300px] h-[6px] bg-neutral-700 rounded-b-full z-10" />
 
       {/* Content container - centered */}
-      <div className="relative px-8 py-24 md:px-16 w-full max-w-5xl mx-auto">
+      <div className="relative px-8 py-24 md:px-16 w-full max-w-5xl mx-auto flex flex-col justify-center">
         <div className="flex justify-center mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 px-4 py-2 text-sm font-medium text-blue-400">
-            <Sparkles className="h-4 w-4" />
+          <div className="inline-flex items-center gap-2 rounded-full bg-neutral-800 border border-amber-500/30 px-4 py-2 text-sm font-medium text-neutral-300 shadow-[0_0_20px_rgba(251,191,36,0.15)]">
+            <Sparkles className="h-5 w-5 text-amber-400" />
             Доверяют более 1000+ HR-специалистов
           </div>
         </div>
@@ -35,86 +33,56 @@ export function CTASection() {
         </h2>
 
         <p className="mb-12 text-lg md:text-xl text-neutral-300 leading-relaxed text-center max-w-3xl mx-auto">
-          Сократите время закрытия вакансий на 70% с помощью QBS Автонайм.
-          Автоматический AI-скрининг, голосовые интервью через Telegram и
-          интеграция с HeadHunter — всё в одной платформе для эффективного
-          подбора кандидатов.
+          Сократите время закрытия вакансий на 70% с помощью QBS Автонайм. Автоматический AI-скрининг, голосовые
+          интервью через Telegram и интеграция с HeadHunter — всё в одной платформе для эффективного подбора кандидатов.
         </p>
 
         {/* Buttons */}
-        <div className="flex flex-col items-center justify-center gap-4 sm:flex-row mb-12">
-          <Button
-            size="lg"
-            className="bg-white text-neutral-900 hover:bg-neutral-100 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl shadow-lg hover:shadow-xl"
-            asChild
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row mb-8">
+          <a
+            href="/#pricing"
+            className="flex h-11 items-center justify-center rounded-lg border border-neutral-200 bg-white px-6 text-center text-sm font-medium text-neutral-900 transition-all hover:ring-2 hover:ring-white/20"
           >
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`}>
-              Начать бесплатно
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            size="lg"
-            className="bg-neutral-800 text-white hover:bg-neutral-700 border border-neutral-700 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl"
-            asChild
+            Начать бесплатно
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </a>
+          <a
+            href="/contact"
+            className="flex h-11 items-center justify-center rounded-lg border border-white/20 bg-white/10 px-6 text-center text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:ring-2 hover:ring-white/10"
           >
-            <Link href={`#`}>Посмотреть демо</Link>
-          </Button>
+            Получить демо
+          </a>
         </div>
 
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <p className="text-sm text-neutral-500 mb-4">
             Бесплатная регистрация • Без кредитной карты • Настройка за 5 минут
           </p>
         </div>
 
         {/* Star ratings */}
-        <div className="flex flex-wrap items-center justify-center gap-8 pt-8 border-t border-neutral-800">
+        <div className="flex flex-wrap items-center justify-center gap-8 mt-12 py-8 border-t border-amber-500/20 shadow-[0_-1px_20px_rgba(251,191,36,0.1)]">
           <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded bg-neutral-800 text-xs font-bold text-white">
-              G2
+            <div className="flex items-center justify-center w-8 h-8 rounded bg-red-600 text-[10px] font-bold text-white">
+              hh
             </div>
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-4 w-4 fill-amber-400 text-amber-400"
-                />
+                <Star key={i} className="h-5 w-5 fill-amber-400 text-amber-400" />
               ))}
             </div>
-            <span className="text-xs text-neutral-400 ml-1">4.9/5.0</span>
+            <span className="text-xs text-amber-200/80 ml-1">4.9/5.0</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded bg-[#DA552F] text-[10px] font-bold text-white">
-              PH
-            </div>
-            <div className="flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-4 w-4 fill-amber-400 text-amber-400"
-                />
-              ))}
-            </div>
-            <span className="text-xs text-neutral-400 ml-1">5.0/5.0</span>
+          <div className="flex items-center gap-3">
+            <Shield className="h-6 w-6 text-emerald-400" />
+            <span className="text-sm text-neutral-300">Соответствует 152-ФЗ</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center justify-center w-7 h-7 rounded bg-gradient-to-br from-blue-500 to-purple-600 text-xs font-bold text-white">
-              HH
-            </div>
-            <div className="flex gap-0.5">
-              {[...Array(4)].map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-4 w-4 fill-amber-400 text-amber-400"
-                />
-              ))}
-              <Star className="h-4 w-4 fill-amber-400/50 text-amber-400/50" />
-            </div>
-            <span className="text-xs text-neutral-400 ml-1">4.7/5.0</span>
+          <div className="flex items-center gap-3">
+            <Award className="h-6 w-6 text-amber-400" />
+            <span className="text-sm text-neutral-300">{"HR Tech 2025"}</span>
           </div>
         </div>
       </div>
     </section>
-  );
+  )
 }

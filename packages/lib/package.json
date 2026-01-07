@@ -32,14 +32,14 @@
   "dependencies": {
     "@ai-sdk/deepseek": "2.0.4",
     "@ai-sdk/openai": "3.0.7",
-    "@aws-sdk/client-s3": "3.962.0",
-    "@aws-sdk/s3-request-presigner": "3.962.0",
+    "@aws-sdk/client-s3": "3.964.0",
+    "@aws-sdk/s3-request-presigner": "3.964.0",
     "@qbs-autonaim/config": "workspace:*",
     "@valibot/to-json-schema": "1.5.0",
-    "ai": "6.0.5",
+    "ai": "6.0.14",
     "langfuse": "3.38.6",
     "sharp": "0.34.5",
-    "zod": "4.3.4"
+    "zod": "4.3.5"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",
