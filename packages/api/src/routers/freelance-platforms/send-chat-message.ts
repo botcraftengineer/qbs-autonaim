@@ -8,7 +8,7 @@ import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
 const sendChatMessageInputSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: z.uuid(),
   message: z.string().min(1, "Сообщение не может быть пустым").max(10000),
 });
 

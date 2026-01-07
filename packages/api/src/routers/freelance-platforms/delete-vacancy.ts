@@ -6,7 +6,7 @@ import { protectedProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
 const deleteVacancyInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   workspaceId: workspaceIdSchema,
   dataCleanupOption: z.enum(["anonymize", "delete"]),
 });

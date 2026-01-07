@@ -8,7 +8,7 @@ import { protectedProcedure } from "../../trpc";
 export const deleteGig = protectedProcedure
   .input(
     z.object({
-      gigId: z.string().uuid(),
+      gigId: z.uuid(),
       workspaceId: workspaceIdSchema,
     }),
   )

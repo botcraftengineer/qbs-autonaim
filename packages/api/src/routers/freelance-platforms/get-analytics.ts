@@ -11,8 +11,8 @@ import { createErrorHandler } from "../../utils/error-handler";
 
 const getAnalyticsInputSchema = z.object({
   workspaceId: workspaceIdSchema,
-  dateFrom: z.string().datetime().optional(),
-  dateTo: z.string().datetime().optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
 });
 
 export const getAnalytics = protectedProcedure

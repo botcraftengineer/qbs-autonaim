@@ -3,7 +3,7 @@ import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 const getChatHistoryInputSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: z.uuid(),
 });
 
 export const getChatHistory = publicProcedure

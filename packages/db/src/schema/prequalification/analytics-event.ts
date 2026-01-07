@@ -79,8 +79,8 @@ export const analyticsEvent = pgTable(
 // Zod schemas
 export const CreateAnalyticsEventSchema = createInsertSchema(analyticsEvent, {
   workspaceId: z.string().min(1),
-  vacancyId: z.string().uuid().optional(),
-  sessionId: z.string().uuid().optional(),
+  vacancyId: z.uuid().optional(),
+  sessionId: z.uuid().optional(),
   eventType: z.enum([
     "widget_view",
     "session_start",

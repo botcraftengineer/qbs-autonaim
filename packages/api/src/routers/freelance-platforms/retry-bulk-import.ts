@@ -10,7 +10,7 @@ import { createErrorHandler } from "../../utils/error-handler";
 import type { ImportResult } from "./import-bulk-responses";
 
 const retryBulkImportInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   failedRecords: z.array(
     z.object({
       freelancerName: z.string().nullable(),

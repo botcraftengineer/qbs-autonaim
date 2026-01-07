@@ -5,11 +5,11 @@ import { z } from "zod";
  */
 
 export const analyzeFreelanceResponseDataSchema = z.object({
-  responseId: z.string().uuid(),
+  responseId: z.uuid(),
 });
 
 export const generateInvitationDataSchema = z.object({
-  responseId: z.string().uuid(),
+  responseId: z.uuid(),
 });
 
 export const notificationChannelEnum = z.enum(["EMAIL", "IN_APP", "TELEGRAM"]);
@@ -22,8 +22,8 @@ export const notificationTypeEnum = z.enum([
 
 export const sendFreelanceNotificationDataSchema = z.object({
   workspaceId: z.string().min(1, "Workspace ID is required").optional(),
-  vacancyId: z.string().uuid().optional(),
-  responseId: z.string().uuid(),
+  vacancyId: z.uuid().optional(),
+  responseId: z.uuid(),
   notificationType: notificationTypeEnum,
   candidateName: z.string().optional(),
   score: z.number().int().min(0).max(100).optional(),

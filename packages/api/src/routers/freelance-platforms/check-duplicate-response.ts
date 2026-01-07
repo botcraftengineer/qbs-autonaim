@@ -4,7 +4,7 @@ import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 const checkDuplicateResponseInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   platformProfileUrl: z.string().min(1),
 });
 

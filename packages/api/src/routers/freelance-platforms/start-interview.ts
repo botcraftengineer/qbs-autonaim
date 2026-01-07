@@ -13,10 +13,10 @@ const platformProfileUrlSchema = z
   );
 
 const startInterviewInputSchema = z.object({
-  token: z.string().uuid(),
+  token: z.uuid(),
   freelancerInfo: z.object({
     name: z.string().min(1, "Имя обязательно").max(500),
-    email: z.string().email("Некорректный email"),
+    email: z.email("Некорректный email"),
     platformProfileUrl: platformProfileUrlSchema,
     phone: z.string().max(50).optional(),
     telegram: z.string().max(100).optional(),

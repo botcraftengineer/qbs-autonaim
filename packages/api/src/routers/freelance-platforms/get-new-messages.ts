@@ -3,8 +3,8 @@ import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 const getNewMessagesInputSchema = z.object({
-  conversationId: z.string().uuid(),
-  lastMessageId: z.string().uuid().optional(),
+  conversationId: z.uuid(),
+  lastMessageId: z.uuid().optional(),
 });
 
 export const getNewMessages = publicProcedure

@@ -6,7 +6,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const deleteVacancyInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   workspaceId: workspaceIdSchema,
   dataCleanupOption: z.enum(["anonymize", "delete"]),
 });

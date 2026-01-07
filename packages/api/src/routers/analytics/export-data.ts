@@ -18,7 +18,7 @@ const exportDataInputSchema = z.object({
     to: z.coerce.date(),
   }),
   format: z.enum(["csv", "json"]),
-  vacancyId: z.string().uuid().optional(),
+  vacancyId: z.uuid().optional(),
 });
 
 export const exportData = protectedProcedure

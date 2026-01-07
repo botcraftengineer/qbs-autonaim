@@ -8,18 +8,18 @@ import { protectedProcedure } from "../../../trpc";
 export const update = protectedProcedure
   .input(
     z.object({
-      responseId: z.string().uuid(),
+      responseId: z.uuid(),
       workspaceId: workspaceIdSchema,
-      candidateName: z.string().max(500).nullable().optional(),
-      telegramUsername: z.string().max(100).nullable().optional(),
-      phone: z.string().max(50).nullable().optional(),
-      email: z.string().email().max(255).nullable().optional(),
-      proposedPrice: z.number().int().positive().nullable().optional(),
-      proposedCurrency: z.string().length(3).nullable().optional(),
-      proposedDeliveryDays: z.number().int().positive().nullable().optional(),
-      coverLetter: z.string().nullable().optional(),
-      experience: z.string().nullable().optional(),
-      resumeLanguage: z.string().max(10).nullable().optional(),
+      candidateName: z.string().max(500).nullish(),
+      telegramUsername: z.string().max(100).nullish(),
+      phone: z.string().max(50).nullish(),
+      email: z.email().max(255).nullish(),
+      proposedPrice: z.number().int().positive().nullish(),
+      proposedCurrency: z.string().length(3).nullish(),
+      proposedDeliveryDays: z.number().int().positive().nullish(),
+      coverLetter: z.string().nullish(),
+      experience: z.string().nullish(),
+      resumeLanguage: z.string().max(10).nullish(),
     }),
   )
   .mutation(async ({ ctx, input }) => {

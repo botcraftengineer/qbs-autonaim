@@ -27,7 +27,7 @@ export const vacancyResponseComment = pgTable("vacancy_response_comments", {
 export const CreateVacancyResponseCommentSchema = createInsertSchema(
   vacancyResponseComment,
   {
-    responseId: z.string().uuid(),
+    responseId: z.uuid(),
     authorId: z.string(),
     content: z.string().min(1),
     isPrivate: z.boolean().default(true),

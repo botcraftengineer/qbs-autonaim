@@ -6,7 +6,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const updateVacancyStatusInputSchema = z.object({
-  id: z.string().uuid(),
+  id: z.uuid(),
   workspaceId: workspaceIdSchema,
   status: z.enum(["active", "paused", "closed"]),
 });

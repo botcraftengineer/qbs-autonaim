@@ -22,7 +22,7 @@ const messageSchema = z.object({
 });
 
 const requestSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.uuid().optional(),
   message: messageSchema.optional(),
   messages: z.array(messageSchema).optional(),
   conversationId: z.string().optional(),

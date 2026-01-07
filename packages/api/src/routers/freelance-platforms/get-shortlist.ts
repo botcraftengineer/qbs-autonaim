@@ -5,7 +5,7 @@ import { protectedProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
 const getShortlistInputSchema = z.object({
-  vacancyId: z.string().uuid(),
+  vacancyId: z.uuid(),
   workspaceId: workspaceIdSchema,
   minScore: z.number().int().min(0).max(100).optional().default(60),
   maxCandidates: z.number().int().min(1).max(100).optional().default(10),

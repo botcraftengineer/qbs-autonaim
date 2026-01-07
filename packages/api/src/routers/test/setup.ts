@@ -17,7 +17,7 @@ import { publicProcedure } from "../../trpc";
 export const setupTestUser = publicProcedure
   .input(
     z.object({
-      email: z.string().email(),
+      email: z.email(),
       password: z.string().min(8),
       name: z.string().optional(),
       orgName: z.string().optional(),
@@ -134,7 +134,7 @@ export const setupTestUser = publicProcedure
 export const cleanupTestUser = publicProcedure
   .input(
     z.object({
-      email: z.string().email(),
+      email: z.email(),
     }),
   )
   .mutation(async ({ input }) => {

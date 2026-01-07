@@ -16,7 +16,7 @@ import { protectedProcedure } from "../../trpc";
 
 const getStatusInputSchema = z.object({
   workspaceId: z.string().min(1, "workspaceId обязателен"),
-  domainId: z.string().uuid("Некорректный ID домена").optional(),
+  domainId: z.uuid("Некорректный ID домена").optional(),
 });
 
 export const getStatus = protectedProcedure

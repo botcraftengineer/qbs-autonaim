@@ -9,6 +9,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { interviewLink } from "@qbs-autonaim/db/schema";
+import { generateSlug } from "../utils/slug-generator";
 
 /**
  * Интерфейс ссылки на интервью
@@ -35,72 +36,6 @@ export class InterviewLinkGenerator {
   }
 
   /**
-   * Генерирует дружелюбный slug для ссылки на интервью
-   * Формат: прилагательное-существительное-число (например: quick-fox-42)
-   */
-  private generateSlug(): string {
-    const adjectives = [
-      "quick",
-      "bright",
-      "clever",
-      "smart",
-      "swift",
-      "bold",
-      "calm",
-      "cool",
-      "eager",
-      "fair",
-      "gentle",
-      "happy",
-      "jolly",
-      "kind",
-      "lively",
-      "merry",
-      "nice",
-      "proud",
-      "quiet",
-      "sharp",
-      "wise",
-      "witty",
-      "brave",
-      "fresh",
-    ];
-
-    const nouns = [
-      "fox",
-      "wolf",
-      "bear",
-      "lion",
-      "tiger",
-      "eagle",
-      "hawk",
-      "owl",
-      "deer",
-      "horse",
-      "panda",
-      "koala",
-      "otter",
-      "seal",
-      "whale",
-      "shark",
-      "dragon",
-      "phoenix",
-      "falcon",
-      "raven",
-      "lynx",
-      "jaguar",
-      "leopard",
-      "cheetah",
-    ];
-
-    const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-    const noun = nouns[Math.floor(Math.random() * nouns.length)];
-    const number = Math.floor(Math.random() * 100);
-
-    return `${adjective}-${noun}-${number}`;
-  }
-
-  /**
    * Проверяет уникальность slug и генерирует новый при необходимости
    */
   private async generateUniqueSlug(): Promise<string> {
@@ -108,7 +43,7 @@ export class InterviewLinkGenerator {
     const maxAttempts = 10;
 
     while (attempts < maxAttempts) {
-      const slug = this.generateSlug();
+      const slug = generateSlug();
 
       const existing = await db.query.interviewLink.findFirst({
         where: eq(interviewLink.slug, slug),
@@ -122,7 +57,7 @@ export class InterviewLinkGenerator {
     }
 
     // Если не удалось сгенерировать уникальный slug, добавляем timestamp
-    return `${this.generateSlug()}-${Date.now()}`;
+    return `${generateSlug()}-${Date.now()}`;
   }
 
   /**

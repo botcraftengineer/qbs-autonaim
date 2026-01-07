@@ -7,12 +7,12 @@
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { PrequalificationError } from "../../services/prequalification/types";
 import { SessionManager } from "../../services/prequalification";
+import { PrequalificationError } from "../../services/prequalification/types";
 import { publicProcedure } from "../../trpc";
 
 const getSessionInputSchema = z.object({
-  sessionId: z.string().uuid("sessionId должен быть UUID"),
+  sessionId: z.uuid("sessionId должен быть UUID"),
   workspaceId: z.string().min(1, "workspaceId обязателен"),
 });
 

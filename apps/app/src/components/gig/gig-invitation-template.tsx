@@ -16,12 +16,7 @@ import {
   IconLink,
   IconLoader2,
 } from "@tabler/icons-react";
-import {
-  skipToken,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -41,14 +36,13 @@ export function GigInvitationTemplate({
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
-  const { data: interviewLink, isLoading: isLoadingLink } = useQuery(
-    workspace?.id
-      ? trpc.gig.getInterviewLink.queryOptions({
-          gigId,
-          workspaceId: workspace.id,
-        })
-      : skipToken,
-  );
+  const { data: interviewLink, isLoading: isLoadingLink } = useQuery({
+    ...trpc.gig.getInterviewLink.queryOptions({
+      gigId,
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
 
   const { mutate: generateLink, isPending: isGenerating } = useMutation({
     ...trpc.gig.generateInterviewLink.mutationOptions({
@@ -74,8 +68,7 @@ export function GigInvitationTemplate({
 
   const template = useMemo(() => {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
-    const interviewUrl =
-      interviewLink?.url || `${baseUrl}/gig-interview/[ссылка]`;
+    const interviewUrl = interviewLink?.url || `${baseUrl}/interview/[ссылка]`;
 
     const lines = [
       "Здравствуйте!",
@@ -122,8 +115,7 @@ export function GigInvitationTemplate({
       <CardHeader>
         <CardTitle>Шаблон приглашения</CardTitle>
         <CardDescription>
-          Скопируйте и отправьте кандидатам через kwork.ru для прохождения
-          интервью
+          Скопируйте и отправьте кандидатам для прохождения интервью
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

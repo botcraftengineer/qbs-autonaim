@@ -4,7 +4,7 @@ import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 const getWebInterviewStatusInputSchema = z.object({
-  conversationId: z.string().uuid(),
+  conversationId: z.uuid(),
 });
 
 export const getWebInterviewStatus = publicProcedure

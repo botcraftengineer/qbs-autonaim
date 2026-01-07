@@ -13,7 +13,7 @@ import { protectedProcedure } from "../../trpc";
 
 const deleteDomainInputSchema = z.object({
   workspaceId: z.string().min(1, "workspaceId обязателен"),
-  domainId: z.string().uuid("Некорректный ID домена"),
+  domainId: z.uuid("Некорректный ID домена"),
 });
 
 export const deleteDomain = protectedProcedure

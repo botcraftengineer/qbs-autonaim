@@ -10,7 +10,7 @@ import { generateSlug } from "../../utils/slug-generator";
 export const generateInterviewLink = protectedProcedure
   .input(
     z.object({
-      gigId: z.string().uuid(),
+      gigId: z.uuid(),
       workspaceId: workspaceIdSchema,
     }),
   )
