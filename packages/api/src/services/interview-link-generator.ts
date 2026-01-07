@@ -6,6 +6,7 @@
  */
 
 import { randomUUID } from "node:crypto";
+import { paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { interviewLink } from "@qbs-autonaim/db/schema";
@@ -156,7 +157,7 @@ export class InterviewLinkGenerator {
       vacancyId: link.vacancyId,
       token: link.token,
       slug: link.slug,
-      url: `${this.baseUrl}/interview/${link.slug}`,
+      url: `${this.baseUrl}${paths.interview(link.slug)}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
       expiresAt: link.expiresAt,

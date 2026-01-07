@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -54,7 +55,7 @@ export const generateInterviewLink = protectedProcedure
         id: existingLink.id,
         gigId: existingLink.gigId,
         slug: existingLink.slug,
-        url: `${baseUrl}/gig-interview/${existingLink.slug}`,
+        url: `${baseUrl}${paths.interview(existingLink.slug)}`,
         isActive: existingLink.isActive,
         createdAt: existingLink.createdAt,
       };
@@ -113,7 +114,7 @@ export const generateInterviewLink = protectedProcedure
       id: created.id,
       gigId: created.gigId,
       slug: created.slug,
-      url: `${baseUrl}/gig-interview/${created.slug}`,
+      url: `${baseUrl}${paths.interview(created.slug)}`,
       isActive: created.isActive,
       createdAt: created.createdAt,
     };

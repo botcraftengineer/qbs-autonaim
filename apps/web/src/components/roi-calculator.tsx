@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { paths } from "@qbs-autonaim/config";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { env } from "@/env";
@@ -94,7 +95,7 @@ export function ROICalculator() {
                   </div>
                   <Slider
                     value={[vacancies]}
-                    onValueChange={(value) => setVacancies(value[0])}
+                    onValueChange={(value) => setVacancies(value[0] ?? 1)}
                     min={1}
                     max={50}
                     step={1}
@@ -256,7 +257,7 @@ export function ROICalculator() {
                 className="w-full h-12 bg-foreground text-background hover:bg-neutral-800 rounded-xl group"
                 asChild
               >
-                <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`}>
                   Начать экономить
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>

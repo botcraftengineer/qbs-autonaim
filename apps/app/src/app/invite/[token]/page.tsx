@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { Button } from "@qbs-autonaim/ui";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -15,7 +16,9 @@ export default async function InvitePage({
 
   // Случай 1: Неавторизованный пользователь
   if (!session?.user) {
-    redirect(`/auth/signin?redirect=/invite/${token}`);
+    redirect(
+      `${paths.auth.signin}?redirect=${paths.invitations.accept(token)}`,
+    );
   }
 
   try {

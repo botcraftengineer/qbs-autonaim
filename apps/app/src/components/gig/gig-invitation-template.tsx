@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -82,7 +83,8 @@ export function GigInvitationTemplate({
 
   const template = useMemo(() => {
     const baseUrl = env.NEXT_PUBLIC_APP_URL;
-    const interviewUrl = interviewLink?.url || `${baseUrl}/interview/[ссылка]`;
+    const interviewUrl =
+      interviewLink?.url || `${baseUrl}${paths.interview("[ссылка]")}`;
 
     if (aiTemplate?.text) {
       // Replace the placeholder URL in AI-generated text with actual URL

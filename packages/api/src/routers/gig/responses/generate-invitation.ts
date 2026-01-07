@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import {
   gigInterviewLink,
@@ -160,7 +161,7 @@ export const generateInvitation = protectedProcedure
     }
 
     const baseUrl = env.NEXT_PUBLIC_APP_URL;
-    const interviewUrl = `${baseUrl}/gig-interview/${link.slug}`;
+    const interviewUrl = `${baseUrl}${paths.interview(link.slug)}`;
 
     // Генерируем текст приглашения
     const invitationText = generateInvitationText(

@@ -1,6 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { paths } from "@qbs-autonaim/config";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -87,7 +88,7 @@ export function InterviewLandingForm({
         vacancyId: string;
       }) => {
         router.push(
-          `/interview/${token}/chat?responseId=${data.conversationId}`,
+          `${paths.interview(token)}/chat?responseId=${data.conversationId}`,
         );
       },
       onError: (error: { message: string }) => {

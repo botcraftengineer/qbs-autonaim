@@ -1,6 +1,7 @@
 "use client";
 
 import type { RouterOutputs } from "@qbs-autonaim/api";
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -111,7 +112,7 @@ export function SecurityTab({ user }: SecurityTabProps) {
     trpc.user.delete.mutationOptions({
       onSuccess: async () => {
         toast.success("Аккаунт успешно удален");
-        router.push("/auth/signin");
+        router.push(paths.auth.signin);
       },
       onError: (err) => {
         const message =

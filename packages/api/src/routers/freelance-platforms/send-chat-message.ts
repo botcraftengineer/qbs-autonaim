@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { env } from "@qbs-autonaim/config";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
 import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import type { BufferedMessage } from "@qbs-autonaim/shared";

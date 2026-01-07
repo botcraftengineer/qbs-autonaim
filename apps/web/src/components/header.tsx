@@ -3,6 +3,7 @@
 import { Menu, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { paths } from "@qbs-autonaim/config";
 import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 
@@ -47,14 +48,14 @@ export function Header() {
             className="text-sm hover:bg-muted hover:text-foreground"
             asChild
           >
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signin`}>Войти</Link>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signin}`}>Войти</Link>
           </Button>
           <Button
             size="sm"
             className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
             asChild
           >
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`}>
               Начать бесплатно
             </Link>
           </Button>
@@ -95,7 +96,7 @@ export function Header() {
                 className="w-full justify-start hover:bg-muted hover:text-foreground"
                 asChild
               >
-                <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signin`}>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signin}`}>
                   Войти
                 </Link>
               </Button>
@@ -103,7 +104,7 @@ export function Header() {
                 className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200"
                 asChild
               >
-                <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
+                <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`}>
                   Начать бесплатно
                 </Link>
               </Button>
