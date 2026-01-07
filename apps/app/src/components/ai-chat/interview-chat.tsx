@@ -58,7 +58,7 @@ interface InterviewChatProps {
 
 export function InterviewChat({
   conversationId,
-  apiEndpoint = "/api/chat/stream",
+  apiEndpoint = "/api/interview/chat/stream",
   className,
 }: InterviewChatProps) {
   const trpc = useTRPC();
