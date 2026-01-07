@@ -9,6 +9,7 @@ import { getAnalytics } from "./get-analytics";
 import { getChatHistory } from "./get-chat-history";
 import { getDashboardStats } from "./get-dashboard-stats";
 import { getInterviewByToken } from "./get-interview-by-token";
+import { getInterviewContext } from "./get-interview-context";
 import { getInterviewLink } from "./get-interview-link";
 import { getNewMessages } from "./get-new-messages";
 import { getShortlist } from "./get-shortlist";
@@ -57,5 +58,6 @@ export const freelancePlatformsRouter = {
   getChatHistory,
   getWebInterviewStatus,
   getNewMessages,
+  getInterviewContext,
   // subscribeToChatMessages, // TODO: Requires wsLink or httpSubscriptionLink setup on client
 } satisfies TRPCRouterRecord;
