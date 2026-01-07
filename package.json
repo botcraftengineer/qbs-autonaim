@@ -45,8 +45,5 @@
     "packages/*",
     "tooling/*"
   ],
-  "dependencies": {
-    "random-word-slugs": "^0.1.7",
-    "unique-names-generator": "^4.7.1"
-  }
+  "dependencies": {}
 }

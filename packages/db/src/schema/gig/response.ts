@@ -178,7 +178,7 @@ export const gigImportSourceValues = [
 export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   candidateId: z.string().max(100),
   candidateName: z.string().max(500).optional(),
-  profileUrl: z.url().optional(),
+  profileUrl: z.string().url().optional(),
   telegramUsername: z.string().max(100).optional(),
   chatId: z.string().max(100).optional(),
   phone: z.string().max(50).optional(),
@@ -187,7 +187,7 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   proposedCurrency: z.string().length(3).default("RUB"),
   proposedDeliveryDays: z.number().int().positive().optional(),
   coverLetter: z.string().optional(),
-  portfolioLinks: z.array(z.url()).optional(),
+  portfolioLinks: z.string().url().array().optional(),
   experience: z.string().optional(),
   skills: z.array(z.string()).optional(),
   rating: z.string().max(20).optional(),
