@@ -33,10 +33,6 @@ export const sendNextQuestionFunction = inngest.createFunction(
       trimmedQuestion.toLowerCase() === "skip";
 
     if (shouldSkip) {
-      console.log("⏭️ Пропускаем отправку сообщения (маркер SKIP)", {
-        conversationId,
-        questionNumber,
-      });
       return {
         success: true,
         conversationId,
@@ -46,11 +42,6 @@ export const sendNextQuestionFunction = inngest.createFunction(
     }
 
     await step.run("save-qa", async () => {
-      console.log("💾 Сохранение вопроса и ответа", {
-        conversationId,
-        questionNumber,
-      });
-
       const lastBotMessages = await db
         .select()
         .from(conversationMessage)
@@ -91,11 +82,6 @@ export const sendNextQuestionFunction = inngest.createFunction(
         throw new Error("ChatId не найден в response");
       }
 
-      console.log("📱 Получен chatId для отправки вопроса", {
-        conversationId,
-        chatId: response.chatId,
-      });
-
       return response.chatId;
     });
 
@@ -104,11 +90,6 @@ export const sendNextQuestionFunction = inngest.createFunction(
       const baseDelay = 1000 + Math.random() * 1000;
       const typingDelay = questionLength * (30 + Math.random() * 20);
       const totalDelay = Math.min(baseDelay + typingDelay, 5000);
-
-      console.log("⏳ Пауза перед отправкой вопроса", {
-        delay: Math.round(totalDelay),
-        questionLength,
-      });
 
       return `${Math.round(totalDelay)}ms`;
     });
@@ -138,11 +119,6 @@ export const sendNextQuestionFunction = inngest.createFunction(
           chatId,
           content: question,
         },
-      });
-
-      console.log("✅ Следующий вопрос отправлен", {
-        conversationId,
-        questionNumber: questionNumber + 1,
       });
     });
 

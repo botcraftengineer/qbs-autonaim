@@ -21,16 +21,7 @@ export const bufferDebounceFunction = inngest.createFunction(
   },
   { event: "interview/message.buffered" },
   async ({ event, step }) => {
-    const { userId, conversationId, interviewStep, messageId, timestamp } =
-      event.data;
-
-    console.log("⏱️ Запущен debounce буфера", {
-      userId,
-      conversationId,
-      interviewStep,
-      messageId,
-      timestamp,
-    });
+    const { userId, conversationId, interviewStep } = event.data;
 
     // Проверка существования буфера
     const hasBuffer = await step.run("check-buffer", async () => {
@@ -40,22 +31,10 @@ export const bufferDebounceFunction = inngest.createFunction(
         interviewStep,
       });
 
-      console.log("🔍 Проверка существования буфера", {
-        userId,
-        conversationId,
-        interviewStep,
-        exists,
-      });
-
       return exists;
     });
 
     if (!hasBuffer) {
-      console.log("⏭️ Буфер уже обработан, пропускаем", {
-        userId,
-        conversationId,
-        interviewStep,
-      });
       return { skipped: true, reason: "Буфер уже обработан" };
     }
 
@@ -72,13 +51,6 @@ export const bufferDebounceFunction = inngest.createFunction(
         flushId,
         messageCount: 0, // будет заполнено в flush функции
       },
-    });
-
-    console.log("✅ Событие flush отправлено", {
-      userId,
-      conversationId,
-      interviewStep,
-      flushId,
     });
 
     return {

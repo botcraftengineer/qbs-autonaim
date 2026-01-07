@@ -69,7 +69,7 @@ export function VacancyLayoutClient({
   if (!workspaceId) {
     return (
       <>
-        <SiteHeader title="Загрузка…" />
+        <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -91,7 +91,7 @@ export function VacancyLayoutClient({
   if (vacancyError || responsesError) {
     return (
       <>
-        <SiteHeader title="Ошибка" />
+        <SiteHeader />
         <div className="flex flex-1 flex-col items-center justify-center">
           <p className="text-destructive">
             {vacancyError
@@ -108,7 +108,7 @@ export function VacancyLayoutClient({
   if (isLoading) {
     return (
       <>
-        <SiteHeader title="Загрузка…" />
+        <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -130,7 +130,7 @@ export function VacancyLayoutClient({
   if (!vacancy) {
     return (
       <>
-        <SiteHeader title="Не найдено" />
+        <SiteHeader />
         <div className="flex flex-1 flex-col items-center justify-center">
           <p className="text-muted-foreground">Вакансия не найдена</p>
         </div>
@@ -140,7 +140,7 @@ export function VacancyLayoutClient({
 
   return (
     <>
-      <SiteHeader title={vacancy?.title ?? "Вакансия"} />
+      <SiteHeader />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">

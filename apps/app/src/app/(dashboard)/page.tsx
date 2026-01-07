@@ -31,7 +31,7 @@ export default async function Page() {
 
   // Если есть workspaces, редирект на первый
   const firstWorkspace = userWorkspaces[0];
-  if (firstWorkspace && firstWorkspace.workspace.organization?.slug) {
+  if (firstWorkspace?.workspace.organization?.slug) {
     redirect(
       paths.workspace.root(
         firstWorkspace.workspace.organization.slug,

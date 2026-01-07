@@ -4,7 +4,7 @@ import { SiteHeader } from "~/components/layout";
 export default function CandidatesPage() {
   return (
     <>
-      <SiteHeader title="Кандидаты" />
+      <SiteHeader />
       <div className="kanban-page flex flex-1 flex-col overflow-hidden">
         <div className="@container/main flex flex-1 flex-col gap-2 overflow-hidden">
           <div className="flex flex-col flex-1 overflow-hidden">
