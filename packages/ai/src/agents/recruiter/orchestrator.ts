@@ -38,9 +38,9 @@ let globalLangfuse: Langfuse | undefined;
  */
 function getLangfuseInstance(): Langfuse | undefined {
   if (globalLangfuse === undefined) {
-    const secretKey = process.env.LANGFUSE_SECRET_KEY;
-    const publicKey = process.env.LANGFUSE_PUBLIC_KEY;
-    const baseUrl = process.env.LANGFUSE_BASE_URL;
+    const secretKey = env.LANGFUSE_SECRET_KEY;
+    const publicKey = env.LANGFUSE_PUBLIC_KEY;
+    const baseUrl = env.LANGFUSE_BASE_URL;
 
     if (!secretKey || !publicKey) {
       console.warn(

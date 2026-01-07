@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { paths } from "@qbs-autonaim/config";
 import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 
@@ -50,7 +51,7 @@ export function HeroSection() {
               className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl"
               asChild
             >
-              <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
+              <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`}>
                 Начать бесплатно
               </Link>
             </Button>

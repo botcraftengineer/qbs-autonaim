@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -49,12 +50,12 @@ export const generateInterviewLink = protectedProcedure
     });
 
     if (existingLink) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+      const baseUrl = env.NEXT_PUBLIC_APP_URL;
       return {
         id: existingLink.id,
         gigId: existingLink.gigId,
         slug: existingLink.slug,
-        url: `${baseUrl}/gig-interview/${existingLink.slug}`,
+        url: `${baseUrl}${paths.interview(existingLink.slug)}`,
         isActive: existingLink.isActive,
         createdAt: existingLink.createdAt,
       };
@@ -107,13 +108,13 @@ export const generateInterviewLink = protectedProcedure
       });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+    const baseUrl = env.NEXT_PUBLIC_APP_URL;
 
     return {
       id: created.id,
       gigId: created.gigId,
       slug: created.slug,
-      url: `${baseUrl}/gig-interview/${created.slug}`,
+      url: `${baseUrl}${paths.interview(created.slug)}`,
       isActive: created.isActive,
       createdAt: created.createdAt,
     };

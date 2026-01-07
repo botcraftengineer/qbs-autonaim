@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Dialog,
@@ -73,7 +74,7 @@ function InviteLinkModalContent({
 
   const inviteLink =
     invite && "token" in invite
-      ? `${window.location.origin}/invite/${invite.token}`
+      ? `${window.location.origin}${paths.invitations.accept(invite.token)}`
       : "";
 
   const handleCopy = async () => {

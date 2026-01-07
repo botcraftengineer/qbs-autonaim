@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { paths } from "@qbs-autonaim/config";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +33,7 @@ export function PricingSection() {
         "Базовая аналитика",
       ],
       cta: "Начать бесплатно",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/auth/signup`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`,
       popular: false,
     },
     {
@@ -49,7 +50,7 @@ export function PricingSection() {
         "Приоритетная поддержка",
       ],
       cta: "Попробовать 14 дней",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/auth/signup?plan=business`,
+      ctaLink: `${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}?plan=business`,
       popular: true,
     },
     {

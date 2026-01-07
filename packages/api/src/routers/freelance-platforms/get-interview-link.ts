@@ -1,3 +1,4 @@
+import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { interviewLink, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -61,7 +62,7 @@ export const getInterviewLink = protectedProcedure
       vacancyId: activeInterviewLink.vacancyId,
       token: activeInterviewLink.token,
       slug: activeInterviewLink.slug,
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app"}/interview/${activeInterviewLink.slug}`,
+      url: `${env.NEXT_PUBLIC_APP_URL}${paths.interview(activeInterviewLink.slug)}`,
       isActive: activeInterviewLink.isActive,
       createdAt: activeInterviewLink.createdAt,
       expiresAt: activeInterviewLink.expiresAt,

@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -131,7 +132,7 @@ function MemberActionsDropdown({
         toast.error("Токен приглашения не найден");
         return;
       }
-      const inviteUrl = `${window.location.origin}/invite/${member.inviteToken}`;
+      const inviteUrl = `${window.location.origin}${paths.invitations.accept(member.inviteToken)}`;
       await navigator.clipboard.writeText(inviteUrl);
       toast.success("Ссылка скопирована в буфер обмена");
       setOpen(false);

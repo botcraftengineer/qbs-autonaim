@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { env } from "@qbs-autonaim/config";
 import { conversationMessage } from "@qbs-autonaim/db/schema";
 import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import type { BufferedMessage } from "@qbs-autonaim/shared";
@@ -106,8 +107,8 @@ export const sendChatMessage = publicProcedure
 
       // Отправляем событие debounce через fetch (так как Inngest клиент доступен только в jobs)
       const inngestEventUrl =
-        process.env.INNGEST_EVENT_API_BASE_URL || "https://inn.gs";
-      const inngestEventKey = process.env.INNGEST_EVENT_KEY;
+        env.INNGEST_EVENT_API_BASE_URL || "https://inn.gs";
+      const inngestEventKey = env.INNGEST_EVENT_KEY;
 
       if (inngestEventKey) {
         try {

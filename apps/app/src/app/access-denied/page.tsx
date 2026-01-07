@@ -1,5 +1,6 @@
 "use client";
 
+import { paths } from "@qbs-autonaim/config";
 import { Button } from "@qbs-autonaim/ui";
 import { ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -11,7 +12,7 @@ export default function AccessDeniedPage() {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("/auth/signin"); // redirect to login page
+          router.push(paths.auth.signin); // redirect to login page
         },
       },
     });

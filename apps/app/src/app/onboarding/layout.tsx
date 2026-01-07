@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { getSession } from "~/auth/server";
@@ -11,7 +12,7 @@ export default async function OnboardingLayout({
   const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect(paths.auth.signin);
   }
 
   // Проверяем, есть ли у пользователя workspaces

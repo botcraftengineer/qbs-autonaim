@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -11,7 +12,7 @@ export async function proxy(request: NextRequest) {
 
   // Если нет cookie сессии и пытается зайти на защищенный маршрут
   if (!sessionCookie && !isPublicPath) {
-    const signInUrl = new URL("/auth/signin", request.url);
+    const signInUrl = new URL(paths.auth.signin, request.url);
     // Сохраняем redirect только для не-корневых путей
     if (
       pathname !== "/" &&

@@ -1,3 +1,4 @@
+import { env, paths } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
@@ -161,7 +162,7 @@ export async function generateFreelanceInvitation(
     return err(`Interview link not found for vacancy ${response.vacancyId}`);
   }
 
-  const interviewUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app"}/interview/${link.slug}`;
+  const interviewUrl = `${env.NEXT_PUBLIC_APP_URL}${paths.interview(link.slug)}`;
 
   // Генерируем текст приглашения
   logger.info("Generating invitation text with AI");

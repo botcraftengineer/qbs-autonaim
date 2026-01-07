@@ -1,0 +1,250 @@
+import type { CompanySettings } from "@qbs-autonaim/db/schema";
+import { streamText } from "@qbs-autonaim/lib/ai";
+import { workspaceIdSchema } from "@qbs-autonaim/validators";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { protectedProcedure } from "../../trpc";
+
+const invitationTemplateSchema = z.object({
+  text: z.string(),
+});
+
+function extractJSON(text: string): string | null {
+  const startIndex = text.indexOf("{");
+  if (startIndex === -1) return null;
+
+  let braceCount = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = startIndex; i < text.length; i++) {
+    const char = text[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+
+    if (char === "\\") {
+      escapeNext = true;
+      continue;
+    }
+
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+
+    if (inString) continue;
+
+    if (char === "{") {
+      braceCount++;
+    } else if (char === "}") {
+      braceCount--;
+      if (braceCount === 0) {
+        return text.substring(startIndex, i + 1);
+      }
+    }
+  }
+
+  return null;
+}
+
+const generateInvitationTemplateInputSchema = z.object({
+  workspaceId: workspaceIdSchema,
+  gigId: z.string(),
+});
+
+function buildInvitationPrompt(
+  gigTitle: string,
+  gigDescription?: string,
+  companySettings?: CompanySettings | null,
+): string {
+  const companySection = companySettings
+    ? `
+ИНФОРМАЦИЯ О КОМПАНИИ:
+Название: ${companySettings.name}
+${companySettings.description ? `Описание: ${companySettings.description}` : ""}
+${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
+${companySettings.botName ? `Имя рекрутера: ${companySettings.botName}` : ""}
+${companySettings.botRole ? `Должность рекрутера: ${companySettings.botRole}` : ""}
+`
+    : "";
+
+  const companyName = companySettings?.name || "наша компания";
+  const recruiterName = companySettings?.botName || "";
+  const recruiterRole = companySettings?.botRole || "";
+
+  return `Ты — эксперт по написанию персональных приглашений для кандидатов на фриланс-проекты.
+
+ЗАДАЧА: Создай персональное приглашение для кандидата, который откликнулся на задание.
+
+ИНФОРМАЦИЯ О ЗАДАНИИ:
+Название: ${gigTitle}
+${gigDescription ? `Описание: ${gigDescription}` : ""}
+${companySection}
+
+ТРЕБОВАНИЯ К ПРИГЛАШЕНИЮ:
+- Дружелюбный и профессиональный тон
+- Персонализация под конкретное задание
+- Упоминание названия задания
+- Объяснение следующего шага (интервью с AI)
+- Указание примерного времени интервью (5-10 минут)
+- Использование плейсхолдера [ссылка на интервью] для URL
+- Подпись от имени компании ${companyName}${recruiterName ? ` (${recruiterName}${recruiterRole ? `, ${recruiterRole}` : ""})` : ""}
+
+СТИЛЬ:
+- Вежливый и уважительный
+- Краткий, но информативный
+- Мотивирующий к прохождению интервью
+- Профессиональный, но не формальный
+
+СТРУКТУРА:
+1. Приветствие
+2. Благодарность за отклик
+3. Краткое упоминание задания
+4. Объяснение следующего шага (AI-интервью)
+5. Ссылка на интервью (плейсхолдер)
+6. Мотивация и заверение
+7. Подпись
+
+ФОРМАТ ОТВЕТА (JSON):
+{
+  "text": "Полный текст приглашения с переносами строк"
+}
+
+ВАЖНО: 
+- Верни ТОЛЬКО валидный JSON без дополнительных пояснений
+- Используй \\n для переносов строк в JSON
+- Обязательно используй плейсхолдер [ссылка на интервью] вместо реальной ссылки`;
+}
+
+export const generateInvitationTemplate = protectedProcedure
+  .input(generateInvitationTemplateInputSchema)
+  .query(async ({ input, ctx }) => {
+    const { workspaceId, gigId } = input;
+
+    // Проверка доступа к workspace
+    const access = await ctx.workspaceRepository.checkAccess(
+      workspaceId,
+      ctx.session.user.id,
+    );
+
+    if (!access) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому workspace",
+      });
+    }
+
+    // Получаем информацию о задании
+    const gig = await ctx.db.query.gig.findFirst({
+      where: (gig, { eq, and }) =>
+        and(eq(gig.id, gigId), eq(gig.workspaceId, workspaceId)),
+    });
+
+    if (!gig) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Задание не найдено",
+      });
+    }
+
+    // Загружаем настройки компании для персонализации
+    const companySettings = await ctx.db.query.companySettings.findFirst({
+      where: (companySettings, { eq }) =>
+        eq(companySettings.workspaceId, workspaceId),
+    });
+
+    const prompt = buildInvitationPrompt(
+      gig.title,
+      gig.description || undefined,
+      companySettings,
+    );
+
+    try {
+      const result = await streamText({
+        prompt,
+        generationName: "invitation-template-generation",
+        entityId: gigId,
+        metadata: {
+          workspaceId,
+          gigId,
+          userId: ctx.session.user.id,
+        },
+      });
+
+      let fullText = "";
+      for await (const chunk of result.textStream) {
+        fullText += chunk;
+      }
+
+      console.log(
+        "[generate-invitation-template] AI response length:",
+        fullText.length,
+      );
+
+      const jsonString = extractJSON(fullText);
+      if (!jsonString) {
+        console.error(
+          "[generate-invitation-template] No JSON found in response:",
+          fullText.substring(0, 500),
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "AI не вернул валидный JSON. Попробуйте переформулировать запрос.",
+        });
+      }
+
+      console.log(
+        "[generate-invitation-template] Extracted JSON:",
+        jsonString.substring(0, 300),
+      );
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(jsonString);
+      } catch (parseError) {
+        console.error(
+          "[generate-invitation-template] JSON parse error:",
+          parseError,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Не удалось распарсить ответ от AI. Попробуйте ещё раз.",
+        });
+      }
+
+      const validationResult = invitationTemplateSchema.safeParse(parsed);
+      if (!validationResult.success) {
+        console.error(
+          "[generate-invitation-template] Validation error:",
+          validationResult.error,
+        );
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "AI вернул данные в неожиданном формате. Попробуйте ещё раз.",
+        });
+      }
+
+      const validated = validationResult.data;
+      console.log(
+        "[generate-invitation-template] Generated template length:",
+        validated.text.length,
+      );
+
+      return {
+        text: validated.text,
+      };
+    } catch (error) {
+      console.error("[generate-invitation-template] Error:", error);
+      if (error instanceof TRPCError) throw error;
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message:
+          "Не удалось сгенерировать шаблон приглашения. Попробуйте позже.",
+      });
+    }
+  });

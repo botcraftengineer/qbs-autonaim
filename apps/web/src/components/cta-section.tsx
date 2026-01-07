@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles, Star } from "lucide-react";
 import Link from "next/link";
+import { paths } from "@qbs-autonaim/config";
 import { Button } from "@/components/ui/button";
 import { env } from "@/env";
 
@@ -47,7 +48,7 @@ export function CTASection() {
             className="bg-white text-neutral-900 hover:bg-neutral-100 transition-all duration-200 h-12 px-8 text-base font-medium rounded-xl shadow-lg hover:shadow-xl"
             asChild
           >
-            <Link href={`${env.NEXT_PUBLIC_APP_URL}/auth/signup`}>
+            <Link href={`${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`}>
               Начать бесплатно
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

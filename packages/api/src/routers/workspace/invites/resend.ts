@@ -1,4 +1,4 @@
-import { env } from "@qbs-autonaim/config";
+import { env, paths } from "@qbs-autonaim/config";
 
 import { WorkspaceInviteEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
@@ -42,7 +42,7 @@ export const resend = protectedProcedure
       });
     }
 
-    const inviteLink = `${env.APP_URL}/invite/${existingInvite.token}`;
+    const inviteLink = `${env.APP_URL}${paths.invitations.accept(existingInvite.token)}`;
 
     await sendEmail({
       to: [input.email],

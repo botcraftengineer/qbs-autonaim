@@ -1,8 +1,9 @@
+import { env } from "@qbs-autonaim/config";
 import { botManager } from "../bot-manager";
 import { SessionWatcher } from "../services/session-watcher";
 import app from "./server";
 
-const port = Number.parseInt(process.env.TG_CLIENT_PORT || "8001", 10);
+const port = env.TG_CLIENT_PORT || "8001";
 let isShuttingDown = false;
 
 // Создаем watcher для автоматического запуска новых сессий
