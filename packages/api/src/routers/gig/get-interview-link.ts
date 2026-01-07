@@ -50,7 +50,7 @@ export const getInterviewLink = protectedProcedure
       return null;
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+    const baseUrl = env.NEXT_PUBLIC_APP_URL;
 
     return {
       id: link.id,

@@ -49,7 +49,7 @@ export const generateInterviewLink = protectedProcedure
     });
 
     if (existingLink) {
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+      const baseUrl = env.NEXT_PUBLIC_APP_URL;
       return {
         id: existingLink.id,
         gigId: existingLink.gigId,
@@ -107,7 +107,7 @@ export const generateInterviewLink = protectedProcedure
       });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+    const baseUrl = env.NEXT_PUBLIC_APP_URL;
 
     return {
       id: created.id,

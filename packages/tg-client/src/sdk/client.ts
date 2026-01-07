@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import type {
   AuthResponse,
   CheckPasswordInput,
@@ -34,8 +35,7 @@ export class TgClientSDK {
   private baseUrl: string;
 
   constructor(baseUrl?: string) {
-    this.baseUrl =
-      baseUrl || process.env.TG_CLIENT_URL || "http://localhost:8001";
+    this.baseUrl = baseUrl || env.TG_CLIENT_URL || "http://localhost:8001";
   }
 
   private async request<T>(

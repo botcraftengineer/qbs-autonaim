@@ -6,6 +6,7 @@
  */
 
 import { createOpenAI } from "@ai-sdk/openai";
+import { env } from "@qbs-autonaim/config";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { SessionManager } from "../../services/prequalification";
@@ -55,7 +56,7 @@ export const uploadResume = publicProcedure
 
     // Initialize resume parser
     const openai = createOpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: env.OPENAI_API_KEY,
     });
 
     const resumeParser = new ResumeParserService({

@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import { env } from "@qbs-autonaim/config";
 
 const ALGORITHM = "aes-256-gcm";
 const IV_LENGTH = 16;
@@ -7,7 +8,7 @@ const IV_LENGTH = 16;
  * Получить ключ шифрования из переменной окружения
  */
 function getEncryptionKey(): string {
-  const key = process.env.ENCRYPTION_KEY;
+  const key = env.ENCRYPTION_KEY;
   if (!key) {
     throw new Error("ENCRYPTION_KEY не установлен в переменных окружения");
   }

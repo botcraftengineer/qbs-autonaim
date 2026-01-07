@@ -6,9 +6,9 @@ import { generateText as aiGenerateText, streamText as aiStreamText } from "ai";
 import { Langfuse } from "langfuse";
 
 const langfuse = new Langfuse({
-  secretKey: process.env.LANGFUSE_SECRET_KEY,
-  publicKey: process.env.LANGFUSE_PUBLIC_KEY,
-  baseUrl: process.env.LANGFUSE_BASE_URL,
+  secretKey: env.LANGFUSE_SECRET_KEY,
+  publicKey: env.LANGFUSE_PUBLIC_KEY,
+  baseUrl: env.LANGFUSE_BASE_URL,
 });
 
 const DEFAULT_MODEL_OPENAI = "gpt-5.2";

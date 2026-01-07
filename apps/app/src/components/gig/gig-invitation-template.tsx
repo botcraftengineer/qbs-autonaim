@@ -9,16 +9,21 @@ import {
   CardTitle,
   Skeleton,
   Textarea,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@qbs-autonaim/ui";
 import {
   IconCheck,
   IconCopy,
   IconLink,
   IconLoader2,
+  IconRefresh,
 } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { env } from "~/env";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -32,12 +37,21 @@ export function GigInvitationTemplate({
   gigTitle,
 }: GigInvitationTemplateProps) {
   const [copied, setCopied] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
   const { data: interviewLink, isLoading: isLoadingLink } = useQuery({
     ...trpc.gig.getInterviewLink.queryOptions({
+      gigId,
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  });
+
+  const { data: aiTemplate, isLoading: isLoadingTemplate } = useQuery({
+    ...trpc.gig.generateInvitationTemplate.queryOptions({
       gigId,
       workspaceId: workspace?.id ?? "",
     }),
@@ -67,9 +81,15 @@ export function GigInvitationTemplate({
   }, [generateLink, gigId, workspace?.id]);
 
   const template = useMemo(() => {
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+    const baseUrl = env.NEXT_PUBLIC_APP_URL;
     const interviewUrl = interviewLink?.url || `${baseUrl}/interview/[ссылка]`;
 
+    if (aiTemplate?.text) {
+      // Replace the placeholder URL in AI-generated text with actual URL
+      return aiTemplate.text.replace(/\[ссылка на интервью\]/g, interviewUrl);
+    }
+
+    // Fallback template if AI generation is not available
     const lines = [
       "Здравствуйте!",
       "",
@@ -82,7 +102,7 @@ export function GigInvitationTemplate({
     ];
 
     return lines.join("\n");
-  }, [gigTitle, interviewLink?.url]);
+  }, [gigTitle, interviewLink?.url, aiTemplate?.text]);
 
   const handleCopy = useCallback(async () => {
     try {
@@ -95,7 +115,47 @@ export function GigInvitationTemplate({
     }
   }, [template]);
 
-  if (isLoadingLink) {
+  const handleCopyLink = useCallback(async () => {
+    if (!interviewLink?.url) return;
+
+    try {
+      await navigator.clipboard.writeText(interviewLink.url);
+      setLinkCopied(true);
+      toast.success("Ссылка скопирована");
+      setTimeout(() => setLinkCopied(false), 2000);
+    } catch {
+      toast.error("Не удалось скопировать ссылку");
+    }
+  }, [interviewLink?.url]);
+
+  const handleRefreshTemplate = useCallback(() => {
+    if (!workspace?.id) return;
+
+    // Invalidate both queries to refresh the template
+    queryClient.invalidateQueries({
+      queryKey: trpc.gig.getInterviewLink.queryKey({
+        gigId,
+        workspaceId: workspace.id,
+      }),
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: trpc.gig.generateInvitationTemplate.queryKey({
+        gigId,
+        workspaceId: workspace.id,
+      }),
+    });
+
+    toast.success("Шаблон обновлен");
+  }, [
+    queryClient,
+    trpc.gig.getInterviewLink,
+    trpc.gig.generateInvitationTemplate,
+    gigId,
+    workspace?.id,
+  ]);
+
+  if (isLoadingLink || isLoadingTemplate) {
     return (
       <Card>
         <CardHeader>
@@ -113,10 +173,32 @@ export function GigInvitationTemplate({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Шаблон приглашения</CardTitle>
-        <CardDescription>
-          Скопируйте и отправьте кандидатам для прохождения интервью
-        </CardDescription>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle>Шаблон приглашения</CardTitle>
+            <CardDescription>
+              Скопируйте и отправьте кандидатам для прохождения интервью
+            </CardDescription>
+          </div>
+          {interviewLink && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={handleRefreshTemplate}
+                  variant="ghost"
+                  size="sm"
+                  className="min-h-[36px]"
+                  aria-label="Обновить шаблон приглашения"
+                >
+                  <IconRefresh className="size-4" aria-hidden="true" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Обновить шаблон</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {!interviewLink && (
@@ -158,24 +240,47 @@ export function GigInvitationTemplate({
           aria-label="Текст шаблона приглашения"
         />
 
-        <Button
-          onClick={handleCopy}
-          variant="outline"
-          className="w-full min-h-[44px]"
-          aria-label="Скопировать шаблон приглашения"
-        >
-          {copied ? (
-            <>
-              <IconCheck className="size-4 mr-2" aria-hidden="true" />
-              Скопировано
-            </>
-          ) : (
-            <>
-              <IconCopy className="size-4 mr-2" aria-hidden="true" />
-              Копировать шаблон
-            </>
+        <div className="flex gap-2">
+          <Button
+            onClick={handleCopy}
+            variant="outline"
+            className="flex-1 min-h-[44px]"
+            aria-label="Скопировать шаблон приглашения"
+          >
+            {copied ? (
+              <>
+                <IconCheck className="size-4 mr-2" aria-hidden="true" />
+                Скопировано
+              </>
+            ) : (
+              <>
+                <IconCopy className="size-4 mr-2" aria-hidden="true" />
+                Копировать шаблон
+              </>
+            )}
+          </Button>
+
+          {interviewLink && (
+            <Button
+              onClick={handleCopyLink}
+              variant="outline"
+              className="flex-1 min-h-[44px]"
+              aria-label="Скопировать ссылку на интервью"
+            >
+              {linkCopied ? (
+                <>
+                  <IconCheck className="size-4 mr-2" aria-hidden="true" />
+                  Ссылка скопирована
+                </>
+              ) : (
+                <>
+                  <IconLink className="size-4 mr-2" aria-hidden="true" />
+                  Копировать ссылку
+                </>
+              )}
+            </Button>
           )}
-        </Button>
+        </div>
       </CardContent>
     </Card>
   );

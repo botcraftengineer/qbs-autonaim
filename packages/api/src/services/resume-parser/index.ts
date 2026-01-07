@@ -6,6 +6,7 @@
  */
 
 import { AgentFactory, type ResumeStructurerOutput } from "@qbs-autonaim/ai";
+import { env } from "@qbs-autonaim/config";
 import type { ParsedResume, StructuredResume } from "@qbs-autonaim/db";
 import type { LanguageModel } from "ai";
 import type { Langfuse } from "langfuse";
@@ -53,10 +54,9 @@ export class ResumeParserService {
   }) {
     const apiUrl =
       options.unstructuredApiUrl ||
-      process.env.UNSTRUCTURED_API_URL ||
+      env.UNSTRUCTURED_API_URL ||
       "http://localhost:8001";
-    const apiKey =
-      options.unstructuredApiKey || process.env.UNSTRUCTURED_API_KEY;
+    const apiKey = options.unstructuredApiKey || env.UNSTRUCTURED_API_KEY;
 
     this.parser = new UnstructuredParser({
       apiUrl,

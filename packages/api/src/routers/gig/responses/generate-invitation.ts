@@ -159,7 +159,7 @@ export const generateInvitation = protectedProcedure
       }
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app";
+    const baseUrl = env.NEXT_PUBLIC_APP_URL;
     const interviewUrl = `${baseUrl}/gig-interview/${link.slug}`;
 
     // Генерируем текст приглашения

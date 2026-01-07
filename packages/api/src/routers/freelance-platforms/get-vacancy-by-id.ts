@@ -81,7 +81,7 @@ export const getVacancyById = protectedProcedure
       responseStats: stats,
       interviewLink: activeInterviewLink
         ? {
-            url: `${process.env.NEXT_PUBLIC_APP_URL || "https://qbs.app"}/interview/${activeInterviewLink.slug}`,
+            url: `${env.NEXT_PUBLIC_APP_URL}/interview/${activeInterviewLink.slug}`,
             token: activeInterviewLink.token,
             slug: activeInterviewLink.slug,
             isActive: activeInterviewLink.isActive,
