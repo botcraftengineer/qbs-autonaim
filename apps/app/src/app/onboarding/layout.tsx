@@ -21,7 +21,7 @@ export default async function OnboardingLayout({
 
   // Если есть workspaces, редиректим на главную
   if (userWorkspaces.length > 0) {
-    redirect("/");
+    redirect(paths.dashboard.root);
   }
 
   return <>{children}</>;

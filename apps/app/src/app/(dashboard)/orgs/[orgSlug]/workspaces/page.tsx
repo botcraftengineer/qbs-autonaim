@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
@@ -12,14 +13,14 @@ export default async function WorkspacesPage({
 }) {
   const session = await getSession();
   if (!session?.user) {
-    redirect("/auth/signin");
+    redirect(paths.auth.signin);
   }
 
   const { orgSlug } = await params;
 
   const organization = await organizationRepository.findBySlug(orgSlug);
   if (!organization) {
-    redirect("/");
+    redirect(paths.dashboard.root);
   }
 
   const access = await organizationRepository.checkAccess(
@@ -28,7 +29,7 @@ export default async function WorkspacesPage({
   );
 
   if (!access) {
-    redirect("/access-denied");
+    redirect(paths.accessDenied);
   }
 
   const workspaces = await organizationRepository.getWorkspaces(

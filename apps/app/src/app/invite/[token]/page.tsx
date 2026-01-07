@@ -67,7 +67,10 @@ export default async function InvitePage({
 
     if (isAlreadyMember) {
       redirect(
-        `/orgs/${invite.workspace.organization?.slug}/workspaces/${invite.workspace.slug}`,
+        paths.workspace.root(
+          invite.workspace.organization?.slug ?? "",
+          invite.workspace.slug,
+        ),
       );
     }
 

@@ -1,3 +1,4 @@
+import { paths } from "@qbs-autonaim/config";
 import { SidebarInset, SidebarProvider } from "@qbs-autonaim/ui";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -28,7 +29,7 @@ export default async function DashboardLayout({
   // Если нет workspaces, редирект на создание
   // (логика с приглашениями обрабатывается на странице /invite/[token])
   if (userWorkspaces.length === 0) {
-    redirect("/onboarding");
+    redirect(paths.onboarding.root);
   }
 
   // Преобразуем данные для компонента

@@ -42,7 +42,7 @@
     "react-dom": "19.2.3",
     "recharts": "3.6.0",
     "superjson": "2.2.6",
-    "zod": "4.3.4"
+    "zod": "4.3.5"
   },
   "optionalDependencies": {
     "sharp": "^0.34.5"

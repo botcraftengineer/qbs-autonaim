@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { HelpCircle } from "lucide-react"
 
 export function FAQSection() {
   const faqs = [
@@ -45,9 +46,20 @@ export function FAQSection() {
   ]
 
   return (
-    <section id="faq" className="bg-muted/30 py-20 md:py-32">
-      <div className="container mx-auto px-4">
+    <section id="faq" className="relative bg-background py-20 md:py-32 overflow-hidden">
+      {/* Top border */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+      {/* Subtle glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-muted/50 via-transparent to-transparent" />
+
+      <div className="container mx-auto px-4 relative">
         <div className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm mb-6">
+            <HelpCircle className="h-4 w-4 text-foreground" />
+            <span className="text-muted-foreground">FAQ</span>
+          </div>
+
           <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground md:text-4xl text-balance">
             Частые вопросы
           </h2>

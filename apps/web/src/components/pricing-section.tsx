@@ -1,23 +1,13 @@
-"use client";
+"use client"
 
-import { Check } from "lucide-react";
-import Link from "next/link";
-import { useState } from "react";
-import { paths } from "@qbs-autonaim/config";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { env } from "@/env";
+import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Check, Sparkles } from "lucide-react"
 
 export function PricingSection() {
-  const [isAnnual, setIsAnnual] = useState(false);
+  const [isAnnual, setIsAnnual] = useState(false)
 
   const plans = [
     {
@@ -25,15 +15,8 @@ export function PricingSection() {
       price: "Бесплатно",
       priceAnnual: "Бесплатно",
       description: "Для небольших команд",
-      features: [
-        "1 workspace",
-        "3 активные вакансии",
-        "100 откликов/месяц",
-        "AI-скрининг резюме",
-        "Базовая аналитика",
-      ],
+      features: ["1 проект", "3 активные вакансии", "100 откликов/месяц", "AI-скрининг резюме", "Базовая аналитика"],
       cta: "Начать бесплатно",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}`,
       popular: false,
     },
     {
@@ -42,15 +25,14 @@ export function PricingSection() {
       priceAnnual: "7 900 ₽",
       description: "Для активного найма",
       features: [
-        "3 workspace",
+        "До 5 проектов",
         "Неограниченные вакансии",
         "1000 откликов/месяц",
-        "AI-интервью в Telegram",
+        "AI-интервью в Telegram и веб-чате",
         "Расширенная аналитика",
         "Приоритетная поддержка",
       ],
       cta: "Попробовать 14 дней",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}${paths.auth.signup}?plan=business`,
       popular: true,
     },
     {
@@ -59,56 +41,55 @@ export function PricingSection() {
       priceAnnual: "По запросу",
       description: "Для крупных компаний",
       features: [
-        "Неограниченные workspace",
+        "Неограниченные проекты",
         "Неограниченные отклики",
-        "Кастомные AI-модели",
+        "Собственный брендинг (White-label)",
         "Выделенная инфраструктура",
         "SLA 99.9%",
         "Персональный менеджер",
       ],
       cta: "Связаться с нами",
-      ctaLink: `${env.NEXT_PUBLIC_APP_URL}/contact`,
       popular: false,
     },
-  ];
+  ]
 
   return (
-    <section id="pricing" className="bg-muted/30 py-24 md:py-32">
-      <div className="container mx-auto px-4">
+    <section id="pricing" className="relative bg-muted/30 py-24 md:py-32 overflow-hidden">
+      {/* Top border */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
+
+      {/* Subtle gradient */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_50%,oklch(0.96_0.01_265/0.2),transparent_70%)]" />
+
+      <div className="container mx-auto px-4 relative">
         <div className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-sm mb-6">
+            <Sparkles className="h-4 w-4 text-foreground" />
+            <span className="text-muted-foreground">Тарифы</span>
+          </div>
+
           <h2 className="mb-6 text-4xl font-bold tracking-tight text-foreground md:text-5xl text-balance">
             Прозрачные цены для каждой команды
           </h2>
-          <p className="mb-12 text-xl text-muted-foreground">
-            Начните бесплатно. Масштабируйтесь по мере роста.
-          </p>
+          <p className="mb-12 text-xl text-muted-foreground">Начните бесплатно. Масштабируйтесь по мере роста.</p>
 
-          <div className="mb-16 inline-flex items-center gap-3 rounded-full border border-border bg-background p-1">
+          <div className="mb-16 inline-flex items-center gap-3 rounded-full border border-border bg-card p-1">
             <button
-              type="button"
               onClick={() => setIsAnnual(false)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                !isAnnual
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground"
+                !isAnnual ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Помесячно
             </button>
             <button
-              type="button"
               onClick={() => setIsAnnual(true)}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                isAnnual
-                  ? "bg-foreground text-background"
-                  : "text-muted-foreground hover:text-foreground"
+                isAnnual ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               Ежегодно
-              <Badge
-                variant="secondary"
-                className="ml-2 bg-emerald-500/10 text-emerald-600 border-0"
-              >
+              <Badge variant="secondary" className="ml-2">
                 -20%
               </Badge>
             </button>
@@ -127,24 +108,17 @@ export function PricingSection() {
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-foreground text-background border-0 px-4 py-1">
-                    Популярный
-                  </Badge>
+                  <Badge className="bg-foreground text-background border-0 px-4 py-1">Популярный</Badge>
                 </div>
               )}
               <CardHeader className="text-center pb-8 pt-8">
                 <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                <CardDescription className="text-base">
-                  {plan.description}
-                </CardDescription>
+                <CardDescription className="text-base">{plan.description}</CardDescription>
                 <div className="mt-6">
-                  <span className="text-5xl font-bold text-foreground">
-                    {isAnnual ? plan.priceAnnual : plan.price}
-                  </span>
-                  {plan.price !== "Бесплатно" &&
-                    plan.price !== "По запросу" && (
-                      <span className="text-muted-foreground ml-1">/мес</span>
-                    )}
+                  <span className="text-5xl font-bold text-foreground">{isAnnual ? plan.priceAnnual : plan.price}</span>
+                  {plan.price !== "Бесплатно" && plan.price !== "По запросу" && (
+                    <span className="text-muted-foreground ml-1">/мес</span>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="pb-8">
@@ -158,16 +132,8 @@ export function PricingSection() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-0">
-                <Button
-                  className={`w-full h-11 ${
-                    plan.popular
-                      ? "bg-foreground text-background hover:bg-neutral-800"
-                      : "hover:bg-muted hover:text-foreground"
-                  }`}
-                  variant={plan.popular ? "default" : "outline"}
-                  asChild
-                >
-                  <Link href={plan.ctaLink}>{plan.cta}</Link>
+                <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
+                  {plan.cta}
                 </Button>
               </CardFooter>
             </Card>
@@ -175,5 +141,5 @@ export function PricingSection() {
         </div>
       </div>
     </section>
-  );
+  )
 }

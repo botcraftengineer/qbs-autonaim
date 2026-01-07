@@ -27,14 +27,25 @@ function MaxIcon({ className }: { className?: string }) {
 export function Footer() {
   const navigation = {
     product: [
-      { name: "Возможности", href: "#features" },
-      { name: "Цены", href: "#pricing" },
+      { name: "AI-Рекрутер", href: "/products/ai-recruiter" },
+      { name: "AI-Создание вакансий", href: "/products/ai-job-creation" },
+      { name: "Управление задачами", href: "/products/task-management" },
+      { name: "Цены", href: "/#pricing" },
+    ],
+    audiences: [
+      { name: "HR-менеджеры", href: "/audiences/hr-managers" },
+      { name: "Стартапы", href: "/audiences/startups" },
+      { name: "Руководители компаний", href: "/audiences/company-leaders" },
+      { name: "Рекрутинговые агентства", href: "/audiences/recruitment-agencies" },
+    ],
+    resources: [
       { name: "Документация", href: "#" },
-      { name: "Блог", href: "#" },
+      { name: "Блог", href: "/blog" },
+      { name: "FAQ", href: "/faq" },
     ],
     company: [
-      { name: "О нас", href: "#" },
-      { name: "Контакты", href: "#" },
+      { name: "О нас", href: "/about" },
+      { name: "Контакты", href: "/contact" },
       { name: "Карьера", href: "#" },
     ],
     legal: [
@@ -51,7 +62,7 @@ export function Footer() {
   return (
     <footer className="border-t border-border/40 bg-background">
       <div className="container mx-auto px-4 py-16">
-        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
           <div className="lg:col-span-2">
             <Link href="/" className="inline-flex items-center gap-2.5">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-foreground">
@@ -68,6 +79,22 @@ export function Footer() {
             <h3 className="mb-4 text-sm font-semibold text-foreground">Продукт</h3>
             <ul className="space-y-3">
               {navigation.product.map((item) => (
+                <li key={item.name}>
+                  <Link
+                    href={item.href}
+                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="mb-4 text-sm font-semibold text-foreground">Ресурсы</h3>
+            <ul className="space-y-3">
+              {navigation.resources.map((item) => (
                 <li key={item.name}>
                   <Link
                     href={item.href}
@@ -113,8 +140,20 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-border/40">
-          <p className="text-center text-sm text-muted-foreground">© 2025 QBS. Все права защищены.</p>
+        <div className="mt-16 pt-8 border-t border-border/40 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-muted-foreground">© 2026 QBS. Все права защищены.</p>
+          <div className="flex items-center gap-4">
+            {navigation.social.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={item.name}
+              >
+                <item.icon className="h-5 w-5" />
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

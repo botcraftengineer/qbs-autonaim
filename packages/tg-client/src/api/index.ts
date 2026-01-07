@@ -3,7 +3,7 @@ import { botManager } from "../bot-manager";
 import { SessionWatcher } from "../services/session-watcher";
 import app from "./server";
 
-const port = env.TG_CLIENT_PORT || "8001";
+const port = env.TG_CLIENT_PORT ?? 8001;
 let isShuttingDown = false;
 
 // Создаем watcher для автоматического запуска новых сессий

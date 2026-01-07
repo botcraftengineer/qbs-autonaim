@@ -1,0 +1,10 @@
+<svg viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="20" cy="20" r="16" fill="#21A038"/>
+  <path d="M20 8C13.4 8 8 13.4 8 20C8 26.6 13.4 32 20 32" stroke="white" stroke-width="3" stroke-linecap="round"/>
+  <path d="M20 12C15.6 12 12 15.6 12 20C12 24.4 15.6 28 20 28" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <path d="M20 16C17.8 16 16 17.8 16 20C16 22.2 17.8 24 20 24" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M45 14C42.2 14 40 15.5 40 18C40 20.5 42 21.5 45 22C48 22.5 49 23 49 24.5C49 26 47.5 27 45 27C42.5 27 41 25.5 41 24H38C38 27 40.5 30 45 30C49.5 30 52 28 52 25C52 22 49.5 21 46 20.5C43 20 43 19 43 18C43 17 44 16 45.5 16C47 16 48 17 48 18H51C51 15.5 48.5 14 45 14Z" fill="#1A1A1A"/>
+  <path d="M56 30V14H66C69.5 14 72 16 72 19C72 21 70.5 22.5 68.5 23L73 30H69L65 24H59V30H56ZM59 21H65.5C67 21 68.5 20.5 68.5 19C68.5 17.5 67.5 17 65.5 17H59V21Z" fill="#1A1A1A"/>
+  <path d="M76 30V14H90V17H79V20H88V23H79V27H90V30H76Z" fill="#1A1A1A"/>
+  <path d="M94 30V14H104C107.5 14 110 16 110 19C110 21 108.5 22.5 106.5 23L111 30H107L103 24H97V30H94ZM97 21H103.5C105 21 106.5 20.5 106.5 19C106.5 17.5 105.5 17 103.5 17H97V21Z" fill="#1A1A1A"/>
+</svg>

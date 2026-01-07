@@ -1,7 +1,7 @@
 "use client"
 
 import { ArrowRight, Clock, Users, Zap, TrendingUp, CheckCircle2 } from "lucide-react"
-import { motion } from "motion/react"
+import { motion } from "framer-motion"
 
 export function ProblemSection() {
   return (

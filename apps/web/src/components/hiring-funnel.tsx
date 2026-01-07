@@ -88,36 +88,6 @@ export function HiringFunnel() {
               </div>
             </div>
           </div>
-
-          {/* Dashboard interface preview */}
-          <div className="relative mx-auto py-8">
-            <div className="relative rounded-3xl border border-border bg-card/50 backdrop-blur-sm overflow-hidden shadow-2xl">
-              {/* Browser dots */}
-              <div className="absolute top-4 left-4 flex gap-1.5 z-10">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                <div className="w-3 h-3 rounded-full bg-green-400" />
-              </div>
-
-              {/* Dashboard screenshot */}
-              <div className="relative mt-8 p-4">
-                <img
-                  src="/images/gemini-generated-image-w1qmzjw1qmzjw1qm.png"
-                  alt="QBS Автонайм Dashboard с AI-скринингом кандидатов"
-                  className="w-full h-auto rounded-xl"
-                />
-              </div>
-
-              {/* Live indicator */}
-              <div className="absolute bottom-4 right-4 flex items-center gap-2 text-xs text-muted-foreground bg-card/80 backdrop-blur-sm px-3 py-2 rounded-full border border-border">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                Обновляется в реальном времени
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Feature cards */}

@@ -30,7 +30,7 @@
     "random-word-slugs": "^0.1.7",
     "sanitize-html": "^2.17.0",
     "superjson": "2.2.6",
-    "zod": "4.3.4"
+    "zod": "4.3.5"
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "workspace:*",

@@ -106,8 +106,7 @@ export const sendChatMessage = publicProcedure
       });
 
       // Отправляем событие debounce через fetch (так как Inngest клиент доступен только в jobs)
-      const inngestEventUrl =
-        env.INNGEST_EVENT_API_BASE_URL || "https://inn.gs";
+      const inngestEventUrl = env.INNGEST_EVENT_API_BASE_URL;
       const inngestEventKey = env.INNGEST_EVENT_KEY;
 
       if (inngestEventKey) {
