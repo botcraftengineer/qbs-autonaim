@@ -154,21 +154,10 @@ export async function POST(request: Request) {
       });
     }
 
-    // Формируем историю диалога
-    const historyContext = messages
-      .map((m) => {
-        const text = m.parts?.map((p) => p.text).join("\n") || m.content || "";
-        return `${m.role === "user" ? "Кандидат" : "Интервьюер"}: ${text}`;
-      })
-      .join("\n\n");
-
     const systemPrompt = `${conversationContext}
 
 Ты — AI-интервьюер. Веди профессиональное интервью с кандидатом.
-Будь вежливым, задавай уточняющие вопросы, оценивай ответы.
-
-История диалога:
-${historyContext}`;
+Будь вежливым, задавай уточняющие вопросы, оценивай ответы.`;
 
     // Создаём trace в Langfuse
     const trace = langfuse.trace({

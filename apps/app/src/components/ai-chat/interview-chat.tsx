@@ -12,6 +12,7 @@ import { useScrollToBottom } from "~/hooks/use-scroll-to-bottom";
 import { useTRPC } from "~/trpc/react";
 import type { ChatStatus } from "~/types/ai-chat";
 import { AIChatInput } from "./ai-chat-input";
+import { InterviewContextCard } from "./interview-context-card";
 
 // Типы для сообщений
 interface MessagePart {
@@ -332,6 +333,13 @@ export function InterviewChat({
     trpc.freelancePlatforms.getChatHistory.queryOptions({ conversationId }),
   );
 
+  // Загрузка контекста интервью (вакансия/задание)
+  const { data: interviewContext, isLoading: isLoadingContext } = useQuery(
+    trpc.freelancePlatforms.getInterviewContext.queryOptions({
+      conversationId,
+    }),
+  );
+
   // Конвертация истории в формат для отображения
   const historyMessages = useMemo(() => {
     if (!chatHistory?.messages) return [];
@@ -416,11 +424,9 @@ export function InterviewChat({
   const isCancelled = chatStatus === "CANCELLED";
   const isReadonly = isCompleted || isCancelled;
 
-  if (isLoadingHistory) {
+  if (isLoadingHistory || isLoadingContext) {
     return (
-      <div
-        className={cn("flex h-dvh min-w-0 flex-col bg-background", className)}
-      >
+      <div className={cn("flex h-dvh min-w-0 flex-col bg-muted/30", className)}>
         <div className="flex flex-1 items-center justify-center">
           <div className="flex flex-col items-center gap-3 text-muted-foreground">
             <Loader2 className="size-8 animate-spin" />
@@ -434,32 +440,46 @@ export function InterviewChat({
   return (
     <div
       className={cn(
-        "flex h-dvh min-w-0 touch-pan-y flex-col bg-background",
+        "flex h-dvh min-w-0 touch-pan-y flex-col bg-muted/30",
         className,
       )}
     >
-      <header className="sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b bg-background px-4 py-2">
-        <div className="flex size-8 items-center justify-center rounded-full bg-primary/10">
-          <Sparkles className="size-4 text-primary" />
-        </div>
-        <div className="flex-1">
-          <h1 className="font-medium text-sm">AI Интервью</h1>
-          <p className="text-muted-foreground text-xs">
-            {isCompleted && "Завершено"}
-            {isCancelled && "Отменено"}
-            {!isReadonly &&
-              (rawStatus === "streaming" ? "Генерирую…" : "Онлайн")}
-          </p>
+      <header className="sticky top-0 z-10 shrink-0 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="mx-auto flex w-full max-w-4xl items-center gap-3 px-4 py-3 sm:px-6">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 ring-1 ring-primary/20">
+            <Sparkles className="size-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h1 className="font-semibold text-base">AI Интервью</h1>
+            <p className="text-muted-foreground text-xs">
+              {isCompleted && "Завершено"}
+              {isCancelled && "Отменено"}
+              {!isReadonly &&
+                (rawStatus === "streaming" ? "Генерирую…" : "Онлайн")}
+            </p>
+          </div>
         </div>
       </header>
 
+      {interviewContext && (
+        <div className="shrink-0 border-b bg-background">
+          <div className="mx-auto w-full max-w-4xl">
+            <InterviewContextCard context={interviewContext} />
+          </div>
+        </div>
+      )}
+
       {error && (
-        <div
-          className="mx-4 mt-4 flex items-center gap-2 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive text-sm"
-          role="alert"
-        >
-          <AlertCircle className="size-4 shrink-0" />
-          <p>{error.message}</p>
+        <div className="shrink-0 border-b bg-background">
+          <div className="mx-auto w-full max-w-4xl px-4 py-4 sm:px-6">
+            <div
+              className="flex items-start gap-3 rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-3 text-destructive text-sm"
+              role="alert"
+            >
+              <AlertCircle className="size-5 shrink-0 mt-0.5" />
+              <p className="flex-1">{error.message}</p>
+            </div>
+          </div>
         </div>
       )}
 
@@ -469,25 +489,29 @@ export function InterviewChat({
         emptyStateComponent={<InterviewGreeting />}
       />
 
-      <div className="sticky bottom-0 z-10 mx-auto flex w-full max-w-4xl gap-2 bg-background px-2 pb-3 md:px-4 md:pb-4">
-        {!isReadonly && (
-          <AIChatInput
-            onSendMessage={handleSendMessage}
-            onStop={stop}
-            status={status}
-            placeholder={
-              status === "streaming"
-                ? "Ожидайте ответа…"
-                : "Напишите сообщение…"
-            }
-          />
-        )}
+      <div className="sticky bottom-0 z-10 shrink-0 border-t bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
+        <div className="mx-auto flex w-full max-w-4xl gap-2 px-4 py-3 sm:px-6 sm:py-4">
+          {!isReadonly && (
+            <AIChatInput
+              onSendMessage={handleSendMessage}
+              onStop={stop}
+              status={status}
+              placeholder={
+                status === "streaming"
+                  ? "Ожидайте ответа…"
+                  : "Напишите сообщение…"
+              }
+            />
+          )}
+        </div>
       </div>
 
       {isReadonly && (
-        <div className="border-t bg-muted/30 px-4 py-3 text-center text-muted-foreground text-sm">
-          {isCompleted && "Интервью завершено. Спасибо за участие!"}
-          {isCancelled && "Интервью было отменено."}
+        <div className="shrink-0 border-t bg-muted/50">
+          <div className="mx-auto w-full max-w-4xl px-4 py-4 text-center text-muted-foreground text-sm sm:px-6">
+            {isCompleted && "Интервью завершено. Спасибо за участие!"}
+            {isCancelled && "Интервью было отменено."}
+          </div>
         </div>
       )}
     </div>
