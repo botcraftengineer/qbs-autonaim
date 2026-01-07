@@ -38,7 +38,7 @@ export default function ResponseDetailPage({
   if (!workspaceId) {
     return (
       <>
-        <SiteHeader title="Ошибка" />
+        <SiteHeader />
         <div className="flex flex-1 flex-col items-center justify-center">
           <p className="text-muted-foreground">
             Рабочее пространство не найдено
@@ -51,7 +51,7 @@ export default function ResponseDetailPage({
   if (isLoading) {
     return (
       <>
-        <SiteHeader title="Загрузка..." />
+        <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
@@ -72,7 +72,7 @@ export default function ResponseDetailPage({
   if (!response) {
     return (
       <>
-        <SiteHeader title="Не найдено" />
+        <SiteHeader />
         <div className="flex flex-1 flex-col items-center justify-center">
           <p className="text-muted-foreground">Отклик не найден</p>
         </div>
@@ -82,9 +82,7 @@ export default function ResponseDetailPage({
 
   return (
     <>
-      <SiteHeader
-        title={`Отклик от ${response.candidateName || "Кандидата"}`}
-      />
+      <SiteHeader />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">

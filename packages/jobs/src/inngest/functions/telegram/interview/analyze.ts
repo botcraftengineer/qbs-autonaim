@@ -21,10 +21,6 @@ export const analyzeInterviewFunction = inngest.createFunction(
     const { conversationId, transcription } = event.data;
 
     const context = await step.run("get-interview-context", async () => {
-      console.log("📋 Получение контекста интервью", {
-        conversationId,
-      });
-
       // Получаем conversation для проверки существования
       const [conv] = await db
         .select()
@@ -46,22 +42,8 @@ export const analyzeInterviewFunction = inngest.createFunction(
     });
 
     const result = await step.run("analyze-and-generate-question", async () => {
-      console.log("🤔 Анализ ответа и генерация следующего вопроса", {
-        conversationId: context.conversationId,
-        questionNumber: context.questionNumber,
-      });
-
       try {
         const analysisResult = await analyzeAndGenerateNextQuestion(context);
-
-        console.log("📊 Результат анализа", {
-          shouldContinue: analysisResult.shouldContinue,
-          hasQuestion: !!analysisResult.nextQuestion,
-          analysis: analysisResult.analysis?.substring(0, 100),
-          reason: analysisResult.reason,
-          shouldEscalate: analysisResult.shouldEscalate,
-          isSimpleAcknowledgment: analysisResult.isSimpleAcknowledgment,
-        });
 
         return analysisResult;
       } catch (error) {
@@ -105,30 +87,13 @@ export const analyzeInterviewFunction = inngest.createFunction(
           questionNumber: context.questionNumber,
         },
       });
-
-      console.log(
-        "ℹ️ Отправлен ответ кандидату, ожидаем его следующего сообщения",
-        {
-          conversationId: context.conversationId,
-          reason: result.reason,
-        },
-      );
     } else {
       // Нет вопроса и не нужно продолжать
       // Проверяем причину - если это простое "спасибо/ок", то НЕ завершаем интервью
       // Используем явное булево поле из ответа AI — это надёжнее, чем парсить строку reason
       const isSimpleAcknowledgment = result.isSimpleAcknowledgment === true;
 
-      if (isSimpleAcknowledgment) {
-        console.log(
-          "⏸️ Получено простое подтверждение, интервью не завершается",
-          {
-            conversationId: context.conversationId,
-            reason: result.reason,
-          },
-        );
-        // Просто выходим, ничего не делая. Статус остается прежним (INTERVIEW или какой был).
-      } else {
+      if (!isSimpleAcknowledgment) {
         // Если это осознанное завершение интервью (собрано достаточно данных)
         await step.sendEvent("complete-interview-event", {
           name: "telegram/interview.complete",

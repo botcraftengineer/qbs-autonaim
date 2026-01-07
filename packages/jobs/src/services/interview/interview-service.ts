@@ -172,6 +172,58 @@ export async function analyzeAndGenerateNextQuestion(
 export async function getInterviewContext(
   conversationId: string,
 ): Promise<InterviewContext | null> {
+  type MessageType = {
+    sender: string;
+    content: string;
+    contentType?: string;
+    voiceTranscription?: string;
+    createdAt: Date;
+  };
+
+  type ConvType = {
+    id: string;
+    candidateName: string | null;
+    metadata: Record<string, unknown> | null;
+    responseId: string | null;
+    gigResponseId: string | null;
+    messages: MessageType[];
+    response?: {
+      resumeLanguage: string | null;
+      vacancy: {
+        title: string;
+        description: string | null;
+        customBotInstructions: string | null;
+        customOrganizationalQuestions: string | null;
+        customInterviewQuestions: string | null;
+        workspace: {
+          companySettings: {
+            botName: string | null;
+            botRole: string | null;
+            name: string;
+            description: string | null;
+          } | null;
+        };
+      };
+    } | null;
+    gigResponse?: {
+      resumeLanguage: string | null;
+      gig: {
+        title: string;
+        description: string | null;
+        customBotInstructions: string | null;
+        customInterviewQuestions: string | null;
+        workspace: {
+          companySettings: {
+            botName: string | null;
+            botRole: string | null;
+            name: string;
+            description: string | null;
+          } | null;
+        };
+      };
+    } | null;
+  };
+
   const conv = (await db.query.conversation.findFirst({
     where: eq(conversation.id, conversationId),
     with: {
@@ -206,7 +258,7 @@ export async function getInterviewContext(
         },
       },
     },
-  })) as any; // Type assertion needed due to Drizzle's deep nesting inference limitations
+  })) as ConvType | undefined;
 
   if (!conv) {
     return null;
@@ -217,8 +269,8 @@ export async function getInterviewContext(
 
   // Формируем историю диалога с правильными типами
   const conversationHistory = conv.messages
-    .filter((msg: any) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
-    .map((msg: any) => ({
+    .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
+    .map((msg) => ({
       sender: msg.sender as "CANDIDATE" | "BOT",
       content:
         msg.contentType === "VOICE" && msg.voiceTranscription

@@ -25,13 +25,6 @@ export const bufferFlushFunction = inngest.createFunction(
   async ({ event, step }) => {
     const { userId, conversationId, interviewStep, flushId } = event.data;
 
-    console.log("🚀 Buffer flush started", {
-      userId,
-      conversationId,
-      interviewStep,
-      flushId,
-    });
-
     // Определяем источник разговора для отправки правильных событий
     const conversationSource = await step.run(
       "get-conversation-source",
@@ -39,11 +32,6 @@ export const bufferFlushFunction = inngest.createFunction(
         const conv = await db.query.conversation.findFirst({
           where: eq(conversation.id, conversationId),
           columns: { source: true },
-        });
-
-        console.log("📍 Conversation source detected", {
-          conversationId,
-          source: conv?.source ?? "TELEGRAM",
         });
 
         return conv?.source ?? "TELEGRAM";
@@ -58,24 +46,11 @@ export const bufferFlushFunction = inngest.createFunction(
         interviewStep,
       });
 
-      console.log("📦 Retrieved buffered messages", {
-        userId,
-        conversationId,
-        interviewStep,
-        messageCount: bufferedMessages.length,
-      });
-
       return bufferedMessages;
     });
 
     // Обработка пустого буфера
     if (messages.length === 0) {
-      console.log("⚠️ Buffer is empty, skipping flush", {
-        userId,
-        conversationId,
-        interviewStep,
-        flushId,
-      });
       return { skipped: true, reason: "Buffer is empty" };
     }
 
@@ -83,23 +58,11 @@ export const bufferFlushFunction = inngest.createFunction(
     const aggregatedContent = await step.run("aggregate-messages", async () => {
       const content = messages.map((m) => m.content).join("\n\n");
 
-      console.log("📝 Messages aggregated", {
-        userId,
-        conversationId,
-        interviewStep,
-        messageCount: messages.length,
-        totalLength: content.length,
-      });
-
       return content;
     });
 
     // Получение полного контекста интервью
     const context = await step.run("get-interview-context", async () => {
-      console.log("📋 Getting interview context", {
-        conversationId,
-      });
-
       const ctx = await getInterviewContext(conversationId);
 
       if (!ctx) {
@@ -111,21 +74,8 @@ export const bufferFlushFunction = inngest.createFunction(
 
     // Отправка в LLM
     const llmResponse = await step.run("send-to-llm", async () => {
-      console.log("🤖 Sending to LLM", {
-        conversationId,
-        questionNumber: context.questionNumber,
-        messageCount: messages.length,
-      });
-
       try {
         const result = await analyzeAndGenerateNextQuestion(context);
-
-        console.log("📊 LLM response received", {
-          conversationId,
-          shouldContinue: result.shouldContinue,
-          hasQuestion: !!result.nextQuestion,
-          reason: result.reason,
-        });
 
         return { success: true, data: result };
       } catch (error) {
@@ -170,12 +120,6 @@ export const bufferFlushFunction = inngest.createFunction(
           interviewStep,
         });
 
-        console.log("🧹 Buffer cleared after error", {
-          userId,
-          conversationId,
-          interviewStep,
-        });
-
         return { cleared: true };
       });
 
@@ -207,12 +151,6 @@ export const bufferFlushFunction = inngest.createFunction(
 
       if (result.shouldContinue && result.nextQuestion) {
         // Обычный флоу: продолжаем интервью с новым вопросом
-        console.log("➡️ Sending next question", {
-          conversationId,
-          questionNumber: context.questionNumber,
-          source: conversationSource,
-        });
-
         await inngest.send({
           name: sendQuestionEvent,
           data: {
@@ -228,12 +166,6 @@ export const bufferFlushFunction = inngest.createFunction(
         result.nextQuestion.trim().length > 0
       ) {
         // Есть ответ кандидату, но shouldContinue=false
-        console.log("💬 Sending response without continuing", {
-          conversationId,
-          reason: result.reason,
-          source: conversationSource,
-        });
-
         await inngest.send({
           name: sendQuestionEvent,
           data: {
@@ -247,19 +179,8 @@ export const bufferFlushFunction = inngest.createFunction(
         // Проверяем на простое подтверждение
         const isSimpleAcknowledgment = result.isSimpleAcknowledgment === true;
 
-        if (isSimpleAcknowledgment) {
-          console.log("⏸️ Simple acknowledgment, not completing interview", {
-            conversationId,
-            reason: result.reason,
-          });
-        } else {
+        if (!isSimpleAcknowledgment) {
           // Завершаем интервью
-          console.log("🏁 Completing interview", {
-            conversationId,
-            reason: result.reason,
-            source: conversationSource,
-          });
-
           await inngest.send({
             name: completeEvent,
             data: {
@@ -287,21 +208,7 @@ export const bufferFlushFunction = inngest.createFunction(
         interviewStep,
       });
 
-      console.log("🧹 Buffer cleared", {
-        userId,
-        conversationId,
-        interviewStep,
-      });
-
       return { cleared: true };
-    });
-
-    console.log("✅ Buffer flush completed", {
-      userId,
-      conversationId,
-      interviewStep,
-      flushId,
-      messageCount: messages.length,
     });
 
     return {

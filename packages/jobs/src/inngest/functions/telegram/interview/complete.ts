@@ -30,23 +30,10 @@ export const completeInterviewFunction = inngest.createFunction(
   },
   { event: "telegram/interview.complete" },
   async ({ event, step }) => {
-    const {
-      conversationId,
-      transcription,
-      reason,
-      questionNumber,
-      responseId,
-    } = event.data;
-
-    console.log("🏁 Интервью завершено", {
-      conversationId,
-      totalQuestions: questionNumber,
-      reason,
-    });
+    const { conversationId, transcription, questionNumber, responseId } =
+      event.data;
 
     await step.run("save-last-qa", async () => {
-      console.log("💾 Сохранение последнего вопроса и ответа");
-
       const lastBotMessages = await db
         .select()
         .from(conversationMessage)
@@ -66,10 +53,6 @@ export const completeInterviewFunction = inngest.createFunction(
 
     if (responseId) {
       const scoringResult = await step.run("create-scoring", async () => {
-        console.log("📊 Создание скоринга интервью", {
-          responseId,
-        });
-
         const updatedContext = await getInterviewContext(conversationId);
 
         if (!updatedContext) {
@@ -77,11 +60,6 @@ export const completeInterviewFunction = inngest.createFunction(
         }
 
         const scoring = await createInterviewScoring(updatedContext);
-
-        console.log("✅ Скоринг создан", {
-          score: scoring.score,
-          detailedScore: scoring.detailedScore,
-        });
 
         await db
           .insert(interviewScoring)
@@ -101,18 +79,10 @@ export const completeInterviewFunction = inngest.createFunction(
             },
           });
 
-        console.log("✅ Скоринг интервью сохранен в БД");
-
         return scoring;
       });
 
       await step.run("finalize-response-status", async () => {
-        console.log("🔄 Финализация статуса response", {
-          responseId,
-          score: scoringResult.score,
-          detailedScore: scoringResult.detailedScore,
-        });
-
         const hrSelectionStatus =
           scoringResult.detailedScore >= 70 ? "RECOMMENDED" : "NOT_RECOMMENDED";
 
@@ -123,12 +93,6 @@ export const completeInterviewFunction = inngest.createFunction(
             hrSelectionStatus,
           })
           .where(eq(vacancyResponse.id, responseId));
-
-        console.log("✅ Статус обновлен", {
-          status: "COMPLETED",
-          hrSelectionStatus,
-          detailedScore: scoringResult.detailedScore,
-        });
       });
 
       // Отправляем уведомление о завершении интервью
@@ -141,7 +105,6 @@ export const completeInterviewFunction = inngest.createFunction(
         });
 
         if (!response?.vacancy?.workspaceId) {
-          console.warn("⚠️ Не удалось получить workspaceId для уведомления");
           return;
         }
 
@@ -176,17 +139,9 @@ export const completeInterviewFunction = inngest.createFunction(
             },
           });
         }
-
-        console.log("✅ Уведомления отправлены", {
-          responseId,
-          detailedScore: scoringResult.detailedScore,
-          isHighScore: scoringResult.detailedScore >= 85,
-        });
       });
 
       await step.run("extract-salary-expectations", async () => {
-        console.log("💰 Извлечение зарплатных ожиданий");
-
         const conv = await db.query.conversation.findFirst({
           where: eq(conversation.id, conversationId),
           with: {
@@ -197,7 +152,6 @@ export const completeInterviewFunction = inngest.createFunction(
         });
 
         if (!conv?.messages) {
-          console.log("⚠️ История диалога не найдена");
           return;
         }
 
@@ -254,12 +208,6 @@ export const completeInterviewFunction = inngest.createFunction(
             oldValue: current?.salaryExpectations,
             newValue: trimmedSalary,
           });
-
-          console.log("✅ Зарплатные ожидания сохранены", {
-            salaryExpectations: trimmedSalary,
-          });
-        } else {
-          console.log("ℹ️ Зарплатные ожидания не упоминались");
         }
       });
     }
@@ -284,11 +232,6 @@ export const completeInterviewFunction = inngest.createFunction(
       if (!response?.chatId) {
         throw new Error("ChatId не найден в response");
       }
-
-      console.log("📱 Получен chatId для финального сообщения", {
-        conversationId,
-        chatId: response.chatId,
-      });
 
       return response.chatId;
     });
@@ -395,8 +338,6 @@ export const completeInterviewFunction = inngest.createFunction(
           content: finalMessage.trim(),
         },
       });
-
-      console.log("✅ Финальное сообщение отправлено");
     });
 
     return {

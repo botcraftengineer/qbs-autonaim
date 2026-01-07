@@ -18,28 +18,10 @@ export const typingActivityFunction = inngest.createFunction(
   },
   { event: "interview/typing.activity" },
   async ({ event, step }) => {
-    const { userId, conversationId, interviewStep, activityType, timestamp } =
-      event.data;
-
-    console.log("⌨️ Typing activity detected", {
-      userId,
-      conversationId,
-      interviewStep,
-      activityType,
-      timestamp,
-    });
+    const { activityType, timestamp } = event.data;
 
     // Логирование активности
     await step.run("log-activity", async () => {
-      console.log("📝 Activity logged", {
-        userId,
-        conversationId,
-        interviewStep,
-        activityType,
-        timestamp,
-        debounceTimeout: env.INTERVIEW_TYPING_DEBOUNCE_TIMEOUT,
-      });
-
       return {
         logged: true,
         activityType,

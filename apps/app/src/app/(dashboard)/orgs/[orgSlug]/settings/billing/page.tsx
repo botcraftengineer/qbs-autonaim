@@ -70,7 +70,7 @@ const plans = [
 export default async function OrganizationBillingPage() {
   return (
     <>
-      <SiteHeader title="Тарифы и биллинг" />
+      <SiteHeader />
       <div className="flex flex-col gap-8 p-6">
         <div className="flex flex-col gap-2">
           <h1 className="text-2xl font-semibold">Тарифы и биллинг</h1>
