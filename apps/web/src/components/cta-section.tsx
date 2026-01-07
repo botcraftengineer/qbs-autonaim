@@ -1,4 +1,5 @@
 import { ArrowRight, Star, Sparkles, Shield, Award } from "lucide-react"
+import { env } from "@/env"
 
 export function CTASection() {
   return (
@@ -40,14 +41,14 @@ export function CTASection() {
         {/* Buttons */}
         <div className="flex flex-col items-center justify-center gap-3 sm:flex-row mb-8">
           <a
-            href="/#pricing"
+            href={`${env.NEXT_PUBLIC_APP_URL}`}
             className="flex h-11 items-center justify-center rounded-lg border border-neutral-200 bg-white px-6 text-center text-sm font-medium text-neutral-900 transition-all hover:ring-2 hover:ring-white/20"
           >
             Начать бесплатно
             <ArrowRight className="ml-2 h-4 w-4" />
           </a>
           <a
-            href="/contact"
+            href={`${env.NEXT_PUBLIC_APP_URL}`}
             className="flex h-11 items-center justify-center rounded-lg border border-white/20 bg-white/10 px-6 text-center text-sm font-medium text-white backdrop-blur-sm transition-all hover:bg-white/20 hover:ring-2 hover:ring-white/10"
           >
             Получить демо

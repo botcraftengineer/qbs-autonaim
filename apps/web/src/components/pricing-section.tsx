@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Check, Sparkles } from "lucide-react"
+import { env } from "@/env"
 
 export function PricingSection() {
   const [isAnnual, setIsAnnual] = useState(false)
@@ -17,6 +18,7 @@ export function PricingSection() {
       description: "Для небольших команд",
       features: ["1 проект", "3 активные вакансии", "100 откликов/месяц", "AI-скрининг резюме", "Базовая аналитика"],
       cta: "Начать бесплатно",
+      href: `${env.NEXT_PUBLIC_APP_URL}`,
       popular: false,
     },
     {
@@ -33,6 +35,7 @@ export function PricingSection() {
         "Приоритетная поддержка",
       ],
       cta: "Попробовать 14 дней",
+      href: `${env.NEXT_PUBLIC_APP_URL}`,
       popular: true,
     },
     {
@@ -49,6 +52,7 @@ export function PricingSection() {
         "Персональный менеджер",
       ],
       cta: "Связаться с нами",
+      href: `${env.NEXT_PUBLIC_APP_URL}/contact?plan=enterprise`,
       popular: false,
     },
   ]
@@ -132,8 +136,14 @@ export function PricingSection() {
                 </ul>
               </CardContent>
               <CardFooter className="pt-0">
-                <Button className="w-full" variant={plan.popular ? "default" : "outline"}>
-                  {plan.cta}
+                <Button 
+                  className="w-full" 
+                  variant={plan.popular ? "default" : "outline"}
+                  asChild
+                >
+                  <a href={plan.href}>
+                    {plan.cta}
+                  </a>
                 </Button>
               </CardFooter>
             </Card>

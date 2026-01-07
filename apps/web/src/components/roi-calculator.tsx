@@ -4,6 +4,7 @@ import { useState, useMemo } from "react"
 import { Calculator, TrendingUp, Clock, Users, Sparkles, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
+import { env } from "@/env"
 
 export function ROICalculator() {
   const [vacancies, setVacancies] = useState(10)
@@ -211,10 +212,13 @@ export function ROICalculator() {
               {/* CTA */}
               <Button
                 size="lg"
+                asChild
                 className="w-full h-12 bg-foreground text-background hover:bg-neutral-800 rounded-xl group"
               >
-                Начать экономить
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                <a href={`${env.NEXT_PUBLIC_APP_URL}`}>
+                  Начать экономить
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </a>
               </Button>
             </div>
           </div>

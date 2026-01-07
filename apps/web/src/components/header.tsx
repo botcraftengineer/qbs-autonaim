@@ -20,6 +20,7 @@ import {
   Phone,
   Brain,
 } from "lucide-react"
+import { env } from "@/env"
 
 type DropdownType = "product" | "resources" | "company" | null
 
@@ -434,14 +435,24 @@ export function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
-          <Button variant="ghost" size="sm" className="text-sm hover:bg-muted hover:text-foreground h-11">
-            Войти
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            asChild
+            className="text-sm hover:bg-muted hover:text-foreground h-11"
+          >
+            <a href={`${env.NEXT_PUBLIC_APP_URL}`}>
+              Войти
+            </a>
           </Button>
           <Button
             size="sm"
+            asChild
             className="bg-foreground text-background hover:bg-neutral-800 transition-all duration-200 h-11"
           >
-            Начать бесплатно
+            <a href={`${env.NEXT_PUBLIC_APP_URL}`}>
+              Начать бесплатно
+            </a>
           </Button>
         </div>
 
@@ -664,12 +675,20 @@ export function Header() {
                 <div className="flex flex-col gap-3 pt-4 border-t border-border">
                   <Button
                     variant="ghost"
+                    asChild
                     className="w-full justify-center hover:bg-muted/70 hover:text-foreground h-11"
                   >
-                    Войти
+                    <a href={`${env.NEXT_PUBLIC_APP_URL}`}>
+                      Войти
+                    </a>
                   </Button>
-                  <Button className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200 h-11">
-                    Начать бесплатно
+                  <Button 
+                    asChild
+                    className="w-full bg-foreground text-background hover:bg-neutral-800 transition-all duration-200 h-11"
+                  >
+                    <a href={`${env.NEXT_PUBLIC_APP_URL}`}>
+                      Начать бесплатно
+                    </a>
                   </Button>
                 </div>
               </nav>

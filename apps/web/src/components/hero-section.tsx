@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sparkles, ArrowRight, User, CheckCircle2, XCircle, Brain } from "lucide-react"
 import { useState, useEffect } from "react"
+import { env } from "@/env"
 
 // Candidate flow visualization
 interface Candidate {
@@ -32,6 +33,8 @@ function CandidateFlowVisualization() {
   useEffect(() => {
     const interval = setInterval(() => {
       const randomCandidate = candidateNames[Math.floor(Math.random() * candidateNames.length)]
+      if (!randomCandidate) return
+      
       const score = Math.floor(Math.random() * 40) + 60 // 60-100
       const approved = score >= 75
 
@@ -337,10 +340,13 @@ export function HeroSection() {
             >
               <Button
                 size="lg"
+                asChild
                 className="min-w-[200px] h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all group"
               >
-                Начать бесплатно
-                <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                <a href={`${env.NEXT_PUBLIC_APP_URL}`}>
+                  Начать бесплатно
+                  <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                </a>
               </Button>
               <Button
                 size="lg"

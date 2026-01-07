@@ -2,6 +2,7 @@
 
 import { Link2, Brain, MessageCircle, CheckCircle, ArrowRight, Sparkles, Clock, Shield, Zap } from "lucide-react"
 import { motion } from "framer-motion"
+import { env } from "@/env"
 
 export function HowItWorks() {
   const steps = [
@@ -179,7 +180,7 @@ export function HowItWorks() {
         {/* CTA */}
         <div className="text-center mt-12">
           <a
-            href="#pricing"
+            href={`${env.NEXT_PUBLIC_APP_URL}`}
             className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors group"
           >
             Начать бесплатно
