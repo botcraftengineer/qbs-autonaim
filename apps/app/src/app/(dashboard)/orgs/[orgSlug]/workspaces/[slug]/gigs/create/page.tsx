@@ -97,6 +97,10 @@ export default function CreateGigPage({ params }: PageProps) {
     string | null
   >(null);
 
+  const handleAssistantMessageConsumed = React.useCallback(() => {
+    setPendingAssistantMessage(null);
+  }, []);
+
   React.useEffect(() => {
     return () => {
       isMountedRef.current = false;
@@ -482,7 +486,7 @@ export default function CreateGigPage({ params }: PageProps) {
           onChatMessage={handleChatMessage}
           quickReplies={quickReplies}
           pendingAssistantMessage={pendingAssistantMessage}
-          onAssistantMessageConsumed={() => setPendingAssistantMessage(null)}
+          onAssistantMessageConsumed={handleAssistantMessageConsumed}
         />
 
         <div className="space-y-6">
