@@ -50,6 +50,7 @@ export const update = protectedProcedure
       customBotInstructions?: string | null;
       customScreeningPrompt?: string | null;
       customInterviewQuestions?: string | null;
+      customOrganizationalQuestions?: string | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -63,6 +64,10 @@ export const update = protectedProcedure
     }
     if (input.settings.customInterviewQuestions !== undefined) {
       patch.customInterviewQuestions = input.settings.customInterviewQuestions;
+    }
+    if (input.settings.customOrganizationalQuestions !== undefined) {
+      patch.customOrganizationalQuestions =
+        input.settings.customOrganizationalQuestions;
     }
 
     // Handle interview media files through join table

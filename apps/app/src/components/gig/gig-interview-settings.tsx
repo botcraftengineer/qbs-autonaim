@@ -31,6 +31,8 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
   const [customBotInstructions, setCustomBotInstructions] = useState("");
   const [customScreeningPrompt, setCustomScreeningPrompt] = useState("");
   const [customInterviewQuestions, setCustomInterviewQuestions] = useState("");
+  const [customOrganizationalQuestions, setCustomOrganizationalQuestions] =
+    useState("");
   const [interviewMediaFileIds, setInterviewMediaFileIds] = useState<string[]>(
     [],
   );
@@ -56,6 +58,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
       setCustomBotInstructions(gig.customBotInstructions ?? "");
       setCustomScreeningPrompt(gig.customScreeningPrompt ?? "");
       setCustomInterviewQuestions(gig.customInterviewQuestions ?? "");
+      setCustomOrganizationalQuestions(gig.customOrganizationalQuestions ?? "");
       setHasChanges(false);
     }
   }, [gig]);
@@ -100,6 +103,8 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         customBotInstructions: customBotInstructions.trim() || null,
         customScreeningPrompt: customScreeningPrompt.trim() || null,
         customInterviewQuestions: customInterviewQuestions.trim() || null,
+        customOrganizationalQuestions:
+          customOrganizationalQuestions.trim() || null,
         interviewMediaFileIds:
           interviewMediaFileIds.length > 0 ? interviewMediaFileIds : null,
       } as Parameters<typeof updateSettings>[0]["settings"],
@@ -111,6 +116,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     customBotInstructions,
     customScreeningPrompt,
     customInterviewQuestions,
+    customOrganizationalQuestions,
     interviewMediaFileIds,
   ]);
 
@@ -204,6 +210,31 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
             className="text-xs text-muted-foreground"
           >
             Укажите критерии для автоматической оценки откликов
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="customOrganizationalQuestions">
+            Организационные вопросы
+          </Label>
+          <Textarea
+            id="customOrganizationalQuestions"
+            name="customOrganizationalQuestions"
+            value={customOrganizationalQuestions}
+            onChange={(e) =>
+              handleChange(setCustomOrganizationalQuestions, e.target.value)
+            }
+            placeholder="Вопросы о доступности, сроках, условиях работы…"
+            rows={4}
+            className="resize-y"
+            aria-describedby="customOrganizationalQuestions-hint"
+          />
+          <p
+            id="customOrganizationalQuestions-hint"
+            className="text-xs text-muted-foreground"
+          >
+            Например: «Когда готовы приступить?», «Какой формат работы
+            предпочитаете?»
           </p>
         </div>
 
