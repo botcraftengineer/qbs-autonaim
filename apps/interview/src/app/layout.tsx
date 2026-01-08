@@ -6,11 +6,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 import "~/app/styles.css";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(
-    env.VERCEL_ENV === "production"
-      ? "https://interview.qbs-autonaim.ru"
-      : "http://localhost:3001",
-  ),
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: "AI Интервью - QBS Автонайм",
   description:
     "Пройдите AI-интервью для отбора на вакансию или задание. Быстро, удобно, автоматически.",

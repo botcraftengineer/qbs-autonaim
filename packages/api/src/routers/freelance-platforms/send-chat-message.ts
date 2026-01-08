@@ -7,6 +7,7 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
+import { requireConversationAccess } from "../../utils/interview-token-validator";
 
 const sendChatMessageInputSchema = z.object({
   conversationId: z.uuid(),
@@ -37,6 +38,14 @@ export const sendChatMessage = publicProcedure
     );
 
     try {
+      // Проверяем доступ к conversation
+      await requireConversationAccess(
+        input.conversationId,
+        ctx.interviewToken,
+        ctx.session?.user?.id ?? null,
+        ctx.db,
+      );
+
       // Проверяем существование conversation
       const conv = await ctx.db.query.conversation.findFirst({
         where: (conversation, { eq, and }) =>

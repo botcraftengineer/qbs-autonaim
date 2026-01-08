@@ -30,8 +30,7 @@ export class GigInterviewLinkGenerator {
   private readonly baseUrl: string;
 
   constructor() {
-    this.baseUrl =
-      process.env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
+    this.baseUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL ?? "";
   }
 
   /**

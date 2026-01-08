@@ -1,10 +1,10 @@
-import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
-import { gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
+import { gig, gigInterviewLink, workspace } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
+import { getInterviewUrl } from "../../utils/get-interview-url";
 
 export const getInterviewLink = protectedProcedure
   .input(
@@ -51,14 +51,18 @@ export const getInterviewLink = protectedProcedure
       return null;
     }
 
-    const baseUrl =
-      env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
+    const workspaceData = await ctx.db.query.workspace.findFirst({
+      where: eq(workspace.id, input.workspaceId),
+      columns: {
+        interviewDomain: true,
+      },
+    });
 
     return {
       id: link.id,
       gigId: link.gigId,
       token: link.token,
-      url: `${baseUrl}/${link.token}`,
+      url: getInterviewUrl(link.token, workspaceData?.interviewDomain),
       isActive: link.isActive,
       createdAt: link.createdAt,
     };

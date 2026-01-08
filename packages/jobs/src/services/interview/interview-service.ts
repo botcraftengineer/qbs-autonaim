@@ -220,6 +220,7 @@ export async function getInterviewContext(
         title: string;
         description: string | null;
         customBotInstructions: string | null;
+        customOrganizationalQuestions: string | null;
         customInterviewQuestions: string | null;
         workspace: {
           companySettings: {
@@ -242,6 +243,13 @@ export async function getInterviewContext(
       response: {
         with: {
           vacancy: {
+            columns: {
+              title: true,
+              description: true,
+              customBotInstructions: true,
+              customOrganizationalQuestions: true,
+              customInterviewQuestions: true,
+            },
             with: {
               workspace: {
                 with: {
@@ -256,6 +264,14 @@ export async function getInterviewContext(
       gigResponse: {
         with: {
           gig: {
+            columns: {
+              id: true,
+              title: true,
+              description: true,
+              customBotInstructions: true,
+              customOrganizationalQuestions: true,
+              customInterviewQuestions: true,
+            },
             with: {
               workspace: {
                 with: {

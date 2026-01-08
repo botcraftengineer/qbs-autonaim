@@ -1,14 +1,15 @@
-import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import {
   gigInterviewLink,
   gigInvitation,
   gigResponse,
+  workspace,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
+import { getInterviewUrl } from "../../../utils/get-interview-url";
 import { generateSlug } from "../../../utils/slug-generator";
 
 function generateInvitationText(
@@ -155,9 +156,17 @@ export const generateInvitation = protectedProcedure
       }
     }
 
-    const baseUrl =
-      env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
-    const interviewUrl = `${baseUrl}/${link.token}`;
+    const workspaceData = await ctx.db.query.workspace.findFirst({
+      where: eq(workspace.id, input.workspaceId),
+      columns: {
+        interviewDomain: true,
+      },
+    });
+
+    const interviewUrl = getInterviewUrl(
+      link.token,
+      workspaceData?.interviewDomain,
+    );
 
     // Генерируем текст приглашения
     const invitationText = generateInvitationText(

@@ -80,8 +80,7 @@ export function GigInvitationTemplate({
   }, [generateLink, gigId, workspace?.id]);
 
   const template = useMemo(() => {
-    const interviewBaseUrl =
-      process.env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
+    const interviewBaseUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL ?? "";
     const interviewUrl = interviewLink?.url || `${interviewBaseUrl}/[ссылка]`;
 
     if (aiTemplate?.text) {

@@ -1,4 +1,5 @@
 import { appRouter, createTRPCContext } from "@qbs-autonaim/api";
+import { auth } from "@qbs-autonaim/auth";
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import type { NextRequest } from "next/server";
 
@@ -10,7 +11,7 @@ const handler = (req: NextRequest) =>
     createContext: () =>
       createTRPCContext({
         headers: req.headers,
-        auth: null,
+        auth,
       }),
     onError:
       process.env.NODE_ENV === "development"
