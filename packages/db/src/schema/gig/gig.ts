@@ -13,7 +13,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { file } from "../file/file";
 import { workspace } from "../workspace/workspace";
 
 /**
@@ -94,6 +93,7 @@ export const gig = pgTable(
     customBotInstructions: text("custom_bot_instructions"),
     customScreeningPrompt: text("custom_screening_prompt"),
     customInterviewQuestions: text("custom_interview_questions"),
+    customOrganizationalQuestions: text("custom_organizational_questions"),
 
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -147,6 +147,7 @@ export const CreateGigSchema = createInsertSchema(gig, {
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),
   customInterviewQuestions: z.string().max(5000).optional(),
+  customOrganizationalQuestions: z.string().max(5000).optional(),
 }).omit({
   id: true,
   views: true,
@@ -160,6 +161,7 @@ export const UpdateGigSettingsSchema = z.object({
   customBotInstructions: z.string().max(5000).nullish(),
   customScreeningPrompt: z.string().max(5000).nullish(),
   customInterviewQuestions: z.string().max(5000).nullish(),
+  customOrganizationalQuestions: z.string().max(5000).nullish(),
 });
 
 export type Gig = typeof gig.$inferSelect;

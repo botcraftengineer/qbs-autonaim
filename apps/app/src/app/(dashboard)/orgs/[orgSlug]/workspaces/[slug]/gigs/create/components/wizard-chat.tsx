@@ -152,7 +152,8 @@ export function WizardChat({
 
   // Добавляем ответ ассистента когда приходит pendingAssistantMessage
   React.useEffect(() => {
-    if (pendingAssistantMessage && state.step === "chat") {
+    if (pendingAssistantMessage) {
+      // Добавляем сообщение независимо от текущего шага
       setConversationHistory((prev) => [
         ...prev,
         {
@@ -163,7 +164,7 @@ export function WizardChat({
       ]);
       onAssistantMessageConsumed?.();
     }
-  }, [pendingAssistantMessage, state.step, onAssistantMessageConsumed]);
+  }, [pendingAssistantMessage, onAssistantMessageConsumed]);
 
   // Автофокус на input в режиме чата
   React.useEffect(() => {

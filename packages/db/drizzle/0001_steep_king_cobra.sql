@@ -1,0 +1,1 @@
+ALTER TABLE "gigs" ADD COLUMN "custom_organizational_questions" text;

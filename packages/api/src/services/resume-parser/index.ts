@@ -6,8 +6,8 @@
  */
 
 import { AgentFactory, type ResumeStructurerOutput } from "@qbs-autonaim/ai";
-import { env } from "@qbs-autonaim/config";
 import type { ParsedResume, StructuredResume } from "@qbs-autonaim/db";
+import { DoclingProcessor } from "@qbs-autonaim/document-processor";
 import type { LanguageModel } from "ai";
 import type { Langfuse } from "langfuse";
 import {
@@ -18,11 +18,9 @@ import {
   type ResumeParserConfig,
   ResumeParserError,
 } from "./types";
-import { UnstructuredParser } from "./unstructured-parser";
 
 // Re-export types for convenience
 export * from "./types";
-export { UnstructuredParser } from "./unstructured-parser";
 
 /**
  * Поддерживаемые расширения файлов
@@ -40,7 +38,7 @@ const SUPPORTED_EXTENSIONS: Record<string, ResumeFileType> = {
  * Сервис для парсинга резюме
  */
 export class ResumeParserService {
-  private readonly parser: UnstructuredParser;
+  private readonly parser: DoclingProcessor;
   private readonly config: ResumeParserConfig;
   private readonly model: LanguageModel;
   private readonly langfuse?: Langfuse;
@@ -49,15 +47,12 @@ export class ResumeParserService {
     model: LanguageModel;
     langfuse?: Langfuse;
     config?: Partial<ResumeParserConfig>;
-    unstructuredApiUrl?: string;
-    unstructuredApiKey?: string;
+    doclingApiUrl?: string;
+    doclingApiKey?: string;
   }) {
-    const apiUrl = options.unstructuredApiUrl || env.UNSTRUCTURED_API_URL;
-    const apiKey = options.unstructuredApiKey || env.UNSTRUCTURED_API_KEY;
-
-    this.parser = new UnstructuredParser({
-      apiUrl,
-      apiKey,
+    this.parser = new DoclingProcessor({
+      apiUrl: options.doclingApiUrl,
+      apiKey: options.doclingApiKey,
       timeout: options.config?.aiTimeoutMs || DEFAULT_PARSER_CONFIG.aiTimeoutMs,
     });
 
@@ -178,7 +173,7 @@ export class ResumeParserService {
   }
 
   /**
-   * Извлекает текст из файла через Unstructured API
+   * Извлекает текст из файла через Docling
    */
   private async extractText(input: ResumeInput): Promise<string> {
     return this.parser.extractText(input.content, input.filename);

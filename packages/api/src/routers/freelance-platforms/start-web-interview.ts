@@ -8,6 +8,36 @@ import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
 
+/**
+ * Нормализует URL профиля для предотвращения дубликатов
+ * - Приводит к нижнему регистру
+ * - Удаляет trailing slash
+ * - Удаляет query параметры и фрагменты
+ * - Удаляет стандартные порты (80, 443)
+ */
+function normalizeProfileUrl(url: string): string {
+  try {
+    const urlObj = new URL(url);
+
+    // Приводим протокол и хост к нижнему регистру
+    let normalized = `${urlObj.protocol.toLowerCase()}//${urlObj.host.toLowerCase()}`;
+
+    // Удаляем стандартные порты
+    normalized = normalized.replace(/:80$/, "").replace(/:443$/, "");
+
+    // Добавляем pathname без trailing slash
+    const pathname = urlObj.pathname.replace(/\/$/, "") || "/";
+    normalized += pathname;
+
+    return normalized.toLowerCase();
+  } catch {
+    // Если URL невалидный, возвращаем нормализованную строку
+    return (
+      url.toLowerCase().replace(/\/$/, "").split("?")[0]?.split("#")[0] || url
+    );
+  }
+}
+
 const platformProfileUrlSchema = z
   .string()
   .min(1, "URL профиля обязателен")
@@ -140,12 +170,17 @@ async function handleVacancyInterview(
     });
   }
 
-  // Проверяем дубликаты
+  // Нормализуем URL для предотвращения дубликатов
+  const normalizedProfileUrl = normalizeProfileUrl(
+    freelancerInfo.platformProfileUrl,
+  );
+
+  // Проверяем дубликаты по нормализованному URL
   const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
     where: (response, { and, eq }) =>
       and(
         eq(response.vacancyId, vacancyLink.vacancyId),
-        eq(response.platformProfileUrl, freelancerInfo.platformProfileUrl),
+        eq(response.platformProfileUrl, normalizedProfileUrl),
       ),
   });
 
@@ -154,12 +189,12 @@ async function handleVacancyInterview(
       "Вы уже откликнулись на эту вакансию",
       {
         vacancyId: vacancyLink.vacancyId,
-        platformProfileUrl: freelancerInfo.platformProfileUrl,
+        platformProfileUrl: normalizedProfileUrl,
       },
     );
   }
 
-  // Создаём отклик
+  // Создаём отклик с нормализованным URL
   const [response] = await ctx.db
     .insert(vacancyResponse)
     .values({
@@ -167,7 +202,7 @@ async function handleVacancyInterview(
       resumeId: `freelance_web_${crypto.randomUUID()}`,
       resumeUrl: freelancerInfo.platformProfileUrl,
       candidateName: freelancerInfo.name,
-      platformProfileUrl: freelancerInfo.platformProfileUrl,
+      platformProfileUrl: normalizedProfileUrl,
       phone: freelancerInfo.phone,
       telegramUsername: freelancerInfo.telegram,
       contacts: {
@@ -288,15 +323,17 @@ async function handleGigInterview(
     });
   }
 
-  // Используем profileUrl как candidateId для обеспечения уникальности
-  const candidateId = freelancerInfo.platformProfileUrl;
+  // Нормализуем URL для использования как candidateId и предотвращения дубликатов
+  const normalizedCandidateId = normalizeProfileUrl(
+    freelancerInfo.platformProfileUrl,
+  );
 
-  // Проверяем дубликаты по candidateId + gigId (соответствует уникальному ограничению БД)
+  // Проверяем дубликаты по normalizedCandidateId + gigId (соответствует уникальному ограничению БД)
   const existingResponse = await ctx.db.query.gigResponse.findFirst({
     where: (response, { and, eq }) =>
       and(
         eq(response.gigId, gigLink.gigId),
-        eq(response.candidateId, candidateId),
+        eq(response.candidateId, normalizedCandidateId),
       ),
   });
 
@@ -305,17 +342,17 @@ async function handleGigInterview(
       "Вы уже откликнулись на это задание",
       {
         gigId: gigLink.gigId,
-        candidateId,
+        candidateId: normalizedCandidateId,
       },
     );
   }
 
-  // Создаём отклик для гига
+  // Создаём отклик для гига с нормализованным candidateId
   const [response] = await ctx.db
     .insert(gigResponse)
     .values({
       gigId: gigLink.gigId,
-      candidateId,
+      candidateId: normalizedCandidateId,
       candidateName: freelancerInfo.name,
       profileUrl: freelancerInfo.platformProfileUrl,
       phone: freelancerInfo.phone,

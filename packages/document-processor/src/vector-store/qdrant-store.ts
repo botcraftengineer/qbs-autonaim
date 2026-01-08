@@ -67,7 +67,7 @@ export class QdrantVectorStore implements VectorStore {
     metadata?: Record<string, unknown>,
   ): Promise<void> {
     try {
-      const points = result.chunks.map((item, idx) => ({
+      const points = result.chunks.map((item) => ({
         id: `${result.documentId}_${item.chunk.index}`,
         vector: item.embedding,
         payload: {
