@@ -37,7 +37,7 @@ const workspaceFormSchema = z.object({
     .regex(/^[a-z0-9-]+$/, "Только строчные буквы, цифры и дефисы"),
   logo: z.string().optional().nullable(),
   interviewDomain: z
-    .union([z.string().url("Некорректный URL домена"), z.literal("")])
+    .union([z.string().url("Некорректный URL домена"), z.literal(""), z.null()])
     .optional(),
 });
 
