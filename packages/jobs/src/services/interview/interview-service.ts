@@ -361,7 +361,7 @@ export async function getInterviewContext(
       ? gig?.customBotInstructions || null
       : vacancy?.customBotInstructions || null,
     customOrganizationalQuestions: isGig
-      ? null
+      ? gig?.customOrganizationalQuestions || null
       : vacancy?.customOrganizationalQuestions || null,
     customInterviewQuestions: isGig
       ? gig?.customInterviewQuestions || null

@@ -8,6 +8,7 @@ import { AlertCircle, ArrowDown, Loader2, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import Markdown from "react-markdown";
+import { toast } from "sonner";
 import { useScrollToBottom } from "~/hooks/use-scroll-to-bottom";
 import { useTRPC } from "~/trpc/react";
 import type { ChatStatus } from "~/types/ai-chat";
@@ -415,6 +416,9 @@ export function InterviewChat({
     async (content: string, audioFile?: File) => {
       // Если есть аудиофайл, загружаем его
       if (audioFile) {
+        let audioObjectUrl: string | null = null;
+        let messageObjectUrl: string | null = null;
+
         try {
           // Конвертируем файл в base64
           const reader = new FileReader();
@@ -426,13 +430,39 @@ export function InterviewChat({
 
           const base64Audio = await base64Promise;
 
-          // Получаем длительность аудио
-          const audio = new Audio(URL.createObjectURL(audioFile));
-          const duration = await new Promise<number>((resolve) => {
-            audio.addEventListener("loadedmetadata", () => {
+          // Получаем длительность аудио с таймаутом
+          audioObjectUrl = URL.createObjectURL(audioFile);
+          const audio = new Audio(audioObjectUrl);
+
+          const duration = await new Promise<number>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              cleanup();
+              reject(new Error("Audio metadata loading timeout"));
+            }, 10000);
+
+            const onLoadedMetadata = () => {
+              cleanup();
               resolve(audio.duration);
-            });
+            };
+
+            const onError = () => {
+              cleanup();
+              reject(new Error("Failed to load audio metadata"));
+            };
+
+            const cleanup = () => {
+              clearTimeout(timeout);
+              audio.removeEventListener("loadedmetadata", onLoadedMetadata);
+              audio.removeEventListener("error", onError);
+            };
+
+            audio.addEventListener("loadedmetadata", onLoadedMetadata);
+            audio.addEventListener("error", onError);
           });
+
+          // Освобождаем URL после получения метаданных
+          URL.revokeObjectURL(audioObjectUrl);
+          audioObjectUrl = null;
 
           // Отправляем на сервер
           const response = await fetch("/api/interview/upload-voice", {
@@ -448,8 +478,14 @@ export function InterviewChat({
           });
 
           if (!response.ok) {
-            throw new Error("Failed to upload voice message");
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(
+              errorData.message || "Failed to upload voice message",
+            );
           }
+
+          // Создаём URL для UI
+          messageObjectUrl = URL.createObjectURL(audioFile);
 
           // Добавляем сообщение в UI
           sendMessage({
@@ -457,7 +493,7 @@ export function InterviewChat({
             parts: [
               {
                 type: "file" as const,
-                url: URL.createObjectURL(audioFile),
+                url: messageObjectUrl,
                 mediaType: audioFile.type,
               },
               ...(content.trim()
@@ -465,8 +501,29 @@ export function InterviewChat({
                 : []),
             ],
           });
+
+          // Освобождаем URL после отправки (с небольшой задержкой для рендера)
+          setTimeout(() => {
+            if (messageObjectUrl) {
+              URL.revokeObjectURL(messageObjectUrl);
+            }
+          }, 1000);
         } catch (error) {
+          // Очищаем все созданные URLs при ошибке
+          if (audioObjectUrl) {
+            URL.revokeObjectURL(audioObjectUrl);
+          }
+          if (messageObjectUrl) {
+            URL.revokeObjectURL(messageObjectUrl);
+          }
+
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Не удалось отправить голосовое сообщение";
           console.error("Failed to send voice message:", error);
+
+          toast.error(errorMessage);
         }
         return;
       }
