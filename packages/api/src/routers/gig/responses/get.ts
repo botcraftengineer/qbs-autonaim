@@ -33,22 +33,6 @@ export const get = protectedProcedure
         interviewScoring: true,
       },
     });
-    if (!response) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Отклик не найден",
-      });
-    }
-
-    // Проверяем что gig принадлежит workspace
-    if (response.gig.workspaceId !== input.workspaceId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Нет доступа к этому отклику",
-      });
-    }
-
-    return response;
 
     if (!response) {
       throw new TRPCError({
@@ -65,5 +49,25 @@ export const get = protectedProcedure
       });
     }
 
-    return response;
+    // Получаем conversation с сообщениями
+    const conversationData = await ctx.db.query.conversation.findFirst({
+      where: (conversation, { eq, and }) =>
+        and(
+          eq(conversation.gigResponseId, input.responseId),
+          eq(conversation.source, "WEB"),
+        ),
+      with: {
+        messages: {
+          with: {
+            file: true,
+          },
+          orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+        },
+      },
+    });
+
+    return {
+      ...response,
+      conversation: conversationData,
+    };
   });
