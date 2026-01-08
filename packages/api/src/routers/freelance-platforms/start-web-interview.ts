@@ -32,8 +32,8 @@ function normalizeProfileUrl(url: string): string {
     return normalized;
   } catch {
     // Если URL невалидный, возвращаем нормализованную строку
-    const withoutQuery = url.split("?")[0];
-    const withoutFragment = withoutQuery.split("#")[0];
+    const withoutQuery = url.split("?")[0] ?? url;
+    const withoutFragment = withoutQuery.split("#")[0] ?? withoutQuery;
     return withoutFragment.replace(/\/$/, "") || url;
   }
 }
@@ -407,7 +407,7 @@ async function handleGigInterview(
     gig.workspace?.companySettings?.botName || "Ассистент по найму";
   const companyName = gig.workspace?.companySettings?.name || "нашей компании";
 
-  const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
+  const welcomeMessage = `Здравствуйте! 👋
 
 Меня зовут ${botName}, я помогаю ${companyName} в подборе исполнителей на задание "${gig.title}".
 

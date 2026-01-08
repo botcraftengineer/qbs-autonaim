@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
+import { interviewScoring } from "../interview/scoring";
 import { workspace } from "../workspace/workspace";
 import { gig } from "./gig";
 import { gigInterviewMedia } from "./gig-interview-media";
@@ -43,6 +44,10 @@ export const gigResponseRelations = relations(gigResponse, ({ one }) => ({
   screening: one(gigResponseScreening, {
     fields: [gigResponse.id],
     references: [gigResponseScreening.responseId],
+  }),
+  interviewScoring: one(interviewScoring, {
+    fields: [gigResponse.id],
+    references: [interviewScoring.gigResponseId],
   }),
   portfolioFile: one(file, {
     fields: [gigResponse.portfolioFileId],

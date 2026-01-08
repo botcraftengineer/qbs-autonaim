@@ -43,7 +43,7 @@ export function InterviewMediaUpload({
 
   const uploadMutation = useMutation(
     trpc.files.uploadInterviewMedia.mutationOptions({
-      onError: (error: Error) => {
+      onError: (error) => {
         toast.error(error.message);
       },
     }),

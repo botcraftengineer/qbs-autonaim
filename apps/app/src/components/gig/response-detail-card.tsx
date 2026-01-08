@@ -9,9 +9,6 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
   Progress,
   Separator,
   Tabs,
@@ -36,7 +33,6 @@ import {
   User,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
 
@@ -398,9 +394,9 @@ export function ResponseDetailCard({
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold">Ссылки на работы</h4>
                     <div className="space-y-2">
-                      {response.portfolioLinks.map((link, index) => (
+                      {response.portfolioLinks.map((link) => (
                         <Button
-                          key={`${link}-${index}`}
+                          key={link}
                           variant="outline"
                           size="sm"
                           className="w-full justify-start gap-2"
@@ -467,8 +463,8 @@ export function ResponseDetailCard({
                   <div className="space-y-3">
                     <h4 className="text-sm font-semibold">Навыки</h4>
                     <div className="flex flex-wrap gap-2">
-                      {response.skills.map((skill, index) => (
-                        <Badge key={`${skill}-${index}`} variant="secondary">
+                      {response.skills.map((skill) => (
+                        <Badge key={skill} variant="secondary">
                           {skill}
                         </Badge>
                       ))}
