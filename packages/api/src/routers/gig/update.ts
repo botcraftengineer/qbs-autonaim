@@ -44,6 +44,7 @@ export const update = protectedProcedure
       customBotInstructions?: string | null;
       customScreeningPrompt?: string | null;
       customInterviewQuestions?: string | null;
+      interviewMediaFileIds?: string[] | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -57,6 +58,9 @@ export const update = protectedProcedure
     }
     if (input.settings.customInterviewQuestions !== undefined) {
       patch.customInterviewQuestions = input.settings.customInterviewQuestions;
+    }
+    if (input.settings.interviewMediaFileIds !== undefined) {
+      patch.interviewMediaFileIds = input.settings.interviewMediaFileIds;
     }
 
     const result = await ctx.db

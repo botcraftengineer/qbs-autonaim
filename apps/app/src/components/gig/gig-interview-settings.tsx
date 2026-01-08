@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
+import { InterviewMediaUpload } from "./interview-media-upload";
 
 interface GigInterviewSettingsProps {
   gigId: string;
@@ -30,6 +31,9 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
   const [customBotInstructions, setCustomBotInstructions] = useState("");
   const [customScreeningPrompt, setCustomScreeningPrompt] = useState("");
   const [customInterviewQuestions, setCustomInterviewQuestions] = useState("");
+  const [interviewMediaFileIds, setInterviewMediaFileIds] = useState<string[]>(
+    [],
+  );
   const [hasChanges, setHasChanges] = useState(false);
 
   const { data: gig, isLoading } = useQuery({
@@ -45,6 +49,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
       setCustomBotInstructions(gig.customBotInstructions ?? "");
       setCustomScreeningPrompt(gig.customScreeningPrompt ?? "");
       setCustomInterviewQuestions(gig.customInterviewQuestions ?? "");
+      setInterviewMediaFileIds(gig.interviewMediaFileIds ?? []);
       setHasChanges(false);
     }
   }, [gig]);
@@ -77,6 +82,8 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         customBotInstructions: customBotInstructions.trim() || null,
         customScreeningPrompt: customScreeningPrompt.trim() || null,
         customInterviewQuestions: customInterviewQuestions.trim() || null,
+        interviewMediaFileIds:
+          interviewMediaFileIds.length > 0 ? interviewMediaFileIds : null,
       },
     });
   }, [
@@ -86,6 +93,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     customBotInstructions,
     customScreeningPrompt,
     customInterviewQuestions,
+    interviewMediaFileIds,
   ]);
 
   const handleChange = useCallback(
@@ -201,6 +209,25 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
           >
             Каждый вопрос с новой строки. Бот задаст их в ходе интервью
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label>Медиафайлы для интервью</Label>
+          <InterviewMediaUpload
+            files={
+              gig?.interviewMediaFileIds?.map((id) => ({
+                id,
+                fileName: "Файл",
+                mimeType: "application/octet-stream",
+              })) ?? []
+            }
+            onFilesChange={(fileIds) => {
+              setInterviewMediaFileIds(fileIds);
+              setHasChanges(true);
+            }}
+            workspaceId={workspace?.id ?? ""}
+            gigId={gigId}
+          />
         </div>
 
         <Button

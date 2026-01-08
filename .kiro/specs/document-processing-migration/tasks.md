@@ -25,6 +25,28 @@
     - Создать src/types.ts с интерфейсами FormatParser, EmbeddingProvider, VectorStore
     - Добавить типы для конфигурации и результатов
     - _Requirements: 6.1_
+  - [ ] 1.5 Миграция существующих данных эмбеддингов
+    - **Стратегия миграции**: Выбрать между re-indexing (полная переиндексация документов через новый pipeline) и import (прямой импорт векторов из Unstructured)
+      - **Основная стратегия**: Re-indexing через DocumentIndexer для обеспечения консистентности с новым форматом
+      - **Fallback стратегия**: Direct import с трансформацией векторов, если re-indexing занимает слишком много времени
+    - **Валидация эквивалентности**: Автоматизированные проверки векторов до/после миграции
+      - Сравнить векторы из `document_embeddings` (Drizzle schema в `@qbs-autonaim/db`) с источником Unstructured
+      - Использовать cosine similarity с порогом ≥0.95 для эквивалентности
+      - Проверить количество векторов (должно совпадать ±5%)
+      - Валидировать метаданные (document_id, chunk_index, text_content)
+    - **Rollback процедуры**: Определить механизмы отката
+      - Сохранить snapshot текущей таблицы `document_embeddings` перед миграцией
+      - Создать feature flag `USE_NEW_EMBEDDINGS` для переключения между старой/новой системой
+      - Документировать команды для восстановления из snapshot
+      - Подготовить скрипт для быстрого переключения обратно на Unstructured API
+    - **Параллельный запуск и критерии перехода**:
+      - Период параллельного запуска: 2 недели с мониторингом метрик
+      - Метрики для cutover: success rate ≥99%, latency p95 ≤ текущей системы +20%, zero data loss
+      - Критерии отката: success rate <95%, критические ошибки в production, latency degradation >50%
+    - Ссылки на схемы:
+      - Drizzle schema: `packages/db/src/schema/document_embeddings.ts`
+      - Unstructured data source: текущая реализация в `packages/api/src/services/resume-parser.service.ts`
+    - _Requirements: 3.1, 3.2, 6.2, 6.4, 7.1_
 
 
 - [x] 2. Реализация DoclingProcessor

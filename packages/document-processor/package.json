@@ -23,8 +23,8 @@
   "dependencies": {
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/validators": "workspace:*",
-    "llamaindex": "latest",
-    "pgvector": "latest",
+    "llamaindex": "^0.12.1",
+    "pgvector": "^0.2.1",
     "zod": "4.3.5"
   },
   "devDependencies": {
