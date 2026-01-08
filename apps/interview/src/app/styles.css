@@ -3,7 +3,6 @@
 @import "@qbs-autonaim/tailwind-config/theme";
 
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
-@source "../../../../packages/interview-ui/src/**/*.{ts,tsx}";
 
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant light (&:where(.light, .light *));
@@ -11,7 +10,7 @@
 
 @utility container {
   margin-inline: auto;
-  padding-inline: --theme(--spacing-8);
+  padding-inline: --theme(--spacing);
   @media (width >= --theme(--breakpoint-sm)) {
     max-width: none;
   }

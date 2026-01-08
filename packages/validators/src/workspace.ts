@@ -50,6 +50,9 @@ export const updateWorkspaceSchema = z.object({
       z.null(),
     ])
     .optional(),
+  interviewDomain: z
+    .union([z.string().url("Некорректный URL домена"), z.literal(""), z.null()])
+    .optional(),
 });
 
 export const addUserToWorkspaceSchema = z.object({

@@ -17,6 +17,7 @@
     "@ai-sdk/react": "^3.0.22",
     "@hookform/resolvers": "^5.2.2",
     "@qbs-autonaim/api": "workspace:*",
+    "@qbs-autonaim/auth": "workspace:*",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
     "@qbs-autonaim/ui": "workspace:*",

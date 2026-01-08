@@ -11,6 +11,7 @@ export default async function createNextConfig(): Promise<NextConfig> {
 
     transpilePackages: [
       "@qbs-autonaim/api",
+      "@qbs-autonaim/auth",
       "@qbs-autonaim/config",
       "@qbs-autonaim/db",
       "@qbs-autonaim/ui",
