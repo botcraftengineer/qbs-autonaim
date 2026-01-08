@@ -215,11 +215,11 @@ export async function getInterviewContext(
     gigResponse?: {
       resumeLanguage: string | null;
       gig: {
+        id: string;
         title: string;
         description: string | null;
         customBotInstructions: string | null;
         customInterviewQuestions: string | null;
-        interviewMediaFileIds: string[] | null;
         workspace: {
           companySettings: {
             botName: string | null;
@@ -303,26 +303,24 @@ export async function getInterviewContext(
     url: string;
   }> = [];
 
-  if (
-    isGig &&
-    gig?.interviewMediaFileIds &&
-    gig.interviewMediaFileIds.length > 0
-  ) {
+  if (isGig && gig) {
     const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
 
-    const mediaFileIds = gig.interviewMediaFileIds;
-    const files = await db.query.file.findMany({
-      where: (files, { inArray }) => inArray(files.id, mediaFileIds),
+    const mediaRecords = await db.query.gigInterviewMedia.findMany({
+      where: (media, { eq }) => eq(media.gigId, gig.id),
+      with: {
+        file: true,
+      },
     });
 
     interviewMediaFiles = await Promise.all(
-      files.map(async (f) => {
+      mediaRecords.map(async (record) => {
         try {
-          const url = await getDownloadUrl(f.key);
+          const url = await getDownloadUrl(record.file.key);
           return {
-            id: f.id,
-            fileName: f.fileName,
-            mimeType: f.mimeType,
+            id: record.file.id,
+            fileName: record.file.fileName,
+            mimeType: record.file.mimeType,
             url,
           };
         } catch {

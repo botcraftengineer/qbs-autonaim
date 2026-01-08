@@ -1,5 +1,9 @@
 import { and, eq } from "@qbs-autonaim/db";
-import { gig, UpdateGigSettingsSchema } from "@qbs-autonaim/db/schema";
+import {
+  gig,
+  gigInterviewMedia,
+  UpdateGigSettingsSchema,
+} from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -10,7 +14,9 @@ export const update = protectedProcedure
     z.object({
       gigId: z.uuid(),
       workspaceId: workspaceIdSchema,
-      settings: UpdateGigSettingsSchema,
+      settings: UpdateGigSettingsSchema.extend({
+        interviewMediaFileIds: z.array(z.string().uuid()).nullish(),
+      }),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -44,7 +50,6 @@ export const update = protectedProcedure
       customBotInstructions?: string | null;
       customScreeningPrompt?: string | null;
       customInterviewQuestions?: string | null;
-      interviewMediaFileIds?: string[] | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -59,8 +64,28 @@ export const update = protectedProcedure
     if (input.settings.customInterviewQuestions !== undefined) {
       patch.customInterviewQuestions = input.settings.customInterviewQuestions;
     }
+
+    // Handle interview media files through join table
     if (input.settings.interviewMediaFileIds !== undefined) {
-      patch.interviewMediaFileIds = input.settings.interviewMediaFileIds;
+      await ctx.db.transaction(async (tx) => {
+        // Delete existing associations
+        await tx
+          .delete(gigInterviewMedia)
+          .where(eq(gigInterviewMedia.gigId, input.gigId));
+
+        // Insert new associations
+        if (
+          input.settings.interviewMediaFileIds &&
+          input.settings.interviewMediaFileIds.length > 0
+        ) {
+          await tx.insert(gigInterviewMedia).values(
+            input.settings.interviewMediaFileIds.map((fileId) => ({
+              gigId: input.gigId,
+              fileId,
+            })),
+          );
+        }
+      });
     }
 
     const result = await ctx.db

@@ -6,7 +6,7 @@ Document processing package with support for parsing, embedding generation, and 
 
 - **Document Parsing**: Support for PDF, DOCX via Docling and Unstructured API
 - **Embedding Generation**: Integration with LlamaIndex for vector embeddings
-- **Vector Storage**: PostgreSQL with pgvector extension for efficient similarity search
+- **Vector Storage**: Qdrant for efficient similarity search
 - **Semantic Search**: Find relevant document chunks based on meaning
 
 ## Installation
@@ -33,8 +33,8 @@ const indexer = new DocumentIndexer({
     dimensions: 1536,
   },
   vectorStore: {
-    connectionString: process.env.DATABASE_URL,
-    tableName: "document_embeddings",
+    url: process.env.QDRANT_URL,
+    collectionName: "document_embeddings",
     dimensions: 1536,
   },
   useDocling: true,
@@ -61,7 +61,7 @@ const results = await indexer.search("Python developer with 5 years experience",
 import {
   DoclingProcessor,
   EmbeddingService,
-  PgVectorStore,
+  QdrantVectorStore,
 } from "@qbs-autonaim/document-processor";
 
 // Parse a document
@@ -79,11 +79,12 @@ const embeddingService = new EmbeddingService({
 const embeddings = await embeddingService.embed(text, "doc-123");
 
 // Store in vector database
-const vectorStore = new PgVectorStore({
-  connectionString: process.env.DATABASE_URL,
-  tableName: "document_embeddings",
+const vectorStore = new QdrantVectorStore({
+  url: process.env.QDRANT_URL,
+  collectionName: "document_embeddings",
   dimensions: 1536,
 });
+await vectorStore.initialize();
 await vectorStore.store(embeddings);
 ```
 
@@ -101,7 +102,7 @@ packages/document-processor/
 │   │   ├── text-chunker.ts           # Text chunking logic
 │   │   └── index.ts
 │   ├── vector-store/
-│   │   ├── pgvector-store.ts         # pgvector implementation
+│   │   ├── qdrant-store.ts           # Qdrant implementation
 │   │   └── index.ts
 │   ├── document-indexer.ts           # Main orchestrator
 │   ├── types.ts                      # TypeScript interfaces
@@ -114,8 +115,10 @@ packages/document-processor/
 ### Environment Variables
 
 ```env
-# Database connection
-DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+# Qdrant connection
+QDRANT_URL=http://localhost:6333
+QDRANT_API_KEY=  # Optional, for production
+QDRANT_COLLECTION_NAME=document_embeddings
 
 # OpenAI API (if using OpenAI embeddings)
 OPENAI_API_KEY=sk-...
@@ -132,17 +135,19 @@ Supported providers:
 - `anthropic`: Anthropic embeddings
 - `local`: Local embedding models
 
-## Database Setup
+## Qdrant Setup
 
-The package requires PostgreSQL with the pgvector extension:
+The package uses Qdrant for vector storage. Run Qdrant locally with Docker:
 
-```sql
--- Enable pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
-
--- The document_embeddings table is managed by Drizzle ORM
--- See @qbs-autonaim/db package for schema definition
+```bash
+docker run -p 6333:6333 -p 6334:6334 \
+  -v $(pwd)/qdrant_storage:/qdrant/storage \
+  qdrant/qdrant
 ```
+
+Or use docker-compose (already configured in the project).
+
+The collection is created automatically on first use.
 
 ## Development
 

@@ -1,5 +1,5 @@
 {
-  "id": "8b303df1-2673-48ac-b651-515aa21ec2b5",
+  "id": "a8962877-ebc8-4c92-b25a-84957e688bed",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -917,6 +917,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "gig_response_id": {
+          "name": "gig_response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
         "candidate_name": {
           "name": "candidate_name",
           "type": "varchar(500)",
@@ -997,6 +1003,21 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "conversation_gig_response_idx": {
+          "name": "conversation_gig_response_idx",
+          "columns": [
+            {
+              "expression": "gig_response_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
       "foreignKeys": {
@@ -1012,6 +1033,19 @@
           ],
           "onDelete": "cascade",
           "onUpdate": "no action"
+        },
+        "conversations_gig_response_id_gig_responses_id_fk": {
+          "name": "conversations_gig_response_id_gig_responses_id_fk",
+          "tableFrom": "conversations",
+          "tableTo": "gig_responses",
+          "columnsFrom": [
+            "gig_response_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -1021,6 +1055,13 @@
           "nullsNotDistinct": false,
           "columns": [
             "response_id"
+          ]
+        },
+        "conversations_gig_response_id_unique": {
+          "name": "conversations_gig_response_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "gig_response_id"
           ]
         }
       },
@@ -1581,6 +1622,321 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.gig_interview_media": {
+      "name": "gig_interview_media",
+      "schema": "",
+      "columns": {
+        "gig_id": {
+          "name": "gig_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "file_id": {
+          "name": "file_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "gig_interview_media_gig_idx": {
+          "name": "gig_interview_media_gig_idx",
+          "columns": [
+            {
+              "expression": "gig_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "gig_interview_media_file_idx": {
+          "name": "gig_interview_media_file_idx",
+          "columns": [
+            {
+              "expression": "file_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "gig_interview_media_gig_id_gigs_id_fk": {
+          "name": "gig_interview_media_gig_id_gigs_id_fk",
+          "tableFrom": "gig_interview_media",
+          "tableTo": "gigs",
+          "columnsFrom": [
+            "gig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "gig_interview_media_file_id_files_id_fk": {
+          "name": "gig_interview_media_file_id_files_id_fk",
+          "tableFrom": "gig_interview_media",
+          "tableTo": "files",
+          "columnsFrom": [
+            "file_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "gig_interview_media_gig_id_file_id_pk": {
+          "name": "gig_interview_media_gig_id_file_id_pk",
+          "columns": [
+            "gig_id",
+            "file_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.gig_interview_links": {
+      "name": "gig_interview_links",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v7()"
+        },
+        "gig_id": {
+          "name": "gig_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token": {
+          "name": "token",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_active": {
+          "name": "is_active",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "expires_at": {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "gig_interview_link_gig_idx": {
+          "name": "gig_interview_link_gig_idx",
+          "columns": [
+            {
+              "expression": "gig_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "gig_interview_link_token_idx": {
+          "name": "gig_interview_link_token_idx",
+          "columns": [
+            {
+              "expression": "token",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "gig_interview_link_active_idx": {
+          "name": "gig_interview_link_active_idx",
+          "columns": [
+            {
+              "expression": "gig_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "is_active",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"gig_interview_links\".\"is_active\" = true",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "gig_interview_links_gig_id_gigs_id_fk": {
+          "name": "gig_interview_links_gig_id_gigs_id_fk",
+          "tableFrom": "gig_interview_links",
+          "tableTo": "gigs",
+          "columnsFrom": [
+            "gig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "gig_interview_links_token_unique": {
+          "name": "gig_interview_links_token_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.gig_invitations": {
+      "name": "gig_invitations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "uuid_generate_v7()"
+        },
+        "response_id": {
+          "name": "response_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invitation_text": {
+          "name": "invitation_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "interview_url": {
+          "name": "interview_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "gig_invitation_response_idx": {
+          "name": "gig_invitation_response_idx",
+          "columns": [
+            {
+              "expression": "response_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "gig_invitation_created_at_idx": {
+          "name": "gig_invitation_created_at_idx",
+          "columns": [
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "gig_invitations_response_id_gig_responses_id_fk": {
+          "name": "gig_invitations_response_id_gig_responses_id_fk",
+          "tableFrom": "gig_invitations",
+          "tableTo": "gig_responses",
+          "columnsFrom": [
+            "response_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.gig_responses": {
       "name": "gig_responses",
       "schema": "",
@@ -1645,6 +2001,13 @@
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false
+        },
+        "resume_language": {
+          "name": "resume_language",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'ru'"
         },
         "proposed_price": {
           "name": "proposed_price",
@@ -4437,12 +4800,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "slug": {
-          "name": "slug",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
         "is_active": {
           "name": "is_active",
           "type": "boolean",
@@ -4485,21 +4842,6 @@
           "columns": [
             {
               "expression": "token",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "interview_link_slug_idx": {
-          "name": "interview_link_slug_idx",
-          "columns": [
-            {
-              "expression": "slug",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -4555,13 +4897,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "token"
-          ]
-        },
-        "interview_links_slug_unique": {
-          "name": "interview_links_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "slug"
           ]
         }
       },

@@ -23,6 +23,14 @@ interface GigInterviewSettingsProps {
   gigId: string;
 }
 
+interface InterviewMediaFile {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: string | null;
+  url?: string;
+}
+
 export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -44,15 +52,29 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     enabled: !!workspace?.id,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: interviewMediaFiles = [] } = useQuery({
+    ...(trpc as any).files.getInterviewMedia.queryOptions({
+      gigId,
+      workspaceId: workspace?.id ?? "",
+    }),
+    enabled: !!workspace?.id,
+  }) as { data: InterviewMediaFile[] };
+
   useEffect(() => {
     if (gig) {
       setCustomBotInstructions(gig.customBotInstructions ?? "");
       setCustomScreeningPrompt(gig.customScreeningPrompt ?? "");
       setCustomInterviewQuestions(gig.customInterviewQuestions ?? "");
-      setInterviewMediaFileIds(gig.interviewMediaFileIds ?? []);
       setHasChanges(false);
     }
   }, [gig]);
+
+  useEffect(() => {
+    if (interviewMediaFiles.length > 0) {
+      setInterviewMediaFileIds(interviewMediaFiles.map((f) => f.id));
+    }
+  }, [interviewMediaFiles]);
 
   const { mutate: updateSettings, isPending } = useMutation({
     ...trpc.gig.update.mutationOptions({
@@ -60,6 +82,13 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.get.queryKey({
             id: gigId,
+            workspaceId: workspace?.id ?? "",
+          }),
+        });
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        queryClient.invalidateQueries({
+          queryKey: (trpc as any).files.getInterviewMedia.queryKey({
+            gigId,
             workspaceId: workspace?.id ?? "",
           }),
         });
@@ -84,7 +113,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         customInterviewQuestions: customInterviewQuestions.trim() || null,
         interviewMediaFileIds:
           interviewMediaFileIds.length > 0 ? interviewMediaFileIds : null,
-      },
+      } as Parameters<typeof updateSettings>[0]["settings"],
     });
   }, [
     updateSettings,
@@ -214,13 +243,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         <div className="space-y-2">
           <Label>Медиафайлы для интервью</Label>
           <InterviewMediaUpload
-            files={
-              gig?.interviewMediaFileIds?.map((id) => ({
-                id,
-                fileName: "Файл",
-                mimeType: "application/octet-stream",
-              })) ?? []
-            }
+            files={interviewMediaFiles}
             onFilesChange={(fileIds) => {
               setInterviewMediaFileIds(fileIds);
               setHasChanges(true);

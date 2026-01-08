@@ -134,10 +134,12 @@ export interface EmbeddingProvider {
  * Configuration for vector store
  */
 export interface VectorStoreConfig {
-  /** Строка подключения к PostgreSQL */
-  connectionString: string;
-  /** Имя таблицы для эмбеддингов */
-  tableName: string;
+  /** URL Qdrant сервера */
+  url: string;
+  /** API ключ (опционально) */
+  apiKey?: string;
+  /** Имя коллекции */
+  collectionName: string;
   /** Размерность векторов */
   dimensions: number;
 }

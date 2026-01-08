@@ -126,6 +126,7 @@ CREATE TABLE "buffered_messages" (
 CREATE TABLE "conversations" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
 	"response_id" uuid,
+	"gig_response_id" uuid,
 	"candidate_name" varchar(500),
 	"username" varchar(100),
 	"status" "conversation_status" DEFAULT 'ACTIVE' NOT NULL,
@@ -133,7 +134,8 @@ CREATE TABLE "conversations" (
 	"metadata" jsonb,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "conversations_response_id_unique" UNIQUE("response_id")
+	CONSTRAINT "conversations_response_id_unique" UNIQUE("response_id"),
+	CONSTRAINT "conversations_gig_response_id_unique" UNIQUE("gig_response_id")
 );
 --> statement-breakpoint
 CREATE TABLE "conversation_messages" (
@@ -188,6 +190,31 @@ CREATE TABLE "gigs" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
+CREATE TABLE "gig_interview_media" (
+	"gig_id" uuid NOT NULL,
+	"file_id" uuid NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "gig_interview_media_gig_id_file_id_pk" PRIMARY KEY("gig_id","file_id")
+);
+--> statement-breakpoint
+CREATE TABLE "gig_interview_links" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"gig_id" uuid NOT NULL,
+	"token" varchar(100) NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"expires_at" timestamp with time zone,
+	CONSTRAINT "gig_interview_links_token_unique" UNIQUE("token")
+);
+--> statement-breakpoint
+CREATE TABLE "gig_invitations" (
+	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
+	"response_id" uuid NOT NULL,
+	"invitation_text" text NOT NULL,
+	"interview_url" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
 CREATE TABLE "gig_responses" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
 	"gig_id" uuid NOT NULL,
@@ -199,6 +226,7 @@ CREATE TABLE "gig_responses" (
 	"phone" varchar(50),
 	"email" varchar(255),
 	"contacts" jsonb,
+	"resume_language" varchar(10) DEFAULT 'ru',
 	"proposed_price" integer,
 	"proposed_currency" varchar(3) DEFAULT 'RUB',
 	"proposed_delivery_days" integer,
@@ -468,12 +496,10 @@ CREATE TABLE "interview_links" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
 	"vacancy_id" uuid NOT NULL,
 	"token" varchar(100) NOT NULL,
-	"slug" varchar(100) NOT NULL,
 	"is_active" boolean DEFAULT true NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"expires_at" timestamp with time zone,
-	CONSTRAINT "interview_links_token_unique" UNIQUE("token"),
-	CONSTRAINT "interview_links_slug_unique" UNIQUE("slug")
+	CONSTRAINT "interview_links_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
 CREATE TABLE "platform_config" (
@@ -614,9 +640,14 @@ ALTER TABLE "users" ADD CONSTRAINT "users_last_active_workspace_id_workspaces_id
 ALTER TABLE "company_settings" ADD CONSTRAINT "company_settings_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "buffered_messages" ADD CONSTRAINT "buffered_messages_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "conversations" ADD CONSTRAINT "conversations_response_id_vacancy_responses_id_fk" FOREIGN KEY ("response_id") REFERENCES "public"."vacancy_responses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "conversations" ADD CONSTRAINT "conversations_gig_response_id_gig_responses_id_fk" FOREIGN KEY ("gig_response_id") REFERENCES "public"."gig_responses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "conversation_messages" ADD CONSTRAINT "conversation_messages_conversation_id_conversations_id_fk" FOREIGN KEY ("conversation_id") REFERENCES "public"."conversations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "conversation_messages" ADD CONSTRAINT "conversation_messages_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gigs" ADD CONSTRAINT "gigs_workspace_id_workspaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."workspaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "gig_interview_media" ADD CONSTRAINT "gig_interview_media_gig_id_gigs_id_fk" FOREIGN KEY ("gig_id") REFERENCES "public"."gigs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "gig_interview_media" ADD CONSTRAINT "gig_interview_media_file_id_files_id_fk" FOREIGN KEY ("file_id") REFERENCES "public"."files"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "gig_interview_links" ADD CONSTRAINT "gig_interview_links_gig_id_gigs_id_fk" FOREIGN KEY ("gig_id") REFERENCES "public"."gigs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "gig_invitations" ADD CONSTRAINT "gig_invitations_response_id_gig_responses_id_fk" FOREIGN KEY ("response_id") REFERENCES "public"."gig_responses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gig_responses" ADD CONSTRAINT "gig_responses_gig_id_gigs_id_fk" FOREIGN KEY ("gig_id") REFERENCES "public"."gigs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gig_responses" ADD CONSTRAINT "gig_responses_portfolio_file_id_files_id_fk" FOREIGN KEY ("portfolio_file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "gig_responses" ADD CONSTRAINT "gig_responses_photo_file_id_files_id_fk" FOREIGN KEY ("photo_file_id") REFERENCES "public"."files"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
@@ -673,6 +704,7 @@ CREATE INDEX "buffered_message_id_idx" ON "buffered_messages" USING btree ("mess
 CREATE INDEX "buffered_message_timestamp_idx" ON "buffered_messages" USING btree ("timestamp");--> statement-breakpoint
 CREATE INDEX "conversation_status_idx" ON "conversations" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "conversation_active_idx" ON "conversations" USING btree ("status") WHERE "conversations"."status" = 'ACTIVE';--> statement-breakpoint
+CREATE INDEX "conversation_gig_response_idx" ON "conversations" USING btree ("gig_response_id");--> statement-breakpoint
 CREATE INDEX "message_conversation_idx" ON "conversation_messages" USING btree ("conversation_id");--> statement-breakpoint
 CREATE INDEX "message_sender_idx" ON "conversation_messages" USING btree ("sender");--> statement-breakpoint
 CREATE INDEX "message_channel_idx" ON "conversation_messages" USING btree ("channel");--> statement-breakpoint
@@ -684,6 +716,13 @@ CREATE INDEX "gig_type_idx" ON "gigs" USING btree ("type");--> statement-breakpo
 CREATE INDEX "gig_active_idx" ON "gigs" USING btree ("workspace_id","is_active") WHERE "gigs"."is_active" = true;--> statement-breakpoint
 CREATE INDEX "gig_source_external_idx" ON "gigs" USING btree ("source","external_id");--> statement-breakpoint
 CREATE INDEX "gig_deadline_idx" ON "gigs" USING btree ("deadline");--> statement-breakpoint
+CREATE INDEX "gig_interview_media_gig_idx" ON "gig_interview_media" USING btree ("gig_id");--> statement-breakpoint
+CREATE INDEX "gig_interview_media_file_idx" ON "gig_interview_media" USING btree ("file_id");--> statement-breakpoint
+CREATE INDEX "gig_interview_link_gig_idx" ON "gig_interview_links" USING btree ("gig_id");--> statement-breakpoint
+CREATE INDEX "gig_interview_link_token_idx" ON "gig_interview_links" USING btree ("token");--> statement-breakpoint
+CREATE INDEX "gig_interview_link_active_idx" ON "gig_interview_links" USING btree ("gig_id","is_active") WHERE "gig_interview_links"."is_active" = true;--> statement-breakpoint
+CREATE INDEX "gig_invitation_response_idx" ON "gig_invitations" USING btree ("response_id");--> statement-breakpoint
+CREATE INDEX "gig_invitation_created_at_idx" ON "gig_invitations" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "gig_response_gig_idx" ON "gig_responses" USING btree ("gig_id");--> statement-breakpoint
 CREATE INDEX "gig_response_status_idx" ON "gig_responses" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "gig_response_hr_status_idx" ON "gig_responses" USING btree ("hr_selection_status");--> statement-breakpoint
@@ -736,7 +775,6 @@ CREATE INDEX "invitation_response_idx" ON "freelance_invitations" USING btree ("
 CREATE INDEX "invitation_created_at_idx" ON "freelance_invitations" USING btree ("created_at");--> statement-breakpoint
 CREATE INDEX "interview_link_vacancy_idx" ON "interview_links" USING btree ("vacancy_id");--> statement-breakpoint
 CREATE INDEX "interview_link_token_idx" ON "interview_links" USING btree ("token");--> statement-breakpoint
-CREATE INDEX "interview_link_slug_idx" ON "interview_links" USING btree ("slug");--> statement-breakpoint
 CREATE INDEX "interview_link_active_idx" ON "interview_links" USING btree ("vacancy_id","is_active") WHERE "interview_links"."is_active" = true;--> statement-breakpoint
 CREATE INDEX "platform_config_code_idx" ON "platform_config" USING btree ("platform_code");--> statement-breakpoint
 CREATE INDEX "platform_config_active_idx" ON "platform_config" USING btree ("is_active") WHERE "platform_config"."is_active" = true;--> statement-breakpoint
