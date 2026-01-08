@@ -13,7 +13,6 @@ import { Copy, Info } from "lucide-react";
 
 interface DnsInstructionsDialogProps {
   domain: string;
-  token: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -29,6 +28,11 @@ export function DnsInstructionsDialog({
       description: `${label} скопировано в буфер обмена`,
     });
   };
+
+  const subdomain =
+    typeof domain === "string" && domain.includes(".")
+      ? domain.split(".")[0]
+      : (domain ?? "");
 
   const cnameValue = "cname.dub.co";
 
@@ -71,9 +75,7 @@ export function DnsInstructionsDialog({
                   <tbody>
                     <tr className="border-t">
                       <td className="px-4 py-3 font-mono">CNAME</td>
-                      <td className="px-4 py-3 font-mono">
-                        {domain.split(".")[0]}
-                      </td>
+                      <td className="px-4 py-3 font-mono">{subdomain}</td>
                       <td className="px-4 py-3 font-mono">{cnameValue}</td>
                       <td className="px-4 py-3 font-mono">86400</td>
                       <td className="px-4 py-3">
@@ -120,9 +122,7 @@ export function DnsInstructionsDialog({
                   <tbody>
                     <tr className="border-t">
                       <td className="px-4 py-3 font-mono">A</td>
-                      <td className="px-4 py-3 font-mono">
-                        {domain.split(".")[0]}
-                      </td>
+                      <td className="px-4 py-3 font-mono">{subdomain}</td>
                       <td className="px-4 py-3 font-mono">76.76.21.21</td>
                       <td className="px-4 py-3 font-mono">86400</td>
                       <td className="px-4 py-3">

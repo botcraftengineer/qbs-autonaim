@@ -219,7 +219,6 @@ export function DomainCard({ domain, workspaceId }: DomainCardProps) {
 
       <DnsInstructionsDialog
         domain={domain.domain}
-        token={domain.verificationToken || ""}
         open={showDnsDialog}
         onOpenChange={setShowDnsDialog}
       />

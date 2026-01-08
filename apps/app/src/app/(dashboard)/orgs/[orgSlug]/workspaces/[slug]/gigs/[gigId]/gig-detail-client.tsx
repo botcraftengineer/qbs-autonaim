@@ -242,27 +242,27 @@ export function GigDetailClient({
   }
 
   return (
-    <div className="container mx-auto max-w-6xl py-6">
+    <div className="container mx-auto max-w-6xl py-4 px-4 sm:py-6 sm:px-6">
       {/* Breadcrumb */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-action-manipulation min-h-[44px] sm:min-h-[24px]"
         >
           <ArrowLeft className="h-4 w-4" />
           Назад к заданиям
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Header Card */}
           <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2">
+            <CardHeader className="p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-2">
+                <div className="space-y-2 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <Badge variant="secondary">
                       {getGigTypeLabel(gig.type)}
                     </Badge>
@@ -270,11 +270,16 @@ export function GigDetailClient({
                       <Badge variant="outline">Неактивно</Badge>
                     )}
                   </div>
-                  <CardTitle className="text-2xl">{gig.title}</CardTitle>
-                  <CardDescription>
+                  <CardTitle className="text-xl sm:text-2xl break-words">
+                    {gig.title}
+                  </CardTitle>
+                  <CardDescription className="text-xs sm:text-sm">
                     Создано {formatDate(gig.createdAt)}
                     {gig.updatedAt && gig.updatedAt !== gig.createdAt && (
-                      <> • Обновлено {formatDate(gig.updatedAt)}</>
+                      <span className="hidden sm:inline">
+                        {" "}
+                        • Обновлено {formatDate(gig.updatedAt)}
+                      </span>
                     )}
                   </CardDescription>
                 </div>
@@ -285,6 +290,7 @@ export function GigDetailClient({
                       variant="ghost"
                       size="icon"
                       aria-label="Открыть меню"
+                      className="min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] touch-action-manipulation"
                     >
                       <MoreHorizontal className="h-4 w-4" />
                       <span className="sr-only">Открыть меню</span>
@@ -321,9 +327,11 @@ export function GigDetailClient({
             </CardHeader>
 
             {gig.description && (
-              <CardContent>
+              <CardContent className="p-4 sm:p-6">
                 <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap">{gig.description}</p>
+                  <p className="whitespace-pre-wrap break-words text-sm sm:text-base">
+                    {gig.description}
+                  </p>
                 </div>
               </CardContent>
             )}
@@ -332,14 +340,16 @@ export function GigDetailClient({
           {/* Requirements Card */}
           {gig.requirements && (
             <Card>
-              <CardHeader>
-                <CardTitle>Требования</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Требования</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6">
                 {gig.requirements.summary && (
                   <div>
-                    <h4 className="font-medium mb-2">Описание</h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    <h4 className="font-medium mb-2 text-sm sm:text-base">
+                      Описание
+                    </h4>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
                       {gig.requirements.summary}
                     </p>
                   </div>
@@ -348,12 +358,16 @@ export function GigDetailClient({
                 {gig.requirements.deliverables &&
                   gig.requirements.deliverables.length > 0 && (
                     <div>
-                      <h4 className="font-medium mb-2">Что нужно сделать</h4>
+                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                        Что нужно сделать
+                      </h4>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         {gig.requirements.deliverables.map((item: string) => (
                           <li key={item} className="flex items-start gap-2">
-                            <span className="text-primary mt-1">•</span>
-                            <span>{item}</span>
+                            <span className="text-primary mt-1 flex-shrink-0">
+                              •
+                            </span>
+                            <span className="break-words">{item}</span>
                           </li>
                         ))}
                       </ul>
@@ -363,11 +377,17 @@ export function GigDetailClient({
                 {gig.requirements.required_skills &&
                   gig.requirements.required_skills.length > 0 && (
                     <div>
-                      <h4 className="font-medium mb-2">Обязательные навыки</h4>
-                      <div className="flex flex-wrap gap-2">
+                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                        Обязательные навыки
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {gig.requirements.required_skills.map(
                           (skill: string) => (
-                            <Badge key={skill} variant="secondary">
+                            <Badge
+                              key={skill}
+                              variant="secondary"
+                              className="text-xs sm:text-sm"
+                            >
                               {skill}
                             </Badge>
                           ),
@@ -379,11 +399,17 @@ export function GigDetailClient({
                 {gig.requirements.nice_to_have_skills &&
                   gig.requirements.nice_to_have_skills.length > 0 && (
                     <div>
-                      <h4 className="font-medium mb-2">Желательные навыки</h4>
-                      <div className="flex flex-wrap gap-2">
+                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                        Желательные навыки
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {gig.requirements.nice_to_have_skills.map(
                           (skill: string) => (
-                            <Badge key={skill} variant="outline">
+                            <Badge
+                              key={skill}
+                              variant="outline"
+                              className="text-xs sm:text-sm"
+                            >
                               {skill}
                             </Badge>
                           ),
@@ -395,10 +421,16 @@ export function GigDetailClient({
                 {gig.requirements.tech_stack &&
                   gig.requirements.tech_stack.length > 0 && (
                     <div>
-                      <h4 className="font-medium mb-2">Технологии</h4>
-                      <div className="flex flex-wrap gap-2">
+                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                        Технологии
+                      </h4>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {gig.requirements.tech_stack.map((tech: string) => (
-                          <Badge key={tech} variant="secondary">
+                          <Badge
+                            key={tech}
+                            variant="secondary"
+                            className="text-xs sm:text-sm"
+                          >
                             {tech}
                           </Badge>
                         ))}
@@ -412,11 +444,17 @@ export function GigDetailClient({
           {/* External Link */}
           {gig.url && (
             <Card>
-              <CardHeader>
-                <CardTitle>Внешняя ссылка</CardTitle>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">
+                  Внешняя ссылка
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <Button variant="outline" asChild>
+              <CardContent className="p-4 sm:p-6">
+                <Button
+                  variant="outline"
+                  asChild
+                  className="w-full sm:w-auto min-h-[44px] touch-action-manipulation"
+                >
                   <a href={gig.url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Открыть на {gig.source}
@@ -434,13 +472,13 @@ export function GigDetailClient({
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           {/* Stats Card */}
           <Card>
-            <CardHeader>
-              <CardTitle>Статистика</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Статистика</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 sm:p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Eye className="h-4 w-4" />
@@ -471,16 +509,18 @@ export function GigDetailClient({
 
           {/* Project Details */}
           <Card>
-            <CardHeader>
-              <CardTitle>Детали проекта</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">
+                Детали проекта
+              </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-4 sm:p-6">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <DollarSign className="h-4 w-4" />
+                  <DollarSign className="h-4 w-4 flex-shrink-0" />
                   Бюджет
                 </div>
-                <p className="font-medium">
+                <p className="font-medium text-sm sm:text-base break-words">
                   {formatBudget(
                     gig.budgetMin,
                     gig.budgetMax,
@@ -492,20 +532,24 @@ export function GigDetailClient({
               {gig.estimatedDuration && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-4 w-4 flex-shrink-0" />
                     Длительность
                   </div>
-                  <p className="font-medium">{gig.estimatedDuration}</p>
+                  <p className="font-medium text-sm sm:text-base break-words">
+                    {gig.estimatedDuration}
+                  </p>
                 </div>
               )}
 
               {gig.deadline && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
+                    <Calendar className="h-4 w-4 flex-shrink-0" />
                     Дедлайн
                   </div>
-                  <p className="font-medium">{formatDate(gig.deadline)}</p>
+                  <p className="font-medium text-sm sm:text-base">
+                    {formatDate(gig.deadline)}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -513,11 +557,14 @@ export function GigDetailClient({
 
           {/* Actions */}
           <Card>
-            <CardHeader>
-              <CardTitle>Действия</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">Действия</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <Button asChild className="w-full">
+            <CardContent className="space-y-3 p-4 sm:p-6">
+              <Button
+                asChild
+                className="w-full min-h-[44px] touch-action-manipulation"
+              >
                 <Link
                   href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
                 >
@@ -526,7 +573,11 @@ export function GigDetailClient({
                 </Link>
               </Button>
 
-              <Button variant="outline" asChild className="w-full">
+              <Button
+                variant="outline"
+                asChild
+                className="w-full min-h-[44px] touch-action-manipulation"
+              >
                 <Link
                   href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
                 >
@@ -537,7 +588,7 @@ export function GigDetailClient({
 
               <Button
                 variant="outline"
-                className="w-full"
+                className="w-full min-h-[44px] touch-action-manipulation"
                 onClick={handleShare}
               >
                 <Share2 className="h-4 w-4 mr-2" />

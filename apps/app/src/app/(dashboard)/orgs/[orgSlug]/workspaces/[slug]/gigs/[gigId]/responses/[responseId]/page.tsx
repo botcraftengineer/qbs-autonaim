@@ -34,26 +34,26 @@ interface PageProps {
 
 function ResponseDetailSkeleton() {
   return (
-    <div className="container mx-auto max-w-5xl py-6 space-y-6">
+    <div className="container mx-auto max-w-5xl py-4 px-4 sm:py-6 sm:px-6 space-y-4 sm:space-y-6">
       <Skeleton className="h-4 w-32" />
 
       <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-4">
-            <Skeleton className="h-16 w-16 rounded-full" />
-            <div className="flex-1 space-y-3">
-              <Skeleton className="h-8 w-64" />
-              <Skeleton className="h-4 w-48" />
+        <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+          <div className="flex items-start gap-3 sm:gap-4">
+            <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full flex-shrink-0" />
+            <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
+              <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
+              <Skeleton className="h-4 w-36 sm:w-48" />
             </div>
-            <Skeleton className="h-6 w-24" />
+            <Skeleton className="h-5 sm:h-6 w-20 sm:w-24 flex-shrink-0" />
           </div>
         </CardContent>
       </Card>
 
       {[1, 2, 3].map((i) => (
         <Card key={i}>
-          <CardContent className="pt-6">
-            <Skeleton className="h-32 w-full" />
+          <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+            <Skeleton className="h-24 sm:h-32 w-full" />
           </CardContent>
         </Card>
       ))}
@@ -199,12 +199,12 @@ export default function GigResponseDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto max-w-5xl py-6">
+    <div className="container mx-auto max-w-5xl py-4 px-4 sm:py-6 sm:px-6">
       {/* Breadcrumb */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-action-manipulation min-h-[44px] sm:min-h-[24px]"
         >
           <ArrowLeft className="h-4 w-4" />
           Назад к откликам
@@ -225,26 +225,27 @@ export default function GigResponseDetailPage({ params }: PageProps) {
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
       >
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">
               {confirmDialog.action === "accept"
                 ? "Принять отклик?"
                 : "Отклонить отклик?"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm sm:text-base">
               {confirmDialog.action === "accept"
                 ? "Вы уверены, что хотите принять этот отклик? Кандидат будет уведомлен."
                 : "Вы уверены, что хотите отклонить этот отклик? Это действие нельзя отменить."}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={() =>
                 setConfirmDialog({ ...confirmDialog, open: false })
               }
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               Отмена
             </Button>
@@ -254,6 +255,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
               }
               onClick={handleConfirmAction}
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               {isProcessing && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -266,10 +268,12 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
       {/* Message Dialog */}
       <Dialog open={messageDialog} onOpenChange={setMessageDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Отправить сообщение</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">
+              Отправить сообщение
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-base break-words">
               Напишите сообщение кандидату{" "}
               {response.candidateName || response.candidateId}
             </DialogDescription>
@@ -280,20 +284,23 @@ export default function GigResponseDetailPage({ params }: PageProps) {
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               rows={6}
-              className="resize-none"
+              className="resize-none text-base sm:text-sm"
+              style={{ fontSize: "16px" }}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={() => setMessageDialog(false)}
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               Отмена
             </Button>
             <Button
               onClick={handleSendMessage}
               disabled={isProcessing || !messageText.trim()}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               {isProcessing && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

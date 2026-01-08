@@ -18,7 +18,12 @@ export function CustomDomainsSection({
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const trpc = useTRPC();
 
-  const { data: domains, isLoading } = useQuery(
+  const {
+    data: domains,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery(
     trpc.customDomain.list.queryOptions({
       workspaceId,
     }),
@@ -26,9 +31,31 @@ export function CustomDomainsSection({
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4" role="status" aria-live="polite">
+        <span className="sr-only">Загрузка кастомных доменов</span>
         <div className="h-8 w-48 animate-pulse rounded bg-muted" />
         <div className="h-32 animate-pulse rounded-lg bg-muted" />
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error("Ошибка загрузки доменов:", error);
+    return (
+      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="font-medium text-destructive">
+              Не удалось загрузить домены
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {error.message}
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            Повторить
+          </Button>
+        </div>
       </div>
     );
   }

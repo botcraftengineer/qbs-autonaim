@@ -49,34 +49,34 @@ interface PageProps {
 
 function ResponsesSkeleton() {
   return (
-    <div className="container mx-auto max-w-7xl py-6">
-      <div className="mb-6">
+    <div className="container mx-auto max-w-7xl py-4 px-4 sm:py-6 sm:px-6">
+      <div className="mb-4 sm:mb-6">
         <Skeleton className="h-4 w-32" />
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <Card>
-          <CardHeader>
-            <Skeleton className="h-8 w-48" />
+          <CardHeader className="p-4 sm:p-6">
+            <Skeleton className="h-6 sm:h-8 w-48" />
             <Skeleton className="h-4 w-64" />
           </CardHeader>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((id) => (
             <Card key={`skeleton-${id}`}>
-              <CardHeader>
-                <div className="flex items-start gap-3">
-                  <Skeleton className="h-12 w-12 rounded-full" />
-                  <div className="flex-1 space-y-2">
-                    <Skeleton className="h-5 w-40" />
-                    <Skeleton className="h-4 w-32" />
+              <CardHeader className="p-4 sm:p-6">
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2 min-w-0">
+                    <Skeleton className="h-4 sm:h-5 w-32 sm:w-40" />
+                    <Skeleton className="h-3 sm:h-4 w-24 sm:w-32" />
                   </div>
-                  <Skeleton className="h-6 w-20" />
+                  <Skeleton className="h-5 sm:h-6 w-16 sm:w-20 flex-shrink-0" />
                 </div>
               </CardHeader>
-              <CardContent>
-                <Skeleton className="h-24 w-full" />
+              <CardContent className="p-4 sm:p-6">
+                <Skeleton className="h-20 sm:h-24 w-full" />
               </CardContent>
             </Card>
           ))}
@@ -287,30 +287,35 @@ export default function GigResponsesPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto max-w-7xl py-6">
+    <div className="container mx-auto max-w-7xl py-4 px-4 sm:py-6 sm:px-6">
       {/* Breadcrumb */}
-      <div className="mb-6">
+      <div className="mb-4 sm:mb-6">
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-action-manipulation min-h-[44px] sm:min-h-[24px]"
         >
           <ArrowLeft className="h-4 w-4" />
           Назад к заданию
         </Link>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
         <Card>
-          <CardHeader>
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <CardTitle>Отклики на задание</CardTitle>
-                <CardDescription className="mt-1.5">
+          <CardHeader className="p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-3 sm:gap-4">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-lg sm:text-xl break-words">
+                  Отклики на задание
+                </CardTitle>
+                <CardDescription className="mt-1.5 text-xs sm:text-sm break-words">
                   {gig.title}
                 </CardDescription>
               </div>
-              <Badge variant="secondary" className="text-base px-3 py-1">
+              <Badge
+                variant="secondary"
+                className="text-sm sm:text-base px-2 py-0.5 sm:px-3 sm:py-1 flex-shrink-0"
+              >
                 {stats.total}
               </Badge>
             </div>
@@ -319,23 +324,24 @@ export default function GigResponsesPage({ params }: PageProps) {
 
         {/* Filters */}
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+          <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   <Input
                     placeholder="Поиск по имени кандидата…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 h-11 sm:h-10 text-base sm:text-sm"
+                    style={{ fontSize: "16px" }}
                   />
                 </div>
               </div>
 
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full sm:w-48">
-                  <Filter className="h-4 w-4 mr-2" />
+                <SelectTrigger className="w-full sm:w-48 h-11 sm:h-10 touch-action-manipulation">
+                  <Filter className="h-4 w-4 mr-2 flex-shrink-0" />
                   <SelectValue placeholder="Статус" />
                 </SelectTrigger>
                 <SelectContent>
@@ -354,25 +360,51 @@ export default function GigResponsesPage({ params }: PageProps) {
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">Все ({stats.total})</TabsTrigger>
-            <TabsTrigger value="new">Новые ({stats.new})</TabsTrigger>
-            <TabsTrigger value="evaluated">
-              Оценены ({stats.evaluated})
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1 p-1">
+            <TabsTrigger
+              value="all"
+              className="min-h-[44px] sm:min-h-[36px] text-xs sm:text-sm touch-action-manipulation"
+            >
+              <span className="hidden sm:inline">Все ({stats.total})</span>
+              <span className="sm:hidden">Все</span>
             </TabsTrigger>
-            <TabsTrigger value="recommended">
-              Рекомендованы ({stats.recommended})
+            <TabsTrigger
+              value="new"
+              className="min-h-[44px] sm:min-h-[36px] text-xs sm:text-sm touch-action-manipulation"
+            >
+              <span className="hidden sm:inline">Новые ({stats.new})</span>
+              <span className="sm:hidden">Новые</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="evaluated"
+              className="min-h-[44px] sm:min-h-[36px] text-xs sm:text-sm touch-action-manipulation"
+            >
+              <span className="hidden sm:inline">
+                Оценены ({stats.evaluated})
+              </span>
+              <span className="sm:hidden">Оценены</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="recommended"
+              className="min-h-[44px] sm:min-h-[36px] text-xs sm:text-sm touch-action-manipulation"
+            >
+              <span className="hidden sm:inline">
+                Рекомендованы ({stats.recommended})
+              </span>
+              <span className="sm:hidden">Рекоменд.</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-6">
+          <TabsContent value={activeTab} className="mt-4 sm:mt-6">
             {filteredResponses.length === 0 ? (
               <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center py-12">
-                    <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-medium mb-2">Нет откликов</h3>
-                    <p className="text-muted-foreground">
+                <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+                  <div className="text-center py-8 sm:py-12">
+                    <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground mx-auto mb-3 sm:mb-4 opacity-50" />
+                    <h3 className="text-base sm:text-lg font-medium mb-2">
+                      Нет откликов
+                    </h3>
+                    <p className="text-sm sm:text-base text-muted-foreground px-4">
                       {searchQuery || statusFilter !== "all"
                         ? "Попробуйте изменить фильтры поиска"
                         : "Пока что никто не откликнулся на это задание"}
@@ -381,7 +413,7 @@ export default function GigResponsesPage({ params }: PageProps) {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {filteredResponses.map((response) => (
                   <ResponseListCard
                     key={response.id}
@@ -405,16 +437,16 @@ export default function GigResponsesPage({ params }: PageProps) {
         open={confirmDialog.open}
         onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
       >
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">
               {confirmDialog.action === "accept"
                 ? "Принять отклик?"
                 : "Отклонить отклик?"}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm sm:text-base">
               {confirmDialog.candidateName && (
-                <span className="font-medium">
+                <span className="font-medium break-words">
                   {confirmDialog.candidateName}
                 </span>
               )}
@@ -423,13 +455,14 @@ export default function GigResponsesPage({ params }: PageProps) {
                 : " — вы уверены, что хотите отклонить этот отклик? Это действие нельзя отменить."}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={() =>
                 setConfirmDialog({ ...confirmDialog, open: false })
               }
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               Отмена
             </Button>
@@ -439,6 +472,7 @@ export default function GigResponsesPage({ params }: PageProps) {
               }
               onClick={handleConfirmAction}
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               {isProcessing && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -454,13 +488,15 @@ export default function GigResponsesPage({ params }: PageProps) {
         open={messageDialog.open}
         onOpenChange={(open) => setMessageDialog({ ...messageDialog, open })}
       >
-        <DialogContent>
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Отправить сообщение</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">
+              Отправить сообщение
+            </DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Напишите сообщение кандидату{" "}
               {messageDialog.candidateName && (
-                <span className="font-medium">
+                <span className="font-medium break-words">
                   {messageDialog.candidateName}
                 </span>
               )}
@@ -472,10 +508,11 @@ export default function GigResponsesPage({ params }: PageProps) {
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               rows={6}
-              className="resize-none"
+              className="resize-none text-base sm:text-sm"
+              style={{ fontSize: "16px" }}
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
             <Button
               variant="outline"
               onClick={() => {
@@ -483,12 +520,14 @@ export default function GigResponsesPage({ params }: PageProps) {
                 setMessageText("");
               }}
               disabled={isProcessing}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               Отмена
             </Button>
             <Button
               onClick={handleSendMessage}
               disabled={isProcessing || !messageText.trim()}
+              className="w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
             >
               {isProcessing && (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
