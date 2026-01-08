@@ -65,7 +65,9 @@ export default async function DashboardLayout({
           }}
         />
         <SidebarInset>{children}</SidebarInset>
-        <GettingStartedContainer />
+        <div className="hidden md:block">
+          <GettingStartedContainer />
+        </div>
       </SidebarProvider>
     </WorkspaceProvider>
   );
