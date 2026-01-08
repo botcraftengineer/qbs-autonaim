@@ -24,7 +24,7 @@ import {
   Skeleton,
   toast,
 } from "@qbs-autonaim/ui";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Calendar,
@@ -45,13 +45,13 @@ import { notFound, useRouter } from "next/navigation";
 import { useState } from "react";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface GigDetailClientProps {
   orgSlug: string;
   workspaceSlug: string;
   gigId: string;
-  workspaceId: string;
 }
 
 function GigDetailSkeleton() {
@@ -158,7 +158,6 @@ export function GigDetailClient({
   orgSlug,
   workspaceSlug,
   gigId,
-  workspaceId,
 }: GigDetailClientProps) {
   const trpc = useTRPC();
   const router = useRouter();
@@ -166,14 +165,24 @@ export function GigDetailClient({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const {
+    workspace,
+    organization,
+    isLoading: workspaceLoading,
+  } = useWorkspace();
+  const workspaceId = workspace?.id;
+
+  const {
     data: gig,
     isPending,
     error,
-  } = useQuery(
-    trpc.gig.get.queryOptions({
+  } = trpc.gig.get.useQuery(
+    {
       id: gigId,
-      workspaceId,
-    }),
+      workspaceId: workspaceId,
+    },
+    {
+      enabled: !!workspaceId,
+    },
   );
 
   const deleteMutation = useMutation(
@@ -190,6 +199,14 @@ export function GigDetailClient({
       },
     }),
   );
+
+  if (workspaceLoading || isPending) {
+    return <GigDetailSkeleton />;
+  }
+
+  if (error || !gig || !workspace || !organization) {
+    notFound();
+  }
 
   const handleShare = () => {
     // TODO: Implement share functionality
@@ -214,6 +231,7 @@ export function GigDetailClient({
   };
 
   const handleDeleteConfirm = () => {
+    if (!workspaceId) return;
     deleteMutation.mutate({ gigId, workspaceId });
   };
 

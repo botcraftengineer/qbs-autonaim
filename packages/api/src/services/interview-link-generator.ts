@@ -7,7 +7,8 @@
 
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { interviewLink, workspaceCustomDomain } from "@qbs-autonaim/db/schema";
+import { interviewLink } from "@qbs-autonaim/db/schema";
+import { getInterviewBaseUrl } from "../utils/get-interview-url";
 import { generateSlug } from "../utils/slug-generator";
 
 /**
@@ -30,16 +31,13 @@ export class InterviewLinkGenerator {
   private readonly baseUrl: string;
 
   constructor() {
-    const envUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL;
-
-    if (!envUrl || envUrl.trim() === "") {
+    try {
+      this.baseUrl = getInterviewBaseUrl();
+    } catch {
       throw new Error(
-        "Missing NEXT_PUBLIC_INTERVIEW_URL for InterviewLinkGenerator",
+        "Не удалось инициализировать InterviewLinkGenerator: отсутствует NEXT_PUBLIC_INTERVIEW_URL",
       );
     }
-
-    // Нормализуем URL - убираем trailing slash для корректной конкатенации
-    this.baseUrl = envUrl.trim().replace(/\/$/, "");
   }
 
   /**

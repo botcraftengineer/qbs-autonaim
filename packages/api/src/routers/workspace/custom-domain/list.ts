@@ -1,4 +1,3 @@
-import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -28,13 +27,15 @@ export const list = protectedProcedure
     }
 
     return await db.query.workspaceCustomDomain.findMany({
-      where: input.type
-        ? (domain, { eq, and }) =>
-            and(
-              eq(domain.workspaceId, input.workspaceId),
-              eq(domain.type, input.type),
-            )
-        : (domain, { eq }) => eq(domain.workspaceId, input.workspaceId),
+      where: (domain, { eq, and }) => {
+        if (input.type) {
+          return and(
+            eq(domain.workspaceId, input.workspaceId),
+            eq(domain.type, input.type),
+          );
+        }
+        return eq(domain.workspaceId, input.workspaceId);
+      },
       orderBy: (domain, { desc }) => [
         desc(domain.isPrimary),
         desc(domain.createdAt),

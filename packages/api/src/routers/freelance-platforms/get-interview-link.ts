@@ -1,10 +1,10 @@
 import { and, eq } from "@qbs-autonaim/db";
-import { interviewLink, vacancy, workspace } from "@qbs-autonaim/db/schema";
+import { interviewLink, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import { getInterviewUrl } from "../../utils/get-interview-url";
+import { getInterviewUrlFromDb } from "../../utils/get-interview-url";
 
 const getInterviewLinkInputSchema = z.object({
   vacancyId: z.uuid(),
@@ -57,21 +57,17 @@ export const getInterviewLink = protectedProcedure
       });
     }
 
-    const workspaceData = await ctx.db.query.workspace.findFirst({
-      where: eq(workspace.id, input.workspaceId),
-      columns: {
-        interviewDomain: true,
-      },
-    });
+    const url = await getInterviewUrlFromDb(
+      ctx.db,
+      activeInterviewLink.token,
+      input.workspaceId,
+    );
 
     return {
       id: activeInterviewLink.id,
       vacancyId: activeInterviewLink.vacancyId,
       token: activeInterviewLink.token,
-      url: getInterviewUrl(
-        activeInterviewLink.token,
-        workspaceData?.interviewDomain,
-      ),
+      url,
       isActive: activeInterviewLink.isActive,
       createdAt: activeInterviewLink.createdAt,
       expiresAt: activeInterviewLink.expiresAt,

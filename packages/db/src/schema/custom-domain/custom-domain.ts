@@ -12,7 +12,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { workspace } from "./workspace";
+import { workspace } from "../workspace/workspace";
 
 /**
  * Тип кастомного домена

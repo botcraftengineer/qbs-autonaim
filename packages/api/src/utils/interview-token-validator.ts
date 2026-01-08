@@ -117,7 +117,7 @@ export async function hasConversationAccess(
     // Проверяем доступ через vacancy response
     if (conv.responseId) {
       const vacancyResponse = await db.query.vacancyResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.responseId!),
+        where: (response, { eq }) => eq(response.id, conv.responseId),
         with: {
           vacancy: true,
         },
@@ -140,7 +140,7 @@ export async function hasConversationAccess(
     // Проверяем доступ через gig response
     if (conv.gigResponseId) {
       const gigResponse = await db.query.gigResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.gigResponseId!),
+        where: (response, { eq }) => eq(response.id, conv.gigResponseId),
         with: {
           gig: true,
         },
@@ -166,7 +166,7 @@ export async function hasConversationAccess(
     // Для vacancy токена проверяем responseId
     if (validatedToken.type === "vacancy" && conv.responseId) {
       const vacancyResponse = await db.query.vacancyResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.responseId!),
+        where: (response, { eq }) => eq(response.id, conv.responseId),
       });
 
       if (vacancyResponse?.vacancyId === validatedToken.entityId) {
@@ -177,7 +177,7 @@ export async function hasConversationAccess(
     // Для gig токена проверяем gigResponseId
     if (validatedToken.type === "gig" && conv.gigResponseId) {
       const gigResponse = await db.query.gigResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.gigResponseId!),
+        where: (response, { eq }) => eq(response.id, conv.gigResponseId),
       });
 
       if (gigResponse?.gigId === validatedToken.entityId) {

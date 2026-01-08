@@ -1,1 +1,1 @@
-export { toast, useToast } from "@qbs-autonaim/ui";
+export { toast } from "@qbs-autonaim/ui";

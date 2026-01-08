@@ -20,7 +20,6 @@ interface DnsInstructionsDialogProps {
 
 export function DnsInstructionsDialog({
   domain,
-  token,
   open,
   onOpenChange,
 }: DnsInstructionsDialogProps) {

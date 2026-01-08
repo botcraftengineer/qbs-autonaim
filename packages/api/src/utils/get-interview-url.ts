@@ -1,4 +1,30 @@
 import { env } from "@qbs-autonaim/config";
+import { and, eq } from "@qbs-autonaim/db";
+import type * as schema from "@qbs-autonaim/db/schema";
+import { workspaceCustomDomain } from "@qbs-autonaim/db/schema";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+
+/**
+ * Получает primary interview domain для workspace
+ */
+async function getPrimaryInterviewDomain(
+  db: NodePgDatabase<typeof schema>,
+  workspaceId: string,
+): Promise<string | null> {
+  const customDomain = await db.query.workspaceCustomDomain.findFirst({
+    where: and(
+      eq(workspaceCustomDomain.workspaceId, workspaceId),
+      eq(workspaceCustomDomain.type, "interview"),
+      eq(workspaceCustomDomain.isPrimary, true),
+      eq(workspaceCustomDomain.isVerified, true),
+    ),
+    columns: {
+      domain: true,
+    },
+  });
+
+  return customDomain?.domain ?? null;
+}
 
 /**
  * Получает базовый URL для интервью
@@ -33,4 +59,16 @@ export function getInterviewUrl(
 ): string {
   const baseUrl = getInterviewBaseUrl(workspaceInterviewDomain);
   return `${baseUrl}/${token}`;
+}
+
+/**
+ * Генерирует полный URL интервью с токеном, получая домен из БД
+ */
+export async function getInterviewUrlFromDb(
+  db: NodePgDatabase<typeof schema>,
+  token: string,
+  workspaceId: string,
+): Promise<string> {
+  const domain = await getPrimaryInterviewDomain(db, workspaceId);
+  return getInterviewUrl(token, domain);
 }

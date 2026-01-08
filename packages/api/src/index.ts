@@ -35,4 +35,9 @@ export {
 export { type AppRouter, appRouter } from "./root";
 export { AuditLoggerService } from "./services/audit-logger";
 export { createTRPCContext } from "./trpc";
+export {
+  getInterviewBaseUrl,
+  getInterviewUrl,
+  getInterviewUrlFromDb,
+} from "./utils/get-interview-url";
 export type { RouterInputs, RouterOutputs };

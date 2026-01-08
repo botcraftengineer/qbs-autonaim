@@ -1,4 +1,4 @@
-import { getInterviewUrl } from "@qbs-autonaim/api/utils/get-interview-url";
+import { getInterviewUrl } from "@qbs-autonaim/api";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
