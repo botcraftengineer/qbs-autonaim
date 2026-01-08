@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { gig } from "@qbs-autonaim/db/schema";
+import { gig, gigInterviewMedia } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -31,7 +31,7 @@ export const getInterviewMedia = protectedProcedure
       });
     }
 
-    // Получаем gig с медиафайлами
+    // Получаем gig
     const gigRecord = await ctx.db.query.gig.findFirst({
       where: eq(gig.id, input.gigId),
     });
@@ -50,27 +50,29 @@ export const getInterviewMedia = protectedProcedure
       });
     }
 
-    const fileIds = gigRecord.interviewMediaFileIds;
-    if (!fileIds || fileIds.length === 0) {
+    // Получаем медиафайлы через join table с relations
+    const mediaRecords = await ctx.db.query.gigInterviewMedia.findMany({
+      where: eq(gigInterviewMedia.gigId, input.gigId),
+      with: {
+        file: true,
+      },
+    });
+
+    if (mediaRecords.length === 0) {
       return [];
     }
 
-    // Получаем файлы из БД
-    const files = await ctx.db.query.file.findMany({
-      where: (files, { inArray }) => inArray(files.id, fileIds),
-    });
-
     // Генерируем presigned URLs
     const mediaFiles = await Promise.all(
-      files.map(async (fileRecord) => {
+      mediaRecords.map(async (record) => {
         try {
-          const url = await getDownloadUrl(fileRecord.key);
+          const url = await getDownloadUrl(record.file.key);
           return {
-            id: fileRecord.id,
+            id: record.file.id,
             url,
-            fileName: fileRecord.fileName,
-            mimeType: fileRecord.mimeType,
-            fileSize: fileRecord.fileSize,
+            fileName: record.file.fileName,
+            mimeType: record.file.mimeType,
+            fileSize: record.file.fileSize,
           };
         } catch {
           return null;

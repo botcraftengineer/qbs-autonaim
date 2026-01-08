@@ -4,7 +4,7 @@
  * Document processing package with support for:
  * - Document parsing (Docling, Unstructured)
  * - Embedding generation (LlamaIndex)
- * - Vector storage (pgvector)
+ * - Vector storage (Qdrant)
  * - Semantic search
  */
 
@@ -34,4 +34,4 @@ export type {
   VectorStoreConfig,
 } from "./types";
 export { DocumentProcessingError, DocumentProcessingErrorCode } from "./types";
-export { PgVectorStore } from "./vector-store/pgvector-store";
+export { QdrantVectorStore } from "./vector-store/qdrant-store";

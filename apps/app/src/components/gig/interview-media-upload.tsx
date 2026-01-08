@@ -9,7 +9,10 @@ import {
   IconUpload,
   IconVideo,
 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
+import { useTRPC } from "~/trpc/react";
 
 interface MediaFile {
   id: string;
@@ -29,17 +32,82 @@ interface InterviewMediaUploadProps {
 export function InterviewMediaUpload({
   files,
   onFilesChange,
+  workspaceId,
+  gigId,
 }: InterviewMediaUploadProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [uploadingFiles, setUploadingFiles] = useState<Set<string>>(new Set());
 
-  const handleFileSelect = useCallback((selectedFiles: FileList | null) => {
-    if (!selectedFiles || selectedFiles.length === 0) return;
+  const trpc = useTRPC();
 
-    // TODO: Implement file upload to S3 and get file IDs
-    // For now, just show a placeholder
-    console.log("Files selected:", selectedFiles);
-  }, []);
+  const uploadMutation = useMutation(
+    trpc.files.uploadInterviewMedia.mutationOptions({
+      onError: (error: Error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
+  const handleFileSelect = useCallback(
+    async (selectedFiles: FileList | null) => {
+      if (!selectedFiles || selectedFiles.length === 0) return;
+
+      const filesArray = Array.from(selectedFiles);
+      const newUploadingFiles = new Set(uploadingFiles);
+
+      for (const file of filesArray) {
+        newUploadingFiles.add(file.name);
+      }
+      setUploadingFiles(newUploadingFiles);
+
+      try {
+        const uploadPromises = filesArray.map(async (file) => {
+          // Читаем файл как base64
+          const fileData = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              const result = reader.result as string;
+              // Убираем префикс data:image/png;base64,
+              const base64 = result.split(",")[1];
+              if (base64) {
+                resolve(base64);
+              } else {
+                reject(new Error("Не удалось прочитать файл"));
+              }
+            };
+            reader.onerror = () => reject(reader.error);
+            reader.readAsDataURL(file);
+          });
+
+          return uploadMutation.mutateAsync({
+            workspaceId,
+            gigId,
+            fileName: file.name,
+            mimeType: file.type,
+            fileData,
+          });
+        });
+
+        const uploadedFiles = await Promise.all(uploadPromises);
+        const newFileIds = [
+          ...files.map((f) => f.id),
+          ...uploadedFiles.map((f) => f.id),
+        ];
+
+        onFilesChange(newFileIds);
+        toast.success(`Загружено файлов: ${uploadedFiles.length}`);
+      } catch {
+        // Ошибка уже обработана в onError
+      } finally {
+        setUploadingFiles(new Set());
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    },
+    [files, gigId, onFilesChange, uploadMutation, uploadingFiles, workspaceId],
+  );
 
   const handleRemoveFile = useCallback(
     (fileId: string) => {
@@ -90,6 +158,8 @@ export function InterviewMediaUpload({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  const isUploading = uploadingFiles.size > 0;
+
   return (
     <div className="space-y-4">
       <input
@@ -100,6 +170,7 @@ export function InterviewMediaUpload({
         onChange={(e) => handleFileSelect(e.target.files)}
         className="sr-only"
         id="interview-media-upload"
+        disabled={isUploading}
       />
       <label
         htmlFor="interview-media-upload"
@@ -110,6 +181,7 @@ export function InterviewMediaUpload({
           flex flex-col items-center gap-2 cursor-pointer
           border-2 border-dashed rounded-lg p-6 text-center transition-colors
           ${isDragging ? "border-primary bg-primary/5" : "border-border"}
+          ${isUploading ? "opacity-50 cursor-not-allowed" : ""}
         `}
       >
         <IconUpload
@@ -118,10 +190,12 @@ export function InterviewMediaUpload({
         />
         <div className="space-y-1">
           <p className="text-sm font-medium">
-            Перетащите файлы сюда или нажмите для выбора
+            {isUploading
+              ? `Загрузка файлов: ${uploadingFiles.size}…`
+              : "Перетащите файлы сюда или нажмите для выбора"}
           </p>
           <p className="text-xs text-muted-foreground">
-            Поддерживаются изображения, видео и PDF
+            Поддерживаются изображения, видео и PDF (до 50 МБ)
           </p>
         </div>
       </label>

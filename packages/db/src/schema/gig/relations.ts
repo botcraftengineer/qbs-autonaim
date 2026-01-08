@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { file } from "../file";
 import { workspace } from "../workspace/workspace";
 import { gig } from "./gig";
+import { gigInterviewMedia } from "./gig-interview-media";
 import { gigInterviewLink } from "./interview-link";
 import { gigInvitation } from "./invitation";
 import { gigResponse } from "./response";
@@ -14,6 +15,7 @@ export const gigRelations = relations(gig, ({ one, many }) => ({
   }),
   responses: many(gigResponse),
   interviewLinks: many(gigInterviewLink),
+  interviewMedia: many(gigInterviewMedia),
 }));
 
 export const gigInterviewLinkRelations = relations(
@@ -53,3 +55,17 @@ export const gigResponseRelations = relations(gigResponse, ({ one }) => ({
     relationName: "photoFile",
   }),
 }));
+
+export const gigInterviewMediaRelations = relations(
+  gigInterviewMedia,
+  ({ one }) => ({
+    gig: one(gig, {
+      fields: [gigInterviewMedia.gigId],
+      references: [gig.id],
+    }),
+    file: one(file, {
+      fields: [gigInterviewMedia.fileId],
+      references: [file.id],
+    }),
+  }),
+);
