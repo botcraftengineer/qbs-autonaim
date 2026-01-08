@@ -1,6 +1,3 @@
-import { Button } from "@qbs-autonaim/ui";
-import Link from "next/link";
-
 export default function NotFound() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4">

@@ -1,7 +1,6 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { paths } from "@qbs-autonaim/config";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -66,13 +65,10 @@ export function InterviewLandingForm({
     handleSubmit,
     formState: { errors },
     setError,
-    watch,
   } = useForm<FreelancerInfo>({
     resolver: zodResolver(freelancerInfoSchema),
     mode: "onSubmit",
   });
-
-  const platformProfileUrl = watch("platformProfileUrl");
 
   const handleFormSubmit = async (data: FreelancerInfo) => {
     setIsSubmitting(true);

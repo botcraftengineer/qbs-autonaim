@@ -15,10 +15,10 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^3.0.22",
+    "@hookform/resolvers": "^5.2.2",
     "@qbs-autonaim/api": "workspace:*",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
-    "@qbs-autonaim/interview-ui": "workspace:*",
     "@qbs-autonaim/ui": "workspace:*",
     "@t3-oss/env-nextjs": "0.13.10",
     "@tanstack/react-query": "5.90.16",
@@ -31,6 +31,7 @@
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hook-form": "^7.70.0",
     "react-markdown": "^10.1.0",
     "superjson": "2.2.6",
     "zod": "4.3.5"

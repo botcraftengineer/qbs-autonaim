@@ -13,7 +13,6 @@ export default async function createNextConfig(): Promise<NextConfig> {
       "@qbs-autonaim/api",
       "@qbs-autonaim/config",
       "@qbs-autonaim/db",
-      "@qbs-autonaim/interview-ui",
       "@qbs-autonaim/ui",
     ],
 

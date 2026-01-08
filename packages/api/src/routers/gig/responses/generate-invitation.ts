@@ -12,7 +12,7 @@ import { protectedProcedure } from "../../../trpc";
 import { generateSlug } from "../../../utils/slug-generator";
 
 function generateInvitationText(
-  candidateName: string | null,
+  _candidateName: string | null,
   gigTitle: string,
   interviewUrl: string,
 ): string {

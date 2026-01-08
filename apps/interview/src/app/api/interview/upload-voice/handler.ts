@@ -4,11 +4,7 @@
  * Только для WEB интервью (source = 'WEB')
  */
 import { db, eq } from "@qbs-autonaim/db";
-import {
-  conversation,
-  conversationMessage,
-  file,
-} from "@qbs-autonaim/db/schema";
+import { conversationMessage, file } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { uploadFile } from "@qbs-autonaim/lib/s3";
 import { NextResponse } from "next/server";

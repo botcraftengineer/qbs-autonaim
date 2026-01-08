@@ -1,4 +1,3 @@
-import { APP_CONFIG } from "@qbs-autonaim/config";
 import { cn, ThemeProvider, Toaster } from "@qbs-autonaim/ui";
 import type { Metadata, Viewport } from "next";
 import { env } from "~/env";

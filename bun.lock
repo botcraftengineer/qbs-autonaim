@@ -83,10 +83,10 @@
       "name": "@qbs-autonaim/interview",
       "dependencies": {
         "@ai-sdk/react": "^3.0.22",
+        "@hookform/resolvers": "^5.2.2",
         "@qbs-autonaim/api": "workspace:*",
         "@qbs-autonaim/config": "workspace:*",
         "@qbs-autonaim/db": "workspace:*",
-        "@qbs-autonaim/interview-ui": "workspace:*",
         "@qbs-autonaim/ui": "workspace:*",
         "@t3-oss/env-nextjs": "0.13.10",
         "@tanstack/react-query": "5.90.16",
@@ -99,6 +99,7 @@
         "next": "16.1.1",
         "react": "19.2.3",
         "react-dom": "19.2.3",
+        "react-hook-form": "^7.70.0",
         "react-markdown": "^10.1.0",
         "superjson": "2.2.6",
         "zod": "4.3.5",
@@ -330,24 +331,6 @@
         "@types/react": "19.2.7",
         "@types/react-dom": "19.2.3",
         "tsdown": "0.18.4",
-        "typescript": "5.9.3",
-      },
-    },
-    "packages/interview-ui": {
-      "name": "@qbs-autonaim/interview-ui",
-      "dependencies": {
-        "@hookform/resolvers": "^5.2.2",
-        "@qbs-autonaim/config": "workspace:*",
-        "@qbs-autonaim/ui": "workspace:*",
-        "@tanstack/react-query": "5.90.16",
-        "lucide-react": "^0.562.0",
-        "react-hook-form": "^7.70.0",
-        "zod": "4.3.5",
-      },
-      "devDependencies": {
-        "@qbs-autonaim/tsconfig": "workspace:*",
-        "@types/react": "19.2.7",
-        "react": "19.2.3",
         "typescript": "5.9.3",
       },
     },
@@ -1241,8 +1224,6 @@
     "@qbs-autonaim/github": ["@qbs-autonaim/github@workspace:tooling/github"],
 
     "@qbs-autonaim/interview": ["@qbs-autonaim/interview@workspace:apps/interview"],
-
-    "@qbs-autonaim/interview-ui": ["@qbs-autonaim/interview-ui@workspace:packages/interview-ui"],
 
     "@qbs-autonaim/jobs": ["@qbs-autonaim/jobs@workspace:packages/jobs"],
 

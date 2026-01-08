@@ -1,6 +1,5 @@
 "use client";
 
-import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -24,7 +23,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { env } from "~/env";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 

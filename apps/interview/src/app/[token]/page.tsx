@@ -1,9 +1,9 @@
 "use client";
 
-import { InterviewLandingForm } from "@qbs-autonaim/interview-ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import React from "react";
+import { InterviewLandingForm } from "~/components/interview-landing-form";
 import { useTRPC } from "~/trpc/react";
 
 interface PageProps {
