@@ -18,6 +18,7 @@ import {
   IconCreditCard,
   IconSettings,
   IconUsers,
+  IconWorld,
 } from "@tabler/icons-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -39,6 +40,11 @@ const organizationNavItems = [
     title: "Команда",
     href: "/settings/members",
     icon: IconUsers,
+  },
+  {
+    title: "Домены",
+    href: "/settings/domains",
+    icon: IconWorld,
   },
   {
     title: "Настройки",

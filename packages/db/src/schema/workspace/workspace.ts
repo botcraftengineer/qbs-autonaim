@@ -39,9 +39,6 @@ export const workspace = pgTable(
     // Логотип
     logo: text("logo"),
 
-    // Кастомный домен для интервью (если не указан, используется NEXT_PUBLIC_INTERVIEW_URL)
-    interviewDomain: text("interview_domain"),
-
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),

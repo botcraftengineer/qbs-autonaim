@@ -1,6 +1,11 @@
+export { AddDomainDialog } from "./add-domain-dialog";
 export { CreateOrganizationDialog } from "./create-organization-dialog";
+export { CustomDomainsSection } from "./custom-domains-section";
 export { DangerZoneSection } from "./danger-zone-section";
+export { DeleteDomainDialog } from "./delete-domain-dialog";
 export { DeleteOrganizationDialog } from "./delete-organization-dialog";
+export { DnsInstructionsDialog } from "./dns-instructions-dialog";
+export { DomainCard } from "./domain-card";
 export { InviteMemberDialog } from "./invite-member-dialog";
 export { OrganizationGeneralForm } from "./organization-general-form";
 export { OrganizationMembersClient } from "./organization-members-client";

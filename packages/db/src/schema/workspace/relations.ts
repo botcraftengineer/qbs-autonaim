@@ -4,6 +4,7 @@ import { companySettings } from "../company/company-settings";
 import { integration } from "../integration/integration";
 import { organization } from "../organization/organization";
 import { vacancy } from "../vacancy/vacancy";
+import { workspaceCustomDomain } from "./custom-domain";
 import { workspace } from "./workspace";
 import { workspaceInvite } from "./workspace-invite";
 import { workspaceMember } from "./workspace-member";
@@ -17,6 +18,7 @@ export const workspaceRelations = relations(workspace, ({ many, one }) => ({
   integrations: many(integration),
   vacancies: many(vacancy),
   invites: many(workspaceInvite),
+  customDomains: many(workspaceCustomDomain),
   companySettings: one(companySettings, {
     fields: [workspace.id],
     references: [companySettings.workspaceId],
@@ -42,6 +44,16 @@ export const workspaceMemberRelations = relations(
     }),
     workspace: one(workspace, {
       fields: [workspaceMember.workspaceId],
+      references: [workspace.id],
+    }),
+  }),
+);
+
+export const workspaceCustomDomainRelations = relations(
+  workspaceCustomDomain,
+  ({ one }) => ({
+    workspace: one(workspace, {
+      fields: [workspaceCustomDomain.workspaceId],
       references: [workspace.id],
     }),
   }),

@@ -1,6 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
 import { create } from "./create";
+import { customDomainRouter } from "./custom-domain";
 import { deleteWorkspace } from "./delete";
 import { get } from "./get";
 import { getBySlug } from "./get-by-slug";
@@ -18,4 +19,5 @@ export const workspaceRouter = {
   delete: deleteWorkspace,
   members: membersRouter,
   invites: invitesRouter,
+  customDomain: customDomainRouter,
 } satisfies TRPCRouterRecord;

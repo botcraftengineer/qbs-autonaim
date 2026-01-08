@@ -7,7 +7,7 @@
 
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { interviewLink } from "@qbs-autonaim/db/schema";
+import { interviewLink, workspaceCustomDomain } from "@qbs-autonaim/db/schema";
 import { generateSlug } from "../utils/slug-generator";
 
 /**
@@ -30,7 +30,41 @@ export class InterviewLinkGenerator {
   private readonly baseUrl: string;
 
   constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL ?? "";
+    const envUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL;
+
+    if (!envUrl || envUrl.trim() === "") {
+      throw new Error(
+        "Missing NEXT_PUBLIC_INTERVIEW_URL for InterviewLinkGenerator",
+      );
+    }
+
+    // Нормализуем URL - убираем trailing slash для корректной конкатенации
+    this.baseUrl = envUrl.trim().replace(/\/$/, "");
+  }
+
+  /**
+   * Получает основной кастомный домен workspace для интервью или дефолтный URL
+   */
+  private async getBaseUrlForWorkspace(workspaceId?: string): Promise<string> {
+    if (!workspaceId) {
+      return this.baseUrl;
+    }
+
+    const primaryDomain = await db.query.workspaceCustomDomain.findFirst({
+      where: (domain, { eq, and }) =>
+        and(
+          eq(domain.workspaceId, workspaceId),
+          eq(domain.type, "interview"),
+          eq(domain.isPrimary, true),
+          eq(domain.isVerified, true),
+        ),
+    });
+
+    if (primaryDomain) {
+      return `https://${primaryDomain.domain}`;
+    }
+
+    return this.baseUrl;
   }
 
   /**
@@ -62,10 +96,14 @@ export class InterviewLinkGenerator {
    * Генерирует уникальную ссылку на интервью для вакансии
    *
    * @param vacancyId - ID вакансии
+   * @param workspaceId - ID workspace (опционально, для кастомного домена)
    * @returns Созданная ссылка на интервью
    * @throws Error если ссылка для вакансии уже существует
    */
-  async generateLink(vacancyId: string): Promise<InterviewLink> {
+  async generateLink(
+    vacancyId: string,
+    workspaceId?: string,
+  ): Promise<InterviewLink> {
     // Проверяем, существует ли уже активная ссылка для этой вакансии
     const existingLink = await db.query.interviewLink.findFirst({
       where: and(
@@ -76,7 +114,7 @@ export class InterviewLinkGenerator {
 
     if (existingLink) {
       // Возвращаем существующую ссылку вместо создания новой
-      return this.mapToInterviewLink(existingLink);
+      return this.mapToInterviewLink(existingLink, workspaceId);
     }
 
     // Генерируем уникальный токен
@@ -96,16 +134,20 @@ export class InterviewLinkGenerator {
       throw new Error("Failed to create interview link");
     }
 
-    return this.mapToInterviewLink(created);
+    return this.mapToInterviewLink(created, workspaceId);
   }
 
   /**
    * Валидирует токен ссылки на интервью
    *
    * @param token - Токен для валидации
+   * @param workspaceId - ID workspace (опционально, для кастомного домена)
    * @returns Ссылка на интервью если токен валиден и активен, иначе null
    */
-  async validateLink(token: string): Promise<InterviewLink | null> {
+  async validateLink(
+    token: string,
+    workspaceId?: string,
+  ): Promise<InterviewLink | null> {
     const link = await db.query.interviewLink.findFirst({
       where: eq(interviewLink.token, token),
     });
@@ -124,7 +166,7 @@ export class InterviewLinkGenerator {
       return null;
     }
 
-    return this.mapToInterviewLink(link);
+    return this.mapToInterviewLink(link, workspaceId);
   }
 
   /**
@@ -142,14 +184,17 @@ export class InterviewLinkGenerator {
   /**
    * Преобразует запись из БД в интерфейс InterviewLink
    */
-  private mapToInterviewLink(
+  private async mapToInterviewLink(
     link: typeof interviewLink.$inferSelect,
-  ): InterviewLink {
+    workspaceId?: string,
+  ): Promise<InterviewLink> {
+    const baseUrl = await this.getBaseUrlForWorkspace(workspaceId);
+
     return {
       id: link.id,
       vacancyId: link.vacancyId,
       token: link.token,
-      url: `${this.baseUrl}/${link.token}`,
+      url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
       expiresAt: link.expiresAt,
