@@ -2,7 +2,7 @@
 
 import { paths } from "@qbs-autonaim/config";
 import { cn } from "@qbs-autonaim/ui";
-import { Building2, Globe, Settings, Users } from "lucide-react";
+import { Building2, Globe, Globe2, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
@@ -22,6 +22,11 @@ const sidebarNavItems = [
     title: "Компания",
     href: "/settings/company",
     icon: Building2,
+  },
+  {
+    title: "Домены",
+    href: "/settings/domains",
+    icon: Globe2,
   },
   {
     title: "Интеграции",
