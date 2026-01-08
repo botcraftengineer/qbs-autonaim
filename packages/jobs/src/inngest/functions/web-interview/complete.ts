@@ -4,6 +4,7 @@ import {
   conversationMessage,
   desc,
   eq,
+  gigResponse,
   interviewScoring,
   sql,
   vacancyResponse,
@@ -34,6 +35,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
       reason,
       questionNumber,
       responseId,
+      gigResponseId,
     } = event.data;
 
     console.log("🏁 Completing web interview", {
@@ -103,6 +105,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           .values({
             conversationId,
             responseId: responseId ?? undefined,
+            gigResponseId: gigResponseId ?? undefined,
             score: result.score,
             detailedScore: result.detailedScore,
             analysis: result.analysis,
@@ -204,6 +207,88 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
           console.log("✅ Уведомления отправлены", {
             responseId,
+            detailedScore: scoring.detailedScore,
+            isHighScore: scoring.detailedScore >= 85,
+          });
+        });
+      }
+
+      // Обновляем статус gig_response
+      if (gigResponseId) {
+        await step.run("update-gig-response-status", async () => {
+          await db
+            .update(gigResponse)
+            .set({
+              status: "INTERVIEW",
+              updatedAt: new Date(),
+            })
+            .where(eq(gigResponse.id, gigResponseId));
+
+          console.log("✅ Gig response status updated to INTERVIEW", {
+            gigResponseId,
+          });
+        });
+
+        // Отправляем уведомления для gig
+        await step.run("send-gig-notifications", async () => {
+          const response = await db.query.gigResponse.findFirst({
+            where: eq(gigResponse.id, gigResponseId),
+            with: {
+              gig: true,
+            },
+          });
+
+          if (!response?.gig?.workspaceId) {
+            console.warn(
+              "⚠️ Не удалось получить workspaceId для уведомления gig",
+            );
+            return;
+          }
+
+          // Получаем скоринг
+          const scoring = await db.query.interviewScoring.findFirst({
+            where: eq(interviewScoring.gigResponseId, gigResponseId),
+          });
+
+          if (!scoring) {
+            console.warn("⚠️ Скоринг не найден для уведомления gig");
+            return;
+          }
+
+          // Отправляем уведомление о завершении интервью
+          await inngest.send({
+            name: "freelance/notification.send",
+            data: {
+              workspaceId: response.gig.workspaceId,
+              gigId: response.gigId,
+              gigResponseId,
+              notificationType: "INTERVIEW_COMPLETED",
+              candidateName: response.candidateName ?? undefined,
+              score: scoring.score,
+              detailedScore: scoring.detailedScore,
+              profileUrl: response.profileUrl ?? undefined,
+            },
+          });
+
+          // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
+          if (scoring.detailedScore >= 85) {
+            await inngest.send({
+              name: "freelance/notification.send",
+              data: {
+                workspaceId: response.gig.workspaceId,
+                gigId: response.gigId,
+                gigResponseId,
+                notificationType: "HIGH_SCORE_CANDIDATE",
+                candidateName: response.candidateName ?? undefined,
+                score: scoring.score,
+                detailedScore: scoring.detailedScore,
+                profileUrl: response.profileUrl ?? undefined,
+              },
+            });
+          }
+
+          console.log("✅ Уведомления для gig отправлены", {
+            gigResponseId,
             detailedScore: scoring.detailedScore,
             isHighScore: scoring.detailedScore >= 85,
           });

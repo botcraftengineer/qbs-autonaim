@@ -40,6 +40,7 @@ interface InterviewContext {
   vacancyDescription: string | null;
   questionNumber: number;
   responseId: string | null;
+  gigResponseId: string | null;
   resumeLanguage?: string | null;
   conversationHistory?: Array<{
     sender: "CANDIDATE" | "BOT";
@@ -343,7 +344,8 @@ export async function getInterviewContext(
         ? stripHtml(vacancy.description).result
         : null,
     questionNumber: questionAnswers.length + 1,
-    responseId: isGig ? conv.gigResponseId : conv.responseId || null,
+    responseId: isGig ? null : conv.responseId || null,
+    gigResponseId: isGig ? conv.gigResponseId : null,
     resumeLanguage:
       conv.response?.resumeLanguage || conv.gigResponse?.resumeLanguage || "ru",
     conversationHistory,

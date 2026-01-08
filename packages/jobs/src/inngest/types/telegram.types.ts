@@ -33,6 +33,7 @@ export const interviewCompleteDataSchema = z.object({
   reason: z.string().optional(),
   questionNumber: z.number().int().min(0),
   responseId: z.string().optional(),
+  gigResponseId: z.string().optional(),
 });
 
 export const telegramAuthErrorDataSchema = z.object({

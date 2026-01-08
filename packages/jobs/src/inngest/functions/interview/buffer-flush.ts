@@ -189,6 +189,7 @@ export const bufferFlushFunction = inngest.createFunction(
               reason: result.reason ?? undefined,
               questionNumber: context.questionNumber,
               responseId: context.responseId ?? undefined,
+              gigResponseId: context.gigResponseId ?? undefined,
             },
           });
         }

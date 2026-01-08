@@ -23,7 +23,9 @@ export const notificationTypeEnum = z.enum([
 export const sendFreelanceNotificationDataSchema = z.object({
   workspaceId: z.string().min(1, "Workspace ID is required").optional(),
   vacancyId: z.uuid().optional(),
-  responseId: z.uuid(),
+  responseId: z.uuid().optional(),
+  gigId: z.uuid().optional(),
+  gigResponseId: z.uuid().optional(),
   notificationType: notificationTypeEnum,
   candidateName: z.string().optional(),
   score: z.number().int().min(0).max(100).optional(),

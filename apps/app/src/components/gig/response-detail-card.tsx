@@ -37,7 +37,13 @@ import {
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
 
 interface ResponseDetailCardProps {
-  response: GigResponseDetail;
+  response: GigResponseDetail & {
+    interviewScoring?: {
+      score: number;
+      detailedScore: number;
+      analysis: string | null;
+    } | null;
+  };
   onAccept?: () => void;
   onReject?: () => void;
   onMessage?: () => void;
@@ -122,6 +128,7 @@ export function ResponseDetailCard({
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
   const hasScreening = !!response.screening;
+  const hasInterviewScoring = !!response.interviewScoring;
 
   return (
     <div className="space-y-6">
@@ -316,6 +323,66 @@ export function ResponseDetailCard({
                 </div>
               )}
             </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Interview Scoring Results */}
+      {hasInterviewScoring && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5 text-primary" />
+              Результаты интервью
+            </CardTitle>
+            <CardDescription>
+              Оценка кандидата на основе AI-интервью
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Score Overview */}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Общая оценка</span>
+                  <span className="text-2xl font-bold">
+                    {response.interviewScoring.score}/5
+                  </span>
+                </div>
+                <Progress
+                  value={(response.interviewScoring.score / 5) * 100}
+                  className="h-2"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Детальная оценка</span>
+                  <span className="text-2xl font-bold">
+                    {response.interviewScoring.detailedScore}/100
+                  </span>
+                </div>
+                <Progress
+                  value={response.interviewScoring.detailedScore}
+                  className="h-2"
+                />
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Analysis */}
+            {response.interviewScoring.analysis && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Анализ интервью
+                </h4>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                  {response.interviewScoring.analysis}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
