@@ -267,16 +267,21 @@ function convertLegacyMessage(message: {
   const role = message.sender === "CANDIDATE" ? "user" : "assistant";
   const parts: MessagePart[] = [];
 
-  if (message.contentType === "VOICE" && message.fileUrl) {
-    parts.push({
-      type: "file",
-      url: message.fileUrl,
-      mediaType: "audio/ogg",
-    });
+  if (message.contentType === "VOICE") {
+    // Добавляем аудиофайл, если есть URL
+    if (message.fileUrl) {
+      parts.push({
+        type: "file",
+        url: message.fileUrl,
+        mediaType: "audio/webm",
+      });
+    }
+    // Добавляем транскрипцию, если есть
     if (message.voiceTranscription) {
       parts.push({ type: "text", text: message.voiceTranscription });
     }
   } else {
+    // Обычное текстовое сообщение
     parts.push({ type: "text", text: message.content });
   }
 
@@ -407,16 +412,74 @@ export function InterviewChat({
 
   // Отправка сообщения
   const handleSendMessage = useCallback(
-    async (content: string, _audioFile?: File) => {
+    async (content: string, audioFile?: File) => {
+      // Если есть аудиофайл, загружаем его
+      if (audioFile) {
+        try {
+          // Конвертируем файл в base64
+          const reader = new FileReader();
+          const base64Promise = new Promise<string>((resolve, reject) => {
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(audioFile);
+          });
+
+          const base64Audio = await base64Promise;
+
+          // Получаем длительность аудио
+          const audio = new Audio(URL.createObjectURL(audioFile));
+          const duration = await new Promise<number>((resolve) => {
+            audio.addEventListener("loadedmetadata", () => {
+              resolve(audio.duration);
+            });
+          });
+
+          // Отправляем на сервер
+          const response = await fetch("/api/interview/upload-voice", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              conversationId,
+              audioFile: base64Audio,
+              fileName: audioFile.name,
+              mimeType: audioFile.type,
+              duration,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to upload voice message");
+          }
+
+          // Добавляем сообщение в UI
+          sendMessage({
+            role: "user",
+            parts: [
+              {
+                type: "file" as const,
+                url: URL.createObjectURL(audioFile),
+                mediaType: audioFile.type,
+              },
+              ...(content.trim()
+                ? [{ type: "text" as const, text: content.trim() }]
+                : []),
+            ],
+          });
+        } catch (error) {
+          console.error("Failed to send voice message:", error);
+        }
+        return;
+      }
+
+      // Обычное текстовое сообщение
       if (!content.trim()) return;
 
-      // TODO: Добавить поддержку аудио
       sendMessage({
         role: "user",
         parts: [{ type: "text", text: content }],
       });
     },
-    [sendMessage],
+    [conversationId, sendMessage],
   );
 
   const chatStatus = chatHistory?.status || "ACTIVE";
@@ -496,6 +559,7 @@ export function InterviewChat({
               onSendMessage={handleSendMessage}
               onStop={stop}
               status={status}
+              enableVoice={true}
               placeholder={
                 status === "streaming"
                   ? "Ожидайте ответа…"

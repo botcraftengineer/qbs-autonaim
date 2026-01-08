@@ -1,3 +1,4 @@
+import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
@@ -18,6 +19,9 @@ export const getChatHistory = publicProcedure
         ),
       with: {
         messages: {
+          with: {
+            file: true,
+          },
           orderBy: (messages, { asc }) => [asc(messages.createdAt)],
         },
       },
@@ -40,14 +44,27 @@ export const getChatHistory = publicProcedure
       });
     }
 
-    // Форматируем сообщения для клиента
-    const messages = conv.messages.map((msg) => ({
-      id: msg.id,
-      sender: msg.sender,
-      content: msg.content,
-      contentType: msg.contentType,
-      createdAt: msg.createdAt,
-    }));
+    // Форматируем сообщения для клиента с поддержкой голосовых
+    const messages = await Promise.all(
+      conv.messages.map(async (msg) => {
+        const baseMessage = {
+          id: msg.id,
+          sender: msg.sender,
+          content: msg.content,
+          contentType: msg.contentType,
+          createdAt: msg.createdAt,
+          voiceTranscription: msg.voiceTranscription ?? null,
+          fileUrl: null as string | null,
+        };
+
+        // Если это голосовое сообщение с файлом, генерируем URL
+        if (msg.contentType === "VOICE" && msg.file) {
+          baseMessage.fileUrl = await getDownloadUrl(msg.file.key);
+        }
+
+        return baseMessage;
+      }),
+    );
 
     return {
       conversationId: conv.id,

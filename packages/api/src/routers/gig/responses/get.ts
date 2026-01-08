@@ -33,6 +33,22 @@ export const get = protectedProcedure
         interviewScoring: true,
       },
     });
+    if (!response) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Отклик не найден",
+      });
+    }
+
+    // Проверяем что gig принадлежит workspace
+    if (response.gig.workspaceId !== input.workspaceId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Нет доступа к этому отклику",
+      });
+    }
+
+    return response;
 
     if (!response) {
       throw new TRPCError({

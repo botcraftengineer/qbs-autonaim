@@ -81,6 +81,14 @@ export async function POST(request: Request) {
     // Проверяем что conversation существует и это WEB интервью
     const conv = await db.query.conversation.findFirst({
       where: (c, { and }) => and(eq(c.id, conversationId), eq(c.source, "WEB")),
+      with: {
+        messages: {
+          with: {
+            file: true,
+          },
+          orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+        },
+      },
     });
 
     if (!conv) {
@@ -143,15 +151,23 @@ export async function POST(request: Request) {
       lastUserMessage?.content ||
       "";
 
-    // Сохраняем сообщение пользователя в БД
+    // Сохраняем текстовое сообщение пользователя в БД (голосовые уже сохранены через upload-voice)
     if (lastUserMessage && userMessageText) {
-      await db.insert(conversationMessage).values({
-        conversationId,
-        sender: "CANDIDATE",
-        contentType: "TEXT",
-        channel: "WEB",
-        content: userMessageText,
-      });
+      // Проверяем, есть ли файл в parts (голосовое сообщение)
+      const hasVoiceFile = lastUserMessage.parts?.some(
+        (p) => p.type === "file",
+      );
+
+      // Если это не голосовое сообщение, сохраняем как текст
+      if (!hasVoiceFile) {
+        await db.insert(conversationMessage).values({
+          conversationId,
+          sender: "CANDIDATE",
+          contentType: "TEXT",
+          channel: "WEB",
+          content: userMessageText,
+        });
+      }
     }
 
     // Определяем, это первый ответ после приветствия или нет
@@ -285,13 +301,29 @@ ${customOrganizationalQuestions}`
           },
         });
 
+        // Формируем сообщения с учетом голосовых (используем транскрипции)
+        const formattedMessages = messages.map((m) => {
+          let content =
+            m.parts?.map((p) => p.text).join("\n") || m.content || "";
+
+          // Если это сообщение пользователя с голосовым файлом, добавляем контекст
+          if (m.role === "user") {
+            const hasVoiceFile = m.parts?.some((p) => p.type === "file");
+            if (hasVoiceFile) {
+              content = `[Голосовое сообщение]\n${content}`;
+            }
+          }
+
+          return {
+            role: m.role as "user" | "assistant" | "system",
+            content,
+          };
+        });
+
         const result = streamText({
           model,
           system: systemPrompt,
-          messages: messages.map((m) => ({
-            role: m.role as "user" | "assistant" | "system",
-            content: m.parts?.map((p) => p.text).join("\n") || m.content || "",
-          })),
+          messages: formattedMessages,
           experimental_transform: smoothStream({ chunking: "word" }),
           onFinish: async ({ text }) => {
             generation.end({ output: text });
