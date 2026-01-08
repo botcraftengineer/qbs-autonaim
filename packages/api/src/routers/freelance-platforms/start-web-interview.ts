@@ -10,7 +10,7 @@ import { createErrorHandler } from "../../utils/error-handler";
 
 /**
  * Нормализует URL профиля для предотвращения дубликатов
- * - Приводит к нижнему регистру
+ * - Приводит протокол и хост к нижнему регистру (pathname остаётся как есть)
  * - Удаляет trailing slash
  * - Удаляет query параметры и фрагменты
  * - Удаляет стандартные порты (80, 443)
@@ -25,16 +25,16 @@ function normalizeProfileUrl(url: string): string {
     // Удаляем стандартные порты
     normalized = normalized.replace(/:80$/, "").replace(/:443$/, "");
 
-    // Добавляем pathname без trailing slash
+    // Добавляем pathname без trailing slash (сохраняем регистр)
     const pathname = urlObj.pathname.replace(/\/$/, "") || "/";
     normalized += pathname;
 
-    return normalized.toLowerCase();
+    return normalized;
   } catch {
     // Если URL невалидный, возвращаем нормализованную строку
-    return (
-      url.toLowerCase().replace(/\/$/, "").split("?")[0]?.split("#")[0] || url
-    );
+    const withoutQuery = url.split("?")[0] ?? url;
+    const withoutFragment = withoutQuery.split("#")[0] ?? withoutQuery;
+    return withoutFragment.replace(/\/$/, "") || url;
   }
 }
 
@@ -407,7 +407,7 @@ async function handleGigInterview(
     gig.workspace?.companySettings?.botName || "Ассистент по найму";
   const companyName = gig.workspace?.companySettings?.name || "нашей компании";
 
-  const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
+  const welcomeMessage = `Здравствуйте! 👋
 
 Меня зовут ${botName}, я помогаю ${companyName} в подборе исполнителей на задание "${gig.title}".
 

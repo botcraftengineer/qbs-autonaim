@@ -1,5 +1,6 @@
-import { eq } from "@qbs-autonaim/db";
+import { eq, sql } from "@qbs-autonaim/db";
 import {
+  gig,
   gigHrSelectionStatusValues,
   gigResponse,
   gigResponseStatusValues,
@@ -72,6 +73,30 @@ export const updateStatus = protectedProcedure
       .set(patch)
       .where(eq(gigResponse.id, input.responseId))
       .returning();
+
+    // Обновляем счетчик новых откликов, если статус изменился
+    if (input.status !== undefined && response.status !== input.status) {
+      const wasNew = response.status === "NEW";
+      const isNew = input.status === "NEW";
+
+      if (wasNew && !isNew) {
+        // Отклик перестал быть новым - уменьшаем счетчик
+        await ctx.db
+          .update(gig)
+          .set({
+            newResponses: sql`GREATEST(COALESCE(${gig.newResponses}, 0) - 1, 0)`,
+          })
+          .where(eq(gig.id, response.gigId));
+      } else if (!wasNew && isNew) {
+        // Отклик стал новым - увеличиваем счетчик
+        await ctx.db
+          .update(gig)
+          .set({
+            newResponses: sql`COALESCE(${gig.newResponses}, 0) + 1`,
+          })
+          .where(eq(gig.id, response.gigId));
+      }
+    }
 
     return updated;
   });

@@ -4,11 +4,13 @@ import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { conversation } from "../conversation/conversation";
+import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
 
 /**
  * Универсальная таблица для результатов скоринга интервью
  * Используется для всех источников: Telegram, Web и других
+ * Поддерживает как вакансии (responseId), так и гиги (gigResponseId)
  */
 export const interviewScoring = pgTable("interview_scorings", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
@@ -17,6 +19,9 @@ export const interviewScoring = pgTable("interview_scorings", {
     .unique()
     .references(() => conversation.id, { onDelete: "cascade" }),
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
+    onDelete: "cascade",
+  }),
+  gigResponseId: uuid("gig_response_id").references(() => gigResponse.id, {
     onDelete: "cascade",
   }),
   score: integer("score").notNull(), // Оценка от 0 до 5
@@ -32,6 +37,7 @@ export const CreateInterviewScoringSchema = createInsertSchema(
   {
     conversationId: uuidv7Schema,
     responseId: uuidv7Schema.optional(),
+    gigResponseId: uuidv7Schema.optional(),
     score: z.number().int().min(0).max(5),
     detailedScore: z.number().int().min(0).max(100),
     analysis: z.string().optional(),

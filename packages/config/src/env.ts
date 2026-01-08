@@ -81,7 +81,8 @@ export const env = createEnv({
       .transform((val) => val === "true"),
 
     // Docling
-    DOCLING_API_URL: z.url().optional().default("http://localhost:8000"),
+    // Note: DOCLING_API_URL uses port 8080 to avoid conflict with PORT (default 8000)
+    DOCLING_API_URL: z.url().optional().default("http://localhost:8080"),
     DOCLING_API_KEY: z.string().optional().default(""),
 
     ENCRYPTION_KEY: z
