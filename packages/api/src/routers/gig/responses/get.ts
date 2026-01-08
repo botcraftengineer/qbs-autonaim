@@ -49,5 +49,25 @@ export const get = protectedProcedure
       });
     }
 
-    return response;
+    // Получаем conversation с сообщениями
+    const conversationData = await ctx.db.query.conversation.findFirst({
+      where: (conversation, { eq, and }) =>
+        and(
+          eq(conversation.gigResponseId, input.responseId),
+          eq(conversation.source, "WEB"),
+        ),
+      with: {
+        messages: {
+          with: {
+            file: true,
+          },
+          orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+        },
+      },
+    });
+
+    return {
+      ...response,
+      conversation: conversationData,
+    };
   });

@@ -9,7 +9,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  cn,
   Progress,
+  ScrollArea,
   Separator,
   Tabs,
   TabsContent,
@@ -19,6 +21,7 @@ import {
 import {
   Award,
   Banknote,
+  Bot,
   Calendar,
   CheckCircle2,
   Clock,
@@ -42,6 +45,18 @@ interface ResponseDetailCardProps {
       score: number;
       detailedScore: number;
       analysis: string | null;
+    } | null;
+    conversation?: {
+      id: string;
+      status: string;
+      messages: Array<{
+        id: string;
+        sender: string;
+        content: string;
+        contentType: string;
+        voiceTranscription: string | null;
+        createdAt: Date;
+      }>;
     } | null;
   };
   onAccept?: () => void;
@@ -129,6 +144,8 @@ export function ResponseDetailCard({
   const StatusIcon = statusConfig.icon;
   const hasScreening = !!response.screening;
   const hasInterviewScoring = !!response.interviewScoring;
+  const hasConversation =
+    !!response.conversation && response.conversation.messages.length > 0;
 
   return (
     <div className="space-y-6">
@@ -391,11 +408,19 @@ export function ResponseDetailCard({
       <Card>
         <Tabs defaultValue="proposal" className="w-full">
           <CardHeader className="pb-3">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList
+              className={cn(
+                "grid w-full",
+                hasConversation ? "grid-cols-5" : "grid-cols-4",
+              )}
+            >
               <TabsTrigger value="proposal">Предложение</TabsTrigger>
               <TabsTrigger value="portfolio">Портфолио</TabsTrigger>
               <TabsTrigger value="experience">Опыт</TabsTrigger>
               <TabsTrigger value="contacts">Контакты</TabsTrigger>
+              {hasConversation && (
+                <TabsTrigger value="dialog">Диалог</TabsTrigger>
+              )}
             </TabsList>
           </CardHeader>
 
@@ -653,6 +678,85 @@ export function ResponseDetailCard({
                   </div>
                 )}
             </TabsContent>
+
+            {/* Dialog Tab */}
+            {hasConversation && response.conversation && (
+              <TabsContent value="dialog" className="space-y-4 mt-0">
+                <ScrollArea className="h-[600px] pr-4">
+                  <div className="space-y-4">
+                    {response.conversation.messages.map((message) => {
+                      const isBot = message.sender === "BOT";
+                      const isVoice = message.contentType === "VOICE";
+
+                      return (
+                        <div
+                          key={message.id}
+                          className={cn(
+                            "flex gap-3",
+                            isBot ? "flex-row" : "flex-row-reverse",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                              isBot ? "bg-primary/10" : "bg-muted",
+                            )}
+                          >
+                            {isBot ? (
+                              <Bot className="h-4 w-4 text-primary" />
+                            ) : (
+                              <User className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+
+                          <div
+                            className={cn(
+                              "flex-1 space-y-1",
+                              isBot ? "items-start" : "items-end",
+                            )}
+                          >
+                            <div
+                              className={cn(
+                                "inline-block rounded-lg px-4 py-2 max-w-[80%]",
+                                isBot
+                                  ? "bg-muted text-foreground"
+                                  : "bg-primary text-primary-foreground",
+                              )}
+                            >
+                              {isVoice && message.voiceTranscription ? (
+                                <div className="space-y-2">
+                                  <div className="text-xs opacity-70">
+                                    🎤 Голосовое сообщение
+                                  </div>
+                                  <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                                    {message.voiceTranscription}
+                                  </p>
+                                </div>
+                              ) : (
+                                <p className="text-sm whitespace-pre-wrap leading-relaxed">
+                                  {message.content}
+                                </p>
+                              )}
+                            </div>
+                            <div
+                              className={cn(
+                                "text-xs text-muted-foreground px-1",
+                                isBot ? "text-left" : "text-right",
+                              )}
+                            >
+                              {new Intl.DateTimeFormat("ru-RU", {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }).format(new Date(message.createdAt))}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </TabsContent>
+            )}
           </CardContent>
         </Tabs>
       </Card>
