@@ -119,11 +119,6 @@ export default function CreateGigPage({ params }: PageProps) {
     estimatedDuration: "",
   });
 
-  // Debug: отслеживаем изменения draft
-  React.useEffect(() => {
-    console.log("[gig-create] Draft state changed:", draft);
-  }, [draft]);
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -212,24 +207,11 @@ export default function CreateGigPage({ params }: PageProps) {
     const message = parts.join("\n");
 
     try {
-      console.log(
-        "[gig-create] Calling generateWithAi with workspaceId:",
-        workspace.id,
-      );
       const result = await generateWithAi({
         workspaceId: workspace.id,
         message,
         currentDocument: {},
         conversationHistory: [],
-      });
-
-      console.log("[gig-create] AI result received:", {
-        hasDocument: !!result.document,
-        documentTitle: result.document?.title,
-        documentDescription: result.document?.description,
-        documentDeliverables: result.document?.deliverables,
-        quickRepliesCount: result.quickReplies?.length,
-        fullDocument: JSON.stringify(result.document, null, 2),
       });
 
       if (!isMountedRef.current) return;
@@ -240,13 +222,7 @@ export default function CreateGigPage({ params }: PageProps) {
       setQuickReplies(result.quickReplies || []);
 
       // Validate AI response shape
-      console.log("[gig-create] Validating document:", doc);
       const parsed = aiDocumentSchema.safeParse(doc);
-      console.log(
-        "[gig-create] Validation result:",
-        parsed.success,
-        parsed.error?.message,
-      );
 
       if (!parsed.success) {
         console.error(
@@ -270,7 +246,6 @@ export default function CreateGigPage({ params }: PageProps) {
         });
       } else {
         const validDoc = parsed.data;
-        console.log("[gig-create] Validated doc:", validDoc);
         // Нормализуем estimatedDuration к строке: приоритет AI-ответу, затем wizard
         const rawDuration =
           validDoc.timeline ?? wizardStateParam.timeline?.days;
@@ -296,7 +271,6 @@ export default function CreateGigPage({ params }: PageProps) {
           estimatedDuration,
         };
 
-        console.log("[gig-create] Setting draft to:", newDraft);
         setDraft(newDraft);
       }
 
@@ -305,7 +279,6 @@ export default function CreateGigPage({ params }: PageProps) {
       setPendingAssistantMessage(assistantMessage);
 
       toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
-      console.log("[gig-create] Draft state after generation:", draft);
     } catch (err) {
       if (!isMountedRef.current) return;
       toast.error(err instanceof Error ? err.message : "Ошибка генерации");
@@ -328,7 +301,6 @@ export default function CreateGigPage({ params }: PageProps) {
     setIsGenerating(true);
 
     try {
-      console.log("[gig-create] handleChatMessage calling AI");
       const result = await generateWithAi({
         workspaceId: workspace.id,
         message,
@@ -346,12 +318,6 @@ export default function CreateGigPage({ params }: PageProps) {
         conversationHistory: history
           .slice(-10)
           .map(({ role, content }) => ({ role, content })), // Последние 10 сообщений
-      });
-
-      console.log("[gig-create] handleChatMessage result:", {
-        hasDocument: !!result.document,
-        documentTitle: result.document?.title,
-        fullDocument: result.document,
       });
 
       if (!isMountedRef.current) return;
@@ -381,13 +347,6 @@ export default function CreateGigPage({ params }: PageProps) {
             budgetMin: budgetFromAI.budgetMin ?? prev.budgetMin,
             budgetMax: budgetFromAI.budgetMax ?? prev.budgetMax,
           };
-
-          console.log(
-            "[gig-create] Updating draft from:",
-            prev,
-            "to:",
-            updatedDraft,
-          );
 
           return updatedDraft;
         });

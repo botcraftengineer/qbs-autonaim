@@ -30,6 +30,7 @@ export const get = protectedProcedure
       with: {
         screening: true,
         gig: true,
+        interviewScoring: true,
       },
     });
 
