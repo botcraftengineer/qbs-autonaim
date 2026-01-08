@@ -8,6 +8,13 @@
       "when": 1767857949300,
       "tag": "0000_bright_titania",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767859531195,
+      "tag": "0001_steep_king_cobra",
+      "breakpoints": true
     }
   ]
 }

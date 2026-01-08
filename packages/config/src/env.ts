@@ -80,8 +80,10 @@ export const env = createEnv({
       .default("true")
       .transform((val) => val === "true"),
 
-    UNSTRUCTURED_API_KEY: z.string(),
-    UNSTRUCTURED_API_URL: z.url().optional().default("http://localhost:8001"),
+    // Docling
+    DOCLING_API_URL: z.url().optional().default("http://localhost:8000"),
+    DOCLING_API_KEY: z.string().optional().default(""),
+
     ENCRYPTION_KEY: z
       .string()
       .length(64, "ENCRYPTION_KEY должен быть 64 символа (32 байта в hex)"),
@@ -138,8 +140,8 @@ export const env = createEnv({
     INTERVIEW_BUFFER_ENABLED: process.env.INTERVIEW_BUFFER_ENABLED,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
-    UNSTRUCTURED_API_KEY: process.env.UNSTRUCTURED_API_KEY,
-    UNSTRUCTURED_API_URL: process.env.UNSTRUCTURED_API_URL,
+    DOCLING_API_URL: process.env.DOCLING_API_URL,
+    DOCLING_API_KEY: process.env.DOCLING_API_KEY,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     TG_CLIENT_PORT: process.env.TG_CLIENT_PORT,
   },

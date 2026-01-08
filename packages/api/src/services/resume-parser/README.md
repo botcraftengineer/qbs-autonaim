@@ -1,10 +1,10 @@
 # Resume Parser Service
 
-Сервис для парсинга резюме из различных форматов документов с использованием Unstructured API и AI-структурирования.
+Сервис для парсинга резюме из различных форматов документов с использованием Docling и AI-структурирования.
 
 ## Возможности
 
-- **Универсальный парсинг**: Поддержка PDF, DOCX, DOC, TXT, RTF, ODT через Unstructured API
+- **Универсальный парсинг**: Поддержка PDF, DOCX, DOC через Docling
 - **AI-структурирование**: Автоматическое извлечение структурированных данных (имя, контакты, опыт, образование, навыки)
 - **Валидация**: Проверка формата, размера файла и качества извлечённого текста
 - **Обработка ошибок**: Понятные сообщения об ошибках на русском языке
@@ -13,20 +13,20 @@
 
 ```
 ResumeParserService
-  ├── UnstructuredParser (извлечение текста через API)
+  ├── DoclingProcessor (извлечение текста через API)
   └── AI Agent (структурирование данных)
 ```
 
 ## Настройка
 
-### 1. Запуск Unstructured через Docker
+### 1. Запуск Docling через Docker
 
 ```bash
-# Запустить все сервисы включая unstructured
-docker-compose up -d unstructured
+# Запустить Docling сервис
+docker-compose up -d docling
 
 # Проверить статус
-docker ps | grep unstructured
+docker ps | grep docling
 ```
 
 ### 2. Переменные окружения
@@ -34,18 +34,18 @@ docker ps | grep unstructured
 Добавьте в `.env`:
 
 ```env
-# URL Unstructured API сервиса
-UNSTRUCTURED_API_URL='http://localhost:8001'
+# URL Docling API сервиса
+DOCLING_API_URL='http://localhost:8000'
 
 # API ключ (опционально для локального Docker)
-UNSTRUCTURED_API_KEY=''
+DOCLING_API_KEY=''
 ```
 
 ### 3. Проверка работоспособности
 
 ```bash
 # Проверить доступность API
-curl http://localhost:8001/general/v0/general
+curl http://localhost:8000/health
 ```
 
 ## Использование
@@ -58,8 +58,8 @@ import { openai } from "@ai-sdk/openai";
 
 const parser = new ResumeParserService({
   model: openai("gpt-4o-mini"),
-  unstructuredApiUrl: process.env.UNSTRUCTURED_API_URL,
-  unstructuredApiKey: process.env.UNSTRUCTURED_API_KEY,
+  doclingApiUrl: process.env.DOCLING_API_URL,
+  doclingApiKey: process.env.DOCLING_API_KEY,
 });
 
 // Валидация формата
@@ -209,23 +209,23 @@ const text = pdfData.text;
 ### Стало (новый подход)
 
 ```typescript
-import { UnstructuredParser } from "@qbs-autonaim/api";
+import { DoclingProcessor } from "@qbs-autonaim/document-processor";
 
-const parser = new UnstructuredParser({
-  apiUrl: process.env.UNSTRUCTURED_API_URL!,
+const parser = new DoclingProcessor({
+  apiUrl: process.env.DOCLING_API_URL,
 });
 
 // Универсально для всех форматов
 const text = await parser.extractText(content, filename);
 ```
 
-## Преимущества Unstructured
+## Преимущества Docling
 
 1. **Универсальность**: Один API для всех форматов документов
-2. **Качество**: Лучшее извлечение текста и структуры
-3. **OCR**: Поддержка отсканированных документов (при настройке)
+2. **Качество**: Высококачественное извлечение текста и структуры
+3. **OCR**: Встроенная поддержка отсканированных документов
 4. **Масштабируемость**: Отдельный сервис, легко масштабировать
-5. **Обновления**: Не нужно обновлять зависимости в проекте
+5. **Структура**: Извлечение заголовков, таблиц, списков
 
 ## Troubleshooting
 
@@ -238,8 +238,8 @@ Error: Сервис обработки документов недоступен
 **Решение**: Проверьте, что Docker контейнер запущен:
 
 ```bash
-docker-compose up -d unstructured
-docker logs unstructured
+docker-compose up -d docling
+docker logs docling
 ```
 
 ### Таймаут обработки
@@ -265,10 +265,9 @@ const parser = new ResumeParserService({
 Error: Документ не содержит текста
 ```
 
-**Решение**: Возможно, это отсканированный документ. Для OCR нужна дополнительная настройка Unstructured с Tesseract.
+**Решение**: Возможно, это отсканированный документ. Docling поддерживает OCR автоматически, но убедитесь что enableOcr включен.
 
 ## Дополнительные ресурсы
 
-- [Unstructured Documentation](https://unstructured-io.github.io/unstructured/)
-- [Unstructured API Reference](https://unstructured-io.github.io/unstructured/api.html)
-- [Docker Hub - Unstructured](https://quay.io/repository/unstructured-io/unstructured-api)
+- [Docling Documentation](https://ds4sd.github.io/docling/)
+- [Docling GitHub](https://github.com/DS4SD/docling)

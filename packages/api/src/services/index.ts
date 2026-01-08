@@ -82,7 +82,6 @@ export {
   DEFAULT_PARSER_CONFIG,
   ResumeParserError,
   ResumeParserService,
-  UnstructuredParser,
 } from "./resume-parser";
 export type {
   ContactInfo as ShortlistContactInfo,

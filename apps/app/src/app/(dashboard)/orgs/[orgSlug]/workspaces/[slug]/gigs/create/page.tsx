@@ -165,6 +165,17 @@ export default function CreateGigPage({ params }: PageProps) {
     setIsGenerating(true);
     setWizardState(wizardStateParam);
 
+    // Сразу обновляем draft данными из визарда для отображения прогресса
+    setDraft((prev) => ({
+      ...prev,
+      type: wizardStateParam.category?.id || "OTHER",
+      budgetMin: wizardStateParam.budget?.min,
+      budgetMax: wizardStateParam.budget?.max,
+      estimatedDuration: wizardStateParam.timeline?.days
+        ? String(wizardStateParam.timeline.days)
+        : "",
+    }));
+
     // Собираем данные из wizard в текстовое описание для AI
     const parts: string[] = [];
 

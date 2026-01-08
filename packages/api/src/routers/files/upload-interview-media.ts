@@ -31,7 +31,7 @@ export const uploadInterviewMedia = protectedProcedure
       mimeType: z.string().refine((type) => ALLOWED_MIME_TYPES.includes(type), {
         message: "Неподдерживаемый тип файла",
       }),
-      fileData: z.string(), // base64
+      fileData: z.string().min(1), // base64
     }),
   )
   .mutation(async ({ input, ctx }) => {

@@ -22,11 +22,9 @@ services:
     ports:
       - 9000:9000
       - 2500:2500
-      - 1100:1100
     environment:
       - INBUCKET_WEB_ADDR=0.0.0.0:9000
       - INBUCKET_SMTP_ADDR=0.0.0.0:2500
-      - INBUCKET_POP3_ADDR=0.0.0.0:1100
   minio:
     restart: always
     image: minio/minio
@@ -130,16 +128,14 @@ services:
       - INNGEST_SIGNING_KEY=1234
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  unstructured:
+  docling:
     restart: always
-    image: quay.io/unstructured-io/unstructured-api:latest
-    container_name: unstructured
+    image: ds4sd/docling:latest
+    container_name: docling
     ports:
-      - 8001:8000
+      - 8000:8000
     environment:
-      - UNSTRUCTURED_API_KEY=${UNSTRUCTURED_API_KEY:-}
-    volumes:
-      - ./tmp:/tmp
+      - DOCLING_API_KEY=${DOCLING_API_KEY:-}
   qdrant:
     restart: always
     image: qdrant/qdrant:latest

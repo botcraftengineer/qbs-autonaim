@@ -1,5 +1,4 @@
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
@@ -29,7 +28,7 @@ export const getInterviewContext = publicProcedure
     if (conv.responseId) {
       const response = await ctx.db.query.vacancyResponse.findFirst({
         where: (vacancyResponse, { eq }) =>
-          eq(vacancyResponse.id, conv.responseId!),
+          eq(vacancyResponse.id, conv.responseId ?? ""),
         with: {
           vacancy: true,
         },
@@ -50,7 +49,8 @@ export const getInterviewContext = publicProcedure
     // Если есть gigResponseId, загружаем задание
     if (conv.gigResponseId) {
       const gigResponse = await ctx.db.query.gigResponse.findFirst({
-        where: (gigResponse, { eq }) => eq(gigResponse.id, conv.gigResponseId!),
+        where: (gigResponse, { eq }) =>
+          eq(gigResponse.id, conv.gigResponseId ?? ""),
         with: {
           gig: true,
         },

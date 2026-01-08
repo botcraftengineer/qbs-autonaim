@@ -52,9 +52,9 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     enabled: !!workspace?.id,
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: interviewMediaFiles = [] } = useQuery({
-    ...(trpc as any).files.getInterviewMedia.queryOptions({
+    // @ts-expect-error - queryOptions not properly typed in tRPC client
+    ...trpc.files.getInterviewMedia.queryOptions({
       gigId,
       workspaceId: workspace?.id ?? "",
     }),
@@ -85,9 +85,9 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
             workspaceId: workspace?.id ?? "",
           }),
         });
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         queryClient.invalidateQueries({
-          queryKey: (trpc as any).files.getInterviewMedia.queryKey({
+          // @ts-expect-error - queryKey not properly typed in tRPC client
+          queryKey: trpc.files.getInterviewMedia.queryKey({
             gigId,
             workspaceId: workspace?.id ?? "",
           }),
