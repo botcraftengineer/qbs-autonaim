@@ -36,6 +36,13 @@
       "when": 1767790459896,
       "tag": "0004_aromatic_blacklash",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1767856798557,
+      "tag": "0005_neat_tarot",
+      "breakpoints": true
     }
   ]
 }

@@ -99,13 +99,30 @@ export class UnstructuredParser implements FormatParser {
           );
         }
 
-        const elements = (await response.json()) as UnstructuredElement[];
+        const parsed = await response.json();
+
+        // Validate response is an array
+        if (!Array.isArray(parsed)) {
+          console.error(
+            "Unstructured API returned non-array response:",
+            parsed,
+          );
+          throw new Error(
+            "Invalid response format: expected array of elements",
+          );
+        }
+
+        // Filter and validate elements
+        const elements = parsed.filter(
+          (item): item is UnstructuredElement =>
+            typeof item === "object" &&
+            item !== null &&
+            typeof item.text === "string" &&
+            item.text.trim() !== "",
+        );
 
         // Извлекаем текст из всех элементов
-        const text = elements
-          .filter((el) => el.text?.trim())
-          .map((el) => el.text.trim())
-          .join("\n\n");
+        const text = elements.map((el) => el.text.trim()).join("\n\n");
 
         if (!text) {
           throw new DocumentProcessingError(
@@ -164,7 +181,11 @@ export class UnstructuredParser implements FormatParser {
   private getMimeType(filename?: string): string {
     if (!filename) return "application/octet-stream";
 
-    const ext = filename.toLowerCase().split(".").pop();
+    const lastDotIndex = filename.lastIndexOf(".");
+    const hasDot = lastDotIndex > -1;
+    const ext = hasDot
+      ? filename.slice(lastDotIndex + 1).toLowerCase()
+      : undefined;
 
     const mimeTypes: Record<string, string> = {
       pdf: "application/pdf",
@@ -175,6 +196,6 @@ export class UnstructuredParser implements FormatParser {
       odt: "application/vnd.oasis.opendocument.text",
     };
 
-    return mimeTypes[ext || ""] || "application/octet-stream";
+    return ext && mimeTypes[ext] ? mimeTypes[ext] : "application/octet-stream";
   }
 }

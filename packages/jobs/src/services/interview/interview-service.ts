@@ -57,6 +57,13 @@ interface InterviewContext {
   customBotInstructions?: string | null;
   customOrganizationalQuestions?: string | null;
   customInterviewQuestions?: string | null;
+  // Медиафайлы для показа кандидату
+  interviewMediaFiles?: Array<{
+    id: string;
+    fileName: string;
+    mimeType: string;
+    url: string;
+  }>;
 }
 
 // ==================== HELPER FUNCTIONS ====================
@@ -212,6 +219,7 @@ export async function getInterviewContext(
         description: string | null;
         customBotInstructions: string | null;
         customInterviewQuestions: string | null;
+        interviewMediaFileIds: string[] | null;
         workspace: {
           companySettings: {
             botName: string | null;
@@ -287,6 +295,45 @@ export async function getInterviewContext(
   const gig = conv.gigResponse?.gig;
   const workspace = isGig ? gig?.workspace : vacancy?.workspace;
 
+  // Получаем медиафайлы для gig (если есть)
+  let interviewMediaFiles: Array<{
+    id: string;
+    fileName: string;
+    mimeType: string;
+    url: string;
+  }> = [];
+
+  if (
+    isGig &&
+    gig?.interviewMediaFileIds &&
+    gig.interviewMediaFileIds.length > 0
+  ) {
+    const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
+
+    const mediaFileIds = gig.interviewMediaFileIds;
+    const files = await db.query.file.findMany({
+      where: (files, { inArray }) => inArray(files.id, mediaFileIds),
+    });
+
+    interviewMediaFiles = await Promise.all(
+      files.map(async (f) => {
+        try {
+          const url = await getDownloadUrl(f.key);
+          return {
+            id: f.id,
+            fileName: f.fileName,
+            mimeType: f.mimeType,
+            url,
+          };
+        } catch {
+          return null;
+        }
+      }),
+    ).then((results) =>
+      results.filter((f): f is NonNullable<typeof f> => f !== null),
+    );
+  }
+
   // Передаем обе группы вопросов, AI сам решит что спрашивать на основе истории
   const result: InterviewContext = {
     conversationId: conv.id,
@@ -319,6 +366,8 @@ export async function getInterviewContext(
     customInterviewQuestions: isGig
       ? gig?.customInterviewQuestions || null
       : vacancy?.customInterviewQuestions || null,
+    interviewMediaFiles:
+      interviewMediaFiles.length > 0 ? interviewMediaFiles : undefined,
   };
 
   return result;
