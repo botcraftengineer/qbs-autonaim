@@ -288,12 +288,15 @@ async function handleGigInterview(
     });
   }
 
-  // Проверяем дубликаты по profileUrl + gigId
+  // Используем profileUrl как candidateId для обеспечения уникальности
+  const candidateId = freelancerInfo.platformProfileUrl;
+
+  // Проверяем дубликаты по candidateId + gigId (соответствует уникальному ограничению БД)
   const existingResponse = await ctx.db.query.gigResponse.findFirst({
     where: (response, { and, eq }) =>
       and(
         eq(response.gigId, gigLink.gigId),
-        eq(response.profileUrl, freelancerInfo.platformProfileUrl),
+        eq(response.candidateId, candidateId),
       ),
   });
 
@@ -302,7 +305,7 @@ async function handleGigInterview(
       "Вы уже откликнулись на это задание",
       {
         gigId: gigLink.gigId,
-        profileUrl: freelancerInfo.platformProfileUrl,
+        candidateId,
       },
     );
   }
@@ -312,7 +315,7 @@ async function handleGigInterview(
     .insert(gigResponse)
     .values({
       gigId: gigLink.gigId,
-      candidateId: `web_${crypto.randomUUID()}`,
+      candidateId,
       candidateName: freelancerInfo.name,
       profileUrl: freelancerInfo.platformProfileUrl,
       phone: freelancerInfo.phone,
