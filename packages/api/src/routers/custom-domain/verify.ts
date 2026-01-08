@@ -1,9 +1,9 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { workspaceCustomDomain } from "@qbs-autonaim/db/schema";
+import { customDomain } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure } from "../../../trpc";
+import { protectedProcedure } from "../../trpc";
 
 async function checkDNSRecords(): Promise<boolean> {
   // TODO: Реализовать реальную проверку DNS
@@ -17,8 +17,8 @@ export const verify = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const domain = await db.query.workspaceCustomDomain.findFirst({
-      where: eq(workspaceCustomDomain.id, input.domainId),
+    const domain = await db.query.customDomain.findFirst({
+      where: eq(customDomain.id, input.domainId),
       with: {
         workspace: {
           with: {
@@ -59,13 +59,13 @@ export const verify = protectedProcedure
     }
 
     const [updated] = await db
-      .update(workspaceCustomDomain)
+      .update(customDomain)
       .set({
         isVerified: true,
         verifiedAt: new Date(),
         updatedAt: new Date(),
       })
-      .where(eq(workspaceCustomDomain.id, input.domainId))
+      .where(eq(customDomain.id, input.domainId))
       .returning();
 
     return updated;

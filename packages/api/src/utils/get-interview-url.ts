@@ -1,7 +1,7 @@
 import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import type * as schema from "@qbs-autonaim/db/schema";
-import { workspaceCustomDomain } from "@qbs-autonaim/db/schema";
+import { customDomain } from "@qbs-autonaim/db/schema";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 /**
@@ -11,19 +11,19 @@ async function getPrimaryInterviewDomain(
   db: NodePgDatabase<typeof schema>,
   workspaceId: string,
 ): Promise<string | null> {
-  const customDomain = await db.query.workspaceCustomDomain.findFirst({
+  const domain = await db.query.customDomain.findFirst({
     where: and(
-      eq(workspaceCustomDomain.workspaceId, workspaceId),
-      eq(workspaceCustomDomain.type, "interview"),
-      eq(workspaceCustomDomain.isPrimary, true),
-      eq(workspaceCustomDomain.isVerified, true),
+      eq(customDomain.workspaceId, workspaceId),
+      eq(customDomain.type, "interview"),
+      eq(customDomain.isPrimary, true),
+      eq(customDomain.isVerified, true),
     ),
     columns: {
       domain: true,
     },
   });
 
-  return customDomain?.domain ?? null;
+  return domain?.domain ?? null;
 }
 
 /**

@@ -24,7 +24,7 @@ import {
   Skeleton,
   toast,
 } from "@qbs-autonaim/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Calendar,
@@ -175,15 +175,13 @@ export function GigDetailClient({
     data: gig,
     isPending,
     error,
-  } = trpc.gig.get.useQuery(
-    {
+  } = useQuery({
+    ...trpc.gig.get.queryOptions({
       id: gigId,
-      workspaceId: workspaceId,
-    },
-    {
-      enabled: !!workspaceId,
-    },
-  );
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: !!workspaceId,
+  });
 
   const deleteMutation = useMutation(
     trpc.gig.delete.mutationOptions({

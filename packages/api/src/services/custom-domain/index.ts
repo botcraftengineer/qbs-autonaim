@@ -95,7 +95,7 @@ export class CustomDomainService {
         workspaceId,
         domain: normalizedDomain,
         cnameTarget,
-        verified: false,
+        isVerified: false,
         sslStatus: "pending",
       })
       .returning();
@@ -208,7 +208,7 @@ export class CustomDomainService {
       await this.db
         .update(customDomain)
         .set({
-          verified: false,
+          isVerified: false,
           verificationError: dnsResult.error,
         })
         .where(eq(customDomain.id, domainId));
@@ -223,7 +223,7 @@ export class CustomDomainService {
     const [updatedDomain] = await this.db
       .update(customDomain)
       .set({
-        verified: true,
+        isVerified: true,
         verifiedAt: new Date(),
         verificationError: null,
         sslStatus: sslResult.status,
@@ -428,13 +428,13 @@ export class CustomDomainService {
       workspaceId: domain.workspaceId,
       domain: domain.domain,
       cnameTarget: domain.cnameTarget,
-      verified: domain.verified ?? false,
+      verified: domain.isVerified,
       verifiedAt: domain.verifiedAt,
-      lastVerificationAttempt: domain.lastVerificationAttempt,
-      verificationError: domain.verificationError,
-      sslStatus: domain.sslStatus ?? "pending",
-      sslCertificateId: domain.sslCertificateId,
-      sslExpiresAt: domain.sslExpiresAt,
+      lastVerificationAttempt: domain.lastVerificationAttempt ?? undefined,
+      verificationError: domain.verificationError ?? undefined,
+      sslStatus: domain.sslStatus,
+      sslCertificateId: domain.sslCertificateId ?? undefined,
+      sslExpiresAt: domain.sslExpiresAt ?? undefined,
       createdAt: domain.createdAt,
       updatedAt: domain.updatedAt,
     };

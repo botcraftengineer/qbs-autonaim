@@ -1,6 +1,6 @@
 "use client";
 
-import type { OrganizationCustomDomain } from "@qbs-autonaim/db/schema";
+import type { WorkspaceCustomDomain } from "@qbs-autonaim/db/schema";
 import {
   Badge,
   Button,
@@ -12,6 +12,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -25,18 +26,16 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
-import { useToast } from "~/hooks/use-toast";
 import { useTRPC } from "~/trpc/react";
 import { DeleteDomainDialog } from "./delete-domain-dialog";
 import { DnsInstructionsDialog } from "./dns-instructions-dialog";
 
 interface DomainCardProps {
-  domain: OrganizationCustomDomain;
+  domain: WorkspaceCustomDomain;
   organizationId: string;
 }
 
 export function DomainCard({ domain, organizationId }: DomainCardProps) {
-  const { toast } = useToast();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [showDnsDialog, setShowDnsDialog] = useState(false);
@@ -45,19 +44,18 @@ export function DomainCard({ domain, organizationId }: DomainCardProps) {
   const verifyMutation = useMutation(
     trpc.customDomain.verify.mutationOptions({
       onSuccess: () => {
-        toast({
-          title: "Домен верифицирован",
+        toast.success("Домен верифицирован", {
           description: "Теперь вы можете использовать этот домен",
         });
         queryClient.invalidateQueries({
-          queryKey: trpc.customDomain.list.queryKey({ organizationId }),
+          queryKey: trpc.customDomain.list.queryKey({
+            workspaceId: organizationId,
+          }),
         });
       },
-      onError: (error: Error) => {
-        toast({
-          title: "Ошибка верификации",
+      onError: (error) => {
+        toast.error("Ошибка верификации", {
           description: error.message,
-          variant: "destructive",
         });
       },
     }),
@@ -66,18 +64,16 @@ export function DomainCard({ domain, organizationId }: DomainCardProps) {
   const setPrimaryMutation = useMutation(
     trpc.customDomain.setPrimary.mutationOptions({
       onSuccess: () => {
-        toast({
-          title: "Основной домен изменён",
-        });
+        toast.success("Основной домен изменён");
         queryClient.invalidateQueries({
-          queryKey: trpc.customDomain.list.queryKey({ organizationId }),
+          queryKey: trpc.customDomain.list.queryKey({
+            workspaceId: organizationId,
+          }),
         });
       },
-      onError: (error: Error) => {
-        toast({
-          title: "Ошибка",
+      onError: (error) => {
+        toast.error("Ошибка", {
           description: error.message,
-          variant: "destructive",
         });
       },
     }),
@@ -85,8 +81,7 @@ export function DomainCard({ domain, organizationId }: DomainCardProps) {
 
   const copyToClipboard = (text: string) => {
     void navigator.clipboard.writeText(text);
-    toast({
-      title: "Скопировано",
+    toast.success("Скопировано", {
       description: "Значение скопировано в буфер обмена",
     });
   };

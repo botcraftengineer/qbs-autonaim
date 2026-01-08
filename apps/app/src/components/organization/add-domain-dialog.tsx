@@ -22,12 +22,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useToast } from "~/hooks/use-toast";
 import { useTRPC } from "~/trpc/react";
 
 const formSchema = z.object({
@@ -58,7 +58,6 @@ export function AddDomainDialog({
   onOpenChange,
   defaultType = "interview",
 }: AddDomainDialogProps) {
-  const { toast } = useToast();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
@@ -73,8 +72,7 @@ export function AddDomainDialog({
   const createMutation = useMutation(
     trpc.customDomain.create.mutationOptions({
       onSuccess: () => {
-        toast({
-          title: "Домен добавлен",
+        toast.success("Домен добавлен", {
           description: "Теперь настройте DNS записи для верификации",
         });
         queryClient.invalidateQueries({
@@ -84,10 +82,8 @@ export function AddDomainDialog({
         onOpenChange(false);
       },
       onError: (error: Error) => {
-        toast({
-          title: "Ошибка",
+        toast.error("Ошибка", {
           description: error.message,
-          variant: "destructive",
         });
       },
     }),

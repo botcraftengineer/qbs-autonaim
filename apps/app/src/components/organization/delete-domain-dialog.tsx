@@ -1,6 +1,6 @@
 "use client";
 
-import type { OrganizationCustomDomain } from "@qbs-autonaim/db/schema";
+import type { WorkspaceCustomDomain } from "@qbs-autonaim/db/schema";
 import {
   Button,
   Dialog,
@@ -9,14 +9,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { useToast } from "~/hooks/use-toast";
 import { useTRPC } from "~/trpc/react";
 
 interface DeleteDomainDialogProps {
-  domain: OrganizationCustomDomain;
+  domain: WorkspaceCustomDomain;
   organizationId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -28,27 +28,25 @@ export function DeleteDomainDialog({
   open,
   onOpenChange,
 }: DeleteDomainDialogProps) {
-  const { toast } = useToast();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
   const deleteMutation = useMutation(
     trpc.customDomain.delete.mutationOptions({
       onSuccess: () => {
-        toast({
-          title: "Домен удалён",
+        toast.success("Домен удалён", {
           description: `Домен ${domain.domain} успешно удалён`,
         });
         queryClient.invalidateQueries({
-          queryKey: trpc.customDomain.list.queryKey({ organizationId }),
+          queryKey: trpc.customDomain.list.queryKey({
+            workspaceId: organizationId,
+          }),
         });
         onOpenChange(false);
       },
-      onError: (error: Error) => {
-        toast({
-          title: "Ошибка",
+      onError: (error) => {
+        toast.error("Ошибка", {
           description: error.message,
-          variant: "destructive",
         });
       },
     }),

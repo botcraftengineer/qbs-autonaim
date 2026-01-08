@@ -23,10 +23,20 @@ export const domainTypeEnum = pgEnum("domain_type", [
 ]);
 
 /**
+ * SSL статус для кастомного домена
+ */
+export const sslStatusEnum = pgEnum("ssl_status", [
+  "pending",
+  "active",
+  "error",
+  "expired",
+]);
+
+/**
  * Кастомные домены для workspace
  * Позволяет каждому workspace использовать собственные домены для различных целей
  */
-export const workspaceCustomDomain = pgTable(
+export const customDomain = pgTable(
   "custom_domains",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
@@ -35,9 +45,21 @@ export const workspaceCustomDomain = pgTable(
       .references(() => workspace.id, { onDelete: "cascade" }),
     domain: varchar("domain", { length: 255 }).notNull(),
     type: domainTypeEnum("type").notNull().default("interview"),
+    cnameTarget: varchar("cname_target", { length: 255 }).notNull(),
     isVerified: boolean("is_verified").default(false).notNull(),
     isPrimary: boolean("is_primary").default(false).notNull(),
     verificationToken: varchar("verification_token", { length: 100 }),
+    verificationError: text("verification_error"),
+    lastVerificationAttempt: timestamp("last_verification_attempt", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    sslStatus: sslStatusEnum("ssl_status").default("pending").notNull(),
+    sslCertificateId: varchar("ssl_certificate_id", { length: 255 }),
+    sslExpiresAt: timestamp("ssl_expires_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -60,37 +82,38 @@ export const workspaceCustomDomain = pgTable(
   }),
 );
 
-export const CreateWorkspaceCustomDomainSchema = createInsertSchema(
-  workspaceCustomDomain,
-  {
-    domain: z
-      .string()
-      .min(3)
-      .max(255)
-      .regex(
-        /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/,
-        "Некорректный формат домена",
-      ),
-    type: z.enum(["interview", "prequalification"]).default("interview"),
-    isVerified: z.boolean().default(false),
-    isPrimary: z.boolean().default(false),
-  },
-).omit({
+export const createCustomDomainSchema = createInsertSchema(customDomain, {
+  domain: z
+    .string()
+    .min(3)
+    .max(255)
+    .regex(
+      /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/,
+      "Некорректный формат домена",
+    ),
+  type: z.enum(["interview", "prequalification"]).default("interview"),
+  cnameTarget: z.string().min(1).max(255),
+  isVerified: z.boolean().default(false),
+  isPrimary: z.boolean().default(false),
+  sslStatus: z
+    .enum(["pending", "active", "error", "expired"])
+    .default("pending"),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
   verifiedAt: true,
   verificationToken: true,
+  verificationError: true,
+  lastVerificationAttempt: true,
+  sslCertificateId: true,
+  sslExpiresAt: true,
 });
 
-export const UpdateWorkspaceCustomDomainSchema =
-  CreateWorkspaceCustomDomainSchema.partial();
+export const updateCustomDomainSchema = createCustomDomainSchema.partial();
 
-export type WorkspaceCustomDomain = typeof workspaceCustomDomain.$inferSelect;
-export type CreateWorkspaceCustomDomain = z.infer<
-  typeof CreateWorkspaceCustomDomainSchema
->;
-export type UpdateWorkspaceCustomDomain = z.infer<
-  typeof UpdateWorkspaceCustomDomainSchema
->;
+export type CustomDomain = typeof customDomain.$inferSelect;
+export type CreateCustomDomain = z.infer<typeof createCustomDomainSchema>;
+export type UpdateCustomDomain = z.infer<typeof updateCustomDomainSchema>;
 export type DomainType = (typeof domainTypeEnum.enumValues)[number];
+export type SSLStatus = (typeof sslStatusEnum.enumValues)[number];

@@ -115,9 +115,10 @@ export async function hasConversationAccess(
   // Если есть авторизованный пользователь, проверяем владение через workspace
   if (userId) {
     // Проверяем доступ через vacancy response
-    if (conv.responseId) {
+    const responseId = conv.responseId;
+    if (responseId) {
       const vacancyResponse = await db.query.vacancyResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.responseId),
+        where: (response, { eq }) => eq(response.id, responseId),
         with: {
           vacancy: true,
         },
@@ -138,9 +139,10 @@ export async function hasConversationAccess(
     }
 
     // Проверяем доступ через gig response
-    if (conv.gigResponseId) {
+    const gigResponseId = conv.gigResponseId;
+    if (gigResponseId) {
       const gigResponse = await db.query.gigResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.gigResponseId),
+        where: (response, { eq }) => eq(response.id, gigResponseId),
         with: {
           gig: true,
         },
@@ -164,9 +166,10 @@ export async function hasConversationAccess(
   // Если есть валидированный токен, проверяем соответствие
   if (validatedToken) {
     // Для vacancy токена проверяем responseId
-    if (validatedToken.type === "vacancy" && conv.responseId) {
+    const responseId = conv.responseId;
+    if (validatedToken.type === "vacancy" && responseId) {
       const vacancyResponse = await db.query.vacancyResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.responseId),
+        where: (response, { eq }) => eq(response.id, responseId),
       });
 
       if (vacancyResponse?.vacancyId === validatedToken.entityId) {
@@ -175,9 +178,10 @@ export async function hasConversationAccess(
     }
 
     // Для gig токена проверяем gigResponseId
-    if (validatedToken.type === "gig" && conv.gigResponseId) {
+    const gigResponseId = conv.gigResponseId;
+    if (validatedToken.type === "gig" && gigResponseId) {
       const gigResponse = await db.query.gigResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, conv.gigResponseId),
+        where: (response, { eq }) => eq(response.id, gigResponseId),
       });
 
       if (gigResponse?.gigId === validatedToken.entityId) {

@@ -1,9 +1,9 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { workspaceCustomDomain } from "@qbs-autonaim/db/schema";
+import { customDomain } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure } from "../../../trpc";
+import { protectedProcedure } from "../../trpc";
 
 export const deleteDomain = protectedProcedure
   .input(
@@ -12,8 +12,8 @@ export const deleteDomain = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const domain = await db.query.workspaceCustomDomain.findFirst({
-      where: eq(workspaceCustomDomain.id, input.domainId),
+    const domain = await db.query.customDomain.findFirst({
+      where: eq(customDomain.id, input.domainId),
       with: {
         workspace: {
           with: {
@@ -40,9 +40,7 @@ export const deleteDomain = protectedProcedure
       });
     }
 
-    await db
-      .delete(workspaceCustomDomain)
-      .where(eq(workspaceCustomDomain.id, input.domainId));
+    await db.delete(customDomain).where(eq(customDomain.id, input.domainId));
 
     return { success: true };
   });

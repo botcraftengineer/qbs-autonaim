@@ -7,9 +7,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  toast,
 } from "@qbs-autonaim/ui";
 import { Copy, Info } from "lucide-react";
-import { useToast } from "~/hooks/use-toast";
 
 interface DnsInstructionsDialogProps {
   domain: string;
@@ -23,12 +23,9 @@ export function DnsInstructionsDialog({
   open,
   onOpenChange,
 }: DnsInstructionsDialogProps) {
-  const { toast } = useToast();
-
   const copyToClipboard = (text: string, label: string) => {
     void navigator.clipboard.writeText(text);
-    toast({
-      title: "Скопировано",
+    toast.success("Скопировано", {
       description: `${label} скопировано в буфер обмена`,
     });
   };

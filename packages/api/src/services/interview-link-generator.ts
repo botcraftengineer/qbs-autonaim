@@ -48,7 +48,7 @@ export class InterviewLinkGenerator {
       return this.baseUrl;
     }
 
-    const primaryDomain = await db.query.workspaceCustomDomain.findFirst({
+    const primaryDomain = await db.query.customDomain.findFirst({
       where: (domain, { eq, and }) =>
         and(
           eq(domain.workspaceId, workspaceId),

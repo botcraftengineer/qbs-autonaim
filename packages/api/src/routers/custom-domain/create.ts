@@ -1,18 +1,18 @@
 import { db } from "@qbs-autonaim/db/client";
 import {
-  CreateWorkspaceCustomDomainSchema,
-  workspaceCustomDomain,
+  createCustomDomainSchema,
+  customDomain,
 } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure } from "../../../trpc";
-import { generateSlug } from "../../../utils/slug-generator";
+import { protectedProcedure } from "../../trpc";
+import { generateSlug } from "../../utils/slug-generator";
 
 export const create = protectedProcedure
   .input(
     z.object({
       workspaceId: z.string(),
-      domain: CreateWorkspaceCustomDomainSchema.shape.domain,
+      domain: createCustomDomainSchema.shape.domain,
       type: z.enum(["interview", "prequalification"]).default("interview"),
     }),
   )
@@ -32,7 +32,7 @@ export const create = protectedProcedure
       });
     }
 
-    const existing = await db.query.workspaceCustomDomain.findFirst({
+    const existing = await db.query.customDomain.findFirst({
       where: (domain, { eq, and }) =>
         and(
           eq(domain.domain, input.domain.toLowerCase()),
@@ -50,11 +50,12 @@ export const create = protectedProcedure
     const verificationToken = generateSlug();
 
     const [created] = await db
-      .insert(workspaceCustomDomain)
+      .insert(customDomain)
       .values({
         workspaceId: input.workspaceId,
         domain: input.domain.toLowerCase(),
         type: input.type,
+        cnameTarget: "app.selectio.ru",
         verificationToken,
         isVerified: false,
         isPrimary: false,

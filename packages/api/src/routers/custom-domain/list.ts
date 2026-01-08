@@ -1,7 +1,7 @@
 import { db } from "@qbs-autonaim/db/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure } from "../../../trpc";
+import { protectedProcedure } from "../../trpc";
 
 export const list = protectedProcedure
   .input(
@@ -26,7 +26,7 @@ export const list = protectedProcedure
       });
     }
 
-    return await db.query.workspaceCustomDomain.findMany({
+    return await db.query.customDomain.findMany({
       where: (domain, { eq, and }) => {
         if (input.type) {
           return and(

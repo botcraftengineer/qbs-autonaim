@@ -1,9 +1,9 @@
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { workspaceCustomDomain } from "@qbs-autonaim/db/schema";
+import { customDomain } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure } from "../../../trpc";
+import { protectedProcedure } from "../../trpc";
 
 export const setPrimary = protectedProcedure
   .input(
@@ -12,8 +12,8 @@ export const setPrimary = protectedProcedure
     }),
   )
   .mutation(async ({ input, ctx }) => {
-    const domain = await db.query.workspaceCustomDomain.findFirst({
-      where: eq(workspaceCustomDomain.id, input.domainId),
+    const domain = await db.query.customDomain.findFirst({
+      where: eq(customDomain.id, input.domainId),
       with: {
         workspace: {
           with: {
@@ -49,22 +49,22 @@ export const setPrimary = protectedProcedure
 
     await db.transaction(async (tx) => {
       await tx
-        .update(workspaceCustomDomain)
+        .update(customDomain)
         .set({ isPrimary: false, updatedAt: new Date() })
         .where(
           and(
-            eq(workspaceCustomDomain.workspaceId, domain.workspaceId),
-            eq(workspaceCustomDomain.type, domain.type),
+            eq(customDomain.workspaceId, domain.workspaceId),
+            eq(customDomain.type, domain.type),
           ),
         );
 
       await tx
-        .update(workspaceCustomDomain)
+        .update(customDomain)
         .set({ isPrimary: true, updatedAt: new Date() })
-        .where(eq(workspaceCustomDomain.id, input.domainId));
+        .where(eq(customDomain.id, input.domainId));
     });
 
-    return await db.query.workspaceCustomDomain.findFirst({
-      where: eq(workspaceCustomDomain.id, input.domainId),
+    return await db.query.customDomain.findFirst({
+      where: eq(customDomain.id, input.domainId),
     });
   });
