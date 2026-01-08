@@ -84,7 +84,6 @@ export const paths = {
     accept: (token: string) => `${ROOTS.INVITE}/${token}`,
   },
   accessDenied: ROOTS.ACCESS_DENIED,
-  interview: (token: string) => `/interview/${token}`,
   organization: {
     workspaces: (slug: string) => `/orgs/${slug}/workspaces`,
     settings: {

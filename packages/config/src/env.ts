@@ -93,6 +93,10 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.url().optional().default("http://localhost:3000"),
     NEXT_PUBLIC_APP_NAME: z.string().optional().default("QBS Автонайм"),
+    NEXT_PUBLIC_INTERVIEW_URL: z
+      .url()
+      .optional()
+      .default("http://localhost:3001"),
   },
   clientPrefix: "NEXT_PUBLIC_",
   runtimeEnv: {
@@ -141,6 +145,7 @@ export const env = createEnv({
     INTERVIEW_BUFFER_ENABLED: process.env.INTERVIEW_BUFFER_ENABLED,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_INTERVIEW_URL: process.env.NEXT_PUBLIC_INTERVIEW_URL,
     DOCLING_API_URL: process.env.DOCLING_API_URL,
     DOCLING_API_KEY: process.env.DOCLING_API_KEY,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,

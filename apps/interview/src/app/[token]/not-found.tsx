@@ -12,11 +12,6 @@ export default function NotFound() {
         <p className="mt-2 text-muted-foreground">
           Ссылка недействительна, истекла или вакансия закрыта
         </p>
-        <div className="mt-8">
-          <Button asChild>
-            <Link href="/">Вернуться на главную</Link>
-          </Button>
-        </div>
         <p className="mt-6 text-sm text-muted-foreground">
           Если вы считаете, что это ошибка, свяжитесь с работодателем
         </p>

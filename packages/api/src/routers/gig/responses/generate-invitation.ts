@@ -1,4 +1,4 @@
-import { env, paths } from "@qbs-autonaim/config";
+import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import {
   gigInterviewLink,
@@ -155,8 +155,9 @@ export const generateInvitation = protectedProcedure
       }
     }
 
-    const baseUrl = env.NEXT_PUBLIC_APP_URL;
-    const interviewUrl = `${baseUrl}${paths.interview(link.token)}`;
+    const baseUrl =
+      env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
+    const interviewUrl = `${baseUrl}/${link.token}`;
 
     // Генерируем текст приглашения
     const invitationText = generateInvitationText(

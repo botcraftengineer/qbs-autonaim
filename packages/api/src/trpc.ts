@@ -31,12 +31,14 @@ import { AuditLoggerService } from "./services/audit-logger";
 
 export const createTRPCContext = async (opts: {
   headers: Headers;
-  auth: Auth;
+  auth: Auth | null;
 }) => {
-  const authApi = opts.auth.api;
-  const session = await authApi.getSession({
-    headers: opts.headers,
-  });
+  const authApi = opts.auth?.api;
+  const session = authApi
+    ? await authApi.getSession({
+        headers: opts.headers,
+      })
+    : null;
 
   // Создаем экземпляры репозиториев с db
   const workspaceRepository = new WorkspaceRepository(db);

@@ -2,13 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { paths } from "@qbs-autonaim/config";
-import { useMutation, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useTRPC } from "~/trpc/react";
 
 const platformProfileUrlSchema = z
   .string()
@@ -30,6 +28,11 @@ interface InterviewLandingFormProps {
   entityId: string;
   entityType: "vacancy" | "gig";
   platformSource: string;
+  onSubmit: (data: FreelancerInfo) => Promise<{ conversationId: string }>;
+  onCheckDuplicate?: (
+    vacancyId: string,
+    platformProfileUrl: string,
+  ) => Promise<{ isDuplicate: boolean }>;
 }
 
 const getPlatformPlaceholder = (source: string): string => {
@@ -52,9 +55,10 @@ export function InterviewLandingForm({
   entityId,
   entityType,
   platformSource,
+  onSubmit,
+  onCheckDuplicate,
 }: InterviewLandingFormProps) {
   const router = useRouter();
-  const trpc = useTRPC();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
@@ -70,49 +74,7 @@ export function InterviewLandingForm({
 
   const platformProfileUrl = watch("platformProfileUrl");
 
-  // Проверка дубликатов только для вакансий
-  const checkDuplicateQuery = useQuery(
-    trpc.freelancePlatforms.checkDuplicateResponse.queryOptions(
-      {
-        vacancyId: entityId,
-        platformProfileUrl: platformProfileUrl || "",
-      },
-      {
-        enabled: false,
-      },
-    ),
-  );
-
-  const startInterviewMutation = useMutation(
-    trpc.freelancePlatforms.startWebInterview.mutationOptions({
-      onSuccess: (data) => {
-        router.push(
-          `${paths.interview(token)}/chat?responseId=${data.conversationId}`,
-        );
-      },
-      onError: (error: { message: string }) => {
-        setIsSubmitting(false);
-        const duplicateMessage =
-          entityType === "vacancy"
-            ? "Вы уже откликнулись на эту вакансию"
-            : "Вы уже откликнулись на это задание";
-
-        if (error.message.includes("откликнулись")) {
-          setError("platformProfileUrl", {
-            type: "manual",
-            message: duplicateMessage,
-          });
-        } else {
-          setError("root", {
-            type: "manual",
-            message: error.message || "Произошла ошибка. Попробуйте снова.",
-          });
-        }
-      },
-    }),
-  );
-
-  const onSubmit = async (data: FreelancerInfo) => {
+  const handleFormSubmit = async (data: FreelancerInfo) => {
     setIsSubmitting(true);
 
     const trimmedData = {
@@ -120,27 +82,55 @@ export function InterviewLandingForm({
       platformProfileUrl: data.platformProfileUrl.trim(),
     };
 
-    // Проверка дубликатов только для вакансий (на бэкенде тоже проверяется)
-    if (entityType === "vacancy") {
-      const duplicateCheck = await checkDuplicateQuery.refetch();
-      if (duplicateCheck.data?.isDuplicate) {
-        setError("platformProfileUrl", {
-          type: "manual",
-          message: "Вы уже откликнулись на эту вакансию",
-        });
-        setIsSubmitting(false);
-        return;
+    // Проверка дубликатов только для вакансий
+    if (entityType === "vacancy" && onCheckDuplicate) {
+      try {
+        const duplicateCheck = await onCheckDuplicate(
+          entityId,
+          trimmedData.platformProfileUrl,
+        );
+        if (duplicateCheck.isDuplicate) {
+          setError("platformProfileUrl", {
+            type: "manual",
+            message: "Вы уже откликнулись на эту вакансию",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+      } catch (error) {
+        console.error("Duplicate check failed:", error);
       }
     }
 
-    startInterviewMutation.mutate({
-      token,
-      freelancerInfo: trimmedData,
-    });
+    try {
+      const result = await onSubmit(trimmedData);
+      router.push(`/${token}/chat?responseId=${result.conversationId}`);
+    } catch (error: unknown) {
+      setIsSubmitting(false);
+      const duplicateMessage =
+        entityType === "vacancy"
+          ? "Вы уже откликнулись на эту вакансию"
+          : "Вы уже откликнулись на это задание";
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Произошла ошибка";
+
+      if (errorMessage.includes("откликнулись")) {
+        setError("platformProfileUrl", {
+          type: "manual",
+          message: duplicateMessage,
+        });
+      } else {
+        setError("root", {
+          type: "manual",
+          message: errorMessage || "Произошла ошибка. Попробуйте снова.",
+        });
+      }
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       {errors.root && (
         <div
           className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-600"
@@ -168,6 +158,7 @@ export function InterviewLandingForm({
           aria-invalid={errors.name ? "true" : "false"}
           aria-describedby={errors.name ? "name-error" : undefined}
           className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+          style={{ fontSize: "16px", touchAction: "manipulation" }}
         />
         {errors.name && (
           <p
@@ -203,6 +194,7 @@ export function InterviewLandingForm({
               : "platformProfileUrl-help"
           }
           className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-500/20 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-500"
+          style={{ fontSize: "16px", touchAction: "manipulation" }}
         />
         {!errors.platformProfileUrl && (
           <p id="platformProfileUrl-help" className="text-xs text-gray-500">
@@ -223,7 +215,7 @@ export function InterviewLandingForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-2 flex w-full items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        className="mt-2 flex w-full min-h-[44px] items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         style={{ touchAction: "manipulation" }}
       >
         {isSubmitting && (

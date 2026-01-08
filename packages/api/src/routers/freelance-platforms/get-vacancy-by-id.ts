@@ -1,4 +1,4 @@
-import { env, paths } from "@qbs-autonaim/config";
+import { env } from "@qbs-autonaim/config";
 import { and, eq, sql } from "@qbs-autonaim/db";
 import {
   interviewLink,
@@ -82,7 +82,7 @@ export const getVacancyById = protectedProcedure
       responseStats: stats,
       interviewLink: activeInterviewLink
         ? {
-            url: `${env.NEXT_PUBLIC_APP_URL}${paths.interview(activeInterviewLink.token)}`,
+            url: `${env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru"}/${activeInterviewLink.token}`,
             token: activeInterviewLink.token,
             isActive: activeInterviewLink.isActive,
             createdAt: activeInterviewLink.createdAt,

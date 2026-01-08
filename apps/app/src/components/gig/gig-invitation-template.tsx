@@ -82,9 +82,9 @@ export function GigInvitationTemplate({
   }, [generateLink, gigId, workspace?.id]);
 
   const template = useMemo(() => {
-    const baseUrl = env.NEXT_PUBLIC_APP_URL;
-    const interviewUrl =
-      interviewLink?.url || `${baseUrl}${paths.interview("[ссылка]")}`;
+    const interviewBaseUrl =
+      process.env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
+    const interviewUrl = interviewLink?.url || `${interviewBaseUrl}/[ссылка]`;
 
     if (aiTemplate?.text) {
       // Replace the placeholder URL in AI-generated text with actual URL

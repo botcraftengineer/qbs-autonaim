@@ -7,7 +7,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Публичные маршруты (не требуют аутентификации)
-  const publicPaths = ["/auth", "/api", "/invite", "/interview"];
+  const publicPaths = ["/auth", "/api", "/invite"];
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
   // Если нет cookie сессии и пытается зайти на защищенный маршрут

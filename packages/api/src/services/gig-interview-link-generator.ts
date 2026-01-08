@@ -5,7 +5,6 @@
  * валидирует токены и управляет активностью ссылок.
  */
 
-import { paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { gigInterviewLink } from "@qbs-autonaim/db/schema";
@@ -30,8 +29,9 @@ export interface GigInterviewLink {
 export class GigInterviewLinkGenerator {
   private readonly baseUrl: string;
 
-  constructor(baseUrl = "https://qbs.app") {
-    this.baseUrl = baseUrl;
+  constructor() {
+    this.baseUrl =
+      process.env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
   }
 
   /**
@@ -149,7 +149,7 @@ export class GigInterviewLinkGenerator {
       id: link.id,
       gigId: link.gigId,
       token: link.token,
-      url: `${this.baseUrl}${paths.interview(link.token)}`,
+      url: `${this.baseUrl}/${link.token}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
       expiresAt: link.expiresAt,

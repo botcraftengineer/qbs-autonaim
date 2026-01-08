@@ -1,7 +1,6 @@
-import { paths } from "@qbs-autonaim/config";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { InterviewChat } from "~/components/ai-chat";
+import { InterviewChat } from "~/components/interview-chat";
 
 interface PageProps {
   params: Promise<{ token: string }>;
@@ -21,7 +20,7 @@ export default async function InterviewChatPage({
   const { responseId } = await searchParams;
 
   if (!responseId) {
-    redirect(paths.interview(token));
+    redirect(`/${token}`);
   }
 
   return (

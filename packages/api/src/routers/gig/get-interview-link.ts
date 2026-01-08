@@ -1,4 +1,4 @@
-import { env, paths } from "@qbs-autonaim/config";
+import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -51,13 +51,14 @@ export const getInterviewLink = protectedProcedure
       return null;
     }
 
-    const baseUrl = env.NEXT_PUBLIC_APP_URL;
+    const baseUrl =
+      env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru";
 
     return {
       id: link.id,
       gigId: link.gigId,
       token: link.token,
-      url: `${baseUrl}${paths.interview(link.token)}`,
+      url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
     };

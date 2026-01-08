@@ -162,7 +162,7 @@ export async function generateFreelanceInvitation(
     return err(`Interview link not found for vacancy ${response.vacancyId}`);
   }
 
-  const interviewUrl = `${env.NEXT_PUBLIC_APP_URL}${paths.interview(link.token)}`;
+  const interviewUrl = `${env.NEXT_PUBLIC_INTERVIEW_URL || "https://interview.domain.ru"}/${link.token}`;
 
   // Генерируем текст приглашения
   logger.info("Generating invitation text with AI");
