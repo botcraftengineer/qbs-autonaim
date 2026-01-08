@@ -8,6 +8,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   Input,
   Select,
   SelectContent,
@@ -19,43 +25,23 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Textarea,
   toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  Calendar,
-  CheckCircle,
-  ExternalLink,
   Filter,
+  Loader2,
   MessageSquare,
   Search,
-  Star,
-  User,
-  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
-import { ResponseInvitationButton } from "~/components/gig/response-invitation-button";
+import { ResponseListCard } from "~/components/gig";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
-
-// Define proper Response type based on the fields used in the component
-interface GigResponse {
-  id: string;
-  candidateId: string;
-  candidateName?: string | null;
-  status: string;
-  hrSelectionStatus?: string | null;
-  rating?: string | null;
-  createdAt: Date | null;
-  experience?: string | null;
-  // Extended fields that may come from external sources
-  source?: string;
-  message?: string;
-  portfolio?: string;
-}
 
 interface PageProps {
   params: Promise<{ orgSlug: string; slug: string; gigId: string }>;
@@ -63,7 +49,7 @@ interface PageProps {
 
 function ResponsesSkeleton() {
   return (
-    <div className="container mx-auto max-w-6xl py-6">
+    <div className="container mx-auto max-w-7xl py-6">
       <div className="mb-6">
         <Skeleton className="h-4 w-32" />
       </div>
@@ -76,20 +62,21 @@ function ResponsesSkeleton() {
           </CardHeader>
         </Card>
 
-        <div className="space-y-4">
-          {[1, 2, 3].map((id) => (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((id) => (
             <Card key={`skeleton-${id}`}>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <Skeleton className="h-6 w-48" />
+                <div className="flex items-start gap-3">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-40" />
                     <Skeleton className="h-4 w-32" />
                   </div>
-                  <Skeleton className="h-6 w-16" />
+                  <Skeleton className="h-6 w-20" />
                 </div>
               </CardHeader>
               <CardContent>
-                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-24 w-full" />
               </CardContent>
             </Card>
           ))}
@@ -97,51 +84,6 @@ function ResponsesSkeleton() {
       </div>
     </div>
   );
-}
-
-function getStatusLabel(status: string) {
-  const statuses: Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-    }
-  > = {
-    NEW: { label: "Новый", variant: "default" },
-    EVALUATED: { label: "Оценен", variant: "secondary" },
-    REJECTED: { label: "Отклонен", variant: "destructive" },
-    ACCEPTED: { label: "Принят", variant: "outline" },
-  };
-
-  return statuses[status] || { label: status, variant: "outline" };
-}
-
-function getHrStatusLabel(status: string) {
-  const statuses: Record<
-    string,
-    {
-      label: string;
-      variant: "default" | "secondary" | "destructive" | "outline";
-    }
-  > = {
-    INVITE: { label: "Пригласить", variant: "default" },
-    RECOMMENDED: { label: "Рекомендован", variant: "secondary" },
-    REJECTED: { label: "Отклонен", variant: "destructive" },
-    MAYBE: { label: "Возможно", variant: "outline" },
-  };
-
-  return statuses[status] || { label: status, variant: "outline" };
-}
-
-function formatDate(date: Date | null) {
-  if (!date) return "Не указан";
-
-  return new Intl.DateTimeFormat("ru-RU", {
-    day: "numeric",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
 }
 
 export default function GigResponsesPage({ params }: PageProps) {
@@ -153,22 +95,22 @@ export default function GigResponsesPage({ params }: PageProps) {
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("all");
   const [activeTab, setActiveTab] = React.useState("all");
+  const [messageText, setMessageText] = React.useState("");
 
-  // Modal states
-  const [messageModal, setMessageModal] = React.useState<{
+  const [messageDialog, setMessageDialog] = React.useState<{
     open: boolean;
     responseId: string;
-    candidateName?: string;
+    candidateName?: string | null;
   }>({ open: false, responseId: "", candidateName: "" });
 
   const [confirmDialog, setConfirmDialog] = React.useState<{
     open: boolean;
     responseId: string;
     action: "accept" | "reject";
-    candidateName?: string;
+    candidateName?: string | null;
   }>({ open: false, responseId: "", action: "accept", candidateName: "" });
 
-  // Получаем информацию о gig
+  // Fetch gig info
   const { data: gig } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
@@ -177,7 +119,7 @@ export default function GigResponsesPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  // Получаем отклики
+  // Fetch responses
   const { data: responses, isLoading } = useQuery({
     ...trpc.gig.responses.list.queryOptions({
       gigId,
@@ -186,7 +128,7 @@ export default function GigResponsesPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  // Specialized mutations for accept, reject, and sendMessage
+  // Mutations
   const acceptMutation = useMutation(
     trpc.gig.responses.accept.mutationOptions({
       onSuccess: () => {
@@ -199,7 +141,7 @@ export default function GigResponsesPage({ params }: PageProps) {
         toast.success("Отклик принят");
         setConfirmDialog({ open: false, responseId: "", action: "accept" });
       },
-      onError: (error: { message: string }) => {
+      onError: (error) => {
         toast.error(error.message);
       },
     }),
@@ -217,7 +159,7 @@ export default function GigResponsesPage({ params }: PageProps) {
         toast.success("Отклик отклонен");
         setConfirmDialog({ open: false, responseId: "", action: "reject" });
       },
-      onError: (error: { message: string }) => {
+      onError: (error) => {
         toast.error(error.message);
       },
     }),
@@ -226,49 +168,47 @@ export default function GigResponsesPage({ params }: PageProps) {
   const sendMessageMutation = useMutation(
     trpc.gig.responses.sendMessage.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.gig.responses.list.queryKey({
-            gigId,
-            workspaceId: workspace?.id ?? "",
-          }),
-        });
         toast.success("Сообщение отправлено");
-        setMessageModal({ open: false, responseId: "" });
+        setMessageDialog({ open: false, responseId: "" });
+        setMessageText("");
       },
-      onError: (error: { message: string }) => {
+      onError: (error) => {
         toast.error(error.message);
       },
     }),
   );
 
-  // Action handlers
-  const _handleAccept = (responseId: string, candidateName?: string) => {
+  // Handlers
+  const handleAccept = (responseId: string) => {
+    const response = responses?.find((r) => r.id === responseId);
     setConfirmDialog({
       open: true,
       responseId,
       action: "accept",
-      candidateName,
+      candidateName: response?.candidateName,
     });
   };
 
-  const _handleReject = (responseId: string, candidateName?: string) => {
+  const handleReject = (responseId: string) => {
+    const response = responses?.find((r) => r.id === responseId);
     setConfirmDialog({
       open: true,
       responseId,
       action: "reject",
-      candidateName,
+      candidateName: response?.candidateName,
     });
   };
 
-  const _handleMessage = (responseId: string, candidateName?: string) => {
-    setMessageModal({
+  const handleMessage = (responseId: string) => {
+    const response = responses?.find((r) => r.id === responseId);
+    setMessageDialog({
       open: true,
       responseId,
-      candidateName,
+      candidateName: response?.candidateName,
     });
   };
 
-  const _handleConfirmAction = () => {
+  const handleConfirmAction = () => {
     if (!workspace?.id) return;
 
     if (confirmDialog.action === "accept") {
@@ -284,22 +224,21 @@ export default function GigResponsesPage({ params }: PageProps) {
     }
   };
 
-  const _handleSendMessage = (message: string) => {
-    if (!workspace?.id || !message.trim()) return;
+  const handleSendMessage = () => {
+    if (!workspace?.id || !messageText.trim()) return;
 
     sendMessageMutation.mutate({
-      responseId: messageModal.responseId,
+      responseId: messageDialog.responseId,
       workspaceId: workspace.id,
-      message: message.trim(),
+      message: messageText.trim(),
     });
   };
 
-  // Фильтрация откликов
+  // Filtering
   const filteredResponses = React.useMemo(() => {
     if (!responses) return [];
 
-    return (responses as GigResponse[]).filter((response) => {
-      // Поиск по имени кандидата
+    return responses.filter((response) => {
       const matchesSearch =
         !searchQuery ||
         response.candidateName
@@ -307,11 +246,9 @@ export default function GigResponsesPage({ params }: PageProps) {
           .includes(searchQuery.toLowerCase()) ||
         response.candidateId.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Фильтр по статусу
       const matchesStatus =
         statusFilter === "all" || response.status === statusFilter;
 
-      // Фильтр по табам
       const matchesTab =
         activeTab === "all" ||
         (activeTab === "new" && response.status === "NEW") ||
@@ -326,16 +263,20 @@ export default function GigResponsesPage({ params }: PageProps) {
   const stats = React.useMemo(() => {
     if (!responses) return { total: 0, new: 0, evaluated: 0, recommended: 0 };
 
-    const typedResponses = responses as GigResponse[];
     return {
-      total: typedResponses.length,
-      new: typedResponses.filter((r) => r.status === "NEW").length,
-      evaluated: typedResponses.filter((r) => r.status === "EVALUATED").length,
-      recommended: typedResponses.filter(
+      total: responses.length,
+      new: responses.filter((r) => r.status === "NEW").length,
+      evaluated: responses.filter((r) => r.status === "EVALUATED").length,
+      recommended: responses.filter(
         (r) => r.hrSelectionStatus === "RECOMMENDED",
       ).length,
     };
   }, [responses]);
+
+  const isProcessing =
+    acceptMutation.isPending ||
+    rejectMutation.isPending ||
+    sendMessageMutation.isPending;
 
   if (isLoading) {
     return <ResponsesSkeleton />;
@@ -346,7 +287,7 @@ export default function GigResponsesPage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto max-w-6xl py-6">
+    <div className="container mx-auto max-w-7xl py-6">
       {/* Breadcrumb */}
       <div className="mb-6">
         <Link
@@ -362,14 +303,21 @@ export default function GigResponsesPage({ params }: PageProps) {
         {/* Header */}
         <Card>
           <CardHeader>
-            <CardTitle>Отклики на задание</CardTitle>
-            <CardDescription>
-              {gig.title} • Всего откликов: {stats.total}
-            </CardDescription>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <CardTitle>Отклики на задание</CardTitle>
+                <CardDescription className="mt-1.5">
+                  {gig.title}
+                </CardDescription>
+              </div>
+              <Badge variant="secondary" className="text-base px-3 py-1">
+                {stats.total}
+              </Badge>
+            </div>
           </CardHeader>
         </Card>
 
-        {/* Filters and Search */}
+        {/* Filters */}
         <Card>
           <CardContent className="pt-6">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -377,7 +325,7 @@ export default function GigResponsesPage({ params }: PageProps) {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
-                    placeholder="Поиск по имени кандидата..."
+                    placeholder="Поиск по имени кандидата…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -394,8 +342,10 @@ export default function GigResponsesPage({ params }: PageProps) {
                   <SelectItem value="all">Все статусы</SelectItem>
                   <SelectItem value="NEW">Новые</SelectItem>
                   <SelectItem value="EVALUATED">Оценены</SelectItem>
-                  <SelectItem value="REJECTED">Отклонены</SelectItem>
-                  <SelectItem value="ACCEPTED">Приняты</SelectItem>
+                  <SelectItem value="INTERVIEW">Интервью</SelectItem>
+                  <SelectItem value="NEGOTIATION">Переговоры</SelectItem>
+                  <SelectItem value="COMPLETED">Завершены</SelectItem>
+                  <SelectItem value="SKIPPED">Пропущены</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -415,12 +365,12 @@ export default function GigResponsesPage({ params }: PageProps) {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="space-y-4 mt-6">
+          <TabsContent value={activeTab} className="mt-6">
             {filteredResponses.length === 0 ? (
               <Card>
                 <CardContent className="pt-6">
-                  <div className="text-center py-8">
-                    <MessageSquare className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <div className="text-center py-12">
+                    <MessageSquare className="h-16 w-16 text-muted-foreground mx-auto mb-4 opacity-50" />
                     <h3 className="text-lg font-medium mb-2">Нет откликов</h3>
                     <p className="text-muted-foreground">
                       {searchQuery || statusFilter !== "all"
@@ -431,143 +381,123 @@ export default function GigResponsesPage({ params }: PageProps) {
                 </CardContent>
               </Card>
             ) : (
-              filteredResponses.map((response) => (
-                <Card
-                  key={response.id}
-                  className="hover:shadow-md transition-shadow"
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground" />
-                            <h3 className="font-medium">
-                              {response.candidateName || response.candidateId}
-                            </h3>
-                          </div>
-
-                          {response.rating && (
-                            <div className="flex items-center gap-1">
-                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                              <span className="text-sm font-medium">
-                                {response.rating}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {formatDate(response.createdAt)}
-                          </div>
-
-                          {response.source && response.source !== "MANUAL" && (
-                            <div className="flex items-center gap-1">
-                              <ExternalLink className="h-4 w-4" />
-                              {response.source}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {response.hrSelectionStatus && (
-                          <Badge
-                            variant={
-                              getHrStatusLabel(response.hrSelectionStatus)
-                                .variant
-                            }
-                          >
-                            {getHrStatusLabel(response.hrSelectionStatus).label}
-                          </Badge>
-                        )}
-
-                        <Badge
-                          variant={getStatusLabel(response.status).variant}
-                        >
-                          {getStatusLabel(response.status).label}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardHeader>
-
-                  {(response.message ||
-                    response.portfolio ||
-                    response.experience) && (
-                    <CardContent>
-                      <div className="space-y-3">
-                        {response.message && (
-                          <div>
-                            <h4 className="text-sm font-medium mb-1">
-                              Сообщение
-                            </h4>
-                            <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                              {response.message}
-                            </p>
-                          </div>
-                        )}
-
-                        {response.portfolio && (
-                          <div>
-                            <h4 className="text-sm font-medium mb-1">
-                              Портфолио
-                            </h4>
-                            <Button variant="outline" size="sm" asChild>
-                              <a
-                                href={response.portfolio}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                <ExternalLink className="h-4 w-4 mr-2" />
-                                Посмотреть портфолио
-                              </a>
-                            </Button>
-                          </div>
-                        )}
-
-                        {response.experience && (
-                          <div>
-                            <h4 className="text-sm font-medium mb-1">
-                              Опыт работы
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              {response.experience}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2 mt-4 pt-4 border-t">
-                        <Button size="sm" variant="default">
-                          <CheckCircle className="h-4 w-4 mr-2" />
-                          Принять
-                        </Button>
-
-                        <ResponseInvitationButton
-                          responseId={response.id}
-                          candidateName={response.candidateName}
-                        />
-
-                        <Button size="sm" variant="outline">
-                          <MessageSquare className="h-4 w-4 mr-2" />
-                          Написать
-                        </Button>
-
-                        <Button size="sm" variant="ghost">
-                          <XCircle className="h-4 w-4 mr-2" />
-                          Отклонить
-                        </Button>
-                      </div>
-                    </CardContent>
-                  )}
-                </Card>
-              ))
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredResponses.map((response) => (
+                  <ResponseListCard
+                    key={response.id}
+                    response={response}
+                    orgSlug={orgSlug}
+                    workspaceSlug={workspaceSlug}
+                    gigId={gigId}
+                    onAccept={handleAccept}
+                    onReject={handleReject}
+                    onMessage={handleMessage}
+                  />
+                ))}
+              </div>
             )}
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Confirm Dialog */}
+      <Dialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog({ ...confirmDialog, open })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirmDialog.action === "accept"
+                ? "Принять отклик?"
+                : "Отклонить отклик?"}
+            </DialogTitle>
+            <DialogDescription>
+              {confirmDialog.candidateName && (
+                <span className="font-medium">
+                  {confirmDialog.candidateName}
+                </span>
+              )}
+              {confirmDialog.action === "accept"
+                ? " — вы уверены, что хотите принять этот отклик? Кандидат будет уведомлен."
+                : " — вы уверены, что хотите отклонить этот отклик? Это действие нельзя отменить."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setConfirmDialog({ ...confirmDialog, open: false })
+              }
+              disabled={isProcessing}
+            >
+              Отмена
+            </Button>
+            <Button
+              variant={
+                confirmDialog.action === "accept" ? "default" : "destructive"
+              }
+              onClick={handleConfirmAction}
+              disabled={isProcessing}
+            >
+              {isProcessing && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
+              {confirmDialog.action === "accept" ? "Принять" : "Отклонить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Message Dialog */}
+      <Dialog
+        open={messageDialog.open}
+        onOpenChange={(open) => setMessageDialog({ ...messageDialog, open })}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Отправить сообщение</DialogTitle>
+            <DialogDescription>
+              Напишите сообщение кандидату{" "}
+              {messageDialog.candidateName && (
+                <span className="font-medium">
+                  {messageDialog.candidateName}
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Textarea
+              placeholder="Введите ваше сообщение…"
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              rows={6}
+              className="resize-none"
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setMessageDialog({ open: false, responseId: "" });
+                setMessageText("");
+              }}
+              disabled={isProcessing}
+            >
+              Отмена
+            </Button>
+            <Button
+              onClick={handleSendMessage}
+              disabled={isProcessing || !messageText.trim()}
+            >
+              {isProcessing && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
+              Отправить
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

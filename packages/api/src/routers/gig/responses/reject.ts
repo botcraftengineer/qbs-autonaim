@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { gigResponse } from "@qbs-autonaim/db/schema";
+import { eq, sql } from "@qbs-autonaim/db";
+import { gig, gigResponse } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -46,6 +46,8 @@ export const reject = protectedProcedure
       });
     }
 
+    const wasNew = response.status === "NEW";
+
     const [updated] = await ctx.db
       .update(gigResponse)
       .set({
@@ -55,6 +57,16 @@ export const reject = protectedProcedure
       })
       .where(eq(gigResponse.id, input.responseId))
       .returning();
+
+    // Если отклик был NEW, уменьшаем счетчик новых откликов
+    if (wasNew) {
+      await ctx.db
+        .update(gig)
+        .set({
+          newResponses: sql`GREATEST(COALESCE(${gig.newResponses}, 0) - 1, 0)`,
+        })
+        .where(eq(gig.id, response.gigId));
+    }
 
     return updated;
   });

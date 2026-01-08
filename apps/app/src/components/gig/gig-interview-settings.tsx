@@ -23,14 +23,6 @@ interface GigInterviewSettingsProps {
   gigId: string;
 }
 
-interface InterviewMediaFile {
-  id: string;
-  fileName: string;
-  mimeType: string;
-  fileSize: string | null;
-  url?: string;
-}
-
 export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -52,14 +44,12 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     enabled: !!workspace?.id,
   });
 
-  const { data: interviewMediaFiles = [] } = useQuery({
-    // @ts-expect-error - queryOptions not properly typed in tRPC client
-    ...trpc.files.getInterviewMedia.queryOptions({
+  const { data: interviewMediaFiles = [] } = useQuery(
+    trpc.files.getInterviewMedia.queryOptions({
       gigId,
       workspaceId: workspace?.id ?? "",
     }),
-    enabled: !!workspace?.id,
-  }) as { data: InterviewMediaFile[] };
+  );
 
   useEffect(() => {
     if (gig) {
@@ -86,7 +76,6 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
           }),
         });
         queryClient.invalidateQueries({
-          // @ts-expect-error - queryKey not properly typed in tRPC client
           queryKey: trpc.files.getInterviewMedia.queryKey({
             gigId,
             workspaceId: workspace?.id ?? "",

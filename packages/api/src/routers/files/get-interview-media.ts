@@ -6,6 +6,14 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
+const interviewMediaFileSchema = z.object({
+  id: z.string(),
+  url: z.string(),
+  fileName: z.string(),
+  mimeType: z.string(),
+  fileSize: z.string().nullable(),
+});
+
 /**
  * Получение presigned URLs для медиафайлов интервью
  * Возвращает массив файлов с их URL для показа кандидату
@@ -17,6 +25,7 @@ export const getInterviewMedia = protectedProcedure
       gigId: uuidv7Schema,
     }),
   )
+  .output(z.array(interviewMediaFileSchema))
   .query(async ({ input, ctx }) => {
     // Проверяем доступ к workspace
     const access = await ctx.workspaceRepository.checkAccess(
