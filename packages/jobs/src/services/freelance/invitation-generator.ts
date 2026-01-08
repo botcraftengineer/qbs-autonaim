@@ -1,3 +1,4 @@
+import { getInterviewUrl } from "@qbs-autonaim/api/utils/get-interview-url";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
@@ -13,16 +14,6 @@ const logger = createLogger("InvitationGenerator");
 
 // Минимальный порог оценки для отправки приглашения (из 100)
 const MIN_SCORE_THRESHOLD = 60;
-
-/**
- * Получает базовый URL для интервью
- */
-function getInterviewBaseUrl(workspaceInterviewDomain?: string | null): string {
-  if (workspaceInterviewDomain) {
-    return workspaceInterviewDomain.replace(/\/$/, "");
-  }
-  return (process.env.NEXT_PUBLIC_INTERVIEW_URL ?? "").replace(/\/$/, "");
-}
 
 interface InvitationResult {
   invitationId: string;
@@ -178,8 +169,10 @@ export async function generateFreelanceInvitation(
     return err(`Interview link not found for vacancy ${response.vacancyId}`);
   }
 
-  const baseUrl = getInterviewBaseUrl(vacancyData.workspace.interviewDomain);
-  const interviewUrl = `${baseUrl}/${link.token}`;
+  const interviewUrl = getInterviewUrl(
+    link.token,
+    vacancyData.workspace.interviewDomain,
+  );
 
   // Генерируем текст приглашения
   logger.info("Generating invitation text with AI");

@@ -1,153 +1,153 @@
-# Security Implementation for Interview TRPC Endpoints
+# Реализация безопасности для TRPC эндпоинтов интервью
 
 ## Overview
-This document describes the security improvements implemented for the interview TRPC endpoints to prevent unauthorized access to sensitive data.
+Этот документ описывает улучшения безопасности, реализованные для TRPC эндпоинтов интервью, чтобы предотвратить несанкционированный доступ к конфиденциальным данным.
 
 ## Changes Made
 
-### 1. Token Validation Utility (`packages/api/src/utils/interview-token-validator.ts`)
+### 1. Утилита валидации токенов (`packages/api/src/utils/interview-token-validator.ts`)
 
-Created a comprehensive token validation utility with the following functions:
+Создана комплексная утилита валидации токенов со следующими функциями:
 
-- **`validateInterviewToken()`**: Validates interview tokens from both vacancy and gig interview links, checking:
-  - Token existence and format
-  - Token active status
-  - Token expiration date
-  - Returns validated token information including type (vacancy/gig) and entity ID
+- **`validateInterviewToken()`**: Валидирует токены интервью как из ссылок вакансий, так и из ссылок гиг-интервью, проверяя:
+  - Существование и формат токена
+  - Активный статус токена
+  - Дату истечения токена
+  - Возвращает валидированную информацию о токене, включая тип (vacancy/gig) и ID сущности
 
-- **`hasVacancyAccess()`**: Checks if a validated token has access to a specific vacancy
+- **`hasVacancyAccess()`**: Проверяет, имеет ли валидированный токен доступ к конкретной вакансии
 
-- **`hasGigAccess()`**: Checks if a validated token has access to a specific gig
+- **`hasGigAccess()`**: Проверяет, имеет ли валидированный токен доступ к конкретному гигу
 
-- **`hasConversationAccess()`**: Comprehensive access check for conversations supporting:
-  - Token-based access (interview participants)
-  - User-based access (workspace members)
-  - Validates through vacancy/gig responses and workspace membership
+- **`hasConversationAccess()`**: Комплексная проверка доступа к беседам с поддержкой:
+  - Доступа на основе токена (участники интервью)
+  - Доступа на основе пользователя (члены workspace)
+  - Валидации через отклики vacancy/gig и членство в workspace
 
-- **`extractTokenFromHeaders()`**: Extracts tokens from HTTP headers supporting:
-  - `Authorization: Bearer <token>` header
-  - `x-interview-token: <token>` custom header
+- **`extractTokenFromHeaders()`**: Извлекает токены из HTTP заголовков с поддержкой:
+  - Заголовка `Authorization: Bearer <token>`
+  - Пользовательского заголовка `x-interview-token: <token>`
 
-- **`requireConversationAccess()`**: Middleware helper that throws TRPC errors if access is denied
+- **`requireConversationAccess()`**: Вспомогательная middleware-функция, которая выбрасывает TRPC ошибки при отказе в доступе
 
-### 2. TRPC Context Enhancement (`packages/api/src/trpc.ts`)
+### 2. Улучшение TRPC контекста (`packages/api/src/trpc.ts`)
 
-Updated `createTRPCContext` to:
-- Extract interview tokens from request headers
-- Validate tokens automatically during context creation
-- Add `interviewToken` to context (nullable)
-- Gracefully handle token validation errors without blocking requests
+Обновлена функция createTRPCContext для:
+- Извлечения токенов интервью из заголовков запроса
+- Автоматической валидации токенов при создании контекста
+- Добавления `interviewToken` в контекст (nullable)
+- Корректной обработки ошибок валидации токенов без блокировки запросов
 
-Added new procedure type:
-- **`interviewTokenProcedure`**: Requires a valid interview token, similar to `protectedProcedure` but for interview participants
+Добавлен новый тип процедуры:
+- **`interviewTokenProcedure`**: Требует валидный токен интервью, аналогично `protectedProcedure`, но для участников интервью
 
-### 3. Interview App Route (`apps/interview/src/app/api/trpc/[trpc]/route.ts`)
+### 3. Роут приложения интервью (`apps/interview/src/app/api/trpc/[trpc]/route.ts`)
 
-Fixed the security vulnerability:
-- Changed from `auth: null` to `auth` (proper auth instance)
-- Now properly validates both user sessions and interview tokens
+Исправлена уязвимость безопасности:
+- Изменено с `auth: null` на `auth` (правильный экземпляр auth)
+- Теперь корректно валидирует как пользовательские сессии, так и токены интервью
 
-### 4. Secured Endpoints
+### 4. Защищенные эндпоинты
 
 #### `checkDuplicateResponse`
-- Requires either a valid interview token for the vacancy OR authenticated user with workspace access
-- Validates workspace membership for authenticated users
-- Prevents unauthorized duplicate checking
+- Требует либо валидный токен интервью для вакансии, либо аутентифицированного пользователя с доступом к workspace
+- Валидирует членство в workspace для аутентифицированных пользователей
+- Предотвращает несанкционированную проверку дубликатов
 
 #### `getChatHistory`
-- Requires conversation access via token or user authentication
-- Validates token ownership of the conversation
-- Validates workspace membership for authenticated users
-- Logs access for audit purposes
+- Требует доступ к беседе через токен или аутентификацию пользователя
+- Валидирует принадлежность токена к беседе
+- Валидирует членство в workspace для аутентифицированных пользователей
+- Логирует доступ для целей аудита
 
 #### `getInterviewContext`
-- Requires conversation access via token or user authentication
-- Validates token ownership of the conversation
-- Validates workspace membership for authenticated users
-- Returns vacancy or gig context only if authorized
+- Требует доступ к беседе через токен или аутентификацию пользователя
+- Валидирует принадлежность токена к беседе
+- Валидирует членство в workspace для аутентифицированных пользователей
+- Возвращает контекст вакансии или гига только при наличии авторизации
 
 #### `sendChatMessage`
-- Requires conversation access via token or user authentication
-- Validates token ownership of the conversation
-- Validates workspace membership for authenticated users
-- Ensures conversation is active before accepting messages
+- Требует доступ к беседе через токен или аутентификацию пользователя
+- Валидирует принадлежность токена к беседе
+- Валидирует членство в workspace для аутентифицированных пользователей
+- Проверяет, что беседа активна перед принятием сообщений
 
 ## Security Model
 
-### Access Levels
+### Уровни доступа
 
-1. **Interview Participant (Token-based)**:
-   - Has valid interview token from link
-   - Can access only their own conversation
-   - Can view chat history, interview context, and send messages
-   - Cannot check duplicates for other vacancies
+1. **Участник интервью (на основе токена)**:
+   - Имеет валидный токен интервью из ссылки
+   - Может получить доступ только к своей беседе
+   - Может просматривать историю чата, контекст интервью и отправлять сообщения
+   - Не может проверять дубликаты для других вакансий
 
-2. **Workspace Member (User-based)**:
-   - Authenticated user with workspace membership
-   - Can access all conversations in their workspace
-   - Can check duplicates for vacancies in their workspace
-   - Full access to interview data for their workspace
+2. **Член workspace (на основе пользователя)**:
+   - Аутентифицированный пользователь с членством в workspace
+   - Может получить доступ ко всем беседам в своем workspace
+   - Может проверять дубликаты для вакансий в своем workspace
+   - Полный доступ к данным интервью для своего workspace
 
-3. **Public (No access)**:
-   - Cannot access any sensitive endpoints
-   - Receives 401 UNAUTHORIZED or 403 FORBIDDEN errors
+3. **Публичный (без доступа)**:
+   - Не может получить доступ к конфиденциальным эндпоинтам
+   - Получает ошибки 401 UNAUTHORIZED или 403 FORBIDDEN
 
-### Token Flow
-
-```
-1. User receives interview link with token
-2. Frontend includes token in requests via:
-   - Authorization: Bearer <token> header, OR
-   - x-interview-token: <token> header
-3. TRPC context extracts and validates token
-4. Endpoints check access using requireConversationAccess()
-5. Access granted if token matches conversation's vacancy/gig
-```
-
-### User Flow
+### Поток токена
 
 ```
-1. User authenticates via better-auth
-2. Session validated in TRPC context
-3. Endpoints check workspace membership
-4. Access granted if user is member of conversation's workspace
+1. Пользователь получает ссылку на интервью с токеном
+2. Frontend включает токен в запросы через:
+   - Заголовок Authorization: Bearer <token>, ИЛИ
+   - Заголовок x-interview-token: <token>
+3. TRPC контекст извлекает и валидирует токен
+4. Эндпоинты проверяют доступ с помощью requireConversationAccess()
+5. Доступ предоставляется, если токен соответствует vacancy/gig беседы
+```
+
+### Поток пользователя
+
+```
+1. Пользователь аутентифицируется через better-auth
+2. Сессия валидируется в TRPC контексте
+3. Эндпоинты проверяют членство в workspace
+4. Доступ предоставляется, если пользователь является членом workspace беседы
 ```
 
 ## Implementation Notes
 
-- All validation happens at the procedure level before business logic
-- Token validation is non-blocking (errors logged but don't fail requests)
-- Workspace membership is checked via database queries
-- Audit logging included for authenticated user access
-- Non-null assertions used safely after null checks (TypeScript warnings expected)
+- Вся валидация происходит на уровне процедуры перед бизнес-логикой
+- Валидация токена неблокирующая (ошибки логируются, но не приводят к сбою запросов)
+- Членство в workspace проверяется через запросы к базе данных
+- Включено логирование аудита для доступа аутентифицированных пользователей
+- Non-null утверждения используются безопасно после null-проверок (ожидаются предупреждения TypeScript)
 
 ## Testing Recommendations
 
-1. **Token-based access**:
-   - Valid token can access own conversation
-   - Expired token is rejected
-   - Invalid token is rejected
-   - Token for vacancy A cannot access vacancy B's conversation
+1. **Доступ на основе токена**:
+   - Валидный токен может получить доступ к своей беседе
+   - Истекший токен отклоняется
+   - Невалидный токен отклоняется
+   - Токен для вакансии A не может получить доступ к беседе вакансии B
 
-2. **User-based access**:
-   - Workspace member can access workspace conversations
-   - Non-member cannot access workspace conversations
-   - User without token cannot check duplicates
+2. **Доступ на основе пользователя**:
+   - Член workspace может получить доступ к беседам workspace
+   - Не-член не может получить доступ к беседам workspace
+   - Пользователь без токена не может проверять дубликаты
 
-3. **Edge cases**:
-   - Missing headers return 401
-   - Malformed tokens return 401
-   - Conversation not found returns 404
-   - Inactive conversation rejects messages
+3. **Граничные случаи**:
+   - Отсутствующие заголовки возвращают 401
+   - Некорректные токены возвращают 401
+   - Беседа не найдена возвращает 404
+   - Неактивная беседа отклоняет сообщения
 
 ## Migration Path
 
-No database migrations required. Changes are purely application-level security enhancements.
+Миграции базы данных не требуются. Изменения являются чисто улучшениями безопасности на уровне приложения.
 
 ## Future Improvements
 
-1. Rate limiting per token/user
-2. Token refresh mechanism
-3. Conversation-level permissions (read-only vs read-write)
-4. IP-based access restrictions
-5. Token usage analytics
+1. Ограничение частоты запросов для токена/пользователя
+2. Механизм обновления токенов
+3. Разрешения на уровне беседы (только чтение vs чтение-запись)
+4. Ограничения доступа на основе IP
+5. Аналитика использования токенов
