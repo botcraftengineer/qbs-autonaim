@@ -1,6 +1,7 @@
 import { eq, inArray } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  gigResponse,
   interviewScoring,
   user,
   vacancyResponse,
@@ -53,18 +54,74 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
   },
   { event: "freelance/notification.send" },
   async ({ event, step }) => {
-    const { responseId, notificationType } = event.data;
+    const { responseId, gigResponseId, notificationType } = event.data;
     const error = (event.data as { error?: string }).error;
+
+    // Пока поддерживаем только vacancy responses
+    // TODO: Добавить поддержку gig responses
+    if (!responseId) {
+      console.log(
+        "⏭️ Пропуск уведомления для gig response (пока не поддерживается)",
+        {
+          gigResponseId,
+          notificationType,
+        },
+      );
+      return {
+        success: true,
+        skipped: true,
+        reason: "Gig responses not yet supported in notifications",
+      };
+    }
 
     console.log("📬 Обработка уведомления", {
       responseId,
+      gigResponseId,
       notificationType,
     });
 
+    // Определяем тип отклика
+    const isGigResponse = !!gigResponseId;
+
     // Получаем данные отклика и кандидата
     const responseData = await step.run("get-response-data", async () => {
+      if (isGigResponse && gigResponseId) {
+        // Обработка gig response
+        const response = await db.query.gigResponse.findFirst({
+          where: eq(gigResponse.id, gigResponseId),
+          with: {
+            gig: {
+              with: {
+                workspace: true,
+              },
+            },
+          },
+        });
+
+        if (!response) {
+          throw new Error(`Gig response ${gigResponseId} не найден`);
+        }
+
+        // Получаем скоринг если есть
+        const scoring = await db.query.interviewScoring.findFirst({
+          where: eq(interviewScoring.gigResponseId, gigResponseId),
+        });
+
+        return {
+          response,
+          scoring,
+          workspaceId: response.gig.workspaceId,
+          isGig: true as const,
+        };
+      }
+
+      if (!responseId) {
+        throw new Error("responseId или gigResponseId обязателен");
+      }
+
+      // Обработка vacancy response (responseId гарантированно string здесь)
       const response = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, responseId),
+        where: eq(vacancyResponse.id, responseId as string),
         with: {
           vacancy: {
             with: {
@@ -80,13 +137,14 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
 
       // Получаем скоринг если есть
       const scoring = await db.query.interviewScoring.findFirst({
-        where: eq(interviewScoring.responseId, responseId),
+        where: eq(interviewScoring.responseId, responseId as string),
       });
 
       return {
         response,
         scoring,
         workspaceId: response.vacancy.workspaceId,
+        isGig: false as const,
       };
     });
 
@@ -124,15 +182,32 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     const { htmlMessage, subject } = await step.run(
       "format-notification",
       async () => {
-        const { response, scoring } = responseData;
+        const { response, scoring, isGig } = responseData;
         const candidateName = response.candidateName || "Кандидат без имени";
-        const vacancyTitle = response.vacancy?.title || "Вакансия";
-        const profileUrl = response.platformProfileUrl || response.resumeUrl;
+
+        // Type-safe access to title and profileUrl
+        const title = isGig
+          ? "gig" in response && response.gig
+            ? response.gig.title
+            : "Задание"
+          : "vacancy" in response && response.vacancy
+            ? response.vacancy.title
+            : "Вакансия";
+
+        const profileUrl = isGig
+          ? "profileUrl" in response
+            ? response.profileUrl
+            : undefined
+          : "platformProfileUrl" in response
+            ? response.platformProfileUrl ||
+              ("resumeUrl" in response ? response.resumeUrl : undefined)
+            : undefined;
+
         const errorMessage = error;
 
         // Sanitize all user-controlled values
         const safeCandidateName = escapeHtml(candidateName);
-        const safeVacancyTitle = escapeHtml(vacancyTitle);
+        const safeTitle = escapeHtml(title);
         const safeProfileUrl = sanitizeUrl(profileUrl);
         const safeErrorMessage = escapeHtml(errorMessage);
         const safeScore = scoring?.detailedScore
@@ -147,11 +222,11 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           subject = `✅ Интервью завершено: ${candidateName}`;
           message = `✅ Интервью завершено\n\n`;
           message += `Кандидат: ${candidateName}\n`;
-          message += `Вакансия: ${vacancyTitle}\n`;
+          message += `${isGig ? "Задание" : "Вакансия"}: ${title}\n`;
 
           htmlMessage = `<h2>✅ Интервью завершено</h2>`;
           htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
-          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
+          htmlMessage += `<p><strong>${isGig ? "Задание" : "Вакансия"}:</strong> ${safeTitle}</p>`;
 
           if (scoring && safeScore) {
             message += `Оценка: ${scoring.detailedScore}/100\n`;
@@ -164,11 +239,11 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           subject = `🌟 Высокооценённый кандидат: ${candidateName}`;
           message = `🌟 Найден высокооценённый кандидат!\n\n`;
           message += `Кандидат: ${candidateName}\n`;
-          message += `Вакансия: ${vacancyTitle}\n`;
+          message += `${isGig ? "Задание" : "Вакансия"}: ${title}\n`;
 
           htmlMessage = `<h2>🌟 Найден высокооценённый кандидат!</h2>`;
           htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
-          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
+          htmlMessage += `<p><strong>${isGig ? "Задание" : "Вакансия"}:</strong> ${safeTitle}</p>`;
 
           if (scoring && safeScore) {
             message += `Оценка: ${scoring.detailedScore}/100 ⭐\n`;
@@ -181,13 +256,13 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           subject = `❌ Ошибка анализа: ${candidateName}`;
           message = `❌ Ошибка AI-анализа отклика\n\n`;
           message += `Кандидат: ${candidateName}\n`;
-          message += `Вакансия: ${vacancyTitle}\n`;
+          message += `${isGig ? "Задание" : "Вакансия"}: ${title}\n`;
           message += `\nВсе попытки автоматического анализа исчерпаны.\n`;
           message += `Вы можете повторить анализ вручную в интерфейсе.\n`;
 
           htmlMessage = `<h2>❌ Ошибка AI-анализа отклика</h2>`;
           htmlMessage += `<p><strong>Кандидат:</strong> ${safeCandidateName}</p>`;
-          htmlMessage += `<p><strong>Вакансия:</strong> ${safeVacancyTitle}</p>`;
+          htmlMessage += `<p><strong>${isGig ? "Задание" : "Вакансия"}:</strong> ${safeTitle}</p>`;
           htmlMessage += `<p>Все попытки автоматического анализа исчерпаны.</p>`;
           htmlMessage += `<p>Вы можете повторить анализ вручную в интерфейсе.</p>`;
 
@@ -206,7 +281,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           subject,
           profileUrl,
           candidateName,
-          vacancyTitle,
+          title,
           score: scoring?.detailedScore,
         };
       },

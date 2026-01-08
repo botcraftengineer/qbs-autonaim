@@ -64,7 +64,7 @@ export async function generateWelcomeMessage(
 
     const result = await welcomeAgent.execute(
       {
-        companyName: company?.name || "наша компания",
+        companyName: company?.name || "",
         vacancyTitle: response.vacancy?.title || undefined,
         candidateName: response.candidateName || undefined,
         customWelcomeMessage: company?.description || undefined,
@@ -142,7 +142,7 @@ export async function generateTelegramInviteMessage(
   const { response, screening, company } = dataResult.data;
 
   const prompt = buildTelegramInvitePrompt({
-    companyName: company?.name || "наша компания",
+    companyName: company?.name || "",
     companyDescription: company?.description || undefined,
     companyWebsite: company?.website || undefined,
     vacancyTitle: response.vacancy?.title || null,

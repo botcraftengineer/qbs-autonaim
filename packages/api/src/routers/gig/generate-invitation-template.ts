@@ -71,7 +71,7 @@ ${companySettings.botRole ? `Должность рекрутера: ${companySet
 `
     : "";
 
-  const companyName = companySettings?.name || "наша компания";
+  const companyName = companySettings?.name || "";
   const recruiterName = companySettings?.botName || "";
   const recruiterRole = companySettings?.botRole || "";
 
