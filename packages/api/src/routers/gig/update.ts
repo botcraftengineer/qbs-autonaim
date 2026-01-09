@@ -1,5 +1,6 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
+  customDomain,
   gig,
   gigInterviewMedia,
   UpdateGigSettingsSchema,
@@ -71,6 +72,41 @@ export const update = protectedProcedure
         input.settings.customOrganizationalQuestions;
     }
     if (input.settings.customDomainId !== undefined) {
+      // Validate customDomainId if provided
+      if (input.settings.customDomainId !== null) {
+        const domain = await ctx.db.query.customDomain.findFirst({
+          where: eq(customDomain.id, input.settings.customDomainId),
+        });
+
+        if (!domain) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Домен не найден",
+          });
+        }
+
+        if (!domain.isVerified) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Домен не верифицирован",
+          });
+        }
+
+        if (domain.type !== "interview") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Домен должен иметь тип 'interview'",
+          });
+        }
+
+        if (domain.workspaceId !== input.workspaceId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Домен не принадлежит этому workspace",
+          });
+        }
+      }
+
       patch.customDomainId = input.settings.customDomainId;
     }
 

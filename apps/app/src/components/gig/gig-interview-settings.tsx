@@ -265,27 +265,31 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
           </p>
         </div>
 
-        <CustomDomainSelect
-          workspaceId={workspace?.id ?? ""}
-          value={customDomainId}
-          onChange={(value) => {
-            setCustomDomainId(value);
-            setHasChanges(true);
-          }}
-        />
-
-        <div className="space-y-2">
-          <Label>Медиафайлы для интервью</Label>
-          <InterviewMediaUpload
-            files={interviewMediaFiles}
-            onFilesChange={(fileIds) => {
-              setInterviewMediaFileIds(fileIds);
+        {workspace?.id && (
+          <CustomDomainSelect
+            workspaceId={workspace.id}
+            value={customDomainId}
+            onChange={(value) => {
+              setCustomDomainId(value);
               setHasChanges(true);
             }}
-            workspaceId={workspace?.id ?? ""}
-            gigId={gigId}
           />
-        </div>
+        )}
+
+        {workspace?.id && (
+          <div className="space-y-2">
+            <Label>Медиафайлы для интервью</Label>
+            <InterviewMediaUpload
+              files={interviewMediaFiles}
+              onFilesChange={(fileIds) => {
+                setInterviewMediaFileIds(fileIds);
+                setHasChanges(true);
+              }}
+              workspaceId={workspace.id}
+              gigId={gigId}
+            />
+          </div>
+        )}
 
         <Button
           onClick={handleSave}

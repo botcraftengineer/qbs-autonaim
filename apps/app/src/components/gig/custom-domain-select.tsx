@@ -24,7 +24,12 @@ export function CustomDomainSelect({
 }: CustomDomainSelectProps) {
   const trpc = useTRPC();
 
-  const { data: domains = [], isLoading } = useQuery(
+  const {
+    data: domains = [],
+    isLoading,
+    isError,
+    error,
+  } = useQuery(
     trpc.customDomain.list.queryOptions({
       workspaceId,
       type: "interview",
@@ -38,6 +43,24 @@ export function CustomDomainSelect({
       <div className="space-y-2">
         <Label>Домен для интервью</Label>
         <div className="h-10 animate-pulse rounded-md bg-muted" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="space-y-2">
+        <Label htmlFor="customDomain">Домен для интервью</Label>
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
+          <p className="text-sm text-destructive">
+            Не удалось загрузить список доменов
+          </p>
+          {error?.message && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              {error.message}
+            </p>
+          )}
+        </div>
       </div>
     );
   }
