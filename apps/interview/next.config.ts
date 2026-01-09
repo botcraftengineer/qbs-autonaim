@@ -16,8 +16,6 @@ export default async function createNextConfig(): Promise<NextConfig> {
       "@qbs-autonaim/db",
       "@qbs-autonaim/ui",
     ],
-
-    typescript: { ignoreBuildErrors: true },
   };
 
   return config;
