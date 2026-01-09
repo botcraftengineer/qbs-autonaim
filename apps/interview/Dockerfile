@@ -50,8 +50,8 @@ USER nextjs
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=installer --chown=nextjs:nodejs /app/apps/interview/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/interview/.next/static ./apps/app/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/interview/public ./apps/app/public
+COPY --from=installer --chown=nextjs:nodejs /app/apps/interview/.next/static ./apps/interview/.next/static
+COPY --from=installer --chown=nextjs:nodejs /app/apps/interview/public ./apps/interview/public
 
 # Expose port
 EXPOSE 3000
