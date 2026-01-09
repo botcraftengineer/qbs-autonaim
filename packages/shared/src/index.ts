@@ -17,6 +17,9 @@ export type {
 // Экспорт всех утилит
 export {
   getConversationMetadata,
+  getInterviewBaseUrl,
+  getInterviewUrl,
+  getInterviewUrlFromDb,
   getQuestionCount,
   updateConversationMetadata,
 } from "./utils";

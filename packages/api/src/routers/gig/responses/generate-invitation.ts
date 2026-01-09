@@ -4,11 +4,11 @@ import {
   gigInvitation,
   gigResponse,
 } from "@qbs-autonaim/db/schema";
+import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
-import { getInterviewUrlFromDb } from "../../../utils/get-interview-url";
 import { generateSlug } from "../../../utils/slug-generator";
 
 function generateInvitationText(

@@ -1,10 +1,10 @@
 import { and, eq } from "@qbs-autonaim/db";
 import { interviewLink, vacancy } from "@qbs-autonaim/db/schema";
+import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import { getInterviewUrlFromDb } from "../../utils/get-interview-url";
 
 const getInterviewLinkInputSchema = z.object({
   vacancyId: z.uuid(),

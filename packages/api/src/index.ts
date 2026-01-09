@@ -18,6 +18,11 @@ type RouterInputs = inferRouterInputs<AppRouter>;
  */
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
+export {
+  getInterviewBaseUrl,
+  getInterviewUrl,
+  getInterviewUrlFromDb,
+} from "@qbs-autonaim/shared";
 export type {
   TenantErrorCode,
   TenantOperation,
@@ -35,9 +40,4 @@ export {
 export { type AppRouter, appRouter } from "./root";
 export { AuditLoggerService } from "./services/audit-logger";
 export { createTRPCContext } from "./trpc";
-export {
-  getInterviewBaseUrl,
-  getInterviewUrl,
-  getInterviewUrlFromDb,
-} from "./utils/get-interview-url";
 export type { RouterInputs, RouterOutputs };

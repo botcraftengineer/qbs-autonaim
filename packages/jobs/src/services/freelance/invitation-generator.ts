@@ -1,4 +1,3 @@
-import { getInterviewUrl } from "@qbs-autonaim/api";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
@@ -8,6 +7,7 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
+import { getInterviewUrl } from "@qbs-autonaim/shared";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("InvitationGenerator");
