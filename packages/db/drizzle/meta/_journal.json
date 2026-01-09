@@ -36,6 +36,13 @@
       "when": 1767938195208,
       "tag": "0005_equal_lizard",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1767943514955,
+      "tag": "0006_naive_lyja",
+      "breakpoints": true
     }
   ]
 }
