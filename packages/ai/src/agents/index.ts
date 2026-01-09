@@ -182,6 +182,15 @@ export type {
   BaseAgentContext,
   WorkflowState,
 } from "./types";
+// Web Interview Orchestrator
+export {
+  type ContextAnalysisResult,
+  type GigData as WebGigData,
+  type VacancyData as WebVacancyData,
+  type WebInterviewContext,
+  WebInterviewOrchestrator,
+  type WebInterviewOrchestratorConfig,
+} from "./web-interview-orchestrator";
 export {
   WelcomeAgent,
   type WelcomeInput,
