@@ -157,3 +157,54 @@ InterviewOrchestratorV2 (координатор)
 2. Определяет Zod схему для output
 3. Реализует `validate()` и `buildPrompt()`
 4. Автоматически получает structured output через AI SDK
+
+
+## Структура папок
+
+После рефакторинга агенты организованы по функциональным группам:
+
+```
+agents/
+├── core/              # Базовые компоненты
+│   ├── base-agent.ts
+│   ├── agent-factory.ts
+│   ├── config.ts
+│   └── types.ts
+│
+├── interview/         # Интервью агенты
+│   ├── types.ts
+│   ├── prompts.ts
+│   ├── web-orchestrator.ts
+│   └── index.ts
+│
+├── detection/         # Детекторы и анализаторы
+│   ├── context-analyzer.ts
+│   ├── escalation-detector.ts
+│   ├── greeting-detector.ts
+│   └── index.ts
+│
+├── handlers/          # Обработчики событий
+│   ├── escalation-handler.ts
+│   ├── pin-handler.ts
+│   ├── welcome.ts
+│   └── index.ts
+│
+├── extraction/        # Извлечение данных
+│   ├── resume-structurer.ts
+│   ├── salary-extraction.ts
+│   └── index.ts
+│
+└── recruiter/         # Рекрутер агенты
+    └── ...
+```
+
+## Импорты
+
+```typescript
+// Новый способ (рекомендуется)
+import { WebInterviewOrchestrator } from "@qbs-autonaim/ai/agents/interview";
+import { ContextAnalyzerAgent } from "@qbs-autonaim/ai/agents/detection";
+
+// Старый способ (обратная совместимость)
+import { WebInterviewOrchestrator, ContextAnalyzerAgent } from "@qbs-autonaim/ai/agents";
+```

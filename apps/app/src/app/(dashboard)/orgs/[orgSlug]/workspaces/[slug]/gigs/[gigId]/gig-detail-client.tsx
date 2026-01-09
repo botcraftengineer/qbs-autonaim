@@ -183,6 +183,25 @@ export function GigDetailClient({
     enabled: !!workspaceId,
   });
 
+  // Получаем актуальные счетчики откликов из базы данных
+  const {
+    data: responseCounts,
+    isPending: isCountsPending,
+    isError: isCountsError,
+    error: countsError,
+  } = useQuery({
+    ...trpc.gig.responses.count.queryOptions({
+      gigId,
+      workspaceId: workspaceId ?? "",
+    }),
+    enabled: !!workspaceId,
+  });
+
+  // Логируем ошибку для отладки
+  if (isCountsError && countsError) {
+    console.error("Ошибка загрузки счетчиков откликов:", countsError);
+  }
+
   const deleteMutation = useMutation(
     trpc.gig.delete.mutationOptions({
       onSuccess: () => {
@@ -475,10 +494,10 @@ export function GigDetailClient({
         <div className="space-y-4 sm:space-y-6">
           {/* Stats Card */}
           <Card>
-            <CardHeader className="p-4 sm:p-6">
+            <CardHeader>
               <CardTitle className="text-lg sm:text-xl">Статистика</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 p-4 sm:p-6">
+            <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Eye className="h-4 w-4" />
@@ -492,18 +511,28 @@ export function GigDetailClient({
                   <MessageSquare className="h-4 w-4" />
                   Отклики
                 </div>
-                <span className="font-medium">{gig.responses || 0}</span>
+                {isCountsPending ? (
+                  <Skeleton className="h-5 w-8" />
+                ) : isCountsError ? (
+                  <span className="font-medium text-muted-foreground">—</span>
+                ) : (
+                  <span className="font-medium">
+                    {responseCounts?.total || 0}
+                  </span>
+                )}
               </div>
 
-              {(gig.newResponses || 0) > 0 && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    Новые отклики
+              {!isCountsPending &&
+                !isCountsError &&
+                (responseCounts?.new || 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      Новые отклики
+                    </div>
+                    <Badge variant="default">{responseCounts?.new}</Badge>
                   </div>
-                  <Badge variant="default">{gig.newResponses}</Badge>
-                </div>
-              )}
+                )}
             </CardContent>
           </Card>
 
