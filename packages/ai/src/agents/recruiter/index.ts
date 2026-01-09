@@ -12,6 +12,8 @@ export * from "./classification";
 export * from "./config";
 // Core
 export * from "./core";
+// Ranking
+export * from "./ranking";
 // Rules
 export * from "./rules";
 // Search

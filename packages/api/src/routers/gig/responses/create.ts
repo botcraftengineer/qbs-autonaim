@@ -5,6 +5,7 @@ import {
   gigImportSourceValues,
   gigResponse,
 } from "@qbs-autonaim/db/schema";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -132,6 +133,21 @@ export const create = protectedProcedure
         newResponses: sql`COALESCE(${gig.newResponses}, 0) + 1`,
       })
       .where(eq(gig.id, input.gigId));
+
+    // Отправляем событие в Inngest для пересчета рейтинга
+    try {
+      await inngest.send({
+        name: "gig/ranking.recalculate",
+        data: {
+          gigId: input.gigId,
+          workspaceId: input.workspaceId,
+          triggeredBy: "response.created",
+        },
+      });
+    } catch (error) {
+      // Логируем ошибку, но не блокируем создание отклика
+      console.error("Ошибка отправки события пересчета рейтинга:", error);
+    }
 
     return newResponse;
   });

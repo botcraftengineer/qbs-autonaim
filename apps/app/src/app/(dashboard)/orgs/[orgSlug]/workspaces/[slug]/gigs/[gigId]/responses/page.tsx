@@ -554,6 +554,7 @@ export default function GigResponsesPage({ params }: PageProps) {
                                   onClick={() => handleMessage(response.id)}
                                   className="h-8 w-8 p-0 touch-action-manipulation"
                                   title="Отправить сообщение"
+                                  aria-label={`Отправить сообщение кандидату ${response.candidateName || "без имени"}`}
                                 >
                                   <MessageSquare className="h-4 w-4" />
                                 </Button>
@@ -563,6 +564,7 @@ export default function GigResponsesPage({ params }: PageProps) {
                                   onClick={() => handleAccept(response.id)}
                                   className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 touch-action-manipulation"
                                   title="Принять"
+                                  aria-label={`Принять кандидата ${response.candidateName || "без имени"}`}
                                 >
                                   <Check className="h-4 w-4" />
                                 </Button>
@@ -572,6 +574,7 @@ export default function GigResponsesPage({ params }: PageProps) {
                                   onClick={() => handleReject(response.id)}
                                   className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 touch-action-manipulation"
                                   title="Отклонить"
+                                  aria-label={`Отклонить кандидата ${response.candidateName || "без имени"}`}
                                 >
                                   <X className="h-4 w-4" />
                                 </Button>

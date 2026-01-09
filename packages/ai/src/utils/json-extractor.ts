@@ -88,7 +88,12 @@ export function extractJsonObject(text: string): unknown | null {
         }
       }
 
-      return null;
+      // endIndex === -1: не нашли закрывающую скобку, ищем следующую открывающую
+      const nextBrace = text.indexOf("{", startIndex + 1);
+      if (nextBrace === -1) {
+        return null;
+      }
+      startIndex = nextBrace;
     }
 
     return null;

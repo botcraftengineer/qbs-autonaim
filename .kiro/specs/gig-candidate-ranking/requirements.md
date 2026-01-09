@@ -6,16 +6,19 @@
 
 ## Glossary
 
-- **Ranking_System**: Система ранжирования кандидатов, которая вычисляет комплексную оценку на основе множества факторов
-- **Candidate_Score**: Комплексная оценка кандидата (0-100), учитывающая все факторы
-- **Comparison_Matrix**: Матрица попарного сравнения кандидатов по ключевым критериям
-- **Recommendation_Engine**: Компонент, формирующий рекомендации по выбору кандидата
+- **Ranking_System**: AI-powered система ранжирования кандидатов, использующая LLM для интеллектуальной оценки и сравнения
+- **Candidate_Evaluator_Agent**: AI агент, оценивающий одного кандидата по всем критериям с учетом контекста
+- **Comparison_Agent**: AI агент, сравнивающий кандидатов между собой и выявляющий относительные преимущества
+- **Recommendation_Agent**: AI агент, формирующий финальную рекомендацию на основе оценок и сравнения
+- **Ranking_Orchestrator**: Координатор, управляющий процессом ранжирования через AI агентов
 - **Gig_Response**: Отклик кандидата на gig задание
-- **Screening_Score**: Оценка скрининга портфолио (0-100)
-- **Interview_Score**: Оценка интервью (0-100)
-- **Price_Score**: Оценка соотношения цена/качество (0-100)
-- **Delivery_Score**: Оценка по срокам выполнения (0-100)
-- **Experience_Score**: Оценка релевантного опыта (0-100)
+- **Screening_Score**: Оценка скрининга портфолио (0-100), уже рассчитанная ранее
+- **Interview_Score**: Оценка интервью (0-100), уже рассчитанная ранее
+- **Price_Score**: AI-оценка соотношения цена/качество (0-100) с учетом бюджета и рынка
+- **Delivery_Score**: AI-оценка по срокам выполнения (0-100) с учетом дедлайна и реалистичности
+- **Experience_Score**: AI-оценка релевантного опыта (0-100) на основе портфолио и требований
+- **Skills_Match_Score**: AI-оценка соответствия навыков (0-100) с учетом required и nice-to-have
+- **Composite_Score**: Итоговая оценка кандидата (0-100), рассчитанная AI с учетом всех факторов
 
 ## Requirements
 
@@ -36,46 +39,47 @@
 9. THE Gig_Response_Schema SHALL include a weaknesses field (jsonb array of strings) for storing identified candidate weaknesses
 10. THE Gig_Response_Schema SHALL include a recommendation field (enum: HIGHLY_RECOMMENDED, RECOMMENDED, NEUTRAL, NOT_RECOMMENDED) for storing the final recommendation
 
-### Requirement 2: Вычисление комплексной оценки кандидата
+### Requirement 2: AI-оценка кандидата
 
-**User Story:** As a recruiter, I want the system to calculate a comprehensive score for each candidate, so that I can quickly identify the best candidates.
-
-#### Acceptance Criteria
-
-1. WHEN a candidate has screening results, THE Ranking_System SHALL include the screening_score in the composite calculation with configurable weight
-2. WHEN a candidate has interview results, THE Ranking_System SHALL include the interview_score in the composite calculation with configurable weight
-3. WHEN a candidate has proposed a price, THE Ranking_System SHALL calculate price_score based on comparison with gig budget and other candidates' prices
-4. WHEN a candidate has proposed delivery days, THE Ranking_System SHALL calculate delivery_score based on comparison with gig deadline and other candidates' delivery times
-5. WHEN a candidate has listed skills, THE Ranking_System SHALL calculate skills_match_score based on matching with gig required_skills
-6. WHEN a candidate has experience information, THE Ranking_System SHALL calculate experience_score based on relevance to gig requirements
-7. THE Ranking_System SHALL calculate composite_score as weighted average of all available scores
-8. IF any score component is missing, THEN THE Ranking_System SHALL use available scores and adjust weights proportionally
-
-### Requirement 3: Сравнительный анализ кандидатов
-
-**User Story:** As a recruiter, I want to see how candidates compare to each other, so that I can understand relative strengths and weaknesses.
+**User Story:** As a recruiter, I want the AI to intelligently evaluate each candidate considering context and nuances, so that I get more accurate assessments than simple formulas.
 
 #### Acceptance Criteria
 
-1. WHEN ranking candidates, THE Comparison_Matrix SHALL compare each candidate against all other candidates for the same gig
-2. THE Comparison_Matrix SHALL identify the best candidate for each criterion (price, delivery, skills, experience, screening, interview)
-3. THE Comparison_Matrix SHALL calculate percentile ranking for each candidate within the candidate pool
-4. WHEN a candidate is in top 25% for a criterion, THE System SHALL mark it as a strength
-5. WHEN a candidate is in bottom 25% for a criterion, THE System SHALL mark it as a weakness
-6. THE System SHALL generate a textual analysis explaining why each candidate received their ranking position
+1. THE Candidate_Evaluator_Agent SHALL analyze candidate data and gig requirements to produce contextual scores
+2. WHEN evaluating price, THE Agent SHALL consider: proposed price vs budget, market rates, candidate's experience level, and value proposition
+3. WHEN evaluating delivery time, THE Agent SHALL consider: proposed days vs deadline, project complexity, candidate's workload signals, and realism of estimate
+4. WHEN evaluating skills match, THE Agent SHALL analyze: required_skills coverage (70% weight), nice_to_have_skills coverage (30% weight), skill depth from portfolio/experience
+5. WHEN evaluating experience, THE Agent SHALL analyze: portfolio relevance, similar project experience, years of experience, and quality indicators
+6. THE Agent SHALL incorporate existing screening_score and interview_score (if available) into evaluation
+7. THE Agent SHALL calculate composite_score (0-100) considering all factors with intelligent weighting based on data availability and quality
+8. THE Agent SHALL provide reasoning for each score to ensure transparency
 
-### Requirement 4: Формирование рекомендаций
+### Requirement 3: AI-сравнение кандидатов
 
-**User Story:** As a recruiter, I want to receive clear recommendations, so that I can make faster hiring decisions.
+**User Story:** As a recruiter, I want the AI to compare candidates intelligently, so that I understand not just numbers but meaningful differences.
 
 #### Acceptance Criteria
 
-1. WHEN composite_score >= 80, THE Recommendation_Engine SHALL assign HIGHLY_RECOMMENDED status
-2. WHEN composite_score >= 60 AND composite_score < 80, THE Recommendation_Engine SHALL assign RECOMMENDED status
-3. WHEN composite_score >= 40 AND composite_score < 60, THE Recommendation_Engine SHALL assign NEUTRAL status
-4. WHEN composite_score < 40, THE Recommendation_Engine SHALL assign NOT_RECOMMENDED status
-5. THE Recommendation_Engine SHALL generate ranking_analysis text explaining the recommendation
-6. THE Recommendation_Engine SHALL highlight top 3 strengths and top 3 weaknesses for each candidate
+1. THE Comparison_Agent SHALL analyze all candidates for a gig and identify relative strengths/weaknesses
+2. THE Agent SHALL identify category leaders (best price, fastest delivery, strongest skills match, most experienced, highest screening, best interview)
+3. THE Agent SHALL determine each candidate's competitive position within the pool
+4. THE Agent SHALL identify up to 3 key strengths per candidate based on: top performance in categories, unique advantages, standout qualities
+5. THE Agent SHALL identify up to 3 key weaknesses per candidate based on: bottom performance in categories, concerning gaps, risk factors
+6. THE Agent SHALL generate ranking_analysis text explaining: why this ranking position, how candidate compares to others, what makes them stand out or fall behind
+7. THE Agent SHALL consider context: "slightly higher price but significantly better experience" vs "cheapest but concerning lack of portfolio"
+
+### Requirement 4: AI-рекомендации
+
+**User Story:** As a recruiter, I want the AI to provide nuanced recommendations beyond just scores, so that I can make better hiring decisions.
+
+#### Acceptance Criteria
+
+1. THE Recommendation_Agent SHALL determine recommendation status considering: composite_score, qualitative factors, red flags, and hiring context
+2. THE Agent SHALL use composite_score as primary signal: >=80 suggests HIGHLY_RECOMMENDED, >=60 suggests RECOMMENDED, >=40 suggests NEUTRAL, <40 suggests NOT_RECOMMENDED
+3. THE Agent MAY adjust recommendation based on qualitative factors: communication quality, portfolio red flags, unrealistic estimates, professionalism signals
+4. THE Agent SHALL generate ranking_analysis explaining: final recommendation reasoning, key decision factors, risks and opportunities, comparison to other candidates
+5. THE Agent SHALL incorporate strengths/weaknesses from Comparison_Agent into final recommendation narrative
+6. THE Agent SHALL provide actionable insights: "Strong candidate but verify availability" or "Lower score but good culture fit potential"
 
 ### Requirement 5: API для получения ранжированного списка
 

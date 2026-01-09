@@ -10,6 +10,7 @@ import {
   conversationMessageReceivedDataSchema,
   conversationMessageSendDataSchema,
   generateInvitationDataSchema,
+  gigRankingRecalculateDataSchema,
   interviewAnalysisDataSchema,
   interviewCompleteDataSchema,
   interviewSendQuestionDataSchema,
@@ -72,5 +73,6 @@ export const inngest = new Inngest({
     "interview/buffer.flush": bufferFlushDataSchema,
     "web/interview.send-question": interviewSendQuestionDataSchema,
     "web/interview.complete": interviewCompleteDataSchema,
+    "gig/ranking.recalculate": gigRankingRecalculateDataSchema,
   }),
 });

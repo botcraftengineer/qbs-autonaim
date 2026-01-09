@@ -43,6 +43,7 @@ import {
 import {
   parseMissingContactsFunction,
   parseNewResumesFunction,
+  recalculateRankingFunction,
   refreshSingleResumeFunction,
   screenAllResponsesFunction,
   screenNewResponsesFunction,
@@ -82,6 +83,7 @@ export const inngestFunctions: InngestFunction.Any[] = [
   // Response
   parseMissingContactsFunction,
   parseNewResumesFunction,
+  recalculateRankingFunction,
   refreshSingleResumeFunction,
   screenAllResponsesFunction,
   screenNewResponsesFunction,
