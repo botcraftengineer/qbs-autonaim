@@ -538,12 +538,12 @@ export function GigDetailClient({
 
           {/* Project Details */}
           <Card>
-            <CardHeader className="p-4 sm:p-6">
+            <CardHeader className="p-3 sm:p-4">
               <CardTitle className="text-lg sm:text-xl">
                 Детали проекта
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4 p-4 sm:p-6">
+            <CardContent className="space-y-3 p-3 sm:p-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <DollarSign className="h-4 w-4 flex-shrink-0" />

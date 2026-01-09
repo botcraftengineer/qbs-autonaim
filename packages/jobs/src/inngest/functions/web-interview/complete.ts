@@ -11,6 +11,11 @@ import {
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  formatProfileDataForStorage,
+  type ProfileData,
+  parseFreelancerProfile,
+} from "../../../parsers/profile-parser";
+import {
   createInterviewScoring,
   getInterviewContext,
   saveQuestionAnswer,
@@ -136,16 +141,61 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
       // Обновляем статус vacancy_response
       if (responseId) {
+        // Парсим профиль фрилансера перед обновлением статуса
+        const profileData = await step.run(
+          "parse-profile",
+          async (): Promise<ProfileData | null> => {
+            const response = await db.query.vacancyResponse.findFirst({
+              where: eq(vacancyResponse.id, responseId),
+            });
+
+            if (!response?.platformProfileUrl) {
+              console.log(
+                "⚠️ platformProfileUrl отсутствует, пропускаем парсинг профиля",
+              );
+              return null;
+            }
+
+            try {
+              const profile = await parseFreelancerProfile(
+                response.platformProfileUrl,
+              );
+
+              console.log("✅ Профиль распарсен", {
+                platform: profile.platform,
+                username: profile.username,
+                error: profile.error,
+              });
+
+              return profile;
+            } catch (error) {
+              console.error("❌ Ошибка парсинга профиля:", error);
+              return null;
+            }
+          },
+        );
+
         await step.run("update-response-status", async () => {
+          const updateData: {
+            status: "COMPLETED";
+            experience?: string;
+          } = {
+            status: "COMPLETED",
+          };
+
+          // Сохраняем данные профиля в поле experience
+          if (profileData && !profileData.error) {
+            updateData.experience = formatProfileDataForStorage(profileData);
+          }
+
           await db
             .update(vacancyResponse)
-            .set({
-              status: "COMPLETED",
-            })
+            .set(updateData)
             .where(eq(vacancyResponse.id, responseId));
 
           console.log("✅ Response status updated to COMPLETED", {
             responseId,
+            profileParsed: !!profileData,
           });
         });
 
@@ -215,17 +265,61 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
       // Обновляем статус gig_response
       if (gigResponseId) {
+        // Парсим профиль фрилансера перед обновлением статуса
+        const gigProfileData = await step.run(
+          "parse-gig-profile",
+          async (): Promise<ProfileData | null> => {
+            const response = await db.query.gigResponse.findFirst({
+              where: eq(gigResponse.id, gigResponseId),
+            });
+
+            if (!response?.profileUrl) {
+              console.log(
+                "⚠️ profileUrl отсутствует, пропускаем парсинг профиля",
+              );
+              return null;
+            }
+
+            try {
+              const profile = await parseFreelancerProfile(response.profileUrl);
+
+              console.log("✅ Профиль gig распарсен", {
+                platform: profile.platform,
+                username: profile.username,
+                error: profile.error,
+              });
+
+              return profile;
+            } catch (error) {
+              console.error("❌ Ошибка парсинга профиля gig:", error);
+              return null;
+            }
+          },
+        );
+
         await step.run("update-gig-response-status", async () => {
+          const updateData: {
+            status: "INTERVIEW";
+            updatedAt: Date;
+            experience?: string;
+          } = {
+            status: "INTERVIEW",
+            updatedAt: new Date(),
+          };
+
+          // Сохраняем данные профиля в поле experience
+          if (gigProfileData && !gigProfileData.error) {
+            updateData.experience = formatProfileDataForStorage(gigProfileData);
+          }
+
           await db
             .update(gigResponse)
-            .set({
-              status: "INTERVIEW",
-              updatedAt: new Date(),
-            })
+            .set(updateData)
             .where(eq(gigResponse.id, gigResponseId));
 
           console.log("✅ Gig response status updated to INTERVIEW", {
             gigResponseId,
+            profileParsed: !!gigProfileData,
           });
         });
 

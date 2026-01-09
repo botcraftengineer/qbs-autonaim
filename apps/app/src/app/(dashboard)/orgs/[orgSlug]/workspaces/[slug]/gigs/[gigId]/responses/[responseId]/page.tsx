@@ -147,6 +147,26 @@ export default function GigResponseDetailPage({ params }: PageProps) {
     }),
   );
 
+  // Evaluate mutation
+  const evaluateMutation = useMutation(
+    trpc.gig.responses.evaluate.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.gig.responses.get.queryKey({
+            responseId,
+            workspaceId: workspace?.id ?? "",
+          }),
+        });
+        toast.success(
+          "Оценка запущена, результаты появятся через несколько минут",
+        );
+      },
+      onError: (error) => {
+        toast.error(error.message);
+      },
+    }),
+  );
+
   const handleAccept = () => {
     setConfirmDialog({ open: true, action: "accept" });
   };
@@ -157,6 +177,15 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
   const handleMessage = () => {
     setMessageDialog(true);
+  };
+
+  const handleEvaluate = () => {
+    if (!workspace?.id) return;
+
+    evaluateMutation.mutate({
+      responseId,
+      workspaceId: workspace.id,
+    });
   };
 
   const handleConfirmAction = () => {
@@ -188,7 +217,8 @@ export default function GigResponseDetailPage({ params }: PageProps) {
   const isProcessing =
     acceptMutation.isPending ||
     rejectMutation.isPending ||
-    sendMessageMutation.isPending;
+    sendMessageMutation.isPending ||
+    evaluateMutation.isPending;
 
   if (isLoading) {
     return <ResponseDetailSkeleton />;
@@ -217,6 +247,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
         onAccept={handleAccept}
         onReject={handleReject}
         onMessage={handleMessage}
+        onEvaluate={handleEvaluate}
         isProcessing={isProcessing}
       />
 

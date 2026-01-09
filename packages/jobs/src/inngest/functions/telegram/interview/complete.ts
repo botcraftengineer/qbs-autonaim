@@ -12,6 +12,11 @@ import {
 import { db } from "@qbs-autonaim/db/client";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
 import {
+  formatProfileDataForStorage,
+  type ProfileData,
+  parseFreelancerProfile,
+} from "../../../../parsers/profile-parser";
+import {
   createInterviewScoring,
   getInterviewContext,
   saveQuestionAnswer,
@@ -86,12 +91,44 @@ export const completeInterviewFunction = inngest.createFunction(
         const hrSelectionStatus =
           scoringResult.detailedScore >= 70 ? "RECOMMENDED" : "NOT_RECOMMENDED";
 
+        // Парсим профиль фрилансера перед финализацией
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, responseId),
+        });
+
+        const updateData: {
+          status: "COMPLETED";
+          hrSelectionStatus: "RECOMMENDED" | "NOT_RECOMMENDED";
+          experience?: string;
+        } = {
+          status: "COMPLETED",
+          hrSelectionStatus,
+        };
+
+        // Парсим профиль если есть platformProfileUrl
+        if (response?.platformProfileUrl) {
+          try {
+            const profile = await parseFreelancerProfile(
+              response.platformProfileUrl,
+            );
+
+            console.log("✅ Профиль распарсен (Telegram)", {
+              platform: profile.platform,
+              username: profile.username,
+              error: profile.error,
+            });
+
+            if (!profile.error) {
+              updateData.experience = formatProfileDataForStorage(profile);
+            }
+          } catch (error) {
+            console.error("❌ Ошибка парсинга профиля (Telegram):", error);
+          }
+        }
+
         await db
           .update(vacancyResponse)
-          .set({
-            status: "COMPLETED",
-            hrSelectionStatus,
-          })
+          .set(updateData)
           .where(eq(vacancyResponse.id, responseId));
       });
 

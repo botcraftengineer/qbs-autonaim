@@ -14,6 +14,12 @@ export * from "./freelance";
 // HH парсер
 export * from "./hh";
 export * from "./kwork";
+// Парсер профилей фрилансеров
+export {
+  formatProfileDataForStorage,
+  type ProfileData,
+  parseFreelancerProfile,
+} from "./profile-parser";
 export type {
   ResponseData,
   ResumeExperience,

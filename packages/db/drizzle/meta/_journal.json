@@ -43,6 +43,13 @@
       "when": 1767943514955,
       "tag": "0006_naive_lyja",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1767989122959,
+      "tag": "0007_lean_ulik",
+      "breakpoints": true
     }
   ]
 }
