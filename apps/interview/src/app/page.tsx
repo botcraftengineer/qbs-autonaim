@@ -4,7 +4,6 @@ import { cn } from "@qbs-autonaim/ui";
 import { MessageSquare } from "lucide-react";
 import { BubbleIcon } from "@/components/ui/bubble-icon";
 import { ButtonLink } from "@/components/ui/button-link";
-import { CTA } from "@/components/ui/cta";
 import { FeaturesSection } from "@/components/ui/features-section";
 import { Hero } from "@/components/ui/hero";
 
