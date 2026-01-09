@@ -13,7 +13,6 @@ import { db } from "@qbs-autonaim/db/client";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
 import {
   formatProfileDataForStorage,
-  type ProfileData,
   parseFreelancerProfile,
 } from "../../../../parsers/profile-parser";
 import {

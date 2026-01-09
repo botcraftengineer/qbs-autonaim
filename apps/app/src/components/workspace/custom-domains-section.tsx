@@ -31,11 +31,11 @@ export function CustomDomainsSection({
 
   if (isLoading) {
     return (
-      <div className="space-y-4" role="status" aria-live="polite">
+      <output className="space-y-4" aria-live="polite">
         <span className="sr-only">Загрузка кастомных доменов</span>
         <div className="h-8 w-48 animate-pulse rounded bg-muted" />
         <div className="h-32 animate-pulse rounded-lg bg-muted" />
-      </div>
+      </output>
     );
   }
 

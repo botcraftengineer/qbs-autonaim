@@ -3,10 +3,23 @@
  * Извлекает данные профиля по URL для использования в оценке откликов
  */
 
+import { scrapeKworkProfile } from "./kwork/profile-scraper";
+
 export interface ProfileData {
   platform: "kwork" | "fl" | "weblancer" | "upwork" | "freelancer" | "unknown";
   username: string;
   profileUrl: string;
+  aboutMe?: string;
+  skills?: string[];
+  statistics?: {
+    rating?: number;
+    ordersCompleted?: number;
+    reviewsReceived?: number;
+    successRate?: number;
+    onTimeRate?: number;
+    repeatOrdersRate?: number;
+    buyerLevel?: string;
+  };
   rawData?: string;
   parsedAt: Date;
   error?: string;
@@ -64,8 +77,8 @@ function extractUsername(
 
 /**
  * Парсит профиль фрилансера по URL
- * В текущей реализации только извлекает метаданные из URL
- * В будущем можно добавить реальный парсинг через API или скрапинг
+ * Для kwork.ru извлекает "О себе" и навыки
+ * Для других платформ пока только метаданные
  */
 export async function parseFreelancerProfile(
   profileUrl: string,
@@ -83,10 +96,43 @@ export async function parseFreelancerProfile(
     };
   }
 
-  // TODO: В будущем здесь можно добавить реальный парсинг профиля
-  // Например, через Playwright или API платформы (если доступно)
-  // const profileData = await scrapeProfile(profileUrl, platform);
+  // Для kwork.ru делаем реальный парсинг
+  if (platform === "kwork") {
+    try {
+      const kworkData = await scrapeKworkProfile(profileUrl);
 
+      if (kworkData.error) {
+        return {
+          platform,
+          username,
+          profileUrl,
+          parsedAt: new Date(),
+          error: kworkData.error,
+        };
+      }
+
+      return {
+        platform,
+        username,
+        profileUrl,
+        aboutMe: kworkData.aboutMe,
+        skills: kworkData.skills,
+        statistics: kworkData.statistics,
+        parsedAt: new Date(),
+      };
+    } catch (error) {
+      return {
+        platform,
+        username,
+        profileUrl,
+        parsedAt: new Date(),
+        error:
+          error instanceof Error ? error.message : "Ошибка парсинга профиля",
+      };
+    }
+  }
+
+  // Для остальных платформ пока только метаданные
   return {
     platform,
     username,
@@ -106,6 +152,17 @@ export function formatProfileDataForStorage(
         username: string;
         profileUrl: string;
         parsedAt: string | Date;
+        aboutMe?: string;
+        skills?: string[];
+        statistics?: {
+          rating?: number;
+          ordersCompleted?: number;
+          reviewsReceived?: number;
+          successRate?: number;
+          onTimeRate?: number;
+          repeatOrdersRate?: number;
+          buyerLevel?: string;
+        };
         error?: string;
       },
 ): string {
@@ -118,6 +175,9 @@ export function formatProfileDataForStorage(
     platform: profile.platform,
     username: profile.username,
     profileUrl: profile.profileUrl,
+    aboutMe: profile.aboutMe,
+    skills: profile.skills,
+    statistics: profile.statistics,
     parsedAt,
     error: profile.error,
   });

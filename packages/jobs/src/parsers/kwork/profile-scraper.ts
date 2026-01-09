@@ -1,11 +1,20 @@
 /**
  * Парсер профилей kwork.ru
- * Извлекает информацию "О себе" и навыки с публичной страницы профиля
+ * Извлекает информацию "О себе", навыки и статистику с публичной страницы профиля
  */
 
 export interface KworkProfileData {
   aboutMe?: string;
   skills: string[];
+  statistics?: {
+    rating?: number;
+    ordersCompleted?: number;
+    reviewsReceived?: number;
+    successRate?: number;
+    onTimeRate?: number;
+    repeatOrdersRate?: number;
+    buyerLevel?: string;
+  };
   error?: string;
 }
 
@@ -44,9 +53,13 @@ export async function scrapeKworkProfile(
     // Парсим навыки
     const skills = extractSkills(html);
 
+    // Парсим статистику
+    const statistics = extractStatistics(html);
+
     return {
       aboutMe,
       skills,
+      statistics,
     };
   } catch (error) {
     console.error("Ошибка парсинга профиля kwork.ru:", error);
@@ -59,74 +72,147 @@ export async function scrapeKworkProfile(
 
 /**
  * Извлекает текст "О себе" из HTML
+ * Kwork.ru использует Vue.js и передает данные через window.stateData
  */
 function extractAboutMe(html: string): string | undefined {
-  // Ищем <div class="user-about-me">...</div>
-  const aboutMeMatch = html.match(
-    /<div\s+class="user-about-me"[^>]*>([\s\S]*?)<\/div>/i,
-  );
+  // Ищем window.stateData в скрипте
+  const stateDataMatch = html.match(/window\.stateData\s*=\s*({[\s\S]*?});/);
 
-  if (!aboutMeMatch?.[1]) {
+  if (!stateDataMatch?.[1]) {
     return undefined;
   }
 
-  // Очищаем HTML теги и декодируем HTML entities
-  let text = aboutMeMatch[1]
-    .replace(/<[^>]+>/g, "") // Удаляем HTML теги
-    .replace(/&nbsp;/g, " ") // Заменяем &nbsp; на пробел
-    .replace(/&quot;/g, '"') // Заменяем &quot; на кавычки
-    .replace(/&amp;/g, "&") // Заменяем &amp; на &
-    .replace(/&lt;/g, "<") // Заменяем &lt; на <
-    .replace(/&gt;/g, ">") // Заменяем &gt; на >
-    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code))) // Декодируем числовые entities
-    .trim();
+  try {
+    const stateData = JSON.parse(stateDataMatch[1]);
 
-  // Удаляем лишние пробелы и переносы строк
-  text = text.replace(/\s+/g, " ").trim();
+    if (!stateData.userProfileDescription) {
+      return undefined;
+    }
 
-  return text || undefined;
+    // Очищаем HTML теги и декодируем HTML entities
+    let text = stateData.userProfileDescription
+      .replace(/<br\s*\/?>/gi, "\n") // Заменяем <br> на перенос строки
+      .replace(/<[^>]+>/g, "") // Удаляем HTML теги
+      .replace(/&nbsp;/g, " ") // Заменяем &nbsp; на пробел
+      .replace(/&quot;/g, '"') // Заменяем &quot; на кавычки
+      .replace(/&amp;/g, "&") // Заменяем &amp; на &
+      .replace(/&lt;/g, "<") // Заменяем &lt; на <
+      .replace(/&gt;/g, ">") // Заменяем &gt; на >
+      .replace(/&mdash;/g, "—") // Заменяем &mdash; на тире
+      .replace(/&laquo;/g, "«") // Заменяем &laquo; на «
+      .replace(/&raquo;/g, "»") // Заменяем &raquo; на »
+      .replace(/&bull;/g, "•") // Заменяем &bull; на •
+      .replace(/&#(\d+);/g, (_: string, code: string) =>
+        String.fromCharCode(Number(code)),
+      ) // Декодируем числовые entities
+      .trim();
+
+    // Удаляем лишние пробелы, но сохраняем переносы строк
+    text = text.replace(/ +/g, " ").replace(/\n +/g, "\n").trim();
+
+    return text || undefined;
+  } catch (error) {
+    console.error("Ошибка парсинга stateData для aboutMe:", error);
+    return undefined;
+  }
 }
 
 /**
  * Извлекает навыки из HTML
+ * Kwork.ru использует Vue.js и передает данные через window.stateData
  */
 function extractSkills(html: string): string[] {
-  const skills: string[] = [];
+  // Ищем window.stateData в скрипте
+  const stateDataMatch = html.match(/window\.stateData\s*=\s*({[\s\S]*?});/);
 
-  // Ищем <div class="user-skills__items">...</div>
-  const skillsContainerMatch = html.match(
-    /<div\s+class="user-skills__items"[^>]*>([\s\S]*?)<\/div>/i,
-  );
-
-  if (!skillsContainerMatch?.[1]) {
-    return skills;
+  if (!stateDataMatch?.[1]) {
+    return [];
   }
 
-  const skillsHtml = skillsContainerMatch[1];
+  try {
+    const stateData = JSON.parse(stateDataMatch[1]);
 
-  // Ищем все <div class="user-skills__item">...</div>
-  const skillMatches = skillsHtml.matchAll(
-    /<div\s+class="user-skills__item"[^>]*>([\s\S]*?)<\/div>/gi,
-  );
-
-  for (const match of skillMatches) {
-    if (match[1]) {
-      // Очищаем HTML теги и декодируем entities
-      const skill = match[1]
-        .replace(/<[^>]+>/g, "")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&quot;/g, '"')
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
-        .trim();
-
-      if (skill) {
-        skills.push(skill);
-      }
+    if (!stateData.userSkills || !Array.isArray(stateData.userSkills)) {
+      return [];
     }
+
+    // Извлекаем названия навыков
+    return stateData.userSkills
+      .map((skill: { name?: string }) => skill.name?.trim())
+      .filter((name: string | undefined): name is string => !!name);
+  } catch (error) {
+    console.error("Ошибка парсинга stateData для skills:", error);
+    return [];
+  }
+}
+
+/**
+ * Извлекает статистику пользователя из HTML
+ * Kwork.ru использует Vue.js и передает данные через window.stateData
+ */
+function extractStatistics(html: string): KworkProfileData["statistics"] {
+  // Ищем window.stateData в скрипте
+  const stateDataMatch = html.match(/window\.stateData\s*=\s*({[\s\S]*?});/);
+
+  if (!stateDataMatch?.[1]) {
+    return undefined;
   }
 
-  return skills;
+  try {
+    const stateData = JSON.parse(stateDataMatch[1]);
+
+    const statistics: NonNullable<KworkProfileData["statistics"]> = {};
+
+    // Парсим рейтинг
+    if (stateData.userRating) {
+      statistics.rating = Number.parseFloat(stateData.userRating);
+    }
+
+    // Парсим количество выполненных заказов
+    if (stateData.orderDoneCount) {
+      statistics.ordersCompleted = Number.parseInt(
+        stateData.orderDoneCount,
+        10,
+      );
+    }
+
+    // Парсим количество отзывов
+    if (stateData.totalReviewsCount) {
+      statistics.reviewsReceived = Number.parseInt(
+        stateData.totalReviewsCount,
+        10,
+      );
+    }
+
+    // Парсим процент успешно сданных заказов
+    if (stateData.orderDonePersent) {
+      statistics.successRate = Number.parseInt(stateData.orderDonePersent, 10);
+    }
+
+    // Парсим процент заказов сданных вовремя
+    if (stateData.orderDoneIntimePersent) {
+      statistics.onTimeRate = Number.parseInt(
+        stateData.orderDoneIntimePersent,
+        10,
+      );
+    }
+
+    // Парсим процент повторных заказов
+    if (stateData.orderDoneRepeatPersent) {
+      statistics.repeatOrdersRate = Number.parseInt(
+        stateData.orderDoneRepeatPersent,
+        10,
+      );
+    }
+
+    // Парсим уровень покупателя
+    if (stateData.payerLevelLabel) {
+      statistics.buyerLevel = stateData.payerLevelLabel;
+    }
+
+    return Object.keys(statistics).length > 0 ? statistics : undefined;
+  } catch (error) {
+    console.error("Ошибка парсинга stateData:", error);
+    return undefined;
+  }
 }

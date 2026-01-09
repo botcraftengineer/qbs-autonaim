@@ -268,9 +268,8 @@ export function AddDomainDialog({
                           }}
                         />
                         {domain && (
-                          <div
+                          <output
                             className="flex items-center gap-2 px-2 py-2 text-sm"
-                            role="status"
                             aria-live={
                               domainStatus === "checking"
                                 ? "assertive"
@@ -307,7 +306,7 @@ export function AddDomainDialog({
                                 aria-hidden="true"
                               />
                             )}
-                          </div>
+                          </output>
                         )}
                       </div>
                     </div>

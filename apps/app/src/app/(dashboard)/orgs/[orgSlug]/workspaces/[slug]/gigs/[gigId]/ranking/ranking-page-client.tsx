@@ -91,7 +91,7 @@ export function RankingPageClient({
       minScore:
         selectedMinScore === "0"
           ? undefined
-          : Number.parseInt(selectedMinScore),
+          : Number.parseInt(selectedMinScore, 10),
       limit,
       offset: page * limit,
     }),

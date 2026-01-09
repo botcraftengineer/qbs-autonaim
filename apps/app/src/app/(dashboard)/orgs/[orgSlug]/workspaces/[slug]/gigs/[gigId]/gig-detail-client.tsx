@@ -42,7 +42,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -112,15 +112,15 @@ function formatBudget(
   };
 
   if (min && max) {
-    return `${formatAmount(min)} - ${formatAmount(max)} ${currency}`;
+    return `${formatAmount(min)}–${formatAmount(max)}\u00A0${currency}`;
   }
 
   if (min) {
-    return `от ${formatAmount(min)} ${currency}`;
+    return `от\u00A0${formatAmount(min)}\u00A0${currency}`;
   }
 
   if (max) {
-    return `до ${formatAmount(max)} ${currency}`;
+    return `до\u00A0${formatAmount(max)}\u00A0${currency}`;
   }
 
   return "Не указан";
@@ -154,6 +154,120 @@ function getGigTypeLabel(type: string) {
   return types[type] || type;
 }
 
+const GigStats = memo(function GigStats({
+  views,
+  responseCounts,
+  isCountsPending,
+  isCountsError,
+}: {
+  views: number;
+  responseCounts?: { total: number; new: number } | null;
+  isCountsPending: boolean;
+  isCountsError: boolean;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-lg sm:text-xl">Статистика</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Eye className="h-4 w-4" aria-hidden="true" />
+            Просмотры
+          </div>
+          <span className="font-medium tabular-nums">{views || 0}</span>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <MessageSquare className="h-4 w-4" aria-hidden="true" />
+            Отклики
+          </div>
+          {isCountsPending ? (
+            <Skeleton className="h-5 w-8" />
+          ) : isCountsError ? (
+            <span className="font-medium text-muted-foreground">—</span>
+          ) : (
+            <span className="font-medium tabular-nums">
+              {responseCounts?.total || 0}
+            </span>
+          )}
+        </div>
+
+        {!isCountsPending &&
+          !isCountsError &&
+          (responseCounts?.new || 0) > 0 && (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Users className="h-4 w-4" aria-hidden="true" />
+                Новые отклики
+              </div>
+              <Badge variant="default">{responseCounts?.new}</Badge>
+            </div>
+          )}
+      </CardContent>
+    </Card>
+  );
+});
+
+const ProjectDetails = memo(function ProjectDetails({
+  budgetMin,
+  budgetMax,
+  budgetCurrency,
+  estimatedDuration,
+  deadline,
+}: {
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  budgetCurrency?: string | null;
+  estimatedDuration?: string | null;
+  deadline?: Date | null;
+}) {
+  return (
+    <Card>
+      <CardHeader className="p-3 sm:p-4">
+        <CardTitle className="text-lg sm:text-xl">Детали проекта</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3 p-3 sm:p-4">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <DollarSign className="h-4 w-4 shrink-0" aria-hidden="true" />
+            Бюджет
+          </div>
+          <p className="font-medium text-sm sm:text-base hyphens-auto">
+            {formatBudget(budgetMin, budgetMax, budgetCurrency || "RUB")}
+          </p>
+        </div>
+
+        {estimatedDuration && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Длительность
+            </div>
+            <p className="font-medium text-sm sm:text-base hyphens-auto">
+              {estimatedDuration}
+            </p>
+          </div>
+        )}
+
+        {deadline && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4 shrink-0" aria-hidden="true" />
+              Дедлайн
+            </div>
+            <p className="font-medium text-sm sm:text-base">
+              {formatDate(deadline)}
+            </p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+});
+
 export function GigDetailClient({
   orgSlug,
   workspaceSlug,
@@ -183,7 +297,6 @@ export function GigDetailClient({
     enabled: !!workspaceId,
   });
 
-  // Получаем актуальные счетчики откликов из базы данных
   const {
     data: responseCounts,
     isPending: isCountsPending,
@@ -197,7 +310,6 @@ export function GigDetailClient({
     enabled: !!workspaceId,
   });
 
-  // Логируем ошибку для отладки
   if (isCountsError && countsError) {
     console.error("Ошибка загрузки счетчиков откликов:", countsError);
   }
@@ -217,16 +329,7 @@ export function GigDetailClient({
     }),
   );
 
-  if (workspaceLoading || isPending) {
-    return <GigDetailSkeleton />;
-  }
-
-  if (error || !gig || !workspace || !organization) {
-    notFound();
-  }
-
-  const handleShare = () => {
-    // TODO: Implement share functionality
+  const handleShare = useCallback(() => {
     const url = `${window.location.origin}/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`;
     navigator.clipboard
       .writeText(url)
@@ -236,47 +339,43 @@ export function GigDetailClient({
       .catch(() => {
         toast.error("Не удалось скопировать ссылку");
       });
-  };
+  }, [orgSlug, workspaceSlug, gigId]);
 
-  const handleSettings = () => {
-    // TODO: Implement settings functionality
+  const handleSettings = useCallback(() => {
     toast.info("Функция «Настройки» скоро будет доступна");
-  };
+  }, []);
 
-  const handleDeleteClick = () => {
+  const handleDeleteClick = useCallback(() => {
     setShowDeleteDialog(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = () => {
+  const handleDeleteConfirm = useCallback(() => {
     if (!workspaceId) return;
     deleteMutation.mutate({ gigId, workspaceId });
-  };
+  }, [workspaceId, gigId, deleteMutation]);
 
-  if (isPending) {
+  if (workspaceLoading || isPending) {
     return <GigDetailSkeleton />;
   }
 
-  if (error || !gig) {
+  if (error || !gig || !workspace || !organization) {
     notFound();
   }
 
   return (
     <div className="container mx-auto max-w-6xl py-4 px-4 sm:py-6 sm:px-6">
-      {/* Breadcrumb */}
-      <div className="mb-4 sm:mb-6">
+      <nav className="mb-4 sm:mb-6" aria-label="Навигация">
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-action-manipulation min-h-[44px] sm:min-h-[24px]"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground focus-visible:text-foreground transition-colors touch-action-manipulation min-h-[44px] sm:min-h-[24px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Назад к заданиям
         </Link>
-      </div>
+      </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-        {/* Main Content */}
         <div className="lg:col-span-2 space-y-4 sm:space-y-6">
-          {/* Header Card */}
           <Card>
             <CardHeader className="p-4 sm:p-6">
               <div className="flex items-start justify-between gap-2">
@@ -289,15 +388,14 @@ export function GigDetailClient({
                       <Badge variant="outline">Неактивно</Badge>
                     )}
                   </div>
-                  <CardTitle className="text-xl sm:text-2xl break-words">
+                  <CardTitle className="text-xl sm:text-2xl hyphens-auto">
                     {gig.title}
                   </CardTitle>
                   <CardDescription className="text-xs sm:text-sm">
                     Создано {formatDate(gig.createdAt)}
                     {gig.updatedAt && gig.updatedAt !== gig.createdAt && (
                       <span className="hidden sm:inline">
-                        {" "}
-                        • Обновлено {formatDate(gig.updatedAt)}
+                        {"\u00A0•\u00A0"}Обновлено {formatDate(gig.updatedAt)}
                       </span>
                     )}
                   </CardDescription>
@@ -308,11 +406,10 @@ export function GigDetailClient({
                     <Button
                       variant="ghost"
                       size="icon"
-                      aria-label="Открыть меню"
+                      aria-label="Открыть меню действий"
                       className="min-w-[44px] min-h-[44px] sm:min-w-[36px] sm:min-h-[36px] touch-action-manipulation"
                     >
-                      <MoreHorizontal className="h-4 w-4" />
-                      <span className="sr-only">Открыть меню</span>
+                      <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -320,24 +417,24 @@ export function GigDetailClient({
                       <Link
                         href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
                       >
-                        <Edit className="h-4 w-4 mr-2" />
+                        <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
                         Редактировать
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleShare}>
-                      <Share2 className="h-4 w-4 mr-2" />
+                      <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
                       Поделиться
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={handleSettings}>
-                      <Settings className="h-4 w-4 mr-2" />
+                      <Settings className="h-4 w-4 mr-2" aria-hidden="true" />
                       Настройки
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      className="text-destructive"
+                      className="text-destructive focus:text-destructive"
                       onSelect={handleDeleteClick}
                     >
-                      <Trash2 className="h-4 w-4 mr-2" />
+                      <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
                       Удалить
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -348,7 +445,7 @@ export function GigDetailClient({
             {gig.description && (
               <CardContent className="p-4 sm:p-6">
                 <div className="prose prose-sm max-w-none">
-                  <p className="whitespace-pre-wrap break-words text-sm sm:text-base">
+                  <p className="whitespace-pre-wrap hyphens-auto text-sm sm:text-base">
                     {gig.description}
                   </p>
                 </div>
@@ -356,7 +453,6 @@ export function GigDetailClient({
             )}
           </Card>
 
-          {/* Requirements Card */}
           {gig.requirements && (
             <Card>
               <CardHeader className="p-4 sm:p-6">
@@ -364,41 +460,44 @@ export function GigDetailClient({
               </CardHeader>
               <CardContent className="space-y-4 p-4 sm:p-6">
                 {gig.requirements.summary && (
-                  <div>
-                    <h4 className="font-medium mb-2 text-sm sm:text-base">
+                  <section>
+                    <h3 className="font-medium mb-2 text-sm sm:text-base">
                       Описание
-                    </h4>
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+                    </h3>
+                    <p className="text-sm text-muted-foreground whitespace-pre-wrap hyphens-auto">
                       {gig.requirements.summary}
                     </p>
-                  </div>
+                  </section>
                 )}
 
                 {gig.requirements.deliverables &&
                   gig.requirements.deliverables.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                    <section>
+                      <h3 className="font-medium mb-2 text-sm sm:text-base">
                         Что нужно сделать
-                      </h4>
+                      </h3>
                       <ul className="text-sm text-muted-foreground space-y-1">
                         {gig.requirements.deliverables.map((item: string) => (
                           <li key={item} className="flex items-start gap-2">
-                            <span className="text-primary mt-1 flex-shrink-0">
+                            <span
+                              className="text-primary mt-1 shrink-0"
+                              aria-hidden="true"
+                            >
                               •
                             </span>
-                            <span className="break-words">{item}</span>
+                            <span className="hyphens-auto">{item}</span>
                           </li>
                         ))}
                       </ul>
-                    </div>
+                    </section>
                   )}
 
                 {gig.requirements.required_skills &&
                   gig.requirements.required_skills.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                    <section>
+                      <h3 className="font-medium mb-2 text-sm sm:text-base">
                         Обязательные навыки
-                      </h4>
+                      </h3>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {gig.requirements.required_skills.map(
                           (skill: string) => (
@@ -412,15 +511,15 @@ export function GigDetailClient({
                           ),
                         )}
                       </div>
-                    </div>
+                    </section>
                   )}
 
                 {gig.requirements.nice_to_have_skills &&
                   gig.requirements.nice_to_have_skills.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                    <section>
+                      <h3 className="font-medium mb-2 text-sm sm:text-base">
                         Желательные навыки
-                      </h4>
+                      </h3>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {gig.requirements.nice_to_have_skills.map(
                           (skill: string) => (
@@ -434,15 +533,15 @@ export function GigDetailClient({
                           ),
                         )}
                       </div>
-                    </div>
+                    </section>
                   )}
 
                 {gig.requirements.tech_stack &&
                   gig.requirements.tech_stack.length > 0 && (
-                    <div>
-                      <h4 className="font-medium mb-2 text-sm sm:text-base">
+                    <section>
+                      <h3 className="font-medium mb-2 text-sm sm:text-base">
                         Технологии
-                      </h4>
+                      </h3>
                       <div className="flex flex-wrap gap-1.5 sm:gap-2">
                         {gig.requirements.tech_stack.map((tech: string) => (
                           <Badge
@@ -454,13 +553,12 @@ export function GigDetailClient({
                           </Badge>
                         ))}
                       </div>
-                    </div>
+                    </section>
                   )}
               </CardContent>
             </Card>
           )}
 
-          {/* External Link */}
           {gig.url && (
             <Card>
               <CardHeader className="p-4 sm:p-6">
@@ -475,7 +573,7 @@ export function GigDetailClient({
                   className="w-full sm:w-auto min-h-[44px] touch-action-manipulation"
                 >
                   <a href={gig.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
+                    <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
                     Открыть на {gig.source}
                   </a>
                 </Button>
@@ -483,108 +581,29 @@ export function GigDetailClient({
             </Card>
           )}
 
-          {/* Interview Settings */}
           <GigInterviewSettings gigId={gigId} />
-
-          {/* Invitation Template */}
           <GigInvitationTemplate gigId={gigId} gigTitle={gig.title} />
         </div>
 
-        {/* Sidebar */}
-        <div className="space-y-4 sm:space-y-6">
-          {/* Stats Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg sm:text-xl">Статистика</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Eye className="h-4 w-4" />
-                  Просмотры
-                </div>
-                <span className="font-medium">{gig.views || 0}</span>
-              </div>
+        <aside
+          className="space-y-4 sm:space-y-6"
+          aria-label="Дополнительная информация"
+        >
+          <GigStats
+            views={gig.views || 0}
+            responseCounts={responseCounts}
+            isCountsPending={isCountsPending}
+            isCountsError={isCountsError}
+          />
 
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <MessageSquare className="h-4 w-4" />
-                  Отклики
-                </div>
-                {isCountsPending ? (
-                  <Skeleton className="h-5 w-8" />
-                ) : isCountsError ? (
-                  <span className="font-medium text-muted-foreground">—</span>
-                ) : (
-                  <span className="font-medium">
-                    {responseCounts?.total || 0}
-                  </span>
-                )}
-              </div>
+          <ProjectDetails
+            budgetMin={gig.budgetMin}
+            budgetMax={gig.budgetMax}
+            budgetCurrency={gig.budgetCurrency}
+            estimatedDuration={gig.estimatedDuration}
+            deadline={gig.deadline}
+          />
 
-              {!isCountsPending &&
-                !isCountsError &&
-                (responseCounts?.new || 0) > 0 && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      Новые отклики
-                    </div>
-                    <Badge variant="default">{responseCounts?.new}</Badge>
-                  </div>
-                )}
-            </CardContent>
-          </Card>
-
-          {/* Project Details */}
-          <Card>
-            <CardHeader className="p-3 sm:p-4">
-              <CardTitle className="text-lg sm:text-xl">
-                Детали проекта
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 p-3 sm:p-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <DollarSign className="h-4 w-4 flex-shrink-0" />
-                  Бюджет
-                </div>
-                <p className="font-medium text-sm sm:text-base break-words">
-                  {formatBudget(
-                    gig.budgetMin,
-                    gig.budgetMax,
-                    gig.budgetCurrency || "RUB",
-                  )}
-                </p>
-              </div>
-
-              {gig.estimatedDuration && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4 flex-shrink-0" />
-                    Длительность
-                  </div>
-                  <p className="font-medium text-sm sm:text-base break-words">
-                    {gig.estimatedDuration}
-                  </p>
-                </div>
-              )}
-
-              {gig.deadline && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4 flex-shrink-0" />
-                    Дедлайн
-                  </div>
-                  <p className="font-medium text-sm sm:text-base">
-                    {formatDate(gig.deadline)}
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Actions */}
           <Card>
             <CardHeader className="p-4 sm:p-6">
               <CardTitle className="text-lg sm:text-xl">Действия</CardTitle>
@@ -597,7 +616,7 @@ export function GigDetailClient({
                 <Link
                   href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
                 >
-                  <MessageSquare className="h-4 w-4 mr-2" />
+                  <MessageSquare className="h-4 w-4 mr-2" aria-hidden="true" />
                   Посмотреть отклики
                 </Link>
               </Button>
@@ -610,7 +629,7 @@ export function GigDetailClient({
                 <Link
                   href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
                 >
-                  <Edit className="h-4 w-4 mr-2" />
+                  <Edit className="h-4 w-4 mr-2" aria-hidden="true" />
                   Редактировать
                 </Link>
               </Button>
@@ -620,15 +639,14 @@ export function GigDetailClient({
                 className="w-full min-h-[44px] touch-action-manipulation"
                 onClick={handleShare}
               >
-                <Share2 className="h-4 w-4 mr-2" />
+                <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
                 Поделиться
               </Button>
             </CardContent>
           </Card>
-        </div>
+        </aside>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

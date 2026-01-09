@@ -292,9 +292,9 @@ export function CandidateComparison({
                   >
                     {candidate.strengths && candidate.strengths.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {candidate.strengths.map((strength, idx) => (
+                        {candidate.strengths.map((strength) => (
                           <Badge
-                            key={idx}
+                            key={strength}
                             variant="secondary"
                             className="text-xs bg-green-50 text-green-700 border-green-200 dark:bg-green-950/30 dark:text-green-400 dark:border-green-800"
                           >
@@ -329,9 +329,9 @@ export function CandidateComparison({
                   >
                     {candidate.weaknesses && candidate.weaknesses.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
-                        {candidate.weaknesses.map((weakness, idx) => (
+                        {candidate.weaknesses.map((weakness) => (
                           <Badge
-                            key={idx}
+                            key={weakness}
                             variant="outline"
                             className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 dark:bg-yellow-950/30 dark:text-yellow-400 dark:border-yellow-800"
                           >
