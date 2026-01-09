@@ -62,6 +62,7 @@ export const env = createEnv({
     // App URL
     APP_URL: z.url().optional().default("http://localhost:3000"),
     APP_NAME: z.string().optional().default("QBS Автонайм"),
+    CUSTOM_DOMAIN_TARGET: z.string().optional().default("cname.qbs.ru"),
 
     // Interview Buffer Configuration
     INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT: z
@@ -138,6 +139,7 @@ export const env = createEnv({
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,
     APP_URL: process.env.APP_URL,
     APP_NAME: process.env.APP_NAME,
+    CUSTOM_DOMAIN_TARGET: process.env.CUSTOM_DOMAIN_TARGET,
     INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT:
       process.env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT,
     INTERVIEW_TYPING_DEBOUNCE_TIMEOUT:

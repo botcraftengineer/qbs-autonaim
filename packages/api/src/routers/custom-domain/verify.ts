@@ -1,3 +1,5 @@
+import { promises as dns } from "node:dns";
+import { APP_CONFIG } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { customDomain } from "@qbs-autonaim/db/schema";
@@ -5,9 +7,26 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
-async function checkDNSRecords(): Promise<boolean> {
-  // TODO: Реализовать реальную проверку DNS
-  return true;
+async function checkDNSRecords(domain: string): Promise<boolean> {
+  try {
+    const records = await dns.resolveCname(domain);
+
+    const expectedTarget = APP_CONFIG.customDomainTarget;
+
+    return records.some(
+      (record) =>
+        record.toLowerCase() === expectedTarget.toLowerCase() ||
+        record.toLowerCase().endsWith(`.${expectedTarget.toLowerCase()}`),
+    );
+  } catch (error) {
+    if (
+      (error as NodeJS.ErrnoException).code === "ENODATA" ||
+      (error as NodeJS.ErrnoException).code === "ENOTFOUND"
+    ) {
+      return false;
+    }
+    throw error;
+  }
 }
 
 export const verify = protectedProcedure
@@ -49,7 +68,7 @@ export const verify = protectedProcedure
       return domain;
     }
 
-    const isValid = await checkDNSRecords();
+    const isValid = await checkDNSRecords(domain.domain);
 
     if (!isValid) {
       throw new TRPCError({

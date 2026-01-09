@@ -34,7 +34,7 @@ export function DnsInstructionsDialog({
       ? domain.split(".")[0]
       : (domain ?? "");
 
-  const cnameValue = "cname.dub.co";
+  const cnameValue = "cname.qbs.ru";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -84,55 +84,6 @@ export function DnsInstructionsDialog({
                           size="icon"
                           className="h-8 w-8"
                           onClick={() => copyToClipboard(cnameValue, "Value")}
-                        >
-                          <Copy className="h-4 w-4" />
-                          <span className="sr-only">Копировать</span>
-                        </Button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  или
-                </span>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="mb-3 font-medium">A запись</h4>
-              <div className="overflow-hidden rounded-lg border">
-                <table className="w-full text-sm">
-                  <thead className="bg-muted/50">
-                    <tr>
-                      <th className="px-4 py-2 text-left font-medium">Type</th>
-                      <th className="px-4 py-2 text-left font-medium">Name</th>
-                      <th className="px-4 py-2 text-left font-medium">Value</th>
-                      <th className="px-4 py-2 text-left font-medium">TTL</th>
-                      <th className="w-12"></th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr className="border-t">
-                      <td className="px-4 py-3 font-mono">A</td>
-                      <td className="px-4 py-3 font-mono">{subdomain}</td>
-                      <td className="px-4 py-3 font-mono">76.76.21.21</td>
-                      <td className="px-4 py-3 font-mono">86400</td>
-                      <td className="px-4 py-3">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() =>
-                            copyToClipboard("76.76.21.21", "IP адрес")
-                          }
                         >
                           <Copy className="h-4 w-4" />
                           <span className="sr-only">Копировать</span>

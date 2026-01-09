@@ -1,45 +1,34 @@
-import { paths } from "@qbs-autonaim/config";
-import { db, WorkspaceRepository } from "@qbs-autonaim/db";
-import { redirect } from "next/navigation";
-import { getSession } from "~/auth/server";
+"use client";
+
+import { Skeleton } from "@qbs-autonaim/ui";
 import { CustomDomainsSection } from "~/components/workspace";
+import { useWorkspace } from "~/hooks/use-workspace";
 
-const workspaceRepository = new WorkspaceRepository(db);
+export default function WorkspaceDomainsPage() {
+  const { workspace, isLoading } = useWorkspace();
 
-export default async function WorkspaceDomainsPage({
-  params,
-}: {
-  params: Promise<{ orgSlug: string; slug: string }>;
-}) {
-  const session = await getSession();
-  if (!session?.user) {
-    redirect(paths.auth.signin);
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="mt-1 h-4 w-96" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </div>
+    );
   }
 
-  const { orgSlug, slug } = await params;
-
-  const workspace = await workspaceRepository.findBySlug(orgSlug, slug);
   if (!workspace) {
-    redirect(paths.dashboard.root);
-  }
-
-  const access = await workspaceRepository.checkAccess(
-    workspace.id,
-    session.user.id,
-  );
-
-  if (!access) {
-    redirect(paths.accessDenied);
+    return (
+      <div className="rounded-lg border p-6">
+        <p className="text-muted-foreground">Workspace не найден</p>
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold">Кастомные домены</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Управляйте доменами для ссылок на интервью
-        </p>
-      </div>
       <CustomDomainsSection workspaceId={workspace.id} />
     </div>
   );

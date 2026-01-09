@@ -1,5 +1,6 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
+import { checkAvailability } from "./check-availability";
 import { create } from "./create";
 import { deleteDomain } from "./delete";
 import { list } from "./list";
@@ -11,5 +12,6 @@ export const customDomainRouter = {
   create,
   verify,
   setPrimary,
+  checkAvailability,
   delete: deleteDomain,
 } satisfies TRPCRouterRecord;
