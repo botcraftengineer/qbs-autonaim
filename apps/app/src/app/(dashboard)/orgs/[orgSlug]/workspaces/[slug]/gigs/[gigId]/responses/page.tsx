@@ -21,6 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
   Skeleton,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
   Tabs,
   TabsContent,
   TabsList,
@@ -31,15 +37,17 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Check,
   Filter,
   Loader2,
   MessageSquare,
+  MoreHorizontal,
   Search,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import React from "react";
-import { ResponseListCard } from "~/components/gig";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -62,25 +70,52 @@ function ResponsesSkeleton() {
           </CardHeader>
         </Card>
 
-        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3, 4, 5, 6].map((id) => (
-            <Card key={`skeleton-${id}`}>
-              <CardHeader className="p-4 sm:p-6">
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex-shrink-0" />
-                  <div className="flex-1 space-y-2 min-w-0">
-                    <Skeleton className="h-4 sm:h-5 w-32 sm:w-40" />
-                    <Skeleton className="h-3 sm:h-4 w-24 sm:w-32" />
-                  </div>
-                  <Skeleton className="h-5 sm:h-6 w-16 sm:w-20 flex-shrink-0" />
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 sm:p-6">
-                <Skeleton className="h-20 sm:h-24 w-full" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>
+                    <Skeleton className="h-4 w-24" />
+                  </TableHead>
+                  <TableHead>
+                    <Skeleton className="h-4 w-20" />
+                  </TableHead>
+                  <TableHead>
+                    <Skeleton className="h-4 w-32" />
+                  </TableHead>
+                  <TableHead>
+                    <Skeleton className="h-4 w-24" />
+                  </TableHead>
+                  <TableHead>
+                    <Skeleton className="h-4 w-20" />
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[1, 2, 3, 4, 5].map((id) => (
+                  <TableRow key={`skeleton-${id}`}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-24" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-28" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-8 w-24" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
@@ -177,6 +212,51 @@ export default function GigResponsesPage({ params }: PageProps) {
       },
     }),
   );
+
+  const getStatusLabel = (status: string) => {
+    const labels: Record<string, string> = {
+      NEW: "Новый",
+      EVALUATED: "Оценен",
+      INTERVIEW: "Интервью",
+      NEGOTIATION: "Переговоры",
+      COMPLETED: "Завершен",
+      SKIPPED: "Пропущен",
+    };
+    return labels[status] || status;
+  };
+
+  const getStatusVariant = (status: string) => {
+    const variants: Record<
+      string,
+      "default" | "secondary" | "destructive" | "outline"
+    > = {
+      NEW: "default",
+      EVALUATED: "secondary",
+      INTERVIEW: "outline",
+      NEGOTIATION: "outline",
+      COMPLETED: "secondary",
+      SKIPPED: "destructive",
+    };
+    return variants[status] || "default";
+  };
+
+  const getHrStatusLabel = (status: string | null) => {
+    if (!status) return null;
+    const labels: Record<string, string> = {
+      RECOMMENDED: "Рекомендован",
+      NOT_RECOMMENDED: "Не рекомендован",
+      PENDING: "На рассмотрении",
+    };
+    return labels[status] || status;
+  };
+
+  const formatDate = (date: Date | string) => {
+    return new Date(date).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   // Handlers
   const handleAccept = (responseId: string) => {
@@ -413,20 +493,97 @@ export default function GigResponsesPage({ params }: PageProps) {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {filteredResponses.map((response) => (
-                  <ResponseListCard
-                    key={response.id}
-                    response={response}
-                    orgSlug={orgSlug}
-                    workspaceSlug={workspaceSlug}
-                    gigId={gigId}
-                    onAccept={handleAccept}
-                    onReject={handleReject}
-                    onMessage={handleMessage}
-                  />
-                ))}
-              </div>
+              <Card>
+                <CardContent className="p-0">
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="min-w-[200px]">
+                            Кандидат
+                          </TableHead>
+                          <TableHead className="min-w-[120px]">
+                            Статус
+                          </TableHead>
+                          <TableHead className="min-w-[140px]">
+                            HR статус
+                          </TableHead>
+                          <TableHead className="min-w-[120px]">Дата</TableHead>
+                          <TableHead className="w-[180px] text-right">
+                            Действия
+                          </TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredResponses.map((response) => (
+                          <TableRow key={response.id}>
+                            <TableCell>
+                              <Link
+                                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses/${response.id}`}
+                                className="font-medium hover:underline"
+                              >
+                                {response.candidateName || "Без имени"}
+                              </Link>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                variant={getStatusVariant(response.status)}
+                              >
+                                {getStatusLabel(response.status)}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {response.hrSelectionStatus ? (
+                                <Badge variant="outline">
+                                  {getHrStatusLabel(response.hrSelectionStatus)}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground text-sm">
+                                  —
+                                </span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-muted-foreground text-sm">
+                              {formatDate(response.createdAt)}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex items-center justify-end gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleMessage(response.id)}
+                                  className="h-8 w-8 p-0 touch-action-manipulation"
+                                  title="Отправить сообщение"
+                                >
+                                  <MessageSquare className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleAccept(response.id)}
+                                  className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 touch-action-manipulation"
+                                  title="Принять"
+                                >
+                                  <Check className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleReject(response.id)}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 touch-action-manipulation"
+                                  title="Отклонить"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
         </Tabs>
