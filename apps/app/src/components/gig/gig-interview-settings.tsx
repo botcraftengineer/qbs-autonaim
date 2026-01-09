@@ -72,8 +72,8 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     }
   }, [interviewMediaFiles]);
 
-  const { mutate: updateSettings, isPending } = useMutation({
-    ...trpc.gig.update.mutationOptions({
+  const { mutate: updateSettings, isPending } = useMutation(
+    trpc.gig.update.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.get.queryKey({
@@ -94,7 +94,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         toast.error(error.message);
       },
     }),
-  });
+  );
 
   const handleSave = useCallback(() => {
     if (!workspace?.id) return;

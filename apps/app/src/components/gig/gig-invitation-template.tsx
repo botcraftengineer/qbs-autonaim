@@ -57,8 +57,8 @@ export function GigInvitationTemplate({
     enabled: !!workspace?.id,
   });
 
-  const { mutate: generateLink, isPending: isGenerating } = useMutation({
-    ...trpc.gig.generateInterviewLink.mutationOptions({
+  const { mutate: generateLink, isPending: isGenerating } = useMutation(
+    trpc.gig.generateInterviewLink.mutationOptions({
       onSuccess: (_data, variables) => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.getInterviewLink.queryKey({
@@ -72,7 +72,7 @@ export function GigInvitationTemplate({
         toast.error(error.message);
       },
     }),
-  });
+  );
 
   const handleGenerateLink = useCallback(() => {
     if (!workspace?.id) return;

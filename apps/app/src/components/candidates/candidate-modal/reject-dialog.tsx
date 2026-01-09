@@ -35,24 +35,25 @@ export function RejectDialog({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const rejectMutation = useMutation({
-    ...trpc.candidates.rejectCandidate.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.list.queryKey(),
-      });
-      toast.success("Кандидат отклонён");
-      onOpenChange(false);
-      setReason("");
-    },
-    onError: () => {
-      toast.error("Не удалось отклонить кандидата");
-    },
-  });
+  const { mutate: rejectCandidate, isPending: isRejecting } = useMutation(
+    trpc.candidates.rejectCandidate.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.list.queryKey(),
+        });
+        toast.success("Кандидат отклонён");
+        onOpenChange(false);
+        setReason("");
+      },
+      onError: () => {
+        toast.error("Не удалось отклонить кандидата");
+      },
+    }),
+  );
 
   const handleReject = () => {
     if (!candidate) return;
-    rejectMutation.mutate({
+    rejectCandidate({
       candidateId: candidate.id,
       workspaceId,
     });
@@ -82,22 +83,18 @@ export function RejectDialog({
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={3}
-            disabled={rejectMutation.isPending}
+            disabled={isRejecting}
           />
         </div>
 
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={rejectMutation.isPending}>
-            Отмена
-          </AlertDialogCancel>
+          <AlertDialogCancel disabled={isRejecting}>Отмена</AlertDialogCancel>
           <Button
             variant="destructive"
             onClick={handleReject}
-            disabled={rejectMutation.isPending}
+            disabled={isRejecting}
           >
-            {rejectMutation.isPending && (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            )}
+            {isRejecting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Отклонить
           </Button>
         </AlertDialogFooter>

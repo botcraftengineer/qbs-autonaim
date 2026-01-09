@@ -42,8 +42,8 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
 
   const conversationId = messages[0]?.conversationId as string | undefined;
 
-  const sendMessage = useMutation({
-    ...trpc.telegram.send.send.mutationOptions({
+  const { mutate: sendMessage, isPending: isSending } = useMutation(
+    trpc.telegram.send.send.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: trpc.candidates.listMessages.queryKey(),
@@ -56,7 +56,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
         toast.error("Не удалось отправить сообщение");
       },
     }),
-  });
+  );
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: scroll to bottom on new messages
   useEffect(() => {
@@ -76,7 +76,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
 
   const handleSend = async () => {
     if (!messageText.trim() || !conversationId) return;
-    sendMessage.mutate({
+    sendMessage({
       conversationId,
       channel: "TELEGRAM",
       sender: "ADMIN",
@@ -283,7 +283,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
               onKeyDown={handleKeyDown}
-              disabled={sendMessage.isPending}
+              disabled={isSending}
               className="min-h-[44px] max-h-[120px] resize-none"
               rows={1}
               autoComplete="off"
@@ -291,9 +291,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
             <Button
               size="icon"
               onClick={handleSend}
-              disabled={
-                !messageText.trim() || sendMessage.isPending || !conversationId
-              }
+              disabled={!messageText.trim() || isSending || !conversationId}
               aria-label="Отправить сообщение"
               className="h-[44px] w-[44px] shrink-0"
             >

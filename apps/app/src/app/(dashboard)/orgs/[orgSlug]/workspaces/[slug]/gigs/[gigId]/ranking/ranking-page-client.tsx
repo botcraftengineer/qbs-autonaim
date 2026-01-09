@@ -18,7 +18,7 @@ import {
   SelectValue,
   Skeleton,
 } from "@qbs-autonaim/ui";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   ArrowLeft,
@@ -63,6 +63,7 @@ export function RankingPageClient({
 }: RankingPageClientProps) {
   const router = useRouter();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
   const [selectedRecommendation, setSelectedRecommendation] =
     useState<string>("all");
   const [selectedMinScore, setSelectedMinScore] = useState<string>("0");
@@ -75,7 +76,6 @@ export function RankingPageClient({
     data: rankingData,
     isLoading,
     error,
-    refetch,
   } = useQuery(
     trpc.gig.responses.ranked.queryOptions({
       gigId,
@@ -98,21 +98,25 @@ export function RankingPageClient({
   );
 
   // Recalculate ranking mutation
-  const recalculateMutation = useMutation({
-    mutationFn: async () => {
-      const result = await trpc.gig.responses.recalculateRanking.mutate({
-        gigId,
-        workspaceId: workspaceSlug,
-      });
-      return result;
-    },
-    onSuccess: () => {
-      void refetch();
-    },
-  });
+  const { mutate: recalculateRanking, isPending: isRecalculating } =
+    useMutation(
+      trpc.gig.responses.recalculateRanking.mutationOptions({
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: trpc.gig.responses.ranked.queryKey({
+              gigId,
+              workspaceId: workspaceSlug,
+            }),
+          });
+        },
+      }),
+    );
 
   const handleRecalculate = () => {
-    recalculateMutation.mutate();
+    recalculateRanking({
+      gigId,
+      workspaceId: workspaceSlug,
+    });
   };
 
   const handleAccept = (responseId: string) => {
@@ -163,17 +167,15 @@ export function RankingPageClient({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             onClick={handleRecalculate}
-            disabled={recalculateMutation.isPending}
+            disabled={isRecalculating}
             variant="outline"
             size="sm"
             className="gap-2 min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
           >
             <RefreshCw
-              className={`h-4 w-4 ${recalculateMutation.isPending ? "animate-spin" : ""}`}
+              className={`h-4 w-4 ${isRecalculating ? "animate-spin" : ""}`}
             />
-            {recalculateMutation.isPending
-              ? "Пересчет…"
-              : "Пересчитать рейтинг"}
+            {isRecalculating ? "Пересчет…" : "Пересчитать рейтинг"}
           </Button>
 
           {candidates.length >= 2 && (
@@ -417,28 +419,6 @@ export function RankingPageClient({
             </Card>
           )}
         </>
-      )}
-
-      {/* Success Message */}
-      {recalculateMutation.isSuccess && (
-        <Alert>
-          <CheckCircle2 className="h-4 w-4" />
-          <AlertTitle>Рейтинг обновлен</AlertTitle>
-          <AlertDescription>
-            Ранжирование кандидатов успешно пересчитано.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {/* Recalculation Error */}
-      {recalculateMutation.isError && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Ошибка пересчета</AlertTitle>
-          <AlertDescription>
-            Не удалось пересчитать рейтинг. Попробуйте еще раз.
-          </AlertDescription>
-        </Alert>
       )}
     </div>
   );
