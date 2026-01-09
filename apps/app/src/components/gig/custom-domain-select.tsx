@@ -50,7 +50,7 @@ export function CustomDomainSelect({
   if (isError) {
     return (
       <div className="space-y-2">
-        <Label htmlFor="customDomain">Домен для интервью</Label>
+        <Label>Домен для интервью</Label>
         <div className="rounded-md border border-destructive/50 bg-destructive/10 p-3">
           <p className="text-sm text-destructive">
             Не удалось загрузить список доменов
