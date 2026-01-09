@@ -22,13 +22,73 @@ export function extractJsonObject(text: string): unknown | null {
       }
     }
 
-    // Стратегия 2: Ищем первый { и последний }
+    // Стратегия 2: Итеративный парсер с отслеживанием глубины вложенности
     const firstBrace = text.indexOf("{");
-    const lastBrace = text.lastIndexOf("}");
+    if (firstBrace === -1) {
+      return null;
+    }
 
-    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-      const jsonStr = text.slice(firstBrace, lastBrace + 1);
-      return JSON.parse(jsonStr);
+    let startIndex = firstBrace;
+    while (startIndex < text.length) {
+      let depth = 0;
+      let inString = false;
+      let escapeNext = false;
+      let endIndex = -1;
+
+      for (let i = startIndex; i < text.length; i++) {
+        const char = text[i];
+
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (char === "\\") {
+          escapeNext = true;
+          continue;
+        }
+
+        if (char === '"' && !inString) {
+          inString = true;
+          continue;
+        }
+
+        if (char === '"' && inString) {
+          inString = false;
+          continue;
+        }
+
+        if (inString) {
+          continue;
+        }
+
+        if (char === "{") {
+          depth++;
+        } else if (char === "}") {
+          depth--;
+          if (depth === 0) {
+            endIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (endIndex !== -1) {
+        const jsonStr = text.slice(startIndex, endIndex + 1);
+        try {
+          return JSON.parse(jsonStr);
+        } catch {
+          // Продолжаем поиск следующей пары скобок
+          const nextBrace = text.indexOf("{", startIndex + 1);
+          if (nextBrace === -1) {
+            return null;
+          }
+          startIndex = nextBrace;
+          continue;
+        }
+      }
+
+      return null;
     }
 
     return null;
