@@ -51,6 +51,7 @@ export const update = protectedProcedure
       customScreeningPrompt?: string | null;
       customInterviewQuestions?: string | null;
       customOrganizationalQuestions?: string | null;
+      customDomainId?: string | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -68,6 +69,9 @@ export const update = protectedProcedure
     if (input.settings.customOrganizationalQuestions !== undefined) {
       patch.customOrganizationalQuestions =
         input.settings.customOrganizationalQuestions;
+    }
+    if (input.settings.customDomainId !== undefined) {
+      patch.customDomainId = input.settings.customDomainId;
     }
 
     // Handle interview media files through join table

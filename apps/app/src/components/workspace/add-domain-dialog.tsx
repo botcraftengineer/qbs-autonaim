@@ -148,7 +148,9 @@ export function AddDomainDialog({
       } else {
         setDomainStatus("available");
       }
-    } catch {
+    } catch (error) {
+      console.error("Ошибка проверки доступности домена:", error);
+      toast.error("Не удалось проверить доступность домена");
       setDomainStatus("idle");
     }
   }, 500);
@@ -266,7 +268,16 @@ export function AddDomainDialog({
                           }}
                         />
                         {domain && (
-                          <div className="flex items-center gap-2 px-2 py-2 text-sm">
+                          <div
+                            className="flex items-center gap-2 px-2 py-2 text-sm"
+                            role="status"
+                            aria-live={
+                              domainStatus === "checking"
+                                ? "assertive"
+                                : "polite"
+                            }
+                            aria-atomic="true"
+                          >
                             <p className="flex-1">
                               {currentStatus.message ? (
                                 currentStatus.message
@@ -293,6 +304,7 @@ export function AddDomainDialog({
                                     ? "animate-spin"
                                     : ""
                                 }`}
+                                aria-hidden="true"
                               />
                             )}
                           </div>

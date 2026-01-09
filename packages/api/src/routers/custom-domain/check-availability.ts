@@ -4,6 +4,7 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 async function checkDomainHasSite(domain: string): Promise<boolean> {
+  // Попытка HTTPS
   try {
     const response = await fetch(`https://${domain}`, {
       method: "HEAD",
@@ -11,11 +12,24 @@ async function checkDomainHasSite(domain: string): Promise<boolean> {
       signal: AbortSignal.timeout(5000),
     });
 
-    // Если получили ответ (любой статус), значит сайт существует
-    return response.ok || response.status >= 300;
-  } catch {
-    // Если ошибка (таймаут, DNS не резолвится и т.д.), считаем что сайта нет
-    return false;
+    // Только 2xx статусы считаются успешными
+    return response.ok;
+  } catch (error) {
+    console.error(`HTTPS check failed for domain ${domain}:`, error);
+
+    // Fallback на HTTP при ошибке SSL/сети
+    try {
+      const response = await fetch(`http://${domain}`, {
+        method: "HEAD",
+        redirect: "manual",
+        signal: AbortSignal.timeout(5000),
+      });
+
+      return response.ok;
+    } catch (httpError) {
+      console.error(`HTTP check failed for domain ${domain}:`, httpError);
+      return false;
+    }
   }
 }
 

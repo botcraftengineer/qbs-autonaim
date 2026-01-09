@@ -48,7 +48,6 @@ export const customDomain = pgTable(
     cnameTarget: varchar("cname_target", { length: 255 }).notNull(),
     isVerified: boolean("is_verified").default(false).notNull(),
     isPrimary: boolean("is_primary").default(false).notNull(),
-    verificationToken: varchar("verification_token", { length: 100 }),
     verificationError: text("verification_error"),
     lastVerificationAttempt: timestamp("last_verification_attempt", {
       withTimezone: true,
@@ -103,7 +102,6 @@ export const createCustomDomainSchema = createInsertSchema(customDomain, {
   createdAt: true,
   updatedAt: true,
   verifiedAt: true,
-  verificationToken: true,
   verificationError: true,
   lastVerificationAttempt: true,
   sslCertificateId: true,

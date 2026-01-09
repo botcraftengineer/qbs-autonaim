@@ -29,10 +29,10 @@ export function DnsInstructionsDialog({
     });
   };
 
-  const subdomain =
-    typeof domain === "string" && domain.includes(".")
-      ? domain.split(".")[0]
-      : (domain ?? "");
+  const firstLabel = domain
+    .split(".")
+    .filter((segment) => segment.length > 0)[0];
+  const subdomain = firstLabel ?? "";
 
   const cnameValue = "cname.qbs.ru";
 

@@ -39,6 +39,9 @@ export const workspace = pgTable(
     // Логотип
     logo: text("logo"),
 
+    // Кастомный домен для интервью
+    interviewDomain: text("interview_domain"),
+
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),

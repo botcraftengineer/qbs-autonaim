@@ -18,7 +18,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   CheckCircle2,
-  Copy,
   Globe,
   Loader2,
   MoreVertical,
@@ -78,13 +77,6 @@ export function DomainCard({ domain, workspaceId }: DomainCardProps) {
       },
     }),
   );
-
-  const copyToClipboard = (text: string) => {
-    void navigator.clipboard.writeText(text);
-    toast.success("Скопировано", {
-      description: "Значение скопировано в буфер обмена",
-    });
-  };
 
   return (
     <>
@@ -148,36 +140,12 @@ export function DomainCard({ domain, workspaceId }: DomainCardProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           {!domain.isVerified && (
-            <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
-              <p className="text-sm text-blue-900 dark:text-blue-100">
-                Домен {domain.domain} ожидает верификации. Настройте DNS записи
-                для подтверждения владения доменом.
-              </p>
-            </div>
-          )}
-
-          {!domain.isVerified && domain.verificationToken && (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between rounded-md border bg-muted/50 p-3">
-                <div className="flex-1 space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">
-                    Токен верификации
-                  </p>
-                  <p className="font-mono text-sm">
-                    {domain.verificationToken}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 shrink-0"
-                  onClick={() =>
-                    copyToClipboard(domain.verificationToken ?? "")
-                  }
-                >
-                  <Copy className="h-4 w-4" />
-                  <span className="sr-only">Копировать токен</span>
-                </Button>
+            <div className="space-y-3">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  Домен {domain.domain} ожидает верификации. Настройте DNS
+                  записи для подтверждения владения доменом.
+                </p>
               </div>
 
               <div className="flex gap-2">

@@ -40,7 +40,14 @@ export function CustomDomainsSection({
   }
 
   if (error) {
-    console.error("Ошибка загрузки доменов:", error);
+    // Логируем полную информацию об ошибке для разработчиков
+    console.error("Ошибка загрузки доменов:", {
+      component: "CustomDomainsSection",
+      workspaceId,
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
     return (
       <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6">
         <div className="flex items-start justify-between gap-4">
@@ -49,7 +56,7 @@ export function CustomDomainsSection({
               Не удалось загрузить домены
             </h3>
             <p className="mt-1 text-sm text-muted-foreground">
-              {error.message}
+              Не удалось загрузить домены. Попробуйте снова.
             </p>
           </div>
           <Button variant="outline" size="sm" onClick={() => refetch()}>

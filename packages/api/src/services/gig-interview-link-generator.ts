@@ -7,7 +7,8 @@
 
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { gigInterviewLink } from "@qbs-autonaim/db/schema";
+import { customDomain, gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
+import { getInterviewBaseUrl } from "../utils/get-interview-url";
 import { generateSlug } from "../utils/slug-generator";
 
 /**
@@ -27,10 +28,57 @@ export interface GigInterviewLink {
  * Сервис для управления ссылками на интервью для гигов
  */
 export class GigInterviewLinkGenerator {
-  private readonly baseUrl: string;
+  /**
+   * Получает домен для интервью из настроек gig
+   */
+  private async getInterviewDomain(gigId: string): Promise<string | null> {
+    const gigData = await db.query.gig.findFirst({
+      where: eq(gig.id, gigId),
+      columns: {
+        customDomainId: true,
+        workspaceId: true,
+      },
+    });
 
-  constructor() {
-    this.baseUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL ?? "";
+    if (!gigData) {
+      return null;
+    }
+
+    // Если у gig указан кастомный домен, используем его
+    if (gigData.customDomainId) {
+      const domain = await db.query.customDomain.findFirst({
+        where: and(
+          eq(customDomain.id, gigData.customDomainId),
+          eq(customDomain.isVerified, true),
+        ),
+        columns: {
+          domain: true,
+        },
+      });
+
+      if (domain) {
+        return `https://${domain.domain}`;
+      }
+    }
+
+    // Иначе ищем primary домен workspace
+    const primaryDomain = await db.query.customDomain.findFirst({
+      where: and(
+        eq(customDomain.workspaceId, gigData.workspaceId),
+        eq(customDomain.type, "interview"),
+        eq(customDomain.isPrimary, true),
+        eq(customDomain.isVerified, true),
+      ),
+      columns: {
+        domain: true,
+      },
+    });
+
+    if (primaryDomain) {
+      return `https://${primaryDomain.domain}`;
+    }
+
+    return null;
   }
 
   /**
@@ -74,8 +122,8 @@ export class GigInterviewLinkGenerator {
     });
 
     if (existingLink) {
-      // Возвращаем ��уществующую ссылку вместо создания новой
-      return this.mapToGigInterviewLink(existingLink);
+      // Возвращаем существующую ссылку вместо создания новой
+      return await this.mapToGigInterviewLink(existingLink);
     }
 
     // Генерируем уникальный токен
@@ -95,7 +143,7 @@ export class GigInterviewLinkGenerator {
       throw new Error("Failed to create gig interview link");
     }
 
-    return this.mapToGigInterviewLink(created);
+    return await this.mapToGigInterviewLink(created);
   }
 
   /**
@@ -123,7 +171,7 @@ export class GigInterviewLinkGenerator {
       return null;
     }
 
-    return this.mapToGigInterviewLink(link);
+    return await this.mapToGigInterviewLink(link);
   }
 
   /**
@@ -141,14 +189,17 @@ export class GigInterviewLinkGenerator {
   /**
    * Преобразует запись из БД в интерфейс GigInterviewLink
    */
-  private mapToGigInterviewLink(
+  private async mapToGigInterviewLink(
     link: typeof gigInterviewLink.$inferSelect,
-  ): GigInterviewLink {
+  ): Promise<GigInterviewLink> {
+    const customDomainUrl = await this.getInterviewDomain(link.gigId);
+    const baseUrl = getInterviewBaseUrl(customDomainUrl);
+
     return {
       id: link.id,
       gigId: link.gigId,
       token: link.token,
-      url: `${this.baseUrl}/${link.token}`,
+      url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,
       createdAt: link.createdAt,
       expiresAt: link.expiresAt,

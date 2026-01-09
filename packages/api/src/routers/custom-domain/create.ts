@@ -6,7 +6,6 @@ import {
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
-import { generateSlug } from "../../utils/slug-generator";
 
 export const create = protectedProcedure
   .input(
@@ -47,8 +46,6 @@ export const create = protectedProcedure
       });
     }
 
-    const verificationToken = generateSlug();
-
     const [created] = await db
       .insert(customDomain)
       .values({
@@ -56,7 +53,6 @@ export const create = protectedProcedure
         domain: input.domain.toLowerCase(),
         type: input.type,
         cnameTarget: "app.selectio.ru",
-        verificationToken,
         isVerified: false,
         isPrimary: false,
       })

@@ -1,5 +1,5 @@
 import { promises as dns } from "node:dns";
-import { APP_CONFIG } from "@qbs-autonaim/config";
+import { env } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { customDomain } from "@qbs-autonaim/db/schema";
@@ -11,7 +11,7 @@ async function checkDNSRecords(domain: string): Promise<boolean> {
   try {
     const records = await dns.resolveCname(domain);
 
-    const expectedTarget = APP_CONFIG.customDomainTarget;
+    const expectedTarget = env.CUSTOM_DOMAIN_TARGET;
 
     return records.some(
       (record) =>
