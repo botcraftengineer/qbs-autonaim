@@ -30,6 +30,11 @@ export const setupTestUser = publicProcedure
       throw new Error("Test API is only available in development");
     }
 
+    // Проверяем что authApi доступен
+    if (!ctx.authApi) {
+      throw new Error("Auth API is not available in this context");
+    }
+
     const { email, password, name, orgName, workspaceName } = input;
 
     // Создаем пользователя через better-auth

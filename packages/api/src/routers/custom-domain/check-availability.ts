@@ -1,62 +1,88 @@
-/**
- * Check Domain Availability Procedure
- *
- * Проверяет, доступен ли домен для регистрации.
- * Защищённая процедура - требует авторизации.
- */
-
+import { db } from "@qbs-autonaim/db/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-
-import { CustomDomainService } from "../../services/custom-domain";
-import { isValidDomainFormat } from "../../services/custom-domain/dns-verifier";
 import { protectedProcedure } from "../../trpc";
 
-const checkAvailabilityInputSchema = z.object({
-  workspaceId: z.string().min(1, "workspaceId обязателен"),
-  domain: z
-    .string()
-    .min(1, "Домен обязателен")
-    .max(255, "Домен слишком длинный")
-    .transform((val) => val.toLowerCase().trim()),
-});
+async function checkDomainHasSite(domain: string): Promise<boolean> {
+  // Попытка HTTPS
+  try {
+    const response = await fetch(`https://${domain}`, {
+      method: "HEAD",
+      redirect: "manual",
+      signal: AbortSignal.timeout(5000),
+    });
+
+    // Только 2xx статусы считаются успешными
+    return response.ok;
+  } catch (error) {
+    console.error(`HTTPS check failed for domain ${domain}:`, error);
+
+    // Fallback на HTTP при ошибке SSL/сети
+    try {
+      const response = await fetch(`http://${domain}`, {
+        method: "HEAD",
+        redirect: "manual",
+        signal: AbortSignal.timeout(5000),
+      });
+
+      return response.ok;
+    } catch (httpError) {
+      console.error(`HTTP check failed for domain ${domain}:`, httpError);
+      return false;
+    }
+  }
+}
 
 export const checkAvailability = protectedProcedure
-  .input(checkAvailabilityInputSchema)
-  .query(async ({ ctx, input }) => {
-    // Verify user has access to workspace
-    const membership = await ctx.workspaceRepository.checkAccess(
-      input.workspaceId,
-      ctx.session.user.id,
-    );
+  .input(
+    z.object({
+      workspaceId: z.string(),
+      domain: z
+        .string()
+        .min(3)
+        .max(255)
+        .regex(
+          /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]$/,
+        )
+        .transform((val) => val.toLowerCase().trim()),
+    }),
+  )
+  .query(async ({ input, ctx }) => {
+    const member = await db.query.workspaceMember.findFirst({
+      where: (member, { eq, and }) =>
+        and(
+          eq(member.workspaceId, input.workspaceId),
+          eq(member.userId, ctx.session.user.id),
+        ),
+    });
 
-    if (!membership) {
+    if (!member) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: "Нет доступа к этому workspace",
+        message: "Нет доступа к workspace",
       });
     }
 
-    // Validate domain format
-    if (!isValidDomainFormat(input.domain)) {
+    const existingDomain = await db.query.customDomain.findFirst({
+      where: (domain, { eq }) => eq(domain.domain, input.domain),
+    });
+
+    if (existingDomain) {
       return {
         available: false,
+        conflict: true,
+        hasSite: false,
         domain: input.domain,
-        reason: "Неверный формат домена",
       };
     }
 
-    const customDomainService = new CustomDomainService(ctx.db);
-
-    // Check if domain is available (excluding current workspace)
-    const available = await customDomainService.isDomainAvailable(
-      input.domain,
-      input.workspaceId,
-    );
+    // Проверяем, указывает ли домен на существующий сайт
+    const hasSite = await checkDomainHasSite(input.domain);
 
     return {
-      available,
+      available: true,
+      conflict: false,
+      hasSite,
       domain: input.domain,
-      reason: available ? null : "Домен уже используется другой компанией",
     };
   });

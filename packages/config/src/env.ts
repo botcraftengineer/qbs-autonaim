@@ -62,6 +62,7 @@ export const env = createEnv({
     // App URL
     APP_URL: z.url().optional().default("http://localhost:3000"),
     APP_NAME: z.string().optional().default("QBS Автонайм"),
+    CUSTOM_DOMAIN_TARGET: z.string().optional().default("cname.qbs.ru"),
 
     // Interview Buffer Configuration
     INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT: z
@@ -93,6 +94,10 @@ export const env = createEnv({
   client: {
     NEXT_PUBLIC_APP_URL: z.url().optional().default("http://localhost:3000"),
     NEXT_PUBLIC_APP_NAME: z.string().optional().default("QBS Автонайм"),
+    NEXT_PUBLIC_INTERVIEW_URL: z
+      .url()
+      .optional()
+      .default("http://localhost:3001"),
   },
   clientPrefix: "NEXT_PUBLIC_",
   runtimeEnv: {
@@ -134,6 +139,7 @@ export const env = createEnv({
     INNGEST_EVENT_API_BASE_URL: process.env.INNGEST_EVENT_API_BASE_URL,
     APP_URL: process.env.APP_URL,
     APP_NAME: process.env.APP_NAME,
+    CUSTOM_DOMAIN_TARGET: process.env.CUSTOM_DOMAIN_TARGET,
     INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT:
       process.env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT,
     INTERVIEW_TYPING_DEBOUNCE_TIMEOUT:
@@ -141,6 +147,7 @@ export const env = createEnv({
     INTERVIEW_BUFFER_ENABLED: process.env.INTERVIEW_BUFFER_ENABLED,
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
+    NEXT_PUBLIC_INTERVIEW_URL: process.env.NEXT_PUBLIC_INTERVIEW_URL,
     DOCLING_API_URL: process.env.DOCLING_API_URL,
     DOCLING_API_KEY: process.env.DOCLING_API_KEY,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,

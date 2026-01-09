@@ -1,4 +1,3 @@
-import { env, paths } from "@qbs-autonaim/config";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
@@ -8,6 +7,7 @@ import {
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
+import { getInterviewUrl } from "@qbs-autonaim/shared";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("InvitationGenerator");
@@ -130,10 +130,17 @@ export async function generateFreelanceInvitation(
     });
   }
 
-  // Получаем вакансию
+  // Получаем вакансию с workspace
   const vacancyResult = await tryCatch(async () => {
     return await db.query.vacancy.findFirst({
       where: eq(vacancy.id, response.vacancyId),
+      with: {
+        workspace: {
+          columns: {
+            interviewDomain: true,
+          },
+        },
+      },
     });
   }, "Failed to fetch vacancy");
 
@@ -162,7 +169,10 @@ export async function generateFreelanceInvitation(
     return err(`Interview link not found for vacancy ${response.vacancyId}`);
   }
 
-  const interviewUrl = `${env.NEXT_PUBLIC_APP_URL}${paths.interview(link.token)}`;
+  const interviewUrl = getInterviewUrl(
+    link.token,
+    vacancyData.workspace.interviewDomain,
+  );
 
   // Генерируем текст приглашения
   logger.info("Generating invitation text with AI");

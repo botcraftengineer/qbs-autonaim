@@ -13,6 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { customDomain } from "../custom-domain/custom-domain";
 import { workspace } from "../workspace/workspace";
 
 /**
@@ -95,6 +96,11 @@ export const gig = pgTable(
     customInterviewQuestions: text("custom_interview_questions"),
     customOrganizationalQuestions: text("custom_organizational_questions"),
 
+    // Кастомный домен для интервью
+    customDomainId: uuid("custom_domain_id").references(() => customDomain.id, {
+      onDelete: "set null",
+    }),
+
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
@@ -162,6 +168,7 @@ export const UpdateGigSettingsSchema = z.object({
   customScreeningPrompt: z.string().max(5000).nullish(),
   customInterviewQuestions: z.string().max(5000).nullish(),
   customOrganizationalQuestions: z.string().max(5000).nullish(),
+  customDomainId: z.string().uuid().nullish(),
 });
 
 export type Gig = typeof gig.$inferSelect;

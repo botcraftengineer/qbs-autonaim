@@ -9,3 +9,10 @@ export {
   getQuestionCount,
   updateConversationMetadata,
 } from "./conversation";
+
+// Утилиты для работы с interview URL
+export {
+  getInterviewBaseUrl,
+  getInterviewUrl,
+  getInterviewUrlFromDb,
+} from "./get-interview-url";

@@ -1,21 +1,17 @@
-/**
- * Custom Domain Router
- *
- * tRPC router для управления кастомными доменами виджета преквалификации.
- */
-
 import type { TRPCRouterRecord } from "@trpc/server";
 
 import { checkAvailability } from "./check-availability";
-import { deleteDomain } from "./delete-domain";
-import { getStatus } from "./get-status";
-import { registerDomain } from "./register-domain";
-import { verifyDomain } from "./verify-domain";
+import { create } from "./create";
+import { deleteDomain } from "./delete";
+import { list } from "./list";
+import { setPrimary } from "./set-primary";
+import { verify } from "./verify";
 
 export const customDomainRouter = {
-  registerDomain,
-  verifyDomain,
-  getStatus,
-  deleteDomain,
+  list,
+  create,
+  verify,
+  setPrimary,
   checkAvailability,
+  delete: deleteDomain,
 } satisfies TRPCRouterRecord;

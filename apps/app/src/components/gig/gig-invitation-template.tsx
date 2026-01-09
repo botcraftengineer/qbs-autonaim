@@ -1,6 +1,5 @@
 "use client";
 
-import { paths } from "@qbs-autonaim/config";
 import {
   Button,
   Card,
@@ -24,7 +23,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { env } from "~/env";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -82,9 +80,8 @@ export function GigInvitationTemplate({
   }, [generateLink, gigId, workspace?.id]);
 
   const template = useMemo(() => {
-    const baseUrl = env.NEXT_PUBLIC_APP_URL;
-    const interviewUrl =
-      interviewLink?.url || `${baseUrl}${paths.interview("[ссылка]")}`;
+    const interviewBaseUrl = process.env.NEXT_PUBLIC_INTERVIEW_URL ?? "";
+    const interviewUrl = interviewLink?.url || `${interviewBaseUrl}/[ссылка]`;
 
     if (aiTemplate?.text) {
       // Replace the placeholder URL in AI-generated text with actual URL

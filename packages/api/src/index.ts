@@ -18,6 +18,11 @@ type RouterInputs = inferRouterInputs<AppRouter>;
  */
 type RouterOutputs = inferRouterOutputs<AppRouter>;
 
+export {
+  getInterviewBaseUrl,
+  getInterviewUrl,
+  getInterviewUrlFromDb,
+} from "@qbs-autonaim/shared";
 export type {
   TenantErrorCode,
   TenantOperation,

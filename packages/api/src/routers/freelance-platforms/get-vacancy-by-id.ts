@@ -1,10 +1,10 @@
-import { env, paths } from "@qbs-autonaim/config";
 import { and, eq, sql } from "@qbs-autonaim/db";
 import {
   interviewLink,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
+import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -82,7 +82,11 @@ export const getVacancyById = protectedProcedure
       responseStats: stats,
       interviewLink: activeInterviewLink
         ? {
-            url: `${env.NEXT_PUBLIC_APP_URL}${paths.interview(activeInterviewLink.token)}`,
+            url: await getInterviewUrlFromDb(
+              ctx.db,
+              activeInterviewLink.token,
+              input.workspaceId,
+            ),
             token: activeInterviewLink.token,
             isActive: activeInterviewLink.isActive,
             createdAt: activeInterviewLink.createdAt,

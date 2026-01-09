@@ -33,9 +33,9 @@ export const appRouter = createTRPCRouter({
   freelancePlatforms: freelancePlatformsRouter,
   prequalification: prequalificationRouter,
   widgetConfig: widgetConfigRouter,
-  customDomain: customDomainRouter,
   analytics: analyticsRouter,
   recruiterAgent: recruiterAgentRouter,
+  customDomain: customDomainRouter,
   ...(process.env.NODE_ENV !== "production" && { test: testRouter }),
 });
 

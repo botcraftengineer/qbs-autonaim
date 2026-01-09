@@ -15,6 +15,11 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError, z } from "zod";
 import { AuditLoggerService } from "./services/audit-logger";
+import {
+  extractTokenFromHeaders,
+  type ValidatedInterviewToken,
+  validateInterviewToken,
+} from "./utils/interview-token-validator";
 
 /**
  * 1. CONTEXT
@@ -31,12 +36,14 @@ import { AuditLoggerService } from "./services/audit-logger";
 
 export const createTRPCContext = async (opts: {
   headers: Headers;
-  auth: Auth;
+  auth: Auth | null;
 }) => {
-  const authApi = opts.auth.api;
-  const session = await authApi.getSession({
-    headers: opts.headers,
-  });
+  const authApi = opts.auth?.api;
+  const session = authApi
+    ? await authApi.getSession({
+        headers: opts.headers,
+      })
+    : null;
 
   // Создаем экземпляры репозиториев с db
   const workspaceRepository = new WorkspaceRepository(db);
@@ -50,6 +57,19 @@ export const createTRPCContext = async (opts: {
     undefined;
   const userAgent = opts.headers.get("user-agent") ?? undefined;
 
+  // Извлекаем и валидируем interview token если присутствует
+  const tokenString = extractTokenFromHeaders(opts.headers);
+  let interviewToken: ValidatedInterviewToken | null = null;
+
+  if (tokenString) {
+    try {
+      interviewToken = await validateInterviewToken(tokenString, db);
+    } catch (error) {
+      // Логируем ошибку валидации, но не блокируем запрос
+      console.error("Failed to validate interview token:", error);
+    }
+  }
+
   return {
     authApi,
     session,
@@ -60,6 +80,7 @@ export const createTRPCContext = async (opts: {
     ipAddress,
     userAgent,
     inngest,
+    interviewToken,
   };
 };
 /**
@@ -145,6 +166,31 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+/**
+ * Interview token protected procedure
+ *
+ * Requires a valid interview token (from Authorization header or x-interview-token).
+ * Use this for endpoints that should be accessible to interview participants.
+ *
+ * @see https://trpc.io/docs/procedures
+ */
+export const interviewTokenProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (!ctx.interviewToken) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Требуется валидный токен интервью",
+      });
+    }
+    return next({
+      ctx: {
+        // infers the `interviewToken` as non-nullable
+        interviewToken: ctx.interviewToken,
       },
     });
   });

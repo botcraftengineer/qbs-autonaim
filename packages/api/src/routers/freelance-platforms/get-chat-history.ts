@@ -2,6 +2,7 @@ import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
+import { requireConversationAccess } from "../../utils/interview-token-validator";
 
 const getChatHistoryInputSchema = z.object({
   conversationId: z.uuid(),
@@ -10,6 +11,14 @@ const getChatHistoryInputSchema = z.object({
 export const getChatHistory = publicProcedure
   .input(getChatHistoryInputSchema)
   .query(async ({ input, ctx }) => {
+    // Проверяем доступ к conversation
+    await requireConversationAccess(
+      input.conversationId,
+      ctx.interviewToken,
+      ctx.session?.user?.id ?? null,
+      ctx.db,
+    );
+
     // Проверяем существование conversation
     const conv = await ctx.db.query.conversation.findFirst({
       where: (conversation, { eq, and }) =>

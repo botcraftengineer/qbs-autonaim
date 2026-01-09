@@ -17,7 +17,8 @@
       "!**/packages/ui/src/**/*.ts",
       "!**/packages/ui/src/**/*.css",
       "!**/tooling/**/*",
-      "!**/apps/app/**/*.css"
+      "!**/apps/app/**/*.css",
+      "!**/apps/interview/**/*.css"
     ]
   },
   "formatter": {

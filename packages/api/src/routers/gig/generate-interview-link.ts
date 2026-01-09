@@ -1,4 +1,3 @@
-import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { gig } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -41,9 +40,7 @@ export const generateInterviewLink = protectedProcedure
       });
     }
 
-    const linkGenerator = new GigInterviewLinkGenerator(
-      env.NEXT_PUBLIC_APP_URL,
-    );
+    const linkGenerator = new GigInterviewLinkGenerator();
     const link = await linkGenerator.generateLink(input.gigId);
 
     return {

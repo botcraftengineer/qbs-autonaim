@@ -1,0 +1,91 @@
+import { promises as dns } from "node:dns";
+import { env } from "@qbs-autonaim/config";
+import { eq } from "@qbs-autonaim/db";
+import { db } from "@qbs-autonaim/db/client";
+import { customDomain } from "@qbs-autonaim/db/schema";
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
+import { protectedProcedure } from "../../trpc";
+
+async function checkDNSRecords(domain: string): Promise<boolean> {
+  try {
+    const records = await dns.resolveCname(domain);
+
+    const expectedTarget = env.CUSTOM_DOMAIN_TARGET;
+
+    return records.some(
+      (record) =>
+        record.toLowerCase() === expectedTarget.toLowerCase() ||
+        record.toLowerCase().endsWith(`.${expectedTarget.toLowerCase()}`),
+    );
+  } catch (error) {
+    if (
+      (error as NodeJS.ErrnoException).code === "ENODATA" ||
+      (error as NodeJS.ErrnoException).code === "ENOTFOUND"
+    ) {
+      return false;
+    }
+    throw error;
+  }
+}
+
+export const verify = protectedProcedure
+  .input(
+    z.object({
+      domainId: z.string().uuid(),
+    }),
+  )
+  .mutation(async ({ input, ctx }) => {
+    const domain = await db.query.customDomain.findFirst({
+      where: eq(customDomain.id, input.domainId),
+      with: {
+        workspace: {
+          with: {
+            members: {
+              where: (member, { eq }) => eq(member.userId, ctx.session.user.id),
+            },
+          },
+        },
+      },
+    });
+
+    if (!domain) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Домен не найден",
+      });
+    }
+
+    const member = domain.workspace.members[0];
+    if (!member || (member.role !== "owner" && member.role !== "admin")) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Недостаточно прав для верификации домена",
+      });
+    }
+
+    if (domain.isVerified) {
+      return domain;
+    }
+
+    const isValid = await checkDNSRecords(domain.domain);
+
+    if (!isValid) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "DNS записи не настроены корректно",
+      });
+    }
+
+    const [updated] = await db
+      .update(customDomain)
+      .set({
+        isVerified: true,
+        verifiedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(customDomain.id, input.domainId))
+      .returning();
+
+    return updated;
+  });

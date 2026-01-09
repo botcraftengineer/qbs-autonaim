@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
+import { CustomDomainSelect } from "./custom-domain-select";
 import { InterviewMediaUpload } from "./interview-media-upload";
 
 interface GigInterviewSettingsProps {
@@ -36,6 +37,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
   const [interviewMediaFileIds, setInterviewMediaFileIds] = useState<string[]>(
     [],
   );
+  const [customDomainId, setCustomDomainId] = useState<string | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
 
   const { data: gig, isLoading } = useQuery({
@@ -59,6 +61,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
       setCustomScreeningPrompt(gig.customScreeningPrompt ?? "");
       setCustomInterviewQuestions(gig.customInterviewQuestions ?? "");
       setCustomOrganizationalQuestions(gig.customOrganizationalQuestions ?? "");
+      setCustomDomainId(gig.customDomainId ?? null);
       setHasChanges(false);
     }
   }, [gig]);
@@ -105,6 +108,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
         customInterviewQuestions: customInterviewQuestions.trim() || null,
         customOrganizationalQuestions:
           customOrganizationalQuestions.trim() || null,
+        customDomainId: customDomainId,
         interviewMediaFileIds:
           interviewMediaFileIds.length > 0 ? interviewMediaFileIds : null,
       } as Parameters<typeof updateSettings>[0]["settings"],
@@ -117,6 +121,7 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
     customScreeningPrompt,
     customInterviewQuestions,
     customOrganizationalQuestions,
+    customDomainId,
     interviewMediaFileIds,
   ]);
 
@@ -260,18 +265,31 @@ export function GigInterviewSettings({ gigId }: GigInterviewSettingsProps) {
           </p>
         </div>
 
-        <div className="space-y-2">
-          <Label>Медиафайлы для интервью</Label>
-          <InterviewMediaUpload
-            files={interviewMediaFiles}
-            onFilesChange={(fileIds) => {
-              setInterviewMediaFileIds(fileIds);
+        {workspace?.id && (
+          <CustomDomainSelect
+            workspaceId={workspace.id}
+            value={customDomainId}
+            onChange={(value) => {
+              setCustomDomainId(value);
               setHasChanges(true);
             }}
-            workspaceId={workspace?.id ?? ""}
-            gigId={gigId}
           />
-        </div>
+        )}
+
+        {workspace?.id && (
+          <div className="space-y-2">
+            <Label>Медиафайлы для интервью</Label>
+            <InterviewMediaUpload
+              files={interviewMediaFiles}
+              onFilesChange={(fileIds) => {
+                setInterviewMediaFileIds(fileIds);
+                setHasChanges(true);
+              }}
+              workspaceId={workspace.id}
+              gigId={gigId}
+            />
+          </div>
+        )}
 
         <Button
           onClick={handleSave}

@@ -1,6 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
+import { requireConversationAccess } from "../../utils/interview-token-validator";
 
 const getInterviewContextInputSchema = z.object({
   conversationId: z.uuid(),
@@ -9,6 +10,14 @@ const getInterviewContextInputSchema = z.object({
 export const getInterviewContext = publicProcedure
   .input(getInterviewContextInputSchema)
   .query(async ({ input, ctx }) => {
+    // Проверяем доступ к conversation
+    await requireConversationAccess(
+      input.conversationId,
+      ctx.interviewToken,
+      ctx.session?.user?.id ?? null,
+      ctx.db,
+    );
+
     const conv = await ctx.db.query.conversation.findFirst({
       where: (conversation, { eq, and }) =>
         and(

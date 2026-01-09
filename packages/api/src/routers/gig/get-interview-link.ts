@@ -1,6 +1,6 @@
-import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
+import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -51,13 +51,17 @@ export const getInterviewLink = protectedProcedure
       return null;
     }
 
-    const baseUrl = env.NEXT_PUBLIC_APP_URL;
+    const url = await getInterviewUrlFromDb(
+      ctx.db,
+      link.token,
+      input.workspaceId,
+    );
 
     return {
       id: link.id,
       gigId: link.gigId,
       token: link.token,
-      url: `${baseUrl}${paths.interview(link.token)}`,
+      url,
       isActive: link.isActive,
       createdAt: link.createdAt,
     };

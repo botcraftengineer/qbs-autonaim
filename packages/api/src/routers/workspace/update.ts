@@ -49,7 +49,7 @@ export const update = protectedProcedure
       }
     }
 
-    const { logo, ...restData } = input.data;
+    const { logo, interviewDomain, ...restData } = input.data;
 
     const dataToUpdate: {
       name?: string;
@@ -57,12 +57,17 @@ export const update = protectedProcedure
       description?: string;
       website?: string;
       logo?: string;
+      interviewDomain?: string;
     } = { ...restData };
 
     if (logo?.startsWith("data:image/")) {
       dataToUpdate.logo = await optimizeLogo(logo);
     } else if (logo !== undefined) {
       dataToUpdate.logo = logo ?? undefined;
+    }
+
+    if (interviewDomain !== undefined) {
+      dataToUpdate.interviewDomain = interviewDomain || undefined;
     }
 
     const updated = await ctx.workspaceRepository.update(

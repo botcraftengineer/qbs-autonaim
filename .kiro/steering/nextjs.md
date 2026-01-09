@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "apps/app/**/*"
+fileMatchPattern: "apps/app/**/*.tsx"
 ---
 
 You are an expert in Next.js App Router.

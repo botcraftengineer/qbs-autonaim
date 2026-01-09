@@ -1,6 +1,6 @@
-import { env, paths } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { interviewLink, vacancy } from "@qbs-autonaim/db/schema";
+import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -57,11 +57,17 @@ export const getInterviewLink = protectedProcedure
       });
     }
 
+    const url = await getInterviewUrlFromDb(
+      ctx.db,
+      activeInterviewLink.token,
+      input.workspaceId,
+    );
+
     return {
       id: activeInterviewLink.id,
       vacancyId: activeInterviewLink.vacancyId,
       token: activeInterviewLink.token,
-      url: `${env.NEXT_PUBLIC_APP_URL}${paths.interview(activeInterviewLink.token)}`,
+      url,
       isActive: activeInterviewLink.isActive,
       createdAt: activeInterviewLink.createdAt,
       expiresAt: activeInterviewLink.expiresAt,
