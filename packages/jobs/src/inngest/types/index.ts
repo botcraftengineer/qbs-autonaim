@@ -5,6 +5,7 @@
 export * from "./buffer.types";
 export * from "./candidate.types";
 export * from "./freelance.types";
+export * from "./gig.types";
 export * from "./integration";
 export * from "./response.types";
 export * from "./telegram.types";

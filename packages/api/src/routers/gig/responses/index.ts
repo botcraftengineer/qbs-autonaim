@@ -7,6 +7,8 @@ import { generateInvitation } from "./generate-invitation";
 import { get } from "./get";
 import { getInvitation } from "./get-invitation";
 import { list } from "./list";
+import { ranked } from "./ranked";
+import { recalculateRanking } from "./recalculate-ranking";
 import { reject } from "./reject";
 import { sendMessage } from "./send-message";
 import { update } from "./update";
@@ -24,4 +26,6 @@ export const gigResponsesRouter = {
   sendMessage,
   generateInvitation,
   getInvitation,
+  ranked,
+  recalculateRanking,
 } satisfies TRPCRouterRecord;

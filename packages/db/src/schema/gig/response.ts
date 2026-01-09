@@ -57,6 +57,16 @@ export const gigImportSourceEnum = pgEnum("gig_import_source", [
 ]);
 
 /**
+ * Рекомендация по кандидату
+ */
+export const gigRecommendationEnum = pgEnum("gig_recommendation", [
+  "HIGHLY_RECOMMENDED",
+  "RECOMMENDED",
+  "NEUTRAL",
+  "NOT_RECOMMENDED",
+]);
+
+/**
  * Таблица откликов на разовые задания
  */
 export const gigResponse = pgTable(
@@ -110,6 +120,24 @@ export const gigResponse = pgTable(
     // PIN для Telegram авторизации
     telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
 
+    // Ranking scores (0-100)
+    compositeScore: integer("composite_score"),
+    priceScore: integer("price_score"),
+    deliveryScore: integer("delivery_score"),
+    skillsMatchScore: integer("skills_match_score"),
+    experienceScore: integer("experience_score"),
+
+    // Ranking position and analysis
+    rankingPosition: integer("ranking_position"),
+    rankingAnalysis: text("ranking_analysis"),
+    strengths: jsonb("strengths").$type<string[]>(),
+    weaknesses: jsonb("weaknesses").$type<string[]>(),
+    recommendation: gigRecommendationEnum("recommendation"),
+    rankedAt: timestamp("ranked_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+
     // Даты
     respondedAt: timestamp("responded_at", {
       withTimezone: true,
@@ -142,6 +170,15 @@ export const gigResponse = pgTable(
       table.status,
     ),
     profileUrlIdx: index("gig_response_profile_url_idx").on(table.profileUrl),
+    compositeScoreIdx: index("gig_response_composite_score_idx").on(
+      table.compositeScore,
+    ),
+    recommendationIdx: index("gig_response_recommendation_idx").on(
+      table.recommendation,
+    ),
+    rankingPositionIdx: index("gig_response_ranking_position_idx").on(
+      table.rankingPosition,
+    ),
   }),
 );
 
@@ -175,6 +212,13 @@ export const gigImportSourceValues = [
   "WEB_LINK",
 ] as const;
 
+export const gigRecommendationValues = [
+  "HIGHLY_RECOMMENDED",
+  "RECOMMENDED",
+  "NEUTRAL",
+  "NOT_RECOMMENDED",
+] as const;
+
 export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   candidateId: z.string().max(100),
   candidateName: z.string().max(500).optional(),
@@ -198,6 +242,17 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   telegramPinCode: z.string().length(4).optional(),
   respondedAt: z.coerce.date().optional(),
   welcomeSentAt: z.coerce.date().optional(),
+  compositeScore: z.number().int().min(0).max(100).optional(),
+  priceScore: z.number().int().min(0).max(100).optional(),
+  deliveryScore: z.number().int().min(0).max(100).optional(),
+  skillsMatchScore: z.number().int().min(0).max(100).optional(),
+  experienceScore: z.number().int().min(0).max(100).optional(),
+  rankingPosition: z.number().int().positive().optional(),
+  rankingAnalysis: z.string().optional(),
+  strengths: z.array(z.string()).optional(),
+  weaknesses: z.array(z.string()).optional(),
+  recommendation: z.enum(gigRecommendationValues).optional(),
+  rankedAt: z.coerce.date().optional(),
 }).omit({
   id: true,
   createdAt: true,

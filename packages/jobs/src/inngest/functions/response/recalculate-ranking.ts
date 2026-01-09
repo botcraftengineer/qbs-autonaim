@@ -1,0 +1,70 @@
+import { RankingService } from "@qbs-autonaim/api";
+import { inngest } from "../../client";
+
+/**
+ * Inngest function for recalculating gig candidate rankings
+ */
+export const recalculateRankingFunction = inngest.createFunction(
+  {
+    id: "recalculate-gig-ranking",
+    name: "Recalculate Gig Candidate Ranking",
+    retries: 3,
+  },
+  { event: "gig/ranking.recalculate" },
+  async ({ event, step }) => {
+    const { gigId, workspaceId, triggeredBy } = event.data;
+
+    const result = await step.run("recalculate-ranking", async () => {
+      console.log("🎯 Пересчет рейтинга кандидатов", {
+        gigId,
+        workspaceId,
+        triggeredBy,
+      });
+
+      try {
+        // Создаем экземпляр RankingService с конфигурацией AI агентов
+        const rankingService = new RankingService({
+          model: "gpt-4o",
+          temperature: 0.3,
+        });
+
+        // Вычисляем рейтинг
+        const rankingResult = await rankingService.calculateRankings(
+          gigId,
+          workspaceId,
+        );
+
+        console.log("📊 Рейтинг вычислен", {
+          gigId,
+          candidatesCount: rankingResult.candidates.length,
+          rankedAt: rankingResult.rankedAt,
+        });
+
+        // Сохраняем результаты в БД
+        await rankingService.saveRankings(gigId, workspaceId, rankingResult);
+
+        console.log("✅ Рейтинг сохранен в БД", {
+          gigId,
+          candidatesCount: rankingResult.candidates.length,
+        });
+
+        return {
+          success: true,
+          gigId,
+          workspaceId,
+          candidatesCount: rankingResult.candidates.length,
+          rankedAt: rankingResult.rankedAt,
+        };
+      } catch (error) {
+        console.error("❌ Ошибка пересчета рейтинга", {
+          gigId,
+          workspaceId,
+          error,
+        });
+        throw error;
+      }
+    });
+
+    return result;
+  },
+);
