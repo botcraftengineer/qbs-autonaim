@@ -4,6 +4,8 @@
  * Эскалация определяется через отдельный AI-вызов с промптом
  */
 
+import { extractJsonObject } from "./json-extractor";
+
 /**
  * Причины эскалации
  */
@@ -141,12 +143,12 @@ ${failedPinAttempts > 0 ? `НЕУДАЧНЫХ ПОПЫТОК ВВОДА PIN: ${f
 export function parseEscalationResponse(aiResponse: string): EscalationCheck {
   try {
     // Пытаемся извлечь JSON из ответа (на случай если AI добавил текст вокруг)
-    const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
+    const jsonObject = extractJsonObject(aiResponse);
+    if (!jsonObject) {
       return { shouldEscalate: false };
     }
 
-    const parsed = JSON.parse(jsonMatch[0]) as {
+    const parsed = jsonObject as {
       shouldEscalate?: boolean;
       reason?: string;
       description?: string;

@@ -32,6 +32,8 @@ export const BASE_RULES = `
 - Будь краток (2-3 предложения)
 - СТРОГО ЗАПРЕЩЕНО: нумерация вопросов, комментарии в скобках, метаинформация
 - СТРОГО ЗАПРЕЩЕНО: оценочные комментарии ("Отлично!", "Интересный подход")
+- СТРОГО ЗАПРЕЩЕНО: озвучивать оценки, баллы или давать фидбек кандидату
+- СТРОГО ЗАПРЕЩЕНО: говорить кандидату насколько он подходит или не подходит
 - Пиши как реальный рекрутер, а не как робот`;
 
 export function buildContextAnalyzerPrompt(
@@ -141,7 +143,7 @@ ${historyText}
 ТВОЯ ЗАДАЧА:
 - Веди профессиональное интервью
 - Задавай релевантные вопросы на основе ответов
-- Оценивай соответствие кандидата вакансии
+- Оценивай соответствие кандидата вакансии (ВНУТРЕННЕ, не озвучивай оценки)
 - Будь краток (2-3 предложения)`;
 }
 
@@ -160,11 +162,11 @@ export function buildGigInterviewPrompt(
   // Форматируем бюджет
   let budgetInfo = "Не указан";
   const currency = gig.budgetCurrency || "RUB";
-  if (gig.budgetMin && gig.budgetMax) {
+  if (gig.budgetMin != null && gig.budgetMax != null) {
     budgetInfo = `${gig.budgetMin.toLocaleString("ru-RU")} - ${gig.budgetMax.toLocaleString("ru-RU")} ${currency}`;
-  } else if (gig.budgetMin) {
+  } else if (gig.budgetMin != null) {
     budgetInfo = `от ${gig.budgetMin.toLocaleString("ru-RU")} ${currency}`;
-  } else if (gig.budgetMax) {
+  } else if (gig.budgetMax != null) {
     budgetInfo = `до ${gig.budgetMax.toLocaleString("ru-RU")} ${currency}`;
   }
 
@@ -233,6 +235,6 @@ ${historyText}
 ТВОЯ ЗАДАЧА:
 - Веди профессиональное интервью
 - Задавай релевантные вопросы на основе ответов
-- Оценивай соответствие исполнителя заданию
+- Оценивай соответствие исполнителя заданию (ВНУТРЕННЕ, не озвучивай оценки)
 - Будь краток (2-3 предложения)`;
 }

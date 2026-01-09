@@ -6,6 +6,7 @@ import type { LanguageModel } from "ai";
 import { generateText } from "ai";
 import type { Langfuse } from "langfuse";
 import { z } from "zod";
+import { extractJsonObject } from "../../utils/json-extractor";
 import {
   buildContextAnalyzerPrompt,
   buildGigInterviewPrompt,
@@ -75,11 +76,9 @@ export class WebInterviewOrchestrator {
         prompt,
       });
 
-      const jsonMatch = result.text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const parsed = contextAnalysisSchema.safeParse(
-          JSON.parse(jsonMatch[0]),
-        );
+      const jsonObject = extractJsonObject(result.text);
+      if (jsonObject) {
+        const parsed = contextAnalysisSchema.safeParse(jsonObject);
         if (parsed.success) {
           const output = {
             ...parsed.data,

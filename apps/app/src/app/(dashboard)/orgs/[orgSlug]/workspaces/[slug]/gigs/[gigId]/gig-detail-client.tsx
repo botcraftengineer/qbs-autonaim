@@ -184,13 +184,23 @@ export function GigDetailClient({
   });
 
   // Получаем актуальные счетчики откликов из базы данных
-  const { data: responseCounts, isPending: isCountsPending } = useQuery({
+  const {
+    data: responseCounts,
+    isPending: isCountsPending,
+    isError: isCountsError,
+    error: countsError,
+  } = useQuery({
     ...trpc.gig.responses.count.queryOptions({
       gigId,
       workspaceId: workspaceId ?? "",
     }),
     enabled: !!workspaceId,
   });
+
+  // Логируем ошибку для отладки
+  if (isCountsError && countsError) {
+    console.error("Ошибка загрузки счетчиков откликов:", countsError);
+  }
 
   const deleteMutation = useMutation(
     trpc.gig.delete.mutationOptions({
@@ -503,6 +513,8 @@ export function GigDetailClient({
                 </div>
                 {isCountsPending ? (
                   <Skeleton className="h-5 w-8" />
+                ) : isCountsError ? (
+                  <span className="font-medium text-muted-foreground">—</span>
                 ) : (
                   <span className="font-medium">
                     {responseCounts?.total || 0}
@@ -510,15 +522,17 @@ export function GigDetailClient({
                 )}
               </div>
 
-              {(responseCounts?.new || 0) > 0 && !isCountsPending && (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    Новые отклики
+              {!isCountsPending &&
+                !isCountsError &&
+                (responseCounts?.new || 0) > 0 && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="h-4 w-4" />
+                      Новые отклики
+                    </div>
+                    <Badge variant="default">{responseCounts?.new}</Badge>
                   </div>
-                  <Badge variant="default">{responseCounts?.new}</Badge>
-                </div>
-              )}
+                )}
             </CardContent>
           </Card>
 
