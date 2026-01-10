@@ -166,14 +166,7 @@ export default function GigResponsesPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  const router = useRouter();
-
-  // Redirect to not-found if gig doesn't exist
-  React.useEffect(() => {
-    if (!isGigLoading && (!gig || isGigError)) {
-      router.push("/404");
-    }
-  }, [isGigLoading, gig, isGigError, router]);
+  const _router = useRouter();
 
   // Mutations
   const acceptMutation = useMutation(
@@ -370,12 +363,32 @@ export default function GigResponsesPage({ params }: PageProps) {
     rejectMutation.isPending ||
     sendMessageMutation.isPending;
 
-  if (isLoading || isGigLoading) {
+  if (isLoading || isGigLoading || !workspace?.id) {
     return <ResponsesSkeleton />;
   }
 
-  if (!gig) {
-    return null; // useEffect will handle redirect
+  if (isGigError || !gig) {
+    return (
+      <div className="container mx-auto max-w-2xl py-12 px-4 sm:py-16 sm:px-6">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Задание не найдено</CardTitle>
+            <CardDescription>
+              Задание, для которого вы пытаетесь просмотреть отклики, не
+              существует или было удалено
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <Button asChild className="min-h-[44px] touch-action-manipulation">
+              <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}>
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+                Вернуться к заданиям
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (

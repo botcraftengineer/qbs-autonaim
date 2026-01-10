@@ -109,13 +109,6 @@ export default function EditGigPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  // Redirect to not-found if gig doesn't exist
-  React.useEffect(() => {
-    if (!isLoading && !gig) {
-      router.push("/404");
-    }
-  }, [isLoading, gig, router]);
-
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -175,12 +168,32 @@ export default function EditGigPage({ params }: PageProps) {
     });
   };
 
-  if (isLoading) {
+  if (isLoading || !workspace?.id) {
     return <EditGigSkeleton />;
   }
 
-  if (!gig) {
-    return null; // useEffect will handle redirect
+  if (isError || !gig) {
+    return (
+      <div className="container mx-auto max-w-2xl py-12 px-4 sm:py-16 sm:px-6">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Задание не найдено</CardTitle>
+            <CardDescription>
+              Задание, которое вы пытаетесь редактировать, не существует или
+              было удалено
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <Button asChild className="min-h-[44px] touch-action-manipulation">
+              <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}>
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+                Вернуться к заданиям
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
