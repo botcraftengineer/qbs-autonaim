@@ -1,3 +1,4 @@
+import { and, eq } from "@qbs-autonaim/db";
 import {
   conversation,
   conversationMessage,
@@ -177,15 +178,11 @@ async function handleVacancyInterview(
 
   // Проверяем дубликаты по нормализованному URL
   const existingResponse = await ctx.db.query.response.findFirst({
-    where: (
-      response: typeof responseTable,
-      { and, eq }: { and: any; eq: any },
-    ) =>
-      and(
-        eq(response.entityId, vacancyLink.entityId),
-        eq(response.entityType, "vacancy"),
-        eq(response.profileUrl, normalizedProfileUrl),
-      ),
+    where: and(
+      eq(responseTable.entityId, vacancyLink.entityId),
+      eq(responseTable.entityType, "vacancy"),
+      eq(responseTable.profileUrl, normalizedProfileUrl),
+    ),
   });
 
   if (existingResponse) {
@@ -204,8 +201,7 @@ async function handleVacancyInterview(
     .values({
       entityId: vacancyLink.entityId,
       entityType: "vacancy",
-      resumeId: `freelance_web_${crypto.randomUUID()}`,
-      resumeUrl: freelancerInfo.platformProfileUrl,
+      candidateId: normalizedProfileUrl,
       candidateName: freelancerInfo.name,
       profileUrl: normalizedProfileUrl,
       phone: freelancerInfo.phone,

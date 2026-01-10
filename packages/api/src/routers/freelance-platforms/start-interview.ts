@@ -52,15 +52,11 @@ export const startInterview = publicProcedure
 
     // Проверяем дубликаты по platformProfileUrl + vacancyId
     const existingResponse = await ctx.db.query.response.findFirst({
-      where: (
-        response: typeof responseTable,
-        { and, eq }: { and: any; eq: any },
-      ) =>
-        and(
-          eq(response.entityId, interviewLink.entityId),
-          eq(response.entityType, "vacancy"),
-          eq(response.profileUrl, input.freelancerInfo.platformProfileUrl),
-        ),
+      where: and(
+        eq(responseTable.entityId, interviewLink.entityId),
+        eq(responseTable.entityType, "vacancy"),
+        eq(responseTable.profileUrl, input.freelancerInfo.platformProfileUrl),
+      ),
     });
 
     if (existingResponse) {
@@ -76,8 +72,7 @@ export const startInterview = publicProcedure
       .values({
         entityId: interviewLink.entityId,
         entityType: "vacancy",
-        resumeId: `freelance_${Date.now()}`,
-        resumeUrl: input.freelancerInfo.platformProfileUrl,
+        candidateId: input.freelancerInfo.platformProfileUrl,
         candidateName: input.freelancerInfo.name,
         profileUrl: input.freelancerInfo.platformProfileUrl,
         phone: input.freelancerInfo.phone,

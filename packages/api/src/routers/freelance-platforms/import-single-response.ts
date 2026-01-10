@@ -75,15 +75,11 @@ export const importSingleResponse = protectedProcedure
     // Проверка дубликатов по platformProfileUrl + vacancyId
     if (input.contactInfo?.platformProfileUrl) {
       const existingResponse = await ctx.db.query.response.findFirst({
-        where: (
-          response: typeof responseTable,
-          { eq, and }: { eq: any; and: any },
-        ) =>
-          and(
-            eq(response.entityId, input.vacancyId),
-            eq(response.entityType, "vacancy"),
-            eq(response.profileUrl, input.contactInfo.platformProfileUrl),
-          ),
+        where: and(
+          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.profileUrl, input.contactInfo.platformProfileUrl),
+        ),
       });
 
       if (existingResponse) {
@@ -100,9 +96,8 @@ export const importSingleResponse = protectedProcedure
       .values({
         entityId: input.vacancyId,
         entityType: "vacancy",
-        resumeId: input.contactInfo?.platformProfileUrl || crypto.randomUUID(),
-        resumeUrl:
-          input.contactInfo?.platformProfileUrl || "manual-import-no-url",
+        candidateId:
+          input.contactInfo?.platformProfileUrl || crypto.randomUUID(),
         candidateName: input.freelancerName,
         coverLetter: input.responseText,
         importSource: "MANUAL",

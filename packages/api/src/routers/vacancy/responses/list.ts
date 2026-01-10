@@ -233,38 +233,54 @@ export const list = protectedProcedure
         welcomeSentAt: true,
         createdAt: true,
       },
-      with: {
-        screening: {
-          columns: {
-            score: true,
-            detailedScore: true,
-            analysis: true,
-          },
-        },
-        interviewScoring: {
-          columns: {
-            score: true,
-            detailedScore: true,
-            analysis: true,
-          },
-        },
-        conversation: {
-          columns: {
-            id: true,
-            candidateName: true,
-            status: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        },
-      },
     });
 
+    // Query related data separately
+    const responseIds = responsesRaw.map((r) => r.id);
+
+    const screenings =
+      responseIds.length > 0
+        ? await ctx.db.query.responseScreening.findMany({
+            where: (s, { inArray }) => inArray(s.responseId, responseIds),
+            columns: {
+              responseId: true,
+              score: true,
+              detailedScore: true,
+              analysis: true,
+            },
+          })
+        : [];
+
+    const interviewScorings =
+      responseIds.length > 0
+        ? await ctx.db.query.interviewScoring.findMany({
+            where: (is, { inArray }) => inArray(is.responseId, responseIds),
+            columns: {
+              responseId: true,
+              score: true,
+              detailedScore: true,
+              analysis: true,
+            },
+          })
+        : [];
+
+    const conversations =
+      responseIds.length > 0
+        ? await ctx.db.query.conversation.findMany({
+            where: (c, { inArray }) => inArray(c.responseId, responseIds),
+            columns: {
+              id: true,
+              responseId: true,
+              candidateName: true,
+              status: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          })
+        : [];
+
     // Получаем количество сообщений для каждой беседы одним запросом
-    const conversationIds = responsesRaw
-      .filter((r) => r.conversation)
-      .map((r) => r.conversation?.id)
-      .filter((id): id is string => id !== undefined);
+    const conversationIds = conversations.map((c) => c.id);
 
     let messageCountsMap = new Map<string, number>();
     if (conversationIds.length > 0) {
@@ -283,31 +299,45 @@ export const list = protectedProcedure
     }
 
     // Формируем ответ с количеством сообщений и санитизацией HTML
-    let responses = responsesRaw.map((r) => ({
-      ...r,
-      screening: r.screening
-        ? {
-            ...r.screening,
-            analysis: r.screening.analysis
-              ? sanitizeHtml(r.screening.analysis)
-              : null,
-          }
-        : null,
-      interviewScoring: r.interviewScoring
-        ? {
-            ...r.interviewScoring,
-            analysis: r.interviewScoring.analysis
-              ? sanitizeHtml(r.interviewScoring.analysis)
-              : null,
-          }
-        : null,
-      conversation: r.conversation
-        ? {
-            ...r.conversation,
-            messageCount: messageCountsMap.get(r.conversation.id) || 0,
-          }
-        : null,
-    }));
+    let responses = responsesRaw.map((r) => {
+      const screening = screenings.find((s) => s.responseId === r.id);
+      const interviewScoring = interviewScorings.find(
+        (is) => is.responseId === r.id,
+      );
+      const conversation = conversations.find((c) => c.responseId === r.id);
+
+      return {
+        ...r,
+        screening: screening
+          ? {
+              score: screening.score,
+              detailedScore: screening.detailedScore,
+              analysis: screening.analysis
+                ? sanitizeHtml(screening.analysis)
+                : null,
+            }
+          : null,
+        interviewScoring: interviewScoring
+          ? {
+              score: interviewScoring.score,
+              detailedScore: interviewScoring.detailedScore,
+              analysis: interviewScoring.analysis
+                ? sanitizeHtml(interviewScoring.analysis)
+                : null,
+            }
+          : null,
+        conversation: conversation
+          ? {
+              id: conversation.id,
+              candidateName: conversation.candidateName,
+              status: conversation.status,
+              createdAt: conversation.createdAt,
+              updatedAt: conversation.updatedAt,
+              messageCount: messageCountsMap.get(conversation.id) || 0,
+            }
+          : null,
+      };
+    });
 
     // Сортировка по score/detailedScore в памяти (только для текущей страницы)
     if (sortField === "score" || sortField === "detailedScore") {

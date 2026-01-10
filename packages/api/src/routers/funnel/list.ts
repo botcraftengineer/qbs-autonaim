@@ -1,5 +1,10 @@
 import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
-import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
+import {
+  interviewScoring as interviewScoringTable,
+  response as responseTable,
+  responseScreening as screeningTable,
+  vacancy,
+} from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -42,25 +47,23 @@ export const list = protectedProcedure
       };
     }
 
-    const conditions = [inArray(vacancyResponse.vacancyId, vacancyIds)];
+    const conditions = [
+      eq(responseTable.entityType, "vacancy"),
+      inArray(responseTable.entityId, vacancyIds),
+    ];
 
     if (input.vacancyId) {
-      conditions.push(eq(vacancyResponse.vacancyId, input.vacancyId));
+      conditions.push(eq(responseTable.entityId, input.vacancyId));
     }
 
     if (input.cursor) {
-      conditions.push(lt(vacancyResponse.id, input.cursor));
+      conditions.push(lt(responseTable.id, input.cursor));
     }
 
-    const responses = await ctx.db.query.vacancyResponse.findMany({
+    const responses = await ctx.db.query.response.findMany({
       where: and(...conditions),
-      orderBy: (responses, { desc }) => [desc(responses.id)],
+      orderBy: [desc(responseTable.id)],
       limit: input.limit + 1,
-      with: {
-        screening: true,
-        interviewScoring: true,
-        photoFile: true,
-      },
     });
 
     let nextCursor: string | undefined;
@@ -69,8 +72,29 @@ export const list = protectedProcedure
       nextCursor = nextItem?.id;
     }
 
+    // Query related data separately
+    const responseIds = responses.map((r) => r.id);
+
+    const screenings =
+      responseIds.length > 0
+        ? await ctx.db.query.responseScreening.findMany({
+            where: (s, { inArray }) => inArray(s.responseId, responseIds),
+          })
+        : [];
+
+    const interviewScorings =
+      responseIds.length > 0
+        ? await ctx.db.query.interviewScoring.findMany({
+            where: (is, { inArray }) => inArray(is.responseId, responseIds),
+          })
+        : [];
+
     const items = responses.map((r) => {
-      const vacancyData = vacancies.find((v) => v.id === r.vacancyId);
+      const vacancyData = vacancies.find((v) => v.id === r.entityId);
+      const screening = screenings.find((s) => s.responseId === r.id);
+      const interviewScoring = interviewScorings.find(
+        (is) => is.responseId === r.id,
+      );
       const stage = mapResponseToStage(r.status, r.hrSelectionStatus);
 
       return {
@@ -78,7 +102,7 @@ export const list = protectedProcedure
         name: r.candidateName || "Без имени",
         position: vacancyData?.title || "Неизвестная должность",
         avatar: null,
-        avatarFileId: r.photoFile?.id ?? null,
+        avatarFileId: r.photoFileId ?? null,
         initials:
           r.candidateName
             ?.split(" ")
@@ -90,16 +114,16 @@ export const list = protectedProcedure
         experience: r.experience || "Не указан",
         location: "Не указано",
         skills: [],
-        matchScore: r.screening?.detailedScore || 0,
-        resumeScore: r.screening?.detailedScore,
-        interviewScore: r.interviewScoring?.detailedScore,
-        scoreAnalysis: r.interviewScoring?.analysis ?? undefined,
+        matchScore: screening?.detailedScore || 0,
+        resumeScore: screening?.detailedScore,
+        interviewScore: interviewScoring?.detailedScore,
+        scoreAnalysis: interviewScoring?.analysis ?? undefined,
         availability: "Не указано",
         salaryExpectation: "Не указано",
         stage,
         status: r.status,
         hrSelectionStatus: r.hrSelectionStatus,
-        vacancyId: r.vacancyId,
+        vacancyId: r.entityId,
         vacancyName: vacancyData?.title || "Неизвестная вакансия",
         email: null,
         phone: r.phone,

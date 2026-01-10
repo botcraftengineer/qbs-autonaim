@@ -74,7 +74,7 @@ export const getImageUrl = protectedProcedure
       ...fileRecord.conversationMessages
         .map((m) => m.conversation?.responseId)
         .filter((id): id is string => id !== null && id !== undefined),
-    ];
+    ].filter((id): id is string => id !== undefined);
 
     if (responseIds.length === 0) {
       throw new TRPCError({
@@ -89,7 +89,9 @@ export const getImageUrl = protectedProcedure
       columns: { id: true, entityId: true },
     });
 
-    const vacancyIds = [...new Set(responses.map((r) => r.entityId))];
+    const vacancyIds = [...new Set(responses.map((r) => r.entityId))].filter(
+      (id): id is string => id !== undefined,
+    );
 
     // Query all vacancies to check workspace access
     const vacancies = await ctx.db.query.vacancy.findMany({

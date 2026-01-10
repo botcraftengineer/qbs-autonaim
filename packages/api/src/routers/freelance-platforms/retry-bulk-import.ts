@@ -96,15 +96,14 @@ export const retryBulkImport = protectedProcedure
           // Проверка дубликатов по platformProfileUrl + vacancyId
           if (parsed.contactInfo.platformProfile) {
             const existingResponse = await ctx.db.query.response.findFirst({
-              where: (
-                response: typeof responseTable,
-                { eq, and }: { eq: any; and: any },
-              ) =>
-                and(
-                  eq(response.entityId, input.vacancyId),
-                  eq(response.entityType, "vacancy"),
-                  eq(response.profileUrl, parsed.contactInfo.platformProfile),
+              where: and(
+                eq(responseTable.entityId, input.vacancyId),
+                eq(responseTable.entityType, "vacancy"),
+                eq(
+                  responseTable.profileUrl,
+                  parsed.contactInfo.platformProfile,
                 ),
+              ),
             });
 
             if (existingResponse) {
@@ -125,10 +124,8 @@ export const retryBulkImport = protectedProcedure
             .values({
               entityId: input.vacancyId,
               entityType: "vacancy",
-              resumeId:
+              candidateId:
                 parsed.contactInfo.platformProfile || crypto.randomUUID(),
-              resumeUrl:
-                parsed.contactInfo.platformProfile || "manual-import-no-url",
               candidateName: parsed.freelancerName,
               coverLetter: parsed.responseText,
               importSource: "MANUAL",

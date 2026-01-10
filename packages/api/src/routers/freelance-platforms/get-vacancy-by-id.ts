@@ -1,8 +1,8 @@
 import { and, eq, sql } from "@qbs-autonaim/db";
 import {
   interviewLink,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -49,12 +49,17 @@ export const getVacancyById = protectedProcedure
     // Получаем статистику по источникам откликов
     const responseStats = await ctx.db
       .select({
-        importSource: vacancyResponse.importSource,
+        importSource: responseTable.importSource,
         count: sql<number>`COUNT(*)::int`,
       })
-      .from(vacancyResponse)
-      .where(eq(vacancyResponse.vacancyId, input.id))
-      .groupBy(vacancyResponse.importSource);
+      .from(responseTable)
+      .where(
+        and(
+          eq(responseTable.entityId, input.id),
+          eq(responseTable.entityType, "vacancy"),
+        ),
+      )
+      .groupBy(responseTable.importSource);
 
     // Получаем активную ссылку на интервью
     const activeInterviewLink = await ctx.db.query.interviewLink.findFirst({

@@ -1,8 +1,5 @@
 import { and, eq, inArray } from "@qbs-autonaim/db";
-import {
-  type response as responseTable,
-  vacancy,
-} from "@qbs-autonaim/db/schema";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -38,14 +35,10 @@ export const vacancyStats = protectedProcedure
     }
 
     const responses = await ctx.db.query.response.findMany({
-      where: (
-        response: typeof responseTable,
-        { eq, and, inArray }: { eq: any; and: any; inArray: any },
-      ) =>
-        and(
-          inArray(response.entityId, vacancyIds),
-          eq(response.entityType, "vacancy"),
-        ),
+      where: and(
+        inArray(responseTable.entityId, vacancyIds),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     const statsByVacancy = new Map<

@@ -63,8 +63,7 @@ export const deleteVacancy = protectedProcedure
             phone: null,
             contacts: null,
             coverLetter: "Данные анонимизированы",
-            platformProfileUrl: null,
-            resumeUrl: "https://anonymized.url",
+            profileUrl: null,
           })
           .where(
             and(

@@ -31,9 +31,6 @@ export const get = protectedProcedure
 
     const response = await ctx.db.query.response.findFirst({
       where: eq(responseTable.id, input.id),
-      with: {
-        resumePdfFile: true,
-      },
     });
 
     if (!response) {
@@ -60,6 +57,13 @@ export const get = protectedProcedure
         message: "Нет доступа к этому отклику",
       });
     }
+
+    // Query resumePdfFile separately if exists
+    const resumePdfFile = response.resumePdfFileId
+      ? await ctx.db.query.file.findFirst({
+          where: (f, { eq }) => eq(f.id, response.resumePdfFileId!),
+        })
+      : null;
 
     // Query screening separately
     const screening = await ctx.db.query.responseScreening.findFirst({
@@ -92,8 +96,8 @@ export const get = protectedProcedure
       });
 
     let resumePdfUrl: string | null = null;
-    if (response.resumePdfFile) {
-      resumePdfUrl = await getDownloadUrl(response.resumePdfFile.key);
+    if (resumePdfFile) {
+      resumePdfUrl = await getDownloadUrl(resumePdfFile.key);
     }
 
     // Get voice file URLs for messages and map null to undefined

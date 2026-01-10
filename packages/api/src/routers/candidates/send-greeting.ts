@@ -15,18 +15,10 @@ export const sendGreeting = protectedProcedure
     const { candidateId, workspaceId } = input;
 
     const candidate = await ctx.db.query.response.findFirst({
-      where: (
-        response: typeof responseTable,
-        { eq, and }: { eq: any; and: any },
-      ) =>
-        and(eq(response.id, candidateId), eq(response.entityType, "vacancy")),
-      with: {
-        vacancy: {
-          columns: {
-            workspaceId: true,
-          },
-        },
-      },
+      where: and(
+        eq(responseTable.id, candidateId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     if (!candidate) {
@@ -36,7 +28,15 @@ export const sendGreeting = protectedProcedure
       });
     }
 
-    if (candidate.vacancy.workspaceId !== workspaceId) {
+    // Query vacancy separately to check workspace access
+    const vacancy = await ctx.db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, candidate.entityId),
+      columns: {
+        workspaceId: true,
+      },
+    });
+
+    if (!vacancy || vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому кандидату",

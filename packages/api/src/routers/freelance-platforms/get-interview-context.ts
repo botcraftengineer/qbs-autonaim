@@ -1,3 +1,8 @@
+import { and, eq } from "@qbs-autonaim/db";
+import {
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
@@ -36,28 +41,26 @@ export const getInterviewContext = publicProcedure
     // Если есть responseId, загружаем вакансию
     if (conv.responseId) {
       const response = await ctx.db.query.response.findFirst({
-        where: (
-          response: typeof responseTable,
-          { eq, and }: { eq: any; and: any },
-        ) =>
-          and(
-            eq(response.id, conv.responseId ?? ""),
-            eq(response.entityType, "vacancy"),
-          ),
-        with: {
-          vacancy: true,
-        },
+        where: and(
+          eq(responseTable.id, conv.responseId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
       });
 
-      if (response?.vacancy) {
-        const vacancy = response.vacancy;
-        return {
-          type: "vacancy" as const,
-          title: vacancy.title,
-          description: vacancy.description,
-          requirements: vacancy.requirements,
-          customInterviewQuestions: vacancy.customInterviewQuestions,
-        };
+      if (response) {
+        const vacancy = await ctx.db.query.vacancy.findFirst({
+          where: eq(vacancyTable.id, response.entityId),
+        });
+
+        if (vacancy) {
+          return {
+            type: "vacancy" as const,
+            title: vacancy.title,
+            description: vacancy.description,
+            requirements: vacancy.requirements,
+            customInterviewQuestions: vacancy.customInterviewQuestions,
+          };
+        }
       }
     }
 
