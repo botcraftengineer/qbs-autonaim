@@ -86,18 +86,6 @@ export const env = createEnv({
     DOCLING_API_URL: z.url().optional().default("http://localhost:8080"),
     DOCLING_API_KEY: z.string().optional().default(""),
 
-    // Document Processor Feature Flags
-    USE_DOCLING_PROCESSOR: z
-      .string()
-      .optional()
-      .default("true")
-      .transform((val) => val === "true"),
-    FALLBACK_TO_UNSTRUCTURED: z
-      .string()
-      .optional()
-      .default("true")
-      .transform((val) => val === "true"),
-
     // Embedding Service Configuration
     EMBEDDING_PROVIDER: z
       .enum(["openai", "anthropic", "local"])
@@ -190,8 +178,6 @@ export const env = createEnv({
     NEXT_PUBLIC_INTERVIEW_URL: process.env.NEXT_PUBLIC_INTERVIEW_URL,
     DOCLING_API_URL: process.env.DOCLING_API_URL,
     DOCLING_API_KEY: process.env.DOCLING_API_KEY,
-    USE_DOCLING_PROCESSOR: process.env.USE_DOCLING_PROCESSOR,
-    FALLBACK_TO_UNSTRUCTURED: process.env.FALLBACK_TO_UNSTRUCTURED,
     EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER,
     EMBEDDING_MODEL: process.env.EMBEDDING_MODEL,
     EMBEDDING_CHUNK_SIZE: process.env.EMBEDDING_CHUNK_SIZE,

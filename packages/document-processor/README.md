@@ -4,7 +4,7 @@ Document processing package with support for parsing, embedding generation, and 
 
 ## Features
 
-- **Document Parsing**: Support for PDF, DOCX via Docling and Unstructured API
+- **Document Parsing**: Support for PDF, DOCX via Docling
 - **Embedding Generation**: Integration with LlamaIndex for vector embeddings
 - **Vector Storage**: Qdrant for efficient similarity search
 - **Semantic Search**: Find relevant document chunks based on meaning
@@ -37,8 +37,6 @@ const indexer = new DocumentIndexer({
     collectionName: "document_embeddings",
     dimensions: 1536,
   },
-  useDocling: true,
-  fallbackToUnstructured: true,
 });
 
 // Index a document
@@ -95,7 +93,6 @@ packages/document-processor/
 ├── src/
 │   ├── parsers/
 │   │   ├── docling-processor.ts      # Docling-based parser
-│   │   ├── unstructured-parser.ts    # Legacy Unstructured API parser
 │   │   └── index.ts
 │   ├── embeddings/
 │   │   ├── embedding-service.ts      # LlamaIndex integration
@@ -122,10 +119,6 @@ QDRANT_COLLECTION_NAME=document_embeddings
 
 # OpenAI API (if using OpenAI embeddings)
 OPENAI_API_KEY=sk-...
-
-# Feature flags
-USE_DOCLING_PROCESSOR=true
-FALLBACK_TO_UNSTRUCTURED=true
 ```
 
 ### Embedding Providers

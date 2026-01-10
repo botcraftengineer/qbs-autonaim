@@ -55,6 +55,5 @@ export type { ChunkingConfig } from "./embeddings/text-chunker";
 export { TextChunker } from "./embeddings/text-chunker";
 // Parsers
 export { DoclingProcessor } from "./parsers/docling-processor";
-export { UnstructuredParser } from "./parsers/unstructured-parser";
 // Vector Store
 export { PgVectorStore } from "./vector-store/pgvector-store";

@@ -166,7 +166,7 @@ export class ResumeParserService {
     this.langfuse = options.langfuse;
 
     // Initialize DocumentIndexer if indexing is enabled
-    if (options.enableIndexing ?? env.USE_DOCLING_PROCESSOR) {
+    if (options.enableIndexing) {
       const indexerConfig: IndexerConfig = {
         embedding: {
           provider: env.EMBEDDING_PROVIDER,
@@ -180,8 +180,6 @@ export class ResumeParserService {
           collectionName: env.VECTOR_STORE_TABLE_NAME,
           dimensions: env.EMBEDDING_DIMENSIONS,
         },
-        useDocling: env.USE_DOCLING_PROCESSOR,
-        fallbackToUnstructured: env.FALLBACK_TO_UNSTRUCTURED,
       };
 
       this.indexer = new DocumentIndexer(indexerConfig);
@@ -430,7 +428,7 @@ export class ResumeParserService {
       logger.error("Indexing is disabled");
       throw new ResumeParserError(
         "INDEXING_DISABLED",
-        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
+        "Індексація документів відключена",
       );
     }
 
@@ -496,7 +494,7 @@ export class ResumeParserService {
       logger.error("Indexing is disabled");
       throw new ResumeParserError(
         "INDEXING_DISABLED",
-        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
+        "Индексация документов отключена",
       );
     }
 
@@ -555,7 +553,7 @@ export class ResumeParserService {
       logger.error("Indexing is disabled");
       throw new ResumeParserError(
         "INDEXING_DISABLED",
-        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
+        "Индексация документов отключена",
       );
     }
 
@@ -637,7 +635,7 @@ export class ResumeParserService {
       logger.error("Indexing is disabled");
       throw new ResumeParserError(
         "INDEXING_DISABLED",
-        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
+        "Индексация документов отключена",
       );
     }
 

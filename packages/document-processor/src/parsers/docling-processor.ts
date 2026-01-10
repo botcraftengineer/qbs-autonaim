@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import {
   type DoclingConfig,
   type DoclingResult,
@@ -47,11 +48,8 @@ export class DoclingProcessor implements FormatParser {
 
   constructor(config?: DoclingServiceConfig) {
     this.config = {
-      apiUrl:
-        config?.apiUrl ||
-        process.env.DOCLING_API_URL ||
-        "http://localhost:8000",
-      apiKey: config?.apiKey || process.env.DOCLING_API_KEY || "",
+      apiUrl: config?.apiUrl || env.DOCLING_API_URL || "http://localhost:8080",
+      apiKey: config?.apiKey || env.DOCLING_API_KEY || "",
       timeout: config?.timeout || 30000,
       enableOcr: config?.enableOcr ?? true,
       ocrLanguage: config?.ocrLanguage || "auto",

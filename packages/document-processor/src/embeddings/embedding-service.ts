@@ -1,3 +1,4 @@
+import { env } from "@qbs-autonaim/config";
 import type {
   EmbeddingConfig,
   EmbeddingProvider,
@@ -41,7 +42,7 @@ export class EmbeddingService implements EmbeddingProvider {
    * Генерирует эмбеддинги для текста используя провайдер API
    */
   private async generateEmbedding(text: string): Promise<number[]> {
-    const apiKey = this.config.apiKey || process.env.OPENAI_API_KEY || "";
+    const apiKey = this.config.apiKey || env.OPENAI_API_KEY || "";
 
     if (!apiKey) {
       throw new DocumentProcessingError(

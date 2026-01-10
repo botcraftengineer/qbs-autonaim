@@ -234,10 +234,6 @@ export interface IndexerConfig {
   embedding: EmbeddingConfig;
   /** Конфигурация vector store */
   vectorStore: VectorStoreConfig;
-  /** Feature flag для использования нового процессора */
-  useDocling: boolean;
-  /** Fallback на Unstructured при ошибках */
-  fallbackToUnstructured: boolean;
 }
 
 // ============================================================================

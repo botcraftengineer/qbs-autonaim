@@ -64,7 +64,7 @@
 
 #### ✅ ResumeParserService
 - Service implemented and available
-- Supports PDF, DOCX, and other formats via Unstructured API
+- Supports PDF, DOCX, and other formats via Docling
 - AI-powered structuring via AgentFactory
 - Confidence scoring implemented
 - Error handling for all failure modes:

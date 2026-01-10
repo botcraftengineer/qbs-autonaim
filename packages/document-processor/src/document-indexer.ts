@@ -1,6 +1,6 @@
+import { env } from "@qbs-autonaim/config";
 import { EmbeddingService } from "./embeddings/embedding-service";
 import { DoclingProcessor } from "./parsers/docling-processor";
-import { UnstructuredParser } from "./parsers/unstructured-parser";
 import type {
   EmbeddingProvider,
   FormatParser,
@@ -19,41 +19,20 @@ import { PgVectorStore } from "./vector-store/pgvector-store";
  */
 export class DocumentIndexer {
   private readonly parser: FormatParser;
-  private readonly fallbackParser?: FormatParser;
   private readonly embeddingService: EmbeddingProvider;
   private readonly vectorStore: VectorStore;
 
   constructor(config: IndexerConfig) {
-    // Initialize parser based on feature flag
-    if (config.useDocling) {
-      this.parser = new DoclingProcessor({
-        timeout: 30000,
-        enableOcr: true,
-      });
-
-      // Setup fallback if enabled
-      if (config.fallbackToUnstructured) {
-        const unstructuredUrl =
-          process.env.UNSTRUCTURED_API_URL || "http://localhost:8000";
-        this.fallbackParser = new UnstructuredParser({
-          apiUrl: unstructuredUrl,
-          timeout: 30000,
-        });
-      }
-    } else {
-      // Use Unstructured as primary parser
-      const unstructuredUrl =
-        process.env.UNSTRUCTURED_API_URL || "http://localhost:8000";
-      this.parser = new UnstructuredParser({
-        apiUrl: unstructuredUrl,
-        timeout: 30000,
-      });
-    }
+    // Initialize Docling parser
+    this.parser = new DoclingProcessor({
+      timeout: 30000,
+      enableOcr: true,
+    });
 
     // Initialize embedding service
     this.embeddingService = new EmbeddingService({
       ...config.embedding,
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: env.OPENAI_API_KEY,
     });
 
     // Initialize vector store
@@ -145,46 +124,19 @@ export class DocumentIndexer {
   }
 
   /**
-   * Parses document with fallback support
-   * Tries primary parser first, falls back to secondary if enabled
+   * Parses document using Docling processor
    *
    * @param content - Document content as Buffer
    * @param filename - Optional filename for format detection
    * @returns Extracted text
-   * @throws DocumentProcessingError if all parsers fail
+   * @throws DocumentProcessingError if parsing fails
    *
-   * Requirements: 6.3, 6.4
+   * Requirements: 6.3
    */
   private async parseDocument(
     content: Buffer,
     filename?: string,
   ): Promise<string> {
-    try {
-      return await this.parser.extractText(content, filename);
-    } catch (error) {
-      // If fallback is enabled and primary parser failed, try fallback
-      if (this.fallbackParser) {
-        console.warn(
-          "Primary parser failed, attempting fallback parser:",
-          error instanceof Error ? error.message : String(error),
-        );
-
-        try {
-          return await this.fallbackParser.extractText(content, filename);
-        } catch (fallbackError) {
-          console.error(
-            "Fallback parser also failed:",
-            fallbackError instanceof Error
-              ? fallbackError.message
-              : String(fallbackError),
-          );
-          // Throw original error since fallback also failed
-          throw error;
-        }
-      }
-
-      // No fallback available, throw original error
-      throw error;
-    }
+    return await this.parser.extractText(content, filename);
   }
 }

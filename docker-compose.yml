@@ -148,20 +148,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-  unstructured:
-    restart: always
-    image: quay.io/unstructured-io/unstructured-api:latest
-    container_name: unstructured
-    ports:
-      - 8002:8000
-    environment:
-      - UNSTRUCTURED_API_KEY=${UNSTRUCTURED_API_KEY:-}
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/general/v0/general"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+
   qdrant:
     restart: always
     image: qdrant/qdrant:latest

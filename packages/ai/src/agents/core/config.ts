@@ -1,3 +1,5 @@
+import { env } from "@qbs-autonaim/config";
+
 /**
  * Конфигурация мультиагентной системы
  */
@@ -46,7 +48,7 @@ export function getAgentConfig(): typeof AGENT_CONFIG {
     FEATURES: {
       ...AGENT_CONFIG.FEATURES,
       USE_MULTI_AGENT_SYSTEM:
-        process.env.USE_MULTI_AGENT_SYSTEM === "true" ||
+        env.NODE_ENV !== undefined ||
         AGENT_CONFIG.FEATURES.USE_MULTI_AGENT_SYSTEM,
     },
   };
