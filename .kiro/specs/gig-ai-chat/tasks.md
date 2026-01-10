@@ -6,32 +6,32 @@
 
 ## Tasks
 
-- [ ] 1. Создать схему базы данных для чат-сессий
-  - [ ] 1.1 Создать таблицу gig_chat_sessions
+- [x] 1. Создать схему базы данных для чат-сессий
+  - [x] 1.1 Создать таблицу gig_chat_sessions
     - Добавить файл `packages/db/src/schema/gig/chat-session.ts`
     - Поля: id, gigId, userId, messageCount, lastMessageAt, createdAt, updatedAt
     - Уникальный индекс на (gigId, userId)
     - _Requirements: 1.1, 1.2_
 
-  - [ ] 1.2 Создать таблицу gig_chat_messages
+  - [x] 1.2 Создать таблицу gig_chat_messages
     - Добавить в тот же файл или отдельный `chat-message.ts`
     - Поля: id, sessionId, role (enum), content, quickReplies (jsonb), metadata (jsonb), createdAt
     - Индексы на sessionId и (sessionId, createdAt)
     - _Requirements: 1.3_
 
-  - [ ] 1.3 Экспортировать схемы и обновить index.ts
+  - [x] 1.3 Экспортировать схемы и обновить index.ts
     - Обновить `packages/db/src/schema/gig/index.ts`
     - Обновить `packages/db/src/schema/index.ts`
     - _Requirements: 1.1, 1.2_
 
-- [ ] 2. Реализовать сервисы загрузки контекста
-  - [ ] 2.1 Создать GigContextLoader
+- [x] 2. Реализовать сервисы загрузки контекста
+  - [x] 2.1 Создать GigContextLoader
     - Создать `packages/api/src/services/gig-chat/context-loader.ts`
     - Функция `loadGigContext(gigId)` возвращает GigContext
     - Включить все поля gig: title, description, requirements, type, budget, deadline
     - _Requirements: 2.1, 2.2, 2.3_
 
-  - [ ] 2.2 Создать CandidatesContextLoader
+  - [x] 2.2 Создать CandidatesContextLoader
     - Функция `loadCandidatesContext(gigId)` возвращает CandidatesContext
     - JOIN с gig_response_screenings для screening данных
     - JOIN с interview_scorings для interview данных
@@ -43,8 +43,8 @@
     - **Property 5: Candidates Context Completeness**
     - **Validates: Requirements 2.1, 2.2, 2.3, 3.1-3.6**
 
-- [ ] 3. Реализовать построитель промпта
-  - [ ] 3.1 Создать ChatPromptBuilder
+- [x] 3. Реализовать построитель промпта
+  - [x] 3.1 Создать ChatPromptBuilder
     - Создать `packages/api/src/services/gig-chat/prompt-builder.ts`
     - Функция `buildGigAIChatPrompt(message, gigContext, candidatesContext, history)`
     - Системная инструкция с ролью AI-помощника по анализу кандидатов
@@ -52,19 +52,19 @@
     - Ограничение истории до 10 последних сообщений
     - _Requirements: 4.1-4.8, 5.1-5.7, 6.1-6.6_
 
-  - [ ] 3.2 Реализовать суммаризацию для больших пулов кандидатов
+  - [x] 3.2 Реализовать суммаризацию для больших пулов кандидатов
     - Если кандидатов > 20, показывать только топ-10 и статистику
     - Если кандидатов > 50, использовать агрегированную сводку
     - _Requirements: 12.1, 12.2_
 
-- [ ] 4. Реализовать tRPC роутер
-  - [ ] 4.1 Создать базовую структуру роутера
+- [x] 4. Реализовать tRPC роутер
+  - [x] 4.1 Создать базовую структуру роутера
     - Создать `packages/api/src/routers/gig/ai-chat.ts`
     - Определить input/output схемы с Zod
     - Экспортировать роутер
     - _Requirements: 10.1, 10.2, 10.3_
 
-  - [ ] 4.2 Реализовать sendMessage mutation
+  - [x] 4.2 Реализовать sendMessage mutation
     - Проверка доступа к workspace
     - Загрузка или создание сессии
     - Загрузка контекста gig и кандидатов
@@ -74,18 +74,18 @@
     - Сохранение сообщений в БД
     - _Requirements: 10.1, 10.6_
 
-  - [ ] 4.3 Реализовать getHistory query
+  - [x] 4.3 Реализовать getHistory query
     - Загрузка сессии по gigId и userId
     - Загрузка последних N сообщений
     - Возврат с пагинацией
     - _Requirements: 10.2, 1.3_
 
-  - [ ] 4.4 Реализовать clearHistory mutation
+  - [x] 4.4 Реализовать clearHistory mutation
     - Удаление всех сообщений сессии
     - Сброс messageCount
     - _Requirements: 1.6, 10.3_
 
-  - [ ] 4.5 Добавить роутер в gig router
+  - [x] 4.5 Добавить роутер в gig router
     - Обновить `packages/api/src/routers/gig/index.ts`
     - Добавить `aiChat: aiChatRouter`
     - _Requirements: 10.1_
@@ -103,8 +103,8 @@
   - Проверить что API работает через tRPC playground
   - Спросить пользователя если есть вопросы
 
-- [ ] 6. Реализовать rate limiting
-  - [ ] 6.1 Добавить rate limiter в sendMessage
+- [x] 6. Реализовать rate limiting
+  - [x] 6.1 Добавить rate limiter в sendMessage
     - Использовать in-memory или Redis для счётчика
     - Лимит: 20 сообщений в минуту на пользователя
     - Возвращать 429 с retry-after header
@@ -114,7 +114,7 @@
     - **Property 9: Rate Limiting Enforcement**
     - **Validates: Requirements 12.4**
 
-- [ ] 7. Реализовать UI компоненты
+- [-] 7. Реализовать UI компоненты
   - [ ] 7.1 Создать GigAIChatPanel
     - Создать `apps/app/src/components/gig/ai-chat/gig-ai-chat-panel.tsx`
     - Sheet/Drawer компонент с заголовком

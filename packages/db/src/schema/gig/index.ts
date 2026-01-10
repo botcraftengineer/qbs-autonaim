@@ -1,3 +1,4 @@
+export * from "./chat-session";
 export * from "./gig";
 export * from "./gig-interview-media";
 export * from "./interview-link";

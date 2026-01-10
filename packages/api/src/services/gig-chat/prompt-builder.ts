@@ -1,0 +1,403 @@
+/**
+ * Gig AI Chat Prompt Builder
+ *
+ * Построитель промптов для AI чата по анализу кандидатов.
+ */
+
+import type {
+  CandidateContext,
+  CandidatesContext,
+  GigContext,
+} from "./context-loader";
+
+/**
+ * Сообщение в истории диалога
+ */
+export interface ChatHistoryMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+/**
+ * Форматирует контекст gig задания для промпта
+ */
+function formatGigContext(gigContext: GigContext): string {
+  const parts: string[] = [];
+
+  parts.push(`# Информация о задании`);
+  parts.push(`**Название:** ${gigContext.title}`);
+
+  if (gigContext.description) {
+    parts.push(`**Описание:** ${gigContext.description}`);
+  }
+
+  parts.push(`**Тип:** ${gigContext.type}`);
+
+  // Бюджет
+  if (gigContext.budgetMin !== null || gigContext.budgetMax !== null) {
+    const currency = gigContext.budgetCurrency || "RUB";
+    if (gigContext.budgetMin !== null && gigContext.budgetMax !== null) {
+      parts.push(
+        `**Бюджет:** ${gigContext.budgetMin}-${gigContext.budgetMax} ${currency}`,
+      );
+    } else if (gigContext.budgetMin !== null) {
+      parts.push(`**Бюджет:** от ${gigContext.budgetMin} ${currency}`);
+    } else if (gigContext.budgetMax !== null) {
+      parts.push(`**Бюджет:** до ${gigContext.budgetMax} ${currency}`);
+    }
+  }
+
+  // Сроки
+  if (gigContext.deadline) {
+    parts.push(
+      `**Дедлайн:** ${gigContext.deadline.toLocaleDateString("ru-RU")}`,
+    );
+  }
+
+  if (gigContext.estimatedDuration) {
+    parts.push(`**Ожидаемая длительность:** ${gigContext.estimatedDuration}`);
+  }
+
+  // Требования
+  if (gigContext.requirements) {
+    const req = gigContext.requirements;
+    parts.push(`\n## Требования к кандидату`);
+
+    if (req.summary) {
+      parts.push(`**Краткое описание:** ${req.summary}`);
+    }
+
+    if (req.required_skills && req.required_skills.length > 0) {
+      parts.push(`**Обязательные навыки:** ${req.required_skills.join(", ")}`);
+    }
+
+    if (req.nice_to_have_skills && req.nice_to_have_skills.length > 0) {
+      parts.push(
+        `**Желательные навыки:** ${req.nice_to_have_skills.join(", ")}`,
+      );
+    }
+
+    if (req.tech_stack && req.tech_stack.length > 0) {
+      parts.push(`**Технологии:** ${req.tech_stack.join(", ")}`);
+    }
+
+    if (req.experience_level) {
+      parts.push(`**Уровень опыта:** ${req.experience_level}`);
+    }
+
+    if (req.languages && req.languages.length > 0) {
+      const langs = req.languages
+        .map((l) => `${l.language} (${l.level})`)
+        .join(", ");
+      parts.push(`**Языки:** ${langs}`);
+    }
+
+    if (req.deliverables && req.deliverables.length > 0) {
+      parts.push(`**Ожидаемые результаты:**`);
+      for (const deliverable of req.deliverables) {
+        parts.push(`- ${deliverable}`);
+      }
+    }
+  }
+
+  // Кастомные инструкции для бота
+  if (gigContext.customBotInstructions) {
+    parts.push(`\n## Дополнительные инструкции`);
+    parts.push(gigContext.customBotInstructions);
+  }
+
+  return parts.join("\n");
+}
+
+/**
+ * Форматирует одного кандидата для промпта
+ */
+function formatCandidate(candidate: CandidateContext): string {
+  const parts: string[] = [];
+
+  const name =
+    candidate.candidateName || `Кандидат ${candidate.id.slice(0, 8)}`;
+  parts.push(`### ${name}`);
+
+  // Основная информация
+  if (candidate.proposedPrice !== null) {
+    const currency = candidate.proposedCurrency || "RUB";
+    parts.push(`- **Цена:** ${candidate.proposedPrice} ${currency}`);
+  } else {
+    parts.push(`- **Цена:** не указана`);
+  }
+
+  if (candidate.proposedDeliveryDays !== null) {
+    parts.push(`- **Сроки:** ${candidate.proposedDeliveryDays} дней`);
+  } else {
+    parts.push(`- **Сроки:** не указаны`);
+  }
+
+  parts.push(`- **Статус:** ${candidate.status}`);
+
+  if (candidate.hrSelectionStatus) {
+    parts.push(`- **HR статус:** ${candidate.hrSelectionStatus}`);
+  }
+
+  // Оценки
+  if (candidate.screeningDetailedScore !== null) {
+    parts.push(
+      `- **Screening оценка:** ${candidate.screeningDetailedScore}/100`,
+    );
+  }
+
+  if (candidate.interviewDetailedScore !== null) {
+    parts.push(
+      `- **Interview оценка:** ${candidate.interviewDetailedScore}/100`,
+    );
+  }
+
+  if (candidate.compositeScore !== null) {
+    parts.push(`- **Общая оценка:** ${candidate.compositeScore}/100`);
+  }
+
+  if (candidate.recommendation) {
+    parts.push(`- **Рекомендация:** ${candidate.recommendation}`);
+  }
+
+  // Сильные и слабые стороны
+  if (candidate.strengths && candidate.strengths.length > 0) {
+    parts.push(`- **Сильные стороны:** ${candidate.strengths.join(", ")}`);
+  }
+
+  if (candidate.weaknesses && candidate.weaknesses.length > 0) {
+    parts.push(`- **Слабые стороны:** ${candidate.weaknesses.join(", ")}`);
+  }
+
+  // Навыки
+  if (candidate.skills && candidate.skills.length > 0) {
+    parts.push(`- **Навыки:** ${candidate.skills.join(", ")}`);
+  }
+
+  // Опыт
+  if (candidate.experience) {
+    parts.push(`- **Опыт:** ${candidate.experience}`);
+  }
+
+  // Сопроводительное письмо (сокращенное)
+  if (candidate.coverLetter) {
+    const shortLetter =
+      candidate.coverLetter.length > 200
+        ? `${candidate.coverLetter.slice(0, 200)}...`
+        : candidate.coverLetter;
+    parts.push(`- **Сопроводительное письмо:** ${shortLetter}`);
+  }
+
+  // Анализ от screening
+  if (candidate.screeningAnalysis) {
+    const shortAnalysis =
+      candidate.screeningAnalysis.length > 300
+        ? `${candidate.screeningAnalysis.slice(0, 300)}...`
+        : candidate.screeningAnalysis;
+    parts.push(`- **Анализ screening:** ${shortAnalysis}`);
+  }
+
+  // Анализ от interview
+  if (candidate.interviewAnalysis) {
+    const shortAnalysis =
+      candidate.interviewAnalysis.length > 300
+        ? `${candidate.interviewAnalysis.slice(0, 300)}...`
+        : candidate.interviewAnalysis;
+    parts.push(`- **Анализ interview:** ${shortAnalysis}`);
+  }
+
+  return parts.join("\n");
+}
+
+/**
+ * Форматирует статистику по кандидатам
+ */
+function formatCandidatesStats(stats: CandidatesContext["stats"]): string {
+  const parts: string[] = [];
+
+  parts.push(`# Статистика по кандидатам`);
+  parts.push(`**Всего откликов:** ${stats.total}`);
+
+  // По статусам
+  if (Object.keys(stats.byStatus).length > 0) {
+    parts.push(`\n**По статусам:**`);
+    for (const [status, count] of Object.entries(stats.byStatus)) {
+      parts.push(`- ${status}: ${count}`);
+    }
+  }
+
+  // По рекомендациям
+  if (Object.keys(stats.byRecommendation).length > 0) {
+    parts.push(`\n**По рекомендациям:**`);
+    for (const [recommendation, count] of Object.entries(
+      stats.byRecommendation,
+    )) {
+      parts.push(`- ${recommendation}: ${count}`);
+    }
+  }
+
+  // Средние значения
+  if (stats.avgPrice !== null) {
+    parts.push(`\n**Средняя цена:** ${stats.avgPrice} RUB`);
+  }
+
+  if (stats.avgDeliveryDays !== null) {
+    parts.push(`**Средние сроки:** ${stats.avgDeliveryDays} дней`);
+  }
+
+  if (stats.avgScreeningScore !== null) {
+    parts.push(`**Средний screening балл:** ${stats.avgScreeningScore}/100`);
+  }
+
+  if (stats.avgInterviewScore !== null) {
+    parts.push(`**Средний interview балл:** ${stats.avgInterviewScore}/100`);
+  }
+
+  return parts.join("\n");
+}
+
+/**
+ * Форматирует контекст кандидатов с учетом их количества
+ */
+function formatCandidatesContext(candidatesContext: CandidatesContext): string {
+  const { candidates, stats } = candidatesContext;
+  const parts: string[] = [];
+
+  // Всегда показываем статистику
+  parts.push(formatCandidatesStats(stats));
+
+  if (candidates.length === 0) {
+    parts.push(
+      `\n**Примечание:** На данный момент нет откликов на это задание.`,
+    );
+    return parts.join("\n");
+  }
+
+  // Если кандидатов > 50, показываем только агрегированную сводку
+  if (candidates.length > 50) {
+    parts.push(
+      `\n**Примечание:** Из-за большого количества кандидатов (${candidates.length}) показана только агрегированная статистика. Для детального анализа конкретных кандидатов задавайте уточняющие вопросы.`,
+    );
+    return parts.join("\n");
+  }
+
+  // Если кандидатов > 20, показываем только топ-10
+  if (candidates.length > 20) {
+    parts.push(`\n# Топ-10 кандидатов`);
+    parts.push(
+      `**Примечание:** Показаны только топ-10 кандидатов из ${candidates.length}. Для анализа остальных задавайте уточняющие вопросы.\n`,
+    );
+
+    // Сортируем по compositeScore (если есть) или по screeningScore
+    const sortedCandidates = [...candidates].sort((a, b) => {
+      const scoreA = a.compositeScore ?? a.screeningDetailedScore ?? 0;
+      const scoreB = b.compositeScore ?? b.screeningDetailedScore ?? 0;
+      return scoreB - scoreA;
+    });
+
+    const top10 = sortedCandidates.slice(0, 10);
+    for (const candidate of top10) {
+      parts.push(formatCandidate(candidate));
+      parts.push(""); // Пустая строка между кандидатами
+    }
+
+    return parts.join("\n");
+  }
+
+  // Если кандидатов <= 20, показываем всех
+  parts.push(`\n# Все кандидаты\n`);
+
+  // Сортируем по compositeScore (если есть) или по screeningScore
+  const sortedCandidates = [...candidates].sort((a, b) => {
+    const scoreA = a.compositeScore ?? a.screeningDetailedScore ?? 0;
+    const scoreB = b.compositeScore ?? b.screeningDetailedScore ?? 0;
+    return scoreB - scoreA;
+  });
+
+  for (const candidate of sortedCandidates) {
+    parts.push(formatCandidate(candidate));
+    parts.push(""); // Пустая строка между кандидатами
+  }
+
+  return parts.join("\n");
+}
+
+/**
+ * Форматирует историю диалога
+ */
+function formatConversationHistory(history: ChatHistoryMessage[]): string {
+  if (history.length === 0) {
+    return "";
+  }
+
+  // Ограничиваем историю до 10 последних сообщений
+  const recentHistory = history.slice(-10);
+
+  const parts: string[] = [];
+  parts.push(`# История диалога\n`);
+
+  for (const message of recentHistory) {
+    const role = message.role === "user" ? "Пользователь" : "Ассистент";
+    parts.push(`**${role}:** ${message.content}\n`);
+  }
+
+  return parts.join("\n");
+}
+
+/**
+ * Строит полный промпт для AI чата
+ */
+export function buildGigAIChatPrompt(
+  userMessage: string,
+  gigContext: GigContext,
+  candidatesContext: CandidatesContext,
+  conversationHistory: ChatHistoryMessage[],
+): string {
+  const parts: string[] = [];
+
+  // Системная инструкция
+  parts.push(`Ты — AI-помощник для анализа кандидатов на gig задание. Твоя задача — помогать рекрутеру принимать обоснованные решения о выборе исполнителей.
+
+**Твои возможности:**
+- Анализировать профили кандидатов и их соответствие требованиям
+- Сравнивать кандидатов между собой
+- Предоставлять статистику и аналитику по пулу кандидатов
+- Давать рекомендации по выбору исполнителей
+- Отвечать на вопросы о конкретных кандидатах
+
+**Правила:**
+- Отвечай на русском языке, четко и по существу
+- Используй данные из контекста для обоснования своих ответов
+- Если данных недостаточно, честно об этом скажи
+- При сравнении кандидатов учитывай все доступные метрики: цену, сроки, оценки, опыт
+- Выделяй ключевые моменты и давай конкретные рекомендации
+- Если кандидатов нет или данных мало, предложи что можно сделать
+
+**Формат ответа:**
+- Используй markdown для форматирования
+- Структурируй ответ с заголовками и списками
+- Выделяй важные цифры и факты
+- В конце можешь предложить 2-4 варианта следующих вопросов (quick replies)
+`);
+
+  // Контекст задания
+  parts.push(`\n---\n`);
+  parts.push(formatGigContext(gigContext));
+
+  // Контекст кандидатов
+  parts.push(`\n---\n`);
+  parts.push(formatCandidatesContext(candidatesContext));
+
+  // История диалога (если есть)
+  if (conversationHistory.length > 0) {
+    parts.push(`\n---\n`);
+    parts.push(formatConversationHistory(conversationHistory));
+  }
+
+  // Текущий вопрос пользователя
+  parts.push(`\n---\n`);
+  parts.push(`# Текущий вопрос\n`);
+  parts.push(`**Пользователь:** ${userMessage}`);
+
+  return parts.join("\n");
+}

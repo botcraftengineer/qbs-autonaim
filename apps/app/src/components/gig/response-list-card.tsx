@@ -30,8 +30,22 @@ import Link from "next/link";
 
 type GigResponseListItem = RouterOutputs["gig"]["responses"]["list"][number];
 
+// Extend the type to include interviewScoring relation
+type GigResponseWithInterviewScoring = GigResponseListItem & {
+  interviewScoring?: {
+    id: string;
+    conversationId: string;
+    responseId: string | null;
+    gigResponseId: string | null;
+    score: number;
+    detailedScore: number;
+    analysis: string | null;
+    createdAt: Date;
+  } | null;
+};
+
 interface ResponseListCardProps {
-  response: GigResponseListItem;
+  response: GigResponseWithInterviewScoring;
   orgSlug: string;
   workspaceSlug: string;
   gigId: string;
@@ -119,7 +133,7 @@ export function ResponseListCard({
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
   const hasScreening = !!response.screening;
-  const hasInterviewScoring = !!(response as any).interviewScoring;
+  const hasInterviewScoring = !!response.interviewScoring;
 
   const handleAction = (e: React.MouseEvent, action: () => void) => {
     e.preventDefault();
@@ -247,7 +261,7 @@ export function ResponseListCard({
           )}
 
           {/* Interview Scoring */}
-          {hasInterviewScoring && (
+          {hasInterviewScoring && response.interviewScoring && (
             <HoverCard>
               <HoverCardTrigger asChild>
                 <button
@@ -263,12 +277,12 @@ export function ResponseListCard({
                       </span>
                     </div>
                     <span className="text-sm font-bold">
-                      {(response as any).interviewScoring.score}/5 •{" "}
-                      {(response as any).interviewScoring.detailedScore}/100
+                      {response.interviewScoring.score}/5 •{" "}
+                      {response.interviewScoring.detailedScore}/100
                     </span>
                   </div>
                   <Progress
-                    value={(response as any).interviewScoring.detailedScore}
+                    value={response.interviewScoring.detailedScore}
                     className="h-1.5"
                   />
                 </button>
@@ -284,11 +298,11 @@ export function ResponseListCard({
                     </p>
                   </div>
 
-                  {(response as any).interviewScoring.analysis && (
+                  {response.interviewScoring.analysis && (
                     <div>
                       <h5 className="text-xs font-medium mb-1">Анализ</h5>
                       <p className="text-xs text-muted-foreground line-clamp-3">
-                        {(response as any).interviewScoring.analysis}
+                        {response.interviewScoring.analysis}
                       </p>
                     </div>
                   )}
@@ -298,15 +312,15 @@ export function ResponseListCard({
           )}
 
           {/* Parsed Profile Indicator */}
-          {response.profileData && (
+          {response.profileData && !response.profileData.error && (
             <div className="p-3 rounded-lg border bg-background">
               <div className="flex items-center gap-2 text-sm">
                 <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span className="font-medium">Портфолио распарсено</span>
                   <span className="text-xs text-muted-foreground ml-2">
-                    {response.profileData.platform} •{" "}
-                    {response.profileData.username}
+                    {response.profileData.platform || "Не указан"} •{" "}
+                    {response.profileData.username || "—"}
                   </span>
                 </div>
               </div>

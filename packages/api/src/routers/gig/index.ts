@@ -1,5 +1,6 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
+import { aiChatRouter } from "./ai-chat";
 import { chatGenerate } from "./chat-generate";
 import { create } from "./create";
 import { deleteGig } from "./delete";
@@ -28,4 +29,5 @@ export const gigRouter = {
   syncResponseCounts,
   syncAllResponseCounts,
   responses: gigResponsesRouter,
+  aiChat: aiChatRouter,
 } satisfies TRPCRouterRecord;
