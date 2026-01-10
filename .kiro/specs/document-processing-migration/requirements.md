@@ -2,16 +2,16 @@
 
 ## Introduction
 
-Миграция системы обработки документов с текущего решения на базе Unstructured API на новый стек: LlamaIndex + Docling + pgvector + LLM. Это позволит улучшить качество парсинга документов, добавить семантический поиск по содержимому резюме и снизить зависимость от внешних сервисов.
+Миграция системы обработки документов с текущего решения на базе Unstructured API на новый стек: LlamaIndex + Docling + Qdrant + LLM. Это позволит улучшить качество парсинга документов, добавить семантический поиск по содержимому резюме и снизить зависимость от внешних сервисов.
 
 ## Glossary
 
 - **Document_Processor**: Сервис обработки документов, заменяющий текущий UnstructuredParser
 - **Docling**: Библиотека IBM для парсинга PDF и других документов с высоким качеством извлечения структуры
 - **LlamaIndex**: Фреймворк для построения RAG-приложений с поддержкой различных источников данных
-- **pgvector**: Расширение PostgreSQL для хранения и поиска векторных эмбеддингов
+- **Qdrant**: Векторная база данных для хранения и поиска векторных эмбеддингов
 - **Embedding_Service**: Сервис генерации векторных представлений текста
-- **Vector_Store**: Хранилище векторных эмбеддингов на базе pgvector
+- **Vector_Store**: Хранилище векторных эмбеддингов на базе Qdrant
 - **Resume_Parser**: Существующий сервис парсинга резюме, который будет использовать новый Document_Processor
 
 ## Requirements
@@ -39,13 +39,13 @@
 3. WHEN embeddings are generated, THE Embedding_Service SHALL return vectors with metadata (chunk index, source document)
 4. IF the embedding provider is unavailable, THEN THE Embedding_Service SHALL retry with exponential backoff and return error after max retries
 
-### Requirement 3: Хранение векторов в pgvector
+### Requirement 3: Хранение векторов в Qdrant
 
-**User Story:** As a system, I want to store document embeddings in PostgreSQL, so that they can be efficiently searched.
+**User Story:** As a system, I want to store document embeddings in Qdrant, so that they can be efficiently searched.
 
 #### Acceptance Criteria
 
-1. WHEN embeddings are generated, THE Vector_Store SHALL persist them to PostgreSQL using pgvector extension
+1. WHEN embeddings are generated, THE Vector_Store SHALL persist them to Qdrant vector database
 2. WHEN storing embeddings, THE Vector_Store SHALL associate them with source document ID and chunk metadata
 3. WHEN a document is deleted, THE Vector_Store SHALL remove all associated embeddings
 4. WHEN a document is re-processed, THE Vector_Store SHALL replace existing embeddings atomically
@@ -69,7 +69,7 @@
 
 1. WHEN initializing the system, THE Document_Processor SHALL configure LlamaIndex with Docling reader
 2. WHEN indexing documents, THE Document_Processor SHALL use LlamaIndex pipeline for chunking and embedding
-3. WHEN querying, THE Document_Processor SHALL use LlamaIndex retriever with pgvector backend
+3. WHEN querying, THE Document_Processor SHALL use LlamaIndex retriever with Qdrant backend
 4. WHEN the LLM provider changes, THE Document_Processor SHALL support configuration switch without code changes
 
 ### Requirement 6: Обратная совместимость

@@ -2,10 +2,10 @@
 
 ## Overview
 
-Миграция системы обработки документов с Unstructured API на новый стек: LlamaIndex + Docling + pgvector. Новая архитектура обеспечит:
+Миграция системы обработки документов с Unstructured API на новый стек: LlamaIndex + Docling + Qdrant. Новая архитектура обеспечит:
 
 - Локальную обработку документов через Docling (Python библиотека IBM)
-- Семантический поиск по содержимому резюме через pgvector
+- Семантический поиск по содержимому резюме через Qdrant
 - Гибкую интеграцию с различными LLM провайдерами через LlamaIndex
 - Обратную совместимость с существующим API через интерфейс FormatParser
 
@@ -30,8 +30,7 @@ graph TB
     end
     
     subgraph "Storage Layer"
-        PG[(PostgreSQL)]
-        PGV[pgvector Extension]
+        QD[(Qdrant)]
     end
     
     subgraph "External Services"
@@ -149,7 +148,7 @@ class EmbeddingService {
 
 ### 3. VectorStore
 
-Хранилище векторов на базе pgvector.
+Хранилище векторов на базе Qdrant.
 
 ```typescript
 interface VectorStoreConfig {
@@ -445,7 +444,7 @@ fc.assert(
 ### Integration Tests
 
 - End-to-end тестирование pipeline: документ → парсинг → эмбеддинг → поиск
-- Тестирование с реальной PostgreSQL + pgvector
+- Тестирование с реальной Qdrant
 - Тестирование fallback логики
 
 ### Test Configuration

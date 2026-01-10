@@ -56,4 +56,4 @@ export { TextChunker } from "./embeddings/text-chunker";
 // Parsers
 export { DoclingProcessor } from "./parsers/docling-processor";
 // Vector Store
-export { PgVectorStore } from "./vector-store/pgvector-store";
+export { QdrantVectorStore } from "./vector-store/qdrant-store";

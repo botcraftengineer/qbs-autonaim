@@ -45,7 +45,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
@@ -145,7 +145,7 @@ export default function GigResponsesPage({ params }: PageProps) {
   }>({ open: false, responseId: "", action: "accept", candidateName: "" });
 
   // Fetch gig info
-  const { data: gig } = useQuery({
+  const { data: gig, isError: isGigError } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId: workspace?.id ?? "",
@@ -161,6 +161,15 @@ export default function GigResponsesPage({ params }: PageProps) {
     }),
     enabled: !!workspace?.id,
   });
+
+  const router = useRouter();
+
+  // Redirect to not-found if gig doesn't exist
+  React.useEffect(() => {
+    if (!isLoading && !gig && isGigError) {
+      router.push("/404");
+    }
+  }, [isLoading, gig, isGigError, router]);
 
   // Mutations
   const acceptMutation = useMutation(
@@ -362,7 +371,7 @@ export default function GigResponsesPage({ params }: PageProps) {
   }
 
   if (!gig) {
-    notFound();
+    return null; // useEffect will handle redirect
   }
 
   return (

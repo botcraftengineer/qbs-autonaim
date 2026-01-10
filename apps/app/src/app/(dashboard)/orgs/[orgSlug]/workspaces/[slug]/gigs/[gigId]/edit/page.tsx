@@ -21,7 +21,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -89,7 +89,11 @@ export default function EditGigPage({ params }: PageProps) {
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
 
-  const { data: gig, isLoading } = useQuery({
+  const {
+    data: gig,
+    isLoading,
+    isError,
+  } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId: workspace?.id ?? "",
@@ -104,6 +108,13 @@ export default function EditGigPage({ params }: PageProps) {
     }),
     enabled: !!workspace?.id,
   });
+
+  // Redirect to not-found if gig doesn't exist
+  React.useEffect(() => {
+    if (!isLoading && !gig && isError) {
+      router.push("/404");
+    }
+  }, [isLoading, gig, isError, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -169,7 +180,7 @@ export default function EditGigPage({ params }: PageProps) {
   }
 
   if (!gig) {
-    notFound();
+    return null; // useEffect will handle redirect
   }
 
   return (
