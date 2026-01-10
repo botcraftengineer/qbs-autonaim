@@ -1,8 +1,8 @@
 import { getAIModel } from "@qbs-autonaim/lib/ai";
+import { RankingService } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { RankingService } from "../../../services/gig/ranking/ranking-service";
 import { protectedProcedure } from "../../../trpc";
 
 /**

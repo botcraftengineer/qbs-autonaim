@@ -5,6 +5,8 @@
  * в пакетах @qbs-autonaim/jobs и @qbs-autonaim/tg-client
  */
 
+// Экспорт ranking service
+export * from "./ranking-service";
 // Экспорт всех типов
 export type {
   BufferedMessage,
