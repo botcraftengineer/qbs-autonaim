@@ -42,11 +42,18 @@ export const recalculateRanking = protectedProcedure
         },
       });
     } catch (err) {
-      console.error("Failed to enqueue ranking recalculation:", err);
+      // Структурированное логирование ошибки
+      console.log({
+        msg: "Не удалось поставить задачу на пересчет рейтинга",
+        gigId: input.gigId,
+        workspaceId: input.workspaceId,
+        errorMessage: String((err as Error)?.message || err),
+        errorStack: (err as Error)?.stack,
+      });
+
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Не удалось запустить пересчет рейтинга",
-        cause: err,
       });
     }
 

@@ -4,6 +4,7 @@ import {
   formatProfileDataForStorage,
   type ProfileData,
   parseFreelancerProfile,
+  type StoredProfileData,
 } from "../../../parsers/profile-parser";
 import {
   createInterviewScoring,
@@ -31,15 +32,25 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       conversationId,
     });
 
-    // Получаем отклик для доступа к profileUrl
+    // Получаем отклик с проверкой принадлежности к workspace
     const response = await step.run("get-response", async () => {
       const { gigResponse } = await import("@qbs-autonaim/db/schema");
       const resp = await db.query.gigResponse.findFirst({
         where: eq(gigResponse.id, responseId),
+        with: {
+          gig: true,
+        },
       });
 
       if (!resp) {
         throw new Error(`Отклик не найден: ${responseId}`);
+      }
+
+      // Проверяем, что отклик принадлежит указанному workspace
+      if (resp.gig.workspaceId !== workspaceId) {
+        throw new Error(
+          `Отклик ${responseId} не принадлежит workspace ${workspaceId}`,
+        );
       }
 
       return resp;
@@ -102,15 +113,15 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       const updateData: {
         status: "EVALUATED";
         updatedAt: Date;
-        experience?: string;
+        profileData?: StoredProfileData;
       } = {
         status: "EVALUATED",
         updatedAt: new Date(),
       };
 
-      // Сохраняем данные профиля в поле experience
+      // Сохраняем данные профиля в поле profileData
       if (profileData && !profileData.error) {
-        updateData.experience = formatProfileDataForStorage(profileData);
+        updateData.profileData = formatProfileDataForStorage(profileData);
       }
 
       await db

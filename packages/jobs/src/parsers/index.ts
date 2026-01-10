@@ -19,6 +19,7 @@ export {
   formatProfileDataForStorage,
   type ProfileData,
   parseFreelancerProfile,
+  type StoredProfileData,
 } from "./profile-parser";
 export type {
   ResponseData,
@@ -27,4 +28,12 @@ export type {
   VacancyData,
 } from "./types";
 export * from "./upwork";
+// Утилиты безопасности URL
+export {
+  type SecureFetchOptions,
+  secureFetch,
+  URLSecurityError,
+  type URLValidationOptions,
+  validateSecureURL,
+} from "./utils/url-security";
 export * from "./weblancer";

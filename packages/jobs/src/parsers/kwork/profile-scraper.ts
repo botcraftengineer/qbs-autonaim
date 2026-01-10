@@ -3,6 +3,8 @@
  * Извлекает информацию "О себе", навыки и статистику с публичной страницы профиля
  */
 
+import { secureFetch } from "../utils/url-security";
+
 export interface KworkProfileData {
   aboutMe?: string;
   skills: string[];
@@ -26,7 +28,9 @@ export async function scrapeKworkProfile(
   profileUrl: string,
 ): Promise<KworkProfileData> {
   try {
-    const response = await fetch(profileUrl, {
+    const response = await secureFetch(profileUrl, {
+      timeout: 10000, // 10 секунд
+      maxRedirects: 0, // Запрещаем редиректы
       headers: {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",

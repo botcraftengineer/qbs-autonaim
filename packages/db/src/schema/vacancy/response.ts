@@ -12,8 +12,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
 import { file } from "../file";
+import type { StoredProfileData } from "../types";
 import { vacancy } from "./vacancy";
 
 export const responseStatusEnum = pgEnum("response_status", [
@@ -59,6 +59,7 @@ export const vacancyResponse = pgTable(
     importSource: importSourceEnum("import_source").default("HH_API"),
     platformProfileUrl: text("platform_profile_url"),
     experience: text("experience"),
+    profileData: jsonb("profile_data").$type<StoredProfileData>(),
     contacts: jsonb("contacts").$type<Record<string, unknown>>(),
     phone: varchar("phone", { length: 50 }),
     resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),

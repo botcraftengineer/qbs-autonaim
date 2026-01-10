@@ -11,5 +11,6 @@ export * from "./organization";
 export * from "./prequalification";
 export * from "./recruiter-agent";
 export * from "./telegram";
+export * from "./types";
 export * from "./vacancy";
 export * from "./workspace";

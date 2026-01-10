@@ -3,7 +3,9 @@
  * Извлекает данные профиля по URL для использования в оценке откликов
  */
 
+import type { StoredProfileData } from "@qbs-autonaim/db/schema";
 import { scrapeKworkProfile } from "./kwork/profile-scraper";
+import { URLSecurityError, validateSecureURL } from "./utils/url-security";
 
 export interface ProfileData {
   platform: "kwork" | "fl" | "weblancer" | "upwork" | "freelancer" | "unknown";
@@ -24,6 +26,12 @@ export interface ProfileData {
   parsedAt: Date;
   error?: string;
 }
+
+/**
+ * Тип для структурированных данных профиля в БД
+ * Re-exported from @qbs-autonaim/db for convenience
+ */
+export type { StoredProfileData } from "@qbs-autonaim/db/schema";
 
 /**
  * Определяет платформу по URL профиля
@@ -83,6 +91,26 @@ function extractUsername(
 export async function parseFreelancerProfile(
   profileUrl: string,
 ): Promise<ProfileData> {
+  // Валидация URL на безопасность (защита от SSRF)
+  try {
+    validateSecureURL(profileUrl, {
+      allowedProtocols: ["https:"],
+      allowPrivateIPs: false,
+      allowLocalhostVariants: false,
+    });
+  } catch (error) {
+    if (error instanceof URLSecurityError) {
+      return {
+        platform: "unknown",
+        username: "",
+        profileUrl,
+        parsedAt: new Date(),
+        error: `Небезопасный URL: ${error.message}`,
+      };
+    }
+    throw error;
+  }
+
   const platform = detectPlatform(profileUrl);
   const username = extractUsername(profileUrl, platform);
 
@@ -143,6 +171,7 @@ export async function parseFreelancerProfile(
 
 /**
  * Форматирует данные профиля для сохранения в БД
+ * Возвращает структурированный объект для JSONB поля
  */
 export function formatProfileDataForStorage(
   profile:
@@ -165,13 +194,13 @@ export function formatProfileDataForStorage(
         };
         error?: string;
       },
-): string {
+): StoredProfileData {
   const parsedAt =
     profile.parsedAt instanceof Date
       ? profile.parsedAt.toISOString()
       : profile.parsedAt;
 
-  return JSON.stringify({
+  return {
     platform: profile.platform,
     username: profile.username,
     profileUrl: profile.profileUrl,
@@ -180,5 +209,5 @@ export function formatProfileDataForStorage(
     statistics: profile.statistics,
     parsedAt,
     error: profile.error,
-  });
+  };
 }

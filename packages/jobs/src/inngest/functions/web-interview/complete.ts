@@ -14,6 +14,7 @@ import {
   formatProfileDataForStorage,
   type ProfileData,
   parseFreelancerProfile,
+  type StoredProfileData,
 } from "../../../parsers/profile-parser";
 import {
   createInterviewScoring,
@@ -178,14 +179,14 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         await step.run("update-response-status", async () => {
           const updateData: {
             status: "COMPLETED";
-            experience?: string;
+            profileData?: StoredProfileData;
           } = {
             status: "COMPLETED",
           };
 
-          // Сохраняем данные профиля в поле experience
+          // Сохраняем данные профиля в поле profileData
           if (profileData && !profileData.error) {
-            updateData.experience = formatProfileDataForStorage(profileData);
+            updateData.profileData = formatProfileDataForStorage(profileData);
           }
 
           await db
@@ -301,15 +302,16 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           const updateData: {
             status: "INTERVIEW";
             updatedAt: Date;
-            experience?: string;
+            profileData?: StoredProfileData;
           } = {
             status: "INTERVIEW",
             updatedAt: new Date(),
           };
 
-          // Сохраняем данные профиля в поле experience
+          // Сохраняем данные профиля в поле profileData
           if (gigProfileData && !gigProfileData.error) {
-            updateData.experience = formatProfileDataForStorage(gigProfileData);
+            updateData.profileData =
+              formatProfileDataForStorage(gigProfileData);
           }
 
           await db
