@@ -9,7 +9,7 @@ import type {
   SearchResult,
   VectorStore,
 } from "./types";
-import { PgVectorStore } from "./vector-store/pgvector-store";
+import { QdrantVectorStore } from "./vector-store/qdrant-store";
 
 /**
  * Main API class for document indexing
@@ -35,8 +35,13 @@ export class DocumentIndexer {
       apiKey: env.OPENAI_API_KEY,
     });
 
-    // Initialize vector store
-    this.vectorStore = new PgVectorStore();
+    // Initialize Qdrant vector store
+    this.vectorStore = new QdrantVectorStore({
+      url: env.QDRANT_URL,
+      apiKey: env.QDRANT_API_KEY,
+      collectionName: env.QDRANT_COLLECTION_NAME,
+      dimensions: env.EMBEDDING_DIMENSIONS,
+    });
   }
 
   /**

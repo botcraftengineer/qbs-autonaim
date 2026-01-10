@@ -2,7 +2,7 @@
 
 ## Overview
 
-Миграция системы обработки документов с Unstructured API на LlamaIndex + Docling + pgvector. Реализация в виде отдельного пакета `@qbs-autonaim/document-processor` для модульности и переиспользования.
+Миграция системы обработки документов с Unstructured API на LlamaIndex + Docling + Qdrant. Реализация в виде отдельного пакета `@qbs-autonaim/document-processor` для модульности и переиспользования.
 
 ## Tasks
 
@@ -13,13 +13,13 @@
     - Создать базовую структуру папок (src/parsers, src/embeddings, src/vector-store)
     - _Requirements: 5.1, 7.1_
   - [x] 1.2 Добавить зависимости в packages/document-processor
-    - Установить `llamaindex`, `docling`, `pgvector`, `fast-check`
+    - Установить `llamaindex`, `docling`, `@qdrant/js-client-rest`, `fast-check`
     - Добавить зависимости на `@qbs-autonaim/db`, `@qbs-autonaim/validators`
     - _Requirements: 5.1, 7.1_
-  - [x] 1.3 Создать Drizzle схему для document_embeddings в @qbs-autonaim/db
-    - Создать таблицу с pgvector extension
-    - Добавить индексы для поиска
-    - Экспортировать схему для использования в document-processor
+  - [x] 1.3 Настроить Qdrant для хранения эмбеддингов
+    - Добавить Qdrant сервис в docker-compose.yml
+    - Настроить переменные окружения для Qdrant
+    - _Requirements: 3.1_
     - _Requirements: 3.1, 3.2_
   - [x] 1.4 Создать типы и интерфейсы
     - Создать src/types.ts с интерфейсами FormatParser, EmbeddingProvider, VectorStore
@@ -89,8 +89,8 @@
     - _Requirements: 2.4_
 
 - [x] 5. Реализация VectorStore
-  - [x] 5.1 Создать src/vector-store/pgvector-store.ts
-    - Инициализация pgvector таблицы
+  - [x] 5.1 Создать src/vector-store/qdrant-store.ts
+    - Инициализация Qdrant коллекции
     - Методы store, deleteByDocument, search
     - _Requirements: 3.1, 3.2, 3.3, 4.1_
   - [ ]* 5.2 Написать property test для round-trip хранения

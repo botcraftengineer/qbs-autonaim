@@ -108,8 +108,10 @@ export const env = createEnv({
       .default("1536")
       .transform(Number),
 
-    // Vector Store Configuration
-    VECTOR_STORE_TABLE_NAME: z
+    // Qdrant Configuration
+    QDRANT_URL: z.url().optional().default("http://localhost:6333"),
+    QDRANT_API_KEY: z.string().optional(),
+    QDRANT_COLLECTION_NAME: z
       .string()
       .optional()
       .default("document_embeddings"),
@@ -183,7 +185,9 @@ export const env = createEnv({
     EMBEDDING_CHUNK_SIZE: process.env.EMBEDDING_CHUNK_SIZE,
     EMBEDDING_CHUNK_OVERLAP: process.env.EMBEDDING_CHUNK_OVERLAP,
     EMBEDDING_DIMENSIONS: process.env.EMBEDDING_DIMENSIONS,
-    VECTOR_STORE_TABLE_NAME: process.env.VECTOR_STORE_TABLE_NAME,
+    QDRANT_URL: process.env.QDRANT_URL,
+    QDRANT_API_KEY: process.env.QDRANT_API_KEY,
+    QDRANT_COLLECTION_NAME: process.env.QDRANT_COLLECTION_NAME,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     TG_CLIENT_PORT: process.env.TG_CLIENT_PORT,
   },
