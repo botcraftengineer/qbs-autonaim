@@ -1,7 +1,7 @@
 import type { ResponseStatus } from "@qbs-autonaim/db/schema";
 import { Button, Input } from "@qbs-autonaim/ui";
 import { Loader2, RefreshCw, Search, Sparkles } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   fetchRefreshVacancyResponsesToken,
   fetchScreenAllResponsesToken,
@@ -16,9 +16,27 @@ import { RefreshDialog } from "./refresh-dialog";
 import { ScreeningDialog } from "./screening-dialog";
 import { useRefreshSubscription } from "./use-refresh-subscription";
 import {
-  useScreeningSubscription,
   type ScreeningProgress,
+  useScreeningSubscription,
 } from "./use-screening-subscription";
+
+function getPluralForm(
+  n: number,
+  one: string,
+  few: string,
+  many: string,
+): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return one;
+  }
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return few;
+  }
+  return many;
+}
 
 interface ResponseTableToolbarProps {
   vacancyId: string;
@@ -91,6 +109,10 @@ export function ResponseTableToolbar({
   const [screenAllSubscriptionActive, setScreenAllSubscriptionActive] =
     useState(false);
 
+  // Timeout refs для предотвращения утечек памяти
+  const screenNewTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const screenAllTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   // Refresh subscription
   useRefreshSubscription({
     vacancyId,
@@ -129,7 +151,15 @@ export function ResponseTableToolbar({
         setScreenNewStatus("error");
         setScreenNewError("Процесс завершился с ошибками");
       }
-      setTimeout(() => handleScreenNewDialogClose(), 3000);
+
+      // Очищаем предыдущий таймер перед установкой нового
+      if (screenNewTimerRef.current) {
+        clearTimeout(screenNewTimerRef.current);
+      }
+      screenNewTimerRef.current = setTimeout(
+        () => handleScreenNewDialogClose(),
+        3000,
+      );
     },
   });
 
@@ -153,7 +183,15 @@ export function ResponseTableToolbar({
         setScreenAllStatus("error");
         setScreenAllError("Процесс завершился с ошибками");
       }
-      setTimeout(() => handleScreenAllDialogClose(), 3000);
+
+      // Очищаем предыдущий таймер перед установкой нового
+      if (screenAllTimerRef.current) {
+        clearTimeout(screenAllTimerRef.current);
+      }
+      screenAllTimerRef.current = setTimeout(
+        () => handleScreenAllDialogClose(),
+        3000,
+      );
     },
   });
 
@@ -202,6 +240,12 @@ export function ResponseTableToolbar({
   };
 
   const handleScreenNewDialogClose = useCallback(() => {
+    // Очищаем таймер при закрытии диалога
+    if (screenNewTimerRef.current) {
+      clearTimeout(screenNewTimerRef.current);
+      screenNewTimerRef.current = null;
+    }
+
     setScreenNewDialogOpen(false);
     setScreenNewError(null);
     setScreenNewMessage("");
@@ -229,6 +273,12 @@ export function ResponseTableToolbar({
   };
 
   const handleScreenAllDialogClose = useCallback(() => {
+    // Очищаем таймер при закрытии диалога
+    if (screenAllTimerRef.current) {
+      clearTimeout(screenAllTimerRef.current);
+      screenAllTimerRef.current = null;
+    }
+
     setScreenAllDialogOpen(false);
     setScreenAllError(null);
     setScreenAllMessage("");
@@ -237,6 +287,18 @@ export function ResponseTableToolbar({
     setScreenAllSubscriptionActive(false);
     onScreeningDialogClose();
   }, [onScreeningDialogClose]);
+
+  // Очистка таймеров при размонтировании компонента
+  useEffect(() => {
+    return () => {
+      if (screenNewTimerRef.current) {
+        clearTimeout(screenNewTimerRef.current);
+      }
+      if (screenAllTimerRef.current) {
+        clearTimeout(screenAllTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <>
@@ -350,13 +412,12 @@ export function ResponseTableToolbar({
       <ScreeningDialog
         open={screenAllDialogOpen}
         title="Оценка всех откликов"
-        description={`Вы собираетесь запустить оценку для ${totalResponses} ${
-          totalResponses === 1
-            ? "отклика"
-            : totalResponses < 5
-              ? "откликов"
-              : "откликов"
-        }. Процесс будет выполняться в фоновом режиме, и результаты появятся в таблице автоматически.`}
+        description={`Вы собираетесь запустить оценку для ${totalResponses} ${getPluralForm(
+          totalResponses,
+          "отклика",
+          "откликов",
+          "откликов",
+        )}. Процесс будет выполняться в фоновом режиме, и результаты появятся в таблице автоматически.`}
         status={screenAllStatus}
         message={screenAllMessage}
         error={screenAllError}

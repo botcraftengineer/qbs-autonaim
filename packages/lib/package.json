@@ -35,8 +35,7 @@
     "@aws-sdk/client-s3": "3.966.0",
     "@aws-sdk/s3-request-presigner": "3.966.0",
     "@qbs-autonaim/config": "workspace:*",
-    "@valibot/to-json-schema": "1.5.0",
-    "ai": "6.0.26",
+    "ai": "6.0.27",
     "langfuse": "3.38.6",
     "sharp": "0.34.5",
     "zod": "4.3.5"
