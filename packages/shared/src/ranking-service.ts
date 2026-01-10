@@ -17,7 +17,6 @@ import { RankingOrchestrator } from "@qbs-autonaim/ai";
 import { and, desc, eq, gte, sql } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { gig, gigResponse } from "@qbs-autonaim/db/schema";
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 /**
@@ -35,6 +34,16 @@ export const getRankedCandidatesFiltersSchema = z.object({
 export type GetRankedCandidatesFilters = z.infer<
   typeof getRankedCandidatesFiltersSchema
 >;
+
+export class RankingServiceError extends Error {
+  constructor(
+    message: string,
+    public code: "NOT_FOUND" | "BAD_REQUEST",
+  ) {
+    super(message);
+    this.name = "RankingServiceError";
+  }
+}
 
 /**
  * Сервис для управления ранжированием кандидатов
@@ -72,10 +81,7 @@ export class RankingService {
     });
 
     if (!gigData) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Задание не найдено",
-      });
+      throw new RankingServiceError("Задание не найдено", "NOT_FOUND");
     }
 
     // 2. Загружаем всех кандидатов
@@ -98,10 +104,10 @@ export class RankingService {
     });
 
     if (candidates.length === 0) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Нет кандидатов для ранжирования",
-      });
+      throw new RankingServiceError(
+        "Нет кандидатов для ранжирования",
+        "BAD_REQUEST",
+      );
     }
 
     // 3. Преобразуем в формат для оркестратора
@@ -174,10 +180,7 @@ export class RankingService {
     });
 
     if (!gigData) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Задание не найдено",
-      });
+      throw new RankingServiceError("Задание не найдено", "NOT_FOUND");
     }
 
     // Строим условия фильтрации
@@ -249,10 +252,7 @@ export class RankingService {
     });
 
     if (!gigData) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Задание не найдено",
-      });
+      throw new RankingServiceError("Задание не найдено", "NOT_FOUND");
     }
 
     // Сохраняем результаты для каждого кандидата

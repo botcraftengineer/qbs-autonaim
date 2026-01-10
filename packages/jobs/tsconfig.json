@@ -9,7 +9,8 @@
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "lib": ["ES2022", "DOM"]
+    "lib": ["ES2022", "DOM"],
+    "types": ["bun-types"]
   },
   "include": ["src"]
 }

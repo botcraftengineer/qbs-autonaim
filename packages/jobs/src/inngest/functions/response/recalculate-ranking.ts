@@ -1,4 +1,4 @@
-import { RankingService } from "@qbs-autonaim/api";
+import { RankingService } from "@qbs-autonaim/shared";
 import { inngest } from "../../client";
 
 /**
