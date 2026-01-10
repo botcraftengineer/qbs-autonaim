@@ -107,6 +107,25 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       return result;
     });
 
+    await step.run("save-interview-scoring", async () => {
+      const { interviewScoring } = await import("@qbs-autonaim/db/schema");
+
+      await db.insert(interviewScoring).values({
+        conversationId,
+        gigResponseId: responseId,
+        score: scoring.score,
+        detailedScore: scoring.detailedScore,
+        analysis: scoring.analysis,
+      });
+
+      console.log("✅ Результаты интервью сохранены", {
+        conversationId,
+        responseId,
+        score: scoring.score,
+        detailedScore: scoring.detailedScore,
+      });
+    });
+
     await step.run("update-response-status", async () => {
       const { gigResponse } = await import("@qbs-autonaim/db/schema");
 
