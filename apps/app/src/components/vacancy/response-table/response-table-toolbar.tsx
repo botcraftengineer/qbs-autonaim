@@ -1,7 +1,7 @@
 import type { ResponseStatus } from "@qbs-autonaim/db/schema";
 import { Button, Input } from "@qbs-autonaim/ui";
 import { Loader2, RefreshCw, Search, Sparkles } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   fetchRefreshVacancyResponsesToken,
   fetchScreenAllResponsesToken,
@@ -415,7 +415,7 @@ export function ResponseTableToolbar({
         description={`Вы собираетесь запустить оценку для ${totalResponses} ${getPluralForm(
           totalResponses,
           "отклика",
-          "откликов",
+          "отклика",
           "откликов",
         )}. Процесс будет выполняться в фоновом режиме, и результаты появятся в таблице автоматически.`}
         status={screenAllStatus}

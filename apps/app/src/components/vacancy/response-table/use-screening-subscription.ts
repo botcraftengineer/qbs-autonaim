@@ -1,3 +1,4 @@
+import type { Realtime } from "@inngest/realtime";
 import { useInngestSubscription } from "@inngest/realtime/hooks";
 import { useEffect } from "react";
 
@@ -25,7 +26,7 @@ export interface ScreeningProgress {
 interface UseScreeningSubscriptionProps {
   vacancyId: string;
   enabled: boolean;
-  fetchToken: (vacancyId: string) => Promise<string>;
+  fetchToken: (vacancyId: string) => Promise<Realtime.Subscribe.Token>;
   onProgress?: (message: string, progress: ScreeningProgress | null) => void;
   onComplete?: (success: boolean, progress: ScreeningProgress) => void;
 }
