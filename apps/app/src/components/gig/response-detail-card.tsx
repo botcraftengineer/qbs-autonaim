@@ -516,15 +516,8 @@ export function ResponseDetailCard({
                   Платформа
                 </span>
                 <span className="text-xs sm:text-sm text-muted-foreground">
-                  {response.profileData.platform}
-                </span>
-              </div>
-              <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
-                <span className="text-xs sm:text-sm font-medium">
-                  Имя пользователя
-                </span>
-                <span className="text-xs sm:text-sm text-muted-foreground">
-                  {response.profileData.username}
+                  {response.profileData.platform ?? '—'}
+                  {response.profileData.username ?? '—'}
                 </span>
               </div>
               {response.profileData.statistics?.rating !== undefined && (
