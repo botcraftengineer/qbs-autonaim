@@ -13,20 +13,18 @@ export const bufferDebounceFunction = inngest.createFunction(
     id: "interview-buffer-debounce",
     name: "Interview Buffer Debounce",
     debounce: {
-      key: "event.data.userId + '-' + (event.data.chatSessionId || event.data.conversationId) + '-' + event.data.interviewStep",
+      key: "event.data.userId + '-' + event.data.chatSessionId + '-' + event.data.interviewStep",
       period: `${env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT}s`,
     },
   },
   { event: "interview/message.buffered" },
   async ({ event, step }) => {
-    const { userId, interviewStep } = event.data;
-    // Поддерживаем оба варианта для обратной совместимости
-    const chatSessionId = event.data.chatSessionId || event.data.conversationId;
+    const { userId, chatSessionId, interviewStep } = event.data;
 
     if (!chatSessionId) {
       return {
         skipped: true,
-        reason: "No chatSessionId or conversationId provided",
+        reason: "No chatSessionId provided",
       };
     }
 

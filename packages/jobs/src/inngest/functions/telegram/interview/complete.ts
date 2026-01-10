@@ -1,15 +1,12 @@
 import { AgentFactory } from "@qbs-autonaim/ai";
-import {
-  and,
-  chatMessage,
-  chatSession,
-  desc,
-  eq,
-  interviewScoring,
-  sql,
-  vacancyResponse,
-} from "@qbs-autonaim/db";
+import { and, desc, eq, sql } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import {
+  interviewMessage,
+  interviewScoring,
+  interviewSession,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
 import {
   formatProfileDataForStorage,
@@ -41,14 +38,14 @@ export const completeInterviewFunction = inngest.createFunction(
     await step.run("save-last-qa", async () => {
       const lastBotMessages = await db
         .select()
-        .from(chatMessage)
+        .from(interviewMessage)
         .where(
           and(
-            eq(chatMessage.sessionId, chatSessionId),
-            eq(chatMessage.role, "assistant"),
+            eq(interviewMessage.sessionId, chatSessionId),
+            eq(interviewMessage.role, "assistant"),
           ),
         )
-        .orderBy(desc(chatMessage.createdAt))
+        .orderBy(desc(interviewMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -69,14 +66,14 @@ export const completeInterviewFunction = inngest.createFunction(
         await db
           .insert(interviewScoring)
           .values({
-            chatSessionId,
+            interviewSessionId: chatSessionId,
             responseId,
             score: Math.round(scoring.score),
             detailedScore: Math.round(scoring.detailedScore),
             analysis: scoring.analysis,
           })
           .onConflictDoUpdate({
-            target: interviewScoring.chatSessionId,
+            target: interviewScoring.interviewSessionId,
             set: {
               score: sql`excluded.score`,
               detailedScore: sql`excluded.detailed_score`,
@@ -91,7 +88,6 @@ export const completeInterviewFunction = inngest.createFunction(
         const hrSelectionStatus =
           scoringResult.detailedScore >= 70 ? "RECOMMENDED" : "NOT_RECOMMENDED";
 
-        // Парсим профиль фрилансера перед финализацией
         const response = await db.query.vacancyResponse.findFirst({
           where: eq(vacancyResponse.id, responseId),
         });
@@ -105,18 +101,11 @@ export const completeInterviewFunction = inngest.createFunction(
           hrSelectionStatus,
         };
 
-        // Парсим профиль если есть platformProfileUrl
         if (response?.platformProfileUrl) {
           try {
             const profile = await parseFreelancerProfile(
               response.platformProfileUrl,
             );
-
-            console.log("✅ Профиль распарсен (Telegram)", {
-              platform: profile.platform,
-              username: profile.username,
-              error: profile.error,
-            });
 
             if (!profile.error) {
               updateData.profileData = formatProfileDataForStorage(profile);
@@ -132,20 +121,14 @@ export const completeInterviewFunction = inngest.createFunction(
           .where(eq(vacancyResponse.id, responseId));
       });
 
-      // Отправляем уведомление о завершении интервью
       await step.run("send-completion-notification", async () => {
         const response = await db.query.vacancyResponse.findFirst({
           where: eq(vacancyResponse.id, responseId),
-          with: {
-            vacancy: true,
-          },
+          with: { vacancy: true },
         });
 
-        if (!response?.vacancy?.workspaceId) {
-          return;
-        }
+        if (!response?.vacancy?.workspaceId) return;
 
-        // Отправляем уведомление о завершении интервью
         await inngest.send({
           name: "freelance/notification.send",
           data: {
@@ -160,7 +143,6 @@ export const completeInterviewFunction = inngest.createFunction(
           },
         });
 
-        // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
         if (scoringResult.detailedScore >= 85) {
           await inngest.send({
             name: "freelance/notification.send",
@@ -179,8 +161,8 @@ export const completeInterviewFunction = inngest.createFunction(
       });
 
       await step.run("extract-salary-expectations", async () => {
-        const session = await db.query.chatSession.findFirst({
-          where: eq(chatSession.id, chatSessionId),
+        const session = await db.query.interviewSession.findFirst({
+          where: eq(interviewSession.id, chatSessionId),
           with: {
             messages: {
               orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -188,12 +170,10 @@ export const completeInterviewFunction = inngest.createFunction(
           },
         });
 
-        if (!session?.messages) {
-          return;
-        }
+        if (!session?.messages) return;
 
         const conversationHistory = session.messages
-          .filter((msg) => msg.role !== "admin")
+          .filter((msg) => msg.role !== "system")
           .map((msg) => ({
             sender: msg.role as "user" | "assistant",
             content:
@@ -216,13 +196,7 @@ export const completeInterviewFunction = inngest.createFunction(
           },
         );
 
-        if (!result.success || !result.data) {
-          console.error("Salary extraction agent failed", {
-            error: result.error,
-            chatSessionId,
-          });
-          return;
-        }
+        if (!result.success || !result.data) return;
 
         const trimmedSalary = result.data.salaryExpectations.trim();
 
@@ -233,9 +207,7 @@ export const completeInterviewFunction = inngest.createFunction(
 
           await db
             .update(vacancyResponse)
-            .set({
-              salaryExpectations: trimmedSalary,
-            })
+            .set({ salaryExpectations: trimmedSalary })
             .where(eq(vacancyResponse.id, responseId));
 
           await logResponseEvent({
@@ -250,32 +222,29 @@ export const completeInterviewFunction = inngest.createFunction(
     }
 
     const chatId = await step.run("get-chat-id", async () => {
-      const session = await db.query.chatSession.findFirst({
-        where: eq(chatSession.id, chatSessionId),
+      const session = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
       });
 
-      if (!session) {
-        throw new Error("ChatSession не найден");
+      if (!session) throw new Error("InterviewSession не найден");
+
+      if (
+        session.entityType === "vacancy_response" &&
+        session.vacancyResponseId
+      ) {
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, session.vacancyResponseId),
+        });
+        if (!response?.chatId) throw new Error("ChatId не найден в response");
+        return response.chatId;
       }
 
-      if (session.entityType !== "vacancy_response") {
-        throw new Error("ChatSession не связан с vacancy_response");
-      }
-
-      const response = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, session.entityId),
-      });
-
-      if (!response?.chatId) {
-        throw new Error("ChatId не найден в response");
-      }
-
-      return response.chatId;
+      throw new Error("Не удалось получить chatId");
     });
 
     await step.run("send-final-message", async () => {
-      const session = await db.query.chatSession.findFirst({
-        where: eq(chatSession.id, chatSessionId),
+      const session = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
         with: {
           messages: {
             orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -289,9 +258,9 @@ export const completeInterviewFunction = inngest.createFunction(
       let detailedScore: number | undefined;
       let resumeLanguage: string | undefined;
 
-      if (session?.entityType === "vacancy_response") {
+      if (session?.vacancyResponseId) {
         const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, session.entityId),
+          where: eq(vacancyResponse.id, session.vacancyResponseId),
           with: { vacancy: true },
         });
         candidateName = response?.candidateName ?? undefined;
@@ -299,7 +268,7 @@ export const completeInterviewFunction = inngest.createFunction(
         resumeLanguage = response?.resumeLanguage ?? "ru";
 
         const scoring = await db.query.interviewScoring.findFirst({
-          where: eq(interviewScoring.chatSessionId, chatSessionId),
+          where: eq(interviewScoring.interviewSessionId, chatSessionId),
         });
         score = scoring?.score ?? undefined;
         detailedScore = scoring?.detailedScore ?? undefined;
@@ -307,7 +276,7 @@ export const completeInterviewFunction = inngest.createFunction(
 
       const conversationHistory =
         session?.messages
-          .filter((msg) => msg.role !== "admin")
+          .filter((msg) => msg.role !== "system")
           .map((msg) => ({
             sender: msg.role as "user" | "assistant",
             content:
@@ -321,13 +290,6 @@ export const completeInterviewFunction = inngest.createFunction(
       const factory = new AgentFactory({ model });
       const agent = factory.createInterviewCompletion();
 
-      const agentContext = {
-        candidateName,
-        vacancyTitle,
-        vacancyDescription: undefined,
-        conversationHistory,
-      };
-
       const result = await agent.execute(
         {
           questionCount: questionNumber,
@@ -335,25 +297,21 @@ export const completeInterviewFunction = inngest.createFunction(
           detailedScore,
           resumeLanguage: resumeLanguage || "ru",
         },
-        agentContext,
+        {
+          candidateName,
+          vacancyTitle,
+          vacancyDescription: undefined,
+          conversationHistory,
+        },
       );
 
-      let finalMessage: string;
-
-      if (!result.success || !result.data) {
-        console.error("Interview completion agent failed", {
-          error: result.error,
-          chatSessionId,
-        });
-
-        finalMessage =
-          "Спасибо за беседу! Обработаю информацию и вернусь с обратной связью.";
-      } else {
-        finalMessage = result.data.finalMessage;
-      }
+      const finalMessage =
+        result.success && result.data
+          ? result.data.finalMessage
+          : "Спасибо за беседу! Обработаю информацию и вернусь с обратной связью.";
 
       const [newMessage] = await db
-        .insert(chatMessage)
+        .insert(interviewMessage)
         .values({
           sessionId: chatSessionId,
           role: "assistant",
@@ -363,9 +321,7 @@ export const completeInterviewFunction = inngest.createFunction(
         })
         .returning();
 
-      if (!newMessage) {
-        throw new Error("Не удалось создать запись сообщения");
-      }
+      if (!newMessage) throw new Error("Не удалось создать запись сообщения");
 
       await inngest.send({
         name: "telegram/message.send",

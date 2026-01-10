@@ -7,41 +7,33 @@ import {
   pgTable,
   text,
   timestamp,
-  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
 import { file } from "../file/file";
 
 /**
- * Тип сущности, к которой привязан чат.
- * Позволяет создать чат для чего угодно.
+ * Тип сущности для командных чатов
+ * НЕ включает интервью - для них есть interviewSession
  */
 export const chatEntityTypeEnum = pgEnum("chat_entity_type", [
   "gig", // Чат по гигу (заказчик-исполнитель)
   "vacancy", // Чат команды по вакансии
   "project", // Общий чат проекта
   "team", // Чат команды
-  "vacancy_response", // Скрининг кандидата (вместо conversation)
-  "gig_response", // Обсуждение отклика на гиг
 ]);
 
 export const chatStatusEnum = pgEnum("chat_status", [
   "active",
-  "completed",
   "archived",
   "blocked",
 ]);
 
-export const chatChannelEnum = pgEnum("chat_channel", [
-  "web",
-  "telegram",
-  "email",
-  "whatsapp",
-]);
+export const chatChannelEnum = pgEnum("chat_channel", ["web", "email"]);
 
 /**
- * Универсальная таблица сессий чата
+ * Командные чаты (НЕ интервью)
+ * Для общения команды по вакансиям, гигам, проектам
  */
 export const chatSession = pgTable(
   "chat_sessions",
@@ -50,20 +42,19 @@ export const chatSession = pgTable(
 
     // Полиморфная связь
     entityType: chatEntityTypeEnum("entity_type").notNull(),
-    entityId: uuid("entity_id").notNull(), // ID вакансии, отклика, проекта и т.д.
+    entityId: uuid("entity_id").notNull(), // ID вакансии, гига, проекта
 
-    // Основной участник (инициатор или кандидат)
-    // Может быть null для командных чатов
-    userId: text("user_id"),
+    // Заголовок чата
+    title: varchar("title", { length: 500 }),
 
-    // Мета-информация
+    // Статус
     status: chatStatusEnum("status").default("active").notNull(),
-    // channel removed from session - session is agnostic
-    lastChannel: chatChannelEnum("last_channel"), // Последний активный канал
-    title: varchar("title", { length: 500 }), // Опциональный заголовок чата
 
+    // Счётчики
     messageCount: integer("message_count").default(0).notNull(),
     lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+
+    // Метаданные
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
 
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -75,46 +66,35 @@ export const chatSession = pgTable(
       .notNull(),
   },
   (table) => ({
-    // Уникальность: один юзер - один чат в рамках сущности (например, один чат по отклику)
-    entityUserUnique: unique("chat_session_entity_user_unique").on(
-      table.entityType,
-      table.entityId,
-      table.userId,
-    ),
     entityTypeIdx: index("chat_session_entity_type_idx").on(table.entityType),
     entityIdx: index("chat_session_entity_idx").on(
       table.entityType,
       table.entityId,
     ),
-    userIdx: index("chat_session_user_idx").on(table.userId),
     statusIdx: index("chat_session_status_idx").on(table.status),
   }),
 );
 
 export const chatMessageRoleEnum = pgEnum("chat_message_role", [
-  "user",
-  "assistant",
-  "system",
-  "admin", // Для явного выделения сообщений рекрутера/админа
+  "user", // Участник команды
+  "admin", // Админ/рекрутер
+  "system", // Системные сообщения
 ]);
 
 export const chatMessageTypeEnum = pgEnum("chat_message_type", [
   "text",
-  "voice",
   "file",
-  "event", // Системные события (начало интервью, и т.д.)
+  "event", // Системные события
 ]);
 
 export interface ChatMessageMetadata {
-  tokensUsed?: number;
-  latencyMs?: number;
-  model?: string;
   isRead?: boolean;
+  editedAt?: string;
   [key: string]: unknown;
 }
 
 /**
- * Универсальная таблица сообщений
+ * Сообщения в командных чатах
  */
 export const chatMessage = pgTable(
   "chat_messages",
@@ -124,21 +104,18 @@ export const chatMessage = pgTable(
       .notNull()
       .references(() => chatSession.id, { onDelete: "cascade" }),
 
+    // Отправитель
+    userId: text("user_id").notNull(), // Clerk user ID
     role: chatMessageRoleEnum("role").notNull(),
     type: chatMessageTypeEnum("type").default("text").notNull(),
-    channel: chatChannelEnum("channel").default("web").notNull(), // Канал конкртеного сообщения
 
-    content: text("content"), // Может быть пустым, если это только файл
+    // Контент
+    content: text("content"),
 
-    // Специфика для голосовых и файлов
+    // Файлы
     fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
-    voiceDuration: integer("voice_duration"), // в секундах
-    voiceTranscription: text("voice_transcription"),
-    
-    // Внешний ID сообщения (например msg_id из Telegram)
-    externalId: varchar("external_id", { length: 100 }),
 
-    quickReplies: jsonb("quick_replies").$type<string[]>(),
+    // Метаданные
     metadata: jsonb("metadata").$type<ChatMessageMetadata>(),
 
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -151,8 +128,7 @@ export const chatMessage = pgTable(
       table.sessionId,
       table.createdAt,
     ),
-    // Индекс для поиска дубликатов по внешнему ID
-    externalIdIdx: index("chat_message_external_id_idx").on(table.externalId),
+    userIdx: index("chat_message_user_idx").on(table.userId),
   }),
 );
 
@@ -161,4 +137,3 @@ export type NewChatSession = typeof chatSession.$inferInsert;
 export type ChatMessage = typeof chatMessage.$inferSelect;
 export type NewChatMessage = typeof chatMessage.$inferInsert;
 export type ChatEntityType = (typeof chatEntityTypeEnum.enumValues)[number];
-export type ChatMessageRole = (typeof chatMessageRoleEnum.enumValues)[number];

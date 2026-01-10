@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
-import { chatSession } from "../chat/session";
 import { file } from "../file";
 import { interviewScoring } from "../interview/scoring";
+import { interviewSession } from "../interview/session";
 import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
 import { vacancyResponseHistory } from "./response-history";
@@ -27,10 +27,10 @@ export const vacancyResponseRelations = relations(
       fields: [vacancyResponse.id],
       references: [vacancyResponseScreening.responseId],
     }),
-    // Используем chatSession вместо удалённого telegramConversation
-    chatSession: one(chatSession, {
+    // Сессия интервью с AI-ботом
+    interviewSession: one(interviewSession, {
       fields: [vacancyResponse.id],
-      references: [chatSession.entityId],
+      references: [interviewSession.vacancyResponseId],
     }),
     resumePdfFile: one(file, {
       fields: [vacancyResponse.resumePdfFileId],

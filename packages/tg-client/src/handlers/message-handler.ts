@@ -21,8 +21,8 @@ export interface HandleMessageParams {
   /** ID workspace */
   workspaceId: string;
 
-  /** ID разговора (если кандидат идентифицирован) */
-  conversationId?: string;
+  /** ID сессии интервью (если кандидат идентифицирован) */
+  interviewSessionId?: string;
 
   /** ID пользователя Telegram */
   userId: string;
@@ -62,7 +62,7 @@ export interface HandleMessageResult {
 export async function handleIncomingMessage(
   params: HandleMessageParams,
 ): Promise<HandleMessageResult> {
-  const { messageData, conversationId, userId, bufferService } = params;
+  const { messageData, interviewSessionId, userId, bufferService } = params;
 
   // Проверяем feature flag
   const bufferEnabled = env.INTERVIEW_BUFFER_ENABLED ?? false;
@@ -75,7 +75,7 @@ export async function handleIncomingMessage(
   }
 
   // Буферизация работает только для идентифицированных кандидатов
-  if (!conversationId) {
+  if (!interviewSessionId) {
     return {
       buffered: false,
       reason: "кандидат не идентифицирован",
@@ -83,12 +83,12 @@ export async function handleIncomingMessage(
   }
 
   // Определяем текущий шаг интервью
-  const interviewStep = await getCurrentInterviewStep(conversationId);
+  const interviewStep = await getCurrentInterviewStep(interviewSessionId);
 
   // Получаем контекст вопроса из metadata
   let questionContext: string | undefined;
   try {
-    const metadata = await getConversationMetadata(conversationId);
+    const metadata = await getConversationMetadata(interviewSessionId);
     questionContext = metadata.lastQuestionAsked;
   } catch (error) {
     console.error("❌ Ошибка получения questionContext:", error);
@@ -123,7 +123,7 @@ export async function handleIncomingMessage(
   try {
     await bufferService.addMessage({
       userId,
-      conversationId,
+      chatSessionId: interviewSessionId,
       interviewStep,
       message: {
         id: messageData.id.toString(),
@@ -135,7 +135,7 @@ export async function handleIncomingMessage(
     });
 
     console.log("✅ Сообщение добавлено в буфер", {
-      conversationId,
+      interviewSessionId,
       interviewStep,
       messageId: messageData.id,
       contentType,
@@ -169,7 +169,7 @@ export async function handleIncomingMessage(
           name: "interview/message.buffered",
           data: {
             userId,
-            conversationId,
+            chatSessionId: interviewSessionId,
             interviewStep,
             messageId: messageData.id.toString(),
             timestamp: Date.now(),
@@ -179,7 +179,7 @@ export async function handleIncomingMessage(
     );
 
     console.log("✅ Событие interview/message.buffered отправлено", {
-      conversationId,
+      interviewSessionId,
       interviewStep,
       messageId: messageData.id,
     });

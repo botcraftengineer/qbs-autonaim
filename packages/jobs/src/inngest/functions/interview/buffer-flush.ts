@@ -1,5 +1,6 @@
-import { chatSession, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { interviewSession } from "@qbs-autonaim/db/schema";
 import { messageBufferService } from "../../../services/buffer";
 import {
   analyzeAndGenerateNextQuestion,
@@ -27,9 +28,8 @@ export const bufferFlushFunction = inngest.createFunction(
 
     // Определяем источник разговора для отправки правильных событий
     const sessionSource = await step.run("get-session-source", async () => {
-      const session = await db.query.chatSession.findFirst({
-        where: eq(chatSession.id, chatSessionId),
-        columns: { lastChannel: true },
+      const session = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
       });
 
       return session?.lastChannel ?? "telegram";

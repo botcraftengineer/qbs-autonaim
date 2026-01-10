@@ -10,10 +10,10 @@ import type { TelegramClient } from "@mtcute/bun";
 import { and, desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatMessage,
-  chatSession,
   gig,
   gigResponse,
+  interviewMessage,
+  interviewSession,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -30,18 +30,10 @@ export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
 }
 
-type ChatSessionWithChatId = {
+type InterviewSessionWithChatId = {
   id: string;
-  entityId: string;
-  entityType:
-    | "gig"
-    | "vacancy"
-    | "gig_response"
-    | "vacancy_response"
-    | "project"
-    | "team";
-  title: string | null;
-  status: "active" | "completed" | "archived" | "blocked";
+  entityType: "vacancy_response" | "gig_response";
+  status: "pending" | "active" | "completed" | "cancelled" | "paused";
   metadata: Record<string, unknown> | null;
   createdAt: Date;
   chatId: string | null;
@@ -110,7 +102,7 @@ function buildMessageData(message: {
 }
 
 /**
- * Обрабатывает пропущенные сообщения для всех активных диалогов
+ * Обрабатывает пропущенные сообщения для всех активных интервью
  */
 export async function processMissedMessages(
   config: MissedMessagesProcessorConfig,
@@ -118,60 +110,59 @@ export async function processMissedMessages(
   const startTime = Date.now();
   console.log("🔍 Проверка пропущенных сообщений...");
 
-  // Get active chat sessions for gig_response with their chatId and workspaceId
+  // Get active interview sessions for gig_response with their chatId and workspaceId
   const gigSessions = await db
     .select({
-      id: chatSession.id,
-      entityId: chatSession.entityId,
-      entityType: chatSession.entityType,
-      title: chatSession.title,
-      status: chatSession.status,
-      metadata: chatSession.metadata,
-      createdAt: chatSession.createdAt,
+      id: interviewSession.id,
+      entityType: interviewSession.entityType,
+      status: interviewSession.status,
+      metadata: interviewSession.metadata,
+      createdAt: interviewSession.createdAt,
       chatId: gigResponse.chatId,
       workspaceId: gig.workspaceId,
     })
-    .from(chatSession)
-    .innerJoin(gigResponse, eq(chatSession.entityId, gigResponse.id))
+    .from(interviewSession)
+    .innerJoin(gigResponse, eq(interviewSession.gigResponseId, gigResponse.id))
     .innerJoin(gig, eq(gigResponse.gigId, gig.id))
     .where(
       and(
-        eq(chatSession.entityType, "gig_response"),
-        eq(chatSession.status, "active"),
+        eq(interviewSession.entityType, "gig_response"),
+        eq(interviewSession.status, "active"),
       ),
     );
 
-  // Get active chat sessions for vacancy_response
+  // Get active interview sessions for vacancy_response
   const vacancySessions = await db
     .select({
-      id: chatSession.id,
-      entityId: chatSession.entityId,
-      entityType: chatSession.entityType,
-      title: chatSession.title,
-      status: chatSession.status,
-      metadata: chatSession.metadata,
-      createdAt: chatSession.createdAt,
+      id: interviewSession.id,
+      entityType: interviewSession.entityType,
+      status: interviewSession.status,
+      metadata: interviewSession.metadata,
+      createdAt: interviewSession.createdAt,
       chatId: vacancyResponse.chatId,
       workspaceId: vacancy.workspaceId,
     })
-    .from(chatSession)
-    .innerJoin(vacancyResponse, eq(chatSession.entityId, vacancyResponse.id))
+    .from(interviewSession)
+    .innerJoin(
+      vacancyResponse,
+      eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+    )
     .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
     .where(
       and(
-        eq(chatSession.entityType, "vacancy_response"),
-        eq(chatSession.status, "active"),
+        eq(interviewSession.entityType, "vacancy_response"),
+        eq(interviewSession.status, "active"),
       ),
     );
 
   const sessions = [...gigSessions, ...vacancySessions];
 
   if (sessions.length === 0) {
-    console.log("ℹ️ Нет активных сессий для проверки");
+    console.log("ℹ️ Нет активных сессий интервью для проверки");
     return;
   }
 
-  console.log(`📋 Найдено ${sessions.length} активных сессий`);
+  console.log(`📋 Найдено ${sessions.length} активных сессий интервью`);
 
   let processedCount = 0;
   let errorCount = 0;
@@ -186,7 +177,7 @@ export async function processMissedMessages(
 
     try {
       const result = await processSessionMissedMessages(
-        session as ChatSessionWithChatId,
+        session as InterviewSessionWithChatId,
         config.getClient,
       );
       processedCount += result.processed;
@@ -206,7 +197,7 @@ export async function processMissedMessages(
         await sleep(waitSeconds * 1000);
         try {
           const result = await processSessionMissedMessages(
-            session as ChatSessionWithChatId,
+            session as InterviewSessionWithChatId,
             config.getClient,
           );
           processedCount += result.processed;
@@ -232,10 +223,10 @@ export async function processMissedMessages(
 }
 
 /**
- * Обрабатывает пропущенные сообщения для одной сессии
+ * Обрабатывает пропущенные сообщения для одной сессии интервью
  */
 async function processSessionMissedMessages(
-  session: ChatSessionWithChatId,
+  session: InterviewSessionWithChatId,
   getClient: (workspaceId: string) => TelegramClient | null,
 ): Promise<{ processed: number; errors: number }> {
   let processed = 0;
@@ -244,9 +235,9 @@ async function processSessionMissedMessages(
   // Получаем последнее сообщение из БД
   const lastMessage = await db
     .select()
-    .from(chatMessage)
-    .where(eq(chatMessage.sessionId, session.id))
-    .orderBy(desc(chatMessage.createdAt))
+    .from(interviewMessage)
+    .where(eq(interviewMessage.sessionId, session.id))
+    .orderBy(desc(interviewMessage.createdAt))
     .limit(1);
 
   const lastMessageDate = lastMessage[0]?.createdAt;

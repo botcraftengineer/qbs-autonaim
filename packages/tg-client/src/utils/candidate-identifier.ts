@@ -2,18 +2,17 @@ import type { Message } from "@mtcute/core";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatSession,
   gig,
   gigResponse,
+  interviewSession,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
-import { ConversationMetadataSchema } from "@qbs-autonaim/shared/utils";
 
 interface IdentificationResult {
   identified: boolean;
   responseId?: string;
-  chatSessionId?: string;
+  interviewSessionId?: string;
   method?: "username" | "phone" | "pinCode";
 }
 
@@ -78,52 +77,46 @@ export async function identifyCandidate(
       const entityType = gigResp ? "gig_response" : "vacancy_response";
 
       if (responseByUsername) {
-        // Проверяем существующую сессию по entityId
-        const existingSession = await db.query.chatSession.findFirst({
-          where: and(
-            eq(chatSession.entityType, entityType),
-            eq(chatSession.entityId, responseByUsername.id),
-          ),
+        // Проверяем существующую сессию интервью
+        const existingSession = await db.query.interviewSession.findFirst({
+          where: gigResp
+            ? eq(interviewSession.gigResponseId, responseByUsername.id)
+            : eq(interviewSession.vacancyResponseId, responseByUsername.id),
         });
 
         if (existingSession) {
           return {
             identified: true,
             responseId: responseByUsername.id,
-            chatSessionId: existingSession.id,
+            interviewSessionId: existingSession.id,
             method: "username",
           };
         }
 
-        // Создаем новую сессию
+        // Создаем новую сессию интервью
         const metadata = {
           identifiedBy: "username" as const,
           username,
           candidateName: responseByUsername.candidateName,
         };
 
-        // Валидируем метаданные перед вставкой
-        const validationResult = ConversationMetadataSchema.safeParse(metadata);
-        if (!validationResult.success) {
-          console.error("Metadata validation failed:", validationResult.error);
-          return { identified: false };
-        }
-
         const [session] = await db
-          .insert(chatSession)
+          .insert(interviewSession)
           .values({
             entityType,
-            entityId: responseByUsername.id,
-            title: responseByUsername.candidateName || undefined,
+            ...(gigResp
+              ? { gigResponseId: responseByUsername.id }
+              : { vacancyResponseId: responseByUsername.id }),
             status: "active",
-            metadata: validationResult.data,
+            lastChannel: "telegram",
+            metadata,
           })
           .returning();
 
         return {
           identified: true,
           responseId: responseByUsername.id,
-          chatSessionId: session?.id,
+          interviewSessionId: session?.id,
           method: "username",
         };
       }
@@ -176,51 +169,45 @@ export async function identifyCandidate(
 
       if (responseByPhone) {
         // Проверяем существующую сессию
-        const existingSession = await db.query.chatSession.findFirst({
-          where: and(
-            eq(chatSession.entityType, entityType),
-            eq(chatSession.entityId, responseByPhone.id),
-          ),
+        const existingSession = await db.query.interviewSession.findFirst({
+          where: gigResp
+            ? eq(interviewSession.gigResponseId, responseByPhone.id)
+            : eq(interviewSession.vacancyResponseId, responseByPhone.id),
         });
 
         if (existingSession) {
           return {
             identified: true,
             responseId: responseByPhone.id,
-            chatSessionId: existingSession.id,
+            interviewSessionId: existingSession.id,
             method: "phone",
           };
         }
 
-        // Создаем новую сессию
+        // Создаем новую сессию интервью
         const metadata = {
           identifiedBy: "phone" as const,
           phone,
           candidateName: responseByPhone.candidateName,
         };
 
-        // Валидируем метаданные перед вставкой
-        const validationResult = ConversationMetadataSchema.safeParse(metadata);
-        if (!validationResult.success) {
-          console.error("Metadata validation failed:", validationResult.error);
-          return { identified: false };
-        }
-
         const [session] = await db
-          .insert(chatSession)
+          .insert(interviewSession)
           .values({
             entityType,
-            entityId: responseByPhone.id,
-            title: responseByPhone.candidateName || undefined,
+            ...(gigResp
+              ? { gigResponseId: responseByPhone.id }
+              : { vacancyResponseId: responseByPhone.id }),
             status: "active",
-            metadata: validationResult.data,
+            lastChannel: "telegram",
+            metadata,
           })
           .returning();
 
         return {
           identified: true,
           responseId: responseByPhone.id,
-          chatSessionId: session?.id,
+          interviewSessionId: session?.id,
           method: "phone",
         };
       }

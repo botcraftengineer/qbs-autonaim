@@ -3,30 +3,36 @@ import { sql } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { chatSession } from "../chat/session";
 import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
+import { interviewSession } from "./session";
 
 /**
- * Универсальная таблица для результатов скоринга интервью
- * Используется для всех источников: Telegram, Web и других
- * Поддерживает как вакансии (responseId), так и гиги (gigResponseId)
+ * Результаты скоринга интервью
+ * Связан с interviewSession (не chatSession)
  */
 export const interviewScoring = pgTable("interview_scorings", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  chatSessionId: uuid("chat_session_id")
+
+  // FK на сессию интервью
+  interviewSessionId: uuid("interview_session_id")
     .notNull()
     .unique()
-    .references(() => chatSession.id, { onDelete: "cascade" }),
+    .references(() => interviewSession.id, { onDelete: "cascade" }),
+
+  // Опциональные FK на отклики (для удобства запросов)
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
     onDelete: "cascade",
   }),
   gigResponseId: uuid("gig_response_id").references(() => gigResponse.id, {
     onDelete: "cascade",
   }),
+
+  // Оценки
   score: integer("score").notNull(), // Оценка от 0 до 5
   detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
   analysis: text("analysis"), // Анализ на основе интервью
+
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -35,7 +41,7 @@ export const interviewScoring = pgTable("interview_scorings", {
 export const CreateInterviewScoringSchema = createInsertSchema(
   interviewScoring,
   {
-    chatSessionId: uuidv7Schema,
+    interviewSessionId: uuidv7Schema,
     responseId: uuidv7Schema.optional(),
     gigResponseId: uuidv7Schema.optional(),
     score: z.number().int().min(0).max(5),
