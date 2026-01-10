@@ -1,3 +1,4 @@
+import type { Realtime } from "@inngest/realtime";
 import { useInngestSubscription } from "@inngest/realtime/hooks";
 import { useEffect } from "react";
 
@@ -10,7 +11,7 @@ interface StatusData {
 interface UseRefreshSubscriptionProps {
   vacancyId: string;
   enabled: boolean;
-  fetchToken: (vacancyId: string) => Promise<string>;
+  fetchToken: (vacancyId: string) => Promise<Realtime.Subscribe.Token>;
   onStatusChange?: (status: "completed" | "error", message: string) => void;
   onMessage?: (message: string) => void;
 }
