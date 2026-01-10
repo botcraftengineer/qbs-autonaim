@@ -5,7 +5,10 @@
 
 import type { StoredProfileData } from "@qbs-autonaim/db/schema";
 import { scrapeKworkProfile } from "./kwork/profile-scraper";
-import { URLSecurityError, validateSecureURL } from "./utils/url-security";
+import {
+  URLSecurityError,
+  validateSecureURLWithDNS,
+} from "./utils/url-security";
 
 export interface ProfileData {
   platform: "kwork" | "fl" | "weblancer" | "upwork" | "freelancer" | "unknown";
@@ -91,9 +94,9 @@ function extractUsername(
 export async function parseFreelancerProfile(
   profileUrl: string,
 ): Promise<ProfileData> {
-  // Валидация URL на безопасность (защита от SSRF)
+  // Валидация URL на безопасность (защита от SSRF и DNS rebinding)
   try {
-    validateSecureURL(profileUrl, {
+    await validateSecureURLWithDNS(profileUrl, {
       allowedProtocols: ["https:"],
       allowPrivateIPs: false,
       allowLocalhostVariants: false,

@@ -62,7 +62,7 @@ function VerificationSubscription({
 
   const { latestData, error } = useInngestSubscription({
     refreshToken,
-    enabled: true,
+    enabled: isVerifying,
   });
 
   useEffect(() => {
