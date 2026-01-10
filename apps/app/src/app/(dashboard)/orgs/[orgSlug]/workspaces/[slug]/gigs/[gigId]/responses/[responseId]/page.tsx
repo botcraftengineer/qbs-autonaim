@@ -17,7 +17,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { ResponseDetailCard } from "~/components/gig/response-detail-card";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -63,6 +63,7 @@ function ResponseDetailSkeleton() {
 
 export default function GigResponseDetailPage({ params }: PageProps) {
   const { orgSlug, slug: workspaceSlug, gigId, responseId } = React.use(params);
+  const router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
@@ -77,13 +78,24 @@ export default function GigResponseDetailPage({ params }: PageProps) {
   const pollingIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Fetch response details
-  const { data: response, isLoading } = useQuery({
+  const {
+    data: response,
+    isLoading,
+    isError,
+  } = useQuery({
     ...trpc.gig.responses.get.queryOptions({
       responseId,
       workspaceId: workspace?.id ?? "",
     }),
     enabled: !!workspace?.id,
   });
+
+  // Redirect to not-found if response doesn't exist
+  React.useEffect(() => {
+    if (!isLoading && !response && isError) {
+      router.push("/404");
+    }
+  }, [isLoading, response, isError, router]);
 
   // Accept mutation
   const acceptMutation = useMutation(
@@ -272,7 +284,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
   }
 
   if (!response) {
-    notFound();
+    return null; // useEffect will handle redirect
   }
 
   return (
