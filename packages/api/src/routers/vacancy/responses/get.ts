@@ -1,5 +1,11 @@
 import { eq } from "@qbs-autonaim/db";
-import { response as responseTable } from "@qbs-autonaim/db/schema";
+import {
+  conversation as conversationTable,
+  interviewScoring as interviewScoringTable,
+  responseScreening as responseScreeningTable,
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -26,25 +32,7 @@ export const get = protectedProcedure
     const response = await ctx.db.query.response.findFirst({
       where: eq(responseTable.id, input.id),
       with: {
-        vacancy: {
-          with: {
-            workspace: true,
-          },
-        },
-        screening: true,
-        conversation: {
-          with: {
-            interviewScoring: true,
-            messages: {
-              with: {
-                file: true,
-              },
-              orderBy: (messages, { asc }) => [asc(messages.createdAt)],
-            },
-          },
-        },
         resumePdfFile: true,
-        interviewScoring: true,
       },
     });
 
@@ -52,13 +40,56 @@ export const get = protectedProcedure
       return null;
     }
 
+    // Query vacancy separately to check workspace access
+    const vacancy = await ctx.db.query.vacancy.findFirst({
+      where: eq(vacancyTable.id, response.entityId),
+      columns: { workspaceId: true },
+    });
+
+    if (!vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
     // Проверка принадлежности вакансии к workspace
-    if (response.vacancy.workspaceId !== input.workspaceId) {
+    if (vacancy.workspaceId !== input.workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому отклику",
       });
     }
+
+    // Query screening separately
+    const screening = await ctx.db.query.responseScreening.findFirst({
+      where: eq(responseScreeningTable.responseId, response.id),
+    });
+
+    // Query conversation separately
+    const conversation = await ctx.db.query.conversation.findFirst({
+      where: eq(conversationTable.responseId, response.id),
+      with: {
+        messages: {
+          with: {
+            file: true,
+          },
+          orderBy: (messages, { asc }) => [asc(messages.createdAt)],
+        },
+      },
+    });
+
+    // Query interview scoring separately (both from conversation and direct)
+    const conversationInterviewScoring = conversation
+      ? await ctx.db.query.interviewScoring.findFirst({
+          where: eq(interviewScoringTable.conversationId, conversation.id),
+        })
+      : null;
+
+    const directInterviewScoring =
+      await ctx.db.query.interviewScoring.findFirst({
+        where: eq(interviewScoringTable.responseId, response.id),
+      });
 
     let resumePdfUrl: string | null = null;
     if (response.resumePdfFile) {
@@ -66,9 +97,9 @@ export const get = protectedProcedure
     }
 
     // Get voice file URLs for messages and map null to undefined
-    const messagesWithUrls = response.conversation?.messages
+    const messagesWithUrls = conversation?.messages
       ? await Promise.all(
-          response.conversation.messages.map(async (message) => {
+          conversation.messages.map(async (message) => {
             const baseMessage = {
               ...message,
               voiceDuration: message.voiceDuration ?? undefined,
@@ -87,34 +118,31 @@ export const get = protectedProcedure
     return {
       ...response,
       resumePdfUrl,
-      screening: response.screening
+      screening: screening
         ? {
-            ...response.screening,
-            analysis: response.screening.analysis
-              ? sanitizeHtml(response.screening.analysis)
+            ...screening,
+            analysis: screening.analysis
+              ? sanitizeHtml(screening.analysis)
               : undefined,
           }
         : null,
-      interviewScoring: response.interviewScoring
+      interviewScoring: directInterviewScoring
         ? {
-            ...response.interviewScoring,
-            analysis: response.interviewScoring.analysis
-              ? sanitizeHtml(response.interviewScoring.analysis)
+            ...directInterviewScoring,
+            analysis: directInterviewScoring.analysis
+              ? sanitizeHtml(directInterviewScoring.analysis)
               : undefined,
           }
         : null,
-      conversation: response.conversation
+      conversation: conversation
         ? {
-            ...response.conversation,
+            ...conversation,
             messages: messagesWithUrls,
-            interviewScoring: response.conversation.interviewScoring
+            interviewScoring: conversationInterviewScoring
               ? {
-                  score: response.conversation.interviewScoring.score,
-                  detailedScore:
-                    response.conversation.interviewScoring.detailedScore,
-                  analysis:
-                    response.conversation.interviewScoring.analysis ??
-                    undefined,
+                  score: conversationInterviewScoring.score,
+                  detailedScore: conversationInterviewScoring.detailedScore,
+                  analysis: conversationInterviewScoring.analysis ?? undefined,
                 }
               : undefined,
           }

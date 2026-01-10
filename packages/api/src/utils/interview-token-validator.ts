@@ -38,7 +38,7 @@ export async function validateInterviewToken(
     return {
       type: "vacancy",
       tokenId: vacancyLink.id,
-      entityId: vacancyLink.vacancyId,
+      entityId: vacancyLink.entityId,
       token: vacancyLink.token,
     };
   }
@@ -120,21 +120,25 @@ export async function hasConversationAccess(
       const vacancyResponse = await db.query.response.findFirst({
         where: (response, { eq, and }) =>
           and(eq(response.id, responseId), eq(response.entityType, "vacancy")),
-        with: {
-          vacancy: true,
-        },
       });
 
-      if (vacancyResponse?.vacancy) {
-        const workspaceMember = await db.query.workspaceMember.findFirst({
-          where: (member, { eq, and }) =>
-            and(
-              eq(member.workspaceId, vacancyResponse.vacancy.workspaceId),
-              eq(member.userId, userId),
-            ),
+      if (vacancyResponse) {
+        const vacancy = await db.query.vacancy.findFirst({
+          where: (vacancy, { eq }) => eq(vacancy.id, vacancyResponse.entityId),
+          columns: { workspaceId: true },
         });
-        if (workspaceMember) {
-          return true;
+
+        if (vacancy) {
+          const workspaceMember = await db.query.workspaceMember.findFirst({
+            where: (member, { eq, and }) =>
+              and(
+                eq(member.workspaceId, vacancy.workspaceId),
+                eq(member.userId, userId),
+              ),
+          });
+          if (workspaceMember) {
+            return true;
+          }
         }
       }
     }

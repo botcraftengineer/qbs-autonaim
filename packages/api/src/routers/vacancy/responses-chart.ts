@@ -41,10 +41,27 @@ export const responsesChart = protectedProcedure
           inArray(response.entityId, vacancyIds),
           gte(response.createdAt, ninetyDaysAgo),
         ),
-      with: {
-        screening: true,
+      columns: {
+        id: true,
+        createdAt: true,
       },
     });
+
+    // Get all screenings separately
+    const responseIds = responses.map((r) => r.id);
+    const screenings =
+      responseIds.length > 0
+        ? await ctx.db.query.responseScreening.findMany({
+            where: (screening, { inArray }) =>
+              inArray(screening.responseId, responseIds),
+            columns: {
+              responseId: true,
+              score: true,
+            },
+          })
+        : [];
+
+    const screeningMap = new Map(screenings.map((s) => [s.responseId, s]));
 
     // Группируем по датам
     const dataByDate = new Map<
@@ -63,9 +80,10 @@ export const responsesChart = protectedProcedure
       };
 
       existing.total += 1;
-      if (response.screening) {
+      const screening = screeningMap.get(response.id);
+      if (screening) {
         existing.processed += 1;
-        if (response.screening.score >= 3) {
+        if (screening.score >= 3) {
           existing.highScore += 1;
         }
       }

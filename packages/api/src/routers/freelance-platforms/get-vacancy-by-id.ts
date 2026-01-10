@@ -67,10 +67,10 @@ export const getVacancyById = protectedProcedure
     });
 
     // Формируем статистику в удобном формате
-    const stats = {
+    const stats: Record<string, number> = {
       HH_API: 0,
-      FREELANCE_MANUAL: 0,
-      FREELANCE_LINK: 0,
+      MANUAL: 0,
+      WEB_LINK: 0,
     };
 
     for (const stat of responseStats) {

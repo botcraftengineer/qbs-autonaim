@@ -104,14 +104,14 @@ export const getDashboardStats = protectedProcedure
           FROM ${responseTable} 
           WHERE ${responseTable.entityId} = ${vacancy.id} 
           AND ${responseTable.entityType} = 'vacancy'
-          AND ${responseTable.importSource} = 'FREELANCE_MANUAL'
+          AND ${responseTable.importSource} = 'MANUAL'
         )`,
           freelanceLinkCount: sql<number>`(
           SELECT COUNT(*) 
           FROM ${responseTable} 
           WHERE ${responseTable.entityId} = ${vacancy.id} 
           AND ${responseTable.entityType} = 'vacancy'
-          AND ${responseTable.importSource} = 'FREELANCE_LINK'
+          AND ${responseTable.importSource} = 'WEB_LINK'
         )`,
           // Статистика интервью
           completedInterviews: sql<number>`(

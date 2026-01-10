@@ -16,7 +16,7 @@ import { generateSlug } from "../utils/slug-generator";
  */
 export interface InterviewLink {
   id: string;
-  vacancyId: string;
+  entityId: string;
   token: string;
   url: string;
   isActive: boolean;
@@ -192,7 +192,7 @@ export class InterviewLinkGenerator {
 
     return {
       id: link.id,
-      vacancyId: link.entityId,
+      entityId: link.entityId,
       token: link.token,
       url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,

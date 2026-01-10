@@ -1,5 +1,5 @@
 import { and, eq, isNull } from "@qbs-autonaim/db";
-import type { response as responseTable } from "@qbs-autonaim/db/schema";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";

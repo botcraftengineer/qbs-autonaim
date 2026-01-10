@@ -122,10 +122,7 @@ export const importBulkResponses = protectedProcedure
               and(
                 eq(response.entityId, input.vacancyId),
                 eq(response.entityType, "vacancy"),
-                eq(
-                  response.platformProfileUrl,
-                  parsed.contactInfo.platformProfile,
-                ),
+                eq(response.profileUrl, parsed.contactInfo.platformProfile),
               ),
           });
 

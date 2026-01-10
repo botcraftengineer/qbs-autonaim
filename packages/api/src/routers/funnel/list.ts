@@ -1,5 +1,5 @@
-import { and, eq, inArray, lt } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

@@ -73,25 +73,61 @@ export class ShortlistGenerator {
           eq(response.entityType, "vacancy"),
           eq(response.entityId, vacancyId),
         ),
-      with: {
-        screening: true,
-        conversation: {
-          with: {
-            interviewScoring: true,
-          },
-        },
-      },
     });
+
+    // Get all screenings separately
+    const responseIds = responses.map((r) => r.id);
+    const screenings =
+      responseIds.length > 0
+        ? await db.query.responseScreening.findMany({
+            where: (screening, { inArray }) =>
+              inArray(screening.responseId, responseIds),
+          })
+        : [];
+
+    const screeningMap = new Map(screenings.map((s) => [s.responseId, s]));
+
+    // Get all conversations separately
+    const conversations =
+      responseIds.length > 0
+        ? await db.query.conversation.findMany({
+            where: (conversation, { inArray }) =>
+              inArray(conversation.responseId, responseIds),
+          })
+        : [];
+
+    const conversationMap = new Map(
+      conversations.map((c) => [c.responseId, c]),
+    );
+
+    // Get all interview scorings separately
+    const conversationIds = conversations.map((c) => c.id);
+    const interviewScorings =
+      conversationIds.length > 0
+        ? await db.query.interviewScoring.findMany({
+            where: (scoring, { inArray }) =>
+              inArray(scoring.conversationId, conversationIds),
+          })
+        : [];
+
+    const interviewScoringMap = new Map(
+      interviewScorings.map((s) => [s.conversationId, s]),
+    );
 
     // Преобразуем в кандидатов с комбинированными оценками
     const candidates: ShortlistCandidate[] = responses
       .map((response) => {
+        const screening = screeningMap.get(response.id);
+        const conversation = conversationMap.get(response.id);
+        const interviewScoring = conversation
+          ? interviewScoringMap.get(conversation.id)
+          : null;
+
         // Получаем оценку анализа отклика
-        const responseScore = response.screening?.detailedScore ?? 0;
+        const responseScore = screening?.detailedScore ?? 0;
 
         // Получаем оценку интервью (если есть завершённое интервью)
-        const interviewScore =
-          response.conversation?.interviewScoring?.detailedScore ?? null;
+        const interviewScore = interviewScoring?.detailedScore ?? null;
 
         // Рассчитываем общую оценку
         const overallScore = this.calculateOverallScore(
@@ -104,8 +140,8 @@ export class ShortlistGenerator {
 
         // Извлекаем ключевые особенности и красные флаги
         const { keyHighlights, redFlags } = this.extractHighlightsAndFlags(
-          response.screening?.analysis,
-          response.conversation?.interviewScoring?.analysis,
+          screening?.analysis,
+          interviewScoring?.analysis,
         );
 
         return {

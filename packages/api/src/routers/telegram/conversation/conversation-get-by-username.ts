@@ -1,4 +1,8 @@
-import { conversation } from "@qbs-autonaim/db";
+import {
+  conversation,
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
@@ -17,24 +21,31 @@ export const getConversationByUsernameRouter = protectedProcedure
 
     const conv = await ctx.db.query.conversation.findFirst({
       where: eq(conversation.username, input.username),
-      with: {
-        response: {
-          with: {
-            vacancy: true,
-          },
-        },
-      },
     });
 
     if (!conv) {
       return null;
     }
 
-    if (conv.response?.vacancy?.workspaceId !== input.workspaceId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Нет доступа к этой беседе",
+    // Query response separately to check workspace access
+    if (conv.responseId) {
+      const response = await ctx.db.query.response.findFirst({
+        where: eq(responseTable.id, conv.responseId),
       });
+
+      if (response) {
+        const vacancy = await ctx.db.query.vacancy.findFirst({
+          where: eq(vacancyTable.id, response.entityId),
+          columns: { workspaceId: true },
+        });
+
+        if (!vacancy || vacancy.workspaceId !== input.workspaceId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Нет доступа к этой беседе",
+          });
+        }
+      }
     }
 
     return conv;

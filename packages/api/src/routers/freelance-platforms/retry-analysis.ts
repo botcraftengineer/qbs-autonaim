@@ -1,5 +1,8 @@
 import { and, eq } from "@qbs-autonaim/db";
-import type { response as responseTable } from "@qbs-autonaim/db/schema";
+import {
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -26,17 +29,10 @@ export const retryAnalysis = protectedProcedure
     try {
       // Проверка существования отклика
       const response = await ctx.db.query.response.findFirst({
-        where: (
-          response: typeof responseTable,
-          { eq, and }: { eq: any; and: any },
-        ) =>
-          and(
-            eq(response.id, input.responseId),
-            eq(response.entityType, "vacancy"),
-          ),
-        with: {
-          vacancy: true,
-        },
+        where: and(
+          eq(responseTable.id, input.responseId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
       });
 
       if (!response) {
@@ -45,16 +41,28 @@ export const retryAnalysis = protectedProcedure
         });
       }
 
+      // Query vacancy separately to check workspace access
+      const vacancy = await ctx.db.query.vacancy.findFirst({
+        where: eq(vacancyTable.id, response.entityId),
+        columns: { workspaceId: true },
+      });
+
+      if (!vacancy) {
+        throw await errorHandler.handleNotFoundError("Вакансия", {
+          vacancyId: response.entityId,
+        });
+      }
+
       // Проверка доступа к workspace вакансии
       const hasAccess = await ctx.workspaceRepository.checkAccess(
-        response.vacancy.workspaceId,
+        vacancy.workspaceId,
         ctx.session.user.id,
       );
 
       if (!hasAccess) {
         throw await errorHandler.handleAuthorizationError("отклика", {
           responseId: input.responseId,
-          workspaceId: response.vacancy.workspaceId,
+          workspaceId: vacancy.workspaceId,
           userId: ctx.session.user.id,
         });
       }

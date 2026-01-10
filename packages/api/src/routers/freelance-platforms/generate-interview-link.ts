@@ -47,7 +47,7 @@ export const generateInterviewLink = protectedProcedure
 
     return {
       id: interviewLink.id,
-      vacancyId: interviewLink.vacancyId,
+      vacancyId: interviewLink.entityId,
       token: interviewLink.token,
       url: interviewLink.url,
       isActive: interviewLink.isActive,

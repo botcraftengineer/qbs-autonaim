@@ -164,7 +164,7 @@ export const submitApplication = publicProcedure
             status: "submitted",
             fitScore: session.fitScore,
             fitDecision: session.fitDecision,
-            importSource: "FREELANCE_MANUAL",
+            importSource: "MANUAL",
             candidateName: candidateInfo?.name,
             candidateEmail: candidateInfo?.email,
           },

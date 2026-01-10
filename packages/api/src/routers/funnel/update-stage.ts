@@ -1,5 +1,8 @@
 import { and, eq } from "@qbs-autonaim/db";
-import type { response as responseTable } from "@qbs-autonaim/db/schema";
+import {
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -60,19 +63,10 @@ export const updateStage = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: (
-        response: typeof responseTable,
-        { eq, and }: { eq: any; and: any },
-      ) =>
-        and(
-          eq(response.id, input.candidateId),
-          eq(response.entityType, "vacancy"),
-        ),
-      with: {
-        vacancy: {
-          columns: { workspaceId: true },
-        },
-      },
+      where: and(
+        eq(responseTable.id, input.candidateId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     if (!response) {
@@ -82,7 +76,20 @@ export const updateStage = protectedProcedure
       });
     }
 
-    if (response.vacancy.workspaceId !== input.workspaceId) {
+    // Query vacancy separately to check workspace access
+    const vacancy = await ctx.db.query.vacancy.findFirst({
+      where: eq(vacancyTable.id, response.entityId),
+      columns: { workspaceId: true },
+    });
+
+    if (!vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
+    if (vacancy.workspaceId !== input.workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Кандидат не принадлежит вашему рабочему пространству",

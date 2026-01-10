@@ -22,7 +22,7 @@ export const getVacancyByToken = publicProcedure
 
     // Получаем вакансию
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.vacancyId),
+      where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.entityId),
     });
 
     if (!vacancy) {

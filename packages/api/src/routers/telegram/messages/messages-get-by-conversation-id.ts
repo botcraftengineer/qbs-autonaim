@@ -1,4 +1,9 @@
-import { conversation, conversationMessage } from "@qbs-autonaim/db";
+import {
+  conversation,
+  conversationMessage,
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -23,13 +28,6 @@ export const getMessagesByConversationIdRouter = protectedProcedure
 
     const conv = await ctx.db.query.conversation.findFirst({
       where: eq(conversation.id, input.conversationId),
-      with: {
-        response: {
-          with: {
-            vacancy: true,
-          },
-        },
-      },
     });
 
     if (!conv) {
@@ -39,11 +37,25 @@ export const getMessagesByConversationIdRouter = protectedProcedure
       });
     }
 
-    if (conv.response?.vacancy?.workspaceId !== input.workspaceId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Нет доступа к этой беседе",
+    // Query response separately to check workspace access
+    if (conv.responseId) {
+      const response = await ctx.db.query.response.findFirst({
+        where: eq(responseTable.id, conv.responseId),
       });
+
+      if (response) {
+        const vacancy = await ctx.db.query.vacancy.findFirst({
+          where: eq(vacancyTable.id, response.entityId),
+          columns: { workspaceId: true },
+        });
+
+        if (!vacancy || vacancy.workspaceId !== input.workspaceId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Нет доступа к этой беседе",
+          });
+        }
+      }
     }
 
     const messages = await ctx.db.query.conversationMessage.findMany({

@@ -1,5 +1,8 @@
 import { eq } from "@qbs-autonaim/db";
-import { response as responseTable } from "@qbs-autonaim/db/schema";
+import {
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -33,9 +36,6 @@ export const sendByUsername = protectedProcedure
     // Проверяем, что отклик существует
     const response = await ctx.db.query.response.findFirst({
       where: eq(responseTable.id, responseId),
-      with: {
-        vacancy: true,
-      },
     });
 
     if (!response) {
@@ -45,8 +45,21 @@ export const sendByUsername = protectedProcedure
       });
     }
 
+    // Query vacancy separately to check workspace access
+    const vacancy = await ctx.db.query.vacancy.findFirst({
+      where: eq(vacancyTable.id, response.entityId),
+      columns: { workspaceId: true },
+    });
+
+    if (!vacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
     // Проверка принадлежности вакансии к workspace
-    if (response.vacancy.workspaceId !== workspaceId) {
+    if (vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому отклику",

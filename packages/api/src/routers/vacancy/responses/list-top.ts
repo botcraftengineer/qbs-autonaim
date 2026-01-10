@@ -1,5 +1,9 @@
-import { desc } from "@qbs-autonaim/db";
-import { response as responseTable } from "@qbs-autonaim/db/schema";
+import { desc, eq } from "@qbs-autonaim/db";
+import {
+  responseScreening as responseScreeningTable,
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -29,29 +33,42 @@ export const listTop = protectedProcedure
 
     const allResponses = await ctx.db.query.response.findMany({
       orderBy: [desc(responseTable.createdAt)],
-      where: (response, { eq }) => eq(response.entityType, "vacancy"),
-      with: {
-        vacancy: {
-          columns: {
-            id: true,
-            title: true,
-            workspaceId: true,
-          },
-        },
-        screening: {
-          columns: {
-            score: true,
-            detailedScore: true,
-          },
-        },
-      },
+      where: eq(responseTable.entityType, "vacancy"),
       columns: {
         id: true,
+        entityId: true,
         candidateName: true,
         createdAt: true,
         photoFileId: true,
       },
     });
+
+    // Get all vacancy IDs to query separately
+    const vacancyIds = [...new Set(allResponses.map((r) => r.entityId))];
+    const vacancies = await ctx.db.query.vacancy.findMany({
+      where: (vacancy, { inArray }) => inArray(vacancy.id, vacancyIds),
+      columns: {
+        id: true,
+        title: true,
+        workspaceId: true,
+      },
+    });
+
+    const vacancyMap = new Map(vacancies.map((v) => [v.id, v]));
+
+    // Get all screenings separately
+    const responseIds = allResponses.map((r) => r.id);
+    const screenings = await ctx.db.query.responseScreening.findMany({
+      where: (screening, { inArray }) =>
+        inArray(screening.responseId, responseIds),
+      columns: {
+        responseId: true,
+        score: true,
+        detailedScore: true,
+      },
+    });
+
+    const screeningMap = new Map(screenings.map((s) => [s.responseId, s]));
 
     // Получаем URLs для фото
     const photoFileIds = allResponses
@@ -71,18 +88,37 @@ export const listTop = protectedProcedure
     );
 
     return allResponses
+      .map((r) => {
+        const vacancy = vacancyMap.get(r.entityId);
+        const screening = screeningMap.get(r.id);
+        return {
+          ...r,
+          vacancy: vacancy
+            ? {
+                id: vacancy.id,
+                title: vacancy.title,
+                workspaceId: vacancy.workspaceId,
+              }
+            : null,
+          screening: screening
+            ? {
+                score: screening.score,
+                detailedScore: screening.detailedScore,
+              }
+            : null,
+          photoUrl: r.photoFileId
+            ? photoUrlMap.get(r.photoFileId) || null
+            : null,
+        };
+      })
       .filter(
         (r) =>
-          r.vacancy.workspaceId === input.workspaceId &&
+          r.vacancy?.workspaceId === input.workspaceId &&
           r.screening?.detailedScore != null,
       )
       .sort(
         (a, b) =>
           (b.screening?.detailedScore ?? 0) - (a.screening?.detailedScore ?? 0),
       )
-      .slice(0, input.limit)
-      .map((r) => ({
-        ...r,
-        photoUrl: r.photoFileId ? photoUrlMap.get(r.photoFileId) || null : null,
-      }));
+      .slice(0, input.limit);
   });

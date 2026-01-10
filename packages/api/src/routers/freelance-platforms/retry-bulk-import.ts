@@ -103,10 +103,7 @@ export const retryBulkImport = protectedProcedure
                 and(
                   eq(response.entityId, input.vacancyId),
                   eq(response.entityType, "vacancy"),
-                  eq(
-                    response.platformProfileUrl,
-                    parsed.contactInfo.platformProfile,
-                  ),
+                  eq(response.profileUrl, parsed.contactInfo.platformProfile),
                 ),
             });
 
@@ -134,8 +131,8 @@ export const retryBulkImport = protectedProcedure
                 parsed.contactInfo.platformProfile || "manual-import-no-url",
               candidateName: parsed.freelancerName,
               coverLetter: parsed.responseText,
-              importSource: "FREELANCE_MANUAL",
-              platformProfileUrl: parsed.contactInfo.platformProfile,
+              importSource: "MANUAL",
+              profileUrl: parsed.contactInfo.platformProfile,
               phone: parsed.contactInfo.phone,
               telegramUsername: parsed.contactInfo.telegram,
               contacts: {

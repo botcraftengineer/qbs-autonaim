@@ -184,7 +184,7 @@ async function handleVacancyInterview(
       and(
         eq(response.entityId, vacancyLink.entityId),
         eq(response.entityType, "vacancy"),
-        eq(response.platformProfileUrl, normalizedProfileUrl),
+        eq(response.profileUrl, normalizedProfileUrl),
       ),
   });
 
@@ -207,7 +207,7 @@ async function handleVacancyInterview(
       resumeId: `freelance_web_${crypto.randomUUID()}`,
       resumeUrl: freelancerInfo.platformProfileUrl,
       candidateName: freelancerInfo.name,
-      platformProfileUrl: normalizedProfileUrl,
+      profileUrl: normalizedProfileUrl,
       phone: freelancerInfo.phone,
       telegramUsername: freelancerInfo.telegram,
       contacts: {
@@ -215,7 +215,7 @@ async function handleVacancyInterview(
         phone: freelancerInfo.phone,
         telegram: freelancerInfo.telegram,
       },
-      importSource: "FREELANCE_LINK",
+      importSource: "WEB_LINK",
       status: "NEW",
       respondedAt: new Date(),
     })

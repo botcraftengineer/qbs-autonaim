@@ -1,6 +1,6 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
-  type response as responseTable,
+  response as responseTable,
   vacancyResponseHistory,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";

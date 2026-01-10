@@ -59,10 +59,7 @@ export const startInterview = publicProcedure
         and(
           eq(response.entityId, interviewLink.entityId),
           eq(response.entityType, "vacancy"),
-          eq(
-            response.platformProfileUrl,
-            input.freelancerInfo.platformProfileUrl,
-          ),
+          eq(response.profileUrl, input.freelancerInfo.platformProfileUrl),
         ),
     });
 
@@ -82,7 +79,7 @@ export const startInterview = publicProcedure
         resumeId: `freelance_${Date.now()}`,
         resumeUrl: input.freelancerInfo.platformProfileUrl,
         candidateName: input.freelancerInfo.name,
-        platformProfileUrl: input.freelancerInfo.platformProfileUrl,
+        profileUrl: input.freelancerInfo.platformProfileUrl,
         phone: input.freelancerInfo.phone,
         telegramUsername: input.freelancerInfo.telegram,
         contacts: {
@@ -90,7 +87,7 @@ export const startInterview = publicProcedure
           phone: input.freelancerInfo.phone,
           telegram: input.freelancerInfo.telegram,
         },
-        importSource: "FREELANCE_LINK",
+        importSource: "WEB_LINK",
         status: "NEW",
         respondedAt: new Date(),
       })

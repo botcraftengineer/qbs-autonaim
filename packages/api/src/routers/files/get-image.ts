@@ -48,29 +48,13 @@ export const getImageUrl = protectedProcedure
       where: (files, { eq }) => eq(files.id, input.fileId),
       with: {
         // Проверяем связь через response (resumePdfFileId)
-        responsesAsResumePdf: {
-          with: {
-            vacancy: true,
-          },
-        },
+        vacancyResponsesAsResumePdf: true,
         // Проверяем связь через response (photoFileId)
-        responsesAsPhoto: {
-          with: {
-            vacancy: true,
-          },
-        },
+        vacancyResponsesAsPhoto: true,
         // Проверяем связь через conversationMessage
         conversationMessages: {
           with: {
-            conversation: {
-              with: {
-                response: {
-                  with: {
-                    vacancy: true,
-                  },
-                },
-              },
-            },
+            conversation: true,
           },
         },
       },
@@ -83,19 +67,40 @@ export const getImageUrl = protectedProcedure
       });
     }
 
+    // Get all response IDs to check workspace access
+    const responseIds = [
+      ...fileRecord.vacancyResponsesAsResumePdf.map((r) => r.id),
+      ...fileRecord.vacancyResponsesAsPhoto.map((r) => r.id),
+      ...fileRecord.conversationMessages
+        .map((m) => m.conversation?.responseId)
+        .filter((id): id is string => id !== null && id !== undefined),
+    ];
+
+    if (responseIds.length === 0) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Файл не найден",
+      });
+    }
+
+    // Query all responses to get their entityIds
+    const responses = await ctx.db.query.response.findMany({
+      where: (response, { inArray }) => inArray(response.id, responseIds),
+      columns: { id: true, entityId: true },
+    });
+
+    const vacancyIds = [...new Set(responses.map((r) => r.entityId))];
+
+    // Query all vacancies to check workspace access
+    const vacancies = await ctx.db.query.vacancy.findMany({
+      where: (vacancy, { inArray }) => inArray(vacancy.id, vacancyIds),
+      columns: { id: true, workspaceId: true },
+    });
+
     // Проверяем что файл принадлежит указанному workspace
-    const belongsToWorkspace =
-      fileRecord.responsesAsResumePdf.some(
-        (response) => response.vacancy.workspaceId === input.workspaceId,
-      ) ||
-      fileRecord.responsesAsPhoto.some(
-        (response) => response.vacancy.workspaceId === input.workspaceId,
-      ) ||
-      fileRecord.conversationMessages.some(
-        (message) =>
-          message.conversation?.response?.vacancy?.workspaceId ===
-          input.workspaceId,
-      );
+    const belongsToWorkspace = vacancies.some(
+      (v) => v.workspaceId === input.workspaceId,
+    );
 
     if (!belongsToWorkspace) {
       throw new TRPCError({

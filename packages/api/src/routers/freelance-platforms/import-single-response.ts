@@ -82,10 +82,7 @@ export const importSingleResponse = protectedProcedure
           and(
             eq(response.entityId, input.vacancyId),
             eq(response.entityType, "vacancy"),
-            eq(
-              response.platformProfileUrl,
-              input.contactInfo.platformProfileUrl,
-            ),
+            eq(response.profileUrl, input.contactInfo.platformProfileUrl),
           ),
       });
 
@@ -108,8 +105,8 @@ export const importSingleResponse = protectedProcedure
           input.contactInfo?.platformProfileUrl || "manual-import-no-url",
         candidateName: input.freelancerName,
         coverLetter: input.responseText,
-        importSource: "FREELANCE_MANUAL",
-        platformProfileUrl: input.contactInfo?.platformProfileUrl,
+        importSource: "MANUAL",
+        profileUrl: input.contactInfo?.platformProfileUrl,
         phone: input.contactInfo?.phone,
         telegramUsername: input.contactInfo?.telegram,
         contacts: input.contactInfo

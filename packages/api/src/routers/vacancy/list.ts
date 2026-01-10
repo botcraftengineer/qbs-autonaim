@@ -1,4 +1,4 @@
-import { count, desc, eq } from "@qbs-autonaim/db";
+import { and, count, desc, eq } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
