@@ -10,6 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { candidate } from "../candidate/candidate";
 import { file } from "../file";
 import {
   candidateContactColumns,
@@ -25,7 +26,6 @@ import {
   importSourceValues,
   responseStatusValues,
 } from "../shared/response-enums";
-import { candidate } from "../candidate/candidate";
 import { vacancy } from "./vacancy";
 
 /**
@@ -48,24 +48,24 @@ export const vacancyResponse = pgTable(
     // Идентификация кандидата (resumeId с hh.ru или другой платформы)
     resumeId: varchar("resume_id", { length: 100 }).notNull(),
     resumeUrl: text("resume_url").notNull(),
+
+    // Идентификация кандидата
     ...candidateIdentityColumns,
 
-    // Контакты
+    // Контактные данные
     ...candidateContactColumns,
 
-    // Сопроводительное письмо
+    // Файлы кандидата
+    ...candidateFileColumns,
+
+    // Сопроводительное письмо (специфично для конкретного отклика)
     ...coverLetterColumn,
 
     // Файлы (специфично для vacancy)
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
-    ...candidateFileColumns,
 
-    // Опыт и навыки
-    ...candidateExperienceColumns,
-
-    // Ожидания по зарплате (специфично для vacancy)
     // Ожидания по зарплате (специфично для vacancy)
     salaryExpectationsAmount: integer("salary_expectations_amount"),
     salaryExpectationsComment: varchar("salary_expectations_comment", {
@@ -104,14 +104,9 @@ export const vacancyResponse = pgTable(
 export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   resumeId: z.string().max(100),
   resumeUrl: z.string(),
-  candidateName: z.string().max(500).optional(),
-  telegramUsername: z.string().max(100).optional(),
-  chatId: z.string().max(100).optional(),
   coverLetter: z.string().optional(),
-  telegramPinCode: z.string().length(4).optional(),
   salaryExpectationsAmount: z.number().int().optional(),
   salaryExpectationsComment: z.string().max(200).optional(),
-  resumeLanguage: z.string().max(10).default("ru").optional(),
   status: z.enum(responseStatusValues).default("NEW"),
   hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
   importSource: z.enum(importSourceValues).default("HH_API"),

@@ -193,10 +193,12 @@ export async function POST(request: Request) {
     orchestrator.setTraceId(trace.id);
 
     // Формируем историю диалога для оркестратора
-    const conversationHistory = conv.messages
-      .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
+    const conversationHistory = session.messages
+      .filter((msg) => msg.role === "user" || msg.role === "assistant")
       .map((msg) => ({
-        sender: msg.sender as "CANDIDATE" | "BOT",
+        sender: (msg.role === "user" ? "CANDIDATE" : "BOT") as
+          | "CANDIDATE"
+          | "BOT",
         content: msg.content,
       }));
 
@@ -237,8 +239,9 @@ export async function POST(request: Request) {
 
     // Формируем контекст для оркестратора
     const interviewContext = {
-      conversationId,
-      candidateName: conv.candidateName,
+      conversationId: sessionId,
+      candidateName:
+        (session.metadata as { candidateName?: string })?.candidateName || null,
       vacancyTitle: vacancy?.title || gig?.title || null,
       vacancyDescription: vacancy?.description || gig?.description || null,
       conversationHistory,
@@ -361,11 +364,11 @@ export async function POST(request: Request) {
           const content = textParts?.map((p) => p.text).join("\n") || "";
 
           if (content) {
-            await db.insert(conversationMessage).values({
-              conversationId,
-              sender: "BOT",
-              contentType: "TEXT",
-              channel: "WEB",
+            await db.insert(interviewMessage).values({
+              sessionId,
+              role: "assistant",
+              type: "text",
+              channel: "web",
               content,
             });
           }

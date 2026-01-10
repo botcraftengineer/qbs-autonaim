@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 const requestSchema = z.object({
-  conversationId: z.string().uuid(),
+  sessionId: z.string().uuid(),
   audioFile: z.string(), // base64
   fileName: z.string(),
   mimeType: z.string(),
@@ -23,22 +23,22 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const { conversationId, audioFile, fileName, mimeType, duration } =
+    const { sessionId, audioFile, fileName, mimeType, duration } =
       requestSchema.parse(json);
 
-    // Проверяем что conversation существует и это WEB интервью
-    const conv = await db.query.conversation.findFirst({
-      where: (c, { and }) => and(eq(c.id, conversationId), eq(c.source, "WEB")),
+    // Проверяем что interview session существует и это WEB интервью
+    const session = await db.query.interviewSession.findFirst({
+      where: (s, { and }) => and(eq(s.id, sessionId), eq(s.lastChannel, "web")),
     });
 
-    if (!conv) {
+    if (!session) {
       return NextResponse.json(
         { error: "Interview not found" },
         { status: 404 },
       );
     }
 
-    if (conv.status !== "ACTIVE") {
+    if (session.status !== "active") {
       return NextResponse.json(
         { error: "Interview is not active" },
         { status: 403 },
@@ -83,12 +83,12 @@ export async function POST(request: Request) {
 
     // Создаем сообщение в БД
     const [message] = await db
-      .insert(conversationMessage)
+      .insert(interviewMessage)
       .values({
-        conversationId,
-        sender: "CANDIDATE",
-        contentType: "VOICE",
-        channel: "WEB",
+        sessionId,
+        role: "user",
+        type: "voice",
+        channel: "web",
         content: "", // Будет заполнено после транскрибации
         fileId: fileRecord.id,
         voiceDuration,

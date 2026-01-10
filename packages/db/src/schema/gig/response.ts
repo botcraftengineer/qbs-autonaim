@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { candidate } from "../candidate/candidate";
 import { file } from "../file";
 import {
   candidateContactColumns,
@@ -29,8 +30,6 @@ import {
   recommendationValues,
   responseStatusValues,
 } from "../shared/response-enums";
-
-import { candidate } from "../candidate/candidate";
 import { gig } from "./gig";
 
 /**
@@ -52,10 +51,18 @@ export const gigResponse = pgTable(
 
     // Идентификация кандидата (уникальный ID на платформе)
     candidateId: varchar("candidate_id", { length: 100 }).notNull(),
+
+    // Идентификация кандидата
     ...candidateIdentityColumns,
 
-    // Контакты
+    // Контактные данные
     ...candidateContactColumns,
+
+    // Файлы кандидата
+    ...candidateFileColumns,
+
+    // Опыт и навыки
+    ...candidateExperienceColumns,
 
     // Предложение кандидата (специфично для gig)
     proposedPrice: integer("proposed_price"),
@@ -72,12 +79,6 @@ export const gigResponse = pgTable(
     portfolioFileId: uuid("portfolio_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
-
-    // Файлы
-    ...candidateFileColumns,
-
-    // Опыт и навыки
-    ...candidateExperienceColumns,
 
     // Статусы
     ...responseStatusColumns,
@@ -120,25 +121,14 @@ export const gigResponse = pgTable(
 
 export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   candidateId: z.string().max(100),
-  candidateName: z.string().max(500).optional(),
-  profileUrl: z.string().url().optional(),
-  telegramUsername: z.string().max(100).optional(),
-  chatId: z.string().max(100).optional(),
-  phone: z.string().max(50).optional(),
-  email: z.string().email().max(255).optional(),
   proposedPrice: z.number().int().positive().optional(),
   proposedCurrency: z.string().length(3).default("RUB"),
   proposedDeliveryDays: z.number().int().positive().optional(),
   coverLetter: z.string().optional(),
   portfolioLinks: z.string().url().array().optional(),
-  experience: z.string().optional(),
-  skills: z.array(z.string()).optional(),
-  rating: z.string().max(20).optional(),
-  resumeLanguage: z.string().max(10).default("ru").optional(),
   status: z.enum(responseStatusValues).default("NEW"),
   hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
   importSource: z.enum(importSourceValues).default("MANUAL"),
-  telegramPinCode: z.string().length(4).optional(),
   respondedAt: z.coerce.date().optional(),
   welcomeSentAt: z.coerce.date().optional(),
   compositeScore: z.number().int().min(0).max(100).optional(),

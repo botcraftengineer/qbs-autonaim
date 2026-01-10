@@ -1,4 +1,4 @@
-import { conversation, db, eq } from "@qbs-autonaim/db";
+import { chatSession, db, eq, vacancy } from "@qbs-autonaim/db";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
@@ -25,7 +25,7 @@ const requestSchema = z.object({
   id: z.uuid().optional(),
   message: messageSchema.optional(),
   messages: z.array(messageSchema).optional(),
-  conversationId: z.string().optional(),
+  chatSessionId: z.string().optional(),
 });
 
 export const maxDuration = 60;
@@ -56,48 +56,47 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { message, messages, conversationId } = requestBody;
+    const { message, messages, chatSessionId } = requestBody;
 
-    // Проверка доступа к conversation
-    let conversationContext = "";
-    if (conversationId) {
-      const conv = await db.query.conversation.findFirst({
-        where: eq(conversation.id, conversationId),
-        with: {
-          response: {
-            with: {
-              vacancy: true,
-            },
-          },
-        },
+    // Проверка доступа к chatSession
+    let chatContext = "";
+    if (chatSessionId) {
+      const chat = await db.query.chatSession.findFirst({
+        where: eq(chatSession.id, chatSessionId),
       });
 
-      if (!conv) {
+      if (!chat) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
       }
 
-      const workspaceId = conv.response?.vacancy?.workspaceId;
-      if (workspaceId) {
-        const member = await db.query.workspaceMember.findFirst({
-          where: (wm, { and }) =>
-            and(
-              eq(wm.workspaceId, workspaceId),
-              eq(wm.userId, session.user.id),
-            ),
+      // Получаем контекст в зависимости от типа сущности
+      if (chat.entityType === "vacancy") {
+        const vac = await db.query.vacancy.findFirst({
+          where: eq(vacancy.id, chat.entityId),
         });
 
-        if (!member) {
-          return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-      }
+        if (vac) {
+          const workspaceId = vac.workspaceId;
+          if (workspaceId) {
+            const member = await db.query.workspaceMember.findFirst({
+              where: (wm, { and }) =>
+                and(
+                  eq(wm.workspaceId, workspaceId),
+                  eq(wm.userId, session.user.id),
+                ),
+            });
 
-      if (conv.response?.vacancy) {
-        const vac = conv.response.vacancy;
-        conversationContext = `
+            if (!member) {
+              return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            }
+          }
+
+          chatContext = `
 Контекст вакансии:
 - Название: ${vac.title || "Не указано"}
 - Описание: ${vac.description || "Не указано"}
 `;
+        }
       }
     }
 
@@ -114,7 +113,7 @@ export async function POST(request: Request) {
       })
       .join("\n\n");
 
-    const prompt = `${conversationContext}
+    const prompt = `${chatContext}
 
 История диалога:
 ${historyContext}

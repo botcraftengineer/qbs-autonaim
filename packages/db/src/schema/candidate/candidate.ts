@@ -14,6 +14,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { organization } from "../organization/organization";
+import { file } from "../file";
 import type { StoredProfileData } from "../types";
 
 /**
@@ -70,9 +71,16 @@ export const candidate = pgTable(
     phone: varchar("phone", { length: 50 }),
     telegramUsername: varchar("telegram_username", { length: 100 }),
     telegramChatId: varchar("telegram_chat_id", { length: 100 }),
+    telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
     preferredContactMethod: varchar("preferred_contact_method", {
       length: 20,
     }).default("telegram"),
+    resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
+
+    // Файлы
+    photoFileId: uuid("photo_file_id").references(() => file.id, {
+      onDelete: "set null",
+    }),
 
     // Ссылки на внешние ресурсы
     hhUrl: text("hh_url"), // Ссылка на hh.ru (Main source in RF)
