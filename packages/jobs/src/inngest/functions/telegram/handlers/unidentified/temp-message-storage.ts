@@ -1,7 +1,7 @@
 import { db } from "@qbs-autonaim/db/client";
 import {
   bufferedTempMessage,
-  chatMessage,
+  interviewMessage,
   tempConversationMessage,
 } from "@qbs-autonaim/db/schema";
 import { removeNullBytes } from "@qbs-autonaim/lib";
@@ -129,7 +129,7 @@ export async function flushTempMessageBuffer(
  */
 export async function migrateTempMessages(
   tempConversationId: string,
-  realChatSessionId: string,
+  realInterviewSessionId: string,
 ) {
   try {
     await db.transaction(async (tx) => {
@@ -151,7 +151,7 @@ export async function migrateTempMessages(
 
       // Переносим в основную таблицу одним batch insert
       const messagesToInsert = tempMessages.map((msg) => ({
-        sessionId: realChatSessionId,
+        sessionId: realInterviewSessionId,
         role: (msg.sender === "CANDIDATE" ? "user" : "assistant") as
           | "user"
           | "assistant",
@@ -163,7 +163,7 @@ export async function migrateTempMessages(
         channel: "telegram" as const,
       }));
 
-      await tx.insert(chatMessage).values(messagesToInsert);
+      await tx.insert(interviewMessage).values(messagesToInsert);
 
       // Удаляем временные сообщения
       await tx
@@ -174,14 +174,14 @@ export async function migrateTempMessages(
 
       console.log("✅ Временные сообщения перенесены", {
         tempConversationId,
-        realChatSessionId,
+        realInterviewSessionId,
         count: tempMessages.length,
       });
     });
   } catch (error) {
     console.error("❌ Ошибка переноса временных сообщений:", {
       tempConversationId,
-      realChatSessionId,
+      realInterviewSessionId,
       error: error instanceof Error ? error.message : String(error),
     });
     throw error; // Пробрасываем ошибку для retry handling

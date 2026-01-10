@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db/client";
-import { chatMessage } from "@qbs-autonaim/db/schema";
+import { interviewMessage } from "@qbs-autonaim/db/schema";
 import { removeNullBytes } from "@qbs-autonaim/lib";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { findDuplicateMessage } from "../../utils";
@@ -43,7 +43,7 @@ export async function saveUnidentifiedMessage(params: {
     const isDuplicate = await findDuplicateMessage(chatSessionId, messageId);
 
     if (!isDuplicate) {
-      await db.insert(chatMessage).values({
+      await db.insert(interviewMessage).values({
         sessionId: chatSessionId,
         role: "user",
         type: contentType,

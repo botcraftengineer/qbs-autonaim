@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatMessage,
-  chatSession,
+  interviewMessage,
+  interviewSession,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -215,60 +215,57 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Сохраняем беседу если получили chatId
             if (sendResult.chatId) {
-              // Проверяем, есть ли уже chatSession для этого response
-              const existing = await db.query.chatSession.findFirst({
+              // Проверяем, есть ли уже interviewSession для этого response
+              const existing = await db.query.interviewSession.findFirst({
                 where: and(
-                  eq(chatSession.entityType, "vacancy_response"),
-                  eq(chatSession.entityId, response.id),
+                  eq(interviewSession.entityType, "vacancy_response"),
+                  eq(interviewSession.vacancyResponseId, response.id),
                 ),
               });
 
-              let session: typeof chatSession.$inferSelect | undefined;
+              let session: typeof interviewSession.$inferSelect | undefined;
               if (existing) {
                 // Получаем существующие метаданные
-                const existingMetadata: Record<string, unknown> =
-                  existing.metadata || {};
+                const existingMetadata = existing.metadata || {};
 
                 // Объединяем с новыми данными
                 const updatedMetadata = {
                   ...existingMetadata,
-                  responseId: response.id,
-                  vacancyId: response.vacancyId,
-                  username: response.telegramUsername,
-                  interviewStarted: true,
+                  telegramUsername: response.telegramUsername ?? undefined,
+                  telegramChatId: sendResult.chatId,
                   questionAnswers: existingMetadata.questionAnswers || [],
                 };
 
-                // Обновляем существующую chatSession
+                // Обновляем существующую interviewSession
                 const [updated] = await db
-                  .update(chatSession)
+                  .update(interviewSession)
                   .set({
-                    title: response.candidateName ?? undefined,
                     status: "active",
                     lastChannel: "telegram",
                     metadata: updatedMetadata,
                   })
-                  .where(eq(chatSession.id, existing.id))
+                  .where(eq(interviewSession.id, existing.id))
                   .returning();
                 session = updated;
               } else {
-                // Создаем новую chatSession
+                // Создаем новую interviewSession
                 const newMetadata = {
-                  responseId: response.id,
-                  vacancyId: response.vacancyId,
-                  username: response.telegramUsername,
-                  interviewStarted: true,
-                  questionAnswers: [],
+                  telegramUsername: response.telegramUsername ?? undefined,
+                  telegramChatId: sendResult.chatId,
+                  questionAnswers: [] as Array<{
+                    question: string;
+                    answer: string;
+                    timestamp?: string;
+                  }>,
                 };
 
                 const [created] = await db
-                  .insert(chatSession)
+                  .insert(interviewSession)
                   .values({
                     entityType: "vacancy_response",
-                    entityId: response.id,
+                    vacancyResponseId: response.id,
                     status: "active",
                     lastChannel: "telegram",
-                    title: response.candidateName ?? undefined,
                     metadata: newMetadata,
                   })
                   .returning();
@@ -277,7 +274,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
               // Сохраняем приветственное сообщение в историю
               if (session) {
-                await db.insert(chatMessage).values({
+                await db.insert(interviewMessage).values({
                   sessionId: session.id,
                   role: "assistant",
                   type: "text",

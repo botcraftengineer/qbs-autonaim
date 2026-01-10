@@ -1,10 +1,10 @@
 /**
- * Утилиты для работы с метаданными chat session
+ * Утилиты для работы с метаданными chat session и interview session
  */
 
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { chatSession } from "@qbs-autonaim/db/schema";
+import { chatSession, interviewSession } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import type { ConversationMetadata } from "../types/conversation";
 
@@ -180,3 +180,128 @@ export async function getQuestionCount(sessionId: string): Promise<number> {
  */
 export const getChatSessionMetadata = getConversationMetadata;
 export const updateChatSessionMetadata = updateConversationMetadata;
+
+// ==================== INTERVIEW SESSION METADATA ====================
+
+/**
+ * Получает метаданные interview session
+ *
+ * @param sessionId - ID сессии интервью
+ * @returns Promise с метаданными
+ */
+export async function getInterviewSessionMetadata(
+  sessionId: string,
+): Promise<ConversationMetadata> {
+  try {
+    const session = await db.query.interviewSession.findFirst({
+      where: eq(interviewSession.id, sessionId),
+    });
+
+    if (!session?.metadata) {
+      return {};
+    }
+
+    try {
+      return safeParseMetadata(session.metadata as Record<string, unknown>);
+    } catch (error) {
+      console.error("Failed to parse interview session metadata", {
+        error,
+        sessionId,
+        rawMetadata: session.metadata,
+      });
+      return {};
+    }
+  } catch (error) {
+    console.error("Error getting interview session metadata", {
+      error,
+      sessionId,
+    });
+    return {};
+  }
+}
+
+/**
+ * Обновляет метаданные interview session с оптимистической блокировкой
+ *
+ * @param sessionId - ID сессии интервью
+ * @param updates - Частичные обновления метаданных
+ * @returns Promise с true если обновление успешно, false в противном случае
+ */
+export async function updateInterviewSessionMetadata(
+  sessionId: string,
+  updates: Partial<ConversationMetadata>,
+): Promise<boolean> {
+  const MAX_RETRIES = 3;
+
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const current = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, sessionId),
+        columns: {
+          metadata: true,
+          updatedAt: true,
+        },
+      });
+
+      if (!current) {
+        console.error("Interview session not found", { sessionId });
+        return false;
+      }
+
+      let currentMetadata: ConversationMetadata = {};
+      if (current.metadata) {
+        try {
+          currentMetadata = safeParseMetadata(
+            current.metadata as Record<string, unknown>,
+          );
+        } catch (error) {
+          console.error("Failed to parse interview session metadata", {
+            sessionId,
+            error,
+            rawMetadata: current.metadata,
+          });
+          throw new Error(
+            `Cannot update interview session with malformed metadata: ${error}`,
+          );
+        }
+      }
+
+      const updatedMetadata = { ...currentMetadata, ...updates };
+
+      await db
+        .update(interviewSession)
+        .set({
+          metadata: updatedMetadata,
+        })
+        .where(eq(interviewSession.id, sessionId));
+
+      return true;
+    } catch (error) {
+      if (attempt === MAX_RETRIES - 1) {
+        console.error("Error in updateInterviewSessionMetadata after retries", {
+          error,
+          sessionId,
+          attempts: MAX_RETRIES,
+        });
+        return false;
+      }
+      // Небольшая задержка перед повтором
+      await new Promise((resolve) => setTimeout(resolve, 100 * (attempt + 1)));
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Получает количество заданных вопросов в интервью
+ *
+ * @param sessionId - ID сессии интервью
+ * @returns Promise с количеством вопросов
+ */
+export async function getInterviewQuestionCount(
+  sessionId: string,
+): Promise<number> {
+  const metadata = await getInterviewSessionMetadata(sessionId);
+  return metadata.questionAnswers?.length || 0;
+}

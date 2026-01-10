@@ -7,9 +7,12 @@ export {
   ConversationMetadataSchema,
   getChatSessionMetadata,
   getConversationMetadata,
+  getInterviewQuestionCount,
+  getInterviewSessionMetadata,
   getQuestionCount,
   updateChatSessionMetadata,
   updateConversationMetadata,
+  updateInterviewSessionMetadata,
 } from "./conversation";
 
 // Утилиты для работы с interview URL

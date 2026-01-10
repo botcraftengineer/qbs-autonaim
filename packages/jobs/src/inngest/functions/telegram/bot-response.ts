@@ -1,6 +1,6 @@
 import { AgentFactory } from "@qbs-autonaim/ai";
 import { db } from "@qbs-autonaim/db/client";
-import { chatMessage } from "@qbs-autonaim/db/schema";
+import { interviewMessage } from "@qbs-autonaim/db/schema";
 import type { getInterviewStartData } from "@qbs-autonaim/lib";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
@@ -201,9 +201,9 @@ export async function generateAndSendBotResponse(params: {
       });
     }
   } else {
-    // Сохраняем в основную таблицу
+    // Сохраняем в основную таблицу interviewMessage
     [botMsg] = await db
-      .insert(chatMessage)
+      .insert(interviewMessage)
       .values({
         sessionId: chatSessionId,
         role: "assistant",

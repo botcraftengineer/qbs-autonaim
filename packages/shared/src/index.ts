@@ -21,9 +21,12 @@ export {
   getChatSessionMetadata,
   getConversationMetadata,
   getInterviewBaseUrl,
+  getInterviewQuestionCount,
+  getInterviewSessionMetadata,
   getInterviewUrl,
   getInterviewUrlFromDb,
   getQuestionCount,
   updateChatSessionMetadata,
   updateConversationMetadata,
+  updateInterviewSessionMetadata,
 } from "./utils";

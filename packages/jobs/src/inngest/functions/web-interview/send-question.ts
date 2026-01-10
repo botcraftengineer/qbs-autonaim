@@ -1,11 +1,11 @@
-import { chatMessage, chatSession, eq } from "@qbs-autonaim/db";
+import { eq, interviewMessage, interviewSession } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { saveQuestionAnswer } from "../../../services/interview";
 import { inngest } from "../../client";
 
 /**
  * Функция отправки следующего вопроса в веб-чате
- * Сохраняет вопрос в chat_messages
+ * Сохраняет вопрос в interview_messages
  */
 export const webSendQuestionFunction = inngest.createFunction(
   {
@@ -23,14 +23,14 @@ export const webSendQuestionFunction = inngest.createFunction(
       questionNumber,
     });
 
-    // Проверяем существование chatSession
-    const session = await step.run("check-chat-session", async () => {
-      const s = await db.query.chatSession.findFirst({
-        where: eq(chatSession.id, chatSessionId),
+    // Проверяем существование interviewSession
+    const session = await step.run("check-interview-session", async () => {
+      const s = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
       });
 
       if (!s) {
-        throw new Error(`ChatSession ${chatSessionId} not found`);
+        throw new Error(`InterviewSession ${chatSessionId} not found`);
       }
 
       return s;
@@ -48,7 +48,7 @@ export const webSendQuestionFunction = inngest.createFunction(
 
     // Сохраняем вопрос как сообщение от бота
     await step.run("save-message", async () => {
-      await db.insert(chatMessage).values({
+      await db.insert(interviewMessage).values({
         sessionId: chatSessionId,
         role: "assistant",
         type: "text",

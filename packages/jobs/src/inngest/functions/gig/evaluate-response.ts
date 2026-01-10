@@ -111,7 +111,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       const { interviewScoring } = await import("@qbs-autonaim/db/schema");
 
       await db.insert(interviewScoring).values({
-        chatSessionId,
+        interviewSessionId: chatSessionId,
         gigResponseId: responseId,
         score: scoring.score,
         detailedScore: scoring.detailedScore,

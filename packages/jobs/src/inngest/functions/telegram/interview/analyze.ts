@@ -1,5 +1,6 @@
-import { chatSession, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { interviewSession } from "@qbs-autonaim/db/schema";
 import {
   analyzeAndGenerateNextQuestion,
   getInterviewContext,
@@ -21,15 +22,13 @@ export const analyzeInterviewFunction = inngest.createFunction(
     const { chatSessionId, transcription } = event.data;
 
     const context = await step.run("get-interview-context", async () => {
-      // Получаем chatSession для проверки существования
-      const [session] = await db
-        .select()
-        .from(chatSession)
-        .where(eq(chatSession.id, chatSessionId))
-        .limit(1);
+      // Получаем interviewSession для проверки существования
+      const session = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
+      });
 
       if (!session) {
-        throw new Error("ChatSession не найден");
+        throw new Error("InterviewSession не найден");
       }
 
       const ctx = await getInterviewContext(chatSessionId);

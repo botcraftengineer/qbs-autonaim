@@ -1,7 +1,7 @@
 import { AgentFactory, InterviewOrchestrator } from "@qbs-autonaim/ai";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { chatSession } from "@qbs-autonaim/db/schema";
+import { interviewSession } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
 import type {
@@ -20,8 +20,8 @@ interface QuestionAnswer {
   answer: string;
 }
 
-/** Typed metadata structure for chatSession */
-interface ChatSessionMetadata {
+/** Typed metadata structure for interviewSession */
+interface InterviewSessionMetadata {
   questionAnswers?: QuestionAnswer[];
 }
 
@@ -74,10 +74,10 @@ interface InterviewContext {
  */
 function parseMetadata(
   metadata: Record<string, unknown> | null,
-): ChatSessionMetadata {
+): InterviewSessionMetadata {
   if (!metadata) return {};
 
-  return metadata as ChatSessionMetadata;
+  return metadata as InterviewSessionMetadata;
 }
 
 /**
@@ -185,7 +185,7 @@ export async function analyzeAndGenerateNextQuestion(
  * Gets interview context from database
  */
 export async function getInterviewContext(
-  chatSessionId: string,
+  interviewSessionId: string,
 ): Promise<InterviewContext | null> {
   type MessageType = {
     role: string;
@@ -198,13 +198,14 @@ export async function getInterviewContext(
   type SessionType = {
     id: string;
     entityType: string;
-    entityId: string;
+    vacancyResponseId: string | null;
+    gigResponseId: string | null;
     metadata: Record<string, unknown> | null;
     messages: MessageType[];
   };
 
-  const session = (await db.query.chatSession.findFirst({
-    where: eq(chatSession.id, chatSessionId),
+  const session = (await db.query.interviewSession.findFirst({
+    where: eq(interviewSession.id, interviewSessionId),
     with: {
       messages: {
         orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -235,7 +236,6 @@ export async function getInterviewContext(
 
   // Определяем источник: vacancy_response или gig_response
   const isGig = session.entityType === "gig_response";
-  const entityId = session.entityId;
 
   let candidateName: string | null = null;
   let vacancyTitle: string | null = null;
@@ -249,10 +249,10 @@ export async function getInterviewContext(
   let customInterviewQuestions: string | null = null;
   let interviewMediaFiles: InterviewContext["interviewMediaFiles"] | undefined;
 
-  if (isGig) {
-    gigResponseId = entityId;
+  if (isGig && session.gigResponseId) {
+    gigResponseId = session.gigResponseId;
     const gigResponse = await db.query.gigResponse.findFirst({
-      where: (gr, { eq }) => eq(gr.id, entityId),
+      where: (gr, { eq }) => eq(gr.id, session.gigResponseId!),
       with: {
         gig: {
           columns: {
@@ -332,10 +332,10 @@ export async function getInterviewContext(
         }
       }
     }
-  } else {
-    responseId = entityId;
+  } else if (session.vacancyResponseId) {
+    responseId = session.vacancyResponseId;
     const vacancyResponse = await db.query.vacancyResponse.findFirst({
-      where: (vr, { eq }) => eq(vr.id, entityId),
+      where: (vr, { eq }) => eq(vr.id, session.vacancyResponseId!),
       with: {
         vacancy: {
           columns: {
@@ -401,32 +401,31 @@ export async function getInterviewContext(
 }
 
 /**
- * Saves question and answer to chatSession metadata
+ * Saves question and answer to interviewSession metadata
  */
 export async function saveQuestionAnswer(
-  chatSessionId: string,
+  interviewSessionId: string,
   question: string,
   answer: string,
 ) {
-  const { updateChatSessionMetadata, getChatSessionMetadata } = await import(
-    "@qbs-autonaim/shared"
-  );
+  const { updateInterviewSessionMetadata, getInterviewSessionMetadata } =
+    await import("@qbs-autonaim/shared");
 
   // Получаем текущие метаданные
-  const metadata = await getChatSessionMetadata(chatSessionId);
+  const metadata = await getInterviewSessionMetadata(interviewSessionId);
   const questionAnswers = metadata.questionAnswers ?? [];
 
   // Добавляем новую пару вопрос-ответ
   questionAnswers.push({ question, answer });
 
   // Обновляем метаданные с использованием оптимистической блокировки
-  const success = await updateChatSessionMetadata(chatSessionId, {
+  const success = await updateInterviewSessionMetadata(interviewSessionId, {
     questionAnswers,
   });
 
   if (!success) {
     throw new Error(
-      `Failed to save question-answer for chatSession ${chatSessionId} after multiple retries`,
+      `Failed to save question-answer for interviewSession ${interviewSessionId} after multiple retries`,
     );
   }
 }

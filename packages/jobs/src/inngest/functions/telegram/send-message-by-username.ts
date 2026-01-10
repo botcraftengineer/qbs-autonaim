@@ -1,6 +1,5 @@
-import { eq, telegramSession } from "@qbs-autonaim/db";
+import { eq, interviewMessage, telegramSession } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { chatMessage } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../client";
 
@@ -63,9 +62,9 @@ export const sendTelegramMessageByUsernameFunction = inngest.createFunction(
         // Обновляем externalId в БД, если messageId не пустой
         if (messageId) {
           await db
-            .update(chatMessage)
+            .update(interviewMessage)
             .set({ externalId: result.messageId })
-            .where(eq(chatMessage.id, messageId));
+            .where(eq(interviewMessage.id, messageId));
         }
 
         console.log("✅ Сообщение отправлено по username", {

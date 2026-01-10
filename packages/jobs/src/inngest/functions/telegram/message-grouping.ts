@@ -9,7 +9,7 @@
  */
 
 import { db } from "@qbs-autonaim/db/client";
-import { chatMessage } from "@qbs-autonaim/db/schema";
+import { interviewMessage } from "@qbs-autonaim/db/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { MESSAGE_GROUPING_CONFIG } from "./message-grouping.config";
 
@@ -57,13 +57,13 @@ export async function shouldProcessMessageGroup(
   const windowStartTime = new Date(now.getTime() - queryWindowMs);
 
   // Получаем все сообщения кандидата за последние 10+5 минут (с буфером)
-  const recentMessages = await db.query.chatMessage.findMany({
+  const recentMessages = await db.query.interviewMessage.findMany({
     where: and(
-      eq(chatMessage.sessionId, chatSessionId),
-      eq(chatMessage.role, "user"),
-      gte(chatMessage.createdAt, windowStartTime),
+      eq(interviewMessage.sessionId, chatSessionId),
+      eq(interviewMessage.role, "user"),
+      gte(interviewMessage.createdAt, windowStartTime),
     ),
-    orderBy: [desc(chatMessage.createdAt)],
+    orderBy: [desc(interviewMessage.createdAt)],
   });
 
   if (recentMessages.length === 0) {
@@ -120,12 +120,12 @@ export async function shouldProcessMessageGroup(
   }
 
   // Финальная проверка: убедимся что не пришло новое сообщение пока мы ждали
-  const finalCheck = await db.query.chatMessage.findFirst({
+  const finalCheck = await db.query.interviewMessage.findFirst({
     where: and(
-      eq(chatMessage.sessionId, chatSessionId),
-      eq(chatMessage.role, "user"),
+      eq(interviewMessage.sessionId, chatSessionId),
+      eq(interviewMessage.role, "user"),
     ),
-    orderBy: [desc(chatMessage.createdAt)],
+    orderBy: [desc(interviewMessage.createdAt)],
   });
 
   if (

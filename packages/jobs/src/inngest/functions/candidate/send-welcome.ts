@@ -2,8 +2,8 @@ import { env } from "@qbs-autonaim/config";
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatMessage,
-  chatSession,
+  interviewMessage,
+  interviewSession,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -263,79 +263,69 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       }
     });
 
-    // Если получили chatId, сохраняем/обновляем chatSession
+    // Если получили chatId, сохраняем/обновляем interviewSession
     if (result?.chatId) {
       const chatId = result.chatId;
-      await step.run("save-chat-session", async () => {
-        // Проверяем, есть ли уже chatSession для этого response
-        const existing = await db.query.chatSession.findFirst({
+      await step.run("save-interview-session", async () => {
+        // Проверяем, есть ли уже interviewSession для этого response
+        const existing = await db.query.interviewSession.findFirst({
           where: and(
-            eq(chatSession.entityType, "vacancy_response"),
-            eq(chatSession.entityId, responseId),
+            eq(interviewSession.entityType, "vacancy_response"),
+            eq(interviewSession.vacancyResponseId, responseId),
           ),
         });
 
         if (existing) {
           // Получаем существующие метаданные
-          const existingMetadata: Record<string, unknown> =
-            existing.metadata || {};
+          const existingMetadata = existing.metadata || {};
 
           // Объединяем с новыми данными
           const updatedMetadata = {
             ...existingMetadata,
-            responseId,
-            vacancyId: response.vacancyId,
-            username,
-            senderId: result && "senderId" in result ? result.senderId : chatId,
-            interviewStarted: true,
+            telegramUsername: username,
+            telegramChatId: chatId,
             questionAnswers: existingMetadata.questionAnswers || [],
           };
 
-          // Обновляем существующую chatSession
+          // Обновляем существующую interviewSession
           await db
-            .update(chatSession)
+            .update(interviewSession)
             .set({
-              title: response.candidateName ?? undefined,
               status: "active",
               lastChannel: result.channel === "TELEGRAM" ? "telegram" : "web",
               metadata: updatedMetadata,
             })
-            .where(eq(chatSession.id, existing.id));
+            .where(eq(interviewSession.id, existing.id));
         } else {
-          // Создаем новую chatSession
+          // Создаем новую interviewSession
           const newMetadata = {
-            responseId,
-            vacancyId: response.vacancyId,
-            username,
-            senderId: result && "senderId" in result ? result.senderId : chatId,
-            interviewStarted: true,
+            telegramUsername: username,
+            telegramChatId: chatId,
             questionAnswers: [],
           };
 
-          await db.insert(chatSession).values({
+          await db.insert(interviewSession).values({
             entityType: "vacancy_response",
-            entityId: responseId,
-            userId: response.candidateId ?? undefined,
+            vacancyResponseId: responseId,
             status: "active",
             lastChannel: result.channel === "TELEGRAM" ? "telegram" : "web",
-            title: response.candidateName ?? undefined,
             metadata: newMetadata,
           });
         }
 
-        const session = await db.query.chatSession.findFirst({
+        const session = await db.query.interviewSession.findFirst({
           where: and(
-            eq(chatSession.entityType, "vacancy_response"),
-            eq(chatSession.entityId, responseId),
+            eq(interviewSession.entityType, "vacancy_response"),
+            eq(interviewSession.vacancyResponseId, responseId),
           ),
         });
 
         if (!session) {
-          throw new Error("Failed to create/update chatSession");
+          throw new Error("Failed to create/update interviewSession");
         }
 
         // Сохраняем приветственное сообщение с правильным каналом и текстом
-        await db.insert(chatMessage).values({
+        await db.insert(interviewMessage).values({
           sessionId: session.id,
           role: "assistant",
           type: "text",

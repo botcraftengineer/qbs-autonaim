@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatMessage,
+  interviewMessage,
   RESPONSE_STATUS,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -21,7 +21,7 @@ export async function saveIdentifiedText(params: {
   const { chatSessionId, text, messageId } = params;
 
   const [savedMessage] = await db
-    .insert(chatMessage)
+    .insert(interviewMessage)
     .values({
       sessionId: chatSessionId,
       role: "user",
@@ -156,7 +156,7 @@ export async function handleIdentifiedMedia(params: {
   });
 
   const [savedMessage] = await db
-    .insert(chatMessage)
+    .insert(interviewMessage)
     .values({
       sessionId: chatSessionId,
       role: "user",
@@ -204,7 +204,7 @@ async function updateStatusOnFirstMessage(
   responseId: string,
 ) {
   // Проверяем, это ли первое сообщение от кандидата
-  const candidateMessagesCount = await db.query.chatMessage.findMany({
+  const candidateMessagesCount = await db.query.interviewMessage.findMany({
     where: (fields, { and, eq }) =>
       and(eq(fields.sessionId, chatSessionId), eq(fields.role, "user")),
   });

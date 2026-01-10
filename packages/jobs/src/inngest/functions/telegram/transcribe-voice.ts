@@ -1,4 +1,4 @@
-import { chatMessage, eq, file } from "@qbs-autonaim/db";
+import { eq, file, interviewMessage } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { RESPONSE_STATUS, vacancyResponse } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
@@ -89,11 +89,11 @@ export const transcribeVoiceFunction = inngest.createFunction(
     if (transcription) {
       await step.run("update-message-transcription", async () => {
         await db
-          .update(chatMessage)
+          .update(interviewMessage)
           .set({
             voiceTranscription: transcription,
           })
-          .where(eq(chatMessage.id, messageId));
+          .where(eq(interviewMessage.id, messageId));
 
         console.log("✅ Обновлена транскрипция в БД", {
           messageId,
@@ -103,8 +103,8 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
       // Попытка буферизации после транскрипции
       await step.run("try-buffer-voice-message", async () => {
-        const message = await db.query.chatMessage.findFirst({
-          where: eq(chatMessage.id, messageId),
+        const message = await db.query.interviewMessage.findFirst({
+          where: eq(interviewMessage.id, messageId),
         });
 
         if (!message) {
@@ -112,13 +112,13 @@ export const transcribeVoiceFunction = inngest.createFunction(
           return;
         }
 
-        // Получаем chatSession
-        const session = await db.query.chatSession.findFirst({
+        // Получаем interviewSession
+        const session = await db.query.interviewSession.findFirst({
           where: (fields, { eq }) => eq(fields.id, message.sessionId),
         });
 
         if (!session) {
-          console.log("⏭️ ChatSession не найден");
+          console.log("⏭️ InterviewSession не найден");
           return;
         }
 
@@ -131,7 +131,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
           const { getCurrentInterviewStep } = await import(
             "@qbs-autonaim/tg-client"
           );
-          const { getChatSessionMetadata } = await import(
+          const { getInterviewSessionMetadata } = await import(
             "@qbs-autonaim/shared"
           );
 
@@ -142,13 +142,15 @@ export const transcribeVoiceFunction = inngest.createFunction(
             return;
           }
 
-          const chatSessionId = message.sessionId;
-          const interviewStep = await getCurrentInterviewStep(chatSessionId);
+          const interviewSessionId = message.sessionId;
+          const interviewStep =
+            await getCurrentInterviewStep(interviewSessionId);
 
           // Получаем контекст вопроса
           let questionContext: string | undefined;
           try {
-            const metadata = await getChatSessionMetadata(chatSessionId);
+            const metadata =
+              await getInterviewSessionMetadata(interviewSessionId);
             questionContext = metadata.lastQuestionAsked;
           } catch (error) {
             console.error("❌ Ошибка получения questionContext:", error);
@@ -156,8 +158,8 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
           // Добавляем в буфер
           await messageBufferService.addMessage({
-            userId: session.userId || chatSessionId,
-            chatSessionId,
+            userId: interviewSessionId,
+            chatSessionId: interviewSessionId,
             interviewStep,
             message: {
               id: messageId,
@@ -169,7 +171,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
           });
 
           console.log("✅ Голосовое сообщение добавлено в буфер", {
-            chatSessionId,
+            interviewSessionId,
             interviewStep,
             messageId,
             transcriptionLength: transcription.length,
@@ -187,8 +189,8 @@ export const transcribeVoiceFunction = inngest.createFunction(
                 body: JSON.stringify({
                   name: "interview/message.buffered",
                   data: {
-                    userId: session.userId || chatSessionId,
-                    chatSessionId,
+                    userId: interviewSessionId,
+                    chatSessionId: interviewSessionId,
                     interviewStep,
                     messageId,
                     timestamp: Date.now(),
@@ -200,7 +202,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
             console.log(
               "✅ Событие interview/message.buffered отправлено для голосового",
               {
-                chatSessionId,
+                interviewSessionId,
                 interviewStep,
                 messageId,
               },
@@ -217,8 +219,8 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
       // Запускаем анализ интервью после проверки группировки (если буферизация не сработала)
       await step.run("check-voice-grouping", async () => {
-        const message = await db.query.chatMessage.findFirst({
-          where: eq(chatMessage.id, messageId),
+        const message = await db.query.interviewMessage.findFirst({
+          where: eq(interviewMessage.id, messageId),
         });
 
         if (!message) {
@@ -226,30 +228,34 @@ export const transcribeVoiceFunction = inngest.createFunction(
           return;
         }
 
-        // Получаем chatSession и response
-        const session = await db.query.chatSession.findFirst({
+        // Получаем interviewSession и response
+        const session = await db.query.interviewSession.findFirst({
           where: (fields, { eq }) => eq(fields.id, message.sessionId),
         });
 
         if (!session) {
-          console.log("⏭️ ChatSession не найден");
+          console.log("⏭️ InterviewSession не найден");
           return;
         }
 
         // Устанавливаем статус INTERVIEW при первом голосовом сообщении
-        if (session.entityType === "vacancy_response") {
-          const candidateMessagesCount = await db.query.chatMessage.findMany({
-            where: (fields, { and, eq }) =>
-              and(
-                eq(fields.sessionId, message.sessionId),
-                eq(fields.role, "user"),
-              ),
-          });
+        if (
+          session.entityType === "vacancy_response" &&
+          session.vacancyResponseId
+        ) {
+          const candidateMessagesCount =
+            await db.query.interviewMessage.findMany({
+              where: (fields, { and, eq }) =>
+                and(
+                  eq(fields.sessionId, message.sessionId),
+                  eq(fields.role, "user"),
+                ),
+            });
 
           // Если это первое сообщение от кандидата
           if (candidateMessagesCount.length === 1) {
             const response = await db.query.vacancyResponse.findFirst({
-              where: eq(vacancyResponse.id, session.entityId),
+              where: eq(vacancyResponse.id, session.vacancyResponseId),
             });
 
             if (
@@ -262,7 +268,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
                 .where(eq(vacancyResponse.id, response.id));
 
               console.log("✅ Статус изменен на INTERVIEW (первое голосовое)", {
-                chatSessionId: message.sessionId,
+                interviewSessionId: message.sessionId,
                 responseId: response.id,
                 previousStatus: response.status,
               });
@@ -278,7 +284,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
         if (!groupCheck.shouldProcess) {
           console.log("⏳ Голосовое не последнее в группе, ждём остальных", {
-            chatSessionId: message.sessionId,
+            interviewSessionId: message.sessionId,
             messageId,
             reason: groupCheck.reason,
           });
@@ -288,7 +294,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
         // Это последнее сообщение в группе - все готово к обработке
         // groupCheck.messages уже содержит транскрипции для голосовых
         console.log("📦 Группа сообщений готова к обработке", {
-          chatSessionId: message.sessionId,
+          interviewSessionId: message.sessionId,
           messagesCount: groupCheck.messages.length,
           reason: groupCheck.reason,
         });
@@ -297,7 +303,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
         const combinedTranscription = formatMessageGroup(groupCheck.messages);
 
         console.log("🚀 Запуск анализа интервью", {
-          chatSessionId: message.sessionId,
+          interviewSessionId: message.sessionId,
           messageId,
         });
 

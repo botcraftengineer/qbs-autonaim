@@ -1,12 +1,10 @@
-import {
-  and,
-  chatMessage,
-  chatSession,
-  desc,
-  eq,
-  vacancyResponse,
-} from "@qbs-autonaim/db";
+import { and, desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import {
+  interviewMessage,
+  interviewSession,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import { saveQuestionAnswer } from "../../../../services/interview";
 import { inngest } from "../../../client";
 
@@ -44,14 +42,14 @@ export const sendNextQuestionFunction = inngest.createFunction(
     await step.run("save-qa", async () => {
       const lastBotMessages = await db
         .select()
-        .from(chatMessage)
+        .from(interviewMessage)
         .where(
           and(
-            eq(chatMessage.sessionId, chatSessionId),
-            eq(chatMessage.role, "assistant"),
+            eq(interviewMessage.sessionId, chatSessionId),
+            eq(interviewMessage.role, "assistant"),
           ),
         )
-        .orderBy(desc(chatMessage.createdAt))
+        .orderBy(desc(interviewMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -60,29 +58,30 @@ export const sendNextQuestionFunction = inngest.createFunction(
     });
 
     const chatId = await step.run("get-chat-id", async () => {
-      const [session] = await db
-        .select()
-        .from(chatSession)
-        .where(eq(chatSession.id, chatSessionId))
-        .limit(1);
-
-      if (!session) {
-        throw new Error("ChatSession не найден");
-      }
-
-      if (session.entityType !== "vacancy_response") {
-        throw new Error("ChatSession не связан с vacancy_response");
-      }
-
-      const response = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, session.entityId),
+      const session = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
       });
 
-      if (!response?.chatId) {
-        throw new Error("ChatId не найден в response");
+      if (!session) {
+        throw new Error("InterviewSession не найден");
       }
 
-      return response.chatId;
+      if (
+        session.entityType === "vacancy_response" &&
+        session.vacancyResponseId
+      ) {
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.id, session.vacancyResponseId),
+        });
+
+        if (!response?.chatId) {
+          throw new Error("ChatId не найден в response");
+        }
+
+        return response.chatId;
+      }
+
+      throw new Error("Не удалось получить chatId");
     });
 
     const delay = await step.run("calculate-delay", () => {
@@ -98,7 +97,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
 
     await step.run("send-message", async () => {
       const [newMessage] = await db
-        .insert(chatMessage)
+        .insert(interviewMessage)
         .values({
           sessionId: chatSessionId,
           role: "assistant",

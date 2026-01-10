@@ -175,11 +175,13 @@ export const completeInterviewFunction = inngest.createFunction(
         const conversationHistory = session.messages
           .filter((msg) => msg.role !== "system")
           .map((msg) => ({
-            sender: msg.role as "user" | "assistant",
+            sender: (msg.role === "user" ? "CANDIDATE" : "BOT") as
+              | "CANDIDATE"
+              | "BOT",
             content:
               msg.type === "voice" && msg.voiceTranscription
                 ? msg.voiceTranscription
-                : msg.content,
+                : (msg.content ?? ""),
           }));
 
         const model = getAIModel();
@@ -278,11 +280,13 @@ export const completeInterviewFunction = inngest.createFunction(
         session?.messages
           .filter((msg) => msg.role !== "system")
           .map((msg) => ({
-            sender: msg.role as "user" | "assistant",
+            sender: (msg.role === "user" ? "CANDIDATE" : "BOT") as
+              | "CANDIDATE"
+              | "BOT",
             content:
               msg.type === "voice" && msg.voiceTranscription
                 ? msg.voiceTranscription
-                : msg.content,
+                : (msg.content ?? ""),
             contentType: msg.type,
           })) ?? [];
 

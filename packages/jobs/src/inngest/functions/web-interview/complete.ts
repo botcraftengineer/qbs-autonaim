@@ -1,11 +1,11 @@
 import {
   and,
-  chatMessage,
-  chatSession,
   desc,
   eq,
   gigResponse,
+  interviewMessage,
   interviewScoring,
+  interviewSession,
   sql,
   vacancyResponse,
 } from "@qbs-autonaim/db";
@@ -67,14 +67,14 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         // Получаем последний вопрос от бота
         const lastBotMessages = await db
           .select()
-          .from(chatMessage)
+          .from(interviewMessage)
           .where(
             and(
-              eq(chatMessage.sessionId, chatSessionId),
-              eq(chatMessage.role, "assistant"),
+              eq(interviewMessage.sessionId, chatSessionId),
+              eq(interviewMessage.role, "assistant"),
             ),
           )
-          .orderBy(desc(chatMessage.createdAt))
+          .orderBy(desc(interviewMessage.createdAt))
           .limit(1);
 
         const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
@@ -109,7 +109,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         await db
           .insert(interviewScoring)
           .values({
-            chatSessionId,
+            interviewSessionId: chatSessionId,
             responseId: responseId ?? undefined,
             gigResponseId: gigResponseId ?? undefined,
             score: result.score,
@@ -117,7 +117,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
             analysis: result.analysis,
           })
           .onConflictDoUpdate({
-            target: interviewScoring.chatSessionId,
+            target: interviewScoring.interviewSessionId,
             set: {
               score: sql`excluded.score`,
               detailedScore: sql`excluded.detailed_score`,
@@ -128,14 +128,14 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         return result;
       });
 
-      // Обновляем статус chatSession
-      await step.run("update-chat-session-status", async () => {
+      // Обновляем статус interviewSession
+      await step.run("update-interview-session-status", async () => {
         await db
-          .update(chatSession)
+          .update(interviewSession)
           .set({ status: "completed" })
-          .where(eq(chatSession.id, chatSessionId));
+          .where(eq(interviewSession.id, chatSessionId));
 
-        console.log("✅ ChatSession status updated to completed", {
+        console.log("✅ InterviewSession status updated to completed", {
           chatSessionId,
         });
       });
@@ -398,16 +398,16 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         reason ||
         "Спасибо за ваши ответы! Интервью завершено. Мы свяжемся с вами в ближайшее время.";
 
-      // Получаем chatSession для доступа к lastChannel
-      const session = await db.query.chatSession.findFirst({
-        where: eq(chatSession.id, chatSessionId),
+      // Получаем interviewSession для доступа к lastChannel
+      const session = await db.query.interviewSession.findFirst({
+        where: eq(interviewSession.id, chatSessionId),
       });
 
       if (!session) {
-        throw new Error(`ChatSession ${chatSessionId} not found`);
+        throw new Error(`InterviewSession ${chatSessionId} not found`);
       }
 
-      await db.insert(chatMessage).values({
+      await db.insert(interviewMessage).values({
         sessionId: chatSessionId,
         role: "assistant",
         type: "text",

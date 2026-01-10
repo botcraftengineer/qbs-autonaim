@@ -1,8 +1,8 @@
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatMessage,
-  chatSession,
+  interviewMessage,
+  interviewSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent, removeNullBytes } from "@qbs-autonaim/lib";
@@ -34,19 +34,19 @@ export const sendOfferFunction = inngest.createFunction(
       return result;
     });
 
-    // Проверяем, есть ли chatSession для этого кандидата
-    const session = await step.run("fetch-chat-session", async () => {
-      return await db.query.chatSession.findFirst({
+    // Проверяем, есть ли interviewSession для этого кандидата
+    const session = await step.run("fetch-interview-session", async () => {
+      return await db.query.interviewSession.findFirst({
         where: and(
-          eq(chatSession.entityType, "vacancy_response"),
-          eq(chatSession.entityId, responseId),
+          eq(interviewSession.entityType, "vacancy_response"),
+          eq(interviewSession.vacancyResponseId, responseId),
         ),
       });
     });
 
     if (!session) {
       console.log("У кандидата нет активной беседы, пропускаем отправку");
-      return { success: false, reason: "no_chat_session" };
+      return { success: false, reason: "no_interview_session" };
     }
 
     const offerMessage = await step.run("generate-offer-message", async () => {
@@ -96,7 +96,7 @@ ${offerDetails.message ? `\n${offerDetails.message}\n` : ""}
 
     // Сохраняем сообщение в базу
     await step.run("save-message", async () => {
-      await db.insert(chatMessage).values({
+      await db.insert(interviewMessage).values({
         sessionId: session.id,
         role: "assistant",
         type: "text",

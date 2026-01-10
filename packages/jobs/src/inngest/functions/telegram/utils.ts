@@ -1,8 +1,8 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  chatMessage,
   companySettings,
+  interviewMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import {
@@ -18,13 +18,13 @@ export function extractPinCode(text: string): string | null {
 }
 
 export async function findDuplicateMessage(
-  chatSessionId: string,
+  interviewSessionId: string,
   externalMessageId: string,
 ): Promise<boolean> {
-  const existingMessage = await db.query.chatMessage.findFirst({
+  const existingMessage = await db.query.interviewMessage.findFirst({
     where: (messages, { and, eq }) =>
       and(
-        eq(messages.sessionId, chatSessionId),
+        eq(messages.sessionId, interviewSessionId),
         eq(messages.externalId, externalMessageId),
       ),
   });
@@ -127,8 +127,8 @@ export async function getChatHistory(chatSessionId: string) {
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 
-  const messages = await db.query.chatMessage.findMany({
-    where: eq(chatMessage.sessionId, chatSessionId),
+  const messages = await db.query.interviewMessage.findMany({
+    where: eq(interviewMessage.sessionId, chatSessionId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
     limit: 10,
   });
@@ -144,9 +144,9 @@ export async function getChatHistory(chatSessionId: string) {
 }
 
 /**
- * Находит chatSession по chatId через связь с vacancyResponse
+ * Находит interviewSession по chatId через связь с vacancyResponse
  */
-export async function findChatSessionByChatId(chatId: string) {
+export async function findInterviewSessionByChatId(chatId: string) {
   // Сначала находим vacancyResponse по chatId
   const response = await db.query.vacancyResponse.findFirst({
     where: eq(vacancyResponse.chatId, chatId),
@@ -159,12 +159,12 @@ export async function findChatSessionByChatId(chatId: string) {
     return null;
   }
 
-  // Затем находим chatSession по entityType и entityId
-  const session = await db.query.chatSession.findFirst({
+  // Затем находим interviewSession по vacancyResponseId
+  const session = await db.query.interviewSession.findFirst({
     where: (fields, { and, eq }) =>
       and(
         eq(fields.entityType, "vacancy_response"),
-        eq(fields.entityId, response.id),
+        eq(fields.vacancyResponseId, response.id),
       ),
   });
 

@@ -1,6 +1,6 @@
 import {
-  chatMessage,
   eq,
+  interviewMessage,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db";
@@ -47,12 +47,12 @@ export const sendTelegramMessageFunction = inngest.createFunction(
 
         const workspaceId = response.vacancy.workspaceId;
 
-        // Получаем chatSession для метаданных
-        const session = await db.query.chatSession.findFirst({
+        // Получаем interviewSession для метаданных
+        const session = await db.query.interviewSession.findFirst({
           where: (fields, { and, eq }) =>
             and(
               eq(fields.entityType, "vacancy_response"),
-              eq(fields.entityId, response.id),
+              eq(fields.vacancyResponseId, response.id),
             ),
         });
 
@@ -146,12 +146,12 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       if (isUuid) {
         await step.run("update-message-record", async () => {
           await db
-            .update(chatMessage)
+            .update(interviewMessage)
             .set({
               // externalId от Telegram — это строка с числом (например, "12345")
               externalId: resultExternalMessageId,
             })
-            .where(eq(chatMessage.id, messageId));
+            .where(eq(interviewMessage.id, messageId));
 
           console.log("✅ Обновлена запись сообщения в БД", {
             messageId,
