@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { gigResponse } from "@qbs-autonaim/db/schema";
+import { gigResponse, interviewSession } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -8,7 +8,7 @@ import { protectedProcedure } from "../../../trpc";
 export const get = protectedProcedure
   .input(
     z.object({
-      responseId: z.uuid(),
+      responseId: z.string().uuid(),
       workspaceId: workspaceIdSchema,
     }),
   )
@@ -49,13 +49,9 @@ export const get = protectedProcedure
       });
     }
 
-    // Получаем conversation с сообщениями
-    const conversationData = await ctx.db.query.conversation.findFirst({
-      where: (conversation, { eq, and }) =>
-        and(
-          eq(conversation.gigResponseId, input.responseId),
-          eq(conversation.source, "WEB"),
-        ),
+    // Получаем interviewSession с сообщениями
+    const sessionData = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSession.gigResponseId, input.responseId),
       with: {
         messages: {
           with: {
@@ -68,6 +64,6 @@ export const get = protectedProcedure
 
     return {
       ...response,
-      conversation: conversationData,
+      interviewSession: sessionData,
     };
   });

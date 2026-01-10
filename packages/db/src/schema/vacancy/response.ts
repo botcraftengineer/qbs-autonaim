@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   index,
+  integer,
   pgTable,
   text,
   unique,
@@ -24,6 +25,7 @@ import {
   importSourceValues,
   responseStatusValues,
 } from "../shared/response-enums";
+import { candidate } from "../candidate/candidate";
 import { vacancy } from "./vacancy";
 
 /**
@@ -36,6 +38,12 @@ export const vacancyResponse = pgTable(
     vacancyId: uuid("vacancy_id")
       .notNull()
       .references(() => vacancy.id, { onDelete: "cascade" }),
+
+    // ID кандидата в глобальной базе (Global Talent Pool)
+    globalCandidateId: uuid("global_candidate_id").references(
+      () => candidate.id,
+      { onDelete: "set null" },
+    ),
 
     // Идентификация кандидата (resumeId с hh.ru или другой платформы)
     resumeId: varchar("resume_id", { length: 100 }).notNull(),
@@ -58,7 +66,12 @@ export const vacancyResponse = pgTable(
     ...candidateExperienceColumns,
 
     // Ожидания по зарплате (специфично для vacancy)
-    salaryExpectations: varchar("salary_expectations", { length: 200 }),
+    // Ожидания по зарплате (специфично для vacancy)
+    salaryExpectationsAmount: integer("salary_expectations_amount"),
+    salaryCurrency: varchar("salary_currency", { length: 3 }).default("RUB"),
+    salaryExpectationsComment: varchar("salary_expectations_comment", {
+      length: 200,
+    }),
 
     // URL профиля на платформе (для фрилансеров)
     platformProfileUrl: text("platform_profile_url"),
@@ -97,7 +110,9 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   chatId: z.string().max(100).optional(),
   coverLetter: z.string().optional(),
   telegramPinCode: z.string().length(4).optional(),
-  salaryExpectations: z.string().max(200).optional(),
+  salaryExpectationsAmount: z.number().int().optional(),
+  salaryCurrency: z.string().length(3).default("RUB"),
+  salaryExpectationsComment: z.string().max(200).optional(),
   resumeLanguage: z.string().max(10).default("ru").optional(),
   status: z.enum(responseStatusValues).default("NEW"),
   hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),

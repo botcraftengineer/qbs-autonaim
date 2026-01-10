@@ -1,5 +1,9 @@
 import { desc, eq } from "@qbs-autonaim/db";
-import { conversation, conversationMessage } from "@qbs-autonaim/db/schema";
+import {
+  interviewMessage,
+  interviewSession,
+  vacancyResponse,
+} from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -26,17 +30,24 @@ export const listMessages = protectedProcedure
       });
     }
 
-    const conv = await ctx.db.query.conversation.findFirst({
-      where: eq(conversation.responseId, input.candidateId),
+    // Find interview session for this vacancy response
+    const interview = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSession.vacancyResponseId, input.candidateId),
     });
 
-    if (!conv) {
+    if (!interview) {
       return [];
     }
 
-    const messages = await ctx.db.query.conversationMessage.findMany({
-      where: eq(conversationMessage.conversationId, conv.id),
-      orderBy: desc(conversationMessage.createdAt),
+    // Get vacancy response for candidate name
+    const response = await ctx.db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, input.candidateId),
+      columns: { candidateName: true },
+    });
+
+    const messages = await ctx.db.query.interviewMessage.findMany({
+      where: eq(interviewMessage.sessionId, interview.id),
+      orderBy: desc(interviewMessage.createdAt),
       limit: 100,
       with: {
         file: true,
@@ -45,7 +56,7 @@ export const listMessages = protectedProcedure
 
     return Promise.all(
       messages.reverse().map(async (msg) => {
-        const isVoice = msg.contentType === "VOICE";
+        const isVoice = msg.type === "voice";
         let voiceUrl: string | undefined;
 
         if (isVoice && msg.file?.key) {
@@ -58,23 +69,21 @@ export const listMessages = protectedProcedure
 
         return {
           id: msg.id,
-          conversationId: conv.id,
+          interviewSessionId: interview.id,
           content: isVoice
             ? msg.voiceTranscription || "Голосовое сообщение"
             : msg.content,
-          sender: msg.sender === "CANDIDATE" ? "candidate" : "recruiter",
+          sender: msg.role === "user" ? "candidate" : "recruiter",
           senderName:
-            msg.sender === "CANDIDATE"
-              ? conv.candidateName || "Кандидат"
+            msg.role === "user"
+              ? response?.candidateName || "Кандидат"
               : "Рекрутер",
           senderAvatar: null,
           timestamp: msg.createdAt,
           type: isVoice ? ("voice" as const) : ("text" as const),
           voiceUrl,
           voiceTranscription: msg.voiceTranscription || undefined,
-          voiceDuration: msg.voiceDuration
-            ? Number.parseInt(msg.voiceDuration, 10)
-            : undefined,
+          voiceDuration: msg.voiceDuration ?? undefined,
         };
       }),
     );

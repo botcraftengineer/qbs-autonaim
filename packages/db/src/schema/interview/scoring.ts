@@ -20,6 +20,9 @@ export const interviewScoring = pgTable("interview_scorings", {
     .unique()
     .references(() => interviewSession.id, { onDelete: "cascade" }),
 
+  // FK на conversation (универсальная таблица)
+  conversationId: uuid("conversation_id"),
+
   // Опциональные FK на отклики (для удобства запросов)
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
     onDelete: "cascade",
@@ -42,6 +45,7 @@ export const CreateInterviewScoringSchema = createInsertSchema(
   interviewScoring,
   {
     interviewSessionId: uuidv7Schema,
+    conversationId: uuidv7Schema.optional(),
     responseId: uuidv7Schema.optional(),
     gigResponseId: uuidv7Schema.optional(),
     score: z.number().int().min(0).max(5),

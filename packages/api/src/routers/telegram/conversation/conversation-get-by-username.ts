@@ -1,11 +1,11 @@
 import {
-  conversation,
-  response as responseTable,
+  interviewSession,
+  vacancyResponse,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 import { verifyWorkspaceAccess } from "../utils";
@@ -19,23 +19,24 @@ export const getConversationByUsernameRouter = protectedProcedure
       ctx.session.user.id,
     );
 
-    const conv = await ctx.db.query.conversation.findFirst({
-      where: eq(conversation.username, input.username),
+    // Search by telegramUsername in metadata
+    const session = await ctx.db.query.interviewSession.findFirst({
+      where: sql`${interviewSession.metadata}->>'telegramUsername' = ${input.username}`,
     });
 
-    if (!conv) {
+    if (!session) {
       return null;
     }
 
-    // Query response separately to check workspace access
-    if (conv.responseId) {
-      const response = await ctx.db.query.response.findFirst({
-        where: eq(responseTable.id, conv.responseId),
+    // Check workspace access through vacancyResponse
+    if (session.vacancyResponseId) {
+      const response = await ctx.db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, session.vacancyResponseId),
       });
 
       if (response) {
         const vacancy = await ctx.db.query.vacancy.findFirst({
-          where: eq(vacancyTable.id, response.entityId),
+          where: eq(vacancyTable.id, response.vacancyId),
           columns: { workspaceId: true },
         });
 
@@ -48,5 +49,5 @@ export const getConversationByUsernameRouter = protectedProcedure
       }
     }
 
-    return conv;
+    return session;
   });

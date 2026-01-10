@@ -1,7 +1,5 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
-import { interviewScoring } from "../interview/scoring";
-import { conversation, conversationMessage } from "./conversation";
 import { interviewLink } from "./interview-link";
 import { responseInvitation } from "./invitation";
 import { response } from "./response";
@@ -28,7 +26,6 @@ export const responseRelations = relations(response, ({ one, many }) => ({
     references: [responseScreening.responseId],
   }),
   invitations: many(responseInvitation),
-  conversations: many(conversation),
 }));
 
 export const responseScreeningRelations = relations(
@@ -47,35 +44,6 @@ export const responseInvitationRelations = relations(
     response: one(response, {
       fields: [responseInvitation.responseId],
       references: [response.id],
-    }),
-  }),
-);
-
-export const conversationRelations = relations(
-  conversation,
-  ({ one, many }) => ({
-    response: one(response, {
-      fields: [conversation.responseId],
-      references: [response.id],
-    }),
-    messages: many(conversationMessage),
-    interviewScoring: one(interviewScoring, {
-      fields: [conversation.id],
-      references: [interviewScoring.interviewSessionId],
-    }),
-  }),
-);
-
-export const conversationMessageRelations = relations(
-  conversationMessage,
-  ({ one }) => ({
-    conversation: one(conversation, {
-      fields: [conversationMessage.conversationId],
-      references: [conversation.id],
-    }),
-    file: one(file, {
-      fields: [conversationMessage.fileId],
-      references: [file.id],
     }),
   }),
 );

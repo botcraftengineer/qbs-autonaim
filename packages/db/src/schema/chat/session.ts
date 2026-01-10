@@ -34,6 +34,7 @@ export const chatChannelEnum = pgEnum("chat_channel", ["web", "email"]);
 /**
  * Командные чаты (НЕ интервью)
  * Для общения команды по вакансиям, гигам, проектам
+ * Также используется для персональных AI-чатов по сущностям
  */
 export const chatSession = pgTable(
   "chat_sessions",
@@ -43,6 +44,9 @@ export const chatSession = pgTable(
     // Полиморфная связь
     entityType: chatEntityTypeEnum("entity_type").notNull(),
     entityId: uuid("entity_id").notNull(), // ID вакансии, гига, проекта
+
+    // Пользователь (для персональных AI-чатов)
+    userId: text("user_id"),
 
     // Заголовок чата
     title: varchar("title", { length: 500 }),
@@ -71,12 +75,19 @@ export const chatSession = pgTable(
       table.entityType,
       table.entityId,
     ),
+    userIdx: index("chat_session_user_idx").on(table.userId),
+    entityUserIdx: index("chat_session_entity_user_idx").on(
+      table.entityType,
+      table.entityId,
+      table.userId,
+    ),
     statusIdx: index("chat_session_status_idx").on(table.status),
   }),
 );
 
 export const chatMessageRoleEnum = pgEnum("chat_message_role", [
   "user", // Участник команды
+  "assistant", // AI ассистент
   "admin", // Админ/рекрутер
   "system", // Системные сообщения
 ]);
@@ -90,6 +101,8 @@ export const chatMessageTypeEnum = pgEnum("chat_message_type", [
 export interface ChatMessageMetadata {
   isRead?: boolean;
   editedAt?: string;
+  latencyMs?: number;
+  entitiesMentioned?: string[];
   [key: string]: unknown;
 }
 
@@ -111,6 +124,9 @@ export const chatMessage = pgTable(
 
     // Контент
     content: text("content"),
+
+    // Quick replies для AI чатов
+    quickReplies: jsonb("quick_replies").$type<string[]>(),
 
     // Файлы
     fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),

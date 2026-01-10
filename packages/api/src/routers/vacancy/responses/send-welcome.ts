@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import {
-  conversation,
-  response as responseTable,
+  interviewSession,
+  vacancyResponse,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
@@ -35,8 +35,8 @@ export const sendWelcome = protectedProcedure
     }
 
     // Получаем данные отклика
-    const response = await ctx.db.query.response.findFirst({
-      where: eq(responseTable.id, responseId),
+    const response = await ctx.db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, responseId),
     });
 
     if (!response) {
@@ -48,7 +48,7 @@ export const sendWelcome = protectedProcedure
 
     // Query vacancy separately to check workspace access
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancyTable.id, response.entityId),
+      where: eq(vacancyTable.id, response.vacancyId),
       columns: { workspaceId: true },
     });
 
@@ -67,48 +67,49 @@ export const sendWelcome = protectedProcedure
       });
     }
 
-    // Создаем или обновляем запись в conversations
+    // Создаем или обновляем interviewSession
     const cleanUsername = username.startsWith("@")
       ? username.substring(1)
       : username;
 
-    // Проверяем существующую conversation
-    const existingConv = await ctx.db.query.conversation.findFirst({
-      where: eq(conversation.responseId, responseId),
+    // Проверяем существующую interviewSession
+    const existingSession = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSession.vacancyResponseId, responseId),
     });
 
-    if (existingConv) {
+    if (existingSession) {
       // Получаем существующие метаданные
       const existingMetadata: Record<string, unknown> =
-        existingConv.metadata || {};
+        existingSession.metadata || {};
 
       // Объединяем с новыми данными
       const updatedMetadata = {
         ...existingMetadata,
+        telegramUsername: cleanUsername,
         responseId,
-        vacancyId: response.entityId,
+        vacancyId: response.vacancyId,
       };
 
-      // Обновляем существующую conversation
+      // Обновляем существующую session
       await ctx.db
-        .update(conversation)
+        .update(interviewSession)
         .set({
-          candidateName: response.candidateName,
-          username: cleanUsername,
-          status: "ACTIVE",
+          status: "active",
+          lastChannel: "telegram",
           metadata: updatedMetadata,
         })
-        .where(eq(conversation.id, existingConv.id));
+        .where(eq(interviewSession.id, existingSession.id));
     } else {
-      // Создаем новую conversation
-      await ctx.db.insert(conversation).values({
-        responseId,
-        candidateName: response.candidateName,
-        username: cleanUsername,
-        status: "ACTIVE",
+      // Создаем новую interviewSession
+      await ctx.db.insert(interviewSession).values({
+        entityType: "vacancy_response",
+        vacancyResponseId: responseId,
+        status: "active",
+        lastChannel: "telegram",
         metadata: {
+          telegramUsername: cleanUsername,
           responseId,
-          vacancyId: response.entityId,
+          vacancyId: response.vacancyId,
         },
       });
     }

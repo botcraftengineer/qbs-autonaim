@@ -1,4 +1,5 @@
 import { relations } from "drizzle-orm";
+import { file } from "../file";
 import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
 import { interviewScoring } from "./scoring";
@@ -35,6 +36,11 @@ export const interviewMessageRelations = relations(
     session: one(interviewSession, {
       fields: [interviewMessage.sessionId],
       references: [interviewSession.id],
+    }),
+    file: one(file, {
+      fields: [interviewMessage.fileId],
+      references: [file.id],
+      relationName: "file",
     }),
   }),
 );

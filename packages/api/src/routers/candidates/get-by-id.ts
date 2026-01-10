@@ -1,9 +1,9 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
-  conversationMessage as conversationMessageTable,
-  conversation as conversationTable,
   file as fileTable,
+  interviewMessage as interviewMessageTable,
   interviewScoring as interviewScoringTable,
+  interviewSession as interviewSessionTable,
   responseScreening as responseScreeningTable,
   response as responseTable,
   vacancy,
@@ -97,20 +97,21 @@ export const getById = protectedProcedure
       where: eq(responseScreeningTable.responseId, response.id),
     });
 
-    const conversation = await ctx.db.query.conversation.findFirst({
-      where: eq(conversationTable.responseId, response.id),
+    // Find interview session for this response
+    const interview = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSessionTable.vacancyResponseId, response.id),
     });
 
     let interviewScoring = null;
     let messageCount = 0;
 
-    if (conversation) {
+    if (interview) {
       interviewScoring = await ctx.db.query.interviewScoring.findFirst({
-        where: eq(interviewScoringTable.conversationId, conversation.id),
+        where: eq(interviewScoringTable.interviewSessionId, interview.id),
       });
 
-      const messages = await ctx.db.query.conversationMessage.findMany({
-        where: eq(conversationMessageTable.conversationId, conversation.id),
+      const messages = await ctx.db.query.interviewMessage.findMany({
+        where: eq(interviewMessageTable.sessionId, interview.id),
         columns: { id: true },
       });
       messageCount = messages.length;

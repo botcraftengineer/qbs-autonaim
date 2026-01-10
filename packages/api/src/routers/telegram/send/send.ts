@@ -1,32 +1,34 @@
 import {
-  CreateMessageSchema,
-  conversation,
-  conversationMessage,
   eq,
-  response as responseTable,
+  interviewMessage,
+  interviewSession,
+  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 
+const sendMessageInputSchema = z.object({
+  sessionId: z.string().uuid(),
+  content: z.string().min(1),
+  type: z.enum(["text", "voice", "file"]).default("text"),
+  fileId: z.string().uuid().optional(),
+  voiceDuration: z.number().int().positive().optional(),
+});
+
 export const sendMessageRouter = protectedProcedure
-  .input(
-    CreateMessageSchema.extend({
-      sender: z.literal("ADMIN"),
-    }),
-  )
+  .input(sendMessageInputSchema)
   .mutation(async ({ input, ctx }) => {
     const [message] = await ctx.db
-      .insert(conversationMessage)
+      .insert(interviewMessage)
       .values({
-        conversationId: input.conversationId,
-        sender: input.sender,
-        contentType: input.contentType,
-        channel: "WEB",
+        sessionId: input.sessionId,
+        role: "assistant", // Админ отправляет как assistant
+        type: input.type,
+        channel: "web",
         content: input.content,
         fileId: input.fileId,
         voiceDuration: input.voiceDuration,
-        externalMessageId: input.externalMessageId,
       })
       .returning();
 
@@ -34,26 +36,31 @@ export const sendMessageRouter = protectedProcedure
       throw new Error("Failed to create message");
     }
 
-    const conversationData = await ctx.db
+    // Получаем данные сессии для отправки в Telegram
+    const sessionData = await ctx.db
       .select({
-        id: conversation.id,
-        chatId: responseTable.chatId,
+        id: interviewSession.id,
+        chatId: vacancyResponse.chatId,
+        entityType: interviewSession.entityType,
       })
-      .from(conversation)
-      .innerJoin(responseTable, eq(conversation.responseId, responseTable.id))
-      .where(eq(conversation.id, input.conversationId))
+      .from(interviewSession)
+      .leftJoin(
+        vacancyResponse,
+        eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+      )
+      .where(eq(interviewSession.id, input.sessionId))
       .limit(1);
 
-    if (!conversationData[0] || !conversationData[0].chatId) {
-      throw new Error("Conversation or chatId not found");
+    if (!sessionData[0] || !sessionData[0].chatId) {
+      throw new Error("Interview session or chatId not found");
     }
 
     await inngest.send({
       name: "telegram/message.send",
       data: {
         messageId: message.id,
-        chatId: conversationData[0].chatId,
-        content: message.content,
+        chatId: sessionData[0].chatId,
+        content: message.content ?? "",
       },
     });
 

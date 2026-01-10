@@ -1,8 +1,8 @@
 import {
-  conversation,
-  conversationMessage,
-  response as responseTable,
+  interviewMessage,
+  interviewSession,
   vacancy,
+  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { and, desc, eq, inArray } from "drizzle-orm";
@@ -24,56 +24,59 @@ export const getAllConversationsRouter = protectedProcedure
       ctx.session.user.id,
     );
 
-    const conversations = await ctx.db
+    const sessions = await ctx.db
       .select()
-      .from(conversation)
-      .innerJoin(responseTable, eq(conversation.responseId, responseTable.id))
-      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
+      .from(interviewSession)
+      .innerJoin(
+        vacancyResponse,
+        eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+      )
+      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
       .where(
         input.vacancyId
           ? and(
-              eq(responseTable.entityType, "vacancy"),
+              eq(interviewSession.entityType, "vacancy_response"),
               eq(vacancy.workspaceId, input.workspaceId),
-              eq(responseTable.entityId, input.vacancyId),
+              eq(vacancyResponse.vacancyId, input.vacancyId),
             )
           : and(
-              eq(responseTable.entityType, "vacancy"),
+              eq(interviewSession.entityType, "vacancy_response"),
               eq(vacancy.workspaceId, input.workspaceId),
             ),
       );
 
-    if (conversations.length === 0) {
+    if (sessions.length === 0) {
       return [];
     }
 
-    const conversationIds = conversations.map((c) => c.conversations.id);
+    const sessionIds = sessions.map((s) => s.interview_sessions.id);
 
     const allMessages = await ctx.db
       .select()
-      .from(conversationMessage)
-      .where(inArray(conversationMessage.conversationId, conversationIds))
-      .orderBy(desc(conversationMessage.createdAt));
+      .from(interviewMessage)
+      .where(inArray(interviewMessage.sessionId, sessionIds))
+      .orderBy(desc(interviewMessage.createdAt));
 
-    const messagesByConversation = new Map<string, (typeof allMessages)[0]>();
+    const messagesBySession = new Map<string, (typeof allMessages)[0]>();
     for (const msg of allMessages) {
-      if (!messagesByConversation.has(msg.conversationId)) {
-        messagesByConversation.set(msg.conversationId, msg);
+      if (!messagesBySession.has(msg.sessionId)) {
+        messagesBySession.set(msg.sessionId, msg);
       }
     }
 
-    const conversationsWithMessages = conversations.map((conv) => {
-      const lastMessage = messagesByConversation.get(conv.conversations.id);
+    const sessionsWithMessages = sessions.map((s) => {
+      const lastMessage = messagesBySession.get(s.interview_sessions.id);
       return {
-        ...conv.conversations,
+        ...s.interview_sessions,
         messages: lastMessage ? [lastMessage] : [],
         response: {
-          ...conv.responses,
-          vacancy: conv.vacancies,
+          ...s.vacancy_responses,
+          vacancy: s.vacancies,
         },
       };
     });
 
-    conversationsWithMessages.sort((a, b) => {
+    sessionsWithMessages.sort((a, b) => {
       const aLastMessage = a.messages[0];
       const bLastMessage = b.messages[0];
 
@@ -86,5 +89,5 @@ export const getAllConversationsRouter = protectedProcedure
       );
     });
 
-    return conversationsWithMessages;
+    return sessionsWithMessages;
   });

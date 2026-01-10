@@ -1,5 +1,6 @@
 export * from "./audit";
 export * from "./auth";
+export * from "./candidate";
 export * from "./chat";
 export * from "./company";
 export * from "./custom-domain";

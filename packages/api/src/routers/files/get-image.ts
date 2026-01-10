@@ -6,18 +6,6 @@ import { protectedProcedure } from "../../trpc";
 
 /**
  * Получение presigned URL для изображения с контролем доступа
- *
- * Преимущества этого подхода:
- * - Проверка прав доступа к workspace перед выдачей URL
- * - Короткое время жизни URL (5 минут) для безопасности
- * - Прямой доступ к S3 без нагрузки на сервер при скачивании
- * - Скрытие структуры S3 от клиента (URL генерируется на сервере)
- *
- * Использование на фронтенде:
- * 1. Получить fileId из списка кандидатов (avatarFileId)
- * 2. Вызвать api.files.getImageUrl({ workspaceId, fileId })
- * 3. Использовать полученный URL в <img src={url} />
- * 4. При необходимости обновить URL через 5 минут
  */
 export const getImageUrl = protectedProcedure
   .input(
@@ -42,19 +30,19 @@ export const getImageUrl = protectedProcedure
 
     // Получаем файл из БД с проверкой принадлежности к workspace
     // Файлы могут быть связаны через:
-    // 1. response (resumePdfFileId, photoFileId) → vacancy → workspace
-    // 2. conversationMessage (fileId) → conversation → response → vacancy → workspace
+    // 1. vacancyResponse (resumePdfFileId, photoFileId) → vacancy → workspace
+    // 2. interviewMessage (fileId) → interviewSession → vacancyResponse → vacancy → workspace
     const fileRecord = await ctx.db.query.file.findFirst({
       where: (files, { eq }) => eq(files.id, input.fileId),
       with: {
-        // Проверяем связь через response (resumePdfFileId)
+        // Проверяем связь через vacancyResponse (resumePdfFileId)
         vacancyResponsesAsResumePdf: true,
-        // Проверяем связь через response (photoFileId)
+        // Проверяем связь через vacancyResponse (photoFileId)
         vacancyResponsesAsPhoto: true,
-        // Проверяем связь через conversationMessage
-        conversationMessages: {
+        // Проверяем связь через interviewMessage
+        interviewMessages: {
           with: {
-            conversation: true,
+            session: true,
           },
         },
       },
@@ -71,8 +59,8 @@ export const getImageUrl = protectedProcedure
     const responseIds = [
       ...fileRecord.vacancyResponsesAsResumePdf.map((r) => r.id),
       ...fileRecord.vacancyResponsesAsPhoto.map((r) => r.id),
-      ...fileRecord.conversationMessages
-        .map((m) => m.conversation?.responseId)
+      ...fileRecord.interviewMessages
+        .map((m) => m.session?.vacancyResponseId)
         .filter((id): id is string => id !== null && id !== undefined),
     ].filter((id): id is string => id !== undefined);
 
@@ -83,13 +71,13 @@ export const getImageUrl = protectedProcedure
       });
     }
 
-    // Query all responses to get their entityIds
-    const responses = await ctx.db.query.response.findMany({
+    // Query all responses to get their vacancyIds
+    const responses = await ctx.db.query.vacancyResponse.findMany({
       where: (response, { inArray }) => inArray(response.id, responseIds),
-      columns: { id: true, entityId: true },
+      columns: { id: true, vacancyId: true },
     });
 
-    const vacancyIds = [...new Set(responses.map((r) => r.entityId))].filter(
+    const vacancyIds = [...new Set(responses.map((r) => r.vacancyId))].filter(
       (id): id is string => id !== undefined,
     );
 

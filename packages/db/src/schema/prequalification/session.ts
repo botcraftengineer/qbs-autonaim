@@ -14,6 +14,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 import { chatSession } from "../chat/session";
+import { interviewSession } from "../interview/session";
 import { vacancyResponse } from "../vacancy/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
@@ -128,10 +129,18 @@ export const prequalificationSession = pgTable(
       onDelete: "set null",
     }),
 
-    // Связь с чат-сессией (заменяет conversation)
+    // Связь с чат-сессией (для внутренних обсуждений)
     chatSessionId: uuid("chat_session_id").references(() => chatSession.id, {
       onDelete: "set null",
     }),
+
+    // Связь с интервью-сессией (для диалога с кандидатом)
+    interviewSessionId: uuid("interview_session_id").references(
+      () => interviewSession.id,
+      {
+        onDelete: "set null",
+      },
+    ),
 
     // Статус сессии
     status: prequalificationStatusEnum("status")
@@ -179,6 +188,9 @@ export const prequalificationSession = pgTable(
     statusIdx: index("preq_session_status_idx").on(table.status),
     fitScoreIdx: index("preq_session_fit_score_idx").on(table.fitScore),
     chatSessionIdx: index("preq_session_chat_idx").on(table.chatSessionId),
+    interviewSessionIdx: index("preq_session_interview_idx").on(
+      table.interviewSessionId,
+    ),
   }),
 );
 

@@ -11,10 +11,11 @@ import {
   sql,
 } from "@qbs-autonaim/db";
 import {
-  conversationMessage,
+  interviewMessage,
+  interviewSession,
   responseScreening,
-  response as responseTable,
   vacancy,
+  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -96,29 +97,22 @@ export const list = protectedProcedure
         .select({ responseId: responseScreening.responseId })
         .from(responseScreening)
         .innerJoin(
-          responseTable,
-          eq(responseScreening.responseId, responseTable.id),
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
         )
-        .where(
-          and(
-            eq(responseTable.entityType, "vacancy"),
-            eq(responseTable.entityId, vacancyId),
-          ),
-        );
+        .where(eq(vacancyResponse.vacancyId, vacancyId));
       filteredResponseIds = screenedResponses.map((r) => r.responseId);
     } else if (screeningFilter === "not-evaluated") {
-      // Оптимизация: используем LEFT JOIN вместо двух запросов
       const notEvaluated = await ctx.db
-        .select({ id: responseTable.id })
-        .from(responseTable)
+        .select({ id: vacancyResponse.id })
+        .from(vacancyResponse)
         .leftJoin(
           responseScreening,
-          eq(responseTable.id, responseScreening.responseId),
+          eq(vacancyResponse.id, responseScreening.responseId),
         )
         .where(
           and(
-            eq(responseTable.entityType, "vacancy"),
-            eq(responseTable.entityId, vacancyId),
+            eq(vacancyResponse.vacancyId, vacancyId),
             sql`${responseScreening.responseId} IS NULL`,
           ),
         );
@@ -128,13 +122,12 @@ export const list = protectedProcedure
         .select({ responseId: responseScreening.responseId })
         .from(responseScreening)
         .innerJoin(
-          responseTable,
-          eq(responseScreening.responseId, responseTable.id),
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
         )
         .where(
           and(
-            eq(responseTable.entityType, "vacancy"),
-            eq(responseTable.entityId, vacancyId),
+            eq(vacancyResponse.vacancyId, vacancyId),
             gte(responseScreening.score, 4),
           ),
         );
@@ -144,13 +137,12 @@ export const list = protectedProcedure
         .select({ responseId: responseScreening.responseId })
         .from(responseScreening)
         .innerJoin(
-          responseTable,
-          eq(responseScreening.responseId, responseTable.id),
+          vacancyResponse,
+          eq(responseScreening.responseId, vacancyResponse.id),
         )
         .where(
           and(
-            eq(responseTable.entityType, "vacancy"),
-            eq(responseTable.entityId, vacancyId),
+            eq(vacancyResponse.vacancyId, vacancyId),
             lt(responseScreening.score, 4),
           ),
         );
@@ -158,10 +150,7 @@ export const list = protectedProcedure
     }
 
     // Базовое условие WHERE
-    const whereConditions: SQL[] = [
-      eq(responseTable.entityType, "vacancy"),
-      eq(responseTable.entityId, vacancyId),
-    ];
+    const whereConditions: SQL[] = [eq(vacancyResponse.vacancyId, vacancyId)];
     if (filteredResponseIds !== null) {
       if (filteredResponseIds.length === 0) {
         return {
@@ -172,19 +161,19 @@ export const list = protectedProcedure
           totalPages: 0,
         };
       }
-      whereConditions.push(inArray(responseTable.id, filteredResponseIds));
+      whereConditions.push(inArray(vacancyResponse.id, filteredResponseIds));
     }
 
     // Добавляем поиск по ФИО кандидата
     if (search?.trim()) {
       whereConditions.push(
-        ilike(responseTable.candidateName, `%${search.trim()}%`),
+        ilike(vacancyResponse.candidateName, `%${search.trim()}%`),
       );
     }
 
     // Добавляем фильтр по статусу
     if (statusFilter && statusFilter.length > 0) {
-      whereConditions.push(inArray(responseTable.status, statusFilter));
+      whereConditions.push(inArray(vacancyResponse.status, statusFilter));
     }
 
     const whereCondition = and(...whereConditions);
@@ -194,32 +183,31 @@ export const list = protectedProcedure
     if (sortField === "createdAt") {
       orderByClause =
         sortDirection === "asc"
-          ? asc(responseTable.createdAt)
-          : desc(responseTable.createdAt);
+          ? asc(vacancyResponse.createdAt)
+          : desc(vacancyResponse.createdAt);
     } else if (sortField === "status") {
       orderByClause =
         sortDirection === "asc"
-          ? asc(responseTable.status)
-          : desc(responseTable.status);
+          ? asc(vacancyResponse.status)
+          : desc(vacancyResponse.status);
     } else if (sortField === "respondedAt") {
       orderByClause =
         sortDirection === "asc"
-          ? asc(responseTable.respondedAt)
-          : desc(responseTable.respondedAt);
+          ? asc(vacancyResponse.respondedAt)
+          : desc(vacancyResponse.respondedAt);
     } else {
-      orderByClause = desc(responseTable.createdAt);
+      orderByClause = desc(vacancyResponse.createdAt);
     }
 
     // Получаем отфильтрованные данные с пагинацией
-    // Оптимизация: загружаем только нужные поля
-    const responsesRaw = await ctx.db.query.response.findMany({
+    const responsesRaw = await ctx.db.query.vacancyResponse.findMany({
       where: whereCondition,
       orderBy: [orderByClause],
       limit,
       offset,
       columns: {
         id: true,
-        entityId: true,
+        vacancyId: true,
         candidateName: true,
         photoFileId: true,
         status: true,
@@ -264,14 +252,14 @@ export const list = protectedProcedure
           })
         : [];
 
-    const conversations =
+    const sessions =
       responseIds.length > 0
-        ? await ctx.db.query.conversation.findMany({
-            where: (c, { inArray }) => inArray(c.responseId, responseIds),
+        ? await ctx.db.query.interviewSession.findMany({
+            where: (s, { inArray }) =>
+              inArray(s.vacancyResponseId, responseIds),
             columns: {
               id: true,
-              responseId: true,
-              candidateName: true,
+              vacancyResponseId: true,
               status: true,
               createdAt: true,
               updatedAt: true,
@@ -279,22 +267,22 @@ export const list = protectedProcedure
           })
         : [];
 
-    // Получаем количество сообщений для каждой беседы одним запросом
-    const conversationIds = conversations.map((c) => c.id);
+    // Получаем количество сообщений для каждой сессии одним запросом
+    const sessionIds = sessions.map((s) => s.id);
 
     let messageCountsMap = new Map<string, number>();
-    if (conversationIds.length > 0) {
+    if (sessionIds.length > 0) {
       const messageCounts = await ctx.db
         .select({
-          conversationId: conversationMessage.conversationId,
+          sessionId: interviewMessage.sessionId,
           count: sql<number>`count(*)::int`,
         })
-        .from(conversationMessage)
-        .where(inArray(conversationMessage.conversationId, conversationIds))
-        .groupBy(conversationMessage.conversationId);
+        .from(interviewMessage)
+        .where(inArray(interviewMessage.sessionId, sessionIds))
+        .groupBy(interviewMessage.sessionId);
 
       messageCountsMap = new Map(
-        messageCounts.map((mc) => [mc.conversationId, mc.count]),
+        messageCounts.map((mc) => [mc.sessionId, mc.count]),
       );
     }
 
@@ -304,7 +292,7 @@ export const list = protectedProcedure
       const interviewScoring = interviewScorings.find(
         (is) => is.responseId === r.id,
       );
-      const conversation = conversations.find((c) => c.responseId === r.id);
+      const session = sessions.find((s) => s.vacancyResponseId === r.id);
 
       return {
         ...r,
@@ -326,14 +314,13 @@ export const list = protectedProcedure
                 : null,
             }
           : null,
-        conversation: conversation
+        interviewSession: session
           ? {
-              id: conversation.id,
-              candidateName: conversation.candidateName,
-              status: conversation.status,
-              createdAt: conversation.createdAt,
-              updatedAt: conversation.updatedAt,
-              messageCount: messageCountsMap.get(conversation.id) || 0,
+              id: session.id,
+              status: session.status,
+              createdAt: session.createdAt,
+              updatedAt: session.updatedAt,
+              messageCount: messageCountsMap.get(session.id) || 0,
             }
           : null,
       };
@@ -357,7 +344,7 @@ export const list = protectedProcedure
     // Получаем общее количество для пагинации
     const totalResult = await ctx.db
       .select({ count: sql<number>`count(*)` })
-      .from(responseTable)
+      .from(vacancyResponse)
       .where(whereCondition);
 
     const total = Number(totalResult[0]?.count ?? 0);

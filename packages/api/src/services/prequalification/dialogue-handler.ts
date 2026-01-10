@@ -11,8 +11,8 @@ import type {
   VacancyRequirements,
 } from "@qbs-autonaim/db";
 import {
-  conversation,
-  conversationMessage,
+  interviewMessage,
+  interviewSession,
   prequalificationSession,
   vacancy,
 } from "@qbs-autonaim/db/schema";
@@ -33,7 +33,7 @@ interface DialogueContext {
   sessionId: string;
   workspaceId: string;
   vacancyId: string;
-  conversationId: string | null;
+  interviewSessionId: string | null;
   parsedResume: ParsedResume | null;
   vacancyTitle: string;
   vacancyDescription: string | null;
@@ -72,7 +72,7 @@ export class DialogueHandler {
         id: prequalificationSession.id,
         workspaceId: prequalificationSession.workspaceId,
         vacancyId: prequalificationSession.vacancyId,
-        conversationId: prequalificationSession.conversationId,
+        interviewSessionId: prequalificationSession.interviewSessionId,
         parsedResume: prequalificationSession.parsedResume,
         status: prequalificationSession.status,
       })
@@ -121,11 +121,11 @@ export class DialogueHandler {
       );
     }
 
-    // Получаем историю диалога если есть conversationId
+    // Получаем историю диалога если есть interviewSessionId
     let conversationHistory: DialogueMessage[] = [];
-    if (session.conversationId) {
+    if (session.interviewSessionId) {
       conversationHistory = await this.getConversationHistory(
-        session.conversationId,
+        session.interviewSessionId,
       );
     }
 
@@ -133,7 +133,7 @@ export class DialogueHandler {
       sessionId: session.id,
       workspaceId: session.workspaceId,
       vacancyId: session.vacancyId,
-      conversationId: session.conversationId,
+      interviewSessionId: session.interviewSessionId,
       parsedResume: session.parsedResume,
       vacancyTitle: vacancyData.title,
       vacancyDescription: vacancyData.description,
@@ -147,21 +147,22 @@ export class DialogueHandler {
    * Получает историю диалога из базы данных
    */
   async getConversationHistory(
-    conversationId: string,
+    interviewSessionId: string,
   ): Promise<DialogueMessage[]> {
     const messages = await this.db
       .select({
-        content: conversationMessage.content,
-        sender: conversationMessage.sender,
-        createdAt: conversationMessage.createdAt,
+        content: interviewMessage.content,
+        role: interviewMessage.role,
+        createdAt: interviewMessage.createdAt,
       })
-      .from(conversationMessage)
-      .where(eq(conversationMessage.conversationId, conversationId))
-      .orderBy(asc(conversationMessage.createdAt));
+      .from(interviewMessage)
+      .where(eq(interviewMessage.sessionId, interviewSessionId))
+      .orderBy(asc(interviewMessage.createdAt));
 
     return messages.map((msg) => ({
-      role: msg.sender === "BOT" ? ("assistant" as const) : ("user" as const),
-      content: msg.content,
+      role:
+        msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
+      content: msg.content ?? "",
       timestamp: msg.createdAt,
     }));
   }
@@ -170,66 +171,61 @@ export class DialogueHandler {
    * Сохраняет сообщение в историю диалога
    */
   async saveMessage(
-    conversationId: string,
+    interviewSessionId: string,
     content: string,
-    sender: "CANDIDATE" | "BOT",
+    role: "user" | "assistant",
   ): Promise<void> {
-    await this.db.insert(conversationMessage).values({
-      conversationId,
+    await this.db.insert(interviewMessage).values({
+      sessionId: interviewSessionId,
       content,
-      sender,
-      contentType: "TEXT",
-      channel: "WEB",
+      role,
+      type: "text",
+      channel: "web",
     });
   }
 
   /**
-   * Создаёт новый разговор для сессии
+   * Создаёт новую interviewSession для преквалификации
    */
-  async createConversation(
-    sessionId: string,
+  async createInterviewSession(
+    prequalSessionId: string,
     workspaceId: string,
-    candidateName?: string,
+    vacancyResponseId?: string,
   ): Promise<string> {
-    // Сначала нужно создать vacancyResponse для conversation
-    // Но в контексте преквалификации мы можем создать conversation напрямую
-    // с responseId = null, так как response создаётся после успешной преквалификации
-
-    const [newConversation] = await this.db
-      .insert(conversation)
+    const [newSession] = await this.db
+      .insert(interviewSession)
       .values({
-        // responseId будет null до создания response
-        responseId: null,
-        candidateName: candidateName ?? null,
-        status: "ACTIVE",
-        source: "WEB",
+        entityType: "vacancy_response",
+        vacancyResponseId: vacancyResponseId ?? null,
+        status: "active",
+        lastChannel: "web",
         metadata: {
-          prequalificationSessionId: sessionId,
+          prequalificationSessionId: prequalSessionId,
           workspaceId,
         },
       })
-      .returning({ id: conversation.id });
+      .returning({ id: interviewSession.id });
 
-    if (!newConversation) {
+    if (!newSession) {
       throw new PrequalificationError(
-        "CONVERSATION_CREATION_FAILED",
-        "Не удалось создать разговор",
-        { sessionId },
+        "INTERVIEW_SESSION_CREATION_FAILED",
+        "Не удалось создать сессию интервью",
+        { prequalSessionId },
       );
     }
 
-    // Обновляем сессию с conversationId
+    // Обновляем сессию преквалификации с interviewSessionId
     await this.db
       .update(prequalificationSession)
-      .set({ conversationId: newConversation.id })
+      .set({ interviewSessionId: newSession.id })
       .where(
         and(
-          eq(prequalificationSession.id, sessionId),
+          eq(prequalificationSession.id, prequalSessionId),
           eq(prequalificationSession.workspaceId, workspaceId),
         ),
       );
 
-    return newConversation.id;
+    return newSession.id;
   }
 
   /**
@@ -285,7 +281,6 @@ export class DialogueHandler {
    */
   private questionMatches(message: string, question: string): boolean {
     // Простая проверка на вхождение ключевых слов
-    // В реальной системе можно использовать более сложную логику
     const keywords = question.split(/\s+/).filter((word) => word.length > 3);
 
     // Если хотя бы 60% ключевых слов присутствуют в сообщении
@@ -319,9 +314,6 @@ export class DialogueHandler {
     if (userMessages < minExchanges) {
       return false;
     }
-
-    // Дополнительная логика может быть добавлена здесь
-    // Например, проверка на наличие ключевой информации
 
     return false;
   }

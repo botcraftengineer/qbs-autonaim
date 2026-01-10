@@ -1,12 +1,12 @@
 import {
-  type GigChatMessageMetadata,
-  gigChatMessage,
-  gigChatSession,
+  type ChatMessageMetadata,
+  chatMessage,
+  chatSession,
 } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { desc, eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   loadCandidatesContext,
@@ -133,17 +133,22 @@ export const sendMessage = protectedProcedure
       });
     }
 
-    // 2. Загрузка или создание сессии
-    let session = await ctx.db.query.gigChatSession.findFirst({
-      where: (gigChatSession, { and, eq }) =>
-        and(eq(gigChatSession.gigId, gigId), eq(gigChatSession.userId, userId)),
+    // 2. Загрузка или создание сессии (используем chatSession для админских чатов)
+    let session = await ctx.db.query.chatSession.findFirst({
+      where: (chatSession, { and, eq }) =>
+        and(
+          eq(chatSession.entityType, "gig"),
+          eq(chatSession.entityId, gigId),
+          eq(chatSession.userId, userId),
+        ),
     });
 
     if (!session) {
       const [newSession] = await ctx.db
-        .insert(gigChatSession)
+        .insert(chatSession)
         .values({
-          gigId,
+          entityType: "gig",
+          entityId: gigId,
           userId,
           messageCount: 0,
         })
@@ -171,18 +176,18 @@ export const sendMessage = protectedProcedure
     const candidatesContext = await loadCandidatesContext(ctx.db, gigId);
 
     // 4. Загрузка истории диалога (последние 10 сообщений)
-    const historyMessages = await ctx.db.query.gigChatMessage.findMany({
-      where: (gigChatMessage, { eq }) =>
-        eq(gigChatMessage.sessionId, session.id),
-      orderBy: (gigChatMessage, { desc }) => [desc(gigChatMessage.createdAt)],
+    const historyMessages = await ctx.db.query.chatMessage.findMany({
+      where: (chatMessage, { eq }) => eq(chatMessage.sessionId, session.id),
+      orderBy: (chatMessage, { desc }) => [desc(chatMessage.createdAt)],
       limit: 10,
     });
 
     const conversationHistory: ChatHistoryMessage[] = historyMessages
       .reverse()
+      .filter((msg) => msg.role === "user" || msg.role === "assistant")
       .map((msg) => ({
-        role: msg.role,
-        content: msg.content,
+        role: msg.role as "user" | "assistant",
+        content: msg.content ?? "",
       }));
 
     // 5. Построение промпта
@@ -218,7 +223,6 @@ export const sendMessage = protectedProcedure
       console.log("[gig-ai-chat] AI response length:", fullText.length);
 
       // 7. Парсинг и валидация ответа
-      // Если ответ не в JSON формате, используем его как есть
       let aiResponse: {
         message: string;
         quickReplies?: string[];
@@ -238,21 +242,18 @@ export const sendMessage = protectedProcedure
               candidatesMentioned: validationResult.data.candidatesMentioned,
             };
           } else {
-            // Если валидация не прошла, используем текст как есть
             aiResponse = {
               message: fullText,
               quickReplies: [],
             };
           }
         } catch {
-          // Если парсинг не удался, используем текст как есть
           aiResponse = {
             message: fullText,
             quickReplies: [],
           };
         }
       } else {
-        // Если JSON не найден, используем текст как есть
         aiResponse = {
           message: fullText,
           quickReplies: [],
@@ -260,21 +261,23 @@ export const sendMessage = protectedProcedure
       }
 
       // 8. Сохранение сообщений в БД
-      const metadata: GigChatMessageMetadata = {
+      const metadata: ChatMessageMetadata = {
         latencyMs,
-        candidatesMentioned: aiResponse.candidatesMentioned,
+        entitiesMentioned: aiResponse.candidatesMentioned,
       };
 
       // Сохраняем сообщение пользователя
-      await ctx.db.insert(gigChatMessage).values({
+      await ctx.db.insert(chatMessage).values({
         sessionId: session.id,
+        userId,
         role: "user",
         content: message,
       });
 
       // Сохраняем ответ ассистента
-      await ctx.db.insert(gigChatMessage).values({
+      await ctx.db.insert(chatMessage).values({
         sessionId: session.id,
+        userId,
         role: "assistant",
         content: aiResponse.message,
         quickReplies: aiResponse.quickReplies,
@@ -283,12 +286,12 @@ export const sendMessage = protectedProcedure
 
       // Обновляем счетчик сообщений и время последнего сообщения
       await ctx.db
-        .update(gigChatSession)
+        .update(chatSession)
         .set({
           messageCount: session.messageCount + 2,
           lastMessageAt: new Date(),
         })
-        .where(eq(gigChatSession.id, session.id));
+        .where(eq(chatSession.id, session.id));
 
       return {
         message: aiResponse.message,
@@ -348,13 +351,16 @@ export const getHistory = protectedProcedure
     }
 
     // 2. Загрузка сессии
-    const session = await ctx.db.query.gigChatSession.findFirst({
-      where: (gigChatSession, { and, eq }) =>
-        and(eq(gigChatSession.gigId, gigId), eq(gigChatSession.userId, userId)),
+    const session = await ctx.db.query.chatSession.findFirst({
+      where: (chatSession, { and, eq }) =>
+        and(
+          eq(chatSession.entityType, "gig"),
+          eq(chatSession.entityId, gigId),
+          eq(chatSession.userId, userId),
+        ),
     });
 
     if (!session) {
-      // Если сессии нет, возвращаем пустую историю
       return {
         messages: [],
         hasMore: false,
@@ -362,17 +368,15 @@ export const getHistory = protectedProcedure
     }
 
     // 3. Загрузка последних N сообщений
-    const messages = await ctx.db.query.gigChatMessage.findMany({
-      where: (gigChatMessage, { eq }) =>
-        eq(gigChatMessage.sessionId, session.id),
-      orderBy: (gigChatMessage, { desc }) => [desc(gigChatMessage.createdAt)],
-      limit: limit + 1, // Загружаем на 1 больше, чтобы проверить hasMore
+    const messages = await ctx.db.query.chatMessage.findMany({
+      where: (chatMessage, { eq }) => eq(chatMessage.sessionId, session.id),
+      orderBy: (chatMessage, { desc }) => [desc(chatMessage.createdAt)],
+      limit: limit + 1,
     });
 
     const hasMore = messages.length > limit;
     const resultMessages = hasMore ? messages.slice(0, limit) : messages;
 
-    // Возвращаем в обратном порядке (от старых к новым)
     return {
       messages: resultMessages.reverse().map((msg) => ({
         id: msg.id,
@@ -428,13 +432,16 @@ export const clearHistory = protectedProcedure
     }
 
     // 2. Загрузка сессии
-    const session = await ctx.db.query.gigChatSession.findFirst({
-      where: (gigChatSession, { and, eq }) =>
-        and(eq(gigChatSession.gigId, gigId), eq(gigChatSession.userId, userId)),
+    const session = await ctx.db.query.chatSession.findFirst({
+      where: (chatSession, { and, eq }) =>
+        and(
+          eq(chatSession.entityType, "gig"),
+          eq(chatSession.entityId, gigId),
+          eq(chatSession.userId, userId),
+        ),
     });
 
     if (!session) {
-      // Если сессии нет, нечего удалять
       return {
         success: true,
       };
@@ -442,17 +449,17 @@ export const clearHistory = protectedProcedure
 
     // 3. Удаление всех сообщений сессии
     await ctx.db
-      .delete(gigChatMessage)
-      .where(eq(gigChatMessage.sessionId, session.id));
+      .delete(chatMessage)
+      .where(eq(chatMessage.sessionId, session.id));
 
     // 4. Сброс messageCount
     await ctx.db
-      .update(gigChatSession)
+      .update(chatSession)
       .set({
         messageCount: 0,
         lastMessageAt: null,
       })
-      .where(eq(gigChatSession.id, session.id));
+      .where(eq(chatSession.id, session.id));
 
     return {
       success: true,

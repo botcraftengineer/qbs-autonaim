@@ -30,6 +30,7 @@ import {
   responseStatusValues,
 } from "../shared/response-enums";
 
+import { candidate } from "../candidate/candidate";
 import { gig } from "./gig";
 
 /**
@@ -42,6 +43,12 @@ export const gigResponse = pgTable(
     gigId: uuid("gig_id")
       .notNull()
       .references(() => gig.id, { onDelete: "cascade" }),
+
+    // ID кандидата в глобальной базе (необязательно, если еще не слинкован)
+    globalCandidateId: uuid("global_candidate_id").references(
+      () => candidate.id,
+      { onDelete: "set null" },
+    ),
 
     // Идентификация кандидата (уникальный ID на платформе)
     candidateId: varchar("candidate_id", { length: 100 }).notNull(),

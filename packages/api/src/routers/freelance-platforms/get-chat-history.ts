@@ -2,30 +2,27 @@ import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
-import { requireConversationAccess } from "../../utils/interview-token-validator";
+import { requireInterviewAccess } from "../../utils/interview-token-validator";
 
 const getChatHistoryInputSchema = z.object({
-  conversationId: z.uuid(),
+  interviewSessionId: z.string().uuid(),
 });
 
 export const getChatHistory = publicProcedure
   .input(getChatHistoryInputSchema)
   .query(async ({ input, ctx }) => {
-    // Проверяем доступ к conversation
-    await requireConversationAccess(
-      input.conversationId,
+    // Проверяем доступ к interview session
+    await requireInterviewAccess(
+      input.interviewSessionId,
       ctx.interviewToken,
       ctx.session?.user?.id ?? null,
       ctx.db,
     );
 
-    // Проверяем существование conversation
-    const conv = await ctx.db.query.conversation.findFirst({
-      where: (conversation, { eq, and }) =>
-        and(
-          eq(conversation.id, input.conversationId),
-          eq(conversation.source, "WEB"),
-        ),
+    // Проверяем существование interview session
+    const session = await ctx.db.query.interviewSession.findFirst({
+      where: (interviewSession, { eq }) =>
+        eq(interviewSession.id, input.interviewSessionId),
       with: {
         messages: {
           with: {
@@ -36,18 +33,18 @@ export const getChatHistory = publicProcedure
       },
     });
 
-    if (!conv) {
+    if (!session) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Разговор не найден",
+        message: "Интервью не найдено",
       });
     }
 
-    // Логируем доступ к разговору (если пользователь авторизован)
+    // Логируем доступ к интервью (если пользователь авторизован)
     if (ctx.session?.user) {
-      await ctx.auditLogger.logConversationAccess({
+      await ctx.auditLogger.logInterviewAccess({
         userId: ctx.session.user.id,
-        conversationId: input.conversationId,
+        interviewSessionId: input.interviewSessionId,
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
       });
@@ -55,19 +52,19 @@ export const getChatHistory = publicProcedure
 
     // Форматируем сообщения для клиента с поддержкой голосовых
     const messages = await Promise.all(
-      conv.messages.map(async (msg) => {
+      session.messages.map(async (msg) => {
         const baseMessage = {
           id: msg.id,
-          sender: msg.sender,
+          role: msg.role,
           content: msg.content,
-          contentType: msg.contentType,
+          type: msg.type,
           createdAt: msg.createdAt,
           voiceTranscription: msg.voiceTranscription ?? null,
           fileUrl: null as string | null,
         };
 
         // Если это голосовое сообщение с файлом, генерируем URL
-        if (msg.contentType === "VOICE" && msg.file) {
+        if (msg.type === "voice" && msg.file) {
           baseMessage.fileUrl = await getDownloadUrl(msg.file.key);
         }
 
@@ -76,8 +73,8 @@ export const getChatHistory = publicProcedure
     );
 
     return {
-      conversationId: conv.id,
-      status: conv.status,
+      interviewSessionId: session.id,
+      status: session.status,
       messages,
     };
   });

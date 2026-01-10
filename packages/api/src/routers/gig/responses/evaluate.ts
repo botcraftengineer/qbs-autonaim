@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { gigResponse } from "@qbs-autonaim/db/schema";
+import { gigResponse, interviewSession } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -47,18 +47,14 @@ export const evaluate = protectedProcedure
       });
     }
 
-    const conversationData = await ctx.db.query.conversation.findFirst({
-      where: (conversation, { eq, and }) =>
-        and(
-          eq(conversation.gigResponseId, input.responseId),
-          eq(conversation.source, "WEB"),
-        ),
+    const sessionData = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSession.gigResponseId, input.responseId),
     });
 
-    if (!conversationData) {
+    if (!sessionData) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Диалог не найден для этого отклика",
+        message: "Сессия интервью не найдена для этого отклика",
       });
     }
 
@@ -68,7 +64,7 @@ export const evaluate = protectedProcedure
         data: {
           responseId: input.responseId,
           workspaceId: input.workspaceId,
-          conversationId: conversationData.id,
+          sessionId: sessionData.id,
         },
       });
 
@@ -81,7 +77,7 @@ export const evaluate = protectedProcedure
         error,
         responseId: input.responseId,
         workspaceId: input.workspaceId,
-        conversationId: conversationData.id,
+        sessionId: sessionData.id,
       });
 
       throw new TRPCError({

@@ -95,62 +95,52 @@ export function hasGigAccess(
 }
 
 /**
- * Проверяет, имеет ли токен или пользователь доступ к conversation
+ * Проверяет, имеет ли токен или пользователь доступ к interviewSession
  */
-export async function hasConversationAccess(
-  conversationId: string,
+export async function hasInterviewAccess(
+  sessionId: string,
   validatedToken: ValidatedInterviewToken | null,
   userId: string | null,
   db: typeof DbType,
 ): Promise<boolean> {
-  // Получаем conversation с необходимыми связями
-  const conv = await db.query.conversation.findFirst({
-    where: (conversation, { eq }) => eq(conversation.id, conversationId),
+  // Получаем interviewSession
+  const session = await db.query.interviewSession.findFirst({
+    where: (interviewSession, { eq }) => eq(interviewSession.id, sessionId),
   });
 
-  if (!conv) {
+  if (!session) {
     return false;
   }
 
   // Если есть авторизованный пользователь, проверяем владение через workspace
   if (userId) {
     // Проверяем доступ через vacancy response
-    const responseId = conv.responseId;
-    if (responseId) {
-      const vacancyResponse = await db.query.response.findFirst({
-        where: (response, { eq, and }) =>
-          and(eq(response.id, responseId), eq(response.entityType, "vacancy")),
+    if (session.vacancyResponseId) {
+      const vacancyResponse = await db.query.vacancyResponse.findFirst({
+        where: (response, { eq }) =>
+          eq(response.id, session.vacancyResponseId!),
+        with: { vacancy: { columns: { workspaceId: true } } },
       });
 
-      if (vacancyResponse) {
-        const vacancy = await db.query.vacancy.findFirst({
-          where: (vacancy, { eq }) => eq(vacancy.id, vacancyResponse.entityId),
-          columns: { workspaceId: true },
+      if (vacancyResponse?.vacancy) {
+        const workspaceMember = await db.query.workspaceMember.findFirst({
+          where: (member, { eq, and }) =>
+            and(
+              eq(member.workspaceId, vacancyResponse.vacancy.workspaceId),
+              eq(member.userId, userId),
+            ),
         });
-
-        if (vacancy) {
-          const workspaceMember = await db.query.workspaceMember.findFirst({
-            where: (member, { eq, and }) =>
-              and(
-                eq(member.workspaceId, vacancy.workspaceId),
-                eq(member.userId, userId),
-              ),
-          });
-          if (workspaceMember) {
-            return true;
-          }
+        if (workspaceMember) {
+          return true;
         }
       }
     }
 
     // Проверяем доступ через gig response
-    const gigResponseId = conv.gigResponseId;
-    if (gigResponseId) {
+    if (session.gigResponseId) {
       const gigResponse = await db.query.gigResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, gigResponseId),
-        with: {
-          gig: true,
-        },
+        where: (response, { eq }) => eq(response.id, session.gigResponseId!),
+        with: { gig: { columns: { workspaceId: true } } },
       });
 
       if (gigResponse?.gig) {
@@ -170,24 +160,22 @@ export async function hasConversationAccess(
 
   // Если есть валидированный токен, проверяем соответствие
   if (validatedToken) {
-    // Для vacancy токена проверяем responseId
-    const responseId = conv.responseId;
-    if (validatedToken.type === "vacancy" && responseId) {
-      const vacancyResponse = await db.query.response.findFirst({
-        where: (response, { eq, and }) =>
-          and(eq(response.id, responseId), eq(response.entityType, "vacancy")),
+    // Для vacancy токена проверяем vacancyResponseId
+    if (validatedToken.type === "vacancy" && session.vacancyResponseId) {
+      const vacancyResponse = await db.query.vacancyResponse.findFirst({
+        where: (response, { eq }) =>
+          eq(response.id, session.vacancyResponseId!),
       });
 
-      if (vacancyResponse?.entityId === validatedToken.entityId) {
+      if (vacancyResponse?.vacancyId === validatedToken.entityId) {
         return true;
       }
     }
 
     // Для gig токена проверяем gigResponseId
-    const gigResponseId = conv.gigResponseId;
-    if (validatedToken.type === "gig" && gigResponseId) {
+    if (validatedToken.type === "gig" && session.gigResponseId) {
       const gigResponse = await db.query.gigResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, gigResponseId),
+        where: (response, { eq }) => eq(response.id, session.gigResponseId!),
       });
 
       if (gigResponse?.gigId === validatedToken.entityId) {
@@ -220,17 +208,17 @@ export function extractTokenFromHeaders(headers: Headers): string | null {
 }
 
 /**
- * Middleware helper для проверки доступа к conversation
+ * Middleware helper для проверки доступа к interviewSession
  * Бросает TRPC ошибку если доступа нет
  */
-export async function requireConversationAccess(
-  conversationId: string,
+export async function requireInterviewAccess(
+  sessionId: string,
   validatedToken: ValidatedInterviewToken | null,
   userId: string | null,
   db: typeof DbType,
 ): Promise<void> {
-  const hasAccess = await hasConversationAccess(
-    conversationId,
+  const hasAccess = await hasInterviewAccess(
+    sessionId,
     validatedToken,
     userId,
     db,
@@ -239,7 +227,7 @@ export async function requireConversationAccess(
   if (!hasAccess) {
     throw new TRPCError({
       code: "FORBIDDEN",
-      message: "Нет доступа к этому разговору",
+      message: "Нет доступа к этому интервью",
     });
   }
 }

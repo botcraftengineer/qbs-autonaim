@@ -3,35 +3,32 @@ import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 const getNewMessagesInputSchema = z.object({
-  conversationId: z.uuid(),
-  lastMessageId: z.uuid().optional(),
+  interviewSessionId: z.string().uuid(),
+  lastMessageId: z.string().uuid().optional(),
 });
 
 export const getNewMessages = publicProcedure
   .input(getNewMessagesInputSchema)
   .query(async ({ input, ctx }) => {
-    // Проверяем существование conversation
-    const conv = await ctx.db.query.conversation.findFirst({
-      where: (conversation, { eq, and }) =>
-        and(
-          eq(conversation.id, input.conversationId),
-          eq(conversation.source, "WEB"),
-        ),
+    // Проверяем существование interview session
+    const session = await ctx.db.query.interviewSession.findFirst({
+      where: (interviewSession, { eq }) =>
+        eq(interviewSession.id, input.interviewSessionId),
     });
 
-    if (!conv) {
+    if (!session) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Разговор не найден",
+        message: "Интервью не найдено",
       });
     }
 
     // Получаем новые сообщения от бота
-    const messages = await ctx.db.query.conversationMessage.findMany({
+    const messages = await ctx.db.query.interviewMessage.findMany({
       where: (message, { eq, and, gt }) => {
         const conditions = [
-          eq(message.conversationId, input.conversationId),
-          eq(message.sender, "BOT"),
+          eq(message.sessionId, input.interviewSessionId),
+          eq(message.role, "assistant"),
         ];
 
         if (input.lastMessageId) {
@@ -47,9 +44,9 @@ export const getNewMessages = publicProcedure
     return {
       messages: messages.map((msg) => ({
         id: msg.id,
-        sender: msg.sender,
+        role: msg.role,
         content: msg.content,
-        contentType: msg.contentType,
+        type: msg.type,
         createdAt: msg.createdAt,
       })),
     };

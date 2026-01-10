@@ -1,8 +1,8 @@
 import {
-  conversation,
-  conversationMessage,
-  response as responseTable,
+  interviewMessage,
+  interviewSession,
   vacancy,
+  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { and, desc, eq } from "drizzle-orm";
@@ -26,31 +26,34 @@ export const getRecentMessagesRouter = protectedProcedure
 
     const messages = await ctx.db
       .select({
-        message: conversationMessage,
-        conversation: conversation,
-        response: responseTable,
+        message: interviewMessage,
+        session: interviewSession,
+        response: vacancyResponse,
         vacancy: vacancy,
       })
-      .from(conversationMessage)
+      .from(interviewMessage)
       .innerJoin(
-        conversation,
-        eq(conversationMessage.conversationId, conversation.id),
+        interviewSession,
+        eq(interviewMessage.sessionId, interviewSession.id),
       )
-      .innerJoin(responseTable, eq(conversation.responseId, responseTable.id))
-      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
+      .innerJoin(
+        vacancyResponse,
+        eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+      )
+      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
       .where(
         and(
-          eq(responseTable.entityType, "vacancy"),
+          eq(interviewSession.entityType, "vacancy_response"),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )
-      .orderBy(desc(conversationMessage.createdAt))
+      .orderBy(desc(interviewMessage.createdAt))
       .limit(input.limit);
 
     return messages.map((row) => ({
       ...row.message,
-      conversation: {
-        ...row.conversation,
+      session: {
+        ...row.session,
         response: {
           ...row.response,
           vacancy: row.vacancy,

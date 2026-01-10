@@ -1,7 +1,7 @@
 import {
-  conversation,
-  conversationMessage,
-  response as responseTable,
+  interviewMessage,
+  interviewSession,
+  vacancyResponse,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
@@ -15,7 +15,7 @@ import { verifyWorkspaceAccess } from "../utils";
 export const getMessagesByConversationIdRouter = protectedProcedure
   .input(
     z.object({
-      conversationId: uuidv7Schema,
+      sessionId: uuidv7Schema,
       workspaceId: workspaceIdSchema,
     }),
   )
@@ -26,41 +26,41 @@ export const getMessagesByConversationIdRouter = protectedProcedure
       ctx.session.user.id,
     );
 
-    const conv = await ctx.db.query.conversation.findFirst({
-      where: eq(conversation.id, input.conversationId),
+    const session = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSession.id, input.sessionId),
     });
 
-    if (!conv) {
+    if (!session) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Беседа не найдена",
+        message: "Сессия интервью не найдена",
       });
     }
 
-    // Query response separately to check workspace access
-    if (conv.responseId) {
-      const response = await ctx.db.query.response.findFirst({
-        where: eq(responseTable.id, conv.responseId),
+    // Check workspace access through vacancyResponse
+    if (session.vacancyResponseId) {
+      const response = await ctx.db.query.vacancyResponse.findFirst({
+        where: eq(vacancyResponse.id, session.vacancyResponseId),
       });
 
       if (response) {
         const vacancy = await ctx.db.query.vacancy.findFirst({
-          where: eq(vacancyTable.id, response.entityId),
+          where: eq(vacancyTable.id, response.vacancyId),
           columns: { workspaceId: true },
         });
 
         if (!vacancy || vacancy.workspaceId !== input.workspaceId) {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Нет доступа к этой беседе",
+            message: "Нет доступа к этой сессии",
           });
         }
       }
     }
 
-    const messages = await ctx.db.query.conversationMessage.findMany({
-      where: eq(conversationMessage.conversationId, input.conversationId),
-      orderBy: [conversationMessage.createdAt],
+    const messages = await ctx.db.query.interviewMessage.findMany({
+      where: eq(interviewMessage.sessionId, input.sessionId),
+      orderBy: [interviewMessage.createdAt],
       with: {
         file: true,
       },

@@ -14,12 +14,13 @@ export const companySettings = pgTable(
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
-    // Связь с workspace
+    // Связь с workspace (который и есть Компания)
     workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" })
       .unique(),
 
+    // Данные компании (могут отличаться от названия workspace)
     name: text("name").notNull(),
     website: text("website"),
     description: text("description"),

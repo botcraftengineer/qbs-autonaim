@@ -164,7 +164,7 @@ export const sendMessage = protectedProcedure
       .reverse()
       .map((msg) => ({
         role: msg.role as "user" | "assistant" | "system",
-        content: msg.content,
+        content: msg.content ?? "",
       }));
 
     // Построение промпта
@@ -258,12 +258,14 @@ export const sendMessage = protectedProcedure
 
       await ctx.db.insert(chatMessage).values({
         sessionId: session.id,
+        userId,
         role: "user",
         content: message,
       });
 
       await ctx.db.insert(chatMessage).values({
         sessionId: session.id,
+        userId: "system",
         role: "assistant",
         content: aiResponse.message,
         quickReplies: aiResponse.quickReplies,

@@ -1,50 +1,44 @@
+import type { InterviewSessionMetadata } from "@qbs-autonaim/db/schema";
 import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 
 const getWebInterviewStatusInputSchema = z.object({
-  conversationId: z.uuid(),
+  interviewSessionId: z.string().uuid(),
 });
 
 export const getWebInterviewStatus = publicProcedure
   .input(getWebInterviewStatusInputSchema)
   .query(async ({ input, ctx }) => {
-    // Проверяем существование conversation
-    const conv = await ctx.db.query.conversation.findFirst({
-      where: (conversation, { eq, and }) =>
-        and(
-          eq(conversation.id, input.conversationId),
-          eq(conversation.source, "WEB"),
-        ),
+    // Проверяем существование interview session
+    const session = await ctx.db.query.interviewSession.findFirst({
+      where: (interviewSession, { eq }) =>
+        eq(interviewSession.id, input.interviewSessionId),
     });
 
-    if (!conv) {
+    if (!session) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Разговор не найден",
+        message: "Интервью не найдено",
       });
     }
 
     // Получаем текущий номер вопроса из метаданных
-    const metadata = (conv.metadata as Record<string, unknown>) || {};
-    const questionAnswers =
-      (metadata.questionAnswers as Array<{
-        question: string;
-        answer: string;
-      }>) || [];
+    const metadata = (session.metadata as InterviewSessionMetadata) || {};
+    const questionAnswers = metadata.questionAnswers || [];
     const interviewStep = questionAnswers.length + 1;
 
     // Проверяем наличие активного буфера
     const hasActiveBuffer = await messageBufferService.hasBuffer({
-      userId: conv.username || "web_user",
-      conversationId: input.conversationId,
+      userId: metadata.telegramUsername || "web_user",
+      chatSessionId: input.interviewSessionId,
       interviewStep,
     });
 
     return {
-      conversationId: conv.id,
-      status: conv.status,
+      interviewSessionId: session.id,
+      status: session.status,
       hasActiveBuffer,
       interviewStep,
       questionCount: questionAnswers.length,

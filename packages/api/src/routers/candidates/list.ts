@@ -1,9 +1,9 @@
 import { and, desc, eq, ilike, inArray, lt, or } from "@qbs-autonaim/db";
 import {
-  conversationMessage as conversationMessageTable,
-  conversation as conversationTable,
   file as fileTable,
+  interviewMessage as interviewMessageTable,
   interviewScoring as interviewScoringTable,
+  interviewSession as interviewSessionTable,
   responseScreening as responseScreeningTable,
   response as responseTable,
   vacancy,
@@ -17,7 +17,6 @@ const mapResponseToStage = (
   status: string,
   hrSelectionStatus: string | null,
 ): string => {
-  // Маппинг на новые стадии воронки
   if (hrSelectionStatus === "ONBOARDING") {
     return "ONBOARDING";
   }
@@ -182,7 +181,6 @@ export const list = protectedProcedure
       conditions.push(lt(responseTable.id, input.cursor));
     }
 
-    // Подсчитываем общее количество для пагинации
     const totalCount = await ctx.db.query.response.findMany({
       where: and(...conditions),
       columns: { id: true },
@@ -200,37 +198,37 @@ export const list = protectedProcedure
       nextCursor = nextItem?.id;
     }
 
-    // Query related data for all responses
     const responseIds = responses.map((r) => r.id);
 
     const screenings = await ctx.db.query.responseScreening.findMany({
       where: inArray(responseScreeningTable.responseId, responseIds),
     });
 
-    const conversations = await ctx.db.query.conversation.findMany({
-      where: inArray(conversationTable.responseId, responseIds),
+    // Find interview sessions for vacancy responses
+    const interviewSessions = await ctx.db.query.interviewSession.findMany({
+      where: inArray(interviewSessionTable.vacancyResponseId, responseIds),
     });
 
-    const conversationIds = conversations.map((c) => c.id);
+    const interviewSessionIds = interviewSessions.map((s) => s.id);
     const interviewScorings =
-      conversationIds.length > 0
+      interviewSessionIds.length > 0
         ? await ctx.db.query.interviewScoring.findMany({
             where: inArray(
-              interviewScoringTable.conversationId,
-              conversationIds,
+              interviewScoringTable.interviewSessionId,
+              interviewSessionIds,
             ),
           })
         : [];
 
     // Get message counts
     const messageCounts = new Map<string, number>();
-    for (const conv of conversations) {
-      const messages = await ctx.db.query.conversationMessage.findMany({
-        where: eq(conversationMessageTable.conversationId, conv.id),
+    for (const session of interviewSessions) {
+      const messages = await ctx.db.query.interviewMessage.findMany({
+        where: eq(interviewMessageTable.sessionId, session.id),
         columns: { id: true },
       });
-      if (conv.responseId) {
-        messageCounts.set(conv.responseId, messages.length);
+      if (session.vacancyResponseId) {
+        messageCounts.set(session.vacancyResponseId, messages.length);
       }
     }
 
@@ -250,9 +248,13 @@ export const list = protectedProcedure
       const stage = mapResponseToStage(r.status, r.hrSelectionStatus);
 
       const screening = screenings.find((s) => s.responseId === r.id);
-      const conversation = conversations.find((c) => c.responseId === r.id);
-      const interviewScoring = conversation
-        ? interviewScorings.find((is) => is.conversationId === conversation.id)
+      const interviewSession = interviewSessions.find(
+        (s) => s.vacancyResponseId === r.id,
+      );
+      const interviewScoring = interviewSession
+        ? interviewScorings.find(
+            (is) => is.interviewSessionId === interviewSession.id,
+          )
         : null;
 
       const resumeScore = screening?.detailedScore;

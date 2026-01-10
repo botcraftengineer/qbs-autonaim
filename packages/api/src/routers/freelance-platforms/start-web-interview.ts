@@ -1,9 +1,9 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
-  conversation,
-  conversationMessage,
   gigResponse,
-  response as responseTable,
+  interviewMessage,
+  interviewSession,
+  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
@@ -11,28 +11,16 @@ import { createErrorHandler } from "../../utils/error-handler";
 
 /**
  * Нормализует URL профиля для предотвращения дубликатов
- * - Приводит протокол и хост к нижнему регистру (pathname остаётся как есть)
- * - Удаляет trailing slash
- * - Удаляет query параметры и фрагменты
- * - Удаляет стандартные порты (80, 443)
  */
 function normalizeProfileUrl(url: string): string {
   try {
     const urlObj = new URL(url);
-
-    // Приводим протокол и хост к нижнему регистру
     let normalized = `${urlObj.protocol.toLowerCase()}//${urlObj.host.toLowerCase()}`;
-
-    // Удаляем стандартные порты
     normalized = normalized.replace(/:80$/, "").replace(/:443$/, "");
-
-    // Добавляем pathname без trailing slash (сохраняем регистр)
     const pathname = urlObj.pathname.replace(/\/$/, "") || "/";
     normalized += pathname;
-
     return normalized;
   } catch {
-    // Если URL невалидный, возвращаем нормализованную строку
     const withoutQuery = url.split("?")[0] ?? url;
     const withoutFragment = withoutQuery.split("#")[0] ?? withoutQuery;
     return withoutFragment.replace(/\/$/, "") || url;
@@ -76,7 +64,6 @@ export const startWebInterview = publicProcedure
       });
 
       if (vacancyLink) {
-        // Проверяем срок действия
         if (vacancyLink.expiresAt && vacancyLink.expiresAt < new Date()) {
           throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
             token: input.token,
@@ -98,7 +85,6 @@ export const startWebInterview = publicProcedure
       });
 
       if (gigLink) {
-        // Проверяем срок действия
         if (gigLink.expiresAt && gigLink.expiresAt < new Date()) {
           throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
             token: input.token,
@@ -171,17 +157,15 @@ async function handleVacancyInterview(
     });
   }
 
-  // Нормализуем URL для предотвращения дубликатов
   const normalizedProfileUrl = normalizeProfileUrl(
     freelancerInfo.platformProfileUrl,
   );
 
-  // Проверяем дубликаты по нормализованному URL
-  const existingResponse = await ctx.db.query.response.findFirst({
+  // Проверяем дубликаты
+  const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
     where: and(
-      eq(responseTable.entityId, vacancyLink.entityId),
-      eq(responseTable.entityType, "vacancy"),
-      eq(responseTable.profileUrl, normalizedProfileUrl),
+      eq(vacancyResponse.vacancyId, vacancyLink.entityId),
+      eq(vacancyResponse.profileUrl, normalizedProfileUrl),
     ),
   });
 
@@ -195,12 +179,11 @@ async function handleVacancyInterview(
     );
   }
 
-  // Создаём отклик с нормализованным URL
+  // Создаём отклик
   const [response] = await ctx.db
-    .insert(responseTable)
+    .insert(vacancyResponse)
     .values({
-      entityId: vacancyLink.entityId,
-      entityType: "vacancy",
+      vacancyId: vacancyLink.entityId,
       candidateId: normalizedProfileUrl,
       candidateName: freelancerInfo.name,
       profileUrl: normalizedProfileUrl,
@@ -227,22 +210,24 @@ async function handleVacancyInterview(
     );
   }
 
-  // Создаём conversation
-  const [conv] = await ctx.db
-    .insert(conversation)
+  // Создаём interviewSession
+  const [session] = await ctx.db
+    .insert(interviewSession)
     .values({
-      responseId: response.id,
-      candidateName: freelancerInfo.name,
-      username: freelancerInfo.email,
-      status: "ACTIVE",
-      source: "WEB",
-      metadata: {},
+      entityType: "vacancy_response",
+      vacancyResponseId: response.id,
+      status: "active",
+      lastChannel: "web",
+      metadata: {
+        candidateName: freelancerInfo.name,
+        email: freelancerInfo.email,
+      },
     })
     .returning();
 
-  if (!conv) {
+  if (!session) {
     throw await errorHandler.handleInternalError(
-      new Error("Failed to create conversation"),
+      new Error("Failed to create interview session"),
       {
         responseId: response.id,
         freelancerName: freelancerInfo.name,
@@ -264,19 +249,19 @@ async function handleVacancyInterview(
 
 Готовы начать?`;
 
-  await ctx.db.insert(conversationMessage).values({
-    conversationId: conv.id,
-    sender: "BOT",
-    contentType: "TEXT",
-    channel: conv.source,
+  await ctx.db.insert(interviewMessage).values({
+    sessionId: session.id,
+    role: "assistant",
+    type: "text",
+    channel: "web",
     content: welcomeMessage,
   });
 
   return {
     type: "vacancy" as const,
-    conversationId: conv.id,
+    sessionId: session.id,
     responseId: response.id,
-    entityId: response.entityId,
+    entityId: response.vacancyId,
     welcomeMessage,
   };
 }
@@ -324,12 +309,11 @@ async function handleGigInterview(
     });
   }
 
-  // Нормализуем URL для использования как candidateId и предотвращения дубликатов
   const normalizedCandidateId = normalizeProfileUrl(
     freelancerInfo.platformProfileUrl,
   );
 
-  // Проверяем дубликаты по normalizedCandidateId + gigId (соответствует уникальному ограничению БД)
+  // Проверяем дубликаты
   const existingResponse = await ctx.db.query.gigResponse.findFirst({
     where: (response, { and, eq }) =>
       and(
@@ -348,7 +332,7 @@ async function handleGigInterview(
     );
   }
 
-  // Создаём отклик для гига с нормализованным candidateId
+  // Создаём отклик для гига
   const [response] = await ctx.db
     .insert(gigResponse)
     .values({
@@ -380,22 +364,24 @@ async function handleGigInterview(
     );
   }
 
-  // Создаём conversation для гига
-  const [conv] = await ctx.db
-    .insert(conversation)
+  // Создаём interviewSession для гига
+  const [session] = await ctx.db
+    .insert(interviewSession)
     .values({
+      entityType: "gig_response",
       gigResponseId: response.id,
-      candidateName: freelancerInfo.name,
-      username: freelancerInfo.email,
-      status: "ACTIVE",
-      source: "WEB",
-      metadata: {},
+      status: "active",
+      lastChannel: "web",
+      metadata: {
+        candidateName: freelancerInfo.name,
+        email: freelancerInfo.email,
+      },
     })
     .returning();
 
-  if (!conv) {
+  if (!session) {
     throw await errorHandler.handleInternalError(
-      new Error("Failed to create conversation"),
+      new Error("Failed to create interview session"),
       {
         responseId: response.id,
         freelancerName: freelancerInfo.name,
@@ -416,17 +402,17 @@ async function handleGigInterview(
 
 Готовы начать?`;
 
-  await ctx.db.insert(conversationMessage).values({
-    conversationId: conv.id,
-    sender: "BOT",
-    contentType: "TEXT",
-    channel: conv.source,
+  await ctx.db.insert(interviewMessage).values({
+    sessionId: session.id,
+    role: "assistant",
+    type: "text",
+    channel: "web",
     content: welcomeMessage,
   });
 
   return {
     type: "gig" as const,
-    conversationId: conv.id,
+    sessionId: session.id,
     responseId: response.id,
     entityId: response.gigId,
     welcomeMessage,

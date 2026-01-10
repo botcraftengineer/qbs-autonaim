@@ -55,10 +55,6 @@ export interface Shortlist {
 export class ShortlistGenerator {
   /**
    * Генерирует шортлист кандидатов для вакансии
-   *
-   * @param vacancyId - ID вакансии
-   * @param options - Опции генерации (минимальная оценка, максимум кандидатов, сортировка)
-   * @returns Шортлист с ранжированными кандидатами
    */
   async generateShortlist(
     vacancyId: string,
@@ -66,13 +62,9 @@ export class ShortlistGenerator {
   ): Promise<Shortlist> {
     const { minScore = 60, maxCandidates = 10, sortBy = "SCORE" } = options;
 
-    // Получаем все отклики для вакансии с оценками
-    const responses = await db.query.response.findMany({
-      where: (response, { eq, and }) =>
-        and(
-          eq(response.entityType, "vacancy"),
-          eq(response.entityId, vacancyId),
-        ),
+    // Получаем все отклики для вакансии
+    const responses = await db.query.vacancyResponse.findMany({
+      where: (response, { eq }) => eq(response.vacancyId, vacancyId),
     });
 
     // Get all screenings separately
@@ -87,40 +79,38 @@ export class ShortlistGenerator {
 
     const screeningMap = new Map(screenings.map((s) => [s.responseId, s]));
 
-    // Get all conversations separately
-    const conversations =
+    // Get all interviewSessions separately
+    const sessions =
       responseIds.length > 0
-        ? await db.query.conversation.findMany({
-            where: (conversation, { inArray }) =>
-              inArray(conversation.responseId, responseIds),
+        ? await db.query.interviewSession.findMany({
+            where: (session, { inArray }) =>
+              inArray(session.vacancyResponseId, responseIds),
           })
         : [];
 
-    const conversationMap = new Map(
-      conversations.map((c) => [c.responseId, c]),
-    );
+    const sessionMap = new Map(sessions.map((s) => [s.vacancyResponseId, s]));
 
     // Get all interview scorings separately
-    const conversationIds = conversations.map((c) => c.id);
+    const sessionIds = sessions.map((s) => s.id);
     const interviewScorings =
-      conversationIds.length > 0
+      sessionIds.length > 0
         ? await db.query.interviewScoring.findMany({
             where: (scoring, { inArray }) =>
-              inArray(scoring.conversationId, conversationIds),
+              inArray(scoring.interviewSessionId, sessionIds),
           })
         : [];
 
     const interviewScoringMap = new Map(
-      interviewScorings.map((s) => [s.conversationId, s]),
+      interviewScorings.map((s) => [s.interviewSessionId, s]),
     );
 
     // Преобразуем в кандидатов с комбинированными оценками
     const candidates: ShortlistCandidate[] = responses
       .map((response) => {
         const screening = screeningMap.get(response.id);
-        const conversation = conversationMap.get(response.id);
-        const interviewScoring = conversation
-          ? interviewScoringMap.get(conversation.id)
+        const session = sessionMap.get(response.id);
+        const interviewScoring = session
+          ? interviewScoringMap.get(session.id)
           : null;
 
         // Получаем оценку анализа отклика
@@ -172,19 +162,14 @@ export class ShortlistGenerator {
 
   /**
    * Рассчитывает общую оценку кандидата
-   * Веса: 40% анализ отклика, 60% интервью
-   * Если нет интервью, использует только оценку отклика
    */
   private calculateOverallScore(
     responseScore: number,
     interviewScore: number | null,
   ): number {
     if (interviewScore === null) {
-      // Нет интервью - используем только оценку отклика
       return responseScore;
     }
-
-    // Комбинируем оценки с весами
     const weighted = responseScore * 0.4 + interviewScore * 0.6;
     return Math.round(weighted);
   }
@@ -195,7 +180,7 @@ export class ShortlistGenerator {
   private extractContactInfo(response: {
     phone?: string | null;
     telegramUsername?: string | null;
-    platformProfileUrl?: string | null;
+    profileUrl?: string | null;
     contacts?: Record<string, unknown> | null;
   }): ContactInfo {
     const contactInfo: ContactInfo = {};
@@ -208,11 +193,10 @@ export class ShortlistGenerator {
       contactInfo.telegram = response.telegramUsername;
     }
 
-    if (response.platformProfileUrl) {
-      contactInfo.platformProfile = response.platformProfileUrl;
+    if (response.profileUrl) {
+      contactInfo.platformProfile = response.profileUrl;
     }
 
-    // Извлекаем email из contacts JSONB
     if (response.contacts && typeof response.contacts === "object") {
       const email = (response.contacts as Record<string, unknown>).email;
       if (typeof email === "string") {
@@ -233,7 +217,6 @@ export class ShortlistGenerator {
     const keyHighlights: string[] = [];
     const redFlags: string[] = [];
 
-    // Простая эвристика: ищем маркеры в тексте анализа
     const combinedAnalysis = [screeningAnalysis, interviewAnalysis]
       .filter(Boolean)
       .join("\n");
@@ -290,25 +273,18 @@ export class ShortlistGenerator {
 
     switch (sortBy) {
       case "SCORE":
-        // Сортировка по общей оценке (по убыванию)
         sorted.sort((a, b) => b.overallScore - a.overallScore);
         break;
 
       case "EXPERIENCE":
-        // Сортировка по наличию интервью и оценке интервью
         sorted.sort((a, b) => {
-          // Приоритет кандидатам с завершённым интервью
           if (a.interviewScore !== null && b.interviewScore === null) return -1;
           if (a.interviewScore === null && b.interviewScore !== null) return 1;
-
-          // Если оба с интервью или оба без, сортируем по общей оценке
           return b.overallScore - a.overallScore;
         });
         break;
 
       case "RESPONSE_DATE":
-        // Сортировка по дате отклика (новые первыми)
-        // Примечание: для этого нужна дата отклика, используем общую оценку как fallback
         sorted.sort((a, b) => b.overallScore - a.overallScore);
         break;
     }

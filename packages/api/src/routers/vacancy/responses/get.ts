@@ -1,9 +1,9 @@
 import { eq } from "@qbs-autonaim/db";
 import {
-  conversation as conversationTable,
   interviewScoring as interviewScoringTable,
+  interviewSession,
   responseScreening as responseScreeningTable,
-  response as responseTable,
+  vacancyResponse,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
@@ -29,8 +29,8 @@ export const get = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.response.findFirst({
-      where: eq(responseTable.id, input.id),
+    const response = await ctx.db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, input.id),
     });
 
     if (!response) {
@@ -39,7 +39,7 @@ export const get = protectedProcedure
 
     // Query vacancy separately to check workspace access
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancyTable.id, response.entityId),
+      where: eq(vacancyTable.id, response.vacancyId),
       columns: { workspaceId: true },
     });
 
@@ -70,9 +70,9 @@ export const get = protectedProcedure
       where: eq(responseScreeningTable.responseId, response.id),
     });
 
-    // Query conversation separately
-    const conversation = await ctx.db.query.conversation.findFirst({
-      where: eq(conversationTable.responseId, response.id),
+    // Query interviewSession separately
+    const session = await ctx.db.query.interviewSession.findFirst({
+      where: eq(interviewSession.vacancyResponseId, response.id),
       with: {
         messages: {
           with: {
@@ -83,10 +83,10 @@ export const get = protectedProcedure
       },
     });
 
-    // Query interview scoring separately (both from conversation and direct)
-    const conversationInterviewScoring = conversation
+    // Query interview scoring separately (both from session and direct)
+    const sessionInterviewScoring = session
       ? await ctx.db.query.interviewScoring.findFirst({
-          where: eq(interviewScoringTable.conversationId, conversation.id),
+          where: eq(interviewScoringTable.interviewSessionId, session.id),
         })
       : null;
 
@@ -101,9 +101,9 @@ export const get = protectedProcedure
     }
 
     // Get voice file URLs for messages and map null to undefined
-    const messagesWithUrls = conversation?.messages
+    const messagesWithUrls = session?.messages
       ? await Promise.all(
-          conversation.messages.map(async (message) => {
+          session.messages.map(async (message) => {
             const baseMessage = {
               ...message,
               voiceDuration: message.voiceDuration ?? undefined,
@@ -138,15 +138,15 @@ export const get = protectedProcedure
               : undefined,
           }
         : null,
-      conversation: conversation
+      interviewSession: session
         ? {
-            ...conversation,
+            ...session,
             messages: messagesWithUrls,
-            interviewScoring: conversationInterviewScoring
+            interviewScoring: sessionInterviewScoring
               ? {
-                  score: conversationInterviewScoring.score,
-                  detailedScore: conversationInterviewScoring.detailedScore,
-                  analysis: conversationInterviewScoring.analysis ?? undefined,
+                  score: sessionInterviewScoring.score,
+                  detailedScore: sessionInterviewScoring.detailedScore,
+                  analysis: sessionInterviewScoring.analysis ?? undefined,
                 }
               : undefined,
           }

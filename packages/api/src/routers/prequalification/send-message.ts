@@ -16,7 +16,7 @@ import { PrequalificationError } from "../../services/prequalification/types";
 import { publicProcedure } from "../../trpc";
 
 const sendMessageInputSchema = z.object({
-  sessionId: z.uuid("sessionId должен быть UUID"),
+  sessionId: z.string().uuid("sessionId должен быть UUID"),
   workspaceId: z.string().min(1, "workspaceId обязателен"),
   message: z
     .string()
@@ -54,12 +54,12 @@ export const sendMessage = publicProcedure
       // Get workspace config
       const config = await sessionManager.getWorkspaceConfig(input.workspaceId);
 
-      // Get or create conversation
-      let conversationId = session.conversationId;
-      if (!conversationId) {
+      // Get or create interviewSession
+      let interviewSessionId = session.interviewSessionId;
+      if (!interviewSessionId) {
         const candidateName =
           session.parsedResume?.structured?.personalInfo?.name;
-        conversationId = await dialogueHandler.createConversation(
+        interviewSessionId = await dialogueHandler.createInterviewSession(
           input.sessionId,
           input.workspaceId,
           candidateName ?? undefined,
@@ -75,9 +75,9 @@ export const sendMessage = publicProcedure
 
       // Save user message
       await dialogueHandler.saveMessage(
-        conversationId,
+        interviewSessionId,
         input.message,
-        "CANDIDATE",
+        "user",
       );
 
       // Check if this is the first message (need welcome message first)
@@ -102,7 +102,11 @@ export const sendMessage = publicProcedure
       });
 
       // Save AI response
-      await dialogueHandler.saveMessage(conversationId, aiResponse, "BOT");
+      await dialogueHandler.saveMessage(
+        interviewSessionId,
+        aiResponse,
+        "assistant",
+      );
 
       // Update conversation history for checks
       const updatedHistory = [
@@ -166,7 +170,7 @@ export const sendMessage = publicProcedure
           SESSION_NOT_FOUND: "NOT_FOUND",
           INVALID_STATE_TRANSITION: "BAD_REQUEST",
           TENANT_MISMATCH: "FORBIDDEN",
-          CONVERSATION_CREATION_FAILED: "INTERNAL_SERVER_ERROR",
+          INTERVIEW_SESSION_CREATION_FAILED: "INTERNAL_SERVER_ERROR",
         };
 
         throw new TRPCError({
