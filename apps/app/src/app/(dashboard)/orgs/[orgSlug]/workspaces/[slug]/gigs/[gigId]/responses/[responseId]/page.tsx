@@ -73,6 +73,8 @@ export default function GigResponseDetailPage({ params }: PageProps) {
     open: boolean;
     action: "accept" | "reject";
   }>({ open: false, action: "accept" });
+  const [isPolling, setIsPolling] = React.useState(false);
+  const pollingIntervalRef = React.useRef<NodeJS.Timeout | null>(null);
 
   // Fetch response details
   const { data: response, isLoading } = useQuery({
@@ -147,22 +149,67 @@ export default function GigResponseDetailPage({ params }: PageProps) {
     }),
   );
 
+  // Cleanup polling on unmount
+  React.useEffect(() => {
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, []);
+
+  // Start polling for updated data
+  const startPolling = React.useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+    }
+
+    setIsPolling(true);
+    let pollCount = 0;
+    const maxPolls = 12; // 12 попыток * 5 секунд = 1 минута
+
+    pollingIntervalRef.current = setInterval(() => {
+      pollCount++;
+
+      queryClient.invalidateQueries({
+        queryKey: trpc.gig.responses.get.queryKey({
+          responseId,
+          workspaceId: workspace?.id ?? "",
+        }),
+      });
+
+      // Остановить polling через 1 минуту
+      if (pollCount >= maxPolls) {
+        if (pollingIntervalRef.current) {
+          clearInterval(pollingIntervalRef.current);
+          pollingIntervalRef.current = null;
+        }
+        setIsPolling(false);
+      }
+    }, 5000);
+  }, [queryClient, responseId, workspace?.id, trpc.gig.responses.get]);
+
+  // Stop polling when interview scoring appears
+  React.useEffect(() => {
+    if (response?.interviewScoring && isPolling) {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
+      setIsPolling(false);
+      toast.success("Оценка кандидата завершена");
+    }
+  }, [response?.interviewScoring, isPolling]);
+
   // Evaluate mutation
   const evaluateMutation = useMutation(
     trpc.gig.responses.evaluate.mutationOptions({
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: trpc.gig.responses.get.queryKey({
-            responseId,
-            workspaceId: workspace?.id ?? "",
-          }),
-        });
-        toast.success(
-          "Оценка запущена, результаты появятся через несколько минут",
-        );
+        toast.success("Пересчёт рейтинга запущен");
+        startPolling();
       },
       onError: (error) => {
-        toast.error(error.message);
+        toast.error(`Ошибка пересчёта: ${error.message}`);
       },
     }),
   );
@@ -249,6 +296,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
         onMessage={handleMessage}
         onEvaluate={handleEvaluate}
         isProcessing={isProcessing}
+        isPolling={isPolling}
       />
 
       {/* Confirm Dialog */}

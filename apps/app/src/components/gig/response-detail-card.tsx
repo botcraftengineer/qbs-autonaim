@@ -28,6 +28,7 @@ import {
   ExternalLink,
   FileText,
   Image as ImageIcon,
+  Loader2,
   Mail,
   MessageSquare,
   Phone,
@@ -38,6 +39,53 @@ import {
 } from "lucide-react";
 
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+
+interface ProfileData {
+  platform: string;
+  username: string;
+  profileUrl: string;
+  aboutMe?: string;
+  skills?: string[];
+  statistics?: {
+    rating?: number;
+    ordersCompleted?: number;
+    reviewsReceived?: number;
+    successRate?: number;
+    onTimeRate?: number;
+    repeatOrdersRate?: number;
+    buyerLevel?: string;
+  };
+  parsedAt: string;
+  error?: string;
+}
+
+function getProfileData(
+  profileData: ProfileData | null | undefined,
+  experience: string | null,
+): {
+  isJson: boolean;
+  data?: ProfileData;
+  text?: string;
+} {
+  // Приоритет: новое поле profileData
+  if (profileData?.platform && profileData.username) {
+    return { isJson: true, data: profileData };
+  }
+
+  // Fallback: старое поле experience (для обратной совместимости)
+  if (!experience) return { isJson: false };
+
+  try {
+    const parsed = JSON.parse(experience) as ProfileData;
+    if (parsed.platform && parsed.username) {
+      return { isJson: true, data: parsed };
+    }
+  } catch {
+    // Не JSON, обычный текст
+  }
+
+  return { isJson: false, text: experience };
+}
 
 interface ResponseDetailCardProps {
   response: GigResponseDetail & {
@@ -64,6 +112,7 @@ interface ResponseDetailCardProps {
   onMessage?: () => void;
   onEvaluate?: () => void;
   isProcessing?: boolean;
+  isPolling?: boolean;
 }
 
 const STATUS_CONFIG = {
@@ -141,6 +190,7 @@ export function ResponseDetailCard({
   onMessage,
   onEvaluate,
   isProcessing,
+  isPolling,
 }: ResponseDetailCardProps) {
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
@@ -148,6 +198,13 @@ export function ResponseDetailCard({
   const hasInterviewScoring = !!response.interviewScoring;
   const hasConversation =
     !!response.conversation && response.conversation.messages.length > 0;
+
+  // Показываем кнопку оценки только если:
+  // 1. Есть диалог с сообщениями
+  // 2. Нет результатов оценки
+  // 3. Статус не EVALUATED (чтобы избежать повторной оценки)
+  const canEvaluate =
+    hasConversation && !hasInterviewScoring && response.status !== "EVALUATED";
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -248,16 +305,25 @@ export function ResponseDetailCard({
               </Button>
             )}
 
-            {onEvaluate && hasConversation && !hasInterviewScoring && (
+            {onEvaluate && canEvaluate && (
               <Button
                 onClick={onEvaluate}
-                disabled={isProcessing}
+                disabled={isProcessing || isPolling}
                 variant="outline"
                 size="sm"
                 className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
               >
-                <Award className="h-4 w-4" />
-                Оценить кандидата
+                {isPolling ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Обработка…
+                  </>
+                ) : (
+                  <>
+                    <Award className="h-4 w-4" />
+                    Оценить кандидата
+                  </>
+                )}
               </Button>
             )}
 
@@ -619,16 +685,202 @@ export function ResponseDetailCard({
               value="experience"
               className="space-y-3 sm:space-y-4 mt-0"
             >
-              {response.experience && (
-                <div className="space-y-2">
-                  <h4 className="text-xs sm:text-sm font-semibold">
-                    Опыт работы
-                  </h4>
-                  <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                    {response.experience}
-                  </p>
-                </div>
-              )}
+              {(() => {
+                const experienceData = getProfileData(
+                  undefined, // profileData не возвращается из API
+                  response.experience,
+                );
+
+                if (experienceData.isJson && experienceData.data) {
+                  const profile = experienceData.data;
+                  return (
+                    <>
+                      {/* Информация о платформе */}
+                      <div className="space-y-2">
+                        <h4 className="text-xs sm:text-sm font-semibold">
+                          Профиль фрилансера
+                        </h4>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                            <span className="text-xs sm:text-sm font-medium">
+                              Платформа
+                            </span>
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                              {profile.platform}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                            <span className="text-xs sm:text-sm font-medium">
+                              Имя пользователя
+                            </span>
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                              {profile.username}
+                            </span>
+                          </div>
+                        </div>
+                        {profile.profileUrl && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+                            asChild
+                          >
+                            <a
+                              href={profile.profileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              <ExternalLink className="h-4 w-4" />
+                              Открыть профиль
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+
+                      {/* О себе */}
+                      {profile.aboutMe && (
+                        <>
+                          <Separator />
+                          <div className="space-y-2">
+                            <h4 className="text-xs sm:text-sm font-semibold">
+                              О себе
+                            </h4>
+                            <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                              {profile.aboutMe}
+                            </p>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Навыки */}
+                      {profile.skills && profile.skills.length > 0 && (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <h4 className="text-xs sm:text-sm font-semibold">
+                              Навыки
+                            </h4>
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                              {profile.skills.map((skill) => (
+                                <Badge
+                                  key={skill}
+                                  variant="secondary"
+                                  className="text-xs sm:text-sm"
+                                >
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </>
+                      )}
+
+                      {/* Статистика */}
+                      {profile.statistics && (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <h4 className="text-xs sm:text-sm font-semibold">
+                              Статистика
+                            </h4>
+                            <div className="grid gap-2 sm:grid-cols-2">
+                              {profile.statistics.rating !== undefined && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Рейтинг
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.rating}
+                                  </span>
+                                </div>
+                              )}
+                              {profile.statistics.ordersCompleted !==
+                                undefined && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Заказов выполнено
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.ordersCompleted}
+                                  </span>
+                                </div>
+                              )}
+                              {profile.statistics.reviewsReceived !==
+                                undefined && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Отзывов получено
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.reviewsReceived}
+                                  </span>
+                                </div>
+                              )}
+                              {profile.statistics.successRate !== undefined && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Успешность
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.successRate}%
+                                  </span>
+                                </div>
+                              )}
+                              {profile.statistics.onTimeRate !== undefined && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Вовремя
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.onTimeRate}%
+                                  </span>
+                                </div>
+                              )}
+                              {profile.statistics.repeatOrdersRate !==
+                                undefined && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Повторные заказы
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.repeatOrdersRate}%
+                                  </span>
+                                </div>
+                              )}
+                              {profile.statistics.buyerLevel && (
+                                <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
+                                  <span className="text-xs sm:text-sm font-medium">
+                                    Уровень
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-muted-foreground">
+                                    {profile.statistics.buyerLevel}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </>
+                  );
+                }
+
+                // Обычный текстовый опыт
+                if (experienceData.text) {
+                  return (
+                    <div className="space-y-2">
+                      <h4 className="text-xs sm:text-sm font-semibold">
+                        Опыт работы
+                      </h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                        {experienceData.text}
+                      </p>
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
 
               {response.skills && response.skills.length > 0 && (
                 <>

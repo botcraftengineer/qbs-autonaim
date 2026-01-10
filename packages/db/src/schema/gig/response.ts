@@ -13,8 +13,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-
 import { file } from "../file";
+import type { StoredProfileData } from "../types";
 import { gig } from "./gig";
 
 /**
@@ -109,6 +109,7 @@ export const gigResponse = pgTable(
 
     // Опыт и навыки
     experience: text("experience"),
+    profileData: jsonb("profile_data").$type<StoredProfileData>(),
     skills: jsonb("skills").$type<string[]>(),
     rating: varchar("rating", { length: 20 }), // Рейтинг на платформе
 

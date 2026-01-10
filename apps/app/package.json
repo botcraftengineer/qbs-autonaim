@@ -14,7 +14,7 @@
     "with-env": "bun run --env-file ../../.env"
   },
   "dependencies": {
-    "@ai-sdk/react": "^3.0.23",
+    "@ai-sdk/react": "^3.0.28",
     "@dnd-kit/core": "6.3.1",
     "@dnd-kit/modifiers": "9.0.0",
     "@dnd-kit/sortable": "10.0.0",
@@ -34,11 +34,11 @@
     "@trpc/client": "11.8.1",
     "@trpc/server": "11.8.1",
     "@trpc/tanstack-react-query": "^11.8.1",
-    "ai": "^6.0.23",
+    "ai": "^6.0.26",
     "better-auth": "1.4.10",
     "date-fns": "4.1.0",
     "lucide-react": "0.562.0",
-    "motion": "^12.24.12",
+    "motion": "^12.25.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
@@ -54,7 +54,7 @@
   "devDependencies": {
     "@qbs-autonaim/tailwind-config": "workspace:*",
     "@qbs-autonaim/tsconfig": "workspace:*",
-    "@types/node": "25.0.3",
+    "@types/node": "25.0.5",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "jiti": "2.6.1",

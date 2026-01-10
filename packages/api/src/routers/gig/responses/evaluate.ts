@@ -69,8 +69,25 @@ export const evaluate = protectedProcedure
       });
     }
 
+    if (!env.INNGEST_EVENT_API_BASE_URL) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Сервис оценки недоступен",
+      });
+    }
+
+    // Validate URL format
     try {
-      await fetch(
+      new URL(env.INNGEST_EVENT_API_BASE_URL);
+    } catch {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Сервис оценки недоступен",
+      });
+    }
+
+    try {
+      const response = await fetch(
         `${env.INNGEST_EVENT_API_BASE_URL}/e/${env.INNGEST_EVENT_KEY}`,
         {
           method: "POST",
@@ -88,12 +105,39 @@ export const evaluate = protectedProcedure
         },
       );
 
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => "Unknown error");
+        console.error("Ошибка отправки события оценки:", {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText,
+          responseId: input.responseId,
+          workspaceId: input.workspaceId,
+          conversationId: conversationData.id,
+        });
+
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Не удалось запустить оценку: HTTP ${response.status} ${response.statusText}`,
+        });
+      }
+
       return {
         success: true,
         message: "Оценка запущена",
       };
     } catch (error) {
-      console.error("Ошибка отправки события оценки:", error);
+      if (error instanceof TRPCError) {
+        throw error;
+      }
+
+      console.error("Ошибка отправки события оценки:", {
+        error,
+        responseId: input.responseId,
+        workspaceId: input.workspaceId,
+        conversationId: conversationData.id,
+      });
+
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
         message: "Не удалось запустить оценку",

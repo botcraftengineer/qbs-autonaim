@@ -14,6 +14,7 @@ import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
 import {
   formatProfileDataForStorage,
   parseFreelancerProfile,
+  type StoredProfileData,
 } from "../../../../parsers/profile-parser";
 import {
   createInterviewScoring,
@@ -98,7 +99,7 @@ export const completeInterviewFunction = inngest.createFunction(
         const updateData: {
           status: "COMPLETED";
           hrSelectionStatus: "RECOMMENDED" | "NOT_RECOMMENDED";
-          experience?: string;
+          profileData?: StoredProfileData;
         } = {
           status: "COMPLETED",
           hrSelectionStatus,
@@ -118,7 +119,7 @@ export const completeInterviewFunction = inngest.createFunction(
             });
 
             if (!profile.error) {
-              updateData.experience = formatProfileDataForStorage(profile);
+              updateData.profileData = formatProfileDataForStorage(profile);
             }
           } catch (error) {
             console.error("❌ Ошибка парсинга профиля (Telegram):", error);

@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@qbs-autonaim/tsconfig": "*",
-    "@types/node": "25.0.3",
+    "@types/node": "25.0.5",
     "typescript": "5.9.3"
   }
 }
