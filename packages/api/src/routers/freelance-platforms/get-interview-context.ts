@@ -43,7 +43,7 @@ export const getInterviewContext = publicProcedure
     // Если это интервью по вакансии
     if (session.vacancyResponse) {
       const vacancy = await ctx.db.query.vacancy.findFirst({
-        where: eq(vacancyTable.id, session.vacancyResponse.entityId),
+        where: eq(vacancyTable.id, session.vacancyResponse.vacancyId),
       });
 
       if (vacancy) {

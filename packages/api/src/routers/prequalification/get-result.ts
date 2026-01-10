@@ -95,9 +95,9 @@ export const getResult = publicProcedure
         content: string;
         timestamp: Date;
       }[] = [];
-      if (session.conversationId) {
+      if (session.interviewSessionId) {
         dialogueHistory = await dialogueHandler.getConversationHistory(
-          session.conversationId,
+          session.interviewSessionId,
         );
       }
 

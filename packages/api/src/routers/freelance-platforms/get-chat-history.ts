@@ -42,9 +42,9 @@ export const getChatHistory = publicProcedure
 
     // Логируем доступ к интервью (если пользователь авторизован)
     if (ctx.session?.user) {
-      await ctx.auditLogger.logInterviewAccess({
+      await ctx.auditLogger.logConversationAccess({
         userId: ctx.session.user.id,
-        interviewSessionId: input.interviewSessionId,
+        conversationId: input.interviewSessionId,
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
       });

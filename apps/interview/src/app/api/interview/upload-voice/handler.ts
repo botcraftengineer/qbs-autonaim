@@ -1,10 +1,10 @@
 /**
  * Публичный endpoint для загрузки голосовых сообщений в интервью
- * Доступен без авторизации, но защищён проверкой conversationId
- * Только для WEB интервью (source = 'WEB')
+ * Доступен без авторизации, но защищён проверкой sessionId
+ * Только для WEB интервью (lastChannel = 'web')
  */
 import { db, eq } from "@qbs-autonaim/db";
-import { conversationMessage, file } from "@qbs-autonaim/db/schema";
+import { file, interviewMessage } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { uploadFile } from "@qbs-autonaim/lib/s3";
 import { NextResponse } from "next/server";

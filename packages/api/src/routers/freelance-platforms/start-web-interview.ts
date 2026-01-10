@@ -165,7 +165,7 @@ async function handleVacancyInterview(
   const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
     where: and(
       eq(vacancyResponse.vacancyId, vacancyLink.entityId),
-      eq(vacancyResponse.profileUrl, normalizedProfileUrl),
+      eq(vacancyResponse.platformProfileUrl, normalizedProfileUrl),
     ),
   });
 
@@ -184,16 +184,12 @@ async function handleVacancyInterview(
     .insert(vacancyResponse)
     .values({
       vacancyId: vacancyLink.entityId,
-      candidateId: normalizedProfileUrl,
+      resumeId: normalizedProfileUrl,
+      resumeUrl: freelancerInfo.platformProfileUrl,
       candidateName: freelancerInfo.name,
-      profileUrl: normalizedProfileUrl,
+      platformProfileUrl: normalizedProfileUrl,
       phone: freelancerInfo.phone,
       telegramUsername: freelancerInfo.telegram,
-      contacts: {
-        email: freelancerInfo.email,
-        phone: freelancerInfo.phone,
-        telegram: freelancerInfo.telegram,
-      },
       importSource: "WEB_LINK",
       status: "NEW",
       respondedAt: new Date(),

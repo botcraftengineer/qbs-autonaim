@@ -4,6 +4,7 @@ import {
   index,
   integer,
   jsonb,
+  pgEnum,
   pgTable,
   text,
   timestamp,
@@ -14,6 +15,26 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { organization } from "../organization/organization";
 import type { StoredProfileData } from "../types";
+
+/**
+ * Источник появления кандидата в базе
+ */
+export const candidateSourceEnum = pgEnum("candidate_source", [
+  "APPLICANT", // Откликнулся сам
+  "SOURCING", // Найден рекрутером (холодный поиск/парсинг)
+  "IMPORT", // Массовый импорт
+  "MANUAL", // Ручное создание
+  "REFERRAL", // Рекомендация
+]);
+
+/**
+ * Статус обработки данных парсером
+ */
+export const parsingStatusEnum = pgEnum("parsing_status", [
+  "PENDING",
+  "COMPLETED",
+  "FAILED",
+]);
 
 /**
  * Глобальный профиль кандидата (Talent Pool).
@@ -65,10 +86,9 @@ export const candidate = pgTable(
     profileData: jsonb("profile_data").$type<StoredProfileData>(),
     skills: jsonb("skills").$type<string[]>(),
     experienceYears: integer("experience_years"),
-    
+
     // Зарплатные ожидания
     salaryExpectationsAmount: integer("salary_expectations_amount"),
-    salaryCurrency: varchar("salary_currency", { length: 3 }).default("RUB"),
     workFormat: varchar("work_format", { length: 50 }), // remote, office, hybrid
 
     // Детали по опыту
@@ -80,6 +100,24 @@ export const candidate = pgTable(
 
     // Заметки рекрутера (общие по кандидату)
     notes: text("notes"),
+
+    // --- Sourcing & Origin ---
+    // Каким образом попал в базу
+    source: candidateSourceEnum("source").default("APPLICANT").notNull(),
+    // Конкретный источник (hh.ru, linkedin, unknown)
+    originalSource: varchar("original_source", { length: 50 }),
+
+    // Статус парсинга (если добавляем через AI-парсером)
+    parsingStatus: parsingStatusEnum("parsing_status")
+      .default("COMPLETED")
+      .notNull(),
+
+    // Теги для быстрого поиска и сегментации (напр. ["senior", "reserve", "msk"])
+    tags: jsonb("tags").$type<string[]>(),
+
+    // --- Search & Privacy ---
+    // Видим ли в глобальном поиске для клиентов (если false - только для внутренних рекрутеров)
+    isSearchable: boolean("is_searchable").default(true),
 
     // Метаданные
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
@@ -113,7 +151,6 @@ export const CreateCandidateSchema = createInsertSchema(candidate, {
   citizenship: z.string().max(100).optional(),
   location: z.string().max(200).optional(),
   salaryExpectationsAmount: z.number().int().optional(),
-  salaryCurrency: z.string().length(3).optional(),
   telegramUsername: z.string().max(100).optional(),
   hhUrl: z.string().url().optional().or(z.literal("")),
   vkUrl: z.string().url().optional().or(z.literal("")),
@@ -121,6 +158,12 @@ export const CreateCandidateSchema = createInsertSchema(candidate, {
   profileData: z.any(),
   skills: z.array(z.string()).optional(),
   experienceYears: z.number().int().min(0).optional(),
+  source: z
+    .enum(["APPLICANT", "SOURCING", "IMPORT", "MANUAL", "REFERRAL"])
+    .optional(),
+  originalSource: z.string().max(50).optional(),
+  tags: z.array(z.string()).optional(),
+  isSearchable: z.boolean().default(true),
   metadata: z.record(z.string(), z.unknown()).optional(),
 }).omit({
   id: true,

@@ -1,7 +1,7 @@
 /**
  * Публичный endpoint для AI-чата интервью
- * Доступен без авторизации, но защищён проверкой conversationId
- * Только для WEB интервью (source = 'WEB')
+ * Доступен без авторизации, но защищён проверкой interviewSessionId
+ * Только для WEB интервью (lastChannel = 'web')
  *
  * Использует мультиагентную систему с поддержкой стриминга
  * Трассировка через Langfuse
@@ -10,7 +10,7 @@
 import { WebInterviewOrchestrator } from "@qbs-autonaim/ai";
 import { env } from "@qbs-autonaim/config";
 import { db, eq } from "@qbs-autonaim/db";
-import { conversationMessage } from "@qbs-autonaim/db/schema";
+import { interviewMessage } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
@@ -50,7 +50,7 @@ const requestSchema = z
   .object({
     id: z.string().optional(),
     messages: z.array(messageSchema),
-    conversationId: z.string().uuid(),
+    sessionId: z.string().uuid(),
   })
   .passthrough();
 
@@ -78,11 +78,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { messages, conversationId } = requestBody;
+    const { messages, sessionId } = requestBody;
 
-    // Проверяем что conversation существует и это WEB интервью
-    const conv = await db.query.conversation.findFirst({
-      where: (c, { and }) => and(eq(c.id, conversationId), eq(c.source, "WEB")),
+    // Проверяем что interview session существует и это WEB интервью
+    const session = await db.query.interviewSession.findFirst({
+      where: (s, { and }) => and(eq(s.id, sessionId), eq(s.lastChannel, "web")),
       with: {
         messages: {
           with: {
@@ -93,14 +93,14 @@ export async function POST(request: Request) {
       },
     });
 
-    if (!conv) {
+    if (!session) {
       return NextResponse.json(
         { error: "Interview not found" },
         { status: 404 },
       );
     }
 
-    if (conv.status !== "ACTIVE") {
+    if (session.status !== "active") {
       return NextResponse.json(
         { error: "Interview is not active" },
         { status: 403 },
@@ -112,9 +112,9 @@ export async function POST(request: Request) {
     let gig = null;
     let companySettings = null;
 
-    if (conv.responseId) {
+    if (session.vacancyResponseId) {
       const response = await db.query.vacancyResponse.findFirst({
-        where: (r, { eq }) => eq(r.id, conv.responseId as string),
+        where: (r, { eq }) => eq(r.id, session.vacancyResponseId as string),
         with: {
           vacancy: {
             with: {
@@ -131,9 +131,9 @@ export async function POST(request: Request) {
       companySettings = response?.vacancy?.workspace?.companySettings;
     }
 
-    if (conv.gigResponseId) {
+    if (session.gigResponseId) {
       const gigResp = await db.query.gigResponse.findFirst({
-        where: (r, { eq }) => eq(r.id, conv.gigResponseId as string),
+        where: (r, { eq }) => eq(r.id, session.gigResponseId as string),
         with: {
           gig: {
             with: {
@@ -166,11 +166,11 @@ export async function POST(request: Request) {
         (p) => p.type === "file",
       );
       if (!hasVoiceFile) {
-        await db.insert(conversationMessage).values({
-          conversationId,
-          sender: "CANDIDATE",
-          contentType: "TEXT",
-          channel: "WEB",
+        await db.insert(interviewMessage).values({
+          sessionId,
+          role: "user",
+          type: "text",
+          channel: "web",
           content: userMessageText,
         });
       }
@@ -179,7 +179,7 @@ export async function POST(request: Request) {
     // Создаём trace в Langfuse (раньше, чтобы связать все запросы)
     const trace = langfuse.trace({
       name: "web-interview-chat",
-      userId: conversationId,
+      userId: sessionId,
       metadata: {
         source: "WEB",
         vacancyId: vacancy?.id,

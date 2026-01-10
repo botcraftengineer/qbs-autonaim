@@ -68,7 +68,6 @@ export const vacancyResponse = pgTable(
     // Ожидания по зарплате (специфично для vacancy)
     // Ожидания по зарплате (специфично для vacancy)
     salaryExpectationsAmount: integer("salary_expectations_amount"),
-    salaryCurrency: varchar("salary_currency", { length: 3 }).default("RUB"),
     salaryExpectationsComment: varchar("salary_expectations_comment", {
       length: 200,
     }),
@@ -111,7 +110,6 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   coverLetter: z.string().optional(),
   telegramPinCode: z.string().length(4).optional(),
   salaryExpectationsAmount: z.number().int().optional(),
-  salaryCurrency: z.string().length(3).default("RUB"),
   salaryExpectationsComment: z.string().max(200).optional(),
   resumeLanguage: z.string().max(10).default("ru").optional(),
   status: z.enum(responseStatusValues).default("NEW"),

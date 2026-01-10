@@ -173,7 +173,8 @@ export type PrequalificationErrorCode =
   | "INSUFFICIENT_DIALOGUE"
   | "EVALUATION_FAILED"
   | "ALREADY_SUBMITTED"
-  | "CONVERSATION_CREATION_FAILED";
+  | "CONVERSATION_CREATION_FAILED"
+  | "INTERVIEW_SESSION_CREATION_FAILED";
 
 /**
  * Ошибка сервиса преквалификации

@@ -64,7 +64,7 @@ export const evaluate = protectedProcedure
         data: {
           responseId: input.responseId,
           workspaceId: input.workspaceId,
-          sessionId: sessionData.id,
+          chatSessionId: sessionData.id,
         },
       });
 
