@@ -9,6 +9,7 @@ export default defineConfig({
   clean: true,
   minify: isProduction,
   external: [
+    "@inngest/realtime",
     "react",
     "react-dom",
     "@qbs-autonaim/config",

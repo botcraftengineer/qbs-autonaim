@@ -1,4 +1,5 @@
 import { realtimeMiddleware } from "@inngest/realtime/middleware";
+
 import { EventSchemas, Inngest } from "inngest";
 import {
   analyzeFreelanceResponseDataSchema,

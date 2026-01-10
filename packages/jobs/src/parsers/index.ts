@@ -35,5 +35,6 @@ export {
   URLSecurityError,
   type URLValidationOptions,
   validateSecureURL,
+  validateSecureURLWithDNS,
 } from "./utils/url-security";
 export * from "./weblancer";

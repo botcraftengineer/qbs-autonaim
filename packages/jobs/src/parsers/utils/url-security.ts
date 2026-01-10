@@ -3,6 +3,8 @@
  * Защита от SSRF (Server-Side Request Forgery)
  */
 
+import { lookup } from "node:dns/promises";
+
 /**
  * Проверяет, является ли IP-адрес приватным
  */
@@ -46,19 +48,13 @@ function isPrivateIP(ip: string): boolean {
 }
 
 /**
- * Проверяет, является ли hostname локальным или приватным
+ * Проверяет, является ли hostname localhost вариантом (без проверки приватных IP)
  */
-function isPrivateHostname(hostname: string): boolean {
+function isLocalhostVariant(hostname: string): boolean {
   const lowerHostname = hostname.toLowerCase();
 
   // Проверка на localhost варианты
-  const localhostPatterns = [
-    "localhost",
-    "localhost.localdomain",
-    "127.0.0.1",
-    "::1",
-    "0.0.0.0",
-  ];
+  const localhostPatterns = ["localhost", "localhost.localdomain"];
 
   if (localhostPatterns.includes(lowerHostname)) {
     return true;
@@ -69,11 +65,6 @@ function isPrivateHostname(hostname: string): boolean {
     return true;
   }
 
-  // Проверка на IP адреса
-  if (isPrivateIP(lowerHostname)) {
-    return true;
-  }
-
   return false;
 }
 
@@ -81,6 +72,7 @@ export interface URLValidationOptions {
   allowedProtocols?: string[];
   allowPrivateIPs?: boolean;
   allowLocalhostVariants?: boolean;
+  skipDNSResolution?: boolean; // For testing or when DNS resolution is not needed
 }
 
 export class URLSecurityError extends Error {
@@ -92,6 +84,8 @@ export class URLSecurityError extends Error {
 
 /**
  * Валидирует URL на безопасность (защита от SSRF)
+ * Выполняет только синтаксическую проверку hostname.
+ * Для полной защиты от DNS rebinding используйте validateSecureURLWithDNS.
  * @throws {URLSecurityError} если URL небезопасен
  */
 export function validateSecureURL(
@@ -120,20 +114,85 @@ export function validateSecureURL(
   }
 
   // Проверка на приватные IP и localhost
-  if (!allowPrivateIPs || !allowLocalhostVariants) {
-    const hostname = parsedURL.hostname;
+  const hostname = parsedURL.hostname;
 
-    if (!allowLocalhostVariants && isPrivateHostname(hostname)) {
-      throw new URLSecurityError(
-        `Недопустимый hostname: ${hostname}. Локальные адреса запрещены`,
-      );
-    }
+  // Проверяем localhost варианты отдельно
+  if (!allowLocalhostVariants && isLocalhostVariant(hostname)) {
+    throw new URLSecurityError(
+      `Недопустимый hostname: ${hostname}. Локальные адреса запрещены`,
+    );
+  }
 
-    if (!allowPrivateIPs && isPrivateIP(hostname)) {
+  // Проверяем приватные IP отдельно
+  if (!allowPrivateIPs && isPrivateIP(hostname)) {
+    throw new URLSecurityError(
+      `Недопустимый IP-адрес: ${hostname}. Приватные IP запрещены`,
+    );
+  }
+
+  return parsedURL;
+}
+
+/**
+ * Валидирует URL с DNS резолюцией для защиты от DNS rebinding атак
+ * @throws {URLSecurityError} если URL небезопасен или резолвится в приватный IP
+ */
+export async function validateSecureURLWithDNS(
+  url: string,
+  options: URLValidationOptions = {},
+): Promise<URL> {
+  const {
+    allowPrivateIPs = false,
+    allowLocalhostVariants = false,
+    skipDNSResolution = false,
+  } = options;
+
+  // Сначала выполняем синтаксическую проверку
+  const parsedURL = validateSecureURL(url, options);
+
+  // Если разрешены приватные IP и localhost, или пропускаем DNS резолюцию - возвращаем результат
+  if ((allowPrivateIPs && allowLocalhostVariants) || skipDNSResolution) {
+    return parsedURL;
+  }
+
+  const hostname = parsedURL.hostname;
+
+  // Если hostname уже является IP адресом, он уже проверен в validateSecureURL
+  if (isPrivateIP(hostname)) {
+    // Уже проверено выше, но на всякий случай
+    if (!allowPrivateIPs) {
       throw new URLSecurityError(
         `Недопустимый IP-адрес: ${hostname}. Приватные IP запрещены`,
       );
     }
+    return parsedURL;
+  }
+
+  // Выполняем DNS резолюцию для защиты от DNS rebinding
+  try {
+    const { address } = await lookup(hostname, { family: 0 }); // 0 = IPv4 or IPv6
+
+    // Проверяем, что резолвленный IP не является приватным
+    if (!allowPrivateIPs && isPrivateIP(address)) {
+      throw new URLSecurityError(
+        `Hostname ${hostname} резолвится в приватный IP-адрес: ${address}. DNS rebinding атака заблокирована`,
+      );
+    }
+
+    if (!allowLocalhostVariants && isLocalhostVariant(address)) {
+      throw new URLSecurityError(
+        `Hostname ${hostname} резолвится в локальный адрес: ${address}. DNS rebinding атака заблокирована`,
+      );
+    }
+  } catch (error) {
+    // Если это наша ошибка безопасности - пробрасываем
+    if (error instanceof URLSecurityError) {
+      throw error;
+    }
+    // DNS ошибки (ENOTFOUND и т.д.) - пробрасываем как есть
+    throw new URLSecurityError(
+      `Не удалось резолвить hostname ${hostname}: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 
   return parsedURL;
@@ -142,35 +201,85 @@ export function validateSecureURL(
 export interface SecureFetchOptions extends RequestInit {
   timeout?: number;
   maxRedirects?: number;
+  urlValidationOptions?: URLValidationOptions;
 }
 
 /**
  * Безопасный fetch с таймаутом и защитой от SSRF
+ * Выполняет DNS резолюцию для защиты от DNS rebinding атак
+ * Вручную обрабатывает редиректы с валидацией каждого целевого URL
  */
 export async function secureFetch(
   url: string,
   options: SecureFetchOptions = {},
 ): Promise<Response> {
-  const { timeout = 10000, maxRedirects = 0, ...fetchOptions } = options;
+  const {
+    timeout = 10000,
+    maxRedirects = 0,
+    urlValidationOptions = {},
+    ...fetchOptions
+  } = options;
 
-  // Валидация URL
-  validateSecureURL(url);
+  // Валидация начального URL с DNS резолюцией для защиты от DNS rebinding
+  await validateSecureURLWithDNS(url, urlValidationOptions);
 
-  // Настройка редиректов
-  const redirect = maxRedirects === 0 ? "error" : "follow";
-
-  // Создаем AbortController для таймаута
+  // Создаем AbortController для таймаута (общий для всех редиректов)
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
 
   try {
-    const response = await fetch(url, {
-      ...fetchOptions,
-      signal: controller.signal,
-      redirect,
-    });
+    let currentUrl = url;
+    let redirectCount = 0;
 
-    return response;
+    while (true) {
+      // Выполняем fetch с manual redirect
+      const response = await fetch(currentUrl, {
+        ...fetchOptions,
+        signal: controller.signal,
+        redirect: "manual",
+      });
+
+      // Проверяем, является ли ответ редиректом (3xx)
+      const isRedirect = response.status >= 300 && response.status < 400;
+
+      if (!isRedirect) {
+        // Не редирект - возвращаем финальный ответ
+        return response;
+      }
+
+      // Это редирект - проверяем лимит
+      if (redirectCount >= maxRedirects) {
+        throw new URLSecurityError(
+          `Превышен лимит редиректов: ${maxRedirects}`,
+        );
+      }
+
+      // Получаем Location header
+      const location = response.headers.get("Location");
+      if (!location) {
+        throw new URLSecurityError(
+          `Редирект без Location header (статус ${response.status})`,
+        );
+      }
+
+      // Резолвим Location в абсолютный URL
+      let redirectUrl: string;
+      try {
+        const resolvedUrl = new URL(location, currentUrl);
+        redirectUrl = resolvedUrl.href;
+      } catch {
+        throw new URLSecurityError(
+          `Невалидный Location header в редиректе: ${location}`,
+        );
+      }
+
+      // Валидируем целевой URL редиректа с DNS резолюцией
+      await validateSecureURLWithDNS(redirectUrl, urlValidationOptions);
+
+      // Переходим к следующему URL
+      currentUrl = redirectUrl;
+      redirectCount++;
+    }
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       throw new URLSecurityError(`Таймаут запроса (${timeout}ms)`);
