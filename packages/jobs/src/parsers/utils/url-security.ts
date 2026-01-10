@@ -170,19 +170,31 @@ export async function validateSecureURLWithDNS(
 
   // Выполняем DNS резолюцию для защиты от DNS rebinding
   try {
-    const { address } = await lookup(hostname, { family: 0 }); // 0 = IPv4 or IPv6
+    const addresses = await lookup(hostname, { family: 0, all: true }); // Получаем все адреса
 
-    // Проверяем, что резолвленный IP не является приватным
-    if (!allowPrivateIPs && isPrivateIP(address)) {
-      throw new URLSecurityError(
-        `Hostname ${hostname} резолвится в приватный IP-адрес: ${address}. DNS rebinding атака заблокирована`,
-      );
-    }
+    // Проверяем каждый резолвленный IP адрес
+    for (const addr of addresses) {
+      // Проверяем, что резолвленный IP не является приватным
+      if (!allowPrivateIPs && isPrivateIP(addr.address)) {
+        throw new URLSecurityError(
+          `Hostname ${hostname} резолвится в приватный IP-адрес: ${addr.address}. DNS rebinding атака заблокирована`,
+        );
+      }
 
-    if (!allowLocalhostVariants && isLocalhostVariant(address)) {
-      throw new URLSecurityError(
-        `Hostname ${hostname} резолвится в локальный адрес: ${address}. DNS rebinding атака заблокирована`,
-      );
+      // Проверяем localhost варианты на hostname (не на IP)
+      // Также проверяем IP на loopback диапазоны
+      if (!allowLocalhostVariants) {
+        if (isLocalhostVariant(hostname) || isPrivateIP(addr.address)) {
+          // isPrivateIP уже проверяет loopback диапазоны (127.0.0.0/8, ::1)
+          const isLoopback =
+            /^127\./.test(addr.address) || addr.address === "::1";
+          if (isLoopback) {
+            throw new URLSecurityError(
+              `Hostname ${hostname} резолвится в локальный адрес: ${addr.address}. DNS rebinding атака заблокирована`,
+            );
+          }
+        }
+      }
     }
   } catch (error) {
     // Если это наша ошибка безопасности - пробрасываем

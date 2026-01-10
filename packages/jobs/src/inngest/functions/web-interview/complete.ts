@@ -185,7 +185,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           };
 
           // Сохраняем данные профиля в поле profileData
-          if (profileData) {
+          if (profileData && !profileData.error) {
             updateData.profileData = formatProfileDataForStorage(profileData);
           }
 
@@ -309,7 +309,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           };
 
           // Сохраняем данные профиля в поле profileData
-          if (gigProfileData) {
+          if (gigProfileData && !gigProfileData.error) {
             updateData.profileData =
               formatProfileDataForStorage(gigProfileData);
           }

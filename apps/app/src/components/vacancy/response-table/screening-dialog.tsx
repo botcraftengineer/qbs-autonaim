@@ -73,7 +73,7 @@ export function ScreeningDialog({
                   ✓ {message || "Процесс успешно завершен!"}
                 </div>
                 {progress && (
-                  <div className="grid grid-cols-3 gap-4 p-4 rounded-lg border bg-linear-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
+                  <div className="grid grid-cols-3 gap-4 p-4 rounded-lg border bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20">
                     <div className="text-center">
                       <div className="text-2xl font-bold text-foreground">
                         {progress.total}
