@@ -4,6 +4,9 @@ import {
   Button,
   Card,
   CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -63,7 +66,7 @@ function ResponseDetailSkeleton() {
 
 export default function GigResponseDetailPage({ params }: PageProps) {
   const { orgSlug, slug: workspaceSlug, gigId, responseId } = React.use(params);
-  const router = useRouter();
+  const _router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();
@@ -89,13 +92,6 @@ export default function GigResponseDetailPage({ params }: PageProps) {
     }),
     enabled: !!workspace?.id,
   });
-
-  // Redirect to not-found if response doesn't exist
-  React.useEffect(() => {
-    if (!isLoading && !response) {
-      router.push("/404");
-    }
-  }, [isLoading, response, router]);
 
   // Accept mutation
   const acceptMutation = useMutation(
@@ -279,12 +275,33 @@ export default function GigResponseDetailPage({ params }: PageProps) {
     sendMessageMutation.isPending ||
     evaluateMutation.isPending;
 
-  if (isLoading) {
+  if (isLoading || !workspace?.id) {
     return <ResponseDetailSkeleton />;
   }
 
-  if (!response) {
-    return null; // useEffect will handle redirect
+  if (isError || !response) {
+    return (
+      <div className="container mx-auto max-w-2xl py-12 px-4 sm:py-16 sm:px-6">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Отклик не найден</CardTitle>
+            <CardDescription>
+              Отклик, который вы ищете, не существует или был удалён
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <Button asChild className="min-h-[44px] touch-action-manipulation">
+              <Link
+                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+                Вернуться к откликам
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   return (
