@@ -72,24 +72,24 @@
   - Запустить тесты, спросить пользователя при вопросах
 
 
-- [ ] 4. Реализация EmbeddingService
-  - [ ] 4.1 Создать src/embeddings/embedding-service.ts
+- [x] 4. Реализация EmbeddingService
+  - [x] 4.1 Создать src/embeddings/embedding-service.ts
     - Интеграция с LlamaIndex для эмбеддингов
     - Поддержка OpenAI/Anthropic провайдеров
     - _Requirements: 2.1, 5.4_
-  - [ ] 4.2 Реализовать src/embeddings/text-chunker.ts
+  - [x] 4.2 Реализовать src/embeddings/text-chunker.ts
     - Разбиение текста на чанки с overlap
     - Генерация метаданных для чанков
     - _Requirements: 2.2, 2.3_
   - [ ]* 4.3 Написать property test для chunking
     - **Property 2: Chunking produces valid segments**
     - **Validates: Requirements 2.2, 2.3**
-  - [ ] 4.4 Добавить retry логику
+  - [x] 4.4 Добавить retry логику
     - Exponential backoff при ошибках провайдера
     - _Requirements: 2.4_
 
-- [ ] 5. Реализация VectorStore
-  - [ ] 5.1 Создать src/vector-store/pgvector-store.ts
+- [x] 5. Реализация VectorStore
+  - [x] 5.1 Создать src/vector-store/pgvector-store.ts
     - Инициализация pgvector таблицы
     - Методы store, deleteByDocument, search
     - _Requirements: 3.1, 3.2, 3.3, 4.1_
@@ -99,7 +99,7 @@
   - [ ]* 5.3 Написать property test для удаления
     - **Property 4: Document deletion removes all embeddings**
     - **Validates: Requirements 3.3**
-  - [ ] 5.4 Реализовать семантический поиск
+  - [x] 5.4 Реализовать семантический поиск
     - Top-K поиск с фильтрацией
     - Сортировка по similarity
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
@@ -113,8 +113,8 @@
   - Запустить тесты, спросить пользователя при вопросах
 
 
-- [ ] 7. Реализация DocumentIndexer (главный API пакета)
-  - [ ] 7.1 Создать src/document-indexer.ts
+- [x] 7. Реализация DocumentIndexer (главный API пакета)
+  - [x] 7.1 Создать src/document-indexer.ts
     - Оркестрация: парсинг → эмбеддинг → хранение
     - Методы index, reindex, remove, search
     - Конфигурация через options (parser, embedding provider, feature flags)
@@ -122,37 +122,37 @@
   - [ ]* 7.2 Написать property test для reindex
     - **Property 5: Reindexing replaces embeddings atomically**
     - **Validates: Requirements 3.4**
-  - [ ] 7.3 Добавить fallback логику
+  - [x] 7.3 Добавить fallback логику
     - Переключение на UnstructuredParser при ошибках
     - Feature flag для выбора процессора
     - _Requirements: 6.3, 6.4_
-  - [ ] 7.4 Создать src/index.ts с экспортами
+  - [x] 7.4 Создать src/index.ts с экспортами
     - Экспортировать DocumentIndexer, типы, интерфейсы
     - Экспортировать отдельные компоненты для кастомизации
     - _Requirements: 5.1_
 
-- [ ] 8. Интеграция с packages/api
-  - [ ] 8.1 Добавить @qbs-autonaim/document-processor в зависимости packages/api
+- [x] 8. Интеграция с packages/api
+  - [x] 8.1 Добавить @qbs-autonaim/document-processor в зависимости packages/api
     - Обновить package.json
     - _Requirements: 5.1_
-  - [ ] 8.2 Добавить переменные окружения в packages/api
+  - [x] 8.2 Добавить переменные окружения в packages/api
     - Добавить DOCLING_*, EMBEDDING_*, VECTOR_STORE_* в env.ts
     - Добавить feature flag USE_DOCLING_PROCESSOR
     - _Requirements: 7.1, 6.3_
-  - [ ] 8.3 Обновить ResumeParserService
+  - [x] 8.3 Обновить ResumeParserService
     - Использовать DocumentIndexer из @qbs-autonaim/document-processor
     - Сохранить совместимость с существующим API
     - _Requirements: 6.1, 6.2_
   - [ ]* 8.4 Написать property test для эквивалентности парсеров
     - **Property 8: Parser equivalence**
     - **Validates: Requirements 6.2**
-  - [ ] 8.5 Добавить метрики и логирование
+  - [x] 8.5 Добавить метрики и логирование
     - Время обработки, success rate
     - Structured logging с trace ID
     - _Requirements: 7.2, 7.3_
 
-- [ ] 9. Обновление docker-compose
-  - [ ] 9.1 Обновить docker-compose.yml
+- [x] 9. Обновление docker-compose
+  - [x] 9.1 Обновить docker-compose.yml
     - Оставить unstructured как fallback
     - Добавить health check
     - _Requirements: 7.4_

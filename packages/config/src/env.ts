@@ -86,6 +86,46 @@ export const env = createEnv({
     DOCLING_API_URL: z.url().optional().default("http://localhost:8080"),
     DOCLING_API_KEY: z.string().optional().default(""),
 
+    // Document Processor Feature Flags
+    USE_DOCLING_PROCESSOR: z
+      .string()
+      .optional()
+      .default("true")
+      .transform((val) => val === "true"),
+    FALLBACK_TO_UNSTRUCTURED: z
+      .string()
+      .optional()
+      .default("true")
+      .transform((val) => val === "true"),
+
+    // Embedding Service Configuration
+    EMBEDDING_PROVIDER: z
+      .enum(["openai", "anthropic", "local"])
+      .optional()
+      .default("openai"),
+    EMBEDDING_MODEL: z.string().optional().default("text-embedding-3-small"),
+    EMBEDDING_CHUNK_SIZE: z
+      .string()
+      .optional()
+      .default("512")
+      .transform(Number),
+    EMBEDDING_CHUNK_OVERLAP: z
+      .string()
+      .optional()
+      .default("50")
+      .transform(Number),
+    EMBEDDING_DIMENSIONS: z
+      .string()
+      .optional()
+      .default("1536")
+      .transform(Number),
+
+    // Vector Store Configuration
+    VECTOR_STORE_TABLE_NAME: z
+      .string()
+      .optional()
+      .default("document_embeddings"),
+
     ENCRYPTION_KEY: z
       .string()
       .length(64, "ENCRYPTION_KEY должен быть 64 символа (32 байта в hex)"),
@@ -150,6 +190,14 @@ export const env = createEnv({
     NEXT_PUBLIC_INTERVIEW_URL: process.env.NEXT_PUBLIC_INTERVIEW_URL,
     DOCLING_API_URL: process.env.DOCLING_API_URL,
     DOCLING_API_KEY: process.env.DOCLING_API_KEY,
+    USE_DOCLING_PROCESSOR: process.env.USE_DOCLING_PROCESSOR,
+    FALLBACK_TO_UNSTRUCTURED: process.env.FALLBACK_TO_UNSTRUCTURED,
+    EMBEDDING_PROVIDER: process.env.EMBEDDING_PROVIDER,
+    EMBEDDING_MODEL: process.env.EMBEDDING_MODEL,
+    EMBEDDING_CHUNK_SIZE: process.env.EMBEDDING_CHUNK_SIZE,
+    EMBEDDING_CHUNK_OVERLAP: process.env.EMBEDDING_CHUNK_OVERLAP,
+    EMBEDDING_DIMENSIONS: process.env.EMBEDDING_DIMENSIONS,
+    VECTOR_STORE_TABLE_NAME: process.env.VECTOR_STORE_TABLE_NAME,
     ENCRYPTION_KEY: process.env.ENCRYPTION_KEY,
     TG_CLIENT_PORT: process.env.TG_CLIENT_PORT,
   },

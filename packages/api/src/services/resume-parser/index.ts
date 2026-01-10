@@ -5,9 +5,15 @@
  * Извлекает текст и структурирует данные с помощью AI.
  */
 
+import { randomUUID } from "node:crypto";
 import { AgentFactory, type ResumeStructurerOutput } from "@qbs-autonaim/ai";
+import { env } from "@qbs-autonaim/config";
 import type { ParsedResume, StructuredResume } from "@qbs-autonaim/db";
-import { DoclingProcessor } from "@qbs-autonaim/document-processor";
+import {
+  DoclingProcessor,
+  DocumentIndexer,
+  type IndexerConfig,
+} from "@qbs-autonaim/document-processor";
 import type { LanguageModel } from "ai";
 import type { Langfuse } from "langfuse";
 import {
@@ -21,6 +27,103 @@ import {
 
 // Re-export types for convenience
 export * from "./types";
+
+/**
+ * Structured logger for resume parser operations
+ */
+class ResumeParserLogger {
+  private context: Record<string, unknown>;
+
+  constructor(context: Record<string, unknown> = {}) {
+    this.context = context;
+  }
+
+  private log(
+    level: "info" | "warn" | "error",
+    message: string,
+    data?: Record<string, unknown>,
+  ) {
+    const timestamp = new Date().toISOString();
+    const logEntry = {
+      timestamp,
+      level,
+      message,
+      ...this.context,
+      ...data,
+    };
+
+    const logMethod = level === "error" ? console.error : console.log;
+    logMethod(JSON.stringify(logEntry));
+  }
+
+  info(message: string, data?: Record<string, unknown>) {
+    this.log("info", message, data);
+  }
+
+  warn(message: string, data?: Record<string, unknown>) {
+    this.log("warn", message, data);
+  }
+
+  error(message: string, data?: Record<string, unknown>) {
+    this.log("error", message, data);
+  }
+
+  withContext(additionalContext: Record<string, unknown>): ResumeParserLogger {
+    return new ResumeParserLogger({ ...this.context, ...additionalContext });
+  }
+}
+
+/**
+ * Metrics collector for resume parser operations
+ */
+const metricsStore = new Map<
+  string,
+  { count: number; totalDuration: number; errors: number }
+>();
+
+function recordMetric(
+  operation: string,
+  duration: number,
+  success: boolean,
+  metadata?: Record<string, unknown>,
+) {
+  const key = operation;
+  const current = metricsStore.get(key) || {
+    count: 0,
+    totalDuration: 0,
+    errors: 0,
+  };
+
+  current.count++;
+  current.totalDuration += duration;
+  if (!success) {
+    current.errors++;
+  }
+
+  metricsStore.set(key, current);
+
+  // Log metric
+  console.log(
+    JSON.stringify({
+      timestamp: new Date().toISOString(),
+      type: "metric",
+      operation,
+      duration,
+      success,
+      successRate:
+        current.count > 0
+          ? ((current.count - current.errors) / current.count) * 100
+          : 0,
+      avgDuration:
+        current.count > 0 ? current.totalDuration / current.count : 0,
+      ...metadata,
+    }),
+  );
+}
+
+export function getMetrics() {
+  return Object.fromEntries(metricsStore);
+}
 
 /**
  * Поддерживаемые расширения файлов
@@ -39,6 +142,7 @@ const SUPPORTED_EXTENSIONS: Record<string, ResumeFileType> = {
  */
 export class ResumeParserService {
   private readonly parser: DoclingProcessor;
+  private readonly indexer?: DocumentIndexer;
   private readonly config: ResumeParserConfig;
   private readonly model: LanguageModel;
   private readonly langfuse?: Langfuse;
@@ -49,6 +153,7 @@ export class ResumeParserService {
     config?: Partial<ResumeParserConfig>;
     doclingApiUrl?: string;
     doclingApiKey?: string;
+    enableIndexing?: boolean;
   }) {
     this.parser = new DoclingProcessor({
       apiUrl: options.doclingApiUrl,
@@ -59,6 +164,28 @@ export class ResumeParserService {
     this.config = { ...DEFAULT_PARSER_CONFIG, ...options.config };
     this.model = options.model;
     this.langfuse = options.langfuse;
+
+    // Initialize DocumentIndexer if indexing is enabled
+    if (options.enableIndexing ?? env.USE_DOCLING_PROCESSOR) {
+      const indexerConfig: IndexerConfig = {
+        embedding: {
+          provider: env.EMBEDDING_PROVIDER,
+          model: env.EMBEDDING_MODEL,
+          chunkSize: env.EMBEDDING_CHUNK_SIZE,
+          chunkOverlap: env.EMBEDDING_CHUNK_OVERLAP,
+          dimensions: env.EMBEDDING_DIMENSIONS,
+        },
+        vectorStore: {
+          url: env.POSTGRES_URL || "",
+          collectionName: env.VECTOR_STORE_TABLE_NAME,
+          dimensions: env.EMBEDDING_DIMENSIONS,
+        },
+        useDocling: env.USE_DOCLING_PROCESSOR,
+        fallbackToUnstructured: env.FALLBACK_TO_UNSTRUCTURED,
+      };
+
+      this.indexer = new DocumentIndexer(indexerConfig);
+    }
   }
 
   /**
@@ -106,70 +233,456 @@ export class ResumeParserService {
    * @throws ResumeParserError при ошибках парсинга
    */
   async parse(input: ResumeInput): Promise<ParsedResume> {
-    // Проверяем размер файла
-    if (input.content.length > this.config.maxFileSizeBytes) {
-      throw new ResumeParserError(
-        "FILE_TOO_LARGE",
-        `Максимальный размер файла: ${Math.round(this.config.maxFileSizeBytes / 1024 / 1024)} МБ`,
-        {
+    const traceId = randomUUID();
+    const logger = new ResumeParserLogger({
+      service: "ResumeParserService",
+      operation: "parse",
+      traceId,
+      filename: input.filename,
+      fileType: input.type,
+      fileSize: input.content.length,
+    });
+
+    const startTime = Date.now();
+    logger.info("Starting resume parsing");
+
+    try {
+      // Проверяем размер файла
+      if (input.content.length > this.config.maxFileSizeBytes) {
+        logger.warn("File size exceeds limit", {
           actualSize: input.content.length,
           maxSize: this.config.maxFileSizeBytes,
-        },
+        });
+
+        throw new ResumeParserError(
+          "FILE_TOO_LARGE",
+          `Максимальный размер файла: ${Math.round(this.config.maxFileSizeBytes / 1024 / 1024)} МБ`,
+          {
+            actualSize: input.content.length,
+            maxSize: this.config.maxFileSizeBytes,
+          },
+        );
+      }
+
+      // Извлекаем текст в зависимости от типа файла
+      let rawText: string;
+      const extractStartTime = Date.now();
+
+      try {
+        rawText = await this.extractText(input);
+        const extractDuration = Date.now() - extractStartTime;
+
+        logger.info("Text extraction completed", {
+          textLength: rawText.length,
+          duration: extractDuration,
+        });
+
+        recordMetric("text_extraction", extractDuration, true, {
+          traceId,
+          fileType: input.type,
+        });
+      } catch (error) {
+        const extractDuration = Date.now() - extractStartTime;
+
+        logger.error("Text extraction failed", {
+          error: error instanceof Error ? error.message : String(error),
+          duration: extractDuration,
+        });
+
+        recordMetric("text_extraction", extractDuration, false, {
+          traceId,
+          fileType: input.type,
+        });
+
+        if (error instanceof ResumeParserError) {
+          throw error;
+        }
+        throw new ResumeParserError(
+          "PARSE_FAILED",
+          "Не удалось извлечь текст из файла",
+          {
+            originalError:
+              error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+
+      // Проверяем минимальную длину текста
+      if (rawText.length < this.config.minTextLength) {
+        logger.warn("Text content too short", {
+          textLength: rawText.length,
+          minLength: this.config.minTextLength,
+        });
+
+        throw new ResumeParserError(
+          "EMPTY_CONTENT",
+          "Файл содержит слишком мало текста для анализа",
+          { textLength: rawText.length, minLength: this.config.minTextLength },
+        );
+      }
+
+      // Структурируем данные с помощью AI
+      let structured: StructuredResume;
+      let confidence: number;
+      const structureStartTime = Date.now();
+
+      try {
+        const result = await this.structureWithAI(rawText);
+        structured = result.structured;
+        confidence = result.confidence;
+
+        const structureDuration = Date.now() - structureStartTime;
+
+        logger.info("AI structuring completed", {
+          confidence,
+          duration: structureDuration,
+        });
+
+        recordMetric("ai_structuring", structureDuration, true, {
+          traceId,
+          confidence,
+        });
+      } catch (error) {
+        const structureDuration = Date.now() - structureStartTime;
+
+        logger.error("AI structuring failed", {
+          error: error instanceof Error ? error.message : String(error),
+          duration: structureDuration,
+        });
+
+        recordMetric("ai_structuring", structureDuration, false, {
+          traceId,
+        });
+
+        if (error instanceof ResumeParserError) {
+          throw error;
+        }
+        throw new ResumeParserError(
+          "AI_STRUCTURING_FAILED",
+          "Не удалось структурировать данные резюме",
+          {
+            originalError:
+              error instanceof Error ? error.message : String(error),
+          },
+        );
+      }
+
+      const totalDuration = Date.now() - startTime;
+
+      logger.info("Resume parsing completed successfully", {
+        totalDuration,
+        confidence,
+      });
+
+      recordMetric("parse_resume", totalDuration, true, {
+        traceId,
+        confidence,
+      });
+
+      return {
+        rawText,
+        structured,
+        confidence,
+      };
+    } catch (error) {
+      const totalDuration = Date.now() - startTime;
+
+      logger.error("Resume parsing failed", {
+        error: error instanceof Error ? error.message : String(error),
+        errorCode:
+          error instanceof ResumeParserError ? error.code : "UNKNOWN_ERROR",
+        totalDuration,
+      });
+
+      recordMetric("parse_resume", totalDuration, false, {
+        traceId,
+        errorCode:
+          error instanceof ResumeParserError ? error.code : "UNKNOWN_ERROR",
+      });
+
+      throw error;
+    }
+  }
+
+  /**
+   * Індексирует резюме для семантического поиска
+   *
+   * @param input - Входные данные с типом и содержимым файла
+   * @param documentId - Уникальный идентификатор документа
+   * @param metadata - Дополнительные метаданные для хранения
+   * @throws ResumeParserError если индексация недоступна или произошла ошибка
+   */
+  async indexResume(
+    input: ResumeInput,
+    documentId: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    const traceId = randomUUID();
+    const logger = new ResumeParserLogger({
+      service: "ResumeParserService",
+      operation: "indexResume",
+      traceId,
+      documentId,
+      filename: input.filename,
+    });
+
+    if (!this.indexer) {
+      logger.error("Indexing is disabled");
+      throw new ResumeParserError(
+        "INDEXING_DISABLED",
+        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
       );
     }
 
-    // Извлекаем текст в зависимости от типа файла
-    let rawText: string;
+    const startTime = Date.now();
+    logger.info("Starting resume indexing");
+
     try {
-      rawText = await this.extractText(input);
+      await this.indexer.index(input.content, documentId, metadata);
+
+      const duration = Date.now() - startTime;
+      logger.info("Resume indexing completed", { duration });
+
+      recordMetric("index_resume", duration, true, {
+        traceId,
+        documentId,
+      });
     } catch (error) {
-      if (error instanceof ResumeParserError) {
-        throw error;
-      }
+      const duration = Date.now() - startTime;
+
+      logger.error("Resume indexing failed", {
+        error: error instanceof Error ? error.message : String(error),
+        duration,
+      });
+
+      recordMetric("index_resume", duration, false, {
+        traceId,
+        documentId,
+      });
+
       throw new ResumeParserError(
-        "PARSE_FAILED",
-        "Не удалось извлечь текст из файла",
+        "INDEXING_FAILED",
+        "Не удалось проиндексировать резюме",
         {
           originalError: error instanceof Error ? error.message : String(error),
         },
       );
     }
+  }
 
-    // Проверяем минимальную длину текста
-    if (rawText.length < this.config.minTextLength) {
+  /**
+   * Переиндексирует резюме (удаляет старые эмбеддинги и создаёт новые)
+   *
+   * @param input - Входные данные с типом и содержимым файла
+   * @param documentId - Уникальный идентификатор документа
+   * @param metadata - Дополнительные метаданные для хранения
+   * @throws ResumeParserError если индексация недоступна или произошла ошибка
+   */
+  async reindexResume(
+    input: ResumeInput,
+    documentId: string,
+    metadata?: Record<string, unknown>,
+  ): Promise<void> {
+    const traceId = randomUUID();
+    const logger = new ResumeParserLogger({
+      service: "ResumeParserService",
+      operation: "reindexResume",
+      traceId,
+      documentId,
+      filename: input.filename,
+    });
+
+    if (!this.indexer) {
+      logger.error("Indexing is disabled");
       throw new ResumeParserError(
-        "EMPTY_CONTENT",
-        "Файл содержит слишком мало текста для анализа",
-        { textLength: rawText.length, minLength: this.config.minTextLength },
+        "INDEXING_DISABLED",
+        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
       );
     }
 
-    // Структурируем данные с помощью AI
-    let structured: StructuredResume;
-    let confidence: number;
+    const startTime = Date.now();
+    logger.info("Starting resume reindexing");
 
     try {
-      const result = await this.structureWithAI(rawText);
-      structured = result.structured;
-      confidence = result.confidence;
+      await this.indexer.reindex(input.content, documentId, metadata);
+
+      const duration = Date.now() - startTime;
+      logger.info("Resume reindexing completed", { duration });
+
+      recordMetric("reindex_resume", duration, true, {
+        traceId,
+        documentId,
+      });
     } catch (error) {
-      if (error instanceof ResumeParserError) {
-        throw error;
-      }
+      const duration = Date.now() - startTime;
+
+      logger.error("Resume reindexing failed", {
+        error: error instanceof Error ? error.message : String(error),
+        duration,
+      });
+
+      recordMetric("reindex_resume", duration, false, {
+        traceId,
+        documentId,
+      });
+
       throw new ResumeParserError(
-        "AI_STRUCTURING_FAILED",
-        "Не удалось структурировать данные резюме",
+        "INDEXING_FAILED",
+        "Не удалось переиндексировать резюме",
         {
           originalError: error instanceof Error ? error.message : String(error),
         },
       );
     }
+  }
 
-    return {
-      rawText,
-      structured,
-      confidence,
-    };
+  /**
+   * Удаляет резюме из индекса
+   *
+   * @param documentId - Уникальный идентификатор документа
+   * @throws ResumeParserError если индексация недоступна или произошла ошибка
+   */
+  async removeFromIndex(documentId: string): Promise<void> {
+    const traceId = randomUUID();
+    const logger = new ResumeParserLogger({
+      service: "ResumeParserService",
+      operation: "removeFromIndex",
+      traceId,
+      documentId,
+    });
+
+    if (!this.indexer) {
+      logger.error("Indexing is disabled");
+      throw new ResumeParserError(
+        "INDEXING_DISABLED",
+        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
+      );
+    }
+
+    const startTime = Date.now();
+    logger.info("Starting resume removal from index");
+
+    try {
+      await this.indexer.remove(documentId);
+
+      const duration = Date.now() - startTime;
+      logger.info("Resume removed from index", { duration });
+
+      recordMetric("remove_from_index", duration, true, {
+        traceId,
+        documentId,
+      });
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      logger.error("Resume removal from index failed", {
+        error: error instanceof Error ? error.message : String(error),
+        duration,
+      });
+
+      recordMetric("remove_from_index", duration, false, {
+        traceId,
+        documentId,
+      });
+
+      throw new ResumeParserError(
+        "INDEXING_FAILED",
+        "Не удалось удалить резюме из индекса",
+        {
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+      );
+    }
+  }
+
+  /**
+   * Выполняет семантический поиск по резюме
+   *
+   * @param query - Поисковый запрос
+   * @param options - Опции поиска (topK, threshold, фильтры)
+   * @returns Результаты поиска с релевантными фрагментами резюме
+   * @throws ResumeParserError если индексация недоступна или произошла ошибка
+   */
+  async searchResumes(
+    query: string,
+    options: {
+      topK?: number;
+      threshold?: number;
+      filter?: {
+        documentIds?: string[];
+        candidateId?: string;
+        dateFrom?: Date;
+        dateTo?: Date;
+      };
+    } = {},
+  ): Promise<
+    Array<{
+      documentId: string;
+      chunkText: string;
+      chunkIndex: number;
+      similarity: number;
+      metadata: Record<string, unknown>;
+    }>
+  > {
+    const traceId = randomUUID();
+    const logger = new ResumeParserLogger({
+      service: "ResumeParserService",
+      operation: "searchResumes",
+      traceId,
+      query,
+      topK: options.topK ?? 10,
+    });
+
+    if (!this.indexer) {
+      logger.error("Indexing is disabled");
+      throw new ResumeParserError(
+        "INDEXING_DISABLED",
+        "Индексация документов отключена. Установите USE_DOCLING_PROCESSOR=true",
+      );
+    }
+
+    const startTime = Date.now();
+    logger.info("Starting semantic search");
+
+    try {
+      const results = await this.indexer.search(query, {
+        topK: options.topK ?? 10,
+        threshold: options.threshold,
+        filter: options.filter,
+      });
+
+      const duration = Date.now() - startTime;
+      logger.info("Semantic search completed", {
+        duration,
+        resultCount: results.length,
+      });
+
+      recordMetric("search_resumes", duration, true, {
+        traceId,
+        resultCount: results.length,
+      });
+
+      return results;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+
+      logger.error("Semantic search failed", {
+        error: error instanceof Error ? error.message : String(error),
+        duration,
+      });
+
+      recordMetric("search_resumes", duration, false, {
+        traceId,
+      });
+
+      throw new ResumeParserError(
+        "SEARCH_FAILED",
+        "Не удалось выполнить поиск по резюме",
+        {
+          originalError: error instanceof Error ? error.message : String(error),
+        },
+      );
+    }
   }
 
   /**

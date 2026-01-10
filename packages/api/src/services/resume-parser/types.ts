@@ -67,7 +67,10 @@ export type ResumeParserErrorCode =
   | "CORRUPTED_FILE"
   | "PARSE_FAILED"
   | "AI_STRUCTURING_FAILED"
-  | "EMPTY_CONTENT";
+  | "EMPTY_CONTENT"
+  | "INDEXING_DISABLED"
+  | "INDEXING_FAILED"
+  | "SEARCH_FAILED";
 
 /**
  * Ошибка парсера резюме
