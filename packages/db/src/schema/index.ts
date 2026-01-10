@@ -14,5 +14,6 @@ export * from "./recruiter-agent";
 export * from "./shared";
 export * from "./telegram";
 export * from "./types";
+export * from "./universal";
 export * from "./vacancy";
 export * from "./workspace";

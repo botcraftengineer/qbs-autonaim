@@ -113,10 +113,3 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
 
 export type VacancyResponse = typeof vacancyResponse.$inferSelect;
 export type NewVacancyResponse = typeof vacancyResponse.$inferInsert;
-
-// Re-export enum types for backward compatibility
-export type {
-  HrSelectionStatus,
-  ImportSource,
-  ResponseStatus,
-} from "../shared/response-enums";

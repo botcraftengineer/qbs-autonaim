@@ -79,8 +79,3 @@ export type VacancyResponseScreening =
   typeof vacancyResponseScreening.$inferSelect;
 export type NewVacancyResponseScreening =
   typeof vacancyResponseScreening.$inferInsert;
-
-// Backward compatibility alias
-export const responseScreening = vacancyResponseScreening;
-export const CreateResponseScreeningSchema =
-  CreateVacancyResponseScreeningSchema;
