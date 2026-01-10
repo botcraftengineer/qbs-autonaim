@@ -41,9 +41,9 @@ import {
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
 
 interface ProfileData {
-  platform: string;
-  username: string;
-  profileUrl: string;
+  platform?: string;
+  username?: string;
+  profileUrl?: string;
   aboutMe?: string;
   skills?: string[];
   statistics?: {
@@ -55,7 +55,7 @@ interface ProfileData {
     repeatOrdersRate?: number;
     buyerLevel?: string;
   };
-  parsedAt: string;
+  parsedAt?: string;
   error?: string;
 }
 
@@ -497,6 +497,62 @@ export function ResponseDetailCard({
         </Card>
       )}
 
+      {/* Parsed Profile Info */}
+      {response.profileData && !response.profileData.error && (
+        <Card>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 shrink-0" />
+              Портфолио распарсено
+            </CardTitle>
+            <CardDescription className="text-xs sm:text-sm">
+              Данные профиля автоматически извлечены с платформы фрилансера
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-6">
+            <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
+                <span className="text-xs sm:text-sm font-medium">
+                  Платформа
+                </span>
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {response.profileData.platform}
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
+                <span className="text-xs sm:text-sm font-medium">
+                  Имя пользователя
+                </span>
+                <span className="text-xs sm:text-sm text-muted-foreground">
+                  {response.profileData.username}
+                </span>
+              </div>
+              {response.profileData.statistics?.rating !== undefined && (
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
+                  <span className="text-xs sm:text-sm font-medium">
+                    Рейтинг
+                  </span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">
+                    {response.profileData.statistics.rating}
+                  </span>
+                </div>
+              )}
+              {response.profileData.statistics?.ordersCompleted !==
+                undefined && (
+                <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
+                  <span className="text-xs sm:text-sm font-medium">
+                    Заказов выполнено
+                  </span>
+                  <span className="text-xs sm:text-sm text-muted-foreground">
+                    {response.profileData.statistics.ordersCompleted}
+                  </span>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Main Content Tabs */}
       <Card>
         <Tabs defaultValue="proposal" className="w-full">
@@ -687,7 +743,7 @@ export function ResponseDetailCard({
             >
               {(() => {
                 const experienceData = getProfileData(
-                  undefined, // profileData не возвращается из API
+                  response.profileData,
                   response.experience,
                 );
 

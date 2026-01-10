@@ -119,6 +119,7 @@ export function ResponseListCard({
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
   const hasScreening = !!response.screening;
+  const hasInterviewScoring = !!(response as any).interviewScoring;
 
   const handleAction = (e: React.MouseEvent, action: () => void) => {
     e.preventDefault();
@@ -243,6 +244,73 @@ export function ResponseListCard({
                 </div>
               </HoverCardContent>
             </HoverCard>
+          )}
+
+          {/* Interview Scoring */}
+          {hasInterviewScoring && (
+            <HoverCard>
+              <HoverCardTrigger asChild>
+                <button
+                  type="button"
+                  className="w-full text-left p-3 rounded-lg border bg-muted/50 hover:bg-muted transition-colors"
+                  onClick={(e) => e.preventDefault()}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-medium">
+                        Оценка интервью
+                      </span>
+                    </div>
+                    <span className="text-sm font-bold">
+                      {(response as any).interviewScoring.score}/5 •{" "}
+                      {(response as any).interviewScoring.detailedScore}/100
+                    </span>
+                  </div>
+                  <Progress
+                    value={(response as any).interviewScoring.detailedScore}
+                    className="h-1.5"
+                  />
+                </button>
+              </HoverCardTrigger>
+              <HoverCardContent className="w-80" align="start">
+                <div className="space-y-3">
+                  <div>
+                    <h4 className="text-sm font-semibold mb-1">
+                      Результаты интервью
+                    </h4>
+                    <p className="text-xs text-muted-foreground">
+                      Оценка кандидата на основе AI-интервью
+                    </p>
+                  </div>
+
+                  {(response as any).interviewScoring.analysis && (
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Анализ</h5>
+                      <p className="text-xs text-muted-foreground line-clamp-3">
+                        {(response as any).interviewScoring.analysis}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </HoverCardContent>
+            </HoverCard>
+          )}
+
+          {/* Parsed Profile Indicator */}
+          {response.profileData && (
+            <div className="p-3 rounded-lg border bg-background">
+              <div className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="h-4 w-4 text-green-600 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="font-medium">Портфолио распарсено</span>
+                  <span className="text-xs text-muted-foreground ml-2">
+                    {response.profileData.platform} •{" "}
+                    {response.profileData.username}
+                  </span>
+                </div>
+              </div>
+            </div>
           )}
 
           {/* Quick Info */}

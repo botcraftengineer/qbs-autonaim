@@ -44,6 +44,7 @@ export const list = protectedProcedure
       where: eq(gigResponse.gigId, input.gigId),
       with: {
         screening: true,
+        interviewScoring: true,
       },
       orderBy: [desc(gigResponse.createdAt)],
     });
