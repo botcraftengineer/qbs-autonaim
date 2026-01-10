@@ -176,8 +176,8 @@ export class ResumeParserService {
           dimensions: env.EMBEDDING_DIMENSIONS,
         },
         vectorStore: {
-          url: env.POSTGRES_URL || "",
-          collectionName: env.VECTOR_STORE_TABLE_NAME,
+          url: env.QDRANT_URL,
+          collectionName: env.QDRANT_COLLECTION_NAME,
           dimensions: env.EMBEDDING_DIMENSIONS,
         },
       };

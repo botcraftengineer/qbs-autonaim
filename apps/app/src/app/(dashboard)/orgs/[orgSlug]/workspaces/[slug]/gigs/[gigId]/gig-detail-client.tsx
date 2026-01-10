@@ -282,6 +282,7 @@ export function GigDetailClient({
     workspace,
     organization,
     isLoading: workspaceLoading,
+    organizationIsLoading,
   } = useWorkspace();
   const workspaceId = workspace?.id;
 
@@ -319,6 +320,7 @@ export function GigDetailClient({
   useEffect(() => {
     if (
       !workspaceLoading &&
+      !organizationIsLoading &&
       !isPending &&
       (isError || !gig || !workspace || !organization)
     ) {
@@ -326,6 +328,7 @@ export function GigDetailClient({
     }
   }, [
     workspaceLoading,
+    organizationIsLoading,
     isPending,
     isError,
     gig,
@@ -374,7 +377,7 @@ export function GigDetailClient({
     deleteMutation.mutate({ gigId, workspaceId });
   }, [workspaceId, gigId, deleteMutation]);
 
-  if (workspaceLoading || isPending) {
+  if (workspaceLoading || organizationIsLoading || isPending) {
     return <GigDetailSkeleton />;
   }
 
