@@ -49,8 +49,8 @@ AI чат для gig заданий позволяет рекрутерам ве
 
 1. WHEN Chat_Session starts, THE System SHALL load all Candidates_Context for the gig
 2. THE Candidates_Context SHALL include: candidateName, proposedPrice, proposedDeliveryDays, coverLetter, experience, skills, rating
-3. THE Candidates_Context SHALL include screening results: screeningScore, screeningAnalysis (from gig_screening table)
-4. THE Candidates_Context SHALL include interview results: interviewScore, interviewAnalysis (from gig_interview table)
+3. THE Candidates_Context SHALL include screening results: screeningScore, screeningAnalysis (from gig_response_screenings table)
+4. THE Candidates_Context SHALL include interview results: interviewScore, interviewAnalysis (from interview_scorings table)
 5. THE Candidates_Context SHALL include ranking data: compositeScore, strengths, weaknesses, recommendation
 6. THE Candidates_Context SHALL include HR status: hrSelectionStatus
 7. THE System SHALL refresh Candidates_Context when new responses arrive or data changes
@@ -142,9 +142,9 @@ AI чат для gig заданий позволяет рекрутерам ве
 
 #### Acceptance Criteria
 
-1. THE API SHALL provide `gig.chat.sendMessage` mutation for sending user messages
-2. THE API SHALL provide `gig.chat.getHistory` query for loading chat history
-3. THE API SHALL provide `gig.chat.clearHistory` mutation for clearing chat
+1. THE API SHALL provide `gig.aiChat.sendMessage` mutation for sending user messages
+2. THE API SHALL provide `gig.aiChat.getHistory` query for loading chat history
+3. THE API SHALL provide `gig.aiChat.clearHistory` mutation for clearing chat
 4. THE API SHALL validate that user has access to the gig before processing
 5. THE API SHALL use protectedProcedure for all endpoints
 6. THE API SHALL return structured response with message, quickReplies, and metadata

@@ -109,12 +109,13 @@ export default function EditGigPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  // Redirect to not-found if gig doesn't exist
+  // Редирект на 404, если задание не существует
+  // Ждём инициализации workspace перед проверкой результата запроса
   React.useEffect(() => {
-    if (!isLoading && !gig) {
+    if (workspace?.id && !isLoading && !gig) {
       router.push("/404");
     }
-  }, [isLoading, gig, router]);
+  }, [workspace?.id, isLoading, gig, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
