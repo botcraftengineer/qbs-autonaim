@@ -3,7 +3,7 @@ import { sql } from "drizzle-orm";
 import { integer, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { conversation } from "../conversation/conversation";
+import { chatSession } from "../chat/session";
 import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
 
@@ -14,10 +14,10 @@ import { vacancyResponse } from "../vacancy/response";
  */
 export const interviewScoring = pgTable("interview_scorings", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  conversationId: uuid("conversation_id")
+  chatSessionId: uuid("chat_session_id")
     .notNull()
     .unique()
-    .references(() => conversation.id, { onDelete: "cascade" }),
+    .references(() => chatSession.id, { onDelete: "cascade" }),
   responseId: uuid("response_id").references(() => vacancyResponse.id, {
     onDelete: "cascade",
   }),
@@ -35,7 +35,7 @@ export const interviewScoring = pgTable("interview_scorings", {
 export const CreateInterviewScoringSchema = createInsertSchema(
   interviewScoring,
   {
-    conversationId: uuidv7Schema,
+    chatSessionId: uuidv7Schema,
     responseId: uuidv7Schema.optional(),
     gigResponseId: uuidv7Schema.optional(),
     score: z.number().int().min(0).max(5),

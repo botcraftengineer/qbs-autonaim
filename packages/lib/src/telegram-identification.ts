@@ -10,8 +10,8 @@ import {
   conversation,
   conversationMessage,
   type responseScreening,
+  response as responseTable,
   type vacancy,
-  vacancyResponse,
   type workspace,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent } from "./vacancy-response-history";
@@ -47,27 +47,32 @@ export async function identifyByPinCode(
 ): Promise<IdentificationResult> {
   try {
     // Ищем отклик по пин-коду с проверкой workspaceId
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, pinCode),
-      with: {
-        vacancy: {
-          columns: {
-            title: true,
-            id: true,
-            workspaceId: true,
-          },
-        },
-      },
+    const response = await db.query.response.findFirst({
+      where: and(
+        eq(responseTable.telegramPinCode, pinCode),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
-    // Проверяем, что вакансия принадлежит нужному workspace
-    if (response && response.vacancy?.workspaceId !== workspaceId) {
+    if (!response) {
       return {
         success: false,
         error: "Отклик не найден по указанному пин-коду",
       };
     }
-    if (!response) {
+
+    // Загружаем вакансию отдельно
+    const vacancy = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, response.entityId),
+      columns: {
+        title: true,
+        id: true,
+        workspaceId: true,
+      },
+    });
+
+    // Проверяем, что вакансия принадлежит нужному workspace
+    if (!vacancy || vacancy.workspaceId !== workspaceId) {
       return {
         success: false,
         error: "Отклик не найден по указанному пин-коду",
@@ -91,11 +96,11 @@ export async function identifyByPinCode(
     const hadUsername = !!response.telegramUsername;
 
     await db
-      .update(vacancyResponse)
+      .update(responseTable)
       .set({
         telegramUsername: username || response.telegramUsername,
       })
-      .where(eq(vacancyResponse.id, response.id));
+      .where(eq(responseTable.id, response.id));
 
     if (!hadChatId) {
       await logResponseEvent({
@@ -120,7 +125,7 @@ export async function identifyByPinCode(
       conversationId: conversation.id,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
-      vacancyTitle: response.vacancy?.title,
+      vacancyTitle: vacancy.title,
     };
   } catch (error) {
     console.error("Error identifying by pin code:", error);
@@ -143,26 +148,33 @@ export async function identifyByVacancy(
 ): Promise<IdentificationResult> {
   try {
     // Ищем отклик по username и вакансии с проверкой workspaceId
-    const response = await db.query.vacancyResponse.findFirst({
+    const response = await db.query.response.findFirst({
       where: and(
-        ilike(vacancyResponse.telegramUsername, username),
-        eq(vacancyResponse.vacancyId, vacancyId),
+        ilike(responseTable.telegramUsername, username),
+        eq(responseTable.entityId, vacancyId),
+        eq(responseTable.entityType, "vacancy"),
       ),
-      with: {
-        vacancy: true,
-      },
       orderBy: (fields, { desc }) => [desc(fields.createdAt)],
     });
 
-    // Проверяем, что вакансия принадлежит нужному workspace
-    if (response && response.vacancy?.workspaceId !== workspaceId) {
+    if (!response) {
       return {
         success: false,
         error: "Отклик не найден",
       };
     }
 
-    if (!response) {
+    // Загружаем вакансию отдельно
+    const vacancy = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, response.entityId),
+      columns: {
+        title: true,
+        workspaceId: true,
+      },
+    });
+
+    // Проверяем, что вакансия принадлежит нужному workspace
+    if (!vacancy || vacancy.workspaceId !== workspaceId) {
       return {
         success: false,
         error: "Отклик не найден",
@@ -185,7 +197,7 @@ export async function identifyByVacancy(
       conversationId: conversation.id,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
-      vacancyTitle: response.vacancy?.title,
+      vacancyTitle: vacancy.title,
     };
   } catch (error) {
     console.error("Error identifying by vacancy:", error);
@@ -303,7 +315,7 @@ export async function saveMessage(
  * Получает данные для начала интервью
  */
 export async function getInterviewStartData(responseId: string): Promise<{
-  response: typeof vacancyResponse.$inferSelect & {
+  response: typeof responseTable.$inferSelect & {
     vacancy:
       | (typeof vacancy.$inferSelect & {
           workspace: typeof workspace.$inferSelect & {
@@ -315,8 +327,11 @@ export async function getInterviewStartData(responseId: string): Promise<{
   };
 } | null> {
   try {
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    const response = await db.query.response.findFirst({
+      where: and(
+        eq(responseTable.id, responseId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
       with: {
         vacancy: {
           with: {

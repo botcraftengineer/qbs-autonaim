@@ -2,9 +2,9 @@
  * Валидация пин-кода для использования в оркестраторе интервью
  */
 
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 
 /**
  * Проверяет валидность пин-кода в базе данных
@@ -33,17 +33,11 @@ export async function validatePinCode(
     }
 
     // Ищем отклик по пин-коду
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, pinCode),
-      with: {
-        vacancy: {
-          columns: {
-            id: true,
-            title: true,
-            workspaceId: true,
-          },
-        },
-      },
+    const response = await db.query.response.findFirst({
+      where: and(
+        eq(responseTable.telegramPinCode, pinCode),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     // Пин-код не найден
@@ -54,8 +48,18 @@ export async function validatePinCode(
       };
     }
 
+    // Загружаем вакансию отдельно для проверки workspace
+    const vacancy = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, response.entityId),
+      columns: {
+        id: true,
+        title: true,
+        workspaceId: true,
+      },
+    });
+
     // Проверяем принадлежность к workspace (если указан)
-    if (workspaceId && response.vacancy?.workspaceId !== workspaceId) {
+    if (workspaceId && (!vacancy || vacancy.workspaceId !== workspaceId)) {
       return {
         valid: false,
         error: "Пин-код не принадлежит данному workspace",
@@ -66,7 +70,7 @@ export async function validatePinCode(
     return {
       valid: true,
       responseId: response.id,
-      vacancyId: response.vacancyId,
+      vacancyId: response.entityId,
       candidateName: response.candidateName || undefined,
     };
   } catch (error) {

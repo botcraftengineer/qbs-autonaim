@@ -2,7 +2,6 @@ export * from "./audit";
 export * from "./auth";
 export * from "./chat";
 export * from "./company";
-export * from "./conversation";
 export * from "./custom-domain";
 export * from "./document";
 export * from "./file";

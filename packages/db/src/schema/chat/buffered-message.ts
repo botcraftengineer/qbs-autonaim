@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { conversation } from "./conversation";
+import { chatSession } from "./session";
 
 /**
  * Таблица для хранения отдельных буферизованных сообщений
@@ -21,9 +21,9 @@ export const bufferedMessage = pgTable(
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
     messageId: varchar("message_id", { length: 100 }).notNull(),
-    conversationId: uuid("conversation_id")
+    chatSessionId: uuid("chat_session_id")
       .notNull()
-      .references(() => conversation.id, {
+      .references(() => chatSession.id, {
         onDelete: "cascade",
       }),
     userId: varchar("user_id", { length: 100 }).notNull(),
@@ -38,8 +38,8 @@ export const bufferedMessage = pgTable(
       .notNull(),
   },
   (table) => ({
-    conversationStepIdx: index("buffered_message_conversation_step_idx").on(
-      table.conversationId,
+    chatSessionStepIdx: index("buffered_message_chat_session_step_idx").on(
+      table.chatSessionId,
       table.interviewStep,
     ),
     userIdx: index("buffered_message_user_idx").on(table.userId),
@@ -53,7 +53,7 @@ export const bufferedMessage = pgTable(
  */
 export const CreateBufferedMessageSchema = createInsertSchema(bufferedMessage, {
   messageId: z.string().min(1),
-  conversationId: z.uuid(),
+  chatSessionId: z.uuid(),
   userId: z.string().min(1),
   interviewStep: z.number().int().min(0),
   content: z.string().min(1),
