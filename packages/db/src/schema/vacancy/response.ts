@@ -23,7 +23,7 @@ import {
 } from "../shared/response-columns";
 import {
   hrSelectionStatusValues,
-  importSourceValues,
+  platformSourceValues,
   responseStatusValues,
 } from "../shared/response-enums";
 import { vacancy } from "./vacancy";
@@ -109,7 +109,7 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   salaryExpectationsComment: z.string().max(200).optional(),
   status: z.enum(responseStatusValues).default("NEW"),
   hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
-  importSource: z.enum(importSourceValues).default("HH_API"),
+  importSource: z.enum(platformSourceValues).default("HH"),
   platformProfileUrl: z.string().optional(),
   respondedAt: z.coerce.date().optional(),
   welcomeSentAt: z.coerce.date().optional(),

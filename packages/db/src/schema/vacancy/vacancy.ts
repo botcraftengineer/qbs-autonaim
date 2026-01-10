@@ -12,6 +12,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
+import { platformSourceEnum, platformSourceValues } from "../shared/response-enums";
 import { workspace } from "../workspace/workspace";
 
 export interface VacancyRequirements {
@@ -53,7 +54,7 @@ export const vacancy = pgTable(
     requirements: jsonb("requirements").$type<VacancyRequirements>(),
 
     // Источник вакансии (hh, avito, superjob)
-    source: text("source").notNull().default("hh"),
+    source: platformSourceEnum("source").notNull().default("HH"),
     // ID вакансии на внешней платформе
     externalId: varchar("external_id", { length: 100 }),
 
@@ -88,9 +89,7 @@ export const vacancy = pgTable(
 export const CreateVacancySchema = createInsertSchema(vacancy, {
   title: z.string().max(500),
   url: z.string().optional(),
-  source: z
-    .enum(["hh", "avito", "superjob", "kwork", "fl", "weblancer", "upwork"])
-    .default("hh"),
+  source: z.enum(platformSourceValues).default("HH"),
   externalId: z.string().max(100).optional(),
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),

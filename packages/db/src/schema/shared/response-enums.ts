@@ -61,31 +61,31 @@ export const hrSelectionStatusValues = [
 export type HrSelectionStatus = (typeof hrSelectionStatusValues)[number];
 
 /**
- * Источник импорта отклика
+ * Источник платформы (откуда пришла вакансия или отклик)
  */
-export const importSourceEnum = pgEnum("import_source", [
+export const platformSourceValues = [
   "MANUAL",
+  "HH",
+  "AVITO",
+  "SUPERJOB",
+  "HABR",
   "KWORK",
   "FL_RU",
   "WEBLANCER",
   "UPWORK",
   "FREELANCE_RU",
-  "HH_API",
   "WEB_LINK",
-]);
-
-export const importSourceValues = [
-  "MANUAL",
-  "KWORK",
-  "FL_RU",
-  "WEBLANCER",
-  "UPWORK",
-  "FREELANCE_RU",
-  "HH_API",
-  "WEB_LINK",
+  "TELEGRAM",
 ] as const;
 
-export type ImportSource = (typeof importSourceValues)[number];
+export const platformSourceEnum = pgEnum("platform_source", platformSourceValues);
+
+export type PlatformSource = (typeof platformSourceValues)[number];
+
+// Остальные значения для обратной совместимости, если нужно
+export const importSourceEnum = platformSourceEnum;
+export const importSourceValues = platformSourceValues;
+export type ImportSource = PlatformSource;
 
 /**
  * Рекомендация по кандидату

@@ -31,12 +31,12 @@ export const interviewScoring = pgTable("interview_scorings", {
     onDelete: "cascade",
   }),
 
-  // Оценки
-  score: integer("score").notNull(), // Оценка от 0 до 5
-  detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
+  // Оценки (унифицированная шкала 0-100)
+  score: integer("score").notNull(), // Основной скоринг 0-100
+  rating: integer("rating"), // Звездный рейтинг 0-5 (удобно для UI)
   analysis: text("analysis"), // Анализ на основе интервью
 
-  createdAt: timestamp("created_at", { withTimezone: true })
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .notNull(),
 });
@@ -48,8 +48,8 @@ export const CreateInterviewScoringSchema = createInsertSchema(
     conversationId: uuidv7Schema.optional(),
     responseId: uuidv7Schema.optional(),
     gigResponseId: uuidv7Schema.optional(),
-    score: z.number().int().min(0).max(5),
-    detailedScore: z.number().int().min(0).max(100),
+    rating: z.number().int().min(0).max(5).optional(),
+    score: z.number().int().min(0).max(100),
     analysis: z.string().optional(),
   },
 ).omit({

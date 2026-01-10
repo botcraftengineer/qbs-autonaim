@@ -14,6 +14,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { customDomain } from "../custom-domain/custom-domain";
+import { platformSourceEnum, platformSourceValues } from "../shared/response-enums";
 import { workspace } from "../workspace/workspace";
 
 /**
@@ -81,7 +82,7 @@ export const gig = pgTable(
     estimatedDuration: varchar("estimated_duration", { length: 100 }), // "1-2 дня", "неделя"
 
     // Источник задания (платформа)
-    source: text("source").notNull().default("manual"),
+    source: platformSourceEnum("source").notNull().default("MANUAL"),
     externalId: varchar("external_id", { length: 100 }),
     url: text("url"),
 
@@ -147,7 +148,7 @@ export const CreateGigSchema = createInsertSchema(gig, {
   budgetCurrency: z.string().length(3).default("RUB"),
   deadline: z.coerce.date().optional(),
   estimatedDuration: z.string().max(100).optional(),
-  source: z.string().default("manual"),
+  source: z.enum(platformSourceValues).default("MANUAL"),
   externalId: z.string().max(100).optional(),
   url: z.url().optional(),
   customBotInstructions: z.string().max(5000).optional(),

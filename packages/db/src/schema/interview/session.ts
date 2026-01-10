@@ -94,18 +94,21 @@ export const interviewSession = pgTable(
 
     // Счётчики
     messageCount: integer("message_count").default(0).notNull(),
-    lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+    lastMessageAt: timestamp("last_message_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
 
     // Метаданные
     metadata: jsonb("metadata").$type<InterviewSessionMetadata>(),
 
     // Timestamps
-    startedAt: timestamp("started_at", { withTimezone: true }),
-    completedAt: timestamp("completed_at", { withTimezone: true }),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    startedAt: timestamp("started_at", { withTimezone: true, mode: "date" }),
+    completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
@@ -196,7 +199,7 @@ export const interviewMessage = pgTable(
     // Метаданные
     metadata: jsonb("metadata").$type<InterviewMessageMetadata>(),
 
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
   },

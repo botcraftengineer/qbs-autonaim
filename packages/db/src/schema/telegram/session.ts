@@ -50,16 +50,21 @@ export const telegramSession = pgTable("telegram_sessions", {
   authError: text("auth_error"),
 
   // Когда произошла ошибка авторизации
-  authErrorAt: timestamp("auth_error_at"),
+  authErrorAt: timestamp("auth_error_at", { withTimezone: true, mode: "date" }),
 
   // Когда было отправлено уведомление об ошибке
-  authErrorNotifiedAt: timestamp("auth_error_notified_at"),
+  authErrorNotifiedAt: timestamp("auth_error_notified_at", {
+    withTimezone: true,
+    mode: "date",
+  }),
 
   // Дата последнего использования
-  lastUsedAt: timestamp("last_used_at"),
+  lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: "date" }),
 
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at")
+  createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+    .defaultNow()
+    .notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
     .defaultNow()
     .$onUpdate(() => new Date())
     .notNull(),

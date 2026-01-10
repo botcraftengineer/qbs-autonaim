@@ -15,6 +15,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { organization } from "../organization/organization";
 import { file } from "../file";
+import { platformSourceEnum, platformSourceValues } from "../shared/response-enums";
 import type { StoredProfileData } from "../types";
 
 /**
@@ -112,8 +113,8 @@ export const candidate = pgTable(
     // --- Sourcing & Origin ---
     // Каким образом попал в базу
     source: candidateSourceEnum("source").default("APPLICANT").notNull(),
-    // Конкретный источник (hh.ru, linkedin, unknown)
-    originalSource: varchar("original_source", { length: 50 }),
+    // Конкретный источник (HH, HABR, etc.)
+    originalSource: platformSourceEnum("original_source").default("MANUAL"),
 
     // Статус парсинга (если добавляем через AI-парсером)
     parsingStatus: parsingStatusEnum("parsing_status")
@@ -169,7 +170,7 @@ export const CreateCandidateSchema = createInsertSchema(candidate, {
   source: z
     .enum(["APPLICANT", "SOURCING", "IMPORT", "MANUAL", "REFERRAL"])
     .optional(),
-  originalSource: z.string().max(50).optional(),
+  originalSource: z.enum(platformSourceValues).default("MANUAL"),
   tags: z.array(z.string()).optional(),
   isSearchable: z.boolean().default(true),
   metadata: z.record(z.string(), z.unknown()).optional(),

@@ -26,7 +26,7 @@ import {
 } from "../shared/response-columns";
 import {
   hrSelectionStatusValues,
-  importSourceValues,
+  platformSourceValues,
   recommendationValues,
   responseStatusValues,
 } from "../shared/response-enums";
@@ -128,7 +128,7 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   portfolioLinks: z.string().url().array().optional(),
   status: z.enum(responseStatusValues).default("NEW"),
   hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
-  importSource: z.enum(importSourceValues).default("MANUAL"),
+  importSource: z.enum(platformSourceValues).default("MANUAL"),
   respondedAt: z.coerce.date().optional(),
   welcomeSentAt: z.coerce.date().optional(),
   compositeScore: z.number().int().min(0).max(100).optional(),
