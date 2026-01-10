@@ -1,4 +1,4 @@
-import { conversation, eq } from "@qbs-autonaim/db";
+import { chatSession, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { messageBufferService } from "../../../services/buffer";
 import {
@@ -23,26 +23,23 @@ export const bufferFlushFunction = inngest.createFunction(
   },
   { event: "interview/buffer.flush" },
   async ({ event, step }) => {
-    const { userId, conversationId, interviewStep, flushId } = event.data;
+    const { userId, chatSessionId, interviewStep, flushId } = event.data;
 
     // Определяем источник разговора для отправки правильных событий
-    const conversationSource = await step.run(
-      "get-conversation-source",
-      async () => {
-        const conv = await db.query.conversation.findFirst({
-          where: eq(conversation.id, conversationId),
-          columns: { source: true },
-        });
+    const sessionSource = await step.run("get-session-source", async () => {
+      const session = await db.query.chatSession.findFirst({
+        where: eq(chatSession.id, chatSessionId),
+        columns: { lastChannel: true },
+      });
 
-        return conv?.source ?? "TELEGRAM";
-      },
-    );
+      return session?.lastChannel ?? "telegram";
+    });
 
     // Получение сообщений из буфера
     const messages = await step.run("get-buffered-messages", async () => {
       const bufferedMessages = await messageBufferService.getMessages({
         userId,
-        conversationId,
+        chatSessionId,
         interviewStep,
       });
 
@@ -63,7 +60,7 @@ export const bufferFlushFunction = inngest.createFunction(
 
     // Получение полного контекста интервью
     const context = await step.run("get-interview-context", async () => {
-      const ctx = await getInterviewContext(conversationId);
+      const ctx = await getInterviewContext(chatSessionId);
 
       if (!ctx) {
         throw new Error("Interview context not found");
@@ -89,7 +86,7 @@ export const bufferFlushFunction = inngest.createFunction(
           errorMessage.includes("AI_APICallError");
 
         console.error("❌ LLM request failed", {
-          conversationId,
+          chatSessionId,
           error: errorMessage,
           isAPIError,
           stack: error instanceof Error ? error.stack : undefined,
@@ -106,7 +103,7 @@ export const bufferFlushFunction = inngest.createFunction(
     // Проверяем успешность запроса к LLM
     if (!llmResponse.success) {
       console.error("❌ Skipping response due to LLM error", {
-        conversationId,
+        chatSessionId,
         error: "error" in llmResponse ? llmResponse.error : "Unknown error",
         isAPIError:
           "isAPIError" in llmResponse ? llmResponse.isAPIError : false,
@@ -116,7 +113,7 @@ export const bufferFlushFunction = inngest.createFunction(
       await step.run("clear-buffer-on-error", async () => {
         await messageBufferService.clearBuffer({
           userId,
-          conversationId,
+          chatSessionId,
           interviewStep,
         });
 
@@ -141,11 +138,11 @@ export const bufferFlushFunction = inngest.createFunction(
     await step.run("send-response", async () => {
       // Определяем имя события в зависимости от источника
       const sendQuestionEvent =
-        conversationSource === "WEB"
+        sessionSource === "web"
           ? "web/interview.send-question"
           : "telegram/interview.send-question";
       const completeEvent =
-        conversationSource === "WEB"
+        sessionSource === "web"
           ? "web/interview.complete"
           : "telegram/interview.complete";
 
@@ -154,7 +151,7 @@ export const bufferFlushFunction = inngest.createFunction(
         await inngest.send({
           name: sendQuestionEvent,
           data: {
-            conversationId: context.conversationId,
+            chatSessionId: context.chatSessionId,
             question: result.nextQuestion,
             transcription: aggregatedContent,
             questionNumber: context.questionNumber,
@@ -169,7 +166,7 @@ export const bufferFlushFunction = inngest.createFunction(
         await inngest.send({
           name: sendQuestionEvent,
           data: {
-            conversationId: context.conversationId,
+            chatSessionId: context.chatSessionId,
             question: result.nextQuestion,
             transcription: aggregatedContent,
             questionNumber: context.questionNumber,
@@ -184,7 +181,7 @@ export const bufferFlushFunction = inngest.createFunction(
           await inngest.send({
             name: completeEvent,
             data: {
-              conversationId: context.conversationId,
+              chatSessionId: context.chatSessionId,
               transcription: aggregatedContent,
               reason: result.reason ?? undefined,
               questionNumber: context.questionNumber,
@@ -205,7 +202,7 @@ export const bufferFlushFunction = inngest.createFunction(
     await step.run("clear-buffer", async () => {
       await messageBufferService.clearBuffer({
         userId,
-        conversationId,
+        chatSessionId,
         interviewStep,
       });
 

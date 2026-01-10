@@ -1,9 +1,9 @@
 import { env } from "@qbs-autonaim/config";
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -215,12 +215,15 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Сохраняем беседу если получили chatId
             if (sendResult.chatId) {
-              // Проверяем, есть ли уже conversation для этого response
-              const existing = await db.query.conversation.findFirst({
-                where: eq(conversation.responseId, response.id),
+              // Проверяем, есть ли уже chatSession для этого response
+              const existing = await db.query.chatSession.findFirst({
+                where: and(
+                  eq(chatSession.entityType, "vacancy_response"),
+                  eq(chatSession.entityId, response.id),
+                ),
               });
 
-              let conv: typeof conversation.$inferSelect | undefined;
+              let session: typeof chatSession.$inferSelect | undefined;
               if (existing) {
                 // Получаем существующие метаданные
                 const existingMetadata: Record<string, unknown> =
@@ -236,20 +239,20 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   questionAnswers: existingMetadata.questionAnswers || [],
                 };
 
-                // Обновляем существующую conversation
+                // Обновляем существующую chatSession
                 const [updated] = await db
-                  .update(conversation)
+                  .update(chatSession)
                   .set({
-                    candidateName: response.candidateName,
-                    username: response.telegramUsername || undefined,
-                    status: "ACTIVE",
+                    title: response.candidateName ?? undefined,
+                    status: "active",
+                    lastChannel: "telegram",
                     metadata: updatedMetadata,
                   })
-                  .where(eq(conversation.id, existing.id))
+                  .where(eq(chatSession.id, existing.id))
                   .returning();
-                conv = updated;
+                session = updated;
               } else {
-                // Создаем новую conversation
+                // Создаем новую chatSession
                 const newMetadata = {
                   responseId: response.id,
                   vacancyId: response.vacancyId,
@@ -259,27 +262,28 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 };
 
                 const [created] = await db
-                  .insert(conversation)
+                  .insert(chatSession)
                   .values({
-                    responseId: response.id,
-                    candidateName: response.candidateName,
-                    username: response.telegramUsername || undefined,
-                    status: "ACTIVE",
+                    entityType: "vacancy_response",
+                    entityId: response.id,
+                    status: "active",
+                    lastChannel: "telegram",
+                    title: response.candidateName ?? undefined,
                     metadata: newMetadata,
                   })
                   .returning();
-                conv = created;
+                session = created;
               }
 
               // Сохраняем приветственное сообщение в историю
-              if (conv) {
-                await db.insert(conversationMessage).values({
-                  conversationId: conv.id,
-                  sender: "BOT",
-                  contentType: "TEXT",
+              if (session) {
+                await db.insert(chatMessage).values({
+                  sessionId: session.id,
+                  role: "assistant",
+                  type: "text",
                   content: removeNullBytes(actualSentMessage),
-                  externalMessageId: sendResult.messageId,
-                  channel: "TELEGRAM",
+                  externalId: sendResult.messageId,
+                  channel: "telegram",
                 });
               }
             }

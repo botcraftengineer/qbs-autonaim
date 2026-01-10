@@ -1,4 +1,4 @@
-import { conversation, eq } from "@qbs-autonaim/db";
+import { chatSession, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   analyzeAndGenerateNextQuestion,
@@ -18,21 +18,21 @@ export const analyzeInterviewFunction = inngest.createFunction(
   },
   { event: "telegram/interview.analyze" },
   async ({ event, step }) => {
-    const { conversationId, transcription } = event.data;
+    const { chatSessionId, transcription } = event.data;
 
     const context = await step.run("get-interview-context", async () => {
-      // Получаем conversation для проверки существования
-      const [conv] = await db
+      // Получаем chatSession для проверки существования
+      const [session] = await db
         .select()
-        .from(conversation)
-        .where(eq(conversation.id, conversationId))
+        .from(chatSession)
+        .where(eq(chatSession.id, chatSessionId))
         .limit(1);
 
-      if (!conv) {
-        throw new Error("Conversation не найден");
+      if (!session) {
+        throw new Error("ChatSession не найден");
       }
 
-      const ctx = await getInterviewContext(conversationId);
+      const ctx = await getInterviewContext(chatSessionId);
 
       if (!ctx) {
         throw new Error("Контекст интервью не найден");
@@ -48,7 +48,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
         return analysisResult;
       } catch (error) {
         console.error("❌ Ошибка при анализе интервью:", {
-          conversationId: context.conversationId,
+          chatSessionId: context.chatSessionId,
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
           contextSample: {
@@ -64,7 +64,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
       await step.sendEvent("send-next-question-event", {
         name: "telegram/interview.send-question",
         data: {
-          conversationId: context.conversationId,
+          chatSessionId: context.chatSessionId,
           question: result.nextQuestion,
           transcription,
           questionNumber: context.questionNumber,
@@ -81,7 +81,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
       await step.sendEvent("send-next-question-event", {
         name: "telegram/interview.send-question",
         data: {
-          conversationId: context.conversationId,
+          chatSessionId: context.chatSessionId,
           question: result.nextQuestion,
           transcription,
           questionNumber: context.questionNumber,
@@ -98,7 +98,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
         await step.sendEvent("complete-interview-event", {
           name: "telegram/interview.complete",
           data: {
-            conversationId: context.conversationId,
+            chatSessionId: context.chatSessionId,
             transcription,
             reason: result.reason ?? undefined,
             questionNumber: context.questionNumber,
@@ -110,7 +110,7 @@ export const analyzeInterviewFunction = inngest.createFunction(
 
     return {
       success: true,
-      conversationId,
+      chatSessionId,
       shouldContinue: result.shouldContinue,
       questionNumber: context.questionNumber,
     };

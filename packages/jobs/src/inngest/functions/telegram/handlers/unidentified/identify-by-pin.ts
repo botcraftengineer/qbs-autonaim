@@ -13,7 +13,7 @@ import { migrateTempMessages } from "./temp-message-storage";
  * ПРОЦЕСС:
  * 1. Проверяем пин-код через identifyByPinCode (поиск в БД по telegramPinCode)
  * 2. Если пин валидный:
- *    - Переносим временные сообщения в основную conversation
+ *    - Переносим временные сообщения в основную chatSession
  *    - Сохраняем сообщение с пином
  *    - Отправляем приветствие и начинаем интервью (PIN_RECEIVED)
  * 3. Если пин невалидный:
@@ -54,26 +54,26 @@ export async function handlePinIdentification(params: {
   // Проверяем результат идентификации
   if (
     identification.success &&
-    identification.conversationId &&
+    identification.chatSessionId &&
     identification.responseId
   ) {
     console.log("✅ Пин-код валидный, идентификация успешна", {
-      conversationId: identification.conversationId,
+      chatSessionId: identification.chatSessionId,
       responseId: identification.responseId,
       pinCode,
     });
 
     // Переносим временные сообщения в основную таблицу
-    await migrateTempMessages(tempConvId, identification.conversationId);
+    await migrateTempMessages(tempConvId, identification.chatSessionId);
 
     // Сохраняем текущее сообщение с пин-кодом
     await saveMessage(
-      identification.conversationId,
-      "CANDIDATE",
+      identification.chatSessionId,
+      "user",
       trimmedText,
-      "TEXT",
+      "text",
       messageId,
-      "TELEGRAM",
+      "telegram",
     );
 
     const interviewData = await getInterviewStartData(
@@ -81,7 +81,7 @@ export async function handlePinIdentification(params: {
     );
 
     await generateAndSendBotResponse({
-      conversationId: identification.conversationId,
+      chatSessionId: identification.chatSessionId,
       messageText: trimmedText,
       stage: "PIN_RECEIVED",
       botSettings,

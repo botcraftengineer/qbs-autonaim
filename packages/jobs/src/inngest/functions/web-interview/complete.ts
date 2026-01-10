@@ -1,7 +1,7 @@
 import {
   and,
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   desc,
   eq,
   gigResponse,
@@ -36,7 +36,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
   { event: "web/interview.complete" },
   async ({ event, step }) => {
     const {
-      conversationId,
+      chatSessionId,
       transcription,
       reason,
       questionNumber,
@@ -45,17 +45,17 @@ export const webCompleteInterviewFunction = inngest.createFunction(
     } = event.data;
 
     console.log("🏁 Completing web interview", {
-      conversationId,
+      chatSessionId,
       questionNumber,
       reason,
     });
 
     // Получаем контекст интервью
     await step.run("get-interview-context", async () => {
-      const ctx = await getInterviewContext(conversationId);
+      const ctx = await getInterviewContext(chatSessionId);
 
       if (!ctx) {
-        throw new Error(`Interview context not found for ${conversationId}`);
+        throw new Error(`Interview context not found for ${chatSessionId}`);
       }
 
       return ctx;
@@ -67,31 +67,31 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         // Получаем последний вопрос от бота
         const lastBotMessages = await db
           .select()
-          .from(conversationMessage)
+          .from(chatMessage)
           .where(
             and(
-              eq(conversationMessage.conversationId, conversationId),
-              eq(conversationMessage.sender, "BOT"),
+              eq(chatMessage.sessionId, chatSessionId),
+              eq(chatMessage.role, "assistant"),
             ),
           )
-          .orderBy(desc(conversationMessage.createdAt))
+          .orderBy(desc(chatMessage.createdAt))
           .limit(1);
 
         const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
 
-        await saveQuestionAnswer(conversationId, lastQuestion, transcription);
+        await saveQuestionAnswer(chatSessionId, lastQuestion, transcription);
 
         console.log("✅ Final answer saved", {
-          conversationId,
+          chatSessionId,
           questionNumber,
         });
       });
 
       // Обновляем контекст с последним ответом
       const updatedContext = await step.run("get-updated-context", async () => {
-        const ctx = await getInterviewContext(conversationId);
+        const ctx = await getInterviewContext(chatSessionId);
         if (!ctx) {
-          throw new Error(`Interview context not found for ${conversationId}`);
+          throw new Error(`Interview context not found for ${chatSessionId}`);
         }
         return ctx;
       });
@@ -101,7 +101,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         const result = await createInterviewScoring(updatedContext);
 
         console.log("✅ Scoring created", {
-          conversationId,
+          chatSessionId,
           score: result.score,
           detailedScore: result.detailedScore,
         });
@@ -109,7 +109,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         await db
           .insert(interviewScoring)
           .values({
-            conversationId,
+            chatSessionId,
             responseId: responseId ?? undefined,
             gigResponseId: gigResponseId ?? undefined,
             score: result.score,
@@ -117,7 +117,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
             analysis: result.analysis,
           })
           .onConflictDoUpdate({
-            target: interviewScoring.conversationId,
+            target: interviewScoring.chatSessionId,
             set: {
               score: sql`excluded.score`,
               detailedScore: sql`excluded.detailed_score`,
@@ -128,15 +128,15 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         return result;
       });
 
-      // Обновляем статус conversation
-      await step.run("update-conversation-status", async () => {
+      // Обновляем статус chatSession
+      await step.run("update-chat-session-status", async () => {
         await db
-          .update(conversation)
-          .set({ status: "COMPLETED" })
-          .where(eq(conversation.id, conversationId));
+          .update(chatSession)
+          .set({ status: "completed" })
+          .where(eq(chatSession.id, chatSessionId));
 
-        console.log("✅ Conversation status updated to COMPLETED", {
-          conversationId,
+        console.log("✅ ChatSession status updated to completed", {
+          chatSessionId,
         });
       });
 
@@ -398,36 +398,36 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         reason ||
         "Спасибо за ваши ответы! Интервью завершено. Мы свяжемся с вами в ближайшее время.";
 
-      // Получаем conversation для доступа к source
-      const conv = await db.query.conversation.findFirst({
-        where: eq(conversation.id, conversationId),
+      // Получаем chatSession для доступа к lastChannel
+      const session = await db.query.chatSession.findFirst({
+        where: eq(chatSession.id, chatSessionId),
       });
 
-      if (!conv) {
-        throw new Error(`Conversation ${conversationId} not found`);
+      if (!session) {
+        throw new Error(`ChatSession ${chatSessionId} not found`);
       }
 
-      await db.insert(conversationMessage).values({
-        conversationId,
-        sender: "BOT",
-        contentType: "TEXT",
-        channel: conv.source,
+      await db.insert(chatMessage).values({
+        sessionId: chatSessionId,
+        role: "assistant",
+        type: "text",
+        channel: session.lastChannel ?? "web",
         content: completionMessage,
       });
 
       console.log("✅ Completion message sent", {
-        conversationId,
+        chatSessionId,
       });
     });
 
     console.log("✅ Web interview completed", {
-      conversationId,
+      chatSessionId,
       questionNumber,
     });
 
     return {
       success: true,
-      conversationId,
+      chatSessionId,
     };
   },
 );

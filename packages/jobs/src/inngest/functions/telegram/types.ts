@@ -29,9 +29,14 @@ export interface BotSettings {
 
 export type PromptStage = "PIN_RECEIVED" | "INVALID_PIN" | "AWAITING_PIN";
 
-export interface ConversationMetadata {
+export interface ChatSessionMetadata {
   interviewStarted?: boolean;
   interviewCompleted?: boolean;
   identifiedBy?: string;
   awaitingPin?: boolean;
+  lastQuestionAsked?: string;
+  questionAnswers?: Array<{ question: string; answer: string }>;
 }
+
+/** @deprecated Use ChatSessionMetadata instead */
+export type ConversationMetadata = ChatSessionMetadata;

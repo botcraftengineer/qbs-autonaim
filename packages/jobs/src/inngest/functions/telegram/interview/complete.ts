@@ -1,8 +1,8 @@
 import { AgentFactory } from "@qbs-autonaim/ai";
 import {
   and,
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   desc,
   eq,
   interviewScoring,
@@ -35,30 +35,30 @@ export const completeInterviewFunction = inngest.createFunction(
   },
   { event: "telegram/interview.complete" },
   async ({ event, step }) => {
-    const { conversationId, transcription, questionNumber, responseId } =
+    const { chatSessionId, transcription, questionNumber, responseId } =
       event.data;
 
     await step.run("save-last-qa", async () => {
       const lastBotMessages = await db
         .select()
-        .from(conversationMessage)
+        .from(chatMessage)
         .where(
           and(
-            eq(conversationMessage.conversationId, conversationId),
-            eq(conversationMessage.sender, "BOT"),
+            eq(chatMessage.sessionId, chatSessionId),
+            eq(chatMessage.role, "assistant"),
           ),
         )
-        .orderBy(desc(conversationMessage.createdAt))
+        .orderBy(desc(chatMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
 
-      await saveQuestionAnswer(conversationId, lastQuestion, transcription);
+      await saveQuestionAnswer(chatSessionId, lastQuestion, transcription);
     });
 
     if (responseId) {
       const scoringResult = await step.run("create-scoring", async () => {
-        const updatedContext = await getInterviewContext(conversationId);
+        const updatedContext = await getInterviewContext(chatSessionId);
 
         if (!updatedContext) {
           throw new Error("Не удалось получить обновленный контекст");
@@ -69,14 +69,14 @@ export const completeInterviewFunction = inngest.createFunction(
         await db
           .insert(interviewScoring)
           .values({
-            conversationId,
+            chatSessionId,
             responseId,
             score: Math.round(scoring.score),
             detailedScore: Math.round(scoring.detailedScore),
             analysis: scoring.analysis,
           })
           .onConflictDoUpdate({
-            target: interviewScoring.conversationId,
+            target: interviewScoring.chatSessionId,
             set: {
               score: sql`excluded.score`,
               detailedScore: sql`excluded.detailed_score`,
@@ -179,8 +179,8 @@ export const completeInterviewFunction = inngest.createFunction(
       });
 
       await step.run("extract-salary-expectations", async () => {
-        const conv = await db.query.conversation.findFirst({
-          where: eq(conversation.id, conversationId),
+        const session = await db.query.chatSession.findFirst({
+          where: eq(chatSession.id, chatSessionId),
           with: {
             messages: {
               orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -188,16 +188,16 @@ export const completeInterviewFunction = inngest.createFunction(
           },
         });
 
-        if (!conv?.messages) {
+        if (!session?.messages) {
           return;
         }
 
-        const conversationHistory = conv.messages
-          .filter((msg) => msg.sender !== "ADMIN")
+        const conversationHistory = session.messages
+          .filter((msg) => msg.role !== "admin")
           .map((msg) => ({
-            sender: msg.sender as "CANDIDATE" | "BOT",
+            sender: msg.role as "user" | "assistant",
             content:
-              msg.contentType === "VOICE" && msg.voiceTranscription
+              msg.type === "voice" && msg.voiceTranscription
                 ? msg.voiceTranscription
                 : msg.content,
           }));
@@ -219,7 +219,7 @@ export const completeInterviewFunction = inngest.createFunction(
         if (!result.success || !result.data) {
           console.error("Salary extraction agent failed", {
             error: result.error,
-            conversationId,
+            chatSessionId,
           });
           return;
         }
@@ -250,20 +250,20 @@ export const completeInterviewFunction = inngest.createFunction(
     }
 
     const chatId = await step.run("get-chat-id", async () => {
-      const conv = await db.query.conversation.findFirst({
-        where: eq(conversation.id, conversationId),
+      const session = await db.query.chatSession.findFirst({
+        where: eq(chatSession.id, chatSessionId),
       });
 
-      if (!conv) {
-        throw new Error("Conversation не найден");
+      if (!session) {
+        throw new Error("ChatSession не найден");
       }
 
-      if (!conv.responseId) {
-        throw new Error("ResponseId не найден в conversation");
+      if (session.entityType !== "vacancy_response") {
+        throw new Error("ChatSession не связан с vacancy_response");
       }
 
       const response = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, conv.responseId),
+        where: eq(vacancyResponse.id, session.entityId),
       });
 
       if (!response?.chatId) {
@@ -274,8 +274,8 @@ export const completeInterviewFunction = inngest.createFunction(
     });
 
     await step.run("send-final-message", async () => {
-      const conv = await db.query.conversation.findFirst({
-        where: eq(conversation.id, conversationId),
+      const session = await db.query.chatSession.findFirst({
+        where: eq(chatSession.id, chatSessionId),
         with: {
           messages: {
             orderBy: (messages, { asc }) => [asc(messages.createdAt)],
@@ -289,9 +289,9 @@ export const completeInterviewFunction = inngest.createFunction(
       let detailedScore: number | undefined;
       let resumeLanguage: string | undefined;
 
-      if (conv?.responseId) {
+      if (session?.entityType === "vacancy_response") {
         const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, conv.responseId),
+          where: eq(vacancyResponse.id, session.entityId),
           with: { vacancy: true },
         });
         candidateName = response?.candidateName ?? undefined;
@@ -299,22 +299,22 @@ export const completeInterviewFunction = inngest.createFunction(
         resumeLanguage = response?.resumeLanguage ?? "ru";
 
         const scoring = await db.query.interviewScoring.findFirst({
-          where: eq(interviewScoring.conversationId, conversationId),
+          where: eq(interviewScoring.chatSessionId, chatSessionId),
         });
         score = scoring?.score ?? undefined;
         detailedScore = scoring?.detailedScore ?? undefined;
       }
 
       const conversationHistory =
-        conv?.messages
-          .filter((msg) => msg.sender !== "ADMIN")
+        session?.messages
+          .filter((msg) => msg.role !== "admin")
           .map((msg) => ({
-            sender: msg.sender as "CANDIDATE" | "BOT",
+            sender: msg.role as "user" | "assistant",
             content:
-              msg.contentType === "VOICE" && msg.voiceTranscription
+              msg.type === "voice" && msg.voiceTranscription
                 ? msg.voiceTranscription
                 : msg.content,
-            contentType: msg.contentType,
+            contentType: msg.type,
           })) ?? [];
 
       const model = getAIModel();
@@ -343,7 +343,7 @@ export const completeInterviewFunction = inngest.createFunction(
       if (!result.success || !result.data) {
         console.error("Interview completion agent failed", {
           error: result.error,
-          conversationId,
+          chatSessionId,
         });
 
         finalMessage =
@@ -353,13 +353,13 @@ export const completeInterviewFunction = inngest.createFunction(
       }
 
       const [newMessage] = await db
-        .insert(conversationMessage)
+        .insert(chatMessage)
         .values({
-          conversationId,
-          sender: "BOT",
-          contentType: "TEXT",
+          sessionId: chatSessionId,
+          role: "assistant",
+          type: "text",
           content: finalMessage.trim(),
-          channel: "TELEGRAM",
+          channel: "telegram",
         })
         .returning();
 
@@ -379,7 +379,7 @@ export const completeInterviewFunction = inngest.createFunction(
 
     return {
       success: true,
-      conversationId,
+      chatSessionId,
       totalQuestions: questionNumber,
     };
   },

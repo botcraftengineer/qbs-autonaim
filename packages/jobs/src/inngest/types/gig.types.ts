@@ -13,5 +13,5 @@ export const gigRankingRecalculateDataSchema = z.object({
 export const gigResponseEvaluateDataSchema = z.object({
   responseId: z.string().uuid("ID отклика должен быть валидным UUID"),
   workspaceId: z.string().min(1, "ID рабочей области обязателен"),
-  conversationId: z.string().min(1, "ID диалога обязателен"),
+  chatSessionId: z.string().min(1, "ID сессии чата обязателен"),
 });

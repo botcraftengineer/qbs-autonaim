@@ -2,9 +2,9 @@
  * Валидация пин-кода для использования в оркестраторе интервью
  */
 
-import { and, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { response as responseTable } from "@qbs-autonaim/db/schema";
+import { vacancyResponse } from "@qbs-autonaim/db/schema";
 
 /**
  * Проверяет валидность пин-кода в базе данных
@@ -33,11 +33,8 @@ export async function validatePinCode(
     }
 
     // Ищем отклик по пин-коду
-    const response = await db.query.response.findFirst({
-      where: and(
-        eq(responseTable.telegramPinCode, pinCode),
-        eq(responseTable.entityType, "vacancy"),
-      ),
+    const response = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.telegramPinCode, pinCode),
     });
 
     // Пин-код не найден
@@ -50,7 +47,7 @@ export async function validatePinCode(
 
     // Загружаем вакансию отдельно для проверки workspace
     const vacancy = await db.query.vacancy.findFirst({
-      where: (v, { eq }) => eq(v.id, response.entityId),
+      where: (v, { eq }) => eq(v.id, response.vacancyId),
       columns: {
         id: true,
         title: true,
@@ -70,7 +67,7 @@ export async function validatePinCode(
     return {
       valid: true,
       responseId: response.id,
-      vacancyId: response.entityId,
+      vacancyId: response.vacancyId,
       candidateName: response.candidateName || undefined,
     };
   } catch (error) {

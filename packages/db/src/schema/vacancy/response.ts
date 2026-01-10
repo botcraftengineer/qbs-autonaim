@@ -1,11 +1,8 @@
 import { sql } from "drizzle-orm";
 import {
   index,
-  jsonb,
-  pgEnum,
   pgTable,
   text,
-  timestamp,
   unique,
   uuid,
   varchar,
@@ -13,34 +10,25 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { file } from "../file";
-import type { StoredProfileData } from "../types";
+import {
+  candidateContactColumns,
+  candidateExperienceColumns,
+  candidateFileColumns,
+  candidateIdentityColumns,
+  coverLetterColumn,
+  responseStatusColumns,
+  responseTimestampColumns,
+} from "../shared/response-columns";
+import {
+  hrSelectionStatusValues,
+  importSourceValues,
+  responseStatusValues,
+} from "../shared/response-enums";
 import { vacancy } from "./vacancy";
 
-export const responseStatusEnum = pgEnum("response_status", [
-  "NEW",
-  "EVALUATED",
-  "INTERVIEW",
-  "COMPLETED",
-  "SKIPPED",
-]);
-
-export const hrSelectionStatusEnum = pgEnum("hr_selection_status", [
-  "INVITE",
-  "RECOMMENDED",
-  "NOT_RECOMMENDED",
-  "REJECTED",
-  "OFFER",
-  "SECURITY_PASSED",
-  "CONTRACT_SENT",
-  "ONBOARDING",
-]);
-
-export const importSourceEnum = pgEnum("import_source", [
-  "HH_API",
-  "FREELANCE_MANUAL",
-  "FREELANCE_LINK",
-]);
-
+/**
+ * Таблица откликов на вакансии
+ */
 export const vacancyResponse = pgTable(
   "vacancy_responses",
   {
@@ -48,48 +36,40 @@ export const vacancyResponse = pgTable(
     vacancyId: uuid("vacancy_id")
       .notNull()
       .references(() => vacancy.id, { onDelete: "cascade" }),
+
+    // Идентификация кандидата (resumeId с hh.ru или другой платформы)
     resumeId: varchar("resume_id", { length: 100 }).notNull(),
     resumeUrl: text("resume_url").notNull(),
-    candidateName: varchar("candidate_name", { length: 500 }),
-    telegramUsername: varchar("telegram_username", { length: 100 }),
-    chatId: varchar("chat_id", { length: 100 }),
-    coverLetter: text("cover_letter"),
-    status: responseStatusEnum("status").default("NEW").notNull(),
-    hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
-    importSource: importSourceEnum("import_source").default("HH_API"),
-    platformProfileUrl: text("platform_profile_url"),
-    experience: text("experience"),
-    profileData: jsonb("profile_data").$type<StoredProfileData>(),
-    contacts: jsonb("contacts").$type<Record<string, unknown>>(),
-    phone: varchar("phone", { length: 50 }),
-    resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
-    telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
+    ...candidateIdentityColumns,
+
+    // Контакты
+    ...candidateContactColumns,
+
+    // Сопроводительное письмо
+    ...coverLetterColumn,
+
+    // Файлы (специфично для vacancy)
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
-    photoFileId: uuid("photo_file_id").references(() => file.id, {
-      onDelete: "set null",
-    }),
+    ...candidateFileColumns,
+
+    // Опыт и навыки
+    ...candidateExperienceColumns,
+
+    // Ожидания по зарплате (специфично для vacancy)
     salaryExpectations: varchar("salary_expectations", { length: 200 }),
-    respondedAt: timestamp("responded_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-    welcomeSentAt: timestamp("welcome_sent_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+
+    // URL профиля на платформе (для фрилансеров)
+    platformProfileUrl: text("platform_profile_url"),
+
+    // Статусы
+    ...responseStatusColumns,
+
+    // Временные метки
+    ...responseTimestampColumns,
   },
   (table) => ({
-    // Composite unique constraint: one resume can apply to multiple vacancies
-    // but can only apply once per vacancy
     vacancyResumeUnique: unique().on(table.vacancyId, table.resumeId),
     vacancyIdx: index("response_vacancy_idx").on(table.vacancyId),
     statusIdx: index("response_status_idx").on(table.status),
@@ -98,12 +78,10 @@ export const vacancyResponse = pgTable(
     platformProfileIdx: index("response_platform_profile_idx").on(
       table.platformProfileUrl,
     ),
-    // Composite index для фильтрации по вакансии и статусу
     vacancyStatusIdx: index("response_vacancy_status_idx").on(
       table.vacancyId,
       table.status,
     ),
-    // Composite index для проверки дубликатов по platformProfileUrl + vacancyId
     vacancyPlatformProfileIdx: index("response_vacancy_platform_idx").on(
       table.vacancyId,
       table.platformProfileUrl,
@@ -121,25 +99,9 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
   telegramPinCode: z.string().length(4).optional(),
   salaryExpectations: z.string().max(200).optional(),
   resumeLanguage: z.string().max(10).default("ru").optional(),
-  status: z
-    .enum(["NEW", "EVALUATED", "INTERVIEW", "COMPLETED", "SKIPPED"])
-    .default("NEW"),
-  hrSelectionStatus: z
-    .enum([
-      "INVITE",
-      "RECOMMENDED",
-      "NOT_RECOMMENDED",
-      "REJECTED",
-      "OFFER",
-      "SECURITY_PASSED",
-      "CONTRACT_SENT",
-      "ONBOARDING",
-    ])
-    .optional(),
-  importSource: z
-    .enum(["HH_API", "FREELANCE_MANUAL", "FREELANCE_LINK"])
-    .default("HH_API")
-    .optional(),
+  status: z.enum(responseStatusValues).default("NEW"),
+  hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
+  importSource: z.enum(importSourceValues).default("HH_API"),
   platformProfileUrl: z.string().optional(),
   respondedAt: z.coerce.date().optional(),
   welcomeSentAt: z.coerce.date().optional(),
@@ -150,3 +112,11 @@ export const CreateVacancyResponseSchema = createInsertSchema(vacancyResponse, {
 });
 
 export type VacancyResponse = typeof vacancyResponse.$inferSelect;
+export type NewVacancyResponse = typeof vacancyResponse.$inferInsert;
+
+// Re-export enum types for backward compatibility
+export type {
+  HrSelectionStatus,
+  ImportSource,
+  ResponseStatus,
+} from "../shared/response-enums";

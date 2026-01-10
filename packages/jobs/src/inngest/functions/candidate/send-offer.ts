@@ -1,8 +1,8 @@
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent, removeNullBytes } from "@qbs-autonaim/lib";
@@ -34,16 +34,19 @@ export const sendOfferFunction = inngest.createFunction(
       return result;
     });
 
-    // Проверяем, есть ли conversation для этого кандидата
-    const conv = await step.run("fetch-conversation", async () => {
-      return await db.query.conversation.findFirst({
-        where: eq(conversation.responseId, responseId),
+    // Проверяем, есть ли chatSession для этого кандидата
+    const session = await step.run("fetch-chat-session", async () => {
+      return await db.query.chatSession.findFirst({
+        where: and(
+          eq(chatSession.entityType, "vacancy_response"),
+          eq(chatSession.entityId, responseId),
+        ),
       });
     });
 
-    if (!conv) {
+    if (!session) {
       console.log("У кандидата нет активной беседы, пропускаем отправку");
-      return { success: false, reason: "no_conversation" };
+      return { success: false, reason: "no_chat_session" };
     }
 
     const offerMessage = await step.run("generate-offer-message", async () => {
@@ -64,7 +67,7 @@ ${offerDetails.message ? `\n${offerDetails.message}\n` : ""}
         // Отправляем сообщение через SDK
         const tgResult = await tgClientSDK.sendMessage({
           workspaceId,
-          chatId: Number(conv.username || response.chatId),
+          chatId: Number(response.chatId),
           text: offerMessage,
         });
 
@@ -93,13 +96,13 @@ ${offerDetails.message ? `\n${offerDetails.message}\n` : ""}
 
     // Сохраняем сообщение в базу
     await step.run("save-message", async () => {
-      await db.insert(conversationMessage).values({
-        conversationId: conv.id,
-        sender: "BOT",
-        contentType: "TEXT",
-        channel: conv.source,
+      await db.insert(chatMessage).values({
+        sessionId: session.id,
+        role: "assistant",
+        type: "text",
+        channel: session.lastChannel ?? "telegram",
         content: removeNullBytes(offerMessage),
-        externalMessageId: result.messageId,
+        externalId: result.messageId,
       });
     });
 

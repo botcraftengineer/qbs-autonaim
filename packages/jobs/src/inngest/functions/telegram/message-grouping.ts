@@ -9,7 +9,7 @@
  */
 
 import { db } from "@qbs-autonaim/db/client";
-import { conversationMessage } from "@qbs-autonaim/db/schema";
+import { chatMessage } from "@qbs-autonaim/db/schema";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { MESSAGE_GROUPING_CONFIG } from "./message-grouping.config";
 
@@ -18,11 +18,11 @@ const GROUPING_WINDOW_MINUTES = 10;
 const QUERY_BUFFER_MINUTES = 5;
 
 interface MessageGroup {
-  conversationId: string;
+  chatSessionId: string;
   messages: Array<{
     id: string;
     content: string;
-    contentType: "TEXT" | "VOICE";
+    contentType: "text" | "voice";
     createdAt: Date;
   }>;
   shouldProcess: boolean;
@@ -36,13 +36,13 @@ interface MessageGroup {
  * Ждем 10 минут после последнего сообщения, затем обрабатываем всю группу
  */
 export async function shouldProcessMessageGroup(
-  conversationId: string,
+  chatSessionId: string,
   currentMessageId: string,
 ): Promise<MessageGroup> {
   // Проверяем, включена ли группировка
   if (!MESSAGE_GROUPING_CONFIG.ENABLE_GROUPING) {
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: true,
       reason: "grouping disabled",
@@ -57,18 +57,18 @@ export async function shouldProcessMessageGroup(
   const windowStartTime = new Date(now.getTime() - queryWindowMs);
 
   // Получаем все сообщения кандидата за последние 10+5 минут (с буфером)
-  const recentMessages = await db.query.conversationMessage.findMany({
+  const recentMessages = await db.query.chatMessage.findMany({
     where: and(
-      eq(conversationMessage.conversationId, conversationId),
-      eq(conversationMessage.sender, "CANDIDATE"),
-      gte(conversationMessage.createdAt, windowStartTime),
+      eq(chatMessage.sessionId, chatSessionId),
+      eq(chatMessage.role, "user"),
+      gte(chatMessage.createdAt, windowStartTime),
     ),
-    orderBy: [desc(conversationMessage.createdAt)],
+    orderBy: [desc(chatMessage.createdAt)],
   });
 
   if (recentMessages.length === 0) {
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: true,
       reason: "no recent messages",
@@ -77,12 +77,12 @@ export async function shouldProcessMessageGroup(
 
   // Находим текущее сообщение
   const currentMessage = recentMessages.find(
-    (m) => m.externalMessageId === currentMessageId,
+    (m) => m.externalId === currentMessageId,
   );
 
   if (!currentMessage) {
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: true,
       reason: "current message not found",
@@ -97,7 +97,7 @@ export async function shouldProcessMessageGroup(
   if (newerMessages.length > 0) {
     // Есть более новые сообщения - текущее не последнее, пропускаем
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: false,
       reason: "newer messages exist",
@@ -112,7 +112,7 @@ export async function shouldProcessMessageGroup(
   if (!hasWaitedEnough) {
     const minutesWaited = Math.round(timeSinceLastMessage / 60000);
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: false,
       reason: `waiting for ${GROUPING_WINDOW_MINUTES} minutes (${minutesWaited}/${GROUPING_WINDOW_MINUTES} min)`,
@@ -120,21 +120,21 @@ export async function shouldProcessMessageGroup(
   }
 
   // Финальная проверка: убедимся что не пришло новое сообщение пока мы ждали
-  const finalCheck = await db.query.conversationMessage.findFirst({
+  const finalCheck = await db.query.chatMessage.findFirst({
     where: and(
-      eq(conversationMessage.conversationId, conversationId),
-      eq(conversationMessage.sender, "CANDIDATE"),
+      eq(chatMessage.sessionId, chatSessionId),
+      eq(chatMessage.role, "user"),
     ),
-    orderBy: [desc(conversationMessage.createdAt)],
+    orderBy: [desc(chatMessage.createdAt)],
   });
 
   if (
     finalCheck &&
-    finalCheck.externalMessageId !== currentMessageId &&
+    finalCheck.externalId !== currentMessageId &&
     finalCheck.createdAt > currentMessage.createdAt
   ) {
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: false,
       reason: "newer message arrived during wait",
@@ -143,12 +143,12 @@ export async function shouldProcessMessageGroup(
 
   // Проверяем голосовые без транскрипции
   const voiceMessagesWithoutTranscription = recentMessages.filter(
-    (m) => m.contentType === "VOICE" && !m.voiceTranscription,
+    (m) => m.type === "voice" && !m.voiceTranscription,
   );
 
   if (voiceMessagesWithoutTranscription.length > 0) {
     return {
-      conversationId,
+      chatSessionId,
       messages: [],
       shouldProcess: false,
       reason: `waiting for voice transcription (${voiceMessagesWithoutTranscription.length} pending)`,
@@ -159,17 +159,17 @@ export async function shouldProcessMessageGroup(
   const groupMessages = recentMessages
     .reverse() // От старых к новым
     .map((m) => ({
-      id: m.externalMessageId || m.id,
+      id: m.externalId || m.id,
       content:
-        m.contentType === "VOICE" && m.voiceTranscription
+        m.type === "voice" && m.voiceTranscription
           ? m.voiceTranscription
-          : m.content,
-      contentType: m.contentType as "TEXT" | "VOICE",
+          : m.content || "",
+      contentType: m.type as "text" | "voice",
       createdAt: m.createdAt,
     }));
 
   return {
-    conversationId,
+    chatSessionId,
     messages: groupMessages,
     shouldProcess: true,
     reason: `group ready (${groupMessages.length} messages in ${GROUPING_WINDOW_MINUTES} min window)`,
@@ -183,7 +183,7 @@ export function formatMessageGroup(
   messages: Array<{
     id: string;
     content: string;
-    contentType: "TEXT" | "VOICE";
+    contentType: "text" | "voice";
     createdAt: Date | string;
   }>,
 ): string {
@@ -193,7 +193,7 @@ export function formatMessageGroup(
   // Несколько сообщений - объединяем с указанием типа
   return messages
     .map((m, idx) => {
-      const prefix = m.contentType === "VOICE" ? "🎤 Голосовое" : "💬 Текст";
+      const prefix = m.contentType === "voice" ? "🎤 Голосовое" : "💬 Текст";
       return `${prefix} ${idx + 1}: ${m.content}`;
     })
     .join("\n\n");

@@ -3,10 +3,8 @@ import {
   index,
   integer,
   jsonb,
-  pgEnum,
   pgTable,
   text,
-  timestamp,
   unique,
   uuid,
   varchar,
@@ -14,60 +12,28 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { file } from "../file";
-import type { StoredProfileData } from "../types";
+import {
+  candidateContactColumns,
+  candidateExperienceColumns,
+  candidateFileColumns,
+  candidateIdentityColumns,
+  coverLetterColumn,
+  rankingAnalysisColumns,
+  rankingScoreColumns,
+  responseStatusColumns,
+  responseTimestampColumns,
+} from "../shared/response-columns";
+import {
+  hrSelectionStatusValues,
+  importSourceValues,
+  recommendationValues,
+  responseStatusValues,
+} from "../shared/response-enums";
+
 import { gig } from "./gig";
 
 /**
- * Статус отклика на gig
- */
-export const gigResponseStatusEnum = pgEnum("gig_response_status", [
-  "NEW",
-  "EVALUATED",
-  "INTERVIEW",
-  "NEGOTIATION",
-  "COMPLETED",
-  "SKIPPED",
-]);
-
-/**
- * HR статус отбора для gig
- */
-export const gigHrSelectionStatusEnum = pgEnum("gig_hr_selection_status", [
-  "INVITE",
-  "RECOMMENDED",
-  "NOT_RECOMMENDED",
-  "REJECTED",
-  "SELECTED",
-  "CONTRACT_SENT",
-  "IN_PROGRESS",
-  "DONE",
-]);
-
-/**
- * Источник импорта отклика
- */
-export const gigImportSourceEnum = pgEnum("gig_import_source", [
-  "MANUAL",
-  "KWORK",
-  "FL_RU",
-  "WEBLANCER",
-  "UPWORK",
-  "FREELANCE_RU",
-  "WEB_LINK",
-]);
-
-/**
- * Рекомендация по кандидату
- */
-export const gigRecommendationEnum = pgEnum("gig_recommendation", [
-  "HIGHLY_RECOMMENDED",
-  "RECOMMENDED",
-  "NEUTRAL",
-  "NOT_RECOMMENDED",
-]);
-
-/**
- * Таблица откликов на разовые задания
+ * Таблица откликов на разовые задания (gigs)
  */
 export const gigResponse = pgTable(
   "gig_responses",
@@ -77,84 +43,46 @@ export const gigResponse = pgTable(
       .notNull()
       .references(() => gig.id, { onDelete: "cascade" }),
 
-    // Идентификация кандидата
+    // Идентификация кандидата (уникальный ID на платформе)
     candidateId: varchar("candidate_id", { length: 100 }).notNull(),
-    candidateName: varchar("candidate_name", { length: 500 }),
-    profileUrl: text("profile_url"),
+    ...candidateIdentityColumns,
 
     // Контакты
-    telegramUsername: varchar("telegram_username", { length: 100 }),
-    chatId: varchar("chat_id", { length: 100 }),
-    phone: varchar("phone", { length: 50 }),
-    email: varchar("email", { length: 255 }),
-    contacts: jsonb("contacts").$type<Record<string, unknown>>(),
-    resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
+    ...candidateContactColumns,
 
-    // Предложение кандидата
+    // Предложение кандидата (специфично для gig)
     proposedPrice: integer("proposed_price"),
     proposedCurrency: varchar("proposed_currency", { length: 3 }).default(
       "RUB",
     ),
     proposedDeliveryDays: integer("proposed_delivery_days"),
-    coverLetter: text("cover_letter"),
 
-    // Портфолио
+    // Сопроводительное письмо
+    ...coverLetterColumn,
+
+    // Портфолио (специфично для gig)
     portfolioLinks: jsonb("portfolio_links").$type<string[]>(),
     portfolioFileId: uuid("portfolio_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
-    photoFileId: uuid("photo_file_id").references(() => file.id, {
-      onDelete: "set null",
-    }),
+
+    // Файлы
+    ...candidateFileColumns,
 
     // Опыт и навыки
-    experience: text("experience"),
-    profileData: jsonb("profile_data").$type<StoredProfileData>(),
-    skills: jsonb("skills").$type<string[]>(),
-    rating: varchar("rating", { length: 20 }), // Рейтинг на платформе
+    ...candidateExperienceColumns,
 
     // Статусы
-    status: gigResponseStatusEnum("status").default("NEW").notNull(),
-    hrSelectionStatus: gigHrSelectionStatusEnum("hr_selection_status"),
-    importSource: gigImportSourceEnum("import_source").default("MANUAL"),
+    ...responseStatusColumns,
 
-    // PIN для Telegram авторизации
-    telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
+    // Ranking scores
+    ...rankingScoreColumns,
 
-    // Ranking scores (0-100)
-    compositeScore: integer("composite_score"),
-    priceScore: integer("price_score"),
-    deliveryScore: integer("delivery_score"),
-    skillsMatchScore: integer("skills_match_score"),
-    experienceScore: integer("experience_score"),
+    // Ranking analysis
+    ...rankingAnalysisColumns,
 
-    // Ranking position and analysis
-    rankingPosition: integer("ranking_position"),
-    rankingAnalysis: text("ranking_analysis"),
-    strengths: jsonb("strengths").$type<string[]>(),
-    weaknesses: jsonb("weaknesses").$type<string[]>(),
-    recommendation: gigRecommendationEnum("recommendation"),
-    rankedAt: timestamp("ranked_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-
-    // Даты
-    respondedAt: timestamp("responded_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-    welcomeSentAt: timestamp("welcome_sent_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    // Временные метки
+    ...responseTimestampColumns,
   },
   (table) => ({
     gigCandidateUnique: unique().on(table.gigId, table.candidateId),
@@ -183,43 +111,6 @@ export const gigResponse = pgTable(
   }),
 );
 
-export const gigResponseStatusValues = [
-  "NEW",
-  "EVALUATED",
-  "INTERVIEW",
-  "NEGOTIATION",
-  "COMPLETED",
-  "SKIPPED",
-] as const;
-
-export const gigHrSelectionStatusValues = [
-  "INVITE",
-  "RECOMMENDED",
-  "NOT_RECOMMENDED",
-  "REJECTED",
-  "SELECTED",
-  "CONTRACT_SENT",
-  "IN_PROGRESS",
-  "DONE",
-] as const;
-
-export const gigImportSourceValues = [
-  "MANUAL",
-  "KWORK",
-  "FL_RU",
-  "WEBLANCER",
-  "UPWORK",
-  "FREELANCE_RU",
-  "WEB_LINK",
-] as const;
-
-export const gigRecommendationValues = [
-  "HIGHLY_RECOMMENDED",
-  "RECOMMENDED",
-  "NEUTRAL",
-  "NOT_RECOMMENDED",
-] as const;
-
 export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   candidateId: z.string().max(100),
   candidateName: z.string().max(500).optional(),
@@ -227,7 +118,7 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   telegramUsername: z.string().max(100).optional(),
   chatId: z.string().max(100).optional(),
   phone: z.string().max(50).optional(),
-  email: z.email().max(255).optional(),
+  email: z.string().email().max(255).optional(),
   proposedPrice: z.number().int().positive().optional(),
   proposedCurrency: z.string().length(3).default("RUB"),
   proposedDeliveryDays: z.number().int().positive().optional(),
@@ -237,9 +128,9 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   skills: z.array(z.string()).optional(),
   rating: z.string().max(20).optional(),
   resumeLanguage: z.string().max(10).default("ru").optional(),
-  status: z.enum(gigResponseStatusValues).default("NEW"),
-  hrSelectionStatus: z.enum(gigHrSelectionStatusValues).optional(),
-  importSource: z.enum(gigImportSourceValues).default("MANUAL"),
+  status: z.enum(responseStatusValues).default("NEW"),
+  hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
+  importSource: z.enum(importSourceValues).default("MANUAL"),
   telegramPinCode: z.string().length(4).optional(),
   respondedAt: z.coerce.date().optional(),
   welcomeSentAt: z.coerce.date().optional(),
@@ -252,7 +143,7 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   rankingAnalysis: z.string().optional(),
   strengths: z.array(z.string()).optional(),
   weaknesses: z.array(z.string()).optional(),
-  recommendation: z.enum(gigRecommendationValues).optional(),
+  recommendation: z.enum(recommendationValues).optional(),
   rankedAt: z.coerce.date().optional(),
 }).omit({
   id: true,
@@ -262,3 +153,11 @@ export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
 
 export type GigResponse = typeof gigResponse.$inferSelect;
 export type NewGigResponse = typeof gigResponse.$inferInsert;
+
+// Re-export enum values for backward compatibility
+export {
+  hrSelectionStatusValues as gigHrSelectionStatusValues,
+  importSourceValues as gigImportSourceValues,
+  recommendationValues as gigRecommendationValues,
+  responseStatusValues as gigResponseStatusValues,
+} from "../shared/response-enums";

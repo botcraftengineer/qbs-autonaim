@@ -6,26 +6,26 @@
 import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  chatMessage,
+  chatSession,
   type companySettings,
-  conversation,
-  conversationMessage,
-  type responseScreening,
-  response as responseTable,
   type vacancy,
+  vacancyResponse,
+  type vacancyResponseScreening,
   type workspace,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent } from "./vacancy-response-history";
 
 interface IdentificationResult {
   success: boolean;
-  conversationId?: string;
+  chatSessionId?: string;
   responseId?: string;
   candidateName?: string;
   vacancyTitle?: string;
   error?: string;
 }
 
-interface ConversationData {
+interface ChatSessionData {
   responseId: string;
   candidateName?: string;
   username?: string;
@@ -36,7 +36,7 @@ interface ConversationData {
 }
 
 /**
- * Идентифицирует кандидата по пин-коду и создает/обновляет conversation
+ * Идентифицирует кандидата по пин-коду и создает/обновляет chat session
  */
 export async function identifyByPinCode(
   pinCode: string,
@@ -47,11 +47,8 @@ export async function identifyByPinCode(
 ): Promise<IdentificationResult> {
   try {
     // Ищем отклик по пин-коду с проверкой workspaceId
-    const response = await db.query.response.findFirst({
-      where: and(
-        eq(responseTable.telegramPinCode, pinCode),
-        eq(responseTable.entityType, "vacancy"),
-      ),
+    const response = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.telegramPinCode, pinCode),
     });
 
     if (!response) {
@@ -63,7 +60,7 @@ export async function identifyByPinCode(
 
     // Загружаем вакансию отдельно
     const vacancy = await db.query.vacancy.findFirst({
-      where: (v, { eq }) => eq(v.id, response.entityId),
+      where: (v, { eq }) => eq(v.id, response.vacancyId),
       columns: {
         title: true,
         id: true,
@@ -79,8 +76,8 @@ export async function identifyByPinCode(
       };
     }
 
-    // Создаем или обновляем conversation
-    const conversationData: ConversationData = {
+    // Создаем или обновляем chat session
+    const sessionData: ChatSessionData = {
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       username,
@@ -89,18 +86,19 @@ export async function identifyByPinCode(
       pinCode,
     };
 
-    const conversation = await createOrUpdateConversation(conversationData);
+    const session = await createOrUpdateChatSession(sessionData);
 
     // Обновляем chatId и username в response
     const hadChatId = !!response.chatId;
     const hadUsername = !!response.telegramUsername;
 
     await db
-      .update(responseTable)
+      .update(vacancyResponse)
       .set({
+        chatId: chatId,
         telegramUsername: username || response.telegramUsername,
       })
-      .where(eq(responseTable.id, response.id));
+      .where(eq(vacancyResponse.id, response.id));
 
     if (!hadChatId) {
       await logResponseEvent({
@@ -122,7 +120,7 @@ export async function identifyByPinCode(
 
     return {
       success: true,
-      conversationId: conversation.id,
+      chatSessionId: session.id,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       vacancyTitle: vacancy.title,
@@ -141,18 +139,17 @@ export async function identifyByPinCode(
  */
 export async function identifyByVacancy(
   vacancyId: string,
-  _chatId: string,
+  chatId: string,
   workspaceId: string,
   username: string,
   firstName?: string,
 ): Promise<IdentificationResult> {
   try {
     // Ищем отклик по username и вакансии с проверкой workspaceId
-    const response = await db.query.response.findFirst({
+    const response = await db.query.vacancyResponse.findFirst({
       where: and(
-        ilike(responseTable.telegramUsername, username),
-        eq(responseTable.entityId, vacancyId),
-        eq(responseTable.entityType, "vacancy"),
+        ilike(vacancyResponse.telegramUsername, username),
+        eq(vacancyResponse.vacancyId, vacancyId),
       ),
       orderBy: (fields, { desc }) => [desc(fields.createdAt)],
     });
@@ -166,7 +163,7 @@ export async function identifyByVacancy(
 
     // Загружаем вакансию отдельно
     const vacancy = await db.query.vacancy.findFirst({
-      where: (v, { eq }) => eq(v.id, response.entityId),
+      where: (v, { eq }) => eq(v.id, response.vacancyId),
       columns: {
         title: true,
         workspaceId: true,
@@ -181,8 +178,8 @@ export async function identifyByVacancy(
       };
     }
 
-    // Создаем или обновляем conversation
-    const conversationData: ConversationData = {
+    // Создаем или обновляем chat session
+    const sessionData: ChatSessionData = {
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       username,
@@ -190,11 +187,17 @@ export async function identifyByVacancy(
       identifiedBy: "vacancy_search",
     };
 
-    const conversation = await createOrUpdateConversation(conversationData);
+    const session = await createOrUpdateChatSession(sessionData);
+
+    // Обновляем chatId
+    await db
+      .update(vacancyResponse)
+      .set({ chatId })
+      .where(eq(vacancyResponse.id, response.id));
 
     return {
       success: true,
-      conversationId: conversation.id,
+      chatSessionId: session.id,
       responseId: response.id,
       candidateName: response.candidateName || firstName,
       vacancyTitle: vacancy.title,
@@ -209,14 +212,17 @@ export async function identifyByVacancy(
 }
 
 /**
- * Создает или обновляет conversation с правильными данными
+ * Создает или обновляет chat session с правильными данными
  */
-async function createOrUpdateConversation(
-  data: ConversationData,
+async function createOrUpdateChatSession(
+  data: ChatSessionData,
 ): Promise<{ id: string }> {
-  // Проверяем, есть ли уже conversation для этого responseId
-  const existing = await db.query.conversation.findFirst({
-    where: eq(conversation.responseId, data.responseId),
+  // Проверяем, есть ли уже chat session для этого responseId
+  const existing = await db.query.chatSession.findFirst({
+    where: and(
+      eq(chatSession.entityType, "vacancy_response"),
+      eq(chatSession.entityId, data.responseId),
+    ),
   });
 
   if (existing) {
@@ -230,76 +236,79 @@ async function createOrUpdateConversation(
       ...(data.pinCode && { pinCode: data.pinCode }),
       ...(data.searchQuery && { searchQuery: data.searchQuery }),
       interviewStarted: true,
+      candidateName: data.candidateName,
+      username: data.username,
       // Сохраняем существующие questionAnswers если они есть
       questionAnswers: existingMetadata.questionAnswers || [],
     };
 
-    // Обновляем существующую conversation
+    // Обновляем существующую chat session
     const [updated] = await db
-      .update(conversation)
+      .update(chatSession)
       .set({
-        candidateName: data.candidateName,
-        username: data.username,
-        status: "ACTIVE",
+        title: data.candidateName,
+        status: "active",
         metadata: updatedMetadata,
       })
-      .where(eq(conversation.id, existing.id))
+      .where(eq(chatSession.id, existing.id))
       .returning();
 
     if (!updated) {
-      throw new Error("Failed to update conversation");
+      throw new Error("Failed to update chat session");
     }
 
     return updated;
   }
 
-  // Создаем новую conversation с начальными метаданными
+  // Создаем новую chat session с начальными метаданными
   const newMetadata = {
     identifiedBy: data.identifiedBy,
     ...(data.pinCode && { pinCode: data.pinCode }),
     ...(data.searchQuery && { searchQuery: data.searchQuery }),
     interviewStarted: true,
+    candidateName: data.candidateName,
+    username: data.username,
     questionAnswers: [],
   };
 
   const [created] = await db
-    .insert(conversation)
+    .insert(chatSession)
     .values({
-      responseId: data.responseId,
-      candidateName: data.candidateName,
-      username: data.username,
-      status: "ACTIVE",
+      entityType: "vacancy_response",
+      entityId: data.responseId,
+      title: data.candidateName,
+      status: "active",
       metadata: newMetadata,
     })
     .returning();
 
   if (!created) {
-    throw new Error("Failed to create conversation");
+    throw new Error("Failed to create chat session");
   }
 
   return created;
 }
 
 /**
- * Сохраняет сообщение в conversation
+ * Сохраняет сообщение в chat session
  */
 export async function saveMessage(
-  conversationId: string,
-  sender: "CANDIDATE" | "BOT",
+  sessionId: string,
+  role: "user" | "assistant" | "system",
   content: string,
-  contentType: "TEXT" | "VOICE" = "TEXT",
-  externalMessageId?: string,
-  channel: "TELEGRAM" | "HH" | "WEB" = "TELEGRAM",
+  type: "text" | "voice" = "text",
+  externalId?: string,
+  channel: "telegram" | "web" = "telegram",
 ): Promise<string | null> {
   try {
     const [message] = await db
-      .insert(conversationMessage)
+      .insert(chatMessage)
       .values({
-        conversationId,
-        sender,
-        contentType,
+        sessionId,
+        role,
+        type,
         content,
-        externalMessageId,
+        externalId,
         channel,
       })
       .returning();
@@ -315,7 +324,7 @@ export async function saveMessage(
  * Получает данные для начала интервью
  */
 export async function getInterviewStartData(responseId: string): Promise<{
-  response: typeof responseTable.$inferSelect & {
+  response: typeof vacancyResponse.$inferSelect & {
     vacancy:
       | (typeof vacancy.$inferSelect & {
           workspace: typeof workspace.$inferSelect & {
@@ -323,15 +332,12 @@ export async function getInterviewStartData(responseId: string): Promise<{
           };
         })
       | null;
-    screening: typeof responseScreening.$inferSelect | null;
+    screening: typeof vacancyResponseScreening.$inferSelect | null;
   };
 } | null> {
   try {
-    const response = await db.query.response.findFirst({
-      where: and(
-        eq(responseTable.id, responseId),
-        eq(responseTable.entityType, "vacancy"),
-      ),
+    const response = await db.query.vacancyResponse.findFirst({
+      where: eq(vacancyResponse.id, responseId),
       with: {
         vacancy: {
           with: {
@@ -352,7 +358,16 @@ export async function getInterviewStartData(responseId: string): Promise<{
 
     // Возвращаем данные в правильной структуре
     return {
-      response,
+      response: response as typeof vacancyResponse.$inferSelect & {
+        vacancy:
+          | (typeof vacancy.$inferSelect & {
+              workspace: typeof workspace.$inferSelect & {
+                companySettings: typeof companySettings.$inferSelect | null;
+              };
+            })
+          | null;
+        screening: typeof vacancyResponseScreening.$inferSelect | null;
+      },
     };
   } catch (error) {
     console.error("Error getting interview start data:", error);

@@ -1,7 +1,7 @@
 import { AgentFactory, InterviewOrchestrator } from "@qbs-autonaim/ai";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { conversation } from "@qbs-autonaim/db/schema";
+import { chatSession } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
 import type {
@@ -20,8 +20,8 @@ interface QuestionAnswer {
   answer: string;
 }
 
-/** Typed metadata structure for conversation */
-interface ConversationMetadata {
+/** Typed metadata structure for chatSession */
+interface ChatSessionMetadata {
   questionAnswers?: QuestionAnswer[];
 }
 
@@ -34,7 +34,7 @@ interface ExtendedInterviewAnalysis extends InterviewAnalysis {
 }
 
 interface InterviewContext {
-  conversationId: string;
+  chatSessionId: string;
   candidateName: string | null;
   vacancyTitle: string | null;
   vacancyDescription: string | null;
@@ -43,9 +43,9 @@ interface InterviewContext {
   gigResponseId: string | null;
   resumeLanguage?: string | null;
   conversationHistory?: Array<{
-    sender: "CANDIDATE" | "BOT";
+    sender: "user" | "assistant";
     content: string;
-    contentType?: "TEXT" | "VOICE";
+    contentType?: "text" | "voice";
   }>;
   // Настройки компании
   companySettings?: {
@@ -74,10 +74,10 @@ interface InterviewContext {
  */
 function parseMetadata(
   metadata: Record<string, unknown> | null,
-): ConversationMetadata {
+): ChatSessionMetadata {
   if (!metadata) return {};
 
-  return metadata as ConversationMetadata;
+  return metadata as ChatSessionMetadata;
 }
 
 /**
@@ -101,7 +101,7 @@ export async function analyzeAndGenerateNextQuestion(
   // Валидация входных данных
   if (!Number.isFinite(questionNumber) || questionNumber < 0) {
     logger.error("Invalid questionNumber in analyzeAndGenerateNextQuestion", {
-      conversationId: context.conversationId,
+      chatSessionId: context.chatSessionId,
       questionNumber,
       type: typeof questionNumber,
     });
@@ -112,14 +112,21 @@ export async function analyzeAndGenerateNextQuestion(
   const model = createAgentModel();
   const orchestrator = new InterviewOrchestrator({ model });
 
-  // Формируем контекст для агентов
+  // Формируем контекст для агентов (конвертируем роли для совместимости с AI)
   const agentContext = {
-    candidateId: context.conversationId,
-    conversationId: context.conversationId,
+    candidateId: context.chatSessionId,
+    conversationId: context.chatSessionId,
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
-    conversationHistory: context.conversationHistory || [],
+    conversationHistory: (context.conversationHistory || []).map((msg) => ({
+      sender:
+        msg.sender === "user" ? "CANDIDATE" : ("BOT" as "CANDIDATE" | "BOT"),
+      content: msg.content,
+      contentType: msg.contentType
+        ? ((msg.contentType === "text" ? "TEXT" : "VOICE") as "TEXT" | "VOICE")
+        : undefined,
+    })),
     companySettings: context.companySettings,
     customBotInstructions: context.customBotInstructions,
     customOrganizationalQuestions: context.customOrganizationalQuestions,
@@ -138,7 +145,7 @@ export async function analyzeAndGenerateNextQuestion(
   );
 
   logger.info("Interview orchestrator trace", {
-    conversationId: context.conversationId,
+    chatSessionId: context.chatSessionId,
     trace: result.agentTrace.map(
       (t: { agent: string; decision: string; timestamp: Date }) => ({
         agent: t.agent,
@@ -150,7 +157,7 @@ export async function analyzeAndGenerateNextQuestion(
   // Проверка эскалации
   if (result.shouldEscalate) {
     logger.warn("Interview escalation triggered", {
-      conversationId: context.conversationId,
+      chatSessionId: context.chatSessionId,
       reason: result.escalationReason,
     });
 
@@ -178,244 +185,248 @@ export async function analyzeAndGenerateNextQuestion(
  * Gets interview context from database
  */
 export async function getInterviewContext(
-  conversationId: string,
+  chatSessionId: string,
 ): Promise<InterviewContext | null> {
   type MessageType = {
-    sender: string;
-    content: string;
-    contentType?: string;
-    voiceTranscription?: string;
+    role: string;
+    content: string | null;
+    type?: string;
+    voiceTranscription?: string | null;
     createdAt: Date;
   };
 
-  type ConvType = {
+  type SessionType = {
     id: string;
-    candidateName: string | null;
+    entityType: string;
+    entityId: string;
     metadata: Record<string, unknown> | null;
-    responseId: string | null;
-    gigResponseId: string | null;
     messages: MessageType[];
-    response?: {
-      resumeLanguage: string | null;
-      vacancy: {
-        title: string;
-        description: string | null;
-        customBotInstructions: string | null;
-        customOrganizationalQuestions: string | null;
-        customInterviewQuestions: string | null;
-        workspace: {
-          companySettings: {
-            botName: string | null;
-            botRole: string | null;
-            name: string;
-            description: string | null;
-          } | null;
-        };
-      };
-    } | null;
-    gigResponse?: {
-      resumeLanguage: string | null;
-      gig: {
-        id: string;
-        title: string;
-        description: string | null;
-        customBotInstructions: string | null;
-        customOrganizationalQuestions: string | null;
-        customInterviewQuestions: string | null;
-        workspace: {
-          companySettings: {
-            botName: string | null;
-            botRole: string | null;
-            name: string;
-            description: string | null;
-          } | null;
-        };
-      };
-    } | null;
   };
 
-  const conv = (await db.query.conversation.findFirst({
-    where: eq(conversation.id, conversationId),
+  const session = (await db.query.chatSession.findFirst({
+    where: eq(chatSession.id, chatSessionId),
     with: {
       messages: {
         orderBy: (messages, { asc }) => [asc(messages.createdAt)],
       },
-      response: {
-        with: {
-          vacancy: {
-            columns: {
-              title: true,
-              description: true,
-              customBotInstructions: true,
-              customOrganizationalQuestions: true,
-              customInterviewQuestions: true,
-            },
-            with: {
-              workspace: {
-                with: {
-                  companySettings: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      // @ts-expect-error - Drizzle type inference limitation with deep nesting
-      gigResponse: {
-        with: {
-          gig: {
-            columns: {
-              id: true,
-              title: true,
-              description: true,
-              customBotInstructions: true,
-              customOrganizationalQuestions: true,
-              customInterviewQuestions: true,
-            },
-            with: {
-              workspace: {
-                with: {
-                  companySettings: true,
-                },
-              },
-            },
-          },
-        },
-      },
     },
-  })) as ConvType | undefined;
+  })) as SessionType | undefined;
 
-  if (!conv) {
+  if (!session) {
     return null;
   }
 
-  const metadata = parseMetadata(conv.metadata);
+  const metadata = parseMetadata(session.metadata);
   const questionAnswers = metadata.questionAnswers ?? [];
 
   // Формируем историю диалога с правильными типами
-  const conversationHistory = conv.messages
-    .filter((msg) => msg.sender === "CANDIDATE" || msg.sender === "BOT")
+  const conversationHistory = session.messages
+    .filter((msg) => msg.role === "user" || msg.role === "assistant")
     .map((msg) => ({
-      sender: msg.sender as "CANDIDATE" | "BOT",
+      sender: msg.role as "user" | "assistant",
       content:
-        msg.contentType === "VOICE" && msg.voiceTranscription
+        msg.type === "voice" && msg.voiceTranscription
           ? msg.voiceTranscription
-          : msg.content,
-      contentType: (msg.contentType === "TEXT" || msg.contentType === "VOICE"
-        ? msg.contentType
-        : undefined) as "TEXT" | "VOICE" | undefined,
+          : msg.content || "",
+      contentType: (msg.type === "text" || msg.type === "voice"
+        ? msg.type
+        : undefined) as "text" | "voice" | undefined,
     }));
 
-  // Определяем источник: vacancy или gig
-  const isGig = !!conv.gigResponse;
-  const vacancy = conv.response?.vacancy;
-  const gig = conv.gigResponse?.gig;
-  const workspace = isGig ? gig?.workspace : vacancy?.workspace;
+  // Определяем источник: vacancy_response или gig_response
+  const isGig = session.entityType === "gig_response";
+  const entityId = session.entityId;
 
-  // Получаем медиафайлы для gig (если есть)
-  let interviewMediaFiles: Array<{
-    id: string;
-    fileName: string;
-    mimeType: string;
-    url: string;
-  }> = [];
+  let candidateName: string | null = null;
+  let vacancyTitle: string | null = null;
+  let vacancyDescription: string | null = null;
+  let responseId: string | null = null;
+  let gigResponseId: string | null = null;
+  let resumeLanguage: string | null = "ru";
+  let companySettings: InterviewContext["companySettings"] | undefined;
+  let customBotInstructions: string | null = null;
+  let customOrganizationalQuestions: string | null = null;
+  let customInterviewQuestions: string | null = null;
+  let interviewMediaFiles: InterviewContext["interviewMediaFiles"] | undefined;
 
-  if (isGig && gig) {
-    const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
-
-    const mediaRecords = await db.query.gigInterviewMedia.findMany({
-      where: (media, { eq }) => eq(media.gigId, gig.id),
+  if (isGig) {
+    gigResponseId = entityId;
+    const gigResponse = await db.query.gigResponse.findFirst({
+      where: (gr, { eq }) => eq(gr.id, entityId),
       with: {
-        file: true,
+        gig: {
+          columns: {
+            id: true,
+            title: true,
+            description: true,
+            customBotInstructions: true,
+            customOrganizationalQuestions: true,
+            customInterviewQuestions: true,
+          },
+          with: {
+            workspace: {
+              with: {
+                companySettings: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    interviewMediaFiles = await Promise.all(
-      mediaRecords.map(async (record) => {
-        try {
-          const url = await getDownloadUrl(record.file.key);
-          return {
-            id: record.file.id,
-            fileName: record.file.fileName,
-            mimeType: record.file.mimeType,
-            url,
-          };
-        } catch {
-          return null;
-        }
-      }),
-    ).then((results) =>
-      results.filter((f): f is NonNullable<typeof f> => f !== null),
-    );
-  }
+    if (gigResponse) {
+      candidateName = gigResponse.candidateName;
+      resumeLanguage = gigResponse.resumeLanguage || "ru";
+      vacancyTitle = gigResponse.gig?.title || null;
+      vacancyDescription = gigResponse.gig?.description
+        ? stripHtml(gigResponse.gig.description).result
+        : null;
+      customBotInstructions = gigResponse.gig?.customBotInstructions || null;
+      customOrganizationalQuestions =
+        gigResponse.gig?.customOrganizationalQuestions || null;
+      customInterviewQuestions =
+        gigResponse.gig?.customInterviewQuestions || null;
 
-  // Передаем обе группы вопросов, AI сам решит что спрашивать на основе истории
-  const result: InterviewContext = {
-    conversationId: conv.id,
-    candidateName: conv.candidateName,
-    vacancyTitle: isGig ? gig?.title || null : vacancy?.title || null,
-    vacancyDescription: isGig
-      ? gig?.description || null
-      : vacancy?.description
-        ? stripHtml(vacancy.description).result
-        : null,
-    questionNumber: questionAnswers.length + 1,
-    responseId: isGig ? null : conv.responseId || null,
-    gigResponseId: isGig ? conv.gigResponseId : null,
-    resumeLanguage:
-      conv.response?.resumeLanguage || conv.gigResponse?.resumeLanguage || "ru",
-    conversationHistory,
-    companySettings: workspace?.companySettings
-      ? {
+      const workspace = gigResponse.gig?.workspace;
+      if (workspace?.companySettings) {
+        companySettings = {
           botName: workspace.companySettings.botName || undefined,
           botRole: workspace.companySettings.botRole || undefined,
           name: workspace.companySettings.name,
           description: workspace.companySettings.description || undefined,
-        }
-      : undefined,
-    customBotInstructions: isGig
-      ? gig?.customBotInstructions || null
-      : vacancy?.customBotInstructions || null,
-    customOrganizationalQuestions: isGig
-      ? gig?.customOrganizationalQuestions || null
-      : vacancy?.customOrganizationalQuestions || null,
-    customInterviewQuestions: isGig
-      ? gig?.customInterviewQuestions || null
-      : vacancy?.customInterviewQuestions || null,
-    interviewMediaFiles:
-      interviewMediaFiles.length > 0 ? interviewMediaFiles : undefined,
-  };
+        };
+      }
 
-  return result;
+      // Получаем медиафайлы для gig
+      if (gigResponse.gig) {
+        const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
+        const gigId = gigResponse.gig.id;
+
+        const mediaRecords = await db.query.gigInterviewMedia.findMany({
+          where: (media, { eq }) => eq(media.gigId, gigId),
+          with: {
+            file: true,
+          },
+        });
+
+        interviewMediaFiles = await Promise.all(
+          mediaRecords.map(async (record) => {
+            try {
+              const url = await getDownloadUrl(record.file.key);
+              return {
+                id: record.file.id,
+                fileName: record.file.fileName,
+                mimeType: record.file.mimeType,
+                url,
+              };
+            } catch {
+              return null;
+            }
+          }),
+        ).then((results) =>
+          results.filter((f): f is NonNullable<typeof f> => f !== null),
+        );
+
+        if (interviewMediaFiles && interviewMediaFiles.length === 0) {
+          interviewMediaFiles = undefined;
+        }
+      }
+    }
+  } else {
+    responseId = entityId;
+    const vacancyResponse = await db.query.vacancyResponse.findFirst({
+      where: (vr, { eq }) => eq(vr.id, entityId),
+      with: {
+        vacancy: {
+          columns: {
+            title: true,
+            description: true,
+            customBotInstructions: true,
+            customOrganizationalQuestions: true,
+            customInterviewQuestions: true,
+          },
+          with: {
+            workspace: {
+              with: {
+                companySettings: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (vacancyResponse) {
+      candidateName = vacancyResponse.candidateName;
+      resumeLanguage = vacancyResponse.resumeLanguage || "ru";
+      vacancyTitle = vacancyResponse.vacancy?.title || null;
+      vacancyDescription = vacancyResponse.vacancy?.description
+        ? stripHtml(vacancyResponse.vacancy.description).result
+        : null;
+      customBotInstructions =
+        vacancyResponse.vacancy?.customBotInstructions || null;
+      customOrganizationalQuestions =
+        vacancyResponse.vacancy?.customOrganizationalQuestions || null;
+      customInterviewQuestions =
+        vacancyResponse.vacancy?.customInterviewQuestions || null;
+
+      const workspace = vacancyResponse.vacancy?.workspace;
+      if (workspace?.companySettings) {
+        companySettings = {
+          botName: workspace.companySettings.botName || undefined,
+          botRole: workspace.companySettings.botRole || undefined,
+          name: workspace.companySettings.name,
+          description: workspace.companySettings.description || undefined,
+        };
+      }
+    }
+  }
+
+  return {
+    chatSessionId: session.id,
+    candidateName,
+    vacancyTitle,
+    vacancyDescription,
+    questionNumber: questionAnswers.length + 1,
+    responseId,
+    gigResponseId,
+    resumeLanguage,
+    conversationHistory,
+    companySettings,
+    customBotInstructions,
+    customOrganizationalQuestions,
+    customInterviewQuestions,
+    interviewMediaFiles,
+  };
 }
 
 /**
- * Saves question and answer to conversation metadata
+ * Saves question and answer to chatSession metadata
  */
 export async function saveQuestionAnswer(
-  conversationId: string,
+  chatSessionId: string,
   question: string,
   answer: string,
 ) {
-  const { updateConversationMetadata, getConversationMetadata } = await import(
+  const { updateChatSessionMetadata, getChatSessionMetadata } = await import(
     "@qbs-autonaim/shared"
   );
 
   // Получаем текущие метаданные
-  const metadata = await getConversationMetadata(conversationId);
+  const metadata = await getChatSessionMetadata(chatSessionId);
   const questionAnswers = metadata.questionAnswers ?? [];
 
   // Добавляем новую пару вопрос-ответ
   questionAnswers.push({ question, answer });
 
   // Обновляем метаданные с использованием оптимистической блокировки
-  const success = await updateConversationMetadata(conversationId, {
+  const success = await updateChatSessionMetadata(chatSessionId, {
     questionAnswers,
   });
 
   if (!success) {
     throw new Error(
-      `Failed to save question-answer for conversation ${conversationId} after multiple retries`,
+      `Failed to save question-answer for chatSession ${chatSessionId} after multiple retries`,
     );
   }
 }
@@ -448,7 +459,7 @@ export async function createInterviewScoring(
   if (!result.success || !result.data) {
     logger.error("Interview scoring agent failed", {
       error: result.error,
-      conversationId: context.conversationId,
+      chatSessionId: context.chatSessionId,
     });
 
     return {

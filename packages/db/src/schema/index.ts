@@ -11,7 +11,7 @@ export * from "./interview";
 export * from "./organization";
 export * from "./prequalification";
 export * from "./recruiter-agent";
-export * from "./response";
+export * from "./shared";
 export * from "./telegram";
 export * from "./types";
 export * from "./vacancy";

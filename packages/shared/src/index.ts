@@ -18,10 +18,12 @@ export type {
 
 // Экспорт всех утилит
 export {
+  getChatSessionMetadata,
   getConversationMetadata,
   getInterviewBaseUrl,
   getInterviewUrl,
   getInterviewUrlFromDb,
   getQuestionCount,
+  updateChatSessionMetadata,
   updateConversationMetadata,
 } from "./utils";

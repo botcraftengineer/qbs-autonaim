@@ -13,7 +13,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { conversation } from "../conversation/conversation";
+import { chatSession } from "../chat/session";
 import { vacancyResponse } from "../vacancy/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
@@ -128,8 +128,8 @@ export const prequalificationSession = pgTable(
       onDelete: "set null",
     }),
 
-    // Связь с разговором
-    conversationId: uuid("conversation_id").references(() => conversation.id, {
+    // Связь с чат-сессией (заменяет conversation)
+    chatSessionId: uuid("chat_session_id").references(() => chatSession.id, {
       onDelete: "set null",
     }),
 
@@ -178,6 +178,7 @@ export const prequalificationSession = pgTable(
     vacancyIdx: index("preq_session_vacancy_idx").on(table.vacancyId),
     statusIdx: index("preq_session_status_idx").on(table.status),
     fitScoreIdx: index("preq_session_fit_score_idx").on(table.fitScore),
+    chatSessionIdx: index("preq_session_chat_idx").on(table.chatSessionId),
   }),
 );
 
@@ -186,7 +187,7 @@ export const CreatePrequalificationSessionSchema = createInsertSchema(
   prequalificationSession,
   {
     workspaceId: z.string().min(1),
-    vacancyId: z.uuid(),
+    vacancyId: z.string().uuid(),
     status: z
       .enum([
         "consent_pending",

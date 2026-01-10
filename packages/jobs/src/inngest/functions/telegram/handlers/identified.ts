@@ -1,41 +1,41 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  conversationMessage,
+  chatMessage,
   RESPONSE_STATUS,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../../client";
-import type { ConversationMetadata } from "../types";
+import type { ChatSessionMetadata } from "../types";
 
 /**
  * Сохраняет текстовое сообщение в БД
  * НЕ отправляет на анализ — это делает process-incoming-message после проверки группировки
  */
 export async function saveIdentifiedText(params: {
-  conversationId: string;
+  chatSessionId: string;
   text: string;
   messageId: string;
 }) {
-  const { conversationId, text, messageId } = params;
+  const { chatSessionId, text, messageId } = params;
 
   const [savedMessage] = await db
-    .insert(conversationMessage)
+    .insert(chatMessage)
     .values({
-      conversationId,
-      sender: "CANDIDATE",
-      contentType: "TEXT",
+      sessionId: chatSessionId,
+      role: "user",
+      type: "text",
       content: text,
-      externalMessageId: messageId,
-      channel: "TELEGRAM",
+      externalId: messageId,
+      channel: "telegram",
     })
     .returning();
 
   console.log("💾 Текстовое сообщение сохранено в БД", {
-    conversationId,
+    chatSessionId,
     messageId: savedMessage?.id,
-    externalMessageId: messageId,
+    externalId: messageId,
   });
 
   return savedMessage;
@@ -45,42 +45,42 @@ export async function saveIdentifiedText(params: {
  * Отправляет событие анализа интервью для сгруппированных сообщений
  */
 export async function triggerTextAnalysis(params: {
-  conversationId: string;
+  chatSessionId: string;
   text: string;
   responseId: string | null;
   status: string;
   metadata: Record<string, unknown> | null;
 }) {
-  const { conversationId, text, responseId, status, metadata } = params;
+  const { chatSessionId, text, responseId, status } = params;
 
-  if (!responseId || status !== "ACTIVE") {
+  if (!responseId || status !== "active") {
     console.log("⏭️ Пропускаем анализ: не активный response", {
-      conversationId,
+      chatSessionId,
       responseId,
       status,
     });
     return;
   }
 
-  const parsedMetadata: ConversationMetadata = (metadata ||
-    {}) as ConversationMetadata;
+  const parsedMetadata: ChatSessionMetadata = (params.metadata ||
+    {}) as ChatSessionMetadata;
 
   if (
     parsedMetadata.interviewStarted === true &&
     parsedMetadata.interviewCompleted !== true
   ) {
     // Устанавливаем статус INTERVIEW при первом сообщении
-    await updateStatusOnFirstMessage(conversationId, responseId);
+    await updateStatusOnFirstMessage(chatSessionId, responseId);
 
     console.log("🚀 Запуск анализа интервью для группы сообщений", {
-      conversationId,
+      chatSessionId,
       textLength: text.length,
     });
 
     await inngest.send({
       name: "telegram/interview.analyze",
       data: {
-        conversationId,
+        chatSessionId,
         transcription: text,
       },
     });
@@ -94,19 +94,19 @@ export async function triggerTextAnalysis(params: {
  * Оставлено для обратной совместимости
  */
 export async function handleIdentifiedText(params: {
-  conversationId: string;
+  chatSessionId: string;
   text: string;
   messageId: string;
   responseId: string | null;
   status: string;
   metadata: Record<string, unknown> | null;
 }) {
-  const { conversationId, text, messageId, responseId, status, metadata } =
+  const { chatSessionId, text, messageId, responseId, status, metadata } =
     params;
 
-  await saveIdentifiedText({ conversationId, text, messageId });
+  await saveIdentifiedText({ chatSessionId, text, messageId });
   await triggerTextAnalysis({
-    conversationId,
+    chatSessionId,
     text,
     responseId,
     status,
@@ -115,7 +115,7 @@ export async function handleIdentifiedText(params: {
 }
 
 export async function handleIdentifiedMedia(params: {
-  conversationId: string;
+  chatSessionId: string;
   chatId: string;
   messageId: number;
   messageIdStr: string;
@@ -124,7 +124,7 @@ export async function handleIdentifiedMedia(params: {
   responseId?: string | null;
 }) {
   const {
-    conversationId,
+    chatSessionId,
     chatId,
     messageId,
     messageIdStr,
@@ -136,7 +136,7 @@ export async function handleIdentifiedMedia(params: {
   console.log(
     `📥 Начинаем скачивание ${mediaType === "voice" ? "голосового" : "аудио"} файла`,
     {
-      conversationId,
+      chatSessionId,
       chatId,
       messageId,
       workspaceId,
@@ -150,30 +150,30 @@ export async function handleIdentifiedMedia(params: {
   });
 
   console.log(`✅ Файл успешно скачан`, {
-    conversationId,
+    chatSessionId,
     fileId: downloadData.fileId,
     duration: downloadData.duration,
   });
 
   const [savedMessage] = await db
-    .insert(conversationMessage)
+    .insert(chatMessage)
     .values({
-      conversationId,
-      sender: "CANDIDATE",
-      contentType: "VOICE",
+      sessionId: chatSessionId,
+      role: "user",
+      type: "voice",
       content: `${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение`,
       fileId: downloadData.fileId,
-      voiceDuration: downloadData.duration.toString(),
-      externalMessageId: messageIdStr,
-      channel: "TELEGRAM",
+      voiceDuration: downloadData.duration,
+      externalId: messageIdStr,
+      channel: "telegram",
     })
     .returning();
 
   console.log(`💾 Сообщение сохранено в БД`, {
-    conversationId,
+    chatSessionId,
     messageId: savedMessage?.id,
     fileId: downloadData.fileId,
-    externalMessageId: messageIdStr,
+    externalId: messageIdStr,
   });
 
   if (savedMessage) {
@@ -193,23 +193,20 @@ export async function handleIdentifiedMedia(params: {
     console.log(`✅ Событие транскрибации отправлено`);
   } else {
     console.error(`❌ Не удалось сохранить сообщение в БД`, {
-      conversationId,
-      externalMessageId: messageIdStr,
+      chatSessionId,
+      externalId: messageIdStr,
     });
   }
 }
 
 async function updateStatusOnFirstMessage(
-  conversationId: string,
+  chatSessionId: string,
   responseId: string,
 ) {
   // Проверяем, это ли первое сообщение от кандидата
-  const candidateMessagesCount = await db.query.conversationMessage.findMany({
+  const candidateMessagesCount = await db.query.chatMessage.findMany({
     where: (fields, { and, eq }) =>
-      and(
-        eq(fields.conversationId, conversationId),
-        eq(fields.sender, "CANDIDATE"),
-      ),
+      and(eq(fields.sessionId, chatSessionId), eq(fields.role, "user")),
   });
 
   // Если это первое сообщение, устанавливаем статус INTERVIEW
@@ -229,7 +226,7 @@ async function updateStatusOnFirstMessage(
         .where(eq(vacancyResponse.id, responseId));
 
       console.log("✅ Статус изменен на INTERVIEW (первое сообщение)", {
-        conversationId,
+        chatSessionId,
         responseId,
         previousStatus: response.status,
       });

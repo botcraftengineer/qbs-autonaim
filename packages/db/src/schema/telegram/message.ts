@@ -1,7 +1,6 @@
-// Реэкспорт из новой схемы для обратной совместимости
+// Реэкспорт из chat схемы для обратной совместимости
 export {
-  CreateMessageSchema as CreateTelegramMessageSchema,
-  conversationMessage,
-  messageContentTypeEnum,
-  messageSenderEnum,
-} from "../conversation/message";
+  chatMessage as conversationMessage,
+  chatMessageRoleEnum as messageSenderEnum,
+  chatMessageTypeEnum as messageContentTypeEnum,
+} from "../chat/session";

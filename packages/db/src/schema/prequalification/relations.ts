@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { customDomain } from "..";
-import { conversation } from "../conversation/conversation";
+import { chatSession } from "../chat/session";
 import { vacancyResponse } from "../vacancy/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
@@ -24,9 +24,9 @@ export const prequalificationSessionRelations = relations(
       fields: [prequalificationSession.responseId],
       references: [vacancyResponse.id],
     }),
-    conversation: one(conversation, {
-      fields: [prequalificationSession.conversationId],
-      references: [conversation.id],
+    chatSession: one(chatSession, {
+      fields: [prequalificationSession.chatSessionId],
+      references: [chatSession.id],
     }),
     analyticsEvents: many(analyticsEvent),
   }),

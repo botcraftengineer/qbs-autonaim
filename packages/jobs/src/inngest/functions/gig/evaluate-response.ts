@@ -24,12 +24,12 @@ export const evaluateGigResponseFunction = inngest.createFunction(
   },
   { event: "gig/response.evaluate" },
   async ({ event, step }) => {
-    const { responseId, workspaceId, conversationId } = event.data;
+    const { responseId, workspaceId, chatSessionId } = event.data;
 
     console.log("🎯 Evaluating gig response", {
       responseId,
       workspaceId,
-      conversationId,
+      chatSessionId,
     });
 
     // Получаем отклик с проверкой принадлежности к workspace
@@ -83,11 +83,11 @@ export const evaluateGigResponseFunction = inngest.createFunction(
     );
 
     const context = await step.run("get-interview-context", async () => {
-      const ctx = await getInterviewContext(conversationId);
+      const ctx = await getInterviewContext(chatSessionId);
 
       if (!ctx) {
         throw new Error(
-          `Контекст интервью не найден для conversation ${conversationId}`,
+          `Контекст интервью не найден для chatSession ${chatSessionId}`,
         );
       }
 
@@ -98,7 +98,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       const result = await createInterviewScoring(context);
 
       console.log("✅ Скоринг создан", {
-        conversationId,
+        chatSessionId,
         responseId,
         score: result.score,
         detailedScore: result.detailedScore,
@@ -111,7 +111,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       const { interviewScoring } = await import("@qbs-autonaim/db/schema");
 
       await db.insert(interviewScoring).values({
-        conversationId,
+        chatSessionId,
         gigResponseId: responseId,
         score: scoring.score,
         detailedScore: scoring.detailedScore,
@@ -119,7 +119,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       });
 
       console.log("✅ Результаты интервью сохранены", {
-        conversationId,
+        chatSessionId,
         responseId,
         score: scoring.score,
         detailedScore: scoring.detailedScore,
@@ -157,7 +157,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
 
     return {
       success: true,
-      conversationId,
+      chatSessionId,
       responseId,
       scoring: {
         score: scoring.score,

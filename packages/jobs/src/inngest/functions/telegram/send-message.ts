@@ -1,5 +1,5 @@
 import {
-  conversationMessage,
+  chatMessage,
   eq,
   telegramSession,
   vacancyResponse,
@@ -33,39 +33,36 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       });
 
       try {
-        // Получаем conversation через chatId в response
-        const conv = await db.query.conversation.findFirst({
-          where: (fields, { inArray }) => {
-            return inArray(
-              fields.responseId,
-              db
-                .select({ id: vacancyResponse.id })
-                .from(vacancyResponse)
-                .where(eq(vacancyResponse.chatId, chatId)),
-            );
-          },
+        // Получаем vacancyResponse по chatId
+        const response = await db.query.vacancyResponse.findFirst({
+          where: eq(vacancyResponse.chatId, chatId),
           with: {
-            response: {
-              with: {
-                vacancy: true,
-              },
-            },
+            vacancy: true,
           },
         });
 
-        if (!conv?.response?.vacancy?.workspaceId) {
+        if (!response?.vacancy?.workspaceId) {
           throw new Error("Не удалось определить workspace для сообщения");
         }
 
-        const workspaceId = conv.response.vacancy.workspaceId;
+        const workspaceId = response.vacancy.workspaceId;
 
-        // Получаем активную сессию для workspace
-        const session = await db.query.telegramSession.findFirst({
+        // Получаем chatSession для метаданных
+        const session = await db.query.chatSession.findFirst({
+          where: (fields, { and, eq }) =>
+            and(
+              eq(fields.entityType, "vacancy_response"),
+              eq(fields.entityId, response.id),
+            ),
+        });
+
+        // Получаем активную Telegram сессию для workspace
+        const tgSession = await db.query.telegramSession.findFirst({
           where: eq(telegramSession.workspaceId, workspaceId),
           orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
         });
 
-        if (!session) {
+        if (!tgSession) {
           throw new Error(
             `Нет активной Telegram сессии для workspace ${workspaceId}`,
           );
@@ -74,28 +71,19 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         // Пытаемся получить username из разных источников в порядке приоритета
         let username: string | undefined;
 
-        // 1. Проверяем metadata
-        if (conv.metadata) {
-          try {
-            const metadata = JSON.parse(conv.metadata as unknown as string);
-            username = metadata.username;
-          } catch (e) {
-            console.warn("Не удалось распарсить metadata", e);
-          }
+        // 1. Проверяем metadata chatSession
+        if (session?.metadata) {
+          const metadata = session.metadata as Record<string, unknown>;
+          username = metadata.username as string | undefined;
         }
 
         // 2. Проверяем vacancy_response.telegramUsername
-        if (!username && conv.response?.telegramUsername) {
-          username = conv.response.telegramUsername;
-        }
-
-        // 3. Проверяем conversation.username
-        if (!username && conv.username) {
-          username = conv.username;
+        if (!username && response.telegramUsername) {
+          username = response.telegramUsername;
         }
 
         // Отправляем сообщение через SDK
-        let result: {
+        let sendResult: {
           success: boolean;
           messageId: string;
           chatId: string;
@@ -104,7 +92,7 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         if (username) {
           // Отправка по username
           console.log(`📨 Отправка по username: @${username}`);
-          result = await tgClientSDK.sendMessageByUsername({
+          sendResult = await tgClientSDK.sendMessageByUsername({
             workspaceId,
             username,
             text: content,
@@ -112,26 +100,26 @@ export const sendTelegramMessageFunction = inngest.createFunction(
         } else {
           // Fallback: отправка по chatId
           console.log(`📨 Отправка по chatId: ${chatId}`);
-          result = await tgClientSDK.sendMessage({
+          sendResult = await tgClientSDK.sendMessage({
             workspaceId,
             chatId: Number.parseInt(chatId, 10),
             text: content,
           });
         }
 
-        const externalMessageId = result.messageId;
+        const externalMessageId = sendResult.messageId;
 
         // Обновляем lastUsedAt для сессии
         await db
           .update(telegramSession)
           .set({ lastUsedAt: new Date() })
-          .where(eq(telegramSession.id, session.id));
+          .where(eq(telegramSession.id, tgSession.id));
 
         console.log("✅ Сообщение отправлено в Telegram", {
           messageId,
           chatId,
           externalMessageId,
-          sessionId: session.id,
+          sessionId: tgSession.id,
         });
 
         return { externalMessageId };
@@ -158,22 +146,22 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       if (isUuid) {
         await step.run("update-message-record", async () => {
           await db
-            .update(conversationMessage)
+            .update(chatMessage)
             .set({
-              // externalMessageId от Telegram — это строка с числом (например, "12345")
-              externalMessageId: resultExternalMessageId,
+              // externalId от Telegram — это строка с числом (например, "12345")
+              externalId: resultExternalMessageId,
             })
-            .where(eq(conversationMessage.id, messageId));
+            .where(eq(chatMessage.id, messageId));
 
           console.log("✅ Обновлена запись сообщения в БД", {
             messageId,
-            externalMessageId: resultExternalMessageId,
+            externalId: resultExternalMessageId,
           });
         });
       } else {
         console.warn("⚠️ Пропущен апдейт: messageId не является валидным UUID", {
           messageId,
-          externalMessageId: resultExternalMessageId,
+          externalId: resultExternalMessageId,
         });
       }
     }

@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
+import { chatSession } from "../chat/session";
 import { file } from "../file";
 import { interviewScoring } from "../interview/scoring";
-import { telegramConversation } from "../telegram/conversation";
 import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
 import { vacancyResponseHistory } from "./response-history";
-import { responseScreening } from "./screening";
+import { vacancyResponseScreening } from "./screening";
 import { vacancy } from "./vacancy";
 
 export const vacancyRelations = relations(vacancy, ({ one, many }) => ({
@@ -23,13 +23,14 @@ export const vacancyResponseRelations = relations(
       fields: [vacancyResponse.vacancyId],
       references: [vacancy.id],
     }),
-    screening: one(responseScreening, {
+    screening: one(vacancyResponseScreening, {
       fields: [vacancyResponse.id],
-      references: [responseScreening.responseId],
+      references: [vacancyResponseScreening.responseId],
     }),
-    conversation: one(telegramConversation, {
+    // Используем chatSession вместо удалённого telegramConversation
+    chatSession: one(chatSession, {
       fields: [vacancyResponse.id],
-      references: [telegramConversation.responseId],
+      references: [chatSession.entityId],
     }),
     resumePdfFile: one(file, {
       fields: [vacancyResponse.resumePdfFileId],

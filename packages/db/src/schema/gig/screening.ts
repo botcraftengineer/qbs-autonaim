@@ -23,11 +23,17 @@ export const gigResponseScreening = pgTable(
     responseId: uuid("response_id")
       .notNull()
       .references(() => gigResponse.id, { onDelete: "cascade" }),
+
+    // Оценки
     score: integer("score").notNull(), // Оценка от 0 до 5
     detailedScore: integer("detailed_score").notNull(), // Детальная оценка от 0 до 100
+
+    // Анализ
     analysis: text("analysis"), // Анализ соответствия портфолио заданию
     priceAnalysis: text("price_analysis"), // Анализ предложенной цены
     deliveryAnalysis: text("delivery_analysis"), // Анализ сроков
+
+    // Временные метки
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -67,3 +73,4 @@ export const CreateGigResponseScreeningSchema = createInsertSchema(
 });
 
 export type GigResponseScreening = typeof gigResponseScreening.$inferSelect;
+export type NewGigResponseScreening = typeof gigResponseScreening.$inferInsert;

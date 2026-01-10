@@ -1,28 +1,28 @@
 import { db } from "@qbs-autonaim/db/client";
-import { conversationMessage } from "@qbs-autonaim/db/schema";
+import { chatMessage } from "@qbs-autonaim/db/schema";
 import { removeNullBytes } from "@qbs-autonaim/lib";
 import { tempMessageBufferService } from "~/services/buffer/temp-message-buffer-service";
 import { findDuplicateMessage } from "../../utils";
 
 export async function saveUnidentifiedMessage(params: {
-  conversationId: string;
+  chatSessionId: string;
   content: string;
   messageId: string;
-  contentType?: "TEXT" | "VOICE";
+  contentType?: "text" | "voice";
 }) {
-  const { conversationId, content, messageId, contentType = "TEXT" } = params;
+  const { chatSessionId, content, messageId, contentType = "text" } = params;
 
-  if (conversationId.startsWith("temp_")) {
-    const chatId = conversationId.replace("temp_", "");
+  if (chatSessionId.startsWith("temp_")) {
+    const chatId = chatSessionId.replace("temp_", "");
 
     try {
       await tempMessageBufferService.addMessage({
-        tempConversationId: conversationId,
+        tempConversationId: chatSessionId,
         chatId,
         message: {
           id: messageId,
           content,
-          contentType,
+          contentType: contentType.toUpperCase() as "TEXT" | "VOICE",
           sender: "CANDIDATE",
           timestamp: new Date(),
           externalMessageId: messageId,
@@ -30,7 +30,7 @@ export async function saveUnidentifiedMessage(params: {
       });
     } catch (error) {
       console.error("Failed to save temporary message:", {
-        conversationId,
+        chatSessionId,
         chatId,
         messageId,
         error: error instanceof Error ? error.message : String(error),
@@ -40,21 +40,21 @@ export async function saveUnidentifiedMessage(params: {
   }
 
   try {
-    const isDuplicate = await findDuplicateMessage(conversationId, messageId);
+    const isDuplicate = await findDuplicateMessage(chatSessionId, messageId);
 
     if (!isDuplicate) {
-      await db.insert(conversationMessage).values({
-        conversationId,
-        sender: "CANDIDATE",
-        contentType,
+      await db.insert(chatMessage).values({
+        sessionId: chatSessionId,
+        role: "user",
+        type: contentType,
         content: removeNullBytes(content),
-        externalMessageId: messageId,
-        channel: "TELEGRAM",
+        externalId: messageId,
+        channel: "telegram",
       });
     }
   } catch (error) {
     console.error("Failed to save unidentified message:", {
-      conversationId,
+      chatSessionId,
       messageId,
       error: error instanceof Error ? error.message : String(error),
     });

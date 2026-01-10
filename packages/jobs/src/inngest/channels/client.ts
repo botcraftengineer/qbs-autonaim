@@ -153,3 +153,18 @@ export const conversationMessagesChannel = channel(
     }),
   ),
 );
+
+/**
+ * Канал для отслеживания новых сообщений в chat session
+ * Алиас для conversationMessagesChannel с новым именованием
+ */
+export const chatSessionMessagesChannel = channel(
+  (chatSessionId: string) => `chat-session-messages-${chatSessionId}`,
+).addTopic(
+  topic("message").schema(
+    z.object({
+      chatSessionId: z.string(),
+      messageId: z.string(),
+    }),
+  ),
+);

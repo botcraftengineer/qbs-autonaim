@@ -7,27 +7,34 @@ import { inngest } from "../../client";
  * Функция debounce для буфера сообщений
  * Запускается при каждом новом сообщении
  * Ждет N секунд без активности перед flush
- *
- * Requirements: 2.1, 2.2, 2.3, 2.4
  */
 export const bufferDebounceFunction = inngest.createFunction(
   {
     id: "interview-buffer-debounce",
     name: "Interview Buffer Debounce",
     debounce: {
-      key: "event.data.userId + '-' + event.data.conversationId + '-' + event.data.interviewStep",
+      key: "event.data.userId + '-' + (event.data.chatSessionId || event.data.conversationId) + '-' + event.data.interviewStep",
       period: `${env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT}s`,
     },
   },
   { event: "interview/message.buffered" },
   async ({ event, step }) => {
-    const { userId, conversationId, interviewStep } = event.data;
+    const { userId, interviewStep } = event.data;
+    // Поддерживаем оба варианта для обратной совместимости
+    const chatSessionId = event.data.chatSessionId || event.data.conversationId;
+
+    if (!chatSessionId) {
+      return {
+        skipped: true,
+        reason: "No chatSessionId or conversationId provided",
+      };
+    }
 
     // Проверка существования буфера
     const hasBuffer = await step.run("check-buffer", async () => {
       const exists = await messageBufferService.hasBuffer({
         userId,
-        conversationId,
+        chatSessionId,
         interviewStep,
       });
 
@@ -46,7 +53,7 @@ export const bufferDebounceFunction = inngest.createFunction(
       name: "interview/buffer.flush",
       data: {
         userId,
-        conversationId,
+        chatSessionId,
         interviewStep,
         flushId,
         messageCount: 0, // будет заполнено в flush функции

@@ -5,8 +5,10 @@
 // Утилиты для работы с conversation
 export {
   ConversationMetadataSchema,
+  getChatSessionMetadata,
   getConversationMetadata,
   getQuestionCount,
+  updateChatSessionMetadata,
   updateConversationMetadata,
 } from "./conversation";
 

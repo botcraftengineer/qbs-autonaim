@@ -42,7 +42,7 @@ export const candidateInputSchema = z.object({
   screeningScore: z.number().int().min(0).max(100).nullable().optional(),
   interviewScore: z.number().int().min(0).max(100).nullable().optional(),
 
-  // Статус отбора
+  // Статус отбора (унифицированный)
   hrSelectionStatus: z
     .enum([
       "INVITE",
@@ -50,8 +50,11 @@ export const candidateInputSchema = z.object({
       "NOT_RECOMMENDED",
       "REJECTED",
       "SELECTED",
+      "OFFER",
+      "SECURITY_PASSED",
       "CONTRACT_SENT",
       "IN_PROGRESS",
+      "ONBOARDING",
       "DONE",
     ])
     .nullable()

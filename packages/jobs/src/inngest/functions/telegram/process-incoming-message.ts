@@ -2,7 +2,7 @@ import { db } from "@qbs-autonaim/db/client";
 import { RESPONSE_STATUS } from "@qbs-autonaim/db/schema";
 import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import { handleIncomingMessage } from "@qbs-autonaim/tg-client/handlers/message-handler";
-import { conversationMessagesChannel } from "../../channels/client";
+import { chatSessionMessagesChannel } from "../../channels/client";
 import { inngest } from "../../client";
 import {
   handleIdentifiedMedia,
@@ -57,66 +57,59 @@ export const processIncomingMessageFunction = inngest.createFunction(
       return await getCompanyBotSettings(workspaceId);
     });
 
-    // Проверяем идентификацию
-    const conv = await step.run("check-conversation", async () => {
-      // Сначала пробуем найти по username
-      if (username) {
-        const byUsername = await db.query.conversation.findFirst({
-          where: (fields, { eq }) => eq(fields.username, username),
-          with: {
-            response: true,
-          },
-        });
-        if (byUsername) {
-          console.log("✅ Conversation найден по username", {
-            conversationId: byUsername.id,
-            username,
-          });
-          return byUsername;
-        }
-      }
-
-      // Если не нашли по username, ищем по metadata.senderId (Telegram chat ID)
-      const allConversations = await db.query.conversation.findMany({
-        where: (fields, { eq }) => eq(fields.status, "ACTIVE"),
+    // Проверяем идентификацию через chatSession
+    const sessionData = await step.run("check-chat-session", async () => {
+      // Сначала пробуем найти vacancyResponse по chatId
+      const response = await db.query.vacancyResponse.findFirst({
+        where: (fields, { eq }) => eq(fields.chatId, chatId),
         with: {
-          response: true,
+          vacancy: true,
         },
       });
 
-      const byMetadata = allConversations.find((c) => {
-        const metadata = c.metadata as Record<string, unknown> | null;
-        return metadata?.senderId === chatId.toString();
-      });
-
-      if (byMetadata) {
-        console.log("✅ Conversation найден по metadata.senderId", {
-          conversationId: byMetadata.id,
-          chatId,
-        });
-      } else {
-        console.log("❌ Conversation не найден", {
-          username,
-          chatId,
-          activeConversationsCount: allConversations.length,
-        });
+      if (!response) {
+        console.log("❌ VacancyResponse не найден по chatId", { chatId });
+        return null;
       }
 
-      return byMetadata || null;
+      // Ищем chatSession по entityType и entityId
+      const session = await db.query.chatSession.findFirst({
+        where: (fields, { and, eq }) =>
+          and(
+            eq(fields.entityType, "vacancy_response"),
+            eq(fields.entityId, response.id),
+          ),
+      });
+
+      if (session) {
+        console.log("✅ ChatSession найден", {
+          chatSessionId: session.id,
+          responseId: response.id,
+        });
+        return {
+          session,
+          response,
+        };
+      }
+
+      console.log("❌ ChatSession не найден для response", {
+        responseId: response.id,
+      });
+      return null;
     });
 
-    const isIdentified = conv?.responseId != null;
+    const isIdentified = sessionData?.response != null;
 
     console.log("🔍 Результат проверки идентификации", {
       isIdentified,
-      conversationId: conv?.id,
-      responseId: conv?.responseId,
-      status: conv?.status,
+      chatSessionId: sessionData?.session?.id,
+      responseId: sessionData?.response?.id,
+      status: sessionData?.session?.status,
     });
 
     // Проверяем статус response если кандидат идентифицирован
-    if (isIdentified && conv.response) {
-      const responseStatus = conv.response.status;
+    if (isIdentified && sessionData.response) {
+      const responseStatus = sessionData.response.status;
       const isInterviewRelated =
         responseStatus === RESPONSE_STATUS.EVALUATED ||
         responseStatus === RESPONSE_STATUS.NEW ||
@@ -126,7 +119,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         console.log(
           "⏭️ Кандидат идентифицирован, но статус не связан с интервью, пропускаем",
           {
-            conversationId: conv.id,
+            chatSessionId: sessionData.session?.id,
             responseStatus,
           },
         );
@@ -168,16 +161,21 @@ export const processIncomingMessageFunction = inngest.createFunction(
       return { processed: true, identified: false };
     }
 
+    const chatSessionId = sessionData.session!.id;
+
     // Обработка идентифицированных сообщений
     if (messageData.text) {
       const isDuplicate = await step.run("check-duplicate-text", async () => {
-        return await findDuplicateMessage(conv.id, messageData.id.toString());
+        return await findDuplicateMessage(
+          chatSessionId,
+          messageData.id.toString(),
+        );
       });
 
       if (isDuplicate) {
         console.log("⏭️ Сообщение уже обработано, пропускаем", {
-          conversationId: conv.id,
-          conversationMessageId: messageData.id.toString(),
+          chatSessionId,
+          messageId: messageData.id.toString(),
         });
         return { skipped: true, reason: "duplicate message" };
       }
@@ -188,7 +186,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           return await handleIncomingMessage({
             messageData,
             workspaceId,
-            conversationId: conv.id,
+            chatSessionId,
             userId: chatId, // используем chatId как userId
             bufferService: messageBufferService,
           });
@@ -201,7 +199,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       // 1. ВСЕГДА сохраняем сообщение в БД (независимо от буферизации)
       await step.run("save-text-message", async () => {
         await saveIdentifiedText({
-          conversationId: conv.id,
+          chatSessionId,
           text: messageData.text || "",
           messageId: messageData.id.toString(),
         });
@@ -209,8 +207,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
       // Публикуем событие о новом сообщении
       await publish(
-        conversationMessagesChannel(conv.id).message({
-          conversationId: conv.id,
+        chatSessionMessagesChannel(chatSessionId).message({
+          chatSessionId,
           messageId: messageData.id.toString(),
         }),
       );
@@ -220,7 +218,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
         console.log(
           "✅ Сообщение сохранено и буферизовано, стандартная обработка пропущена",
           {
-            conversationId: conv.id,
+            chatSessionId,
             messageId: messageData.id.toString(),
             interviewStep: bufferResult.interviewStep,
           },
@@ -236,7 +234,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       console.log(
         "ℹ️ Буферизация не применена, используем стандартную обработку",
         {
-          conversationId: conv.id,
+          chatSessionId,
           reason: bufferResult.reason,
         },
       );
@@ -244,14 +242,14 @@ export const processIncomingMessageFunction = inngest.createFunction(
       // 2. Проверяем группировку сообщений (сообщение уже в БД)
       const groupCheck = await step.run("check-message-grouping", async () => {
         return await shouldProcessMessageGroup(
-          conv.id,
+          chatSessionId,
           messageData.id.toString(),
         );
       });
 
       if (!groupCheck.shouldProcess) {
         console.log("⏳ Ждем завершения группы сообщений", {
-          conversationId: conv.id,
+          chatSessionId,
           messageId: messageData.id.toString(),
           reason: groupCheck.reason,
         });
@@ -270,7 +268,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           "recheck-message-grouping",
           async () => {
             return await shouldProcessMessageGroup(
-              conv.id,
+              chatSessionId,
               messageData.id.toString(),
             );
           },
@@ -280,7 +278,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           console.log(
             "⏭️ Сообщение не последнее в группе или ждём транскрипции, пропускаем",
             {
-              conversationId: conv.id,
+              chatSessionId,
               messageId: messageData.id.toString(),
               reason: recheckGroup.reason,
             },
@@ -294,18 +292,18 @@ export const processIncomingMessageFunction = inngest.createFunction(
         // 3. Обрабатываем группу - отправляем на анализ
         const groupedText = formatMessageGroup(recheckGroup.messages);
         console.log("📦 Обрабатываем группу сообщений", {
-          conversationId: conv.id,
+          chatSessionId,
           messagesCount: recheckGroup.messages.length,
           groupedText: groupedText.substring(0, 100),
         });
 
         await step.run("trigger-text-analysis-group", async () => {
           await triggerTextAnalysis({
-            conversationId: conv.id,
+            chatSessionId,
             text: groupedText,
-            responseId: conv.responseId,
-            status: conv.status,
-            metadata: conv.metadata,
+            responseId: sessionData.response!.id,
+            status: sessionData.session!.status,
+            metadata: sessionData.session!.metadata,
           });
         });
 
@@ -319,7 +317,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           : messageData.text || "";
 
       console.log("✅ Обрабатываем сообщение", {
-        conversationId: conv.id,
+        chatSessionId,
         messageId: messageData.id.toString(),
         isGroup: groupCheck.messages.length > 1,
         messagesCount: groupCheck.messages.length,
@@ -327,11 +325,11 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
       await step.run("trigger-text-analysis", async () => {
         await triggerTextAnalysis({
-          conversationId: conv.id,
+          chatSessionId,
           text: textToProcess,
-          responseId: conv.responseId,
-          status: conv.status,
-          metadata: conv.metadata,
+          responseId: sessionData.response!.id,
+          status: sessionData.session!.status,
+          metadata: sessionData.session!.metadata,
         });
       });
 
@@ -343,7 +341,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       console.log(
         `🎤 Обработка ${mediaType === "voice" ? "голосового" : "аудио"} сообщения`,
         {
-          conversationId: conv.id,
+          chatSessionId,
           messageId: messageData.id.toString(),
           chatId,
           workspaceId,
@@ -353,7 +351,10 @@ export const processIncomingMessageFunction = inngest.createFunction(
       const isDuplicate = await step.run(
         `check-duplicate-${mediaType}`,
         async () => {
-          return await findDuplicateMessage(conv.id, messageData.id.toString());
+          return await findDuplicateMessage(
+            chatSessionId,
+            messageData.id.toString(),
+          );
         },
       );
 
@@ -361,8 +362,8 @@ export const processIncomingMessageFunction = inngest.createFunction(
         console.log(
           `⏭️ ${mediaType === "voice" ? "Голосовое" : "Аудио"} сообщение уже обработано, пропускаем`,
           {
-            conversationId: conv.id,
-            conversationMessageId: messageData.id.toString(),
+            chatSessionId,
+            messageId: messageData.id.toString(),
           },
         );
         return { skipped: true, reason: `duplicate ${mediaType} message` };
@@ -371,25 +372,25 @@ export const processIncomingMessageFunction = inngest.createFunction(
       // Голосовые сразу отправляем на транскрибацию
       // Группировка проверяется в transcribe-voice.ts после получения транскрипции
       console.log(`✅ Отправляем ${mediaType} на транскрибацию`, {
-        conversationId: conv.id,
+        chatSessionId,
         messageId: messageData.id.toString(),
       });
 
       await step.run(`handle-${mediaType}`, async () => {
         await handleIdentifiedMedia({
-          conversationId: conv.id,
+          chatSessionId,
           chatId,
           messageId: messageData.id,
           messageIdStr: messageData.id.toString(),
           mediaType,
           workspaceId,
-          responseId: conv.responseId,
+          responseId: sessionData.response!.id,
         });
       });
 
       await publish(
-        conversationMessagesChannel(conv.id).message({
-          conversationId: conv.id,
+        chatSessionMessagesChannel(chatSessionId).message({
+          chatSessionId,
           messageId: messageData.id.toString(),
         }),
       );

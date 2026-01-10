@@ -1,8 +1,8 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  chatMessage,
   companySettings,
-  conversationMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import {
@@ -18,14 +18,14 @@ export function extractPinCode(text: string): string | null {
 }
 
 export async function findDuplicateMessage(
-  conversationId: string,
+  chatSessionId: string,
   externalMessageId: string,
 ): Promise<boolean> {
-  const existingMessage = await db.query.conversationMessage.findFirst({
+  const existingMessage = await db.query.chatMessage.findFirst({
     where: (messages, { and, eq }) =>
       and(
-        eq(messages.conversationId, conversationId),
-        eq(messages.externalMessageId, externalMessageId),
+        eq(messages.sessionId, chatSessionId),
+        eq(messages.externalId, externalMessageId),
       ),
   });
   return !!existingMessage;
@@ -57,48 +57,56 @@ export async function getCompanyBotSettings(
   }
 }
 
-function isValidSender(value: unknown): value is "CANDIDATE" | "BOT" {
-  return value === "CANDIDATE" || value === "BOT";
+function isValidRole(value: unknown): value is "user" | "assistant" {
+  return value === "user" || value === "assistant";
 }
 
-function isValidContentType(value: unknown): value is "TEXT" | "VOICE" {
-  return value === "TEXT" || value === "VOICE";
+function isValidMessageType(value: unknown): value is "text" | "voice" {
+  return value === "text" || value === "voice";
 }
 
-export async function getConversationHistory(conversationId: string) {
-  if (conversationId.startsWith("temp_")) {
+export async function getChatHistory(chatSessionId: string) {
+  if (chatSessionId.startsWith("temp_")) {
     const bufferedMessages = await tempMessageBufferService.getMessages({
-      tempConversationId: conversationId,
+      tempConversationId: chatSessionId,
     });
 
-    const tempMessages = await getTempMessageHistory(conversationId);
+    const tempMessages = await getTempMessageHistory(chatSessionId);
 
     const allMessages = [
       ...tempMessages.map((msg) => ({
         id: msg.id,
-        conversationId: msg.tempConversationId,
-        sender: msg.sender as "CANDIDATE" | "BOT",
-        contentType: msg.contentType as "TEXT" | "VOICE",
-        channel: "TELEGRAM" as const,
+        sessionId: msg.tempConversationId,
+        role:
+          msg.sender === "CANDIDATE"
+            ? "user"
+            : ("assistant" as "user" | "assistant"),
+        type:
+          msg.contentType === "VOICE" ? "voice" : ("text" as "text" | "voice"),
+        channel: "telegram" as const,
         content: msg.content,
         fileId: null,
         voiceDuration: null,
         voiceTranscription: null,
-        externalMessageId: msg.externalMessageId,
+        externalId: msg.externalMessageId,
         createdAt: msg.createdAt,
         timestamp: msg.createdAt,
       })),
       ...bufferedMessages.map((msg: BufferedTempMessageData) => ({
         id: msg.id,
-        conversationId,
-        sender: msg.sender,
-        contentType: msg.contentType,
-        channel: "TELEGRAM" as const,
+        sessionId: chatSessionId,
+        role:
+          msg.sender === "CANDIDATE"
+            ? "user"
+            : ("assistant" as "user" | "assistant"),
+        type:
+          msg.contentType === "VOICE" ? "voice" : ("text" as "text" | "voice"),
+        channel: "telegram" as const,
         content: msg.content,
         fileId: null,
         voiceDuration: null,
         voiceTranscription: null,
-        externalMessageId: msg.externalMessageId,
+        externalId: msg.externalMessageId,
         createdAt: msg.timestamp,
         timestamp: msg.timestamp,
       })),
@@ -106,13 +114,12 @@ export async function getConversationHistory(conversationId: string) {
 
     return allMessages
       .filter((msg) => {
-        const isValid =
-          isValidSender(msg.sender) && isValidContentType(msg.contentType);
+        const isValid = isValidRole(msg.role) && isValidMessageType(msg.type);
         if (!isValid) {
           console.error("❌ Невалидное временное сообщение, пропускаем", {
             id: msg.id,
-            sender: msg.sender,
-            contentType: msg.contentType,
+            role: msg.role,
+            type: msg.type,
           });
         }
         return isValid;
@@ -120,8 +127,8 @@ export async function getConversationHistory(conversationId: string) {
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
   }
 
-  const messages = await db.query.conversationMessage.findMany({
-    where: eq(conversationMessage.conversationId, conversationId),
+  const messages = await db.query.chatMessage.findMany({
+    where: eq(chatMessage.sessionId, chatSessionId),
     orderBy: (messages, { asc }) => [asc(messages.createdAt)],
     limit: 10,
   });
@@ -130,45 +137,59 @@ export async function getConversationHistory(conversationId: string) {
   return messages.map((msg) => ({
     ...msg,
     content:
-      msg.contentType === "VOICE" && msg.voiceTranscription
+      msg.type === "voice" && msg.voiceTranscription
         ? msg.voiceTranscription
         : msg.content,
   }));
 }
 
 /**
- * Находит conversation по chatId через связь с vacancyResponse
+ * Находит chatSession по chatId через связь с vacancyResponse
  */
-export async function findConversationByChatId(chatId: string) {
-  return await db.query.conversation.findFirst({
-    where: (fields, { inArray }) => {
-      return inArray(
-        fields.responseId,
-        db
-          .select({ id: vacancyResponse.id })
-          .from(vacancyResponse)
-          .where(eq(vacancyResponse.chatId, chatId)),
-      );
-    },
+export async function findChatSessionByChatId(chatId: string) {
+  // Сначала находим vacancyResponse по chatId
+  const response = await db.query.vacancyResponse.findFirst({
+    where: eq(vacancyResponse.chatId, chatId),
     with: {
-      response: {
-        with: {
-          vacancy: true,
-        },
-      },
+      vacancy: true,
     },
   });
+
+  if (!response) {
+    return null;
+  }
+
+  // Затем находим chatSession по entityType и entityId
+  const session = await db.query.chatSession.findFirst({
+    where: (fields, { and, eq }) =>
+      and(
+        eq(fields.entityType, "vacancy_response"),
+        eq(fields.entityId, response.id),
+      ),
+  });
+
+  if (!session) {
+    return null;
+  }
+
+  return {
+    ...session,
+    response: {
+      ...response,
+      vacancy: response.vacancy,
+    },
+  };
 }
 
 /**
  * Создает или возвращает временный ID для неидентифицированного пользователя
  * Используется для хранения сообщений до идентификации по пин-коду
  *
- * ВАЖНО: Возвращает chatId как временный ID, так как conversation
- * требует обязательный responseId, который мы не можем создать без вакансии.
+ * ВАЖНО: Возвращает chatId как временный ID, так как chatSession
+ * требует обязательный entityId, который мы не можем создать без вакансии.
  * Сообщения будут храниться с этим временным ID до идентификации.
  */
-export async function createOrUpdateTempConversation(
+export async function createOrUpdateTempChatSession(
   chatId: string,
   _username?: string,
   _firstName?: string,

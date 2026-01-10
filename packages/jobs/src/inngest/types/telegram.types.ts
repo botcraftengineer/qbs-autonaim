@@ -16,19 +16,19 @@ export const voiceTranscriptionDataSchema = z.object({
 });
 
 export const interviewAnalysisDataSchema = z.object({
-  conversationId: z.string().min(1, "Conversation ID is required"),
+  chatSessionId: z.string().min(1, "Chat session ID is required"),
   transcription: z.string().min(1, "Transcription is required"),
 });
 
 export const interviewSendQuestionDataSchema = z.object({
-  conversationId: z.string().min(1, "Conversation ID is required"),
+  chatSessionId: z.string().min(1, "Chat session ID is required"),
   question: z.string().min(1, "Question is required"),
   transcription: z.string().min(1, "Transcription is required"),
   questionNumber: z.number().int().min(0),
 });
 
 export const interviewCompleteDataSchema = z.object({
-  conversationId: z.string().min(1, "Conversation ID is required"),
+  chatSessionId: z.string().min(1, "Chat session ID is required"),
   transcription: z.string().min(1, "Transcription is required"),
   reason: z.string().optional(),
   questionNumber: z.number().int().min(0),

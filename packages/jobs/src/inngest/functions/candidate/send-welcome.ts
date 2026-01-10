@@ -1,9 +1,9 @@
 import { env } from "@qbs-autonaim/config";
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   telegramSession,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -263,13 +263,16 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       }
     });
 
-    // Если получили chatId, сохраняем/обновляем conversation
+    // Если получили chatId, сохраняем/обновляем chatSession
     if (result?.chatId) {
       const chatId = result.chatId;
-      await step.run("save-conversation", async () => {
-        // Проверяем, есть ли уже conversation для этого response
-        const existing = await db.query.conversation.findFirst({
-          where: eq(conversation.responseId, responseId),
+      await step.run("save-chat-session", async () => {
+        // Проверяем, есть ли уже chatSession для этого response
+        const existing = await db.query.chatSession.findFirst({
+          where: and(
+            eq(chatSession.entityType, "vacancy_response"),
+            eq(chatSession.entityId, responseId),
+          ),
         });
 
         if (existing) {
@@ -288,18 +291,18 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
             questionAnswers: existingMetadata.questionAnswers || [],
           };
 
-          // Обновляем существующую conversation
+          // Обновляем существующую chatSession
           await db
-            .update(conversation)
+            .update(chatSession)
             .set({
-              candidateName: response.candidateName,
-              username: username || undefined,
-              status: "ACTIVE",
+              title: response.candidateName ?? undefined,
+              status: "active",
+              lastChannel: result.channel === "TELEGRAM" ? "telegram" : "web",
               metadata: updatedMetadata,
             })
-            .where(eq(conversation.id, existing.id));
+            .where(eq(chatSession.id, existing.id));
         } else {
-          // Создаем новую conversation
+          // Создаем новую chatSession
           const newMetadata = {
             responseId,
             vacancyId: response.vacancyId,
@@ -309,34 +312,39 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
             questionAnswers: [],
           };
 
-          await db.insert(conversation).values({
-            responseId,
-            candidateName: response.candidateName,
-            username: username || undefined,
-            status: "ACTIVE",
+          await db.insert(chatSession).values({
+            entityType: "vacancy_response",
+            entityId: responseId,
+            userId: response.candidateId ?? undefined,
+            status: "active",
+            lastChannel: result.channel === "TELEGRAM" ? "telegram" : "web",
+            title: response.candidateName ?? undefined,
             metadata: newMetadata,
           });
         }
 
-        const conv = await db.query.conversation.findFirst({
-          where: eq(conversation.responseId, responseId),
+        const session = await db.query.chatSession.findFirst({
+          where: and(
+            eq(chatSession.entityType, "vacancy_response"),
+            eq(chatSession.entityId, responseId),
+          ),
         });
 
-        if (!conv) {
-          throw new Error("Failed to create/update conversation");
+        if (!session) {
+          throw new Error("Failed to create/update chatSession");
         }
 
         // Сохраняем приветственное сообщение с правильным каналом и текстом
-        await db.insert(conversationMessage).values({
-          conversationId: conv.id,
-          sender: "BOT",
-          contentType: "TEXT",
-          channel: result.channel,
+        await db.insert(chatMessage).values({
+          sessionId: session.id,
+          role: "assistant",
+          type: "text",
+          channel: result.channel === "TELEGRAM" ? "telegram" : "web",
           content: removeNullBytes(result.sentMessage),
-          externalMessageId: result.messageId,
+          externalId: result.messageId,
         });
 
-        return conv;
+        return session;
       });
 
       // Обновляем welcomeSentAt только после успешной отправки

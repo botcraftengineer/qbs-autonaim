@@ -46,7 +46,7 @@ export interface BufferValue {
  * Интерфейс сервиса буферизации сообщений
  *
  * Управляет буферизацией сообщений кандидатов во время интервью.
- * Буферы изолированы по userId, conversationId и interviewStep.
+ * Буферы изолированы по userId, chatSessionId и interviewStep.
  */
 export interface MessageBufferService {
   /**
@@ -54,14 +54,14 @@ export interface MessageBufferService {
    *
    * @param params - Параметры для добавления сообщения
    * @param params.userId - ID пользователя
-   * @param params.conversationId - ID разговора
+   * @param params.chatSessionId - ID сессии чата
    * @param params.interviewStep - Текущий шаг интервью (номер вопроса)
    * @param params.message - Сообщение для буферизации
    * @returns Promise, который разрешается после добавления сообщения
    */
   addMessage(params: {
     userId: string;
-    conversationId: string;
+    chatSessionId: string;
     interviewStep: number;
     message: BufferedMessage;
   }): Promise<void>;
@@ -71,13 +71,13 @@ export interface MessageBufferService {
    *
    * @param params - Параметры для получения сообщений
    * @param params.userId - ID пользователя
-   * @param params.conversationId - ID разговора
+   * @param params.chatSessionId - ID сессии чата
    * @param params.interviewStep - Текущий шаг интервью (номер вопроса)
    * @returns Promise с массивом буферизованных сообщений
    */
   getMessages(params: {
     userId: string;
-    conversationId: string;
+    chatSessionId: string;
     interviewStep: number;
   }): Promise<BufferedMessage[]>;
 
@@ -86,13 +86,13 @@ export interface MessageBufferService {
    *
    * @param params - Параметры для очистки буфера
    * @param params.userId - ID пользователя
-   * @param params.conversationId - ID разговора
+   * @param params.chatSessionId - ID сессии чата
    * @param params.interviewStep - Текущий шаг интервью (номер вопроса)
    * @returns Promise, который разрешается после очистки буфера
    */
   clearBuffer(params: {
     userId: string;
-    conversationId: string;
+    chatSessionId: string;
     interviewStep: number;
   }): Promise<void>;
 
@@ -101,13 +101,13 @@ export interface MessageBufferService {
    *
    * @param params - Параметры для проверки существования буфера
    * @param params.userId - ID пользователя
-   * @param params.conversationId - ID разговора
+   * @param params.chatSessionId - ID сессии чата
    * @param params.interviewStep - Текущий шаг интервью (номер вопроса)
    * @returns Promise с true если буфер существует, false в противном случае
    */
   hasBuffer(params: {
     userId: string;
-    conversationId: string;
+    chatSessionId: string;
     interviewStep: number;
   }): Promise<boolean>;
 }

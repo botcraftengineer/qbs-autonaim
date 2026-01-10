@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export const messageBufferedDataSchema = z.object({
   userId: z.string().min(1, "ID пользователя обязателен"),
-  conversationId: z.string().min(1, "ID разговора обязателен"),
+  chatSessionId: z.string().min(1, "ID сессии чата обязателен"),
   interviewStep: z
     .number()
     .int()
@@ -20,7 +20,7 @@ export const messageBufferedDataSchema = z.object({
 
 export const typingActivityDataSchema = z.object({
   userId: z.string().min(1, "ID пользователя обязателен"),
-  conversationId: z.string().min(1, "ID разговора обязателен"),
+  chatSessionId: z.string().min(1, "ID сессии чата обязателен"),
   interviewStep: z
     .number()
     .int()
@@ -36,7 +36,7 @@ export const typingActivityDataSchema = z.object({
 
 export const bufferFlushDataSchema = z.object({
   userId: z.string().min(1, "ID пользователя обязателен"),
-  conversationId: z.string().min(1, "ID разговора обязателен"),
+  chatSessionId: z.string().min(1, "ID сессии чата обязателен"),
   interviewStep: z
     .number()
     .int()

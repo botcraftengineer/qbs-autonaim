@@ -1,7 +1,7 @@
 import {
   and,
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   desc,
   eq,
   vacancyResponse,
@@ -22,7 +22,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
   },
   { event: "telegram/interview.send-question" },
   async ({ event, step }) => {
-    const { conversationId, question, transcription, questionNumber } =
+    const { chatSessionId, question, transcription, questionNumber } =
       event.data;
 
     // Проверяем SKIP в самом начале, до любых API вызовов
@@ -35,7 +35,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
     if (shouldSkip) {
       return {
         success: true,
-        conversationId,
+        chatSessionId,
         questionNumber,
         skipped: true,
       };
@@ -44,38 +44,38 @@ export const sendNextQuestionFunction = inngest.createFunction(
     await step.run("save-qa", async () => {
       const lastBotMessages = await db
         .select()
-        .from(conversationMessage)
+        .from(chatMessage)
         .where(
           and(
-            eq(conversationMessage.conversationId, conversationId),
-            eq(conversationMessage.sender, "BOT"),
+            eq(chatMessage.sessionId, chatSessionId),
+            eq(chatMessage.role, "assistant"),
           ),
         )
-        .orderBy(desc(conversationMessage.createdAt))
+        .orderBy(desc(chatMessage.createdAt))
         .limit(1);
 
       const lastQuestion = lastBotMessages[0]?.content || "Первый вопрос";
 
-      await saveQuestionAnswer(conversationId, lastQuestion, transcription);
+      await saveQuestionAnswer(chatSessionId, lastQuestion, transcription);
     });
 
     const chatId = await step.run("get-chat-id", async () => {
-      const [conv] = await db
+      const [session] = await db
         .select()
-        .from(conversation)
-        .where(eq(conversation.id, conversationId))
+        .from(chatSession)
+        .where(eq(chatSession.id, chatSessionId))
         .limit(1);
 
-      if (!conv) {
-        throw new Error("Conversation не найден");
+      if (!session) {
+        throw new Error("ChatSession не найден");
       }
 
-      if (!conv.responseId) {
-        throw new Error("ResponseId не найден в conversation");
+      if (session.entityType !== "vacancy_response") {
+        throw new Error("ChatSession не связан с vacancy_response");
       }
 
       const response = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, conv.responseId),
+        where: eq(vacancyResponse.id, session.entityId),
       });
 
       if (!response?.chatId) {
@@ -98,13 +98,13 @@ export const sendNextQuestionFunction = inngest.createFunction(
 
     await step.run("send-message", async () => {
       const [newMessage] = await db
-        .insert(conversationMessage)
+        .insert(chatMessage)
         .values({
-          conversationId,
-          sender: "BOT",
-          contentType: "TEXT",
+          sessionId: chatSessionId,
+          role: "assistant",
+          type: "text",
           content: question,
-          channel: "TELEGRAM",
+          channel: "telegram",
         })
         .returning();
 
@@ -124,7 +124,7 @@ export const sendNextQuestionFunction = inngest.createFunction(
 
     return {
       success: true,
-      conversationId,
+      chatSessionId,
       questionNumber: questionNumber + 1,
       skipped: false,
     };

@@ -4,25 +4,18 @@
  * Этот модуль обрабатывает сообщения, которые могли быть пропущены во время
  * отключения бота. Работает в связке с catchUp: true в TelegramClient,
  * который автоматически получает пропущенные обновления через MTProto.
- *
- * Процессор дополнительно проверяет историю активных диалогов и обрабатывает
- * входящие сообщения, которые появились после последнего сохраненного в БД.
- *
- * Важно: Использует iterDialogs() для итерации по всем диалогам и получения
- * access hash нужного чата перед обращением к его истории. Это решает проблему
- * PEER_ID_INVALID при первом запуске, когда клиент еще не "встретил" пользователя
- * в текущей сессии и не имеет необходимых данных для прямого обращения к чату.
  */
 
 import type { TelegramClient } from "@mtcute/bun";
-import { and, desc, eq, or } from "@qbs-autonaim/db";
+import { and, desc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  conversation,
-  conversationMessage,
+  chatMessage,
+  chatSession,
   gig,
-  response,
+  gigResponse,
   vacancy,
+  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
 import { messageDataSchema } from "../schemas/message-data.schema";
@@ -37,18 +30,22 @@ export interface MissedMessagesProcessorConfig {
   getClient: (workspaceId: string) => TelegramClient | null;
 }
 
-type ConversationWithChatId = {
+type ChatSessionWithChatId = {
   id: string;
-  responseId: string;
-  candidateName: string | null;
-  username: string | null;
-  status: "ACTIVE" | "COMPLETED" | "CANCELLED";
+  entityId: string;
+  entityType:
+    | "gig"
+    | "vacancy"
+    | "gig_response"
+    | "vacancy_response"
+    | "project"
+    | "team";
+  title: string | null;
+  status: "active" | "completed" | "archived" | "blocked";
   metadata: Record<string, unknown> | null;
   createdAt: Date;
-  updatedAt: Date;
   chatId: string | null;
   workspaceId: string;
-  entityType: "gig" | "vacancy" | "project";
 };
 
 function buildMessageData(message: {
@@ -121,78 +118,75 @@ export async function processMissedMessages(
   const startTime = Date.now();
   console.log("🔍 Проверка пропущенных сообщений...");
 
-  // Get active conversations with their chatId and workspaceId
-  // We need to join with both gig and vacancy tables to get workspaceId
-  const gigConversations = await db
+  // Get active chat sessions for gig_response with their chatId and workspaceId
+  const gigSessions = await db
     .select({
-      id: conversation.id,
-      responseId: conversation.responseId,
-      candidateName: conversation.candidateName,
-      username: conversation.username,
-      status: conversation.status,
-      metadata: conversation.metadata,
-      createdAt: conversation.createdAt,
-      updatedAt: conversation.updatedAt,
-      chatId: response.chatId,
+      id: chatSession.id,
+      entityId: chatSession.entityId,
+      entityType: chatSession.entityType,
+      title: chatSession.title,
+      status: chatSession.status,
+      metadata: chatSession.metadata,
+      createdAt: chatSession.createdAt,
+      chatId: gigResponse.chatId,
       workspaceId: gig.workspaceId,
-      entityType: response.entityType,
     })
-    .from(conversation)
-    .innerJoin(response, eq(conversation.responseId, response.id))
-    .innerJoin(
-      gig,
-      and(eq(response.entityType, "gig"), eq(response.entityId, gig.id)),
-    )
-    .where(eq(conversation.status, "ACTIVE"));
-
-  const vacancyConversations = await db
-    .select({
-      id: conversation.id,
-      responseId: conversation.responseId,
-      candidateName: conversation.candidateName,
-      username: conversation.username,
-      status: conversation.status,
-      metadata: conversation.metadata,
-      createdAt: conversation.createdAt,
-      updatedAt: conversation.updatedAt,
-      chatId: response.chatId,
-      workspaceId: vacancy.workspaceId,
-      entityType: response.entityType,
-    })
-    .from(conversation)
-    .innerJoin(response, eq(conversation.responseId, response.id))
-    .innerJoin(
-      vacancy,
+    .from(chatSession)
+    .innerJoin(gigResponse, eq(chatSession.entityId, gigResponse.id))
+    .innerJoin(gig, eq(gigResponse.gigId, gig.id))
+    .where(
       and(
-        eq(response.entityType, "vacancy"),
-        eq(response.entityId, vacancy.id),
+        eq(chatSession.entityType, "gig_response"),
+        eq(chatSession.status, "active"),
       ),
-    )
-    .where(eq(conversation.status, "ACTIVE"));
+    );
 
-  const conversations = [...gigConversations, ...vacancyConversations];
+  // Get active chat sessions for vacancy_response
+  const vacancySessions = await db
+    .select({
+      id: chatSession.id,
+      entityId: chatSession.entityId,
+      entityType: chatSession.entityType,
+      title: chatSession.title,
+      status: chatSession.status,
+      metadata: chatSession.metadata,
+      createdAt: chatSession.createdAt,
+      chatId: vacancyResponse.chatId,
+      workspaceId: vacancy.workspaceId,
+    })
+    .from(chatSession)
+    .innerJoin(vacancyResponse, eq(chatSession.entityId, vacancyResponse.id))
+    .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+    .where(
+      and(
+        eq(chatSession.entityType, "vacancy_response"),
+        eq(chatSession.status, "active"),
+      ),
+    );
 
-  if (conversations.length === 0) {
-    console.log("ℹ️ Нет активных бесед для проверки");
+  const sessions = [...gigSessions, ...vacancySessions];
+
+  if (sessions.length === 0) {
+    console.log("ℹ️ Нет активных сессий для проверки");
     return;
   }
 
-  console.log(`📋 Найдено ${conversations.length} активных бесед`);
+  console.log(`📋 Найдено ${sessions.length} активных сессий`);
 
   let processedCount = 0;
   let errorCount = 0;
   let skippedCount = 0;
 
-  for (const conversation of conversations) {
-    // Пропускаем беседы без responseId или chatId
-    if (!conversation.responseId || !conversation.chatId) {
+  for (const session of sessions) {
+    // Пропускаем сессии без chatId
+    if (!session.chatId) {
       skippedCount++;
       continue;
     }
 
     try {
-      const result = await processConversationMissedMessages(
-        conversation as ConversationWithChatId,
+      const result = await processSessionMissedMessages(
+        session as ChatSessionWithChatId,
         config.getClient,
       );
       processedCount += result.processed;
@@ -201,40 +195,31 @@ export async function processMissedMessages(
         skippedCount++;
       }
 
-      // Добавляем небольшую задержку между обработкой бесед
-      // чтобы избежать FLOOD_WAIT
+      // Добавляем небольшую задержку между обработкой сессий
       await sleep(1000);
     } catch (error) {
-      // Обработка FLOOD_WAIT ошибки
       if (isFloodWaitError(error)) {
         const waitSeconds = getFloodWaitSeconds(error);
         console.warn(
           `⏳ FLOOD_WAIT: ожидание ${waitSeconds} секунд перед продолжением...`,
         );
         await sleep(waitSeconds * 1000);
-        // Повторная попытка после ожидания
         try {
-          const result = await processConversationMissedMessages(
-            conversation as ConversationWithChatId,
+          const result = await processSessionMissedMessages(
+            session as ChatSessionWithChatId,
             config.getClient,
           );
           processedCount += result.processed;
           errorCount += result.errors;
-          if (result.processed === 0 && result.errors === 0) {
-            skippedCount++;
-          }
         } catch (retryError) {
           console.error(
-            `❌ Ошибка проверки беседы ${conversation.chatId} после повтора:`,
+            `❌ Ошибка проверки сессии ${session.chatId} после повтора:`,
             retryError,
           );
           errorCount++;
         }
       } else {
-        console.error(
-          `❌ Ошибка проверки беседы ${conversation.chatId}:`,
-          error,
-        );
+        console.error(`❌ Ошибка проверки сессии ${session.chatId}:`, error);
         errorCount++;
       }
     }
@@ -247,10 +232,10 @@ export async function processMissedMessages(
 }
 
 /**
- * Обрабатывает пропущенные сообщения для одной беседы
+ * Обрабатывает пропущенные сообщения для одной сессии
  */
-async function processConversationMissedMessages(
-  conversation: ConversationWithChatId,
+async function processSessionMissedMessages(
+  session: ChatSessionWithChatId,
   getClient: (workspaceId: string) => TelegramClient | null,
 ): Promise<{ processed: number; errors: number }> {
   let processed = 0;
@@ -259,36 +244,32 @@ async function processConversationMissedMessages(
   // Получаем последнее сообщение из БД
   const lastMessage = await db
     .select()
-    .from(conversationMessage)
-    .where(eq(conversationMessage.conversationId, conversation.id))
-    .orderBy(desc(conversationMessage.createdAt))
+    .from(chatMessage)
+    .where(eq(chatMessage.sessionId, session.id))
+    .orderBy(desc(chatMessage.createdAt))
     .limit(1);
 
   const lastMessageDate = lastMessage[0]?.createdAt;
 
-  // Get client using workspaceId from conversation
-  const client = getClient(conversation.workspaceId);
+  const client = getClient(session.workspaceId);
   if (!client) {
-    console.log(`⚠️ Клиент не найден для workspace ${conversation.workspaceId}`);
+    console.log(`⚠️ Клиент не найден для workspace ${session.workspaceId}`);
     return { processed, errors };
   }
 
-  // Получаем историю из Telegram
-  if (!conversation.chatId) {
-    console.log(`⚠️ Отсутствует chatId для беседы ${conversation.id}`);
+  if (!session.chatId) {
+    console.log(`⚠️ Отсутствует chatId для сессии ${session.id}`);
     return { processed, errors };
   }
 
-  const chatIdNumber = Number.parseInt(conversation.chatId, 10);
+  const chatIdNumber = Number.parseInt(session.chatId, 10);
   if (Number.isNaN(chatIdNumber)) {
     console.log(
-      `⚠️ Некорректный chatId для беседы ${conversation.id}: ${conversation.chatId}`,
+      `⚠️ Некорректный chatId для сессии ${session.id}: ${session.chatId}`,
     );
     return { processed, errors };
   }
 
-  // Используем findDialogs для получения access hash
-  // Это позволяет избежать PEER_ID_INVALID при первом запуске
   const messages: Array<{
     id: number;
     text?: string;
@@ -297,14 +278,12 @@ async function processConversationMissedMessages(
   }> = [];
 
   try {
-    // Ищем диалог среди всех диалогов клиента
     let dialogFound = false;
 
     for await (const dialog of client.iterDialogs()) {
-      if (dialog.peer.id.toString() === conversation.chatId) {
+      if (dialog.peer.id.toString() === session.chatId) {
         dialogFound = true;
 
-        // Теперь у нас есть access hash, можем получить историю
         const history = await client.getHistory(dialog.peer.id, { limit: 20 });
 
         for await (const msg of history) {
@@ -321,25 +300,22 @@ async function processConversationMissedMessages(
 
     if (!dialogFound) {
       console.log(
-        `⚠️ Диалог ${conversation.chatId} не найден среди активных диалогов`,
+        `⚠️ Диалог ${session.chatId} не найден среди активных диалогов`,
       );
       return { processed, errors };
     }
   } catch (historyError) {
-    // Обработка FLOOD_WAIT
     if (isFloodWaitError(historyError)) {
       const waitSeconds = getFloodWaitSeconds(historyError);
       console.warn(
-        `⏳ FLOOD_WAIT для чата ${conversation.chatId}: ожидание ${waitSeconds} секунд...`,
+        `⏳ FLOOD_WAIT для чата ${session.chatId}: ожидание ${waitSeconds} секунд...`,
       );
       await sleep(waitSeconds * 1000);
-      // Очищаем массив перед повторной попыткой, чтобы избежать дублирования
       messages.length = 0;
-      // Повторная попытка после ожидания
       try {
         let dialogFound = false;
         for await (const dialog of client.iterDialogs()) {
-          if (dialog.peer.id.toString() === conversation.chatId) {
+          if (dialog.peer.id.toString() === session.chatId) {
             dialogFound = true;
             const history = await client.getHistory(dialog.peer.id, {
               limit: 20,
@@ -356,14 +332,11 @@ async function processConversationMissedMessages(
           }
         }
         if (!dialogFound) {
-          console.log(
-            `⚠️ Диалог ${conversation.chatId} не найден среди активных диалогов`,
-          );
           return { processed, errors };
         }
       } catch (retryError) {
         console.error(
-          `❌ Ошибка получения истории чата ${conversation.chatId} после повтора:`,
+          `❌ Ошибка получения истории чата ${session.chatId} после повтора:`,
           retryError,
         );
         errors++;
@@ -375,23 +348,19 @@ async function processConversationMissedMessages(
           ? historyError.message
           : String(historyError);
 
-      // Если чат не найден или недоступен, пропускаем
       if (
         errorMessage.includes("PEER_ID_INVALID") ||
         errorMessage.includes("CHANNEL_INVALID") ||
         errorMessage.includes("CHAT_INVALID") ||
         errorMessage.includes("USER_INVALID")
       ) {
-        console.log(
-          `⚠️ Чат ${conversation.chatId} недоступен или не существует`,
-        );
+        console.log(`⚠️ Чат ${session.chatId} недоступен или не существует`);
         return { processed, errors };
       }
       throw historyError;
     }
   }
 
-  // Фильтруем пропущенные входящие сообщения
   const missedMessages = messages.filter((msg) => {
     if (msg.isOutgoing) return false;
     if (!lastMessageDate) return true;
@@ -400,7 +369,7 @@ async function processConversationMissedMessages(
 
   if (missedMessages.length > 0) {
     console.log(
-      `📨 Найдено ${missedMessages.length} пропущенных сообщений в чате ${conversation.chatId}`,
+      `📨 Найдено ${missedMessages.length} пропущенных сообщений в чате ${session.chatId}`,
     );
 
     for (const msg of missedMessages.reverse()) {
@@ -421,20 +390,18 @@ async function processConversationMissedMessages(
           }
 
           await triggerIncomingMessage(
-            conversation.workspaceId,
+            session.workspaceId,
             validationResult.data,
           );
           processed++;
         }
       } catch (msgError) {
-        // Обработка FLOOD_WAIT для отдельных сообщений
         if (isFloodWaitError(msgError)) {
           const waitSeconds = getFloodWaitSeconds(msgError);
           console.warn(
             `⏳ FLOOD_WAIT для сообщения ${msg.id}: ожидание ${waitSeconds} секунд...`,
           );
           await sleep(waitSeconds * 1000);
-          // Повторная попытка
           try {
             const fullMessage = await client.getMessages(chatIdNumber, [
               msg.id,
@@ -446,15 +413,11 @@ async function processConversationMissedMessages(
               const validationResult =
                 messageDataSchema.safeParse(messageDataRaw);
               if (!validationResult.success) {
-                console.error(
-                  `❌ Ошибка валидации данных сообщения ${msg.id}:`,
-                  validationResult.error.format(),
-                );
                 errors++;
                 continue;
               }
               await triggerIncomingMessage(
-                conversation.workspaceId,
+                session.workspaceId,
                 validationResult.data,
               );
               processed++;

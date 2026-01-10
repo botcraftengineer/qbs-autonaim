@@ -2,26 +2,16 @@ import { AgentFactory } from "@qbs-autonaim/ai";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { generateAndSendBotResponse } from "../../bot-response";
 import type { BotSettings } from "../../types";
-import { createOrUpdateTempConversation, extractPinCode } from "../../utils";
+import {
+  createOrUpdateTempChatSession,
+  extractPinCode,
+  getChatHistory,
+} from "../../utils";
 import { handlePinIdentification } from "./identify-by-pin";
 import { saveUnidentifiedMessage } from "./save-message";
 
 /**
  * Обрабатывает текстовые сообщения от неидентифицированных пользователей
- *
- * ЛОГИКА ВАЛИДАЦИИ ПИНА (улучшенная с AI):
- * 1. Используем EnhancedContextAnalyzerAgent для анализа сообщения
- * 2. Агент определяет тип сообщения (PIN_CODE, GREETING, QUESTION и т.д.)
- * 3. Если обнаружен PIN_CODE:
- *    - Извлекаем пин-код из extractedData
- *    - Проверяем его валидность через identifyByPinCode
- *    - Если валидный → идентифицируем кандидата и переходим к PIN_RECEIVED (начало интервью)
- *    - Если невалидный → отправляем INVALID_PIN (просим попробовать еще раз)
- * 4. Если GREETING → отправляем приветствие с просьбой прислать пин-код
- * 5. Если другой тип → отправляем AWAITING_PIN (просим прислать код)
- *
- * ВАЖНО: При каждой новой попытке ввода пина система заново проверяет его валидность,
- * поэтому после неудачной попытки кандидат может сразу прислать правильный код.
  */
 export async function handleUnidentifiedText(params: {
   chatId: string;
@@ -44,28 +34,27 @@ export async function handleUnidentifiedText(params: {
 
   const trimmedText = text.trim();
 
-  // Создаем временную conversation
-  const tempConv = await createOrUpdateTempConversation(
+  // Создаем временную chatSession
+  const tempSession = await createOrUpdateTempChatSession(
     chatId,
     username,
     firstName,
   );
 
-  if (!tempConv) {
-    console.error("Failed to create/update temp conversation:", {
+  if (!tempSession) {
+    console.error("Failed to create/update temp chat session:", {
       chatId,
       messageId,
     });
-    throw new Error("Failed to create temp conversation");
+    throw new Error("Failed to create temp chat session");
   }
 
   // Подсчитываем количество неудачных попыток PIN из истории
-  const { getConversationHistory } = await import("../../utils");
-  const history = await getConversationHistory(tempConv.id);
+  const history = await getChatHistory(tempSession.id);
   const failedPinAttempts = history.filter(
     (msg) =>
-      msg.sender === "BOT" &&
-      msg.content.toLowerCase().includes("код не подошел"),
+      msg.role === "assistant" &&
+      (msg.content || "").toLowerCase().includes("код не подошел"),
   ).length;
 
   let pinCode: string | null = null;
@@ -102,7 +91,7 @@ export async function handleUnidentifiedText(params: {
         console.log("🔑 AI обнаружил пин-код, проверяем валидность", {
           pinCode,
           chatId,
-          tempConvId: tempConv.id,
+          tempSessionId: tempSession.id,
         });
 
         const result = await handlePinIdentification({
@@ -114,7 +103,7 @@ export async function handleUnidentifiedText(params: {
           trimmedText,
           messageId,
           botSettings,
-          tempConvId: tempConv.id,
+          tempConvId: tempSession.id,
         });
 
         if (result.identified) {
@@ -132,13 +121,13 @@ export async function handleUnidentifiedText(params: {
         });
 
         await saveUnidentifiedMessage({
-          conversationId: tempConv.id,
+          chatSessionId: tempSession.id,
           content: trimmedText,
           messageId,
         });
 
         await generateAndSendBotResponse({
-          conversationId: tempConv.id,
+          chatSessionId: tempSession.id,
           messageText: trimmedText,
           stage: "INVALID_PIN",
           botSettings,
@@ -161,13 +150,13 @@ export async function handleUnidentifiedText(params: {
         );
 
         await saveUnidentifiedMessage({
-          conversationId: tempConv.id,
+          chatSessionId: tempSession.id,
           content: trimmedText,
           messageId,
         });
 
         await generateAndSendBotResponse({
-          conversationId: tempConv.id,
+          chatSessionId: tempSession.id,
           messageText: trimmedText,
           stage: "AWAITING_PIN",
           botSettings,
@@ -196,7 +185,7 @@ export async function handleUnidentifiedText(params: {
     console.log("🔑 Обнаружен пин-код (fallback), проверяем валидность", {
       pinCode,
       chatId,
-      tempConvId: tempConv.id,
+      tempSessionId: tempSession.id,
     });
 
     const result = await handlePinIdentification({
@@ -208,7 +197,7 @@ export async function handleUnidentifiedText(params: {
       trimmedText,
       messageId,
       botSettings,
-      tempConvId: tempConv.id,
+      tempConvId: tempSession.id,
     });
 
     if (result.identified) {
@@ -226,13 +215,13 @@ export async function handleUnidentifiedText(params: {
     });
 
     await saveUnidentifiedMessage({
-      conversationId: tempConv.id,
+      chatSessionId: tempSession.id,
       content: trimmedText,
       messageId,
     });
 
     await generateAndSendBotResponse({
-      conversationId: tempConv.id,
+      chatSessionId: tempSession.id,
       messageText: trimmedText,
       stage: "INVALID_PIN",
       botSettings,
@@ -247,13 +236,13 @@ export async function handleUnidentifiedText(params: {
 
   // Нет пин-кода
   await saveUnidentifiedMessage({
-    conversationId: tempConv.id,
+    chatSessionId: tempSession.id,
     content: trimmedText,
     messageId,
   });
 
   await generateAndSendBotResponse({
-    conversationId: tempConv.id,
+    chatSessionId: tempSession.id,
     messageText: trimmedText,
     stage: "AWAITING_PIN",
     botSettings,

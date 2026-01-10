@@ -1,7 +1,7 @@
 import { db } from "@qbs-autonaim/db/client";
 import {
   bufferedTempMessage,
-  conversationMessage,
+  chatMessage,
   tempConversationMessage,
 } from "@qbs-autonaim/db/schema";
 import { removeNullBytes } from "@qbs-autonaim/lib";
@@ -129,7 +129,7 @@ export async function flushTempMessageBuffer(
  */
 export async function migrateTempMessages(
   tempConversationId: string,
-  realConversationId: string,
+  realChatSessionId: string,
 ) {
   try {
     await db.transaction(async (tx) => {
@@ -151,15 +151,19 @@ export async function migrateTempMessages(
 
       // Переносим в основную таблицу одним batch insert
       const messagesToInsert = tempMessages.map((msg) => ({
-        conversationId: realConversationId,
-        sender: msg.sender as "CANDIDATE" | "BOT",
-        contentType: msg.contentType as "TEXT" | "VOICE",
+        sessionId: realChatSessionId,
+        role: (msg.sender === "CANDIDATE" ? "user" : "assistant") as
+          | "user"
+          | "assistant",
+        type: (msg.contentType === "VOICE" ? "voice" : "text") as
+          | "text"
+          | "voice",
         content: removeNullBytes(msg.content),
-        externalMessageId: msg.externalMessageId ?? undefined,
-        channel: "TELEGRAM" as const,
+        externalId: msg.externalMessageId ?? undefined,
+        channel: "telegram" as const,
       }));
 
-      await tx.insert(conversationMessage).values(messagesToInsert);
+      await tx.insert(chatMessage).values(messagesToInsert);
 
       // Удаляем временные сообщения
       await tx
@@ -170,14 +174,14 @@ export async function migrateTempMessages(
 
       console.log("✅ Временные сообщения перенесены", {
         tempConversationId,
-        realConversationId,
+        realChatSessionId,
         count: tempMessages.length,
       });
     });
   } catch (error) {
     console.error("❌ Ошибка переноса временных сообщений:", {
       tempConversationId,
-      realConversationId,
+      realChatSessionId,
       error: error instanceof Error ? error.message : String(error),
     });
     throw error; // Пробрасываем ошибку для retry handling

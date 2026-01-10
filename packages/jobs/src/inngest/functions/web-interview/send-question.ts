@@ -1,12 +1,11 @@
-import { conversationMessage, eq } from "@qbs-autonaim/db";
+import { chatMessage, chatSession, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { conversation } from "@qbs-autonaim/db/schema";
 import { saveQuestionAnswer } from "../../../services/interview";
 import { inngest } from "../../client";
 
 /**
  * Функция отправки следующего вопроса в веб-чате
- * Сохраняет вопрос в conversation_messages
+ * Сохраняет вопрос в chat_messages
  */
 export const webSendQuestionFunction = inngest.createFunction(
   {
@@ -16,61 +15,61 @@ export const webSendQuestionFunction = inngest.createFunction(
   },
   { event: "web/interview.send-question" },
   async ({ event, step }) => {
-    const { conversationId, question, transcription, questionNumber } =
+    const { chatSessionId, question, transcription, questionNumber } =
       event.data;
 
     console.log("📤 Sending question to web chat", {
-      conversationId,
+      chatSessionId,
       questionNumber,
     });
 
-    // Проверяем существование conversation
-    const conv = await step.run("check-conversation", async () => {
-      const c = await db.query.conversation.findFirst({
-        where: eq(conversation.id, conversationId),
+    // Проверяем существование chatSession
+    const session = await step.run("check-chat-session", async () => {
+      const s = await db.query.chatSession.findFirst({
+        where: eq(chatSession.id, chatSessionId),
       });
 
-      if (!c) {
-        throw new Error(`Conversation ${conversationId} not found`);
+      if (!s) {
+        throw new Error(`ChatSession ${chatSessionId} not found`);
       }
 
-      return c;
+      return s;
     });
 
     // Сохраняем вопрос-ответ в метаданные
     await step.run("save-question-answer", async () => {
-      await saveQuestionAnswer(conversationId, question, transcription);
+      await saveQuestionAnswer(chatSessionId, question, transcription);
 
       console.log("✅ Question-answer saved", {
-        conversationId,
+        chatSessionId,
         questionNumber,
       });
     });
 
     // Сохраняем вопрос как сообщение от бота
     await step.run("save-message", async () => {
-      await db.insert(conversationMessage).values({
-        conversationId,
-        sender: "BOT",
-        contentType: "TEXT",
-        channel: conv.source,
+      await db.insert(chatMessage).values({
+        sessionId: chatSessionId,
+        role: "assistant",
+        type: "text",
+        channel: session.lastChannel ?? "web",
         content: question,
       });
 
       console.log("✅ Question message saved", {
-        conversationId,
+        chatSessionId,
         questionNumber,
       });
     });
 
     console.log("✅ Question sent to web chat", {
-      conversationId,
+      chatSessionId,
       questionNumber,
     });
 
     return {
       success: true,
-      conversationId,
+      chatSessionId,
       questionNumber,
     };
   },

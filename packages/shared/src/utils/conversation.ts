@@ -1,10 +1,10 @@
 /**
- * Утилиты для работы с метаданными conversation
+ * Утилиты для работы с метаданными chat session
  */
 
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { conversation } from "@qbs-autonaim/db/schema";
+import { chatSession } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import type { ConversationMetadata } from "../types/conversation";
 
@@ -31,6 +31,7 @@ const ConversationMetadataSchema = z.object({
   lastQuestionAsked: z.string().optional(),
   interviewCompleted: z.boolean().optional(),
   completedAt: z.string().optional(),
+  candidateName: z.string().optional(),
 });
 
 /**
@@ -63,65 +64,65 @@ function safeParseMetadata(
 }
 
 /**
- * Получает метаданные conversation
+ * Получает метаданные chat session
  *
- * @param conversationId - ID разговора
- * @returns Promise с метаданными conversation
+ * @param sessionId - ID сессии
+ * @returns Promise с метаданными
  */
 export async function getConversationMetadata(
-  conversationId: string,
+  sessionId: string,
 ): Promise<ConversationMetadata> {
   try {
-    const conv = await db.query.conversation.findFirst({
-      where: eq(conversation.id, conversationId),
+    const session = await db.query.chatSession.findFirst({
+      where: eq(chatSession.id, sessionId),
     });
 
-    if (!conv?.metadata) {
+    if (!session?.metadata) {
       return {};
     }
 
     try {
-      return safeParseMetadata(conv.metadata);
+      return safeParseMetadata(session.metadata);
     } catch (error) {
-      console.error("Failed to parse conversation metadata", {
+      console.error("Failed to parse chat session metadata", {
         error,
-        conversationId,
-        rawMetadata: conv.metadata,
+        sessionId,
+        rawMetadata: session.metadata,
       });
       // Возвращаем пустой объект при невалидных данных
       return {};
     }
   } catch (error) {
-    console.error("Error getting conversation metadata", {
+    console.error("Error getting chat session metadata", {
       error,
-      conversationId,
+      sessionId,
     });
     return {};
   }
 }
 
 /**
- * Обновляет метаданные conversation
+ * Обновляет метаданные chat session
  *
- * @param conversationId - ID разговора
+ * @param sessionId - ID сессии
  * @param updates - Частичные обновления метаданных
  * @returns Promise с true если обновление успешно, false в противном случае
  */
 export async function updateConversationMetadata(
-  conversationId: string,
+  sessionId: string,
   updates: Partial<ConversationMetadata>,
 ): Promise<boolean> {
   try {
     // Читаем текущие метаданные
-    const current = await db.query.conversation.findFirst({
-      where: eq(conversation.id, conversationId),
+    const current = await db.query.chatSession.findFirst({
+      where: eq(chatSession.id, sessionId),
       columns: {
         metadata: true,
       },
     });
 
     if (!current) {
-      console.error("Conversation not found", { conversationId });
+      console.error("Chat session not found", { sessionId });
       return false;
     }
 
@@ -131,14 +132,14 @@ export async function updateConversationMetadata(
       try {
         currentMetadata = safeParseMetadata(current.metadata);
       } catch (error) {
-        console.error("Failed to parse conversation metadata", {
-          conversationId,
+        console.error("Failed to parse chat session metadata", {
+          sessionId,
           error,
           rawMetadata: current.metadata,
         });
         // Прерываем при невалидных данных
         throw new Error(
-          `Cannot update conversation with malformed metadata: ${error}`,
+          `Cannot update chat session with malformed metadata: ${error}`,
         );
       }
     }
@@ -147,17 +148,17 @@ export async function updateConversationMetadata(
 
     // Обновляем метаданные
     await db
-      .update(conversation)
+      .update(chatSession)
       .set({
         metadata: updatedMetadata,
       })
-      .where(eq(conversation.id, conversationId));
+      .where(eq(chatSession.id, sessionId));
 
     return true;
   } catch (error) {
     console.error("Error in updateConversationMetadata", {
       error,
-      conversationId,
+      sessionId,
     });
     return false;
   }
@@ -166,12 +167,16 @@ export async function updateConversationMetadata(
 /**
  * Получает количество заданных вопросов
  *
- * @param conversationId - ID разговора
+ * @param sessionId - ID сессии
  * @returns Promise с количеством вопросов
  */
-export async function getQuestionCount(
-  conversationId: string,
-): Promise<number> {
-  const metadata = await getConversationMetadata(conversationId);
+export async function getQuestionCount(sessionId: string): Promise<number> {
+  const metadata = await getConversationMetadata(sessionId);
   return metadata.questionAnswers?.length || 0;
 }
+
+/**
+ * Алиасы для совместимости с новым именованием
+ */
+export const getChatSessionMetadata = getConversationMetadata;
+export const updateChatSessionMetadata = updateConversationMetadata;
