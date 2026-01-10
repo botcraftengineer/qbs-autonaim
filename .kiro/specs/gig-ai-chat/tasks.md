@@ -114,53 +114,53 @@
     - **Property 9: Rate Limiting Enforcement**
     - **Validates: Requirements 12.4**
 
-- [-] 7. Реализовать UI компоненты
-  - [ ] 7.1 Создать GigAIChatPanel
+- [x] 7. Реализовать UI компоненты
+  - [x] 7.1 Создать GigAIChatPanel
     - Создать `apps/app/src/components/gig/ai-chat/gig-ai-chat-panel.tsx`
     - Sheet/Drawer компонент с заголовком
     - Состояние: messages, isLoading, error
     - Загрузка истории при открытии
     - _Requirements: 8.1_
 
-  - [ ] 7.2 Создать ChatMessageList
+  - [x] 7.2 Создать ChatMessageList
     - Создать `apps/app/src/components/gig/ai-chat/chat-message-list.tsx`
     - Отображение сообщений с разделением user/assistant
     - Поддержка markdown через react-markdown
     - Auto-scroll к последнему сообщению
     - _Requirements: 8.2, 8.4, 8.6_
 
-  - [ ] 7.3 Создать ChatInput
+  - [x] 7.3 Создать ChatInput
     - Создать `apps/app/src/components/gig/ai-chat/chat-input.tsx`
     - Textarea с автоматическим resize
     - Enter для отправки, Shift+Enter для новой строки
     - Disabled состояние во время загрузки
     - _Requirements: 8.7_
 
-  - [ ] 7.4 Создать QuickReplies
+  - [x] 7.4 Создать QuickReplies
     - Создать `apps/app/src/components/gig/ai-chat/quick-replies.tsx`
     - Кнопки под последним сообщением AI
     - Клик отправляет текст как новое сообщение
     - _Requirements: 7.5, 8.5_
 
-  - [ ] 7.5 Создать TypingIndicator
+  - [x] 7.5 Создать TypingIndicator
     - Создать `apps/app/src/components/gig/ai-chat/typing-indicator.tsx`
     - Анимированные точки во время генерации
     - _Requirements: 8.3_
 
-- [ ] 8. Интегрировать чат в страницу gig
-  - [ ] 8.1 Добавить кнопку открытия чата
+- [x] 8. Интегрировать чат в страницу gig
+  - [x] 8.1 Добавить кнопку открытия чата
     - Обновить страницу gig detail
     - Добавить кнопку "AI Помощник" или иконку чата
     - Состояние isOpen для панели
     - _Requirements: 8.1_
 
-  - [ ] 8.2 Подключить tRPC hooks
+  - [x] 8.2 Подключить tRPC hooks
     - useMutation для sendMessage
     - useQuery для getHistory
     - Обработка loading и error состояний
     - _Requirements: 10.1, 10.2_
 
-  - [ ] 8.3 Реализовать отправку сообщений
+  - [x] 8.3 Реализовать отправку сообщений
     - Оптимистичное добавление user message
     - Показ typing indicator
     - Добавление AI response после получения

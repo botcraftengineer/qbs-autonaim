@@ -27,6 +27,7 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Bot,
   Calendar,
   Clock,
   DollarSign,
@@ -43,6 +44,7 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useState } from "react";
+import { GigAIChatPanel } from "~/components/gig/ai-chat/gig-ai-chat-panel";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -381,6 +383,7 @@ export function GigDetailClient({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const {
     workspace,
@@ -730,7 +733,16 @@ export function GigDetailClient({
             </CardHeader>
             <CardContent className="space-y-3 p-4 sm:p-6">
               <Button
+                className="w-full min-h-[44px] touch-action-manipulation"
+                onClick={() => setIsAIChatOpen(true)}
+              >
+                <Bot className="h-4 w-4 mr-2" aria-hidden="true" />
+                AI Помощник
+              </Button>
+
+              <Button
                 asChild
+                variant="outline"
                 className="w-full min-h-[44px] touch-action-manipulation"
               >
                 <Link
@@ -790,6 +802,12 @@ export function GigDetailClient({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <GigAIChatPanel
+        gigId={gigId}
+        isOpen={isAIChatOpen}
+        onClose={() => setIsAIChatOpen(false)}
+      />
     </div>
   );
 }
