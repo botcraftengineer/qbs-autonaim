@@ -94,26 +94,27 @@ export function CandidateModal({
     }
   }, [isRating, candidateDetail?.matchScore]);
 
-  const inviteCandidateMutation = useMutation({
-    ...trpc.candidates.inviteCandidate.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.list.queryKey(),
-      });
-      if (fullCandidate) {
+  const { mutate: inviteCandidate, isPending: isInviting } = useMutation(
+    trpc.candidates.inviteCandidate.mutationOptions({
+      onSuccess: () => {
         queryClient.invalidateQueries({
-          queryKey: trpc.candidates.getById.queryKey({
-            workspaceId,
-            candidateId: fullCandidate.id,
-          }),
+          queryKey: trpc.candidates.list.queryKey(),
         });
-      }
-      toast.success("Кандидат приглашён");
-    },
-    onError: () => {
-      toast.error("Не удалось пригласить кандидата");
-    },
-  });
+        if (fullCandidate) {
+          queryClient.invalidateQueries({
+            queryKey: trpc.candidates.getById.queryKey({
+              workspaceId,
+              candidateId: fullCandidate.id,
+            }),
+          });
+        }
+        toast.success("Кандидат приглашён");
+      },
+      onError: () => {
+        toast.error("Не удалось пригласить кандидата");
+      },
+    }),
+  );
 
   const handleSendGreeting = async () => {
     if (!fullCandidate?.telegram && !fullCandidate?.phone) {
@@ -287,7 +288,7 @@ export function CandidateModal({
                 candidate={candidateDetail}
                 isLoading={{
                   sendGreeting: isSendingGreeting,
-                  invite: inviteCandidateMutation.isPending,
+                  invite: isInviting,
                   refreshResume: isRefreshingResume,
                   rate: isRating,
                 }}
@@ -300,7 +301,7 @@ export function CandidateModal({
                       setShowOfferDialog(true);
                       break;
                     case "invite":
-                      inviteCandidateMutation.mutate({
+                      inviteCandidate({
                         candidateId: fullCandidate.id,
                         workspaceId,
                       });

@@ -32,14 +32,23 @@ export const recalculateRanking = protectedProcedure
     }
 
     // Отправляем событие в Inngest для фоновой обработки
-    await inngest.send({
-      name: "gig/ranking.recalculate",
-      data: {
-        gigId: input.gigId,
-        workspaceId: input.workspaceId,
-        triggeredBy: ctx.session.user.id,
-      },
-    });
+    try {
+      await inngest.send({
+        name: "gig/ranking.recalculate",
+        data: {
+          gigId: input.gigId,
+          workspaceId: input.workspaceId,
+          triggeredBy: ctx.session.user.id,
+        },
+      });
+    } catch (err) {
+      console.error("Failed to enqueue ranking recalculation:", err);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Не удалось запустить пересчет рейтинга",
+        cause: err,
+      });
+    }
 
     return {
       success: true,

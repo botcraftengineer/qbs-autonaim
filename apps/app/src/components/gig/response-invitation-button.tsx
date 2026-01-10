@@ -44,8 +44,8 @@ export function ResponseInvitationButton({
     enabled: !!workspace?.id && open,
   });
 
-  const { mutate: generateInvitation, isPending: isGenerating } = useMutation({
-    ...trpc.gig.responses.generateInvitation.mutationOptions({
+  const { mutate: generateInvitation, isPending: isGenerating } = useMutation(
+    trpc.gig.responses.generateInvitation.mutationOptions({
       onSuccess: () => {
         queryClient.invalidateQueries({
           queryKey: trpc.gig.responses.getInvitation.queryKey({
@@ -59,7 +59,7 @@ export function ResponseInvitationButton({
         toast.error(error.message);
       },
     }),
-  });
+  );
 
   const handleGenerate = useCallback(() => {
     if (!workspace?.id) return;

@@ -198,11 +198,15 @@ export class RankingOrchestrator {
     // Edge case: один кандидат - пропускаем сравнение (Requirement 8.1)
     let comparisonResults: ComparisonAgentOutput;
     if (evaluatedCandidates.length === 1) {
+      const singleCandidate = evaluatedCandidates[0];
+      if (!singleCandidate) {
+        throw new Error("Expected single candidate but found none");
+      }
       // Для одного кандидата создаем пустое сравнение
       comparisonResults = {
         comparisons: [
           {
-            candidateId: evaluatedCandidates[0].candidate.id,
+            candidateId: singleCandidate.candidate.id,
             strengths: [],
             weaknesses: [],
             comparative_analysis:
@@ -210,7 +214,7 @@ export class RankingOrchestrator {
           },
         ],
         category_leaders: {
-          highest_composite: evaluatedCandidates[0].candidate.id,
+          highest_composite: singleCandidate.candidate.id,
         },
       };
     } else {

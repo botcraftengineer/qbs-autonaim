@@ -117,23 +117,24 @@ export function SendOfferDialog({
     }
   }, [errors, setFocus]);
 
-  const sendOfferMutation = useMutation({
-    ...trpc.candidates.sendOffer.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.list.queryKey(),
-      });
-      toast.success("Оффер успешно отправлен");
-      onOpenChange(false);
-    },
-    onError: () => {
-      toast.error("Не удалось отправить оффер");
-    },
-  });
+  const { mutate: sendOffer, isPending: isSendingOffer } = useMutation(
+    trpc.candidates.sendOffer.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.list.queryKey(),
+        });
+        toast.success("Оффер успешно отправлен");
+        onOpenChange(false);
+      },
+      onError: () => {
+        toast.error("Не удалось отправить оффер");
+      },
+    }),
+  );
 
   const onSubmit = (data: OfferFormData) => {
     if (!candidate) return;
-    sendOfferMutation.mutate({
+    sendOffer({
       workspaceId,
       candidateId: candidate.id,
       offerDetails: {
@@ -240,12 +241,12 @@ export function SendOfferDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={sendOfferMutation.isPending}
+              disabled={isSendingOffer}
             >
               Отмена
             </Button>
-            <Button type="submit" disabled={sendOfferMutation.isPending}>
-              {sendOfferMutation.isPending && (
+            <Button type="submit" disabled={isSendingOffer}>
+              {isSendingOffer && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               )}
               Отправить оффер

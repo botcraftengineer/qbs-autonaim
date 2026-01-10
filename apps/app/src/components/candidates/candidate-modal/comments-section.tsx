@@ -38,25 +38,26 @@ export function CommentsSection({
     enabled: !!workspaceId && !!candidateId,
   });
 
-  const addCommentMutation = useMutation({
-    ...trpc.candidates.addComment.mutationOptions(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: trpc.candidates.listComments.queryKey(),
-      });
-      setNewComment("");
-      toast.success("Комментарий добавлен");
-    },
-    onError: () => {
-      toast.error("Не удалось добавить комментарий");
-    },
-  });
+  const { mutate: addComment, isPending: isAddingComment } = useMutation(
+    trpc.candidates.addComment.mutationOptions({
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: trpc.candidates.listComments.queryKey(),
+        });
+        setNewComment("");
+        toast.success("Комментарий добавлен");
+      },
+      onError: () => {
+        toast.error("Не удалось добавить комментарий");
+      },
+    }),
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newComment.trim()) return;
 
-    addCommentMutation.mutate({
+    addComment({
       workspaceId,
       candidateId,
       content: newComment.trim(),
@@ -80,7 +81,7 @@ export function CommentsSection({
           onChange={(e) => setNewComment(e.target.value)}
           onKeyDown={handleKeyDown}
           className="min-h-[100px] resize-none"
-          disabled={addCommentMutation.isPending}
+          disabled={isAddingComment}
           autoComplete="off"
         />
         <div className="flex items-center justify-between gap-3">
@@ -101,11 +102,11 @@ export function CommentsSection({
           <Button
             type="submit"
             size="sm"
-            disabled={!newComment.trim() || addCommentMutation.isPending}
+            disabled={!newComment.trim() || isAddingComment}
             className="gap-2"
           >
             <Send className="h-4 w-4" />
-            {addCommentMutation.isPending ? "Сохранение…" : "Добавить"}
+            {isAddingComment ? "Сохранение…" : "Добавить"}
           </Button>
         </div>
       </form>

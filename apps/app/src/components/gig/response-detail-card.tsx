@@ -62,6 +62,7 @@ interface ResponseDetailCardProps {
   onAccept?: () => void;
   onReject?: () => void;
   onMessage?: () => void;
+  onEvaluate?: () => void;
   isProcessing?: boolean;
 }
 
@@ -138,6 +139,7 @@ export function ResponseDetailCard({
   onAccept,
   onReject,
   onMessage,
+  onEvaluate,
   isProcessing,
 }: ResponseDetailCardProps) {
   const statusConfig = STATUS_CONFIG[response.status];
@@ -243,6 +245,19 @@ export function ResponseDetailCard({
               >
                 <MessageSquare className="h-4 w-4" />
                 Написать
+              </Button>
+            )}
+
+            {onEvaluate && hasConversation && !hasInterviewScoring && (
+              <Button
+                onClick={onEvaluate}
+                disabled={isProcessing}
+                variant="outline"
+                size="sm"
+                className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+              >
+                <Award className="h-4 w-4" />
+                Оценить кандидата
               </Button>
             )}
 

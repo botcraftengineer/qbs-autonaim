@@ -41,7 +41,6 @@ import {
   Filter,
   Loader2,
   MessageSquare,
-  MoreHorizontal,
   Search,
   X,
 } from "lucide-react";

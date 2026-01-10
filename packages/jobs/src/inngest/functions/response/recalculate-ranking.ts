@@ -25,7 +25,6 @@ export const recalculateRankingFunction = inngest.createFunction(
         // Создаем экземпляр RankingService с конфигурацией AI агентов
         const rankingService = new RankingService({
           model: "gpt-4o",
-          temperature: 0.3,
         });
 
         // Вычисляем рейтинг

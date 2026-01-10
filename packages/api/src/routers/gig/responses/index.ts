@@ -3,6 +3,7 @@ import type { TRPCRouterRecord } from "@trpc/server";
 import { accept } from "./accept";
 import { countResponses } from "./count";
 import { create } from "./create";
+import { evaluate } from "./evaluate";
 import { generateInvitation } from "./generate-invitation";
 import { get } from "./get";
 import { getInvitation } from "./get-invitation";
@@ -24,6 +25,7 @@ export const gigResponsesRouter = {
   accept,
   reject,
   sendMessage,
+  evaluate,
   generateInvitation,
   getInvitation,
   ranked,

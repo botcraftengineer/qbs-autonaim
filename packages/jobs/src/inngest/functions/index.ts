@@ -8,6 +8,9 @@ export * from "./candidate";
 // Freelance functions
 export * from "./freelance";
 
+// Gig functions
+export * from "./gig";
+
 // Integration functions
 export * from "./integration";
 
@@ -34,6 +37,7 @@ import {
   generateFreelanceInvitationFunction,
   sendFreelanceNotificationFunction,
 } from "./freelance";
+import { evaluateGigResponseFunction } from "./gig";
 import { verifyHHCredentialsFunction } from "./integration";
 import {
   bufferDebounceFunction,
@@ -97,6 +101,8 @@ export const inngestFunctions: InngestFunction.Any[] = [
   analyzeFreelanceResponseFunction,
   generateFreelanceInvitationFunction,
   sendFreelanceNotificationFunction,
+  // Gig
+  evaluateGigResponseFunction,
   // Integration
   verifyHHCredentialsFunction,
   // Interview

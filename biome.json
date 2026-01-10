@@ -89,6 +89,12 @@
       "linter": {
         "enabled": false
       }
+    },
+    {
+      "includes": ["**/*.html"],
+      "linter": {
+        "enabled": false
+      }
     }
   ]
 }
