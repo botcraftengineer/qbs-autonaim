@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { DbClient } from "../index";
-import { vacancyResponse } from "../schema";
+import { response } from "../schema";
 
 export interface ResponseByPinCode {
   id: string;
@@ -41,11 +41,15 @@ export async function findResponseByPinCode(
   }
 
   try {
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, trimmedPinCode),
+    // Query universal response table for vacancy responses with matching pin code
+    const responseData = await db.query.response.findFirst({
+      where: and(
+        eq(response.entityType, "vacancy"),
+        eq(response.telegramPinCode, trimmedPinCode),
+      ),
     });
 
-    if (!response) {
+    if (!responseData) {
       return {
         success: false,
         error: "Неверный пин-код",
@@ -55,8 +59,8 @@ export async function findResponseByPinCode(
     return {
       success: true,
       data: {
-        id: response.id,
-        candidateName: response.candidateName,
+        id: responseData.id,
+        candidateName: responseData.candidateName,
       },
     };
   } catch (error) {

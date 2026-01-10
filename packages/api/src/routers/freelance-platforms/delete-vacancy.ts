@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -55,7 +55,7 @@ export const deleteVacancy = protectedProcedure
       if (input.dataCleanupOption === "anonymize") {
         // Анонимизируем персональные данные фрилансеров
         await ctx.db
-          .update(vacancyResponse)
+          .update(responseTable)
           .set({
             candidateName: "Анонимный кандидат",
             telegramUsername: null,
@@ -66,7 +66,12 @@ export const deleteVacancy = protectedProcedure
             platformProfileUrl: null,
             resumeUrl: "https://anonymized.url",
           })
-          .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+          .where(
+            and(
+              eq(responseTable.entityId, input.vacancyId),
+              eq(responseTable.entityType, "vacancy"),
+            ),
+          );
 
         // Помечаем вакансию как неактивную (soft delete)
         await ctx.db

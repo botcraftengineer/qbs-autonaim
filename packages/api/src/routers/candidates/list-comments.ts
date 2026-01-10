@@ -1,7 +1,7 @@
 import {
+  response as responseTable,
   user,
   vacancy,
-  vacancyResponse,
   vacancyResponseComment,
 } from "@qbs-autonaim/db";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -43,14 +43,15 @@ export const listComments = protectedProcedure
       })
       .from(vacancyResponseComment)
       .innerJoin(
-        vacancyResponse,
-        eq(vacancyResponseComment.responseId, vacancyResponse.id),
+        responseTable,
+        eq(vacancyResponseComment.responseId, responseTable.id),
       )
-      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
       .innerJoin(user, eq(vacancyResponseComment.authorId, user.id))
       .where(
         and(
-          eq(vacancyResponse.id, input.candidateId),
+          eq(responseTable.id, input.candidateId),
+          eq(responseTable.entityType, "vacancy"),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )

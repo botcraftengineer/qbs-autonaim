@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import type { response as responseTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -14,8 +14,12 @@ export const rejectCandidate = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const { candidateId, workspaceId } = input;
 
-    const candidate = await ctx.db.query.vacancyResponse.findFirst({
-      where: (response, { eq }) => eq(response.id, candidateId),
+    const candidate = await ctx.db.query.response.findFirst({
+      where: (
+        response: typeof responseTable,
+        { eq, and }: { eq: any; and: any },
+      ) =>
+        and(eq(response.id, candidateId), eq(response.entityType, "vacancy")),
       with: {
         vacancy: {
           columns: {
@@ -40,12 +44,17 @@ export const rejectCandidate = protectedProcedure
     }
 
     await ctx.db
-      .update(vacancyResponse)
+      .update(responseTable)
       .set({
         hrSelectionStatus: "REJECTED",
         status: "SKIPPED",
       })
-      .where(eq(vacancyResponse.id, candidateId));
+      .where(
+        and(
+          eq(responseTable.id, candidateId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
+      );
 
     return { success: true };
   });

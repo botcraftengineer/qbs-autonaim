@@ -1,5 +1,5 @@
-export { ChatContainer } from "./chat-container";
-export { ChatHeader } from "./chat-header";
 export { ChatInput } from "./chat-input";
-export { ChatMessage } from "./chat-message";
-export { ChatPreviewCard } from "./chat-preview-card";
+export { ChatMessageList } from "./chat-message-list";
+export { QuickReplies } from "./quick-replies";
+export { TypingIndicator } from "./typing-indicator";
+export { UniversalChatPanel } from "./universal-chat-panel";

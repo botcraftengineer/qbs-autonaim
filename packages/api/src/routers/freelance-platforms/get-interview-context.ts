@@ -35,9 +35,15 @@ export const getInterviewContext = publicProcedure
 
     // Если есть responseId, загружаем вакансию
     if (conv.responseId) {
-      const response = await ctx.db.query.vacancyResponse.findFirst({
-        where: (vacancyResponse, { eq }) =>
-          eq(vacancyResponse.id, conv.responseId ?? ""),
+      const response = await ctx.db.query.response.findFirst({
+        where: (
+          response: typeof responseTable,
+          { eq, and }: { eq: any; and: any },
+        ) =>
+          and(
+            eq(response.id, conv.responseId ?? ""),
+            eq(response.entityType, "vacancy"),
+          ),
         with: {
           vacancy: true,
         },

@@ -1,5 +1,5 @@
 import { and, eq } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import type { response as responseTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
@@ -60,11 +60,16 @@ export const checkDuplicateResponse = publicProcedure
     }
 
     // Проверяем дубликаты по platformProfileUrl + vacancyId
-    const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
-      where: and(
-        eq(vacancyResponse.vacancyId, input.vacancyId),
-        eq(vacancyResponse.platformProfileUrl, input.platformProfileUrl),
-      ),
+    const existingResponse = await ctx.db.query.response.findFirst({
+      where: (
+        response: typeof responseTable,
+        { eq, and }: { eq: any; and: any },
+      ) =>
+        and(
+          eq(response.entityId, input.vacancyId),
+          eq(response.entityType, "vacancy"),
+          eq(response.platformProfileUrl, input.platformProfileUrl),
+        ),
     });
 
     return {

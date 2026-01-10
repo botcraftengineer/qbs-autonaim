@@ -1,4 +1,4 @@
-import { conversation, vacancyResponse } from "@qbs-autonaim/db";
+import { conversation, response as responseTable } from "@qbs-autonaim/db";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { eq } from "drizzle-orm";
@@ -15,8 +15,8 @@ export const getConversationByResponseIdRouter = protectedProcedure
       ctx.session.user.id,
     );
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.responseId),
+    const response = await ctx.db.query.response.findFirst({
+      where: eq(responseTable.id, input.responseId),
       with: {
         vacancy: true,
       },

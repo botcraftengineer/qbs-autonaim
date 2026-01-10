@@ -1,7 +1,7 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
   freelanceImportHistory,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -74,14 +74,19 @@ export const importSingleResponse = protectedProcedure
 
     // Проверка дубликатов по platformProfileUrl + vacancyId
     if (input.contactInfo?.platformProfileUrl) {
-      const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
-        where: and(
-          eq(vacancyResponse.vacancyId, input.vacancyId),
-          eq(
-            vacancyResponse.platformProfileUrl,
-            input.contactInfo.platformProfileUrl,
+      const existingResponse = await ctx.db.query.response.findFirst({
+        where: (
+          response: typeof responseTable,
+          { eq, and }: { eq: any; and: any },
+        ) =>
+          and(
+            eq(response.entityId, input.vacancyId),
+            eq(response.entityType, "vacancy"),
+            eq(
+              response.platformProfileUrl,
+              input.contactInfo.platformProfileUrl,
+            ),
           ),
-        ),
       });
 
       if (existingResponse) {
@@ -94,9 +99,10 @@ export const importSingleResponse = protectedProcedure
 
     // Создаём запись отклика
     const [createdResponse] = await ctx.db
-      .insert(vacancyResponse)
+      .insert(responseTable)
       .values({
-        vacancyId: input.vacancyId,
+        entityId: input.vacancyId,
+        entityType: "vacancy",
         resumeId: input.contactInfo?.platformProfileUrl || crypto.randomUUID(),
         resumeUrl:
           input.contactInfo?.platformProfileUrl || "manual-import-no-url",

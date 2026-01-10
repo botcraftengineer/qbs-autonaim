@@ -1,7 +1,7 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
   freelanceImportHistory,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { ResponseParser } from "../../services/response-parser";
@@ -114,17 +114,20 @@ export const importBulkResponses = protectedProcedure
           }
 
           // Проверка дубликатов по platformProfileUrl + vacancyId
-          const existingResponse = await ctx.db.query.vacancyResponse.findFirst(
-            {
-              where: and(
-                eq(vacancyResponse.vacancyId, input.vacancyId),
+          const existingResponse = await ctx.db.query.response.findFirst({
+            where: (
+              response: typeof responseTable,
+              { eq, and }: { eq: any; and: any },
+            ) =>
+              and(
+                eq(response.entityId, input.vacancyId),
+                eq(response.entityType, "vacancy"),
                 eq(
-                  vacancyResponse.platformProfileUrl,
+                  response.platformProfileUrl,
                   parsed.contactInfo.platformProfile,
                 ),
               ),
-            },
-          );
+          });
 
           if (existingResponse) {
             results.push({
@@ -140,9 +143,10 @@ export const importBulkResponses = protectedProcedure
           // Создаём запись отклика
           // platformProfile гарантированно существует после валидации выше
           const [createdResponse] = await ctx.db
-            .insert(vacancyResponse)
+            .insert(responseTable)
             .values({
-              vacancyId: input.vacancyId,
+              entityId: input.vacancyId,
+              entityType: "vacancy",
               resumeId: parsed.contactInfo.platformProfile,
               resumeUrl: parsed.contactInfo.platformProfile,
               candidateName: parsed.freelancerName,

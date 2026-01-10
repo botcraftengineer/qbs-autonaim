@@ -1,11 +1,7 @@
 import type { Message } from "@mtcute/core";
-import { and, eq } from "@qbs-autonaim/db";
+import { and, eq, or } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import {
-  conversation,
-  vacancy,
-  vacancyResponse,
-} from "@qbs-autonaim/db/schema";
+import { conversation, gig, response, vacancy } from "@qbs-autonaim/db/schema";
 import { ConversationMetadataSchema } from "@qbs-autonaim/shared/utils";
 
 interface IdentificationResult {
@@ -32,24 +28,57 @@ export async function identifyCandidate(
       username = sender.username;
     }
 
-    // 2. Поиск по username в vacancy_response с проверкой workspaceId
+    // 2. Search by username in response with workspaceId check
+    // We need to join with entity tables (gig or vacancy) to filter by workspaceId
     if (username) {
-      const responseByUsername = await db
+      // Try gig responses first
+      const gigResponse = await db
         .select({
-          id: vacancyResponse.id,
-          candidateName: vacancyResponse.candidateName,
+          id: response.id,
+          candidateName: response.candidateName,
         })
-        .from(vacancyResponse)
-        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+        .from(response)
+        .innerJoin(
+          gig,
+          and(eq(response.entityType, "gig"), eq(response.entityId, gig.id)),
+        )
         .where(
           and(
-            eq(vacancyResponse.telegramUsername, username),
-            eq(vacancy.workspaceId, workspaceId),
+            eq(response.telegramUsername, username),
+            eq(gig.workspaceId, workspaceId),
           ),
         )
-        .orderBy(vacancyResponse.createdAt)
+        .orderBy(response.createdAt)
         .limit(1)
         .then((rows) => rows[0]);
+
+      // Try vacancy responses if not found in gigs
+      const vacancyResponse = gigResponse
+        ? null
+        : await db
+            .select({
+              id: response.id,
+              candidateName: response.candidateName,
+            })
+            .from(response)
+            .innerJoin(
+              vacancy,
+              and(
+                eq(response.entityType, "vacancy"),
+                eq(response.entityId, vacancy.id),
+              ),
+            )
+            .where(
+              and(
+                eq(response.telegramUsername, username),
+                eq(vacancy.workspaceId, workspaceId),
+              ),
+            )
+            .orderBy(response.createdAt)
+            .limit(1)
+            .then((rows) => rows[0]);
+
+      const responseByUsername = gigResponse || vacancyResponse;
 
       if (responseByUsername) {
         // Проверяем существующую беседу по responseId
@@ -99,29 +128,56 @@ export async function identifyCandidate(
       }
     }
 
-    // 3. Поиск по номеру телефона (если доступен)
+    // 3. Search by phone number (if available)
     const phone =
       sender && "phone" in sender && typeof sender.phone === "string"
         ? sender.phone
         : undefined;
 
     if (phone) {
-      const responseByPhone = await db
+      // Try gig responses first
+      const gigResponse = await db
         .select({
-          id: vacancyResponse.id,
-          candidateName: vacancyResponse.candidateName,
+          id: response.id,
+          candidateName: response.candidateName,
         })
-        .from(vacancyResponse)
-        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
-        .where(
-          and(
-            eq(vacancyResponse.phone, phone),
-            eq(vacancy.workspaceId, workspaceId),
-          ),
+        .from(response)
+        .innerJoin(
+          gig,
+          and(eq(response.entityType, "gig"), eq(response.entityId, gig.id)),
         )
-        .orderBy(vacancyResponse.createdAt)
+        .where(and(eq(response.phone, phone), eq(gig.workspaceId, workspaceId)))
+        .orderBy(response.createdAt)
         .limit(1)
         .then((rows) => rows[0]);
+
+      // Try vacancy responses if not found in gigs
+      const vacancyResponse = gigResponse
+        ? null
+        : await db
+            .select({
+              id: response.id,
+              candidateName: response.candidateName,
+            })
+            .from(response)
+            .innerJoin(
+              vacancy,
+              and(
+                eq(response.entityType, "vacancy"),
+                eq(response.entityId, vacancy.id),
+              ),
+            )
+            .where(
+              and(
+                eq(response.phone, phone),
+                eq(vacancy.workspaceId, workspaceId),
+              ),
+            )
+            .orderBy(response.createdAt)
+            .limit(1)
+            .then((rows) => rows[0]);
+
+      const responseByPhone = gigResponse || vacancyResponse;
 
       if (responseByPhone) {
         // Проверяем существующую беседу по responseId

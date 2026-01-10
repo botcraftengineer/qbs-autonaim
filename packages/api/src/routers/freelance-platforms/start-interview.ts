@@ -1,4 +1,5 @@
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { InterviewLinkGenerator } from "../../services";
@@ -39,7 +40,7 @@ export const startInterview = publicProcedure
 
     // Проверяем, что вакансия активна
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.vacancyId),
+      where: (vacancy, { eq }) => eq(vacancy.id, interviewLink.entityId),
     });
 
     if (!vacancy || !vacancy.isActive) {
@@ -50,10 +51,14 @@ export const startInterview = publicProcedure
     }
 
     // Проверяем дубликаты по platformProfileUrl + vacancyId
-    const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
-      where: (response, { and, eq }) =>
+    const existingResponse = await ctx.db.query.response.findFirst({
+      where: (
+        response: typeof responseTable,
+        { and, eq }: { and: any; eq: any },
+      ) =>
         and(
-          eq(response.vacancyId, interviewLink.vacancyId),
+          eq(response.entityId, interviewLink.entityId),
+          eq(response.entityType, "vacancy"),
           eq(
             response.platformProfileUrl,
             input.freelancerInfo.platformProfileUrl,
@@ -70,9 +75,10 @@ export const startInterview = publicProcedure
 
     // Создаём отклик
     const [response] = await ctx.db
-      .insert(vacancyResponse)
+      .insert(responseTable)
       .values({
-        vacancyId: interviewLink.vacancyId,
+        entityId: interviewLink.entityId,
+        entityType: "vacancy",
         resumeId: `freelance_${Date.now()}`,
         resumeUrl: input.freelancerInfo.platformProfileUrl,
         candidateName: input.freelancerInfo.name,
@@ -99,6 +105,6 @@ export const startInterview = publicProcedure
 
     return {
       responseId: response.id,
-      vacancyId: response.vacancyId,
+      vacancyId: response.entityId,
     };
   });

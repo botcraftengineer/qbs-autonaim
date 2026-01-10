@@ -2,8 +2,8 @@ import { and, count, eq, gte, lte, sql } from "@qbs-autonaim/db";
 import {
   interviewLink,
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
@@ -94,41 +94,47 @@ export const getDashboardStats = protectedProcedure
           // Статистика по источникам
           hhApiCount: sql<number>`(
           SELECT COUNT(*) 
-          FROM ${vacancyResponse} 
-          WHERE ${vacancyResponse.vacancyId} = ${vacancy.id} 
-          AND ${vacancyResponse.importSource} = 'HH_API'
+          FROM ${responseTable} 
+          WHERE ${responseTable.entityId} = ${vacancy.id} 
+          AND ${responseTable.entityType} = 'vacancy'
+          AND ${responseTable.importSource} = 'HH_API'
         )`,
           freelanceManualCount: sql<number>`(
           SELECT COUNT(*) 
-          FROM ${vacancyResponse} 
-          WHERE ${vacancyResponse.vacancyId} = ${vacancy.id} 
-          AND ${vacancyResponse.importSource} = 'FREELANCE_MANUAL'
+          FROM ${responseTable} 
+          WHERE ${responseTable.entityId} = ${vacancy.id} 
+          AND ${responseTable.entityType} = 'vacancy'
+          AND ${responseTable.importSource} = 'FREELANCE_MANUAL'
         )`,
           freelanceLinkCount: sql<number>`(
           SELECT COUNT(*) 
-          FROM ${vacancyResponse} 
-          WHERE ${vacancyResponse.vacancyId} = ${vacancy.id} 
-          AND ${vacancyResponse.importSource} = 'FREELANCE_LINK'
+          FROM ${responseTable} 
+          WHERE ${responseTable.entityId} = ${vacancy.id} 
+          AND ${responseTable.entityType} = 'vacancy'
+          AND ${responseTable.importSource} = 'FREELANCE_LINK'
         )`,
           // Статистика интервью
           completedInterviews: sql<number>`(
           SELECT COUNT(*) 
-          FROM ${vacancyResponse} vr
+          FROM ${responseTable} vr
           INNER JOIN ${responseScreening} rs ON vr.id = rs."response_id"
-          WHERE vr."vacancy_id" = ${vacancy.id}
+          WHERE vr."entity_id" = ${vacancy.id}
+          AND vr."entity_type" = 'vacancy'
         )`,
           // Средняя оценка
           avgScore: sql<number>`(
           SELECT COALESCE(AVG(rs."detailed_score"), 0)
-          FROM ${vacancyResponse} vr
+          FROM ${responseTable} vr
           INNER JOIN ${responseScreening} rs ON vr.id = rs."response_id"
-          WHERE vr."vacancy_id" = ${vacancy.id}
+          WHERE vr."entity_id" = ${vacancy.id}
+          AND vr."entity_type" = 'vacancy'
         )`,
           // Есть ли ссылка на интервью
           hasInterviewLink: sql<boolean>`EXISTS(
           SELECT 1 
           FROM ${interviewLink} 
-          WHERE ${interviewLink.vacancyId} = ${vacancy.id}
+          WHERE ${interviewLink.entityId} = ${vacancy.id}
+          AND ${interviewLink.entityType} = 'vacancy'
         )`,
         })
         .from(vacancy)

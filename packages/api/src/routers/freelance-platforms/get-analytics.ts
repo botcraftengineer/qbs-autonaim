@@ -1,8 +1,8 @@
 import { and, count, eq, gte, lte, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
@@ -59,16 +59,18 @@ export const getAnalytics = protectedProcedure
           createdAt: vacancy.createdAt,
           firstShortlistDate: sql<Date | null>`(
           SELECT MIN(rs."created_at")
-          FROM ${vacancyResponse} vr
+          FROM ${responseTable} vr
           INNER JOIN ${responseScreening} rs ON vr.id = rs."response_id"
-          WHERE vr."vacancy_id" = ${vacancy.id}
+          WHERE vr."entity_id" = ${vacancy.id}
+          AND vr."entity_type" = 'vacancy'
           AND rs."detailed_score" >= 60
         )`,
           daysToShortlist: sql<number | null>`(
           SELECT EXTRACT(EPOCH FROM (MIN(rs."created_at") - ${vacancy.createdAt})) / 86400
-          FROM ${vacancyResponse} vr
+          FROM ${responseTable} vr
           INNER JOIN ${responseScreening} rs ON vr.id = rs."response_id"
-          WHERE vr."vacancy_id" = ${vacancy.id}
+          WHERE vr."entity_id" = ${vacancy.id}
+          AND vr."entity_type" = 'vacancy'
           AND rs."detailed_score" >= 60
         )`,
         })
@@ -79,25 +81,31 @@ export const getAnalytics = protectedProcedure
       const completionRates = await ctx.db
         .select({
           source: vacancy.source,
-          totalResponses: sql<number>`COUNT(DISTINCT ${vacancyResponse.id})`,
+          totalResponses: sql<number>`COUNT(DISTINCT ${responseTable.id})`,
           completedInterviews: sql<number>`COUNT(DISTINCT CASE 
           WHEN ${responseScreening.id} IS NOT NULL 
-          THEN ${vacancyResponse.id} 
+          THEN ${responseTable.id} 
         END)`,
           completionRate: sql<number>`ROUND(
           CAST(COUNT(DISTINCT CASE 
             WHEN ${responseScreening.id} IS NOT NULL 
-            THEN ${vacancyResponse.id} 
+            THEN ${responseTable.id} 
           END) AS DECIMAL) / 
-          NULLIF(COUNT(DISTINCT ${vacancyResponse.id}), 0) * 100, 
+          NULLIF(COUNT(DISTINCT ${responseTable.id}), 0) * 100, 
           2
         )`,
         })
         .from(vacancy)
-        .leftJoin(vacancyResponse, eq(vacancy.id, vacancyResponse.vacancyId))
+        .leftJoin(
+          responseTable,
+          and(
+            eq(vacancy.id, responseTable.entityId),
+            eq(responseTable.entityType, "vacancy"),
+          ),
+        )
         .leftJoin(
           responseScreening,
-          eq(vacancyResponse.id, responseScreening.responseId),
+          eq(responseTable.id, responseScreening.responseId),
         )
         .where(and(...conditions))
         .groupBy(vacancy.source);
@@ -118,10 +126,16 @@ export const getAnalytics = protectedProcedure
         })
         .from(responseScreening)
         .innerJoin(
-          vacancyResponse,
-          eq(responseScreening.responseId, vacancyResponse.id),
+          responseTable,
+          eq(responseScreening.responseId, responseTable.id),
         )
-        .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+        .innerJoin(
+          vacancy,
+          and(
+            eq(responseTable.entityId, vacancy.id),
+            eq(responseTable.entityType, "vacancy"),
+          ),
+        )
         .where(and(...conditions))
         .groupBy(sql`1`)
         .orderBy(sql`1 DESC`);
@@ -131,10 +145,10 @@ export const getAnalytics = protectedProcedure
         .select({
           platform: vacancy.source,
           totalVacancies: count(vacancy.id),
-          totalResponses: sql<number>`COUNT(DISTINCT ${vacancyResponse.id})`,
+          totalResponses: sql<number>`COUNT(DISTINCT ${responseTable.id})`,
           completedInterviews: sql<number>`COUNT(DISTINCT CASE 
           WHEN ${responseScreening.id} IS NOT NULL 
-          THEN ${vacancyResponse.id} 
+          THEN ${responseTable.id} 
         END)`,
           avgScore: sql<number>`ROUND(AVG(${responseScreening.detailedScore}), 2)`,
           avgTimeToShortlist: sql<number | null>`ROUND(
@@ -144,17 +158,23 @@ export const getAnalytics = protectedProcedure
           completionRate: sql<number>`ROUND(
           CAST(COUNT(DISTINCT CASE 
             WHEN ${responseScreening.id} IS NOT NULL 
-            THEN ${vacancyResponse.id} 
+            THEN ${responseTable.id} 
           END) AS DECIMAL) / 
-          NULLIF(COUNT(DISTINCT ${vacancyResponse.id}), 0) * 100, 
+          NULLIF(COUNT(DISTINCT ${responseTable.id}), 0) * 100, 
           2
         )`,
         })
         .from(vacancy)
-        .leftJoin(vacancyResponse, eq(vacancy.id, vacancyResponse.vacancyId))
+        .leftJoin(
+          responseTable,
+          and(
+            eq(vacancy.id, responseTable.entityId),
+            eq(responseTable.entityType, "vacancy"),
+          ),
+        )
         .leftJoin(
           responseScreening,
-          eq(vacancyResponse.id, responseScreening.responseId),
+          eq(responseTable.id, responseScreening.responseId),
         )
         .where(and(...conditions))
         .groupBy(vacancy.source);
@@ -167,10 +187,10 @@ export const getAnalytics = protectedProcedure
           ELSE 'Фриланс-платформы'
         END`,
           totalVacancies: count(vacancy.id),
-          totalResponses: sql<number>`COUNT(DISTINCT ${vacancyResponse.id})`,
+          totalResponses: sql<number>`COUNT(DISTINCT ${responseTable.id})`,
           completedInterviews: sql<number>`COUNT(DISTINCT CASE 
           WHEN ${responseScreening.id} IS NOT NULL 
-          THEN ${vacancyResponse.id} 
+          THEN ${responseTable.id} 
         END)`,
           avgScore: sql<number>`ROUND(AVG(${responseScreening.detailedScore}), 2)`,
           avgTimeToShortlist: sql<number | null>`ROUND(
@@ -180,17 +200,23 @@ export const getAnalytics = protectedProcedure
           completionRate: sql<number>`ROUND(
           CAST(COUNT(DISTINCT CASE 
             WHEN ${responseScreening.id} IS NOT NULL 
-            THEN ${vacancyResponse.id} 
+            THEN ${responseTable.id} 
           END) AS DECIMAL) / 
-          NULLIF(COUNT(DISTINCT ${vacancyResponse.id}), 0) * 100, 
+          NULLIF(COUNT(DISTINCT ${responseTable.id}), 0) * 100, 
           2
         )`,
         })
         .from(vacancy)
-        .leftJoin(vacancyResponse, eq(vacancy.id, vacancyResponse.vacancyId))
+        .leftJoin(
+          responseTable,
+          and(
+            eq(vacancy.id, responseTable.entityId),
+            eq(responseTable.entityType, "vacancy"),
+          ),
+        )
         .leftJoin(
           responseScreening,
-          eq(vacancyResponse.id, responseScreening.responseId),
+          eq(responseTable.id, responseScreening.responseId),
         )
         .where(and(...conditions))
         .groupBy(sql`1`);

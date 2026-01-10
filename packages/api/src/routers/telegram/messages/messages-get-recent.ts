@@ -1,11 +1,11 @@
 import {
   conversation,
   conversationMessage,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../../trpc";
 import { verifyWorkspaceAccess } from "../utils";
@@ -28,7 +28,7 @@ export const getRecentMessagesRouter = protectedProcedure
       .select({
         message: conversationMessage,
         conversation: conversation,
-        response: vacancyResponse,
+        response: responseTable,
         vacancy: vacancy,
       })
       .from(conversationMessage)
@@ -36,12 +36,14 @@ export const getRecentMessagesRouter = protectedProcedure
         conversation,
         eq(conversationMessage.conversationId, conversation.id),
       )
-      .innerJoin(
-        vacancyResponse,
-        eq(conversation.responseId, vacancyResponse.id),
+      .innerJoin(responseTable, eq(conversation.responseId, responseTable.id))
+      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
+      .where(
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          eq(vacancy.workspaceId, input.workspaceId),
+        ),
       )
-      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
-      .where(eq(vacancy.workspaceId, input.workspaceId))
       .orderBy(desc(conversationMessage.createdAt))
       .limit(input.limit);
 

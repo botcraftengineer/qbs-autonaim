@@ -27,7 +27,6 @@ export {
   logger,
   map,
   ok,
-  RESPONSE_STATUS,
   type ResponseStatus,
   // Result type
   type Result,

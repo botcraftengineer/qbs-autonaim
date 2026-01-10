@@ -167,32 +167,32 @@
     - Обновление quickReplies
     - _Requirements: 9.1, 9.2, 9.3_
 
-- [ ] 9. Checkpoint - UI готов
+- [x] 9. Checkpoint - UI готов
   - Убедиться что все тесты проходят
   - Проверить UI в браузере
   - Спросить пользователя если есть вопросы
 
-- [ ] 10. Реализовать обработку ошибок
-  - [ ] 10.1 Добавить error handling в UI
+- [x] 10. Реализовать обработку ошибок
+  - [x] 10.1 Добавить error handling в UI
     - Toast уведомления для ошибок
     - Retry кнопка при ошибке генерации
     - Сообщение при rate limit
     - _Requirements: 11.1, 11.4_
 
-  - [ ] 10.2 Обработать edge cases
+  - [x] 10.2 Обработать edge cases
     - Gig без кандидатов - показать подсказку
     - Пустая история - показать welcome message
     - _Requirements: 11.2_
 
-- [ ] 11. Добавить Langfuse трейсинг
-  - [ ] 11.1 Настроить трейсинг в sendMessage
+- [x] 11. Добавить Langfuse трейсинг
+  - [x] 11.1 Настроить трейсинг в sendMessage
     - Создать trace с metadata (workspaceId, gigId, userId)
     - Логировать token usage
     - Логировать latency
     - generationName: "gig-ai-chat"
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
 
-- [ ] 12. Финальный checkpoint
+- [x] 12. Финальный checkpoint
   - Убедиться что все тесты проходят
   - Проверить полный flow в браузере
   - Спросить пользователя если есть вопросы

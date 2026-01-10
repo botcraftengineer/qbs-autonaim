@@ -1,5 +1,5 @@
 import { and, eq } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -48,7 +48,7 @@ export const deleteVacancy = protectedProcedure
         await ctx.db.transaction(async (tx) => {
           // Анонимизируем персональные данные кандидатов
           await tx
-            .update(vacancyResponse)
+            .update(responseTable)
             .set({
               candidateName: "Анонимный кандидат",
               telegramUsername: null,
@@ -56,12 +56,17 @@ export const deleteVacancy = protectedProcedure
               phone: null,
               contacts: null,
               coverLetter: "Данные анонимизированы",
-              platformProfileUrl: null,
-              resumeUrl: "https://anonymized.url",
+              profileUrl: null,
+              resumePdfFileId: null,
               experience: null,
               salaryExpectations: null,
             })
-            .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+            .where(
+              and(
+                eq(responseTable.entityType, "vacancy"),
+                eq(responseTable.entityId, input.vacancyId),
+              ),
+            );
 
           // Помечаем вакансию как неактивную
           await tx

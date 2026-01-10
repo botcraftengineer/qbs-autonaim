@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -23,8 +23,8 @@ export const get = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.id),
+    const response = await ctx.db.query.response.findFirst({
+      where: eq(responseTable.id, input.id),
       with: {
         vacancy: {
           with: {

@@ -1,5 +1,5 @@
 import { and, count, desc, eq, sql } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -79,13 +79,19 @@ export const getVacancies = protectedProcedure
           createdAt: vacancy.createdAt,
           updatedAt: vacancy.updatedAt,
           // Статистика по источникам откликов
-          hhApiCount: sql<number>`COUNT(CASE WHEN ${vacancyResponse.importSource} = 'HH_API' THEN 1 END)`,
-          freelanceManualCount: sql<number>`COUNT(CASE WHEN ${vacancyResponse.importSource} = 'FREELANCE_MANUAL' THEN 1 END)`,
-          freelanceLinkCount: sql<number>`COUNT(CASE WHEN ${vacancyResponse.importSource} = 'FREELANCE_LINK' THEN 1 END)`,
-          totalResponsesCount: count(vacancyResponse.id),
+          hhApiCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'HH_API' THEN 1 END)`,
+          freelanceManualCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'FREELANCE_MANUAL' THEN 1 END)`,
+          freelanceLinkCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'FREELANCE_LINK' THEN 1 END)`,
+          totalResponsesCount: count(responseTable.id),
         })
         .from(vacancy)
-        .leftJoin(vacancyResponse, eq(vacancy.id, vacancyResponse.vacancyId))
+        .leftJoin(
+          responseTable,
+          and(
+            eq(vacancy.id, responseTable.entityId),
+            eq(responseTable.entityType, "vacancy"),
+          ),
+        )
         .where(and(...conditions));
 
       const vacancies = await query

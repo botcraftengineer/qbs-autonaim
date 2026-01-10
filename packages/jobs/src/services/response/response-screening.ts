@@ -2,6 +2,7 @@ import { buildResponseScreeningPrompt } from "@qbs-autonaim/ai";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  RESPONSE_STATUS,
   responseScreening,
   vacancy,
   vacancyResponse,
@@ -10,13 +11,7 @@ import { generateText } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
 import { responseScreeningResultSchema } from "../../schemas/response-screening.schema";
 import { extractJsonFromText } from "../../utils/json-extractor";
-import {
-  createLogger,
-  err,
-  RESPONSE_STATUS,
-  type Result,
-  tryCatch,
-} from "../base";
+import { createLogger, err, type Result, tryCatch } from "../base";
 import { getVacancyRequirements } from "../vacancy";
 
 const logger = createLogger("ResponseScreening");

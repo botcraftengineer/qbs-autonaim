@@ -1,5 +1,6 @@
 import { analyticsRouter } from "./routers/analytics";
 import { candidatesRouter } from "./routers/candidates";
+import { chatRouter } from "./routers/chat";
 import { companyRouter } from "./routers/company";
 import { customDomainRouter } from "./routers/custom-domain";
 import { filesRouter } from "./routers/files";
@@ -16,7 +17,11 @@ import { userRouter } from "./routers/user";
 import { vacancyRouter } from "./routers/vacancy";
 import { widgetConfigRouter } from "./routers/widget-config";
 import { workspaceRouter } from "./routers/workspace";
+import { registerChatEntities } from "./services/chat/register-entities";
 import { createTRPCRouter } from "./trpc";
+
+// Регистрация типов сущностей для AI чата
+registerChatEntities();
 
 export const appRouter = createTRPCRouter({
   user: userRouter,
@@ -36,6 +41,7 @@ export const appRouter = createTRPCRouter({
   analytics: analyticsRouter,
   recruiterAgent: recruiterAgentRouter,
   customDomain: customDomainRouter,
+  chat: chatRouter,
   ...(process.env.NODE_ENV !== "production" && { test: testRouter }),
 });
 

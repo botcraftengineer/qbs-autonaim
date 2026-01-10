@@ -2,8 +2,8 @@ import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
 import {
   interviewScoring,
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -36,20 +36,19 @@ export const listAll = protectedProcedure
     // Запрашиваем limit + 1 для определения hasMore
     const responses = await ctx.db
       .select({
-        response: vacancyResponse,
+        response: responseTable,
         vacancy: vacancy,
       })
-      .from(vacancyResponse)
-      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+      .from(responseTable)
+      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
       .where(
         and(
+          eq(responseTable.entityType, "vacancy"),
           eq(vacancy.workspaceId, input.workspaceId),
-          input.cursor
-            ? lt(vacancyResponse.createdAt, input.cursor)
-            : undefined,
+          input.cursor ? lt(responseTable.createdAt, input.cursor) : undefined,
         ),
       )
-      .orderBy(desc(vacancyResponse.createdAt))
+      .orderBy(desc(responseTable.createdAt))
       .limit(input.limit + 1);
 
     const hasMore = responses.length > input.limit;

@@ -1,8 +1,8 @@
 import { and, eq, gte, lte, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -48,10 +48,10 @@ export const exportAnalytics = protectedProcedure
         vacancyTitle: vacancy.title,
         platform: vacancy.source,
         vacancyCreatedAt: vacancy.createdAt,
-        totalResponses: sql<number>`COUNT(DISTINCT ${vacancyResponse.id})`,
+        totalResponses: sql<number>`COUNT(DISTINCT ${responseTable.id})`,
         completedInterviews: sql<number>`COUNT(DISTINCT CASE 
           WHEN ${responseScreening.id} IS NOT NULL 
-          THEN ${vacancyResponse.id} 
+          THEN ${responseTable.id} 
         END)`,
         avgScore: sql<number>`ROUND(AVG(${responseScreening.detailedScore}), 2)`,
         minScore: sql<number | null>`MIN(${responseScreening.detailedScore})`,
@@ -59,9 +59,9 @@ export const exportAnalytics = protectedProcedure
         completionRate: sql<number>`ROUND(
           CAST(COUNT(DISTINCT CASE 
             WHEN ${responseScreening.id} IS NOT NULL 
-            THEN ${vacancyResponse.id} 
+            THEN ${responseTable.id} 
           END) AS DECIMAL) / 
-          NULLIF(COUNT(DISTINCT ${vacancyResponse.id}), 0) * 100, 
+          NULLIF(COUNT(DISTINCT ${responseTable.id}), 0) * 100, 
           2
         )`,
         daysToFirstShortlist: sql<number | null>`ROUND(
@@ -70,10 +70,16 @@ export const exportAnalytics = protectedProcedure
         )`,
       })
       .from(vacancy)
-      .leftJoin(vacancyResponse, eq(vacancy.id, vacancyResponse.vacancyId))
+      .leftJoin(
+        responseTable,
+        and(
+          eq(vacancy.id, responseTable.entityId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
+      )
       .leftJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(and(...conditions))
       .groupBy(vacancy.id, vacancy.title, vacancy.source, vacancy.createdAt)

@@ -1,5 +1,8 @@
 import { eq } from "@qbs-autonaim/db";
-import { conversation, vacancyResponse } from "@qbs-autonaim/db/schema";
+import {
+  conversation,
+  response as responseTable,
+} from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -31,8 +34,8 @@ export const sendWelcome = protectedProcedure
     }
 
     // Получаем данные отклика
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    const response = await ctx.db.query.response.findFirst({
+      where: eq(responseTable.id, responseId),
       with: {
         vacancy: true,
       },
@@ -79,7 +82,7 @@ export const sendWelcome = protectedProcedure
       const updatedMetadata = {
         ...existingMetadata,
         responseId,
-        vacancyId: response.vacancyId,
+        vacancyId: response.entityId,
       };
 
       // Обновляем существующую conversation
@@ -101,7 +104,7 @@ export const sendWelcome = protectedProcedure
         status: "ACTIVE",
         metadata: {
           responseId,
-          vacancyId: response.vacancyId,
+          vacancyId: response.entityId,
         },
       });
     }

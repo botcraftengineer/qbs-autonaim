@@ -35,5 +35,5 @@ export const TELEGRAM = {
 } as const;
 
 export type { ResponseStatus } from "@qbs-autonaim/db/schema";
-// Re-export RESPONSE_STATUS from database schema for consistency
-export { RESPONSE_STATUS } from "@qbs-autonaim/db/schema";
+// Re-export ResponseStatus type from database schema for consistency
+// Note: RESPONSE_STATUS constant is available from @qbs-autonaim/db/schema

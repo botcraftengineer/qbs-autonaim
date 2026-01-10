@@ -1,8 +1,8 @@
 import { and, count, eq, gte, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -42,34 +42,45 @@ export const analytics = protectedProcedure
     // Получаем общее количество откликов
     const totalResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
-      .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+      .from(responseTable)
+      .where(
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.entityId, input.vacancyId),
+        ),
+      );
 
     const totalResponses = totalResponsesResult[0]?.count ?? 0;
 
     // Получаем количество обработанных откликов (с скринингом)
     const processedResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
-      .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+      .where(
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.entityId, input.vacancyId),
+        ),
+      );
 
     const processedResponses = processedResponsesResult[0]?.count ?? 0;
 
     // Получаем количество кандидатов со скорингом >= 3
     const highScoreResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
         and(
-          eq(vacancyResponse.vacancyId, input.vacancyId),
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.entityId, input.vacancyId),
           gte(responseScreening.score, 3),
         ),
       );
@@ -79,14 +90,15 @@ export const analytics = protectedProcedure
     // Получаем количество кандидатов со скорингом >= 4
     const topScoreResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
         and(
-          eq(vacancyResponse.vacancyId, input.vacancyId),
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.entityId, input.vacancyId),
           gte(responseScreening.score, 4),
         ),
       );
@@ -98,12 +110,17 @@ export const analytics = protectedProcedure
       .select({
         avg: sql<number>`COALESCE(AVG(${responseScreening.score}), 0)`,
       })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
-      .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+      .where(
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.entityId, input.vacancyId),
+        ),
+      );
 
     const avgScore = avgScoreResult[0]?.avg ?? 0;
 

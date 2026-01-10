@@ -1,5 +1,8 @@
-import { eq, inArray } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq, inArray } from "@qbs-autonaim/db";
+import {
+  type response as responseTable,
+  vacancy,
+} from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -34,8 +37,15 @@ export const vacancyStats = protectedProcedure
       return [];
     }
 
-    const responses = await ctx.db.query.vacancyResponse.findMany({
-      where: inArray(vacancyResponse.vacancyId, vacancyIds),
+    const responses = await ctx.db.query.response.findMany({
+      where: (
+        response: typeof responseTable,
+        { eq, and, inArray }: { eq: any; and: any; inArray: any },
+      ) =>
+        and(
+          inArray(response.entityId, vacancyIds),
+          eq(response.entityType, "vacancy"),
+        ),
     });
 
     const statsByVacancy = new Map<
@@ -51,7 +61,7 @@ export const vacancyStats = protectedProcedure
     >();
 
     for (const response of responses) {
-      const vacancyData = vacancies.find((v) => v.id === response.vacancyId);
+      const vacancyData = vacancies.find((v) => v.id === response.entityId);
       const vacancyName = vacancyData?.title ?? "Неизвестная вакансия";
 
       const stage = mapResponseToStage(
@@ -61,7 +71,7 @@ export const vacancyStats = protectedProcedure
       const isHired = stage === "HIRED";
       const isRejected = stage === "REJECTED";
 
-      const existing = statsByVacancy.get(response.vacancyId);
+      const existing = statsByVacancy.get(response.entityId);
 
       if (existing) {
         existing.total++;
@@ -73,8 +83,8 @@ export const vacancyStats = protectedProcedure
           existing.inProcess++;
         }
       } else {
-        statsByVacancy.set(response.vacancyId, {
-          vacancyId: response.vacancyId,
+        statsByVacancy.set(response.entityId, {
+          vacancyId: response.entityId,
           vacancyName,
           total: 1,
           inProcess: !isHired && !isRejected ? 1 : 0,

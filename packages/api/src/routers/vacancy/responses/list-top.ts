@@ -1,5 +1,5 @@
 import { desc } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -27,8 +27,9 @@ export const listTop = protectedProcedure
       });
     }
 
-    const allResponses = await ctx.db.query.vacancyResponse.findMany({
-      orderBy: [desc(vacancyResponse.createdAt)],
+    const allResponses = await ctx.db.query.response.findMany({
+      orderBy: [desc(responseTable.createdAt)],
+      where: (response, { eq }) => eq(response.entityType, "vacancy"),
       with: {
         vacancy: {
           columns: {

@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import type { response as responseTable } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -32,8 +32,15 @@ export const sendOffer = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.candidateId),
+    const response = await ctx.db.query.response.findFirst({
+      where: (
+        response: typeof responseTable,
+        { eq, and }: { eq: any; and: any },
+      ) =>
+        and(
+          eq(response.id, input.candidateId),
+          eq(response.entityType, "vacancy"),
+        ),
       with: {
         vacancy: true,
       },
@@ -64,14 +71,19 @@ export const sendOffer = protectedProcedure
 
     // Обновляем статус и сохраняем детали оффера
     await ctx.db
-      .update(vacancyResponse)
+      .update(responseTable)
       .set({
         hrSelectionStatus: "OFFER",
         status: "COMPLETED",
         contacts: updatedContacts,
         updatedAt: new Date(),
       })
-      .where(eq(vacancyResponse.id, input.candidateId));
+      .where(
+        and(
+          eq(responseTable.id, input.candidateId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
+      );
 
     // Отправляем событие в Inngest для асинхронной отправки сообщения в Telegram
     try {

@@ -67,8 +67,12 @@ export class ShortlistGenerator {
     const { minScore = 60, maxCandidates = 10, sortBy = "SCORE" } = options;
 
     // Получаем все отклики для вакансии с оценками
-    const responses = await db.query.vacancyResponse.findMany({
-      where: (response, { eq }) => eq(response.vacancyId, vacancyId),
+    const responses = await db.query.response.findMany({
+      where: (response, { eq, and }) =>
+        and(
+          eq(response.entityType, "vacancy"),
+          eq(response.entityId, vacancyId),
+        ),
       with: {
         screening: true,
         conversation: {

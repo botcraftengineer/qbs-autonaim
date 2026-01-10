@@ -1,5 +1,5 @@
 import { and, count as countFn, eq } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -43,8 +43,13 @@ export const getCount = protectedProcedure
 
     const result = await ctx.db
       .select({ count: countFn() })
-      .from(vacancyResponse)
-      .where(eq(vacancyResponse.vacancyId, input.vacancyId));
+      .from(responseTable)
+      .where(
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          eq(responseTable.entityId, input.vacancyId),
+        ),
+      );
 
     return { total: result[0]?.count ?? 0 };
   });

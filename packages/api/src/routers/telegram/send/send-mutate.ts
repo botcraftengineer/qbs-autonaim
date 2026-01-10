@@ -2,7 +2,7 @@ import {
   conversation,
   conversationMessage,
   eq,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { uuidv7Schema } from "@qbs-autonaim/validators";
@@ -35,13 +35,10 @@ export const sendMutateRouter = protectedProcedure
     const conversationData = await ctx.db
       .select({
         id: conversation.id,
-        chatId: vacancyResponse.chatId,
+        chatId: responseTable.chatId,
       })
       .from(conversation)
-      .innerJoin(
-        vacancyResponse,
-        eq(conversation.responseId, vacancyResponse.id),
-      )
+      .innerJoin(responseTable, eq(conversation.responseId, responseTable.id))
       .where(eq(conversation.id, input.conversationId))
       .limit(1);
 

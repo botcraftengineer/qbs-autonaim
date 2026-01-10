@@ -34,10 +34,11 @@ export const responsesChart = protectedProcedure
     const ninetyDaysAgo = new Date();
     ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
 
-    const responses = await ctx.db.query.vacancyResponse.findMany({
-      where: (response, { and, inArray, gte }) =>
+    const responses = await ctx.db.query.response.findMany({
+      where: (response, { and, inArray, gte, eq }) =>
         and(
-          inArray(response.vacancyId, vacancyIds),
+          eq(response.entityType, "vacancy"),
+          inArray(response.entityId, vacancyIds),
           gte(response.createdAt, ninetyDaysAgo),
         ),
       with: {

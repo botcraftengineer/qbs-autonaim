@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import type { response as responseTable } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -26,8 +26,15 @@ export const updateSalaryExpectations = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.candidateId),
+    const response = await ctx.db.query.response.findFirst({
+      where: (
+        response: typeof responseTable,
+        { eq, and }: { eq: any; and: any },
+      ) =>
+        and(
+          eq(response.id, input.candidateId),
+          eq(response.entityType, "vacancy"),
+        ),
       with: {
         vacancy: {
           columns: {
@@ -52,12 +59,17 @@ export const updateSalaryExpectations = protectedProcedure
     }
 
     await ctx.db
-      .update(vacancyResponse)
+      .update(responseTable)
       .set({
         salaryExpectations: input.salaryExpectations,
         updatedAt: new Date(),
       })
-      .where(eq(vacancyResponse.id, input.candidateId));
+      .where(
+        and(
+          eq(responseTable.id, input.candidateId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
+      );
 
     return { success: true };
   });

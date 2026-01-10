@@ -42,19 +42,19 @@ export const getImageUrl = protectedProcedure
 
     // Получаем файл из БД с проверкой принадлежности к workspace
     // Файлы могут быть связаны через:
-    // 1. vacancyResponse (resumePdfFileId, photoFileId) → vacancy → workspace
-    // 2. conversationMessage (fileId) → conversation → vacancyResponse → vacancy → workspace
+    // 1. response (resumePdfFileId, photoFileId) → vacancy → workspace
+    // 2. conversationMessage (fileId) → conversation → response → vacancy → workspace
     const fileRecord = await ctx.db.query.file.findFirst({
       where: (files, { eq }) => eq(files.id, input.fileId),
       with: {
-        // Проверяем связь через vacancyResponse (resumePdfFileId)
-        vacancyResponsesAsResumePdf: {
+        // Проверяем связь через response (resumePdfFileId)
+        responsesAsResumePdf: {
           with: {
             vacancy: true,
           },
         },
-        // Проверяем связь через vacancyResponse (photoFileId)
-        vacancyResponsesAsPhoto: {
+        // Проверяем связь через response (photoFileId)
+        responsesAsPhoto: {
           with: {
             vacancy: true,
           },
@@ -85,10 +85,10 @@ export const getImageUrl = protectedProcedure
 
     // Проверяем что файл принадлежит указанному workspace
     const belongsToWorkspace =
-      fileRecord.vacancyResponsesAsResumePdf.some(
+      fileRecord.responsesAsResumePdf.some(
         (response) => response.vacancy.workspaceId === input.workspaceId,
       ) ||
-      fileRecord.vacancyResponsesAsPhoto.some(
+      fileRecord.responsesAsPhoto.some(
         (response) => response.vacancy.workspaceId === input.workspaceId,
       ) ||
       fileRecord.conversationMessages.some(

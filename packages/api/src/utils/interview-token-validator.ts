@@ -117,8 +117,9 @@ export async function hasConversationAccess(
     // Проверяем доступ через vacancy response
     const responseId = conv.responseId;
     if (responseId) {
-      const vacancyResponse = await db.query.vacancyResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, responseId),
+      const vacancyResponse = await db.query.response.findFirst({
+        where: (response, { eq, and }) =>
+          and(eq(response.id, responseId), eq(response.entityType, "vacancy")),
         with: {
           vacancy: true,
         },
@@ -168,11 +169,12 @@ export async function hasConversationAccess(
     // Для vacancy токена проверяем responseId
     const responseId = conv.responseId;
     if (validatedToken.type === "vacancy" && responseId) {
-      const vacancyResponse = await db.query.vacancyResponse.findFirst({
-        where: (response, { eq }) => eq(response.id, responseId),
+      const vacancyResponse = await db.query.response.findFirst({
+        where: (response, { eq, and }) =>
+          and(eq(response.id, responseId), eq(response.entityType, "vacancy")),
       });
 
-      if (vacancyResponse?.vacancyId === validatedToken.entityId) {
+      if (vacancyResponse?.entityId === validatedToken.entityId) {
         return true;
       }
     }

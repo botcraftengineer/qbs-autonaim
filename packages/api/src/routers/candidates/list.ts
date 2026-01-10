@@ -1,5 +1,13 @@
-import { and, eq, ilike, inArray, lt, or } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, desc, eq, ilike, inArray, lt, or } from "@qbs-autonaim/db";
+import {
+  conversationMessage as conversationMessageTable,
+  conversation as conversationTable,
+  file as fileTable,
+  interviewScoring as interviewScoringTable,
+  responseScreening as responseScreeningTable,
+  response as responseTable,
+  vacancy,
+} from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -88,10 +96,13 @@ export const list = protectedProcedure
       };
     }
 
-    const conditions = [inArray(vacancyResponse.vacancyId, vacancyIds)];
+    const conditions = [
+      eq(responseTable.entityType, "vacancy"),
+      inArray(responseTable.entityId, vacancyIds),
+    ];
 
     if (input.vacancyId) {
-      conditions.push(eq(vacancyResponse.vacancyId, input.vacancyId));
+      conditions.push(eq(responseTable.entityId, input.vacancyId));
     }
 
     if (input.search) {
@@ -102,11 +113,11 @@ export const list = protectedProcedure
         )
         .map((v) => v.id);
 
-      const searchConditions = [ilike(vacancyResponse.candidateName, search)];
+      const searchConditions = [ilike(responseTable.candidateName, search)];
 
       if (matchingVacancyIds.length > 0) {
         searchConditions.push(
-          inArray(vacancyResponse.vacancyId, matchingVacancyIds),
+          inArray(responseTable.entityId, matchingVacancyIds),
         );
       }
 
@@ -120,44 +131,42 @@ export const list = protectedProcedure
       const stageConditions = [];
 
       if (input.stages.includes("ONBOARDING")) {
-        stageConditions.push(
-          eq(vacancyResponse.hrSelectionStatus, "ONBOARDING"),
-        );
+        stageConditions.push(eq(responseTable.hrSelectionStatus, "ONBOARDING"));
       }
 
       if (input.stages.includes("OFFER_SENT")) {
-        stageConditions.push(eq(vacancyResponse.hrSelectionStatus, "OFFER"));
+        stageConditions.push(eq(responseTable.hrSelectionStatus, "OFFER"));
       }
 
       if (input.stages.includes("REJECTED")) {
         stageConditions.push(
           or(
-            inArray(vacancyResponse.hrSelectionStatus, [
+            inArray(responseTable.hrSelectionStatus, [
               "REJECTED",
               "NOT_RECOMMENDED",
             ]),
-            eq(vacancyResponse.status, "SKIPPED"),
+            eq(responseTable.status, "SKIPPED"),
           ),
         );
       }
 
       if (input.stages.includes("SCREENING_DONE")) {
-        stageConditions.push(eq(vacancyResponse.status, "EVALUATED"));
+        stageConditions.push(eq(responseTable.status, "EVALUATED"));
       }
 
       if (input.stages.includes("INTERVIEW")) {
-        stageConditions.push(eq(vacancyResponse.status, "INTERVIEW"));
+        stageConditions.push(eq(responseTable.status, "INTERVIEW"));
       }
 
       if (input.stages.includes("SECURITY_PASSED")) {
         stageConditions.push(
-          eq(vacancyResponse.hrSelectionStatus, "SECURITY_PASSED"),
+          eq(responseTable.hrSelectionStatus, "SECURITY_PASSED"),
         );
       }
 
       if (input.stages.includes("CONTRACT_SENT")) {
         stageConditions.push(
-          eq(vacancyResponse.hrSelectionStatus, "CONTRACT_SENT"),
+          eq(responseTable.hrSelectionStatus, "CONTRACT_SENT"),
         );
       }
 
@@ -170,38 +179,19 @@ export const list = protectedProcedure
     }
 
     if (input.cursor) {
-      conditions.push(lt(vacancyResponse.id, input.cursor));
+      conditions.push(lt(responseTable.id, input.cursor));
     }
 
     // Подсчитываем общее количество для пагинации
-    const totalCount = await ctx.db.query.vacancyResponse.findMany({
+    const totalCount = await ctx.db.query.response.findMany({
       where: and(...conditions),
       columns: { id: true },
     });
 
-    const responses = await ctx.db.query.vacancyResponse.findMany({
+    const responses = await ctx.db.query.response.findMany({
       where: and(...conditions),
-      orderBy: (responses, { desc }) => [desc(responses.id)],
+      orderBy: [desc(responseTable.id)],
       limit: input.limit + 1,
-      with: {
-        screening: {
-          columns: { detailedScore: true },
-        },
-        interviewScoring: {
-          columns: { detailedScore: true },
-        },
-        photoFile: {
-          columns: { id: true },
-        },
-        conversation: {
-          columns: { id: true },
-          with: {
-            messages: {
-              columns: { id: true },
-            },
-          },
-        },
-      },
     });
 
     let nextCursor: string | undefined;
@@ -210,12 +200,63 @@ export const list = protectedProcedure
       nextCursor = nextItem?.id;
     }
 
+    // Query related data for all responses
+    const responseIds = responses.map((r) => r.id);
+
+    const screenings = await ctx.db.query.responseScreening.findMany({
+      where: inArray(responseScreeningTable.responseId, responseIds),
+    });
+
+    const conversations = await ctx.db.query.conversation.findMany({
+      where: inArray(conversationTable.responseId, responseIds),
+    });
+
+    const conversationIds = conversations.map((c) => c.id);
+    const interviewScorings =
+      conversationIds.length > 0
+        ? await ctx.db.query.interviewScoring.findMany({
+            where: inArray(
+              interviewScoringTable.conversationId,
+              conversationIds,
+            ),
+          })
+        : [];
+
+    // Get message counts
+    const messageCounts = new Map<string, number>();
+    for (const conv of conversations) {
+      const messages = await ctx.db.query.conversationMessage.findMany({
+        where: eq(conversationMessageTable.conversationId, conv.id),
+        columns: { id: true },
+      });
+      if (conv.responseId) {
+        messageCounts.set(conv.responseId, messages.length);
+      }
+    }
+
+    // Get photo files
+    const photoFileIds = responses
+      .map((r) => r.photoFileId)
+      .filter((id): id is string => id !== null);
+    const photoFiles =
+      photoFileIds.length > 0
+        ? await ctx.db.query.file.findMany({
+            where: inArray(fileTable.id, photoFileIds),
+          })
+        : [];
+
     const items = responses.map((r) => {
-      const vacancyData = vacancies.find((v) => v.id === r.vacancyId);
+      const vacancyData = vacancies.find((v) => v.id === r.entityId);
       const stage = mapResponseToStage(r.status, r.hrSelectionStatus);
 
-      const resumeScore = r.screening?.detailedScore;
-      const interviewScore = r.interviewScoring?.detailedScore;
+      const screening = screenings.find((s) => s.responseId === r.id);
+      const conversation = conversations.find((c) => c.responseId === r.id);
+      const interviewScoring = conversation
+        ? interviewScorings.find((is) => is.conversationId === conversation.id)
+        : null;
+
+      const resumeScore = screening?.detailedScore;
+      const interviewScore = interviewScoring?.detailedScore;
 
       const matchScore =
         resumeScore !== undefined && interviewScore !== undefined
@@ -225,8 +266,9 @@ export const list = protectedProcedure
       const contacts = r.contacts as Record<string, string> | null;
       const telegram = r.telegramUsername || contacts?.telegram || null;
       const email = contacts?.email || null;
-      const avatarFileId = r.photoFile?.id ?? null;
-      const messageCount = r.conversation?.messages?.length ?? 0;
+      const photoFile = photoFiles.find((f) => f.id === r.photoFileId);
+      const avatarFileId = photoFile?.id ?? null;
+      const messageCount = r.id ? (messageCounts.get(r.id) ?? 0) : 0;
 
       return {
         id: r.id,
@@ -236,8 +278,8 @@ export const list = protectedProcedure
         initials:
           r.candidateName
             ?.split(" ")
-            .filter((n) => n.length > 0)
-            .map((n) => n[0])
+            .filter((n: string) => n.length > 0)
+            .map((n: string) => n[0])
             .join("")
             .toUpperCase()
             .slice(0, 2) || "??",
@@ -247,7 +289,7 @@ export const list = protectedProcedure
         stage,
         status: r.status,
         hrSelectionStatus: r.hrSelectionStatus,
-        vacancyId: r.vacancyId,
+        vacancyId: r.entityId,
         vacancyName: vacancyData?.title || "Неизвестная вакансия",
         salaryExpectation: "Не указано",
         email: email,

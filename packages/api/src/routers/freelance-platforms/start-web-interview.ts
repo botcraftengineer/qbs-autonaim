@@ -2,7 +2,7 @@ import {
   conversation,
   conversationMessage,
   gigResponse,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
@@ -136,7 +136,7 @@ async function handleVacancyInterview(
   >[0]["ctx"] extends infer T
     ? T
     : never,
-  vacancyLink: { id: string; vacancyId: string },
+  vacancyLink: { id: string; entityId: string },
   freelancerInfo: {
     name: string;
     email?: string;
@@ -148,7 +148,7 @@ async function handleVacancyInterview(
 ) {
   // Получаем вакансию
   const vacancy = await ctx.db.query.vacancy.findFirst({
-    where: (v, { eq }) => eq(v.id, vacancyLink.vacancyId),
+    where: (v, { eq }) => eq(v.id, vacancyLink.entityId),
     with: {
       workspace: {
         with: {
@@ -160,13 +160,13 @@ async function handleVacancyInterview(
 
   if (!vacancy) {
     throw await errorHandler.handleNotFoundError("Вакансия", {
-      vacancyId: vacancyLink.vacancyId,
+      vacancyId: vacancyLink.entityId,
     });
   }
 
   if (!vacancy.isActive) {
     throw await errorHandler.handleValidationError("Вакансия закрыта", {
-      vacancyId: vacancyLink.vacancyId,
+      vacancyId: vacancyLink.entityId,
     });
   }
 
@@ -176,10 +176,14 @@ async function handleVacancyInterview(
   );
 
   // Проверяем дубликаты по нормализованному URL
-  const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
-    where: (response, { and, eq }) =>
+  const existingResponse = await ctx.db.query.response.findFirst({
+    where: (
+      response: typeof responseTable,
+      { and, eq }: { and: any; eq: any },
+    ) =>
       and(
-        eq(response.vacancyId, vacancyLink.vacancyId),
+        eq(response.entityId, vacancyLink.entityId),
+        eq(response.entityType, "vacancy"),
         eq(response.platformProfileUrl, normalizedProfileUrl),
       ),
   });
@@ -188,7 +192,7 @@ async function handleVacancyInterview(
     throw await errorHandler.handleConflictError(
       "Вы уже откликнулись на эту вакансию",
       {
-        vacancyId: vacancyLink.vacancyId,
+        vacancyId: vacancyLink.entityId,
         platformProfileUrl: normalizedProfileUrl,
       },
     );
@@ -196,9 +200,10 @@ async function handleVacancyInterview(
 
   // Создаём отклик с нормализованным URL
   const [response] = await ctx.db
-    .insert(vacancyResponse)
+    .insert(responseTable)
     .values({
-      vacancyId: vacancyLink.vacancyId,
+      entityId: vacancyLink.entityId,
+      entityType: "vacancy",
       resumeId: `freelance_web_${crypto.randomUUID()}`,
       resumeUrl: freelancerInfo.platformProfileUrl,
       candidateName: freelancerInfo.name,
@@ -220,7 +225,7 @@ async function handleVacancyInterview(
     throw await errorHandler.handleInternalError(
       new Error("Failed to create response"),
       {
-        vacancyId: vacancyLink.vacancyId,
+        vacancyId: vacancyLink.entityId,
         freelancerName: freelancerInfo.name,
       },
     );
@@ -275,7 +280,7 @@ async function handleVacancyInterview(
     type: "vacancy" as const,
     conversationId: conv.id,
     responseId: response.id,
-    entityId: response.vacancyId,
+    entityId: response.entityId,
     welcomeMessage,
   };
 }

@@ -1,3 +1,8 @@
+import { and, eq } from "@qbs-autonaim/db";
+import {
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -12,15 +17,11 @@ export const refreshResume = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const { candidateId, workspaceId } = input;
 
-    const candidate = await ctx.db.query.vacancyResponse.findFirst({
-      where: (response, { eq }) => eq(response.id, candidateId),
-      with: {
-        vacancy: {
-          columns: {
-            workspaceId: true,
-          },
-        },
-      },
+    const candidate = await ctx.db.query.response.findFirst({
+      where: and(
+        eq(responseTable.id, candidateId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     if (!candidate) {
@@ -30,14 +31,22 @@ export const refreshResume = protectedProcedure
       });
     }
 
-    if (!candidate.vacancy) {
+    // Query vacancy separately using entityId
+    const vacancy = await ctx.db.query.vacancy.findFirst({
+      where: eq(vacancyTable.id, candidate.entityId),
+      columns: {
+        workspaceId: true,
+      },
+    });
+
+    if (!vacancy) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Вакансия для кандидата не найдена",
       });
     }
 
-    if (candidate.vacancy.workspaceId !== workspaceId) {
+    if (vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому кандидату",

@@ -1,24 +1,28 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancyResponseHistory } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import {
+  type response as responseTable,
+  vacancyResponseHistory,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const EVENT_TYPE_DESCRIPTIONS: Record<string, string> = {
-  CREATED: "Кандидат откликнулся на вакансию",
   STATUS_CHANGED: "Статус изменен",
   HR_STATUS_CHANGED: "HR статус изменен",
   TELEGRAM_USERNAME_ADDED: "Добавлен Telegram username",
   CHAT_ID_ADDED: "Добавлен Chat ID",
-  PHONE_ADDED: "Добавлен номер телефона",
+  PHONE_ADDED: "Добавлен телефон",
   RESUME_UPDATED: "Резюме обновлено",
   PHOTO_ADDED: "Добавлено фото",
-  WELCOME_SENT: "Отправлено приветственное сообщение",
-  OFFER_SENT: "Отправлен оффер",
+  WELCOME_SENT: "Отправлено приветствие",
+  OFFER_SENT: "Отправлено предложение",
   COMMENT_ADDED: "Добавлен комментарий",
   SALARY_UPDATED: "Обновлена зарплата",
   CONTACT_INFO_UPDATED: "Обновлена контактная информация",
+  CREATED: "Создан",
 };
 
 export const listActivities = protectedProcedure
@@ -32,15 +36,11 @@ export const listActivities = protectedProcedure
     const { candidateId, workspaceId } = input;
 
     // Проверяем существование отклика и доступ к workspace
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: (response, { eq }) => eq(response.id, candidateId),
-      with: {
-        vacancy: {
-          columns: {
-            workspaceId: true,
-          },
-        },
-      },
+    const response = await ctx.db.query.response.findFirst({
+      where: and(
+        eq(responseTable.id, candidateId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     if (!response) {
@@ -50,14 +50,22 @@ export const listActivities = protectedProcedure
       });
     }
 
-    if (!response.vacancy) {
+    // Query vacancy separately using entityId
+    const vacancy = await ctx.db.query.vacancy.findFirst({
+      where: eq(vacancyTable.id, response.entityId),
+      columns: {
+        workspaceId: true,
+      },
+    });
+
+    if (!vacancy) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Вакансия для этого кандидата не найдена",
       });
     }
 
-    if (response.vacancy.workspaceId !== workspaceId) {
+    if (vacancy.workspaceId !== workspaceId) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому кандидату",

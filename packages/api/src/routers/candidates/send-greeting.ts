@@ -1,5 +1,5 @@
 import { and, eq, isNull } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import type { response as responseTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -14,8 +14,12 @@ export const sendGreeting = protectedProcedure
   .mutation(async ({ ctx, input }) => {
     const { candidateId, workspaceId } = input;
 
-    const candidate = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, candidateId),
+    const candidate = await ctx.db.query.response.findFirst({
+      where: (
+        response: typeof responseTable,
+        { eq, and }: { eq: any; and: any },
+      ) =>
+        and(eq(response.id, candidateId), eq(response.entityType, "vacancy")),
       with: {
         vacancy: {
           columns: {
@@ -42,15 +46,16 @@ export const sendGreeting = protectedProcedure
     // Идемпотентное обновление: устанавливаем welcomeSentAt только если оно NULL
     // Это предотвращает race condition при конкурентных запросах
     const updateResult = await ctx.db
-      .update(vacancyResponse)
+      .update(responseTable)
       .set({ welcomeSentAt: new Date() })
       .where(
         and(
-          eq(vacancyResponse.id, candidateId),
-          isNull(vacancyResponse.welcomeSentAt),
+          eq(responseTable.id, candidateId),
+          eq(responseTable.entityType, "vacancy"),
+          isNull(responseTable.welcomeSentAt),
         ),
       )
-      .returning({ id: vacancyResponse.id });
+      .returning({ id: responseTable.id });
 
     // Проверяем, была ли обновлена строка
     // Если 0 строк обновлено, значит приветствие уже было отправлено
@@ -77,9 +82,14 @@ export const sendGreeting = protectedProcedure
 
       // Откатываем welcomeSentAt, чтобы можно было повторить попытку
       await ctx.db
-        .update(vacancyResponse)
+        .update(responseTable)
         .set({ welcomeSentAt: null })
-        .where(eq(vacancyResponse.id, candidateId));
+        .where(
+          and(
+            eq(responseTable.id, candidateId),
+            eq(responseTable.entityType, "vacancy"),
+          ),
+        );
 
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",

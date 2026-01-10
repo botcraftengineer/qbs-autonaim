@@ -1,5 +1,13 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancy, vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import {
+  conversationMessage as conversationMessageTable,
+  conversation as conversationTable,
+  file as fileTable,
+  interviewScoring as interviewScoringTable,
+  responseScreening as responseScreeningTable,
+  response as responseTable,
+  vacancy,
+} from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -58,21 +66,11 @@ export const getById = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.candidateId),
-      with: {
-        screening: true,
-        interviewScoring: true,
-        photoFile: true,
-        resumePdfFile: true,
-        conversation: {
-          with: {
-            messages: {
-              columns: { id: true },
-            },
-          },
-        },
-      },
+    const response = await ctx.db.query.response.findFirst({
+      where: and(
+        eq(responseTable.id, input.candidateId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     if (!response) {
@@ -83,7 +81,7 @@ export const getById = protectedProcedure
     }
 
     const vacancyData = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancy.id, response.vacancyId),
+      where: eq(vacancy.id, response.entityId),
       columns: { id: true, title: true, workspaceId: true },
     });
 
@@ -94,13 +92,51 @@ export const getById = protectedProcedure
       });
     }
 
+    // Query related data separately
+    const screening = await ctx.db.query.responseScreening.findFirst({
+      where: eq(responseScreeningTable.responseId, response.id),
+    });
+
+    const conversation = await ctx.db.query.conversation.findFirst({
+      where: eq(conversationTable.responseId, response.id),
+    });
+
+    let interviewScoring = null;
+    let messageCount = 0;
+
+    if (conversation) {
+      interviewScoring = await ctx.db.query.interviewScoring.findFirst({
+        where: eq(interviewScoringTable.conversationId, conversation.id),
+      });
+
+      const messages = await ctx.db.query.conversationMessage.findMany({
+        where: eq(conversationMessageTable.conversationId, conversation.id),
+        columns: { id: true },
+      });
+      messageCount = messages.length;
+    }
+
+    let photoFile = null;
+    if (response.photoFileId) {
+      photoFile = await ctx.db.query.file.findFirst({
+        where: eq(fileTable.id, response.photoFileId),
+      });
+    }
+
+    let resumePdfFile = null;
+    if (response.resumePdfFileId) {
+      resumePdfFile = await ctx.db.query.file.findFirst({
+        where: eq(fileTable.id, response.resumePdfFileId),
+      });
+    }
+
     const stage = mapResponseToStage(
       response.status,
       response.hrSelectionStatus,
     );
 
-    const resumeScore = response.screening?.detailedScore;
-    const interviewScore = response.interviewScoring?.detailedScore;
+    const resumeScore = screening?.detailedScore;
+    const interviewScore = interviewScoring?.detailedScore;
 
     const matchScore =
       resumeScore !== undefined && interviewScore !== undefined
@@ -113,12 +149,11 @@ export const getById = protectedProcedure
     const github = contacts?.github || contacts?.gitHub || null;
     const telegram = response.telegramUsername || contacts?.telegram || null;
 
-    const avatarFileId = response.photoFile?.id ?? null;
-    const messageCount = response.conversation?.messages?.length ?? 0;
+    const avatarFileId = photoFile?.id ?? null;
 
     let resumePdfUrl: string | null = null;
-    if (response.resumePdfFile) {
-      resumePdfUrl = await getDownloadUrl(response.resumePdfFile.key);
+    if (resumePdfFile) {
+      resumePdfUrl = await getDownloadUrl(resumePdfFile.key);
     }
 
     return {
@@ -129,8 +164,8 @@ export const getById = protectedProcedure
       initials:
         response.candidateName
           ?.split(" ")
-          .filter((n) => n.length > 0)
-          .map((n) => n[0])
+          .filter((n: string) => n.length > 0)
+          .map((n: string) => n[0])
           .join("")
           .toUpperCase()
           .slice(0, 2) || "??",
@@ -139,22 +174,21 @@ export const getById = protectedProcedure
       matchScore,
       resumeScore,
       interviewScore,
-      scoreAnalysis: response.interviewScoring?.analysis ?? undefined,
-      screeningAnalysis: response.screening?.analysis ?? undefined,
+      scoreAnalysis: interviewScoring?.analysis ?? undefined,
+      screeningAnalysis: screening?.analysis ?? undefined,
       availability: "Не указано",
       salaryExpectation: response.salaryExpectations || "Не указано",
       stage,
       status: response.status,
       hrSelectionStatus: response.hrSelectionStatus,
-      vacancyId: response.vacancyId,
+      vacancyId: response.entityId,
       vacancyName: vacancyData.title || "Неизвестная вакансия",
       email: email,
       phone: contactPhone,
       github: github,
       telegram: telegram,
-      resumeUrl: response.resumeUrl,
       resumePdfUrl,
-      messageCount,
+      messageCount: messageCount,
       createdAt: response.createdAt,
       updatedAt: response.updatedAt,
     };

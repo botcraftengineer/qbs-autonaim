@@ -1,9 +1,9 @@
 import {
+  response as responseTable,
   vacancy,
-  vacancyResponse,
   vacancyResponseComment,
 } from "@qbs-autonaim/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -19,11 +19,16 @@ export const addComment = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const [candidate] = await ctx.db
       .select({
-        id: vacancyResponse.id,
-        vacancyId: vacancyResponse.vacancyId,
+        id: responseTable.id,
+        vacancyId: responseTable.entityId,
       })
-      .from(vacancyResponse)
-      .where(eq(vacancyResponse.id, input.candidateId))
+      .from(responseTable)
+      .where(
+        and(
+          eq(responseTable.id, input.candidateId),
+          eq(responseTable.entityType, "vacancy"),
+        ),
+      )
       .limit(1);
 
     if (!candidate) {

@@ -1,5 +1,6 @@
 export * from "./audit";
 export * from "./auth";
+export * from "./chat";
 export * from "./company";
 export * from "./conversation";
 export * from "./custom-domain";
@@ -11,6 +12,7 @@ export * from "./interview";
 export * from "./organization";
 export * from "./prequalification";
 export * from "./recruiter-agent";
+export * from "./response";
 export * from "./telegram";
 export * from "./types";
 export * from "./vacancy";

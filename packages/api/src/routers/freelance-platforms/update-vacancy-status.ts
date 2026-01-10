@@ -62,7 +62,12 @@ export const updateVacancyStatus = protectedProcedure
       await ctx.db
         .update(interviewLink)
         .set({ isActive: false })
-        .where(eq(interviewLink.vacancyId, input.id));
+        .where(
+          and(
+            eq(interviewLink.entityId, input.id),
+            eq(interviewLink.entityType, "vacancy"),
+          ),
+        );
     }
 
     return updatedVacancy;

@@ -4,7 +4,6 @@ export type { ResponseStatus } from "./constants";
 // Constants
 export {
   INTERVIEW,
-  RESPONSE_STATUS,
   SCREENING,
   TELEGRAM,
 } from "./constants";

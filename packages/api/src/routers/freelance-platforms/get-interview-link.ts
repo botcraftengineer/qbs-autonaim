@@ -45,7 +45,8 @@ export const getInterviewLink = protectedProcedure
     // Получаем активную ссылку на интервью
     const activeInterviewLink = await ctx.db.query.interviewLink.findFirst({
       where: and(
-        eq(interviewLink.vacancyId, input.vacancyId),
+        eq(interviewLink.entityType, "vacancy"),
+        eq(interviewLink.entityId, input.vacancyId),
         eq(interviewLink.isActive, true),
       ),
     });
@@ -65,7 +66,7 @@ export const getInterviewLink = protectedProcedure
 
     return {
       id: activeInterviewLink.id,
-      vacancyId: activeInterviewLink.vacancyId,
+      vacancyId: activeInterviewLink.entityId,
       token: activeInterviewLink.token,
       url,
       isActive: activeInterviewLink.isActive,

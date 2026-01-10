@@ -1,8 +1,8 @@
 import {
   conversation,
   conversationMessage,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { and, desc, eq, inArray } from "drizzle-orm";
@@ -27,18 +27,19 @@ export const getAllConversationsRouter = protectedProcedure
     const conversations = await ctx.db
       .select()
       .from(conversation)
-      .innerJoin(
-        vacancyResponse,
-        eq(conversation.responseId, vacancyResponse.id),
-      )
-      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+      .innerJoin(responseTable, eq(conversation.responseId, responseTable.id))
+      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
       .where(
         input.vacancyId
           ? and(
+              eq(responseTable.entityType, "vacancy"),
               eq(vacancy.workspaceId, input.workspaceId),
-              eq(vacancyResponse.vacancyId, input.vacancyId),
+              eq(responseTable.entityId, input.vacancyId),
             )
-          : eq(vacancy.workspaceId, input.workspaceId),
+          : and(
+              eq(responseTable.entityType, "vacancy"),
+              eq(vacancy.workspaceId, input.workspaceId),
+            ),
       );
 
     if (conversations.length === 0) {
@@ -66,7 +67,7 @@ export const getAllConversationsRouter = protectedProcedure
         ...conv.conversations,
         messages: lastMessage ? [lastMessage] : [],
         response: {
-          ...conv.vacancy_responses,
+          ...conv.responses,
           vacancy: conv.vacancies,
         },
       };

@@ -15,12 +15,14 @@
  */
 
 import type { TelegramClient } from "@mtcute/bun";
-import { desc, eq } from "@qbs-autonaim/db";
+import { and, desc, eq, or } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   conversation,
   conversationMessage,
-  vacancyResponse,
+  gig,
+  response,
+  vacancy,
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
 import { messageDataSchema } from "../schemas/message-data.schema";
@@ -45,6 +47,8 @@ type ConversationWithChatId = {
   createdAt: Date;
   updatedAt: Date;
   chatId: string | null;
+  workspaceId: string;
+  entityType: "gig" | "vacancy" | "project";
 };
 
 function buildMessageData(message: {
@@ -117,7 +121,9 @@ export async function processMissedMessages(
   const startTime = Date.now();
   console.log("🔍 Проверка пропущенных сообщений...");
 
-  const conversations = await db
+  // Get active conversations with their chatId and workspaceId
+  // We need to join with both gig and vacancy tables to get workspaceId
+  const gigConversations = await db
     .select({
       id: conversation.id,
       responseId: conversation.responseId,
@@ -127,11 +133,44 @@ export async function processMissedMessages(
       metadata: conversation.metadata,
       createdAt: conversation.createdAt,
       updatedAt: conversation.updatedAt,
-      chatId: vacancyResponse.chatId,
+      chatId: response.chatId,
+      workspaceId: gig.workspaceId,
+      entityType: response.entityType,
     })
     .from(conversation)
-    .innerJoin(vacancyResponse, eq(conversation.responseId, vacancyResponse.id))
+    .innerJoin(response, eq(conversation.responseId, response.id))
+    .innerJoin(
+      gig,
+      and(eq(response.entityType, "gig"), eq(response.entityId, gig.id)),
+    )
     .where(eq(conversation.status, "ACTIVE"));
+
+  const vacancyConversations = await db
+    .select({
+      id: conversation.id,
+      responseId: conversation.responseId,
+      candidateName: conversation.candidateName,
+      username: conversation.username,
+      status: conversation.status,
+      metadata: conversation.metadata,
+      createdAt: conversation.createdAt,
+      updatedAt: conversation.updatedAt,
+      chatId: response.chatId,
+      workspaceId: vacancy.workspaceId,
+      entityType: response.entityType,
+    })
+    .from(conversation)
+    .innerJoin(response, eq(conversation.responseId, response.id))
+    .innerJoin(
+      vacancy,
+      and(
+        eq(response.entityType, "vacancy"),
+        eq(response.entityId, vacancy.id),
+      ),
+    )
+    .where(eq(conversation.status, "ACTIVE"));
+
+  const conversations = [...gigConversations, ...vacancyConversations];
 
   if (conversations.length === 0) {
     console.log("ℹ️ Нет активных бесед для проверки");
@@ -227,27 +266,10 @@ async function processConversationMissedMessages(
 
   const lastMessageDate = lastMessage[0]?.createdAt;
 
-  // Получаем workspace
-  if (!conversation.responseId) {
-    return { processed, errors };
-  }
-
-  const response = await db.query.vacancyResponse.findFirst({
-    where: eq(vacancyResponse.id, conversation.responseId),
-    with: {
-      vacancy: true,
-    },
-  });
-
-  if (!response?.vacancy?.workspaceId) {
-    return { processed, errors };
-  }
-
-  const client = getClient(response.vacancy.workspaceId);
+  // Get client using workspaceId from conversation
+  const client = getClient(conversation.workspaceId);
   if (!client) {
-    console.log(
-      `⚠️ Клиент не найден для workspace ${response.vacancy.workspaceId}`,
-    );
+    console.log(`⚠️ Клиент не найден для workspace ${conversation.workspaceId}`);
     return { processed, errors };
   }
 
@@ -399,7 +421,7 @@ async function processConversationMissedMessages(
           }
 
           await triggerIncomingMessage(
-            response.vacancy.workspaceId,
+            conversation.workspaceId,
             validationResult.data,
           );
           processed++;
@@ -432,7 +454,7 @@ async function processConversationMissedMessages(
                 continue;
               }
               await triggerIncomingMessage(
-                response.vacancy.workspaceId,
+                conversation.workspaceId,
                 validationResult.data,
               );
               processed++;

@@ -105,7 +105,8 @@ export class InterviewLinkGenerator {
     // Проверяем, существует ли уже активная ссылка для этой вакансии
     const existingLink = await db.query.interviewLink.findFirst({
       where: and(
-        eq(interviewLink.vacancyId, vacancyId),
+        eq(interviewLink.entityType, "vacancy"),
+        eq(interviewLink.entityId, vacancyId),
         eq(interviewLink.isActive, true),
       ),
     });
@@ -122,7 +123,8 @@ export class InterviewLinkGenerator {
     const [created] = await db
       .insert(interviewLink)
       .values({
-        vacancyId,
+        entityType: "vacancy",
+        entityId: vacancyId,
         token,
         isActive: true,
       })
@@ -190,7 +192,7 @@ export class InterviewLinkGenerator {
 
     return {
       id: link.id,
-      vacancyId: link.vacancyId,
+      vacancyId: link.entityId,
       token: link.token,
       url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,

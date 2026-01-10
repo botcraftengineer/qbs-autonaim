@@ -1,5 +1,5 @@
-import { eq } from "@qbs-autonaim/db";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { and, eq } from "@qbs-autonaim/db";
+import type { response as responseTable } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -25,8 +25,15 @@ export const retryAnalysis = protectedProcedure
 
     try {
       // Проверка существования отклика
-      const response = await ctx.db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, input.responseId),
+      const response = await ctx.db.query.response.findFirst({
+        where: (
+          response: typeof responseTable,
+          { eq, and }: { eq: any; and: any },
+        ) =>
+          and(
+            eq(response.id, input.responseId),
+            eq(response.entityType, "vacancy"),
+          ),
         with: {
           vacancy: true,
         },
@@ -68,7 +75,7 @@ export const retryAnalysis = protectedProcedure
         resourceId: input.responseId,
         metadata: {
           action: "RETRY_ANALYSIS",
-          vacancyId: response.vacancyId,
+          vacancyId: response.entityId,
           candidateName: response.candidateName,
         },
         ipAddress: ctx.ipAddress,

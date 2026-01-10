@@ -6,10 +6,10 @@ export const RESPONSE_STATUS = {
   SKIPPED: "SKIPPED",
 } as const;
 
-export type ResponseStatus =
+export type VacancyResponseStatus =
   (typeof RESPONSE_STATUS)[keyof typeof RESPONSE_STATUS];
 
-export const RESPONSE_STATUS_LABELS: Record<ResponseStatus, string> = {
+export const RESPONSE_STATUS_LABELS: Record<VacancyResponseStatus, string> = {
   [RESPONSE_STATUS.NEW]: "Новый",
   [RESPONSE_STATUS.EVALUATED]: "Оценено",
   [RESPONSE_STATUS.INTERVIEW]: "Собеседование HH.ru",
@@ -17,7 +17,10 @@ export const RESPONSE_STATUS_LABELS: Record<ResponseStatus, string> = {
   [RESPONSE_STATUS.SKIPPED]: "Пропущено",
 };
 
-export const RESPONSE_STATUS_DESCRIPTIONS: Record<ResponseStatus, string> = {
+export const RESPONSE_STATUS_DESCRIPTIONS: Record<
+  VacancyResponseStatus,
+  string
+> = {
   [RESPONSE_STATUS.NEW]: "Только откликнулся, резюме не проанализировано",
   [RESPONSE_STATUS.EVALUATED]:
     "AI проанализировал резюме, выставлена оценка, предложен диалог",
@@ -39,10 +42,13 @@ export const HR_SELECTION_STATUS = {
   ONBOARDING: "ONBOARDING",
 } as const;
 
-export type HrSelectionStatus =
+export type VacancyHrSelectionStatus =
   (typeof HR_SELECTION_STATUS)[keyof typeof HR_SELECTION_STATUS];
 
-export const HR_SELECTION_STATUS_LABELS: Record<HrSelectionStatus, string> = {
+export const HR_SELECTION_STATUS_LABELS: Record<
+  VacancyHrSelectionStatus,
+  string
+> = {
   [HR_SELECTION_STATUS.INVITE]: "Пригласить",
   [HR_SELECTION_STATUS.RECOMMENDED]: "Рекомендовано",
   [HR_SELECTION_STATUS.NOT_RECOMMENDED]: "Не рекомендовано",
@@ -55,7 +61,7 @@ export const HR_SELECTION_STATUS_LABELS: Record<HrSelectionStatus, string> = {
 };
 
 export const HR_SELECTION_STATUS_DESCRIPTIONS: Record<
-  HrSelectionStatus,
+  VacancyHrSelectionStatus,
   string
 > = {
   [HR_SELECTION_STATUS.INVITE]: "AI рекомендует пригласить",
@@ -70,3 +76,6 @@ export const HR_SELECTION_STATUS_DESCRIPTIONS: Record<
   [HR_SELECTION_STATUS.ONBOARDING]:
     "Сотрудник проходит адаптацию и введение в должность",
 };
+
+// Re-export universal types for backward compatibility
+export type { HrSelectionStatus, ResponseStatus } from "../response/response";

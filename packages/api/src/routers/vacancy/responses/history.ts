@@ -1,6 +1,6 @@
 import { desc, eq } from "@qbs-autonaim/db";
 import {
-  vacancyResponse,
+  response as responseTable,
   vacancyResponseHistory,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -23,8 +23,8 @@ export const getHistory = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.responseId),
+    const response = await ctx.db.query.response.findFirst({
+      where: eq(responseTable.id, input.responseId),
       with: {
         vacancy: true,
       },

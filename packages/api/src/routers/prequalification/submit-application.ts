@@ -9,7 +9,7 @@
 import {
   prequalificationSession,
   vacancy,
-  vacancyResponse,
+  response as vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -104,19 +104,19 @@ export const submitApplication = publicProcedure
       const resumeId = `preq_${nanoid(16)}`;
 
       // Create vacancy response
-      // Note: vacancyResponse schema requires resumeId and resumeUrl
+      // Note: response schema requires candidateId and entityType/entityId
       // For prequalification, we use the session ID as reference
       const [newResponse] = await ctx.db
         .insert(vacancyResponse)
         .values({
-          vacancyId: session.vacancyId,
-          resumeId,
-          resumeUrl: `prequalification://${session.id}`,
+          entityType: "vacancy",
+          entityId: session.vacancyId,
+          candidateId: resumeId,
           candidateName: candidateInfo?.name ?? null,
           phone: candidateInfo?.phone ?? null,
           coverLetter: input.coverLetter ?? null,
           status: "NEW",
-          importSource: "FREELANCE_MANUAL", // Using existing enum value for web submissions
+          importSource: "WEB_LINK", // Using existing enum value for web submissions
           // Store prequalification metadata in contacts field
           contacts: {
             email: candidateInfo?.email,

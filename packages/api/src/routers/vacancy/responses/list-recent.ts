@@ -2,8 +2,8 @@ import { desc, eq } from "@qbs-autonaim/db";
 import {
   interviewScoring,
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -30,13 +30,18 @@ export const listRecent = protectedProcedure
 
     const responses = await ctx.db
       .select({
-        response: vacancyResponse,
+        response: responseTable,
         vacancy: vacancy,
       })
-      .from(vacancyResponse)
-      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
-      .where(eq(vacancy.workspaceId, input.workspaceId))
-      .orderBy(desc(vacancyResponse.createdAt))
+      .from(responseTable)
+      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
+      .where(
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          eq(vacancy.workspaceId, input.workspaceId),
+        ),
+      )
+      .orderBy(desc(responseTable.createdAt))
       .limit(5);
 
     // Получаем URLs для фото

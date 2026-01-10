@@ -1,5 +1,8 @@
 import { and, count, eq, gte, isNull, sql } from "@qbs-autonaim/db";
-import { responseScreening, vacancyResponse } from "@qbs-autonaim/db/schema";
+import {
+  responseScreening,
+  response as responseTable,
+} from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -46,42 +49,49 @@ export const dashboardStats = protectedProcedure
 
     const totalResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .where(
-        sql`${vacancyResponse.vacancyId} IN (${sql.join(
-          vacancyIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})`,
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          sql`${responseTable.entityId} IN (${sql.join(
+            vacancyIds.map((id) => sql`${id}`),
+            sql`, `,
+          )})`,
+        ),
       );
 
     const totalResponses = totalResponsesResult[0]?.count ?? 0;
 
     const processedResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
-        sql`${vacancyResponse.vacancyId} IN (${sql.join(
-          vacancyIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})`,
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          sql`${responseTable.entityId} IN (${sql.join(
+            vacancyIds.map((id) => sql`${id}`),
+            sql`, `,
+          )})`,
+        ),
       );
 
     const processedResponses = processedResponsesResult[0]?.count ?? 0;
 
     const highScoreResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
         and(
-          sql`${vacancyResponse.vacancyId} IN (${sql.join(
+          eq(responseTable.entityType, "vacancy"),
+          sql`${responseTable.entityId} IN (${sql.join(
             vacancyIds.map((id) => sql`${id}`),
             sql`, `,
           )})`,
@@ -93,14 +103,15 @@ export const dashboardStats = protectedProcedure
 
     const topScoreResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
         and(
-          sql`${vacancyResponse.vacancyId} IN (${sql.join(
+          eq(responseTable.entityType, "vacancy"),
+          sql`${responseTable.entityId} IN (${sql.join(
             vacancyIds.map((id) => sql`${id}`),
             sql`, `,
           )})`,
@@ -114,30 +125,34 @@ export const dashboardStats = protectedProcedure
       .select({
         avg: sql<number>`COALESCE(AVG(${responseScreening.score}), 0)`,
       })
-      .from(vacancyResponse)
+      .from(responseTable)
       .innerJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
-        sql`${vacancyResponse.vacancyId} IN (${sql.join(
-          vacancyIds.map((id) => sql`${id}`),
-          sql`, `,
-        )})`,
+        and(
+          eq(responseTable.entityType, "vacancy"),
+          sql`${responseTable.entityId} IN (${sql.join(
+            vacancyIds.map((id) => sql`${id}`),
+            sql`, `,
+          )})`,
+        ),
       );
 
     const avgScore = avgScoreResult[0]?.avg ?? 0;
 
     const newResponsesResult = await ctx.db
       .select({ count: count() })
-      .from(vacancyResponse)
+      .from(responseTable)
       .leftJoin(
         responseScreening,
-        eq(vacancyResponse.id, responseScreening.responseId),
+        eq(responseTable.id, responseScreening.responseId),
       )
       .where(
         and(
-          sql`${vacancyResponse.vacancyId} IN (${sql.join(
+          eq(responseTable.entityType, "vacancy"),
+          sql`${responseTable.entityId} IN (${sql.join(
             vacancyIds.map((id) => sql`${id}`),
             sql`, `,
           )})`,
