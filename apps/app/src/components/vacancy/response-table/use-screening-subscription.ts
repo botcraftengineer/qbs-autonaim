@@ -1,5 +1,5 @@
 import { useInngestSubscription } from "@inngest/realtime/hooks";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 interface ProgressData {
   status: string;
