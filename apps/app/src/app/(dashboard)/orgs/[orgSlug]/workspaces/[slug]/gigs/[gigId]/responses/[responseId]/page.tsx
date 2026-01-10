@@ -92,10 +92,10 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
   // Redirect to not-found if response doesn't exist
   React.useEffect(() => {
-    if (!isLoading && !response && isError) {
+    if (!isLoading && !response) {
       router.push("/404");
     }
-  }, [isLoading, response, isError, router]);
+  }, [isLoading, response, router]);
 
   // Accept mutation
   const acceptMutation = useMutation(

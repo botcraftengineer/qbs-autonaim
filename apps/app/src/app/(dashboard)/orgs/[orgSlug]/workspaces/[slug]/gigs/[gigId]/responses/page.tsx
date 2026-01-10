@@ -145,7 +145,11 @@ export default function GigResponsesPage({ params }: PageProps) {
   }>({ open: false, responseId: "", action: "accept", candidateName: "" });
 
   // Fetch gig info
-  const { data: gig, isError: isGigError } = useQuery({
+  const {
+    data: gig,
+    isLoading: isGigLoading,
+    isError: isGigError,
+  } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
       workspaceId: workspace?.id ?? "",
@@ -166,10 +170,10 @@ export default function GigResponsesPage({ params }: PageProps) {
 
   // Redirect to not-found if gig doesn't exist
   React.useEffect(() => {
-    if (!isLoading && !gig && isGigError) {
+    if (!isGigLoading && (!gig || isGigError)) {
       router.push("/404");
     }
-  }, [isLoading, gig, isGigError, router]);
+  }, [isGigLoading, gig, isGigError, router]);
 
   // Mutations
   const acceptMutation = useMutation(
@@ -366,7 +370,7 @@ export default function GigResponsesPage({ params }: PageProps) {
     rejectMutation.isPending ||
     sendMessageMutation.isPending;
 
-  if (isLoading) {
+  if (isLoading || isGigLoading) {
     return <ResponsesSkeleton />;
   }
 

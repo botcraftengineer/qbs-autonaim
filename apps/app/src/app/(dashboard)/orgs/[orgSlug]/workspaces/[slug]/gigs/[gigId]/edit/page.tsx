@@ -111,10 +111,10 @@ export default function EditGigPage({ params }: PageProps) {
 
   // Redirect to not-found if gig doesn't exist
   React.useEffect(() => {
-    if (!isLoading && !gig && isError) {
+    if (!isLoading && !gig) {
       router.push("/404");
     }
-  }, [isLoading, gig, isError, router]);
+  }, [isLoading, gig, router]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
