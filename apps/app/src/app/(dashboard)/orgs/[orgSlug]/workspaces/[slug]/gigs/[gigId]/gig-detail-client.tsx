@@ -41,8 +41,8 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { notFound, useRouter } from "next/navigation";
-import { memo, useCallback, useState } from "react";
+import { useRouter } from "next/navigation";
+import { memo, useCallback, useEffect, useState } from "react";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -289,6 +289,7 @@ export function GigDetailClient({
     data: gig,
     isPending,
     error,
+    isError,
   } = useQuery({
     ...trpc.gig.get.queryOptions({
       id: gigId,
@@ -313,6 +314,25 @@ export function GigDetailClient({
   if (isCountsError && countsError) {
     console.error("Ошибка загрузки счетчиков откликов:", countsError);
   }
+
+  // Redirect to not-found if gig doesn't exist
+  useEffect(() => {
+    if (
+      !workspaceLoading &&
+      !isPending &&
+      (isError || !gig || !workspace || !organization)
+    ) {
+      router.push("/404");
+    }
+  }, [
+    workspaceLoading,
+    isPending,
+    isError,
+    gig,
+    workspace,
+    organization,
+    router,
+  ]);
 
   const deleteMutation = useMutation(
     trpc.gig.delete.mutationOptions({
@@ -359,7 +379,7 @@ export function GigDetailClient({
   }
 
   if (error || !gig || !workspace || !organization) {
-    notFound();
+    return null; // useEffect will handle redirect
   }
 
   return (
