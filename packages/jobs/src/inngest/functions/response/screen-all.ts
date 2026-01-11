@@ -41,11 +41,14 @@ export const screenAllResponsesFunction = inngest.createFunction(
     const responses = await step.run("fetch-all-responses", async () => {
       const allResponses = await Promise.all(
         vacancyIds.map((vacancyId) =>
-          db.query.vacancyResponse.findMany({
-            where: eq(vacancyResponse.vacancyId, vacancyId),
+          db.query.response.findMany({
+            where: and(
+              eq(response.entityType, "vacancy"),
+              eq(response.entityId, vacancyId),
+            ),
             columns: {
               id: true,
-              vacancyId: true,
+              entityId: true,
             },
           }),
         ),
@@ -83,9 +86,9 @@ export const screenAllResponsesFunction = inngest.createFunction(
 
     // Группируем отклики по вакансиям для отчетности
     const responsesByVacancy = responses.reduce(
-      (acc, r) => {
-        if (!acc[r.vacancyId]) acc[r.vacancyId] = [];
-        acc[r.vacancyId]?.push(r);
+      (acc: Record<string, typeof responses>, r) => {
+        if (!acc[r.entityId]) acc[r.entityId] = [];
+        acc[r.entityId]?.push(r);
         return acc;
       },
       {} as Record<string, typeof responses>,

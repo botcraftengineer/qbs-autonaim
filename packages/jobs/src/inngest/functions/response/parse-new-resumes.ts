@@ -41,29 +41,23 @@ export const parseNewResumesFunction = inngest.createFunction(
     const responses = await step.run(
       "fetch-responses-without-details",
       async () => {
-        const allResponses = await db.query.vacancyResponse.findMany({
-          where: inArray(vacancyResponse.vacancyId, vacancyIds),
+        const allResponses = await db.query.response.findMany({
+          where: inArray(response.entityId, vacancyIds),
           columns: {
             id: true,
-            vacancyId: true,
+            entityId: true,
             resumeId: true,
             resumeUrl: true,
             candidateName: true,
             experience: true,
             contacts: true,
           },
-          with: {
-            vacancy: {
-              columns: {
-                workspaceId: true,
-              },
-            },
-          },
         });
 
         // Фильтруем только отклики без детальной информации
         const results = allResponses.filter(
-          (r) => !r.experience || r.experience === "",
+          (r: typeof response.$inferSelect) =>
+            !r.experience || r.experience === "",
         );
 
         console.log(`✅ Найдено откликов без деталей: ${results.length}`);
@@ -71,7 +65,7 @@ export const parseNewResumesFunction = inngest.createFunction(
         // Отправляем прогресс для каждой вакансии
         for (const vacancyId of vacancyIds) {
           const vacancyResponses = results.filter(
-            (r) => r.vacancyId === vacancyId,
+            (r: typeof response.$inferSelect) => r.entityId === vacancyId,
           );
           await publish(
             parseNewResumesChannel(vacancyId).progress({

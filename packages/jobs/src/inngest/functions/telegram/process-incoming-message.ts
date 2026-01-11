@@ -59,41 +59,34 @@ export const processIncomingMessageFunction = inngest.createFunction(
 
     // Проверяем идентификацию через interviewSession
     const sessionData = await step.run("check-interview-session", async () => {
-      // Сначала пробуем найти vacancyResponse по chatId
-      const response = await db.query.vacancyResponse.findFirst({
+      // Сначала пробуем найти response по chatId
+      const responseRecord = await db.query.response.findFirst({
         where: (fields, { eq }) => eq(fields.chatId, chatId),
-        with: {
-          vacancy: true,
-        },
       });
 
-      if (!response) {
-        console.log("❌ VacancyResponse не найден по chatId", { chatId });
+      if (!responseRecord) {
+        console.log("❌ Response не найден по chatId", { chatId });
         return null;
       }
 
-      // Ищем interviewSession по vacancyResponseId
+      // Ищем interviewSession по responseId
       const session = await db.query.interviewSession.findFirst({
-        where: (fields, { and, eq }) =>
-          and(
-            eq(fields.entityType, "vacancy_response"),
-            eq(fields.vacancyResponseId, response.id),
-          ),
+        where: (fields, { eq }) => eq(fields.responseId, responseRecord.id),
       });
 
       if (session) {
         console.log("✅ InterviewSession найден", {
           interviewSessionId: session.id,
-          responseId: response.id,
+          responseId: responseRecord.id,
         });
         return {
           session,
-          response,
+          response: responseRecord,
         };
       }
 
       console.log("❌ InterviewSession не найден для response", {
-        responseId: response.id,
+        responseId: responseRecord.id,
       });
       return null;
     });

@@ -27,8 +27,8 @@ export const screenResponsesBatchFunction = inngest.createFunction(
 
     // Получаем отклики
     const responses = await step.run("fetch-responses", async () => {
-      const results = await db.query.vacancyResponse.findMany({
-        where: inArray(vacancyResponse.id, allResponseIds),
+      const results = await db.query.response.findMany({
+        where: inArray(response.id, allResponseIds),
         columns: {
           id: true,
         },
@@ -50,33 +50,36 @@ export const screenResponsesBatchFunction = inngest.createFunction(
 
     // Обрабатываем каждый отклик
     const results = await Promise.allSettled(
-      responses.map(async (response) => {
-        return await step.run(`screen-response-${response.id}`, async () => {
-          try {
-            console.log(`🎯 Скрининг отклика: ${response.id}`);
+      responses.map(async (responseItem: typeof response.$inferSelect) => {
+        return await step.run(
+          `screen-response-${responseItem.id}`,
+          async () => {
+            try {
+              console.log(`🎯 Скрининг отклика: ${responseItem.id}`);
 
-            const resultWrapper = await screenResponse(response.id);
-            const result = unwrap(resultWrapper);
+              const resultWrapper = await screenResponse(responseItem.id);
+              const result = unwrap(resultWrapper);
 
-            console.log(`✅ Скрининг завершен: ${response.id}`, {
-              score: result.score,
-              detailedScore: result.detailedScore,
-            });
+              console.log(`✅ Скрининг завершен: ${response.id}`, {
+                score: result.score,
+                detailedScore: result.detailedScore,
+              });
 
-            return {
-              responseId: response.id,
-              success: true,
-              score: result.score,
-            };
-          } catch (error) {
-            console.error(`❌ Ошибка скрининга для ${response.id}:`, error);
-            return {
-              responseId: response.id,
-              success: false,
-              error: error instanceof Error ? error.message : "Unknown error",
-            };
-          }
-        });
+              return {
+                responseId: response.id,
+                success: true,
+                score: result.score,
+              };
+            } catch (error) {
+              console.error(`❌ Ошибка скрининга для ${response.id}:`, error);
+              return {
+                responseId: response.id,
+                success: false,
+                error: error instanceof Error ? error.message : "Unknown error",
+              };
+            }
+          },
+        );
       }),
     );
 

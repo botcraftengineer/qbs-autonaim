@@ -180,8 +180,11 @@ export const collectChatIdsFunction = inngest.createFunction(
       console.log(`📊 Всего получено чатов: ${allChats.length}`);
 
       // Получаем все отклики для вакансии
-      const responses = await db.query.vacancyResponse.findMany({
-        where: eq(vacancyResponse.vacancyId, vacancyId),
+      const responses = await db.query.response.findMany({
+        where: and(
+          eq(response.entityType, "vacancy"),
+          eq(response.entityId, vacancyId),
+        ),
       });
 
       let updatedCount = 0;

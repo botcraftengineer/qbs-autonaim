@@ -1,10 +1,6 @@
 import { and, eq, isNull, or } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import {
-  file,
-  RESPONSE_STATUS,
-  vacancyResponse,
-} from "@qbs-autonaim/db/schema";
+import { file, RESPONSE_STATUS, response } from "@qbs-autonaim/db/schema";
 import { logResponseEvent, uploadFile } from "@qbs-autonaim/lib";
 import type { SaveResponseData } from "../../parsers/types";
 import {
@@ -23,8 +19,8 @@ export async function checkResponseExists(
   resumeId: string,
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
-    const existingResponse = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeId, resumeId),
+    const existingResponse = await db.query.response.findFirst({
+      where: eq(response.resumeId, resumeId),
     });
     return !!existingResponse;
   }, "Failed to check response existence");
@@ -35,8 +31,8 @@ export async function checkResponseExists(
  */
 export async function getResponseById(responseId: string) {
   return tryCatch(async () => {
-    const result = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    const result = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
     return result ?? null;
   }, "Failed to get response");
@@ -47,8 +43,8 @@ export async function getResponseById(responseId: string) {
  */
 export async function getResponseByResumeId(resumeId: string) {
   return tryCatch(async () => {
-    const result = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeId, resumeId),
+    const result = await db.query.response.findFirst({
+      where: eq(response.resumeId, resumeId),
     });
     return result ?? null;
   }, "Failed to get response by resume ID");
@@ -58,19 +54,19 @@ export async function getResponseByResumeId(resumeId: string) {
  * Checks if response has detailed info (experience or contacts)
  */
 export async function hasDetailedInfo(
-  vacancyId: string,
+  entityId: string,
   resumeId: string,
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
-    const response = await db.query.vacancyResponse.findFirst({
+    const responseRecord = await db.query.response.findFirst({
       where: and(
-        eq(vacancyResponse.vacancyId, vacancyId),
-        eq(vacancyResponse.resumeId, resumeId),
+        eq(response.entityId, entityId),
+        eq(response.resumeId, resumeId),
       ),
     });
 
-    if (!response) return false;
-    return !!(response.experience || response.contacts);
+    if (!responseRecord) return false;
+    return !!(responseRecord.experience || responseRecord.contacts);
   }, "Failed to check detailed info");
 }
 
@@ -79,11 +75,8 @@ export async function hasDetailedInfo(
  */
 export async function getResponsesWithoutDetails() {
   return tryCatch(async () => {
-    return await db.query.vacancyResponse.findMany({
-      where: or(
-        isNull(vacancyResponse.experience),
-        eq(vacancyResponse.experience, ""),
-      ),
+    return await db.query.response.findMany({
+      where: or(isNull(response.experience), eq(response.experience, "")),
     });
   }, "Failed to get responses without details");
 }
@@ -93,7 +86,7 @@ export async function getResponsesWithoutDetails() {
  * @returns true if response was saved, false if already existed
  */
 export async function saveBasicResponse(
-  vacancyId: string,
+  entityId: string,
   resumeId: string,
   resumeUrl: string,
   candidateName: string,
@@ -101,9 +94,11 @@ export async function saveBasicResponse(
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
     const [inserted] = await db
-      .insert(vacancyResponse)
+      .insert(response)
       .values({
-        vacancyId,
+        entityType: "vacancy",
+        entityId,
+        candidateId: resumeId,
         resumeId,
         resumeUrl,
         candidateName,
@@ -114,9 +109,9 @@ export async function saveBasicResponse(
         respondedAt,
       })
       .onConflictDoNothing({
-        target: [vacancyResponse.vacancyId, vacancyResponse.resumeId],
+        target: [response.entityType, response.entityId, response.candidateId],
       })
-      .returning({ id: vacancyResponse.id });
+      .returning({ id: response.id });
 
     const isNew = !!inserted;
 
@@ -125,7 +120,7 @@ export async function saveBasicResponse(
         db,
         responseId: inserted.id,
         eventType: "CREATED",
-        newValue: { candidateName, vacancyId },
+        newValue: { candidateName, entityId },
       });
       logger.info(`Basic info saved: ${candidateName}`);
     } else {
@@ -140,74 +135,74 @@ export async function saveBasicResponse(
  * Updates response with detailed info
  */
 export async function updateResponseDetails(
-  response: SaveResponseData,
+  responseData: SaveResponseData,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
     logger.info(
-      `Updating response details for ${response.candidateName}, photoFileId: ${response.photoFileId}`,
+      `Updating response details for ${responseData.candidateName}, photoFileId: ${responseData.photoFileId}`,
     );
 
-    const current = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.resumeId, response.resumeId),
+    const current = await db.query.response.findFirst({
+      where: eq(response.resumeId, responseData.resumeId),
     });
 
     await db
-      .update(vacancyResponse)
+      .update(response)
       .set({
-        experience: response.experience,
-        contacts: response.contacts as Record<string, unknown> | null,
-        phone: response.phone,
-        telegramUsername: response.telegramUsername,
-        resumePdfFileId: response.resumePdfFileId,
-        photoFileId: response.photoFileId,
+        experience: responseData.experience,
+        contacts: responseData.contacts as Record<string, unknown> | null,
+        phone: responseData.phone,
+        telegramUsername: responseData.telegramUsername,
+        resumePdfFileId: responseData.resumePdfFileId,
+        photoFileId: responseData.photoFileId,
       })
-      .where(eq(vacancyResponse.resumeId, response.resumeId));
+      .where(eq(response.resumeId, responseData.resumeId));
 
     if (current) {
-      if (response.telegramUsername && !current.telegramUsername) {
+      if (responseData.telegramUsername && !current.telegramUsername) {
         await logResponseEvent({
           db,
           responseId: current.id,
           eventType: "TELEGRAM_USERNAME_ADDED",
-          newValue: response.telegramUsername,
+          newValue: responseData.telegramUsername,
         });
       }
-      if (response.phone && !current.phone) {
+      if (responseData.phone && !current.phone) {
         await logResponseEvent({
           db,
           responseId: current.id,
           eventType: "PHONE_ADDED",
-          newValue: response.phone,
+          newValue: responseData.phone,
         });
       }
-      if (response.photoFileId && !current.photoFileId) {
+      if (responseData.photoFileId && !current.photoFileId) {
         await logResponseEvent({
           db,
           responseId: current.id,
           eventType: "PHOTO_ADDED",
         });
       }
-      if (response.resumePdfFileId && !current.resumePdfFileId) {
+      if (responseData.resumePdfFileId && !current.resumePdfFileId) {
         await logResponseEvent({
           db,
           responseId: current.id,
           eventType: "RESUME_UPDATED",
         });
       }
-      if (response.contacts && !current.contacts) {
+      if (responseData.contacts && !current.contacts) {
         await logResponseEvent({
           db,
           responseId: current.id,
           eventType: "CONTACT_INFO_UPDATED",
-          newValue: response.contacts,
+          newValue: responseData.contacts,
         });
       }
     }
 
     logger.info(
-      `Detailed info updated: ${response.candidateName}, photoFileId saved: ${response.photoFileId}`,
+      `Detailed info updated: ${responseData.candidateName}, photoFileId saved: ${responseData.photoFileId}`,
     );
-  }, `Failed to update details for ${response.candidateName}`);
+  }, `Failed to update details for ${responseData.candidateName}`);
 }
 
 /**
@@ -218,14 +213,14 @@ export async function updateResponseStatus(
   status: ResponseStatus,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
-    const current = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    const current = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
 
     await db
-      .update(vacancyResponse)
+      .update(response)
       .set({ status })
-      .where(eq(vacancyResponse.id, responseId));
+      .where(eq(response.id, responseId));
 
     await logResponseEvent({
       db,
@@ -352,23 +347,25 @@ export async function uploadCandidatePhoto(
  * Saves or updates full response data
  */
 export async function saveResponseToDb(
-  response: SaveResponseData,
+  responseData: SaveResponseData,
 ): Promise<Result<void>> {
   return tryCatch(async () => {
     const result = await db
-      .insert(vacancyResponse)
+      .insert(response)
       .values({
-        vacancyId: response.vacancyId,
-        resumeId: response.resumeId,
-        resumeUrl: response.resumeUrl,
-        candidateName: response.candidateName,
+        entityType: "vacancy",
+        entityId: responseData.vacancyId,
+        candidateId: responseData.resumeId,
+        resumeId: responseData.resumeId,
+        resumeUrl: responseData.resumeUrl,
+        candidateName: responseData.candidateName,
         status: RESPONSE_STATUS.NEW,
-        experience: response.experience,
-        contacts: response.contacts as Record<string, unknown> | null,
-        phone: response.phone,
+        experience: responseData.experience,
+        contacts: responseData.contacts as Record<string, unknown> | null,
+        phone: responseData.phone,
       })
       .onConflictDoNothing({
-        target: [vacancyResponse.vacancyId, vacancyResponse.resumeId],
+        target: [response.entityType, response.entityId, response.candidateId],
       });
 
     if ((result.rowCount ?? 0) === 0) {

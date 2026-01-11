@@ -27,7 +27,7 @@ export async function sendHHChatMessage(
 
   // Get response with chat_id
   const responseResult = await tryCatch(async () => {
-    return await db.query.vacancyResponse.findFirst({
+    return await db.query.response.findFirst({
       where: (fields) => eq(fields.id, responseId),
     });
   }, "Failed to fetch response");

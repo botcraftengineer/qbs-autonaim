@@ -1,7 +1,7 @@
 import {
   eq,
   findResponseByPinCode as findResponseByPinCodeDB,
-  vacancyResponse,
+  response,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
@@ -32,8 +32,8 @@ export async function generateTelegramInvite(
 
   // Проверка существования пин-кода
   const existingResponse = await tryCatch(async () => {
-    return await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    return await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
   }, "Не удалось получить данные отклика");
 
@@ -61,8 +61,8 @@ export async function generateTelegramInvite(
 
   // Проверяем уникальность пин-кода
   while (attempts < maxAttempts) {
-    const existing = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, pinCode),
+    const existing = await db.query.response.findFirst({
+      where: eq(response.telegramPinCode, pinCode),
     });
 
     if (!existing) {
@@ -80,9 +80,9 @@ export async function generateTelegramInvite(
   // Сохранение пин-кода в базу данных
   const updateResult = await tryCatch(async () => {
     await db
-      .update(vacancyResponse)
+      .update(response)
       .set({ telegramPinCode: pinCode })
-      .where(eq(vacancyResponse.id, responseId));
+      .where(eq(response.id, responseId));
   }, "Не удалось сохранить пин-код");
 
   if (!updateResult.success) {

@@ -5,7 +5,7 @@ import {
   interviewMessage,
   interviewScoring,
   interviewSession,
-  vacancyResponse,
+  response,
 } from "@qbs-autonaim/db/schema";
 import { getAIModel, logResponseEvent } from "@qbs-autonaim/lib";
 import {
@@ -84,10 +84,10 @@ export const completeInterviewFunction = inngest.createFunction(
 
       await step.run("finalize-response-status", async () => {
         const hrSelectionStatus =
-          scoringResult.detailedScore >= 70 ? "RECOMMENDED" : "NOT_RECOMMENDED";
+          scoringResult.score >= 70 ? "RECOMMENDED" : "NOT_RECOMMENDED";
 
-        const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, responseId),
+        const responseRecord = await db.query.response.findFirst({
+          where: eq(response.id, responseId),
         });
 
         const updateData: {
@@ -99,10 +99,10 @@ export const completeInterviewFunction = inngest.createFunction(
           hrSelectionStatus,
         };
 
-        if (response?.platformProfileUrl) {
+        if (responseRecord?.platformProfileUrl) {
           try {
             const profile = await parseFreelancerProfile(
-              response.platformProfileUrl,
+              responseRecord.platformProfileUrl,
             );
 
             if (!profile.error) {
@@ -114,45 +114,66 @@ export const completeInterviewFunction = inngest.createFunction(
         }
 
         await db
-          .update(vacancyResponse)
+          .update(response)
           .set(updateData)
-          .where(eq(vacancyResponse.id, responseId));
+          .where(eq(response.id, responseId));
       });
 
       await step.run("send-completion-notification", async () => {
-        const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, responseId),
-          with: { vacancy: true },
+        const responseRecord = await db.query.response.findFirst({
+          where: eq(response.id, responseId),
         });
 
-        if (!response?.vacancy?.workspaceId) return;
+        if (!responseRecord) return;
+
+        // Загружаем vacancy или gig для получения workspaceId
+        let workspaceId: string | undefined;
+        let entityId: string | undefined;
+
+        if (responseRecord.entityType === "vacancy") {
+          const vacancy = await db.query.vacancy.findFirst({
+            where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+          });
+          workspaceId = vacancy?.workspaceId;
+          entityId = vacancy?.id;
+        } else if (responseRecord.entityType === "gig") {
+          const gig = await db.query.gig.findFirst({
+            where: (g, { eq }) => eq(g.id, responseRecord.entityId),
+          });
+          workspaceId = gig?.workspaceId;
+          entityId = gig?.id;
+        }
+
+        if (!workspaceId || !entityId) return;
 
         await inngest.send({
           name: "freelance/notification.send",
           data: {
-            workspaceId: response.vacancy.workspaceId,
-            vacancyId: response.vacancyId,
+            workspaceId,
+            vacancyId:
+              responseRecord.entityType === "vacancy" ? entityId : undefined,
             responseId,
             notificationType: "INTERVIEW_COMPLETED",
-            candidateName: response.candidateName ?? undefined,
+            candidateName: responseRecord.candidateName ?? undefined,
             score: scoringResult.score,
-            detailedScore: scoringResult.detailedScore,
-            profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+            profileUrl:
+              responseRecord.platformProfileUrl ?? responseRecord.resumeUrl,
           },
         });
 
-        if (scoringResult.detailedScore >= 85) {
+        if (scoringResult.score >= 85) {
           await inngest.send({
             name: "freelance/notification.send",
             data: {
-              workspaceId: response.vacancy.workspaceId,
-              vacancyId: response.vacancyId,
+              workspaceId,
+              vacancyId:
+                responseRecord.entityType === "vacancy" ? entityId : undefined,
               responseId,
               notificationType: "HIGH_SCORE_CANDIDATE",
-              candidateName: response.candidateName ?? undefined,
+              candidateName: responseRecord.candidateName ?? undefined,
               score: scoringResult.score,
-              detailedScore: scoringResult.detailedScore,
-              profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+              profileUrl:
+                responseRecord.platformProfileUrl ?? responseRecord.resumeUrl,
             },
           });
         }
@@ -201,14 +222,14 @@ export const completeInterviewFunction = inngest.createFunction(
         const trimmedSalary = result.data.salaryExpectations.trim();
 
         if (trimmedSalary) {
-          const current = await db.query.vacancyResponse.findFirst({
-            where: eq(vacancyResponse.id, responseId),
+          const current = await db.query.response.findFirst({
+            where: eq(response.id, responseId),
           });
 
           await db
-            .update(vacancyResponse)
+            .update(response)
             .set({ salaryExpectationsComment: trimmedSalary })
-            .where(eq(vacancyResponse.id, responseId));
+            .where(eq(response.id, responseId));
 
           await logResponseEvent({
             db,
@@ -228,18 +249,13 @@ export const completeInterviewFunction = inngest.createFunction(
 
       if (!session) throw new Error("InterviewSession не найден");
 
-      if (
-        session.entityType === "vacancy_response" &&
-        session.vacancyResponseId
-      ) {
-        const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, session.vacancyResponseId),
-        });
-        if (!response?.chatId) throw new Error("ChatId не найден в response");
-        return response.chatId;
-      }
+      const responseRecord = await db.query.response.findFirst({
+        where: eq(response.id, session.responseId),
+      });
 
-      throw new Error("Не удалось получить chatId");
+      if (!responseRecord?.chatId)
+        throw new Error("ChatId не найден в response");
+      return responseRecord.chatId;
     });
 
     await step.run("send-final-message", async () => {
@@ -255,17 +271,27 @@ export const completeInterviewFunction = inngest.createFunction(
       let candidateName: string | undefined;
       let vacancyTitle: string | undefined;
       let score: number | undefined;
-      let detailedScore: number | undefined;
       let resumeLanguage: string | undefined;
 
-      if (session?.vacancyResponseId) {
-        const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, session.vacancyResponseId),
-          with: { vacancy: true },
+      if (session?.responseId) {
+        const responseRecord = await db.query.response.findFirst({
+          where: eq(response.id, session.responseId),
         });
-        candidateName = response?.candidateName ?? undefined;
-        vacancyTitle = response?.vacancy?.title ?? undefined;
-        resumeLanguage = response?.resumeLanguage ?? "ru";
+        candidateName = responseRecord?.candidateName ?? undefined;
+        resumeLanguage = responseRecord?.resumeLanguage ?? "ru";
+
+        // Загружаем vacancy или gig для получения title
+        if (responseRecord?.entityType === "vacancy") {
+          const vacancy = await db.query.vacancy.findFirst({
+            where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+          });
+          vacancyTitle = vacancy?.title ?? undefined;
+        } else if (responseRecord?.entityType === "gig") {
+          const gig = await db.query.gig.findFirst({
+            where: (g, { eq }) => eq(g.id, responseRecord.entityId),
+          });
+          vacancyTitle = gig?.title ?? undefined;
+        }
 
         const scoring = await db.query.interviewScoring.findFirst({
           where: eq(interviewScoring.interviewSessionId, chatSessionId),
@@ -295,7 +321,6 @@ export const completeInterviewFunction = inngest.createFunction(
         {
           questionCount: questionNumber,
           score,
-          detailedScore,
           resumeLanguage: resumeLanguage || "ru",
         },
         {

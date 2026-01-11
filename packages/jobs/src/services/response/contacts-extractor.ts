@@ -33,8 +33,8 @@ export async function extractContactsFromResponse(
   logger.info(`Extracting contacts for response ${responseId}`);
 
   const responseResult = await tryCatch(async () => {
-    return await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    return await db.query.response.findFirst({
+      where: eq(response.id, responseId),
       columns: {
         id: true,
         vacancyId: true,

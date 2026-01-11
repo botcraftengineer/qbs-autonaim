@@ -45,8 +45,8 @@ export async function screenResponse(
   logger.info(`Screening response ${responseId}`);
 
   const responseResult = await tryCatch(async () => {
-    return await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    return await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
   }, "Failed to fetch response");
 

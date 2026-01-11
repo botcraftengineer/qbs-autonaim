@@ -33,40 +33,46 @@ export const evaluateGigResponseFunction = inngest.createFunction(
     });
 
     // Получаем отклик с проверкой принадлежности к workspace
-    const response = await step.run("get-response", async () => {
-      const { gigResponse } = await import("@qbs-autonaim/db/schema");
-      const resp = await db.query.gigResponse.findFirst({
-        where: eq(gigResponse.id, responseId),
-        with: {
-          gig: true,
-        },
+    const responseData = await step.run("get-response", async () => {
+      const { response } = await import("@qbs-autonaim/db/schema");
+      const resp = await db.query.response.findFirst({
+        where: eq(response.id, responseId),
       });
 
       if (!resp) {
         throw new Error(`Отклик не найден: ${responseId}`);
       }
 
+      // Получаем gig отдельно через entityId
+      const gig = await db.query.gig.findFirst({
+        where: (g, { eq }) => eq(g.id, resp.entityId),
+      });
+
+      if (!gig) {
+        throw new Error(`Gig не найден для отклика: ${responseId}`);
+      }
+
       // Проверяем, что отклик принадлежит указанному workspace
-      if (resp.gig.workspaceId !== workspaceId) {
+      if (gig.workspaceId !== workspaceId) {
         throw new Error(
           `Отклик ${responseId} не принадлежит workspace ${workspaceId}`,
         );
       }
 
-      return resp;
+      return { ...resp, gig };
     });
 
     // Парсим профиль фрилансера (если есть profileUrl)
     const profileData = await step.run(
       "parse-profile",
       async (): Promise<ProfileData | null> => {
-        if (!response.profileUrl) {
+        if (!responseData.profileUrl) {
           console.log("⚠️ ProfileUrl отсутствует, пропускаем парсинг профиля");
           return null;
         }
 
         try {
-          const profile = await parseFreelancerProfile(response.profileUrl);
+          const profile = await parseFreelancerProfile(responseData.profileUrl);
 
           console.log("✅ Профиль распарсен", {
             platform: profile.platform,
@@ -112,7 +118,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
 
       await db.insert(interviewScoring).values({
         interviewSessionId: chatSessionId,
-        gigResponseId: responseId,
+        responseId: responseId,
         score: scoring.score,
         analysis: scoring.analysis,
       });
@@ -125,7 +131,7 @@ export const evaluateGigResponseFunction = inngest.createFunction(
     });
 
     await step.run("update-response-status", async () => {
-      const { gigResponse } = await import("@qbs-autonaim/db/schema");
+      const { response } = await import("@qbs-autonaim/db/schema");
 
       const updateData: {
         status: "EVALUATED";
@@ -142,9 +148,9 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       }
 
       await db
-        .update(gigResponse)
+        .update(response)
         .set(updateData)
-        .where(eq(gigResponse.id, responseId));
+        .where(eq(response.id, responseId));
 
       console.log("✅ Статус отклика обновлен", {
         responseId,

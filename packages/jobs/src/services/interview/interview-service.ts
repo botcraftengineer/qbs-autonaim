@@ -197,9 +197,7 @@ export async function getInterviewContext(
 
   type SessionType = {
     id: string;
-    entityType: string;
-    vacancyResponseId: string | null;
-    gigResponseId: string | null;
+    responseId: string;
     metadata: Record<string, unknown> | null;
     messages: MessageType[];
   };
@@ -234,14 +232,20 @@ export async function getInterviewContext(
         : undefined) as "text" | "voice" | undefined,
     }));
 
-  // Определяем источник: vacancy_response или gig_response
-  const isGig = session.entityType === "gig_response";
+  // Получаем response по responseId из session
+  const responseRecord = await db.query.response.findFirst({
+    where: (r, { eq }) => eq(r.id, session.responseId),
+  });
+
+  if (!responseRecord) {
+    return null;
+  }
 
   let candidateName: string | null = null;
   let vacancyTitle: string | null = null;
   let vacancyDescription: string | null = null;
-  let responseId: string | null = null;
-  let gigResponseId: string | null = null;
+  const responseId: string | null = session.responseId;
+  const gigResponseId: string | null = null;
   let resumeLanguage: string | null = "ru";
   let botSettings: InterviewContext["botSettings"] | undefined;
   let customBotInstructions: string | null = null;
@@ -249,45 +253,40 @@ export async function getInterviewContext(
   let customInterviewQuestions: string | null = null;
   let interviewMediaFiles: InterviewContext["interviewMediaFiles"] | undefined;
 
-  if (isGig && session.gigResponseId) {
-    gigResponseId = session.gigResponseId;
-    const gigResponse = await db.query.gigResponse.findFirst({
-      where: (gr, { eq }) => eq(gr.id, session.gigResponseId!),
+  candidateName = responseRecord.candidateName;
+  resumeLanguage = responseRecord.resumeLanguage || "ru";
+
+  // Загружаем vacancy или gig в зависимости от entityType
+  if (responseRecord.entityType === "gig") {
+    const gig = await db.query.gig.findFirst({
+      where: (g, { eq }) => eq(g.id, responseRecord.entityId),
+      columns: {
+        id: true,
+        title: true,
+        description: true,
+        customBotInstructions: true,
+        customOrganizationalQuestions: true,
+        customInterviewQuestions: true,
+      },
       with: {
-        gig: {
-          columns: {
-            id: true,
-            title: true,
-            description: true,
-            customBotInstructions: true,
-            customOrganizationalQuestions: true,
-            customInterviewQuestions: true,
-          },
+        workspace: {
           with: {
-            workspace: {
-              with: {
-                botSettings: true,
-              },
-            },
+            botSettings: true,
           },
         },
       },
     });
 
-    if (gigResponse) {
-      candidateName = gigResponse.candidateName;
-      resumeLanguage = gigResponse.resumeLanguage || "ru";
-      vacancyTitle = gigResponse.gig?.title || null;
-      vacancyDescription = gigResponse.gig?.description
-        ? stripHtml(gigResponse.gig.description).result
+    if (gig) {
+      vacancyTitle = gig.title || null;
+      vacancyDescription = gig.description
+        ? stripHtml(gig.description).result
         : null;
-      customBotInstructions = gigResponse.gig?.customBotInstructions || null;
-      customOrganizationalQuestions =
-        gigResponse.gig?.customOrganizationalQuestions || null;
-      customInterviewQuestions =
-        gigResponse.gig?.customInterviewQuestions || null;
+      customBotInstructions = gig.customBotInstructions || null;
+      customOrganizationalQuestions = gig.customOrganizationalQuestions || null;
+      customInterviewQuestions = gig.customInterviewQuestions || null;
 
-      const workspace = gigResponse.gig?.workspace;
+      const workspace = gig.workspace;
       if (workspace?.botSettings) {
         botSettings = {
           botName: workspace.botSettings.botName || undefined,
@@ -299,79 +298,68 @@ export async function getInterviewContext(
       }
 
       // Получаем медиафайлы для gig
-      if (gigResponse.gig) {
-        const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
-        const gigId = gigResponse.gig.id;
+      const { getDownloadUrl } = await import("@qbs-autonaim/lib/s3");
+      const gigId = gig.id;
 
-        const mediaRecords = await db.query.gigInterviewMedia.findMany({
-          where: (media, { eq }) => eq(media.gigId, gigId),
-          with: {
-            file: true,
-          },
-        });
+      const mediaRecords = await db.query.gigInterviewMedia.findMany({
+        where: (media, { eq }) => eq(media.gigId, gigId),
+        with: {
+          file: true,
+        },
+      });
 
-        interviewMediaFiles = await Promise.all(
-          mediaRecords.map(async (record) => {
-            try {
-              const url = await getDownloadUrl(record.file.key);
-              return {
-                id: record.file.id,
-                fileName: record.file.fileName,
-                mimeType: record.file.mimeType,
-                url,
-              };
-            } catch {
-              return null;
-            }
-          }),
-        ).then((results) =>
-          results.filter((f): f is NonNullable<typeof f> => f !== null),
-        );
+      interviewMediaFiles = await Promise.all(
+        mediaRecords.map(async (record) => {
+          try {
+            const url = await getDownloadUrl(record.file.key);
+            return {
+              id: record.file.id,
+              fileName: record.file.fileName,
+              mimeType: record.file.mimeType,
+              url,
+            };
+          } catch {
+            return null;
+          }
+        }),
+      ).then((results) =>
+        results.filter((f): f is NonNullable<typeof f> => f !== null),
+      );
 
-        if (interviewMediaFiles && interviewMediaFiles.length === 0) {
-          interviewMediaFiles = undefined;
-        }
+      if (interviewMediaFiles && interviewMediaFiles.length === 0) {
+        interviewMediaFiles = undefined;
       }
     }
-  } else if (session.vacancyResponseId) {
-    responseId = session.vacancyResponseId;
-    const vacancyResponse = await db.query.vacancyResponse.findFirst({
-      where: (vr, { eq }) => eq(vr.id, session.vacancyResponseId!),
+  } else if (responseRecord.entityType === "vacancy") {
+    const vacancy = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+      columns: {
+        title: true,
+        description: true,
+        customBotInstructions: true,
+        customOrganizationalQuestions: true,
+        customInterviewQuestions: true,
+      },
       with: {
-        vacancy: {
-          columns: {
-            title: true,
-            description: true,
-            customBotInstructions: true,
-            customOrganizationalQuestions: true,
-            customInterviewQuestions: true,
-          },
+        workspace: {
           with: {
-            workspace: {
-              with: {
-                botSettings: true,
-              },
-            },
+            botSettings: true,
           },
         },
       },
     });
 
-    if (vacancyResponse) {
-      candidateName = vacancyResponse.candidateName;
-      resumeLanguage = vacancyResponse.resumeLanguage || "ru";
-      vacancyTitle = vacancyResponse.vacancy?.title || null;
-      vacancyDescription = vacancyResponse.vacancy?.description
-        ? stripHtml(vacancyResponse.vacancy.description).result
+    if (vacancy) {
+      vacancyTitle = vacancy.title || null;
+      vacancyDescription = vacancy.description
+        ? stripHtml(vacancy.description).result
         : null;
-      customBotInstructions =
-        vacancyResponse.vacancy?.customBotInstructions || null;
+      customBotInstructions = vacancy.customBotInstructions || null;
       customOrganizationalQuestions =
-        vacancyResponse.vacancy?.customOrganizationalQuestions || null;
-      customInterviewQuestions =
-        vacancyResponse.vacancy?.customInterviewQuestions || null;
+        vacancy.customOrganizationalQuestions || null;
+      customInterviewQuestions = vacancy.customInterviewQuestions || null;
 
-      const workspace = vacancyResponse.vacancy?.workspace;
+      const workspace = vacancy.workspace;
       if (workspace?.botSettings) {
         botSettings = {
           botName: workspace.botSettings.botName || undefined,
@@ -469,7 +457,7 @@ export async function createInterviewScoring(
     };
   }
 
-  // Возвращаем результат
+  // Возвращаем результат (без detailedScore - его нет в схеме)
   return {
     score: result.data.score,
     analysis: result.data.analysis,

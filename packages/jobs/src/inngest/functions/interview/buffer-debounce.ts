@@ -13,18 +13,18 @@ export const bufferDebounceFunction = inngest.createFunction(
     id: "interview-buffer-debounce",
     name: "Interview Buffer Debounce",
     debounce: {
-      key: "event.data.userId + '-' + event.data.interviewSessionId + '-' + event.data.interviewStep",
+      key: "event.data.userId + '-' + event.data.chatSessionId + '-' + event.data.interviewStep",
       period: `${env.INTERVIEW_BUFFER_DEBOUNCE_TIMEOUT}s`,
     },
   },
   { event: "interview/message.buffered" },
   async ({ event, step }) => {
-    const { userId, interviewSessionId, interviewStep } = event.data;
+    const { userId, chatSessionId, interviewStep } = event.data;
 
-    if (!interviewSessionId) {
+    if (!chatSessionId) {
       return {
         skipped: true,
-        reason: "No interviewSessionId provided",
+        reason: "No chatSessionId provided",
       };
     }
 
@@ -32,7 +32,7 @@ export const bufferDebounceFunction = inngest.createFunction(
     const hasBuffer = await step.run("check-buffer", async () => {
       const exists = await messageBufferService.hasBuffer({
         userId,
-        chatSessionId: interviewSessionId,
+        chatSessionId,
         interviewStep,
       });
 
@@ -51,7 +51,7 @@ export const bufferDebounceFunction = inngest.createFunction(
       name: "interview/buffer.flush",
       data: {
         userId,
-        interviewSessionId,
+        chatSessionId,
         interviewStep,
         flushId,
         messageCount: 0, // будет заполнено в flush функции

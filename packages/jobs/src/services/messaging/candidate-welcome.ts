@@ -3,8 +3,8 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   botSettings,
+  response,
   responseScreening,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
@@ -22,18 +22,20 @@ export async function generateWelcomeMessage(
   logger.info(`Generating welcome message for response ${responseId}`);
 
   const dataResult = await tryCatch(async () => {
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
-      with: {
-        vacancy: true,
-      },
+    const responseRecord = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
 
-    if (!response) {
+    if (!responseRecord) {
       throw new Error(`Response ${responseId} not found`);
     }
 
-    if (!response.vacancy) {
+    // Получаем vacancy отдельно через entityId
+    const vacancy = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+    });
+
+    if (!vacancy) {
       throw new Error(`Vacancy not found for response ${responseId}`);
     }
 
@@ -42,11 +44,11 @@ export async function generateWelcomeMessage(
     });
 
     const bot = await db.query.botSettings.findFirst({
-      where: eq(botSettings.workspaceId, response.vacancy.workspaceId),
+      where: eq(botSettings.workspaceId, vacancy.workspaceId),
     });
 
     // Bot settings are optional - we can generate message without them
-    return { response, screening, bot };
+    return { response: { ...responseRecord, vacancy }, screening, bot };
   }, "Failed to fetch data for welcome message");
 
   if (!dataResult.success) {
@@ -108,18 +110,20 @@ export async function generateTelegramInviteMessage(
   logger.info(`Generating Telegram invite message for response ${responseId}`);
 
   const dataResult = await tryCatch(async () => {
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
-      with: {
-        vacancy: true,
-      },
+    const responseRecord = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
 
-    if (!response) {
+    if (!responseRecord) {
       throw new Error(`Response ${responseId} not found`);
     }
 
-    if (!response.vacancy) {
+    // Получаем vacancy отдельно через entityId
+    const vacancy = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+    });
+
+    if (!vacancy) {
       throw new Error(`Vacancy not found for response ${responseId}`);
     }
 
@@ -128,11 +132,11 @@ export async function generateTelegramInviteMessage(
     });
 
     const bot = await db.query.botSettings.findFirst({
-      where: eq(botSettings.workspaceId, response.vacancy.workspaceId),
+      where: eq(botSettings.workspaceId, vacancy.workspaceId),
     });
 
     // Bot settings are optional - we can generate message without them
-    return { response, screening, bot };
+    return { response: { ...responseRecord, vacancy }, screening, bot };
   }, "Failed to fetch data for invite message");
 
   if (!dataResult.success) {
@@ -164,7 +168,7 @@ export async function generateTelegramInviteMessage(
       entityId: responseId,
       metadata: {
         responseId,
-        vacancyId: response.vacancyId,
+        entityId: response.entityId,
         candidateName: response.candidateName,
       },
     });
