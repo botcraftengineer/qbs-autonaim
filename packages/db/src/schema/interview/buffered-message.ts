@@ -10,20 +10,22 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { chatSession } from "./session";
+import { interviewSession } from "./session";
 
 /**
- * Таблица для хранения отдельных буферизованных сообщений
+ * Таблица для хранения буферизованных сообщений интервью
  * Каждое сообщение в отдельной строке для предотвращения затирания
+ * при конкурентных операциях (когда кандидат отправляет несколько сообщений подряд)
  */
 export const bufferedMessage = pgTable(
   "buffered_messages",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
     messageId: varchar("message_id", { length: 100 }).notNull(),
-    chatSessionId: uuid("chat_session_id")
+    // TODO: Переименовать в interview_session_id после миграции БД
+    interviewSessionId: uuid("chat_session_id")
       .notNull()
-      .references(() => chatSession.id, {
+      .references(() => interviewSession.id, {
         onDelete: "cascade",
       }),
     userId: varchar("user_id", { length: 100 }).notNull(),
@@ -38,8 +40,8 @@ export const bufferedMessage = pgTable(
       .notNull(),
   },
   (table) => ({
-    chatSessionStepIdx: index("buffered_message_chat_session_step_idx").on(
-      table.chatSessionId,
+    interviewSessionStepIdx: index("buffered_message_interview_session_step_idx").on(
+      table.interviewSessionId,
       table.interviewStep,
     ),
     userIdx: index("buffered_message_user_idx").on(table.userId),
@@ -53,7 +55,7 @@ export const bufferedMessage = pgTable(
  */
 export const CreateBufferedMessageSchema = createInsertSchema(bufferedMessage, {
   messageId: z.string().min(1),
-  chatSessionId: z.uuid(),
+  interviewSessionId: z.uuid(),
   userId: z.string().min(1),
   interviewStep: z.number().int().min(0),
   content: z.string().min(1),

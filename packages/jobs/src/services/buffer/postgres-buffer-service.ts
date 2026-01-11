@@ -1,5 +1,5 @@
 /**
- * PostgreSQL-based реализация сервиса буферизации сообщений
+ * PostgreSQL-based реализация сервиса буферизации сообщений интервью
  *
  * Использует отдельную таблицу buffered_messages для хранения сообщений.
  * Каждое сообщение в отдельной строке для предотвращения затирания.
@@ -31,14 +31,14 @@ export class PostgresMessageBufferService implements MessageBufferService {
    */
   async addMessage(params: {
     userId: string;
-    chatSessionId: string;
+    interviewSessionId: string;
     interviewStep: number;
     message: BufferedMessage;
   }): Promise<void> {
     // Валидация пустых сообщений
     if (!params.message.content.trim()) {
       logger.debug("Ignoring empty message", {
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
       });
       return;
@@ -47,7 +47,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
     try {
       await db.insert(bufferedMessage).values({
         messageId: params.message.id,
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         userId: params.userId,
         interviewStep: params.interviewStep,
         content: params.message.content,
@@ -57,14 +57,14 @@ export class PostgresMessageBufferService implements MessageBufferService {
       });
 
       logger.debug("Message added to buffer", {
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
         messageId: params.message.id,
       });
     } catch (error) {
       logger.error("Error adding message to buffer", {
         error,
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
       });
       throw error;
@@ -79,13 +79,13 @@ export class PostgresMessageBufferService implements MessageBufferService {
    */
   async getMessages(params: {
     userId: string;
-    chatSessionId: string;
+    interviewSessionId: string;
     interviewStep: number;
   }): Promise<BufferedMessage[]> {
     try {
       const messages = await db.query.bufferedMessage.findMany({
         where: and(
-          eq(bufferedMessage.chatSessionId, params.chatSessionId),
+          eq(bufferedMessage.interviewSessionId, params.interviewSessionId),
           eq(bufferedMessage.interviewStep, params.interviewStep),
         ),
         orderBy: [asc(bufferedMessage.timestamp)],
@@ -100,7 +100,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
       }));
 
       logger.debug("Retrieved messages from buffer", {
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
         messageCount: result.length,
       });
@@ -109,7 +109,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
     } catch (error) {
       logger.error("Error getting messages from buffer", {
         error,
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
       });
       return [];
@@ -123,7 +123,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
    */
   async clearBuffer(params: {
     userId: string;
-    chatSessionId: string;
+    interviewSessionId: string;
     interviewStep: number;
   }): Promise<void> {
     try {
@@ -131,19 +131,19 @@ export class PostgresMessageBufferService implements MessageBufferService {
         .delete(bufferedMessage)
         .where(
           and(
-            eq(bufferedMessage.chatSessionId, params.chatSessionId),
+            eq(bufferedMessage.interviewSessionId, params.interviewSessionId),
             eq(bufferedMessage.interviewStep, params.interviewStep),
           ),
         );
 
       logger.debug("Buffer cleared", {
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
       });
     } catch (error) {
       logger.error("Error clearing buffer", {
         error,
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
       });
       throw error;
@@ -157,13 +157,13 @@ export class PostgresMessageBufferService implements MessageBufferService {
    */
   async hasBuffer(params: {
     userId: string;
-    chatSessionId: string;
+    interviewSessionId: string;
     interviewStep: number;
   }): Promise<boolean> {
     try {
       const message = await db.query.bufferedMessage.findFirst({
         where: and(
-          eq(bufferedMessage.chatSessionId, params.chatSessionId),
+          eq(bufferedMessage.interviewSessionId, params.interviewSessionId),
           eq(bufferedMessage.interviewStep, params.interviewStep),
         ),
       });
@@ -171,7 +171,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
       const hasBuffer = message !== undefined && message !== null;
 
       logger.debug("Checked buffer existence", {
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
         hasBuffer,
       });
@@ -180,7 +180,7 @@ export class PostgresMessageBufferService implements MessageBufferService {
     } catch (error) {
       logger.error("Error checking buffer existence", {
         error,
-        chatSessionId: params.chatSessionId,
+        interviewSessionId: params.interviewSessionId,
         interviewStep: params.interviewStep,
       });
       return false;
