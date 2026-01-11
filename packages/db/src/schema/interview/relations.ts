@@ -2,8 +2,9 @@ import { relations } from "drizzle-orm";
 import { file } from "../file";
 import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
+import { interviewMessage } from "./interview-message";
+import { interviewSession } from "./interview-session";
 import { interviewScoring } from "./scoring";
-import { interviewMessage, interviewSession } from "./session";
 
 /**
  * Relations для interviewSession

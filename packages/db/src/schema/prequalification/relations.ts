@@ -1,11 +1,11 @@
 import { relations } from "drizzle-orm";
 import { customDomain } from "..";
-import { chatSession } from "../chat/session";
+import { chatSession } from "../chat/chat-session";
 import { vacancyResponse } from "../vacancy/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
 import { analyticsEvent } from "./analytics-event";
-import { prequalificationSession } from "./session";
+import { prequalificationSession } from "./prequalification-session";
 import { widgetConfig } from "./widget-config";
 
 // Prequalification Session Relations

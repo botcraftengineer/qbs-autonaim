@@ -10,7 +10,6 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { file } from "../file/file";
 
 /**
  * Тип сущности для командных чатов
@@ -28,8 +27,6 @@ export const chatStatusEnum = pgEnum("chat_status", [
   "archived",
   "blocked",
 ]);
-
-export const chatChannelEnum = pgEnum("chat_channel", ["web", "email"]);
 
 /**
  * Командные чаты (НЕ интервью)
@@ -56,15 +53,18 @@ export const chatSession = pgTable(
 
     // Счётчики
     messageCount: integer("message_count").default(0).notNull(),
-    lastMessageAt: timestamp("last_message_at", { withTimezone: true }),
+    lastMessageAt: timestamp("last_message_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
 
     // Метаданные
     metadata: jsonb("metadata").$type<Record<string, unknown>>(),
 
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .$onUpdate(() => new Date())
       .notNull(),
@@ -82,74 +82,16 @@ export const chatSession = pgTable(
       table.userId,
     ),
     statusIdx: index("chat_session_status_idx").on(table.status),
-  }),
-);
-
-export const chatMessageRoleEnum = pgEnum("chat_message_role", [
-  "user", // Участник команды
-  "assistant", // AI ассистент
-  "admin", // Админ/рекрутер
-  "system", // Системные сообщения
-]);
-
-export const chatMessageTypeEnum = pgEnum("chat_message_type", [
-  "text",
-  "file",
-  "event", // Системные события
-]);
-
-export interface ChatMessageMetadata {
-  isRead?: boolean;
-  editedAt?: string;
-  latencyMs?: number;
-  entitiesMentioned?: string[];
-  [key: string]: unknown;
-}
-
-/**
- * Сообщения в командных чатах
- */
-export const chatMessage = pgTable(
-  "chat_messages",
-  {
-    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-    sessionId: uuid("session_id")
-      .notNull()
-      .references(() => chatSession.id, { onDelete: "cascade" }),
-
-    // Отправитель
-    userId: text("user_id").notNull(), // Clerk user ID
-    role: chatMessageRoleEnum("role").notNull(),
-    type: chatMessageTypeEnum("type").default("text").notNull(),
-
-    // Контент
-    content: text("content"),
-
-    // Quick replies для AI чатов
-    quickReplies: jsonb("quick_replies").$type<string[]>(),
-
-    // Файлы
-    fileId: uuid("file_id").references(() => file.id, { onDelete: "set null" }),
-
-    // Метаданные
-    metadata: jsonb("metadata").$type<ChatMessageMetadata>(),
-
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => ({
-    sessionIdx: index("chat_message_session_idx").on(table.sessionId),
-    sessionCreatedIdx: index("chat_message_session_created_idx").on(
-      table.sessionId,
-      table.createdAt,
+    lastMessageAtIdx: index("chat_session_last_message_at_idx").on(
+      table.lastMessageAt,
     ),
-    userIdx: index("chat_message_user_idx").on(table.userId),
+    metadataIdx: index("chat_session_metadata_idx").using(
+      "gin",
+      table.metadata,
+    ),
   }),
 );
 
 export type ChatSession = typeof chatSession.$inferSelect;
 export type NewChatSession = typeof chatSession.$inferInsert;
-export type ChatMessage = typeof chatMessage.$inferSelect;
-export type NewChatMessage = typeof chatMessage.$inferInsert;
 export type ChatEntityType = (typeof chatEntityTypeEnum.enumValues)[number];

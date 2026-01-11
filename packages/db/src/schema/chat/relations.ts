@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file/file";
-import { chatMessage, chatSession } from "./session";
+import { chatMessage } from "./chat-message";
+import { chatSession } from "./chat-session";
 
 export const chatSessionRelations = relations(chatSession, ({ many }) => ({
   messages: many(chatMessage),

@@ -13,8 +13,8 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-import { chatSession } from "../chat/session";
-import { interviewSession } from "../interview/session";
+import { chatSession } from "../chat/chat-session";
+import { interviewSession } from "../interview/interview-session";
 import { vacancyResponse } from "../vacancy/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";

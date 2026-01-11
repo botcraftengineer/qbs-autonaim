@@ -10,7 +10,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
-import { interviewSession } from "./session";
+import { interviewSession } from "./interview-session";
 
 /**
  * Таблица для хранения буферизованных сообщений интервью

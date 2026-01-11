@@ -13,7 +13,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { gigResponse } from "../gig/response";
 import { vacancyResponse } from "../vacancy/response";
-import { interviewSession } from "./session";
+import { interviewSession } from "./interview-session";
 
 /**
  * Результаты скоринга интервью

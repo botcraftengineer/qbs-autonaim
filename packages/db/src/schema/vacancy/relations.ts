@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
+import { interviewSession } from "../interview/interview-session";
 import { interviewScoring } from "../interview/scoring";
-import { interviewSession } from "../interview/session";
 import { workspace } from "../workspace/workspace";
 import { vacancyResponse } from "./response";
 import { vacancyResponseHistory } from "./response-history";

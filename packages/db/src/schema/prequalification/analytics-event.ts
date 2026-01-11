@@ -13,18 +13,21 @@ import { z } from "zod";
 
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
-import { prequalificationSession } from "./session";
+import { prequalificationSession } from "./prequalification-session";
 
 // Analytics Event Type Enum
-export const analyticsEventTypeEnum = pgEnum("prequalification_analytics_event_type", [
-  "widget_view",
-  "session_start",
-  "resume_upload",
-  "dialogue_message",
-  "dialogue_complete",
-  "evaluation_complete",
-  "application_submit",
-]);
+export const analyticsEventTypeEnum = pgEnum(
+  "prequalification_analytics_event_type",
+  [
+    "widget_view",
+    "session_start",
+    "resume_upload",
+    "dialogue_message",
+    "dialogue_complete",
+    "evaluation_complete",
+    "application_submit",
+  ],
+);
 
 // Analytics Event Table
 export const analyticsEvent = pgTable(

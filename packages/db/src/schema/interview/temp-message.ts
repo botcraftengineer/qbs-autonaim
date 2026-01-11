@@ -23,12 +23,12 @@ export const tempMessageContentTypeEnum = pgEnum("temp_message_content_type", [
 /**
  * Временные сообщения для неидентифицированных пользователей
  * Хранятся до момента идентификации по пин-коду
- * После идентификации переносятся в conversation_messages
+ * После идентификации переносятся в interview_messages
  */
-export const tempConversationMessage = pgTable("temp_conversation_messages", {
+export const tempInterviewMessage = pgTable("temp_interview_messages", {
   id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
   // Временный ID формата temp_{chatId}
-  tempConversationId: varchar("temp_conversation_id", {
+  tempSessionId: varchar("temp_session_id", {
     length: 100,
   }).notNull(),
   chatId: varchar("chat_id", { length: 100 }).notNull(),
@@ -41,10 +41,10 @@ export const tempConversationMessage = pgTable("temp_conversation_messages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-export const CreateTempMessageSchema = createInsertSchema(
-  tempConversationMessage,
+export const CreateTempInterviewMessageSchema = createInsertSchema(
+  tempInterviewMessage,
   {
-    tempConversationId: z.string().max(100),
+    tempSessionId: z.string().max(100),
     chatId: z.string().max(100),
     sender: z.enum(["CANDIDATE", "BOT"]),
     contentType: z.enum(["TEXT", "VOICE"]).default("TEXT"),

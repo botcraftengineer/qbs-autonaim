@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
-import { chatMessage } from "../chat/session";
+import { chatMessage } from "../chat/chat-message";
 import { gigResponse } from "../gig/response";
-import { interviewMessage } from "../interview/session";
+import { interviewMessage } from "../interview/interview-message";
 import { vacancyResponse } from "../vacancy/response";
 import { file } from "./file";
 

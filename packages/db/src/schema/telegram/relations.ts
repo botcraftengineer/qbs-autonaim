@@ -1,8 +1,9 @@
 import { relations } from "drizzle-orm";
-import { chatMessage, chatSession } from "../chat/session";
+import { chatMessage } from "../chat/chat-message";
+import { chatSession } from "../chat/chat-session";
 import { file } from "../file/file";
 import { workspace } from "../workspace/workspace";
-import { telegramSession } from "./session";
+import { telegramSession } from "./telegram-session";
 
 /**
  * Relations для telegram сессий
