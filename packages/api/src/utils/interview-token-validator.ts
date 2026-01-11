@@ -23,47 +23,30 @@ export async function validateInterviewToken(
     return null;
   }
 
-  // 1. Проверяем в таблице vacancy interview links
-  const vacancyLink = await db.query.interviewLink.findFirst({
-    where: (link, { eq, and }) =>
-      and(eq(link.token, token), eq(link.isActive, true)),
+  // Проверяем в универсальной таблице interview_links
+  const link = await db.query.interviewLink.findFirst({
+    where: (l, { eq, and }) =>
+      and(eq(l.token, token), eq(l.isActive, true)),
   });
 
-  if (vacancyLink) {
-    // Проверяем срок действия
-    if (vacancyLink.expiresAt && vacancyLink.expiresAt < new Date()) {
-      return null;
-    }
-
-    return {
-      type: "vacancy",
-      tokenId: vacancyLink.id,
-      entityId: vacancyLink.entityId,
-      token: vacancyLink.token,
-    };
+  if (!link) {
+    return null;
   }
 
-  // 2. Проверяем в таблице gig interview links
-  const gigLink = await db.query.gigInterviewLink.findFirst({
-    where: (link, { eq, and }) =>
-      and(eq(link.token, token), eq(link.isActive, true)),
-  });
-
-  if (gigLink) {
-    // Проверяем срок действия
-    if (gigLink.expiresAt && gigLink.expiresAt < new Date()) {
-      return null;
-    }
-
-    return {
-      type: "gig",
-      tokenId: gigLink.id,
-      entityId: gigLink.gigId,
-      token: gigLink.token,
-    };
+  // Проверяем срок действия
+  if (link.expiresAt && link.expiresAt < new Date()) {
+    return null;
   }
 
-  return null;
+  // Определяем тип на основе entityType
+  const type = link.entityType === "gig" ? "gig" : "vacancy";
+
+  return {
+    type,
+    tokenId: link.id,
+    entityId: link.entityId,
+    token: link.token,
+  };
 }
 
 /**

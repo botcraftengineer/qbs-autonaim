@@ -49,7 +49,7 @@ export const create = protectedProcedure
         workspaceId: input.workspaceId,
         title: input.title,
         description: fullDescription || null,
-        source: "manual",
+        source: "MANUAL",
         isActive: true,
       })
       .returning();

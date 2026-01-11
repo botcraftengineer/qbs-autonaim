@@ -8,81 +8,38 @@ const getInterviewByTokenInputSchema = z.object({
 
 /**
  * Универсальный эндпоинт для получения данных интервью по токену.
- * Ищет токен сначала в таблице vacancy interview links,
- * затем в gig interview links.
- * Возвращает тип сущности (vacancy | gig) и соответствующие данные.
+ * Ищет токен в таблице interview_links и возвращает
+ * тип сущности (vacancy | gig) и соответствующие данные.
  */
 export const getInterviewByToken = publicProcedure
   .input(getInterviewByTokenInputSchema)
   .query(async ({ input, ctx }) => {
-    // 1. Ищем в таблице interview_links (vacancy)
-    const vacancyLink = await ctx.db.query.interviewLink.findFirst({
-      where: (link, { eq, and }) =>
-        and(eq(link.token, input.token), eq(link.isActive, true)),
+    // Ищем в универсальной таблице interview_links
+    const link = await ctx.db.query.interviewLink.findFirst({
+      where: (l, { eq, and }) =>
+        and(eq(l.token, input.token), eq(l.isActive, true)),
     });
 
-    if (vacancyLink) {
-      // Проверяем срок действия
-      if (vacancyLink.expiresAt && vacancyLink.expiresAt < new Date()) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Ссылка на интервью истекла",
-        });
-      }
-
-      // Получаем вакансию
-      const foundVacancy = await ctx.db.query.vacancy.findFirst({
-        where: (v, { eq }) => eq(v.id, vacancyLink.entityId),
+    if (!link) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Ссылка на интервью недействительна или истекла",
       });
-
-      if (!foundVacancy) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Вакансия не найдена",
-        });
-      }
-
-      if (!foundVacancy.isActive) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Вакансия закрыта",
-        });
-      }
-
-      return {
-        type: "vacancy" as const,
-        interviewLink: {
-          id: vacancyLink.id,
-          token: vacancyLink.token,
-        },
-        data: {
-          id: foundVacancy.id,
-          title: foundVacancy.title,
-          description: foundVacancy.description,
-          requirements: foundVacancy.requirements,
-          source: foundVacancy.source,
-        },
-      };
     }
 
-    // 2. Ищем в таблице gig_interview_links (gig)
-    const gigLink = await ctx.db.query.gigInterviewLink.findFirst({
-      where: (link, { eq, and }) =>
-        and(eq(link.token, input.token), eq(link.isActive, true)),
-    });
+    // Проверяем срок действия
+    if (link.expiresAt && link.expiresAt < new Date()) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Ссылка на интервью истекла",
+      });
+    }
 
-    if (gigLink) {
-      // Проверяем срок действия
-      if (gigLink.expiresAt && gigLink.expiresAt < new Date()) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Ссылка на интервью истекла",
-        });
-      }
-
+    // Обработка по типу сущности
+    if (link.entityType === "gig") {
       // Получаем гиг
       const foundGig = await ctx.db.query.gig.findFirst({
-        where: (g, { eq }) => eq(g.id, gigLink.gigId),
+        where: (g, { eq }) => eq(g.id, link.entityId),
       });
 
       if (!foundGig) {
@@ -102,8 +59,8 @@ export const getInterviewByToken = publicProcedure
       return {
         type: "gig" as const,
         interviewLink: {
-          id: gigLink.id,
-          token: gigLink.token,
+          id: link.id,
+          token: link.token,
         },
         data: {
           id: foundGig.id,
@@ -115,9 +72,37 @@ export const getInterviewByToken = publicProcedure
       };
     }
 
-    // 3. Токен не найден ни в одной таблице
-    throw new TRPCError({
-      code: "NOT_FOUND",
-      message: "Ссылка на интервью недействительна или истекла",
+    // Обработка vacancy (по умолчанию)
+    const foundVacancy = await ctx.db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, link.entityId),
     });
+
+    if (!foundVacancy) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
+    if (!foundVacancy.isActive) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Вакансия закрыта",
+      });
+    }
+
+    return {
+      type: "vacancy" as const,
+      interviewLink: {
+        id: link.id,
+        token: link.token,
+      },
+      data: {
+        id: foundVacancy.id,
+        title: foundVacancy.title,
+        description: foundVacancy.description,
+        requirements: foundVacancy.requirements,
+        source: foundVacancy.source,
+      },
+    };
   });

@@ -183,7 +183,7 @@ export const getAnalytics = protectedProcedure
       const sourceComparison = await ctx.db
         .select({
           sourceType: sql<string>`CASE
-          WHEN ${vacancy.source} = 'hh' THEN 'HeadHunter'
+          WHEN ${vacancy.source} = 'HH' THEN 'HeadHunter'
           ELSE 'Фриланс-платформы'
         END`,
           totalVacancies: count(vacancy.id),

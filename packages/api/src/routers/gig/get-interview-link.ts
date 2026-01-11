@@ -1,5 +1,5 @@
 import { and, eq } from "@qbs-autonaim/db";
-import { gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
+import { gig, interviewLink } from "@qbs-autonaim/db/schema";
 import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -40,10 +40,11 @@ export const getInterviewLink = protectedProcedure
       });
     }
 
-    const link = await ctx.db.query.gigInterviewLink.findFirst({
+    const link = await ctx.db.query.interviewLink.findFirst({
       where: and(
-        eq(gigInterviewLink.gigId, input.gigId),
-        eq(gigInterviewLink.isActive, true),
+        eq(interviewLink.entityType, "gig"),
+        eq(interviewLink.entityId, input.gigId),
+        eq(interviewLink.isActive, true),
       ),
     });
 
@@ -59,7 +60,7 @@ export const getInterviewLink = protectedProcedure
 
     return {
       id: link.id,
-      gigId: link.gigId,
+      gigId: link.entityId,
       token: link.token,
       url,
       isActive: link.isActive,

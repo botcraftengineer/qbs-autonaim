@@ -9,15 +9,14 @@ const getVacanciesInputSchema = z.object({
   workspaceId: workspaceIdSchema,
   source: z
     .enum([
-      "hh",
-      "kwork",
-      "fl",
-      "weblancer",
-      "upwork",
-      "freelancer",
-      "fiverr",
-      "avito",
-      "superjob",
+      "HH",
+      "KWORK",
+      "FL_RU",
+      "FREELANCE_RU",
+      "WEB_LINK",
+      "AVITO",
+      "SUPERJOB",
+      "HABR",
     ])
     .optional(),
 });

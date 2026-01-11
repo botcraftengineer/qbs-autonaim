@@ -18,14 +18,7 @@ const retryBulkImportInputSchema = z.object({
       rawText: z.string(),
     }),
   ),
-  platformSource: z.enum([
-    "kwork",
-    "fl",
-    "weblancer",
-    "upwork",
-    "freelancer",
-    "fiverr",
-  ]),
+  platformSource: z.enum(["KWORK", "FL_RU", "FREELANCE_RU", "WEB_LINK"]),
 });
 
 /**

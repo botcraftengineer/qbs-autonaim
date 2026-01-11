@@ -56,7 +56,7 @@ export const create = protectedProcedure
 
         deadline: input.deadline ? new Date(input.deadline) : null,
         estimatedDuration: input.estimatedDuration,
-        source: "manual",
+        source: "MANUAL",
         isActive: true,
       })
       .returning();

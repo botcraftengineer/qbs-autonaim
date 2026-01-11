@@ -114,7 +114,6 @@ export class VacancyContextLoader implements ContextLoader {
     const interviews: Array<{
       responseId: string | null;
       score: number;
-      detailedScore: number;
       analysis: string | null;
     }> = [];
 
@@ -125,7 +124,6 @@ export class VacancyContextLoader implements ContextLoader {
           columns: {
             responseId: true,
             score: true,
-            detailedScore: true,
             analysis: true,
           },
         });
@@ -164,7 +162,7 @@ export class VacancyContextLoader implements ContextLoader {
         screeningDetailedScore: screening?.detailedScore ?? null,
         screeningAnalysis: screening?.analysis ?? null,
         interviewScore: interview?.score ?? null,
-        interviewDetailedScore: interview?.detailedScore ?? null,
+        interviewDetailedScore: interview?.score ?? null,
         interviewAnalysis: interview?.analysis ?? null,
       };
     });

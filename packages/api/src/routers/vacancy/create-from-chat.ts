@@ -53,7 +53,7 @@ export const createFromChat = protectedProcedure
         workspaceId: input.workspaceId,
         title: input.title,
         description: fullDescription || null,
-        source: "manual",
+        source: "MANUAL",
         isActive: true,
         // Bot configuration fields (Requirements 5.1, 5.2, 5.3, 5.4)
         customBotInstructions: input.customBotInstructions || null,

@@ -11,14 +11,7 @@ const createVacancyInputSchema = z.object({
   title: z.string().min(1).max(500),
   description: z.string().optional(),
   requirements: z.string().optional(),
-  platformSource: z.enum([
-    "kwork",
-    "fl",
-    "weblancer",
-    "upwork",
-    "freelancer",
-    "fiverr",
-  ]),
+  platformSource: z.enum(["KWORK", "FL_RU", "FREELANCE_RU", "WEB_LINK"]),
   platformUrl: z.url().optional(),
 });
 

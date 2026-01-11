@@ -7,7 +7,7 @@
 
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { customDomain, gig, gigInterviewLink } from "@qbs-autonaim/db/schema";
+import { customDomain, gig, interviewLink } from "@qbs-autonaim/db/schema";
 import { getInterviewBaseUrl } from "@qbs-autonaim/shared";
 import { generateSlug } from "../utils/slug-generator";
 
@@ -91,8 +91,8 @@ export class GigInterviewLinkGenerator {
     while (attempts < maxAttempts) {
       const token = generateSlug();
 
-      const existing = await db.query.gigInterviewLink.findFirst({
-        where: eq(gigInterviewLink.token, token),
+      const existing = await db.query.interviewLink.findFirst({
+        where: eq(interviewLink.token, token),
       });
 
       if (!existing) {
@@ -114,10 +114,11 @@ export class GigInterviewLinkGenerator {
    */
   async generateLink(gigId: string): Promise<GigInterviewLink> {
     // Проверяем, существует ли уже активная ссылка для этого гига
-    const existingLink = await db.query.gigInterviewLink.findFirst({
+    const existingLink = await db.query.interviewLink.findFirst({
       where: and(
-        eq(gigInterviewLink.gigId, gigId),
-        eq(gigInterviewLink.isActive, true),
+        eq(interviewLink.entityType, "gig"),
+        eq(interviewLink.entityId, gigId),
+        eq(interviewLink.isActive, true),
       ),
     });
 
@@ -131,9 +132,10 @@ export class GigInterviewLinkGenerator {
 
     // Создаём запись в БД
     const [created] = await db
-      .insert(gigInterviewLink)
+      .insert(interviewLink)
       .values({
-        gigId,
+        entityType: "gig",
+        entityId: gigId,
         token,
         isActive: true,
       })
@@ -153,8 +155,11 @@ export class GigInterviewLinkGenerator {
    * @returns Ссылка на интервью если токен валиден и активен, иначе null
    */
   async validateLink(token: string): Promise<GigInterviewLink | null> {
-    const link = await db.query.gigInterviewLink.findFirst({
-      where: eq(gigInterviewLink.token, token),
+    const link = await db.query.interviewLink.findFirst({
+      where: and(
+        eq(interviewLink.token, token),
+        eq(interviewLink.entityType, "gig"),
+      ),
     });
 
     if (!link) {
@@ -181,23 +186,23 @@ export class GigInterviewLinkGenerator {
    */
   async deactivateLink(linkId: string): Promise<void> {
     await db
-      .update(gigInterviewLink)
+      .update(interviewLink)
       .set({ isActive: false })
-      .where(eq(gigInterviewLink.id, linkId));
+      .where(eq(interviewLink.id, linkId));
   }
 
   /**
    * Преобразует запись из БД в интерфейс GigInterviewLink
    */
   private async mapToGigInterviewLink(
-    link: typeof gigInterviewLink.$inferSelect,
+    link: typeof interviewLink.$inferSelect,
   ): Promise<GigInterviewLink> {
-    const customDomainUrl = await this.getInterviewDomain(link.gigId);
+    const customDomainUrl = await this.getInterviewDomain(link.entityId);
     const baseUrl = getInterviewBaseUrl(customDomainUrl);
 
     return {
       id: link.id,
-      gigId: link.gigId,
+      gigId: link.entityId,
       token: link.token,
       url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,

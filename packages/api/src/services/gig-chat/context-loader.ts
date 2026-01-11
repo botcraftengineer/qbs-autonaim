@@ -198,7 +198,6 @@ export async function loadCandidatesContext(
   const interviews: Array<{
     gigResponseId: string | null;
     score: number;
-    detailedScore: number;
     analysis: string | null;
   }> = [];
 
@@ -209,7 +208,6 @@ export async function loadCandidatesContext(
         columns: {
           gigResponseId: true,
           score: true,
-          detailedScore: true,
           analysis: true,
         },
       });
@@ -250,7 +248,7 @@ export async function loadCandidatesContext(
       screeningAnalysis: screening?.analysis ?? null,
       // Interview data
       interviewScore: interview?.score ?? null,
-      interviewDetailedScore: interview?.detailedScore ?? null,
+      interviewDetailedScore: interview?.score ?? null,
       interviewAnalysis: interview?.analysis ?? null,
       // Ranking data
       compositeScore: response.compositeScore,

@@ -1,6 +1,6 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
-  gigInterviewLink,
+  interviewLink,
   gigInvitation,
   gigResponse,
 } from "@qbs-autonaim/db/schema";
@@ -88,10 +88,11 @@ export const generateInvitation = protectedProcedure
     }
 
     // Получаем или создаём ссылку на интервью для гига
-    let link = await ctx.db.query.gigInterviewLink.findFirst({
+    let link = await ctx.db.query.interviewLink.findFirst({
       where: and(
-        eq(gigInterviewLink.gigId, response.gigId),
-        eq(gigInterviewLink.isActive, true),
+        eq(interviewLink.entityType, "gig"),
+        eq(interviewLink.entityId, response.gigId),
+        eq(interviewLink.isActive, true),
       ),
     });
 
@@ -105,9 +106,10 @@ export const generateInvitation = protectedProcedure
           const token = generateSlug();
 
           const [created] = await ctx.db
-            .insert(gigInterviewLink)
+            .insert(interviewLink)
             .values({
-              gigId: response.gigId,
+              entityType: "gig",
+              entityId: response.gigId,
               token,
               isActive: true,
             })

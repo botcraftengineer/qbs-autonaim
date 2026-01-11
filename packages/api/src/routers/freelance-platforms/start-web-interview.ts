@@ -57,52 +57,41 @@ export const startWebInterview = publicProcedure
     );
 
     try {
-      // 1. Ищем токен в таблице vacancy interview links
-      const vacancyLink = await ctx.db.query.interviewLink.findFirst({
-        where: (link, { eq, and }) =>
-          and(eq(link.token, input.token), eq(link.isActive, true)),
+      // Ищем токен в универсальной таблице interview_links
+      const link = await ctx.db.query.interviewLink.findFirst({
+        where: (l, { eq, and }) =>
+          and(eq(l.token, input.token), eq(l.isActive, true)),
       });
 
-      if (vacancyLink) {
-        if (vacancyLink.expiresAt && vacancyLink.expiresAt < new Date()) {
-          throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
-            token: input.token,
-          });
-        }
-
-        return await handleVacancyInterview(
-          ctx,
-          vacancyLink,
-          input.freelancerInfo,
-          errorHandler,
-        );
+      if (!link) {
+        throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
+          token: input.token,
+        });
       }
 
-      // 2. Ищем токен в таблице gig interview links
-      const gigLink = await ctx.db.query.gigInterviewLink.findFirst({
-        where: (link, { eq, and }) =>
-          and(eq(link.token, input.token), eq(link.isActive, true)),
-      });
+      if (link.expiresAt && link.expiresAt < new Date()) {
+        throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
+          token: input.token,
+        });
+      }
 
-      if (gigLink) {
-        if (gigLink.expiresAt && gigLink.expiresAt < new Date()) {
-          throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
-            token: input.token,
-          });
-        }
-
+      // Обработка по типу сущности
+      if (link.entityType === "gig") {
         return await handleGigInterview(
           ctx,
-          gigLink,
+          { id: link.id, gigId: link.entityId },
           input.freelancerInfo,
           errorHandler,
         );
       }
 
-      // 3. Токен не найден
-      throw await errorHandler.handleNotFoundError("Ссылка на интервью", {
-        token: input.token,
-      });
+      // По умолчанию vacancy
+      return await handleVacancyInterview(
+        ctx,
+        { id: link.id, entityId: link.entityId },
+        input.freelancerInfo,
+        errorHandler,
+      );
     } catch (error) {
       if (error instanceof Error && error.message.includes("TRPC")) {
         throw error;
