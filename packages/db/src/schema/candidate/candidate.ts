@@ -41,6 +41,30 @@ export const parsingStatusEnum = pgEnum("parsing_status", [
   "FAILED",
 ]);
 
+export const genderEnum = pgEnum("gender", ["male", "female", "other"]);
+
+export const candidateStatusEnum = pgEnum("candidate_status", [
+  "ACTIVE",
+  "BLACKLISTED",
+  "HIRED",
+  "PASSIVE",
+]);
+
+export const englishLevelEnum = pgEnum("english_level", [
+  "A1",
+  "A2",
+  "B1",
+  "B2",
+  "C1",
+  "C2",
+]);
+
+export const workFormatEnum = pgEnum("work_format", [
+  "remote",
+  "office",
+  "hybrid",
+]);
+
 /**
  * Глобальный профиль кандидата (Talent Pool).
  * Позволяет накапливать базу талантов организации независимо от конкретных вакансий.
@@ -66,7 +90,7 @@ export const candidate = pgTable(
 
     // Личные данные (критично для РФ)
     birthDate: timestamp("birth_date", { withTimezone: true, mode: "date" }),
-    gender: varchar("gender", { length: 20 }), // "male", "female"
+    gender: genderEnum("gender"), // "male", "female"
     citizenship: varchar("citizenship", { length: 100 }), // Гражданство (важно для оформления)
     location: varchar("location", { length: 200 }), // Город проживания
 
@@ -89,14 +113,14 @@ export const candidate = pgTable(
 
     // Зарплатные ожидания
     salaryExpectationsAmount: integer("salary_expectations_amount"),
-    workFormat: varchar("work_format", { length: 50 }), // remote, office, hybrid
+    workFormat: workFormatEnum("work_format"), // remote, office, hybrid
 
     // Детали по опыту
-    englishLevel: varchar("english_level", { length: 20 }), // A1-C2
+    englishLevel: englishLevelEnum("english_level"), // A1-C2
     readyForRelocation: boolean("ready_for_relocation").default(false),
 
     // Статус в базе (например, "BLACKLISTED", "HIRED", "PASSIVE")
-    status: varchar("status", { length: 50 }).default("ACTIVE"),
+    status: candidateStatusEnum("status").default("ACTIVE"),
 
     // Заметки рекрутера (общие по кандидату)
     notes: text("notes"),
@@ -161,10 +185,12 @@ export const CreateCandidateSchema = createInsertSchema(candidate, {
   profileData: z.any(),
   skills: z.array(z.string()).optional(),
   experienceYears: z.number().int().min(0).optional(),
-  source: z
-    .enum(["APPLICANT", "SOURCING", "IMPORT", "MANUAL", "REFERRAL"])
-    .optional(),
-  originalSource: z.enum(platformSourceValues).default("MANUAL"),
+  gender: z.enum(genderEnum.enumValues).optional(),
+  status: z.enum(candidateStatusEnum.enumValues).default("ACTIVE"),
+  englishLevel: z.enum(englishLevelEnum.enumValues).optional(),
+  workFormat: z.enum(workFormatEnum.enumValues).optional(),
+  source: z.enum(candidateSourceEnum.enumValues).optional(),
+  originalSource: z.enum(platformSourceEnum.enumValues).default("MANUAL"),
   tags: z.array(z.string()).optional(),
   isSearchable: z.boolean().default(true),
   metadata: z.record(z.string(), z.unknown()).optional(),

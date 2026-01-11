@@ -27,6 +27,18 @@ import {
   responseStatusValues,
 } from "../shared/response-enums";
 
+import {
+  candidateContactColumns,
+  candidateExperienceColumns,
+  candidateFileColumns,
+  candidateIdentityColumns,
+  coverLetterColumn,
+  rankingAnalysisColumns,
+  rankingScoreColumns,
+  responseStatusColumns,
+  responseTimestampColumns,
+} from "../shared/response-columns";
+
 /**
  * Тип сущности для откликов
  */
@@ -57,17 +69,10 @@ export const response = pgTable(
 
     // Идентификация кандидата на платформе
     candidateId: varchar("candidate_id", { length: 100 }).notNull(),
-    candidateName: varchar("candidate_name", { length: 500 }),
-    profileUrl: text("profile_url"),
+    ...candidateIdentityColumns,
 
     // Контакты
-    telegramUsername: varchar("telegram_username", { length: 100 }),
-    chatId: varchar("chat_id", { length: 100 }),
-    phone: varchar("phone", { length: 50 }),
-    email: varchar("email", { length: 255 }),
-    contacts: jsonb("contacts").$type<Record<string, unknown>>(),
-    resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
-    telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
+    ...candidateContactColumns,
 
     // === Gig-специфичные поля ===
     proposedPrice: integer("proposed_price"),
@@ -87,58 +92,28 @@ export const response = pgTable(
     }),
 
     // Сопроводительное письмо
-    coverLetter: text("cover_letter"),
+    ...coverLetterColumn,
 
     // Файлы
-    photoFileId: uuid("photo_file_id").references(() => file.id, {
-      onDelete: "set null",
-    }),
+    ...candidateFileColumns,
     resumePdfFileId: uuid("resume_pdf_file_id").references(() => file.id, {
       onDelete: "set null",
     }),
 
     // Опыт и навыки
-    experience: text("experience"),
-    profileData: jsonb("profile_data").$type<Record<string, unknown>>(),
-    skills: jsonb("skills").$type<string[]>(),
-    rating: varchar("rating", { length: 20 }),
+    ...candidateExperienceColumns,
 
     // Статусы
-    status: responseStatusEnum("status").default("NEW").notNull(),
-    hrSelectionStatus: hrSelectionStatusEnum("hr_selection_status"),
-    importSource: importSourceEnum("import_source").default("MANUAL").notNull(),
+    ...responseStatusColumns,
 
     // Ranking scores (0-100)
-    compositeScore: integer("composite_score"),
-    priceScore: integer("price_score"),
-    deliveryScore: integer("delivery_score"),
-    skillsMatchScore: integer("skills_match_score"),
-    experienceScore: integer("experience_score"),
-    rankingPosition: integer("ranking_position"),
+    ...rankingScoreColumns,
 
     // Ranking analysis
-    rankingAnalysis: text("ranking_analysis"),
-    strengths: jsonb("strengths").$type<string[]>(),
-    weaknesses: jsonb("weaknesses").$type<string[]>(),
-    recommendation: recommendationEnum("recommendation"),
-    rankedAt: timestamp("ranked_at", { withTimezone: true, mode: "date" }),
+    ...rankingAnalysisColumns,
 
     // Временные метки
-    respondedAt: timestamp("responded_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-    welcomeSentAt: timestamp("welcome_sent_at", {
-      withTimezone: true,
-      mode: "date",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
-      .defaultNow()
-      .$onUpdate(() => new Date())
-      .notNull(),
+    ...responseTimestampColumns,
   },
   (table) => [
     // Уникальность: один кандидат — один отклик на сущность
@@ -148,7 +123,6 @@ export const response = pgTable(
       table.candidateId,
     ),
     // Основные индексы
-    index("response_entity_idx").on(table.entityType, table.entityId),
     index("response_global_candidate_idx").on(table.globalCandidateId),
     index("response_status_idx").on(table.status),
     index("response_hr_status_idx").on(table.hrSelectionStatus),
@@ -204,7 +178,7 @@ export const response = pgTable(
 );
 
 export const CreateResponseSchema = createInsertSchema(response, {
-  entityType: z.enum(["gig", "vacancy", "project"]),
+  entityType: z.enum(responseEntityTypeEnum.enumValues),
   entityId: z.string().uuid(),
   globalCandidateId: z.string().uuid().optional(),
   candidateId: z.string().max(100),

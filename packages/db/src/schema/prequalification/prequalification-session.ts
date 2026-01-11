@@ -206,18 +206,8 @@ export const CreatePrequalificationSessionSchema = createInsertSchema(
   {
     workspaceId: z.string().min(1),
     vacancyId: z.string().uuid(),
-    status: z
-      .enum([
-        "consent_pending",
-        "resume_pending",
-        "dialogue_active",
-        "evaluating",
-        "completed",
-        "submitted",
-        "expired",
-      ])
-      .default("consent_pending"),
-    source: z.enum(["widget", "direct"]).default("widget"),
+    status: z.enum(prequalificationStatusEnum.enumValues).default("consent_pending"),
+    source: z.enum(prequalificationSourceEnum.enumValues).default("widget"),
     ipAddress: z.string().max(45).optional(),
     userAgent: z.string().optional(),
   },

@@ -10,7 +10,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
-import type { z } from "zod";
+import { z } from "zod";
 
 export const auditActionEnum = pgEnum("audit_action", [
   "VIEW",
@@ -33,6 +33,10 @@ export const auditResourceTypeEnum = pgEnum("audit_resource_type", [
   "WIDGET_CONFIG",
   "CUSTOM_DOMAIN",
   "RULE",
+  "CANDIDATE",
+  "ORGANIZATION",
+  "USER",
+  "GIG",
 ]);
 
 export const auditLog = pgTable(
@@ -91,7 +95,10 @@ export const auditLog = pgTable(
   }),
 );
 
-export const CreateAuditLogSchema = createInsertSchema(auditLog).omit({
+export const CreateAuditLogSchema = createInsertSchema(auditLog, {
+  action: z.enum(auditActionEnum.enumValues),
+  resourceType: z.enum(auditResourceTypeEnum.enumValues),
+}).omit({
   id: true,
   createdAt: true,
 });
