@@ -17,8 +17,7 @@ const SOURCE_LABELS: Record<string, string> = {
   superjob: "SuperJob",
   kwork: "Kwork",
   fl: "FL.ru",
-  weblancer: "Weblancer",
-  upwork: "Upwork",
+  freelance: "Freelance.ru",
 };
 
 /**

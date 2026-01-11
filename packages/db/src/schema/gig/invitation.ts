@@ -6,7 +6,6 @@ import { gigResponse } from "./response";
 
 /**
  * Таблица для хранения приглашений на интервью для откликов на гиги
- * Генерируется ботом для отправки кандидату через kwork.ru
  */
 export const gigInvitation = pgTable(
   "gig_invitations",

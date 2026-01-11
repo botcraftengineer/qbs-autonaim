@@ -47,12 +47,12 @@ interface InterviewContext {
     content: string;
     contentType?: "text" | "voice";
   }>;
-  // Настройки компании
-  companySettings?: {
+  // Настройки бота
+  botSettings?: {
     botName?: string;
     botRole?: string;
-    name?: string;
-    description?: string;
+    companyName?: string;
+    companyDescription?: string;
   };
   // Настройки вакансии
   customBotInstructions?: string | null;
@@ -127,7 +127,7 @@ export async function analyzeAndGenerateNextQuestion(
         ? ((msg.contentType === "text" ? "TEXT" : "VOICE") as "TEXT" | "VOICE")
         : undefined,
     })),
-    companySettings: context.companySettings,
+    botSettings: context.botSettings,
     customBotInstructions: context.customBotInstructions,
     customOrganizationalQuestions: context.customOrganizationalQuestions,
     customInterviewQuestions: context.customInterviewQuestions,
@@ -243,7 +243,7 @@ export async function getInterviewContext(
   let responseId: string | null = null;
   let gigResponseId: string | null = null;
   let resumeLanguage: string | null = "ru";
-  let companySettings: InterviewContext["companySettings"] | undefined;
+  let botSettings: InterviewContext["botSettings"] | undefined;
   let customBotInstructions: string | null = null;
   let customOrganizationalQuestions: string | null = null;
   let customInterviewQuestions: string | null = null;
@@ -266,7 +266,7 @@ export async function getInterviewContext(
           with: {
             workspace: {
               with: {
-                companySettings: true,
+                botSettings: true,
               },
             },
           },
@@ -288,12 +288,13 @@ export async function getInterviewContext(
         gigResponse.gig?.customInterviewQuestions || null;
 
       const workspace = gigResponse.gig?.workspace;
-      if (workspace?.companySettings) {
-        companySettings = {
-          botName: workspace.companySettings.botName || undefined,
-          botRole: workspace.companySettings.botRole || undefined,
-          name: workspace.companySettings.name,
-          description: workspace.companySettings.description || undefined,
+      if (workspace?.botSettings) {
+        botSettings = {
+          botName: workspace.botSettings.botName || undefined,
+          botRole: workspace.botSettings.botRole || undefined,
+          companyName: workspace.botSettings.companyName,
+          companyDescription:
+            workspace.botSettings.companyDescription || undefined,
         };
       }
 
@@ -348,7 +349,7 @@ export async function getInterviewContext(
           with: {
             workspace: {
               with: {
-                companySettings: true,
+                botSettings: true,
               },
             },
           },
@@ -371,12 +372,13 @@ export async function getInterviewContext(
         vacancyResponse.vacancy?.customInterviewQuestions || null;
 
       const workspace = vacancyResponse.vacancy?.workspace;
-      if (workspace?.companySettings) {
-        companySettings = {
-          botName: workspace.companySettings.botName || undefined,
-          botRole: workspace.companySettings.botRole || undefined,
-          name: workspace.companySettings.name,
-          description: workspace.companySettings.description || undefined,
+      if (workspace?.botSettings) {
+        botSettings = {
+          botName: workspace.botSettings.botName || undefined,
+          botRole: workspace.botSettings.botRole || undefined,
+          companyName: workspace.botSettings.companyName,
+          companyDescription:
+            workspace.botSettings.companyDescription || undefined,
         };
       }
     }
@@ -392,7 +394,7 @@ export async function getInterviewContext(
     gigResponseId,
     resumeLanguage,
     conversationHistory,
-    companySettings,
+    botSettings,
     customBotInstructions,
     customOrganizationalQuestions,
     customInterviewQuestions,

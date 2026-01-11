@@ -1,1 +1,0 @@
-export { parseUpworkVacancies } from "./parser";

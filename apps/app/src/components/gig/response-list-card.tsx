@@ -101,8 +101,6 @@ const IMPORT_SOURCE_LABELS = {
   MANUAL: "Вручную",
   KWORK: "Kwork",
   FL_RU: "FL.ru",
-  WEBLANCER: "Weblancer",
-  UPWORK: "Upwork",
   FREELANCE_RU: "Freelance.ru",
   HH_API: "HeadHunter",
   WEB_LINK: "Веб-ссылка",
@@ -337,9 +335,7 @@ export function ResponseListCard({
                 <div className="min-w-0">
                   <div className="text-xs text-muted-foreground">Цена</div>
                   <div className="font-medium truncate">
-                    {formatCurrency(
-                      response.proposedPrice,
-                    )}
+                    {formatCurrency(response.proposedPrice)}
                   </div>
                 </div>
               </div>

@@ -83,8 +83,8 @@ export function buildVacancyInterviewPrompt(
     .map((m) => `${m.sender === "CANDIDATE" ? "К" : "Я"}: ${m.content}`)
     .join("\n");
 
-  const botName = context.companySettings?.botName || "Рекрутер";
-  const companyName = context.companySettings?.name || "";
+  const botName = context.botSettings?.botName || "Рекрутер";
+  const companyName = context.botSettings?.companyName || "";
 
   const orgQuestions =
     vacancy.customOrganizationalQuestions ||
@@ -156,8 +156,8 @@ export function buildGigInterviewPrompt(
     .map((m) => `${m.sender === "CANDIDATE" ? "К" : "Я"}: ${m.content}`)
     .join("\n");
 
-  const botName = context.companySettings?.botName || "Менеджер";
-  const companyName = context.companySettings?.name || "";
+  const botName = context.botSettings?.botName || "Менеджер";
+  const companyName = context.botSettings?.companyName || "";
 
   // Форматируем бюджет
   let budgetInfo = "Не указан";

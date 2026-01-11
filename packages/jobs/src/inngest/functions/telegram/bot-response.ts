@@ -78,18 +78,19 @@ export async function generateAndSendBotResponse(params: {
           language: interviewData.response.resumeLanguage ?? undefined,
         }
       : undefined,
-    companySettings: interviewData?.response.vacancy?.workspace.companySettings
+    botSettings: interviewData?.response.vacancy?.workspace.botSettings
       ? {
           botName:
-            interviewData.response.vacancy.workspace.companySettings.botName ??
+            interviewData.response.vacancy.workspace.botSettings.botName ??
             undefined,
           botRole:
-            interviewData.response.vacancy.workspace.companySettings.botRole ??
+            interviewData.response.vacancy.workspace.botSettings.botRole ??
             undefined,
-          name: interviewData.response.vacancy.workspace.companySettings.name,
-          description:
-            interviewData.response.vacancy.workspace.companySettings
-              .description ?? undefined,
+          companyName:
+            interviewData.response.vacancy.workspace.botSettings.companyName,
+          companyDescription:
+            interviewData.response.vacancy.workspace.botSettings
+              .companyDescription ?? undefined,
         }
       : undefined,
     customBotInstructions: vacancy?.customBotInstructions ?? undefined,

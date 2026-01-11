@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { user } from "../auth/user";
-import { companySettings } from "../company/company-settings";
+import { botSettings } from "../company/bot-settings";
 import { customDomain } from "../custom-domain/custom-domain";
 import { integration } from "../integration/integration";
 import { organization } from "../organization/organization";
@@ -19,9 +19,9 @@ export const workspaceRelations = relations(workspace, ({ many, one }) => ({
   vacancies: many(vacancy),
   invites: many(workspaceInvite),
   customDomains: many(customDomain),
-  companySettings: one(companySettings, {
+  botSettings: one(botSettings, {
     fields: [workspace.id],
-    references: [companySettings.workspaceId],
+    references: [botSettings.workspaceId],
   }),
 }));
 

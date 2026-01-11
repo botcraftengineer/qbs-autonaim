@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   pgTable,
   text,
@@ -41,6 +42,20 @@ export const workspace = pgTable(
 
     // Кастомный домен для интервью
     interviewDomain: text("interview_domain"),
+
+    // Настройки онбординга
+    onboardingCompleted: boolean("onboarding_completed").default(false),
+    onboardingCompletedAt: timestamp("onboarding_completed_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
+    dismissedGettingStarted: boolean("dismissed_getting_started").default(
+      false,
+    ),
+    dismissedGettingStartedAt: timestamp("dismissed_getting_started_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
 
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()

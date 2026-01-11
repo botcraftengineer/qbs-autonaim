@@ -247,7 +247,7 @@ export function Header() {
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-foreground">Интеграции</p>
-                      <p className="text-xs text-foreground/60 leading-relaxed">HH, Авито, LinkedIn, Upwork</p>
+                      <p className="text-xs text-foreground/60 leading-relaxed">HH, Авито, Хабр Карьера</p>
                     </div>
                   </Link>
                   <Link

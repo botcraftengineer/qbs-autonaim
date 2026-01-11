@@ -70,10 +70,7 @@ export default function FreelanceAnalyticsPage() {
     const platforms: Record<string, string> = {
       kwork: "Kwork",
       fl: "FL.ru",
-      weblancer: "Weblancer",
-      upwork: "Upwork",
-      freelancer: "Freelancer",
-      fiverr: "Fiverr",
+      freelance: "Freelance.ru",
       hh: "HeadHunter",
     };
     return platforms[source] || source;

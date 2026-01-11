@@ -71,14 +71,15 @@ export const platformSourceValues = [
   "HABR",
   "KWORK",
   "FL_RU",
-  "WEBLANCER",
-  "UPWORK",
   "FREELANCE_RU",
   "WEB_LINK",
   "TELEGRAM",
 ] as const;
 
-export const platformSourceEnum = pgEnum("platform_source", platformSourceValues);
+export const platformSourceEnum = pgEnum(
+  "platform_source",
+  platformSourceValues,
+);
 
 export type PlatformSource = (typeof platformSourceValues)[number];
 

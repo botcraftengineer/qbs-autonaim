@@ -27,7 +27,6 @@ export type {
   SaveResponseData,
   VacancyData,
 } from "./types";
-export * from "./upwork";
 // Утилиты безопасности URL
 export {
   type SecureFetchOptions,
@@ -37,4 +36,3 @@ export {
   validateSecureURL,
   validateSecureURLWithDNS,
 } from "./utils/url-security";
-export * from "./weblancer";

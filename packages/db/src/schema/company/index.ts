@@ -1,2 +1,2 @@
-export * from "./company-settings";
+export * from "./bot-settings";
 export * from "./relations";

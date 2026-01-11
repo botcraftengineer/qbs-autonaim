@@ -72,9 +72,9 @@ export class InterviewStartAgent extends BaseAgent<
     const { alreadyGreeted = false } = input;
 
     const name = extractFirstName(candidateName || null);
-    const botName = context.companySettings?.botName || "Дмитрий";
-    const botRole = context.companySettings?.botRole || "рекрутер";
-    const companyName = context.companySettings?.name || "";
+    const botName = context.botSettings?.botName || "Дмитрий";
+    const botRole = context.botSettings?.botRole || "рекрутер";
+    const companyName = context.botSettings?.companyName || "";
     const resumeLanguage = resumeData?.language || "ru";
 
     const languageInstruction = `⚠️ АДАПТАЦИЯ К ЯЗЫКУ: 

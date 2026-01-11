@@ -27,14 +27,7 @@ import { useState } from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
-type PlatformFilter =
-  | "all"
-  | "kwork"
-  | "fl"
-  | "weblancer"
-  | "upwork"
-  | "freelancer"
-  | "fiverr";
+type PlatformFilter = "all" | "kwork" | "fl" | "freelance";
 
 export default function FreelanceDashboardPage() {
   const { orgSlug, slug: workspaceSlug } = useParams<{
@@ -56,13 +49,7 @@ export default function FreelanceDashboardPage() {
       platformSource:
         platformFilter === "all"
           ? undefined
-          : (platformFilter as
-              | "kwork"
-              | "fl"
-              | "weblancer"
-              | "upwork"
-              | "freelancer"
-              | "fiverr"),
+          : (platformFilter as "kwork" | "fl" | "freelance"),
     }),
     enabled: !!workspace?.id,
   });
@@ -71,10 +58,7 @@ export default function FreelanceDashboardPage() {
     const platforms: Record<string, string> = {
       kwork: "Kwork",
       fl: "FL.ru",
-      weblancer: "Weblancer",
-      upwork: "Upwork",
-      freelancer: "Freelancer",
-      fiverr: "Fiverr",
+      freelance: "Freelance.ru",
     };
     return platforms[source] || source;
   };
@@ -261,10 +245,7 @@ export default function FreelanceDashboardPage() {
                   <SelectItem value="all">Все платформы</SelectItem>
                   <SelectItem value="kwork">Kwork</SelectItem>
                   <SelectItem value="fl">FL.ru</SelectItem>
-                  <SelectItem value="weblancer">Weblancer</SelectItem>
-                  <SelectItem value="upwork">Upwork</SelectItem>
-                  <SelectItem value="freelancer">Freelancer</SelectItem>
-                  <SelectItem value="fiverr">Fiverr</SelectItem>
+                  <SelectItem value="freelance">Freelance.ru</SelectItem>
                 </SelectContent>
               </Select>
             </div>

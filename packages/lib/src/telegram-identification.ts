@@ -6,9 +6,9 @@
 import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
+  type botSettings,
   chatMessage,
   chatSession,
-  type companySettings,
   type vacancy,
   vacancyResponse,
   type vacancyResponseScreening,
@@ -328,7 +328,7 @@ export async function getInterviewStartData(responseId: string): Promise<{
     vacancy:
       | (typeof vacancy.$inferSelect & {
           workspace: typeof workspace.$inferSelect & {
-            companySettings: typeof companySettings.$inferSelect | null;
+            botSettings: typeof botSettings.$inferSelect | null;
           };
         })
       | null;
@@ -343,7 +343,7 @@ export async function getInterviewStartData(responseId: string): Promise<{
           with: {
             workspace: {
               with: {
-                companySettings: true,
+                botSettings: true,
               },
             },
           },
@@ -362,7 +362,7 @@ export async function getInterviewStartData(responseId: string): Promise<{
         vacancy:
           | (typeof vacancy.$inferSelect & {
               workspace: typeof workspace.$inferSelect & {
-                companySettings: typeof companySettings.$inferSelect | null;
+                botSettings: typeof botSettings.$inferSelect | null;
               };
             })
           | null;

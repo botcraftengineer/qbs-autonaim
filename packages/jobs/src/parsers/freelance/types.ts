@@ -1,13 +1,8 @@
 /**
- * Типы для фриланс-платформ (Kwork, FL.ru, Weblancer, Upwork)
+ * Типы для фриланс-платформ (Kwork, FL.ru, Freelance.ru)
  */
 
-export const FREELANCE_SOURCES = [
-  "kwork",
-  "fl",
-  "weblancer",
-  "upwork",
-] as const;
+export const FREELANCE_SOURCES = ["kwork", "fl", "freelance"] as const;
 
 export type FreelanceSource = (typeof FREELANCE_SOURCES)[number];
 

@@ -11,7 +11,7 @@ import {
 } from "./utils/url-security";
 
 export interface ProfileData {
-  platform: "kwork" | "fl" | "weblancer" | "upwork" | "freelancer" | "unknown";
+  platform: "kwork" | "fl" | "freelance" | "unknown";
   username: string;
   profileUrl: string;
   aboutMe?: string;
@@ -44,9 +44,7 @@ function detectPlatform(url: string): ProfileData["platform"] {
 
   if (urlLower.includes("kwork.ru")) return "kwork";
   if (urlLower.includes("fl.ru")) return "fl";
-  if (urlLower.includes("weblancer.net")) return "weblancer";
-  if (urlLower.includes("upwork.com")) return "upwork";
-  if (urlLower.includes("freelancer.com")) return "freelancer";
+  if (urlLower.includes("freelance.ru")) return "freelance";
 
   return "unknown";
 }
@@ -69,15 +67,9 @@ function extractUsername(
       case "fl":
         // https://fl.ru/users/username/
         return pathname.split("/users/")[1]?.split("/")[0] || "";
-      case "weblancer":
-        // https://weblancer.net/users/username/
+      case "freelance":
+        // https://freelance.ru/users/username/
         return pathname.split("/users/")[1]?.split("/")[0] || "";
-      case "upwork":
-        // https://upwork.com/freelancers/username
-        return pathname.split("/freelancers/")[1]?.split("/")[0] || "";
-      case "freelancer":
-        // https://freelancer.com/u/username
-        return pathname.split("/u/")[1]?.split("/")[0] || "";
       default:
         return "";
     }

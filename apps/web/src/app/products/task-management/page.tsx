@@ -9,8 +9,8 @@ import { ProductNavigation } from "@/components/product-navigation" // Added imp
 export const metadata: Metadata = {
   title: "Управление задачами | QBS Автонайм",
   description:
-    "Управляйте фриланс-задачами с разных платформ в одном месте. Единый дашборд для Upwork, Freelancer, Kwork и других бирж.",
-  keywords: ["управление фриланс проектами", "дашборд фрилансера", "агрегатор фриланс бирж", "Upwork Kwork FL.ru"],
+    "Управляйте фриланс-задачами с разных платформ в одном месте. Единый дашборд для Kwork, FL.ru, Freelance.ru и других российских бирж.",
+  keywords: ["управление фриланс проектами", "дашборд фрилансера", "агрегатор фриланс бирж", "Kwork FL.ru Freelance.ru"],
   openGraph: {
     title: "Управление задачами | QBS Автонайм",
     description: "Все фриланс-проекты в одном месте. Единый дашборд для управления задачами.",
@@ -22,7 +22,7 @@ export default function TaskManagementPage() {
     {
       icon: Globe,
       title: "Все платформы в одном месте",
-      description: "Собирайте задачи с Upwork, Freelancer, Kwork, FL.ru и других бирж в единый дашборд.",
+      description: "Собирайте задачи с Kwork, FL.ru, Freelance.ru и других российских бирж в единый дашборд.",
     },
     {
       icon: Bell,
@@ -52,9 +52,9 @@ export default function TaskManagementPage() {
   ]
 
   const platforms = [
-    { name: "Upwork", color: "bg-green-500", projects: "2.3M+" },
-    { name: "Freelancer", color: "bg-blue-500", projects: "1.8M+" },
     { name: "Kwork", color: "bg-orange-500", projects: "450K+" },
+    { name: "FL.ru", color: "bg-blue-500", projects: "380K+" },
+    { name: "Freelance.ru", color: "bg-green-500", projects: "250K+" },
     { name: "FL.ru", color: "bg-purple-500", projects: "380K+" },
     { name: "Fiverr", color: "bg-emerald-500", projects: "1.2M+" },
     { name: "Хабр Фриланс", color: "bg-cyan-500", projects: "120K+" },
@@ -91,7 +91,7 @@ export default function TaskManagementPage() {
             </h1>
 
             <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Единый дашборд для управления задачами с Upwork, Freelancer, Kwork и других платформ. Находите лучшие
+              Единый дашборд для управления задачами с Kwork, FL.ru, Freelance.ru и других российских платформ. Находите лучшие
               проекты быстрее.
             </p>
 
@@ -139,8 +139,8 @@ export default function TaskManagementPage() {
                       count: 12,
                       color: "bg-blue-500",
                       tasks: [
-                        { name: "Landing Page Design", platform: "Upwork", budget: "$500" },
-                        { name: "React Dashboard", platform: "Freelancer", budget: "$1200" },
+                        { name: "Landing Page Design", platform: "Kwork", budget: "$500" },
+                        { name: "React Dashboard", platform: "FL.ru", budget: "$1200" },
                       ],
                     },
                     {
@@ -162,7 +162,7 @@ export default function TaskManagementPage() {
                       title: "Завершено",
                       count: 24,
                       color: "bg-emerald-500",
-                      tasks: [{ name: "WordPress Site", platform: "Upwork", budget: "$400" }],
+                      tasks: [{ name: "WordPress Site", platform: "Freelance.ru", budget: "$400" }],
                     },
                   ].map((column, i) => (
                     <div key={i} className="rounded-xl border border-border bg-background p-4">

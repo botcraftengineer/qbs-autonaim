@@ -1,2 +1,0 @@
-ALTER TABLE "interview_scorings" ADD COLUMN "gig_response_id" uuid;--> statement-breakpoint
-ALTER TABLE "interview_scorings" ADD CONSTRAINT "interview_scorings_gig_response_id_gig_responses_id_fk" FOREIGN KEY ("gig_response_id") REFERENCES "public"."gig_responses"("id") ON DELETE cascade ON UPDATE no action;

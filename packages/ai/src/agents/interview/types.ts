@@ -11,10 +11,11 @@ export interface WebInterviewContext {
     sender: "CANDIDATE" | "BOT";
     content: string;
   }>;
-  companySettings?: {
+  botSettings?: {
     botName?: string;
     botRole?: string;
-    name?: string;
+    companyName?: string;
+    companyDescription?: string;
   };
   customOrganizationalQuestions?: string | null;
   customInterviewQuestions?: string | null;

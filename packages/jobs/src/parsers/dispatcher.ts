@@ -3,8 +3,6 @@ import type { RawFreelanceVacancy } from "./freelance";
 import { FREELANCE_SOURCES, type FreelanceSource } from "./freelance/types";
 import { parseKworkVacancies } from "./kwork";
 import type { VacancyData } from "./types";
-import { parseUpworkVacancies } from "./upwork";
-import { parseWeblancerVacancies } from "./weblancer";
 
 /**
  * Список поддерживаемых источников вакансий
@@ -15,8 +13,7 @@ export const VACANCY_SOURCES = [
   "superjob",
   "kwork",
   "fl",
-  "weblancer",
-  "upwork",
+  "freelance",
 ] as const;
 
 /**
@@ -36,10 +33,9 @@ export async function parseVacanciesBySource(
       return parseKworkVacancies(rawData);
     case "fl":
       return parseFlVacancies(rawData);
-    case "weblancer":
-      return parseWeblancerVacancies(rawData);
-    case "upwork":
-      return parseUpworkVacancies(rawData);
+    case "freelance":
+      // Freelance.ru использует тот же формат что и FL.ru
+      return parseFlVacancies(rawData);
     case "hh":
     case "avito":
     case "superjob":

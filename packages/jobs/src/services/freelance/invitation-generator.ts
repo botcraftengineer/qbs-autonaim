@@ -2,7 +2,6 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   freelanceInvitation,
-  interviewLink,
   vacancy,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -95,8 +94,6 @@ export async function generateFreelanceInvitation(
   if (
     response.importSource !== "KWORK" &&
     response.importSource !== "FL_RU" &&
-    response.importSource !== "WEBLANCER" &&
-    response.importSource !== "UPWORK" &&
     response.importSource !== "FREELANCE_RU"
   ) {
     logger.info(
@@ -159,7 +156,12 @@ export async function generateFreelanceInvitation(
   // Получаем ссылку на интервью
   const interviewLinkResult = await tryCatch(async () => {
     return await db.query.interviewLink.findFirst({
-      where: eq(interviewLink.vacancyId, response.vacancyId),
+      where: (link, { eq, and }) =>
+        and(
+          eq(link.entityType, "vacancy"),
+          eq(link.entityId, response.vacancyId),
+          eq(link.isActive, true),
+        ),
     });
   }, "Failed to fetch interview link");
 

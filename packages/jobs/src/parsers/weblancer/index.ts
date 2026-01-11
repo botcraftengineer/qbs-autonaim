@@ -1,1 +1,0 @@
-export { parseWeblancerVacancies } from "./parser";

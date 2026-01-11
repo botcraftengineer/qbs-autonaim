@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  companySettings,
+  botSettings,
   interviewMessage,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -35,12 +35,12 @@ export async function getCompanyBotSettings(
   workspaceId: string,
 ): Promise<BotSettings> {
   try {
-    const company = await db.query.companySettings.findFirst({
-      where: eq(companySettings.workspaceId, workspaceId),
+    const bot = await db.query.botSettings.findFirst({
+      where: eq(botSettings.workspaceId, workspaceId),
     });
     return {
-      botName: company?.botName ?? "Дмитрий",
-      botRole: company?.botRole ?? "рекрутер",
+      botName: bot?.botName ?? "Дмитрий",
+      botRole: bot?.botRole ?? "рекрутер",
     };
   } catch (error) {
     console.error(

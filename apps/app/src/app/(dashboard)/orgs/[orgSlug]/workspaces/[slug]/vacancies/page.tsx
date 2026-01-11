@@ -59,12 +59,10 @@ export default function VacanciesPage() {
           | "hh"
           | "kwork"
           | "fl"
-          | "weblancer"
-          | "upwork"
-          | "freelancer"
-          | "fiverr"
+          | "freelance"
           | "avito"
-          | "superjob",
+          | "superjob"
+          | "habr",
       }),
     }),
     enabled: !!workspace?.id,
@@ -225,12 +223,10 @@ export default function VacanciesPage() {
                         <SelectItem value="hh">HeadHunter</SelectItem>
                         <SelectItem value="kwork">Kwork</SelectItem>
                         <SelectItem value="fl">FL.ru</SelectItem>
-                        <SelectItem value="weblancer">Weblancer</SelectItem>
-                        <SelectItem value="upwork">Upwork</SelectItem>
-                        <SelectItem value="freelancer">Freelancer</SelectItem>
-                        <SelectItem value="fiverr">Fiverr</SelectItem>
+                        <SelectItem value="freelance">Freelance.ru</SelectItem>
                         <SelectItem value="avito">Avito</SelectItem>
                         <SelectItem value="superjob">SuperJob</SelectItem>
+                        <SelectItem value="habr">Хабр Карьера</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -492,19 +488,15 @@ export default function VacanciesPage() {
                                   ? "Kwork"
                                   : vacancy.source === "fl"
                                     ? "FL.ru"
-                                    : vacancy.source === "weblancer"
-                                      ? "Weblancer"
-                                      : vacancy.source === "upwork"
-                                        ? "Upwork"
-                                        : vacancy.source === "freelancer"
-                                          ? "Freelancer"
-                                          : vacancy.source === "fiverr"
-                                            ? "Fiverr"
-                                            : vacancy.source === "avito"
-                                              ? "Avito"
-                                              : vacancy.source === "superjob"
-                                                ? "SuperJob"
-                                                : vacancy.source}
+                                    : vacancy.source === "freelance"
+                                      ? "Freelance.ru"
+                                      : vacancy.source === "avito"
+                                        ? "Avito"
+                                        : vacancy.source === "superjob"
+                                          ? "SuperJob"
+                                          : vacancy.source === "habr"
+                                            ? "Хабр Карьера"
+                                            : vacancy.source}
                             </Badge>
                           </TableCell>
                           <TableCell className="hidden md:table-cell">

@@ -90,9 +90,9 @@ ${RECRUITER_PERSONA.GREETING_RULES}`;
     const { resumeLanguage = "ru" } = input;
 
     const name = extractFirstName(candidateName || null);
-    const botName = context.companySettings?.botName || "Дмитрий";
-    const botRole = context.companySettings?.botRole || "рекрутер";
-    const companyName = context.companySettings?.name || "";
+    const botName = context.botSettings?.botName || "Дмитрий";
+    const botRole = context.botSettings?.botRole || "рекрутер";
+    const companyName = context.botSettings?.companyName || "";
 
     // Передаём полную историю диалога без обрезки
     const historyText =

@@ -17,14 +17,9 @@ export const FREELANCE_CONFIGS: Record<
     baseUrl: "https://www.fl.ru",
     vacanciesUrl: "https://www.fl.ru/projects/",
   },
-  weblancer: {
-    name: "Weblancer",
-    baseUrl: "https://www.weblancer.net",
-    vacanciesUrl: "https://www.weblancer.net/jobs/",
-  },
-  upwork: {
-    name: "Upwork",
-    baseUrl: "https://www.upwork.com",
-    vacanciesUrl: "https://www.upwork.com/nx/find-work/",
+  freelance: {
+    name: "Freelance.ru",
+    baseUrl: "https://www.freelance.ru",
+    vacanciesUrl: "https://www.freelance.ru/projects/",
   },
 };

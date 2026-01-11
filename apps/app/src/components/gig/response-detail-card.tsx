@@ -162,8 +162,6 @@ const IMPORT_SOURCE_LABELS = {
   MANUAL: "Вручную",
   KWORK: "Kwork",
   FL_RU: "FL.ru",
-  WEBLANCER: "Weblancer",
-  UPWORK: "Upwork",
   FREELANCE_RU: "Freelance.ru",
   HH_API: "HeadHunter",
   WEB_LINK: "Веб-ссылка",
@@ -518,8 +516,8 @@ export function ResponseDetailCard({
                   Платформа
                 </span>
                 <span className="text-xs sm:text-sm text-muted-foreground">
-                  {response.profileData.platform ?? '—'}
-                  {response.profileData.username ?? '—'}
+                  {response.profileData.platform ?? "—"}
+                  {response.profileData.username ?? "—"}
                 </span>
               </div>
               {response.profileData.statistics?.rating !== undefined && (
@@ -609,9 +607,7 @@ export function ResponseDetailCard({
                   <div
                     className="text-base sm:text-lg font-semibold"
                     dangerouslySetInnerHTML={{
-                      __html: formatCurrency(
-                        response.proposedPrice,
-                      ),
+                      __html: formatCurrency(response.proposedPrice),
                     }}
                   />
                 </div>

@@ -2,7 +2,7 @@ import { AgentFactory, buildTelegramInvitePrompt } from "@qbs-autonaim/ai";
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  companySettings,
+  botSettings,
   responseScreening,
   vacancyResponse,
 } from "@qbs-autonaim/db/schema";
@@ -41,19 +41,19 @@ export async function generateWelcomeMessage(
       where: eq(responseScreening.responseId, responseId),
     });
 
-    const company = await db.query.companySettings.findFirst({
-      where: eq(companySettings.workspaceId, response.vacancy.workspaceId),
+    const bot = await db.query.botSettings.findFirst({
+      where: eq(botSettings.workspaceId, response.vacancy.workspaceId),
     });
 
-    // Company settings are optional - we can generate message without them
-    return { response, screening, company };
+    // Bot settings are optional - we can generate message without them
+    return { response, screening, bot };
   }, "Failed to fetch data for welcome message");
 
   if (!dataResult.success) {
     return err(dataResult.error);
   }
 
-  const { response, company } = dataResult.data;
+  const { response, bot } = dataResult.data;
 
   logger.info("Generating welcome message with WelcomeAgent");
 
@@ -64,10 +64,10 @@ export async function generateWelcomeMessage(
 
     const result = await welcomeAgent.execute(
       {
-        companyName: company?.name || "",
+        companyName: bot?.companyName || "",
         vacancyTitle: response.vacancy?.title || undefined,
         candidateName: response.candidateName || undefined,
-        customWelcomeMessage: company?.description || undefined,
+        customWelcomeMessage: bot?.companyDescription || undefined,
       },
       {
         conversationHistory: [],
@@ -127,24 +127,24 @@ export async function generateTelegramInviteMessage(
       where: eq(responseScreening.responseId, responseId),
     });
 
-    const company = await db.query.companySettings.findFirst({
-      where: eq(companySettings.workspaceId, response.vacancy.workspaceId),
+    const bot = await db.query.botSettings.findFirst({
+      where: eq(botSettings.workspaceId, response.vacancy.workspaceId),
     });
 
-    // Company settings are optional - we can generate message without them
-    return { response, screening, company };
+    // Bot settings are optional - we can generate message without them
+    return { response, screening, bot };
   }, "Failed to fetch data for invite message");
 
   if (!dataResult.success) {
     return err(dataResult.error);
   }
 
-  const { response, screening, company } = dataResult.data;
+  const { response, screening, bot } = dataResult.data;
 
   const prompt = buildTelegramInvitePrompt({
-    companyName: company?.name || "",
-    companyDescription: company?.description || undefined,
-    companyWebsite: company?.website || undefined,
+    companyName: bot?.companyName || "",
+    companyDescription: bot?.companyDescription || undefined,
+    companyWebsite: bot?.companyWebsite || undefined,
     vacancyTitle: response.vacancy?.title || null,
     vacancyDescription: response.vacancy?.description
       ? stripHtml(response.vacancy.description).result.substring(0, 200)
