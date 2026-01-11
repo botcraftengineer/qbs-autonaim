@@ -46,9 +46,9 @@ export const resend = protectedProcedure
 
     await sendEmail({
       to: [input.email],
-      subject: `Приглашение в ${workspace.name}`,
+      subject: `Приглашение в ${workspace.botSettings?.companyName}`,
       react: WorkspaceInviteEmail({
-        workspaceName: workspace.name,
+        workspaceName: workspace.botSettings?.companyName,
         workspaceLogo: workspace.logo || undefined,
         inviterName: ctx.session.user.name || ctx.session.user.email,
         inviteLink,

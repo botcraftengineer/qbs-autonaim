@@ -1,9 +1,9 @@
 import { eq, sql } from "@qbs-autonaim/db";
 import {
   gig,
-  gigHrSelectionStatusValues,
-  gigResponse,
-  gigResponseStatusValues,
+  hrSelectionStatusValues,
+  response as responseTable,
+  responseStatusValues,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -15,8 +15,8 @@ export const updateStatus = protectedProcedure
     z.object({
       responseId: z.string(),
       workspaceId: workspaceIdSchema,
-      status: z.enum(gigResponseStatusValues).optional(),
-      hrSelectionStatus: z.enum(gigHrSelectionStatusValues).optional(),
+      status: z.enum(responseStatusValues).optional(),
+      hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -32,7 +32,7 @@ export const updateStatus = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.gigResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(gigResponse.id, input.responseId),
       with: {
         gig: true,
@@ -54,8 +54,8 @@ export const updateStatus = protectedProcedure
     }
 
     const patch: {
-      status?: (typeof gigResponseStatusValues)[number];
-      hrSelectionStatus?: (typeof gigHrSelectionStatusValues)[number];
+      status?: (typeof responseStatusValues)[number];
+      hrSelectionStatus?: (typeof hrSelectionStatusValues)[number];
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -86,7 +86,7 @@ export const updateStatus = protectedProcedure
           .set({
             newResponses: sql`GREATEST(COALESCE(${gig.newResponses}, 0) - 1, 0)`,
           })
-          .where(eq(gig.id, response.gigId));
+          .where(eq(gig.id, response.entityId));
       } else if (!wasNew && isNew) {
         // Отклик стал новым - увеличиваем счетчик
         await ctx.db
@@ -94,7 +94,7 @@ export const updateStatus = protectedProcedure
           .set({
             newResponses: sql`COALESCE(${gig.newResponses}, 0) + 1`,
           })
-          .where(eq(gig.id, response.gigId));
+          .where(eq(gig.id, response.entityId));
       }
     }
 

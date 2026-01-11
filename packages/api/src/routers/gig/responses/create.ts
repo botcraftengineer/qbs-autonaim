@@ -2,8 +2,8 @@ import { and, eq, sql } from "@qbs-autonaim/db";
 import {
   type GigResponse,
   gig,
-  gigImportSourceValues,
-  gigResponse,
+  importSourceValues,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -29,7 +29,7 @@ const createResponseSchema = z.object({
   skills: z.array(z.string()).optional(),
   rating: z.string().max(20).optional(),
   resumeLanguage: z.string().max(10).default("ru"),
-  importSource: z.enum(gigImportSourceValues).default("MANUAL"),
+  importSource: z.enum(importSourceValues).default("MANUAL"),
 });
 
 export const create = protectedProcedure
@@ -50,7 +50,7 @@ export const create = protectedProcedure
     // Проверяем что gig существует и принадлежит workspace
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.gigId),
+        eq(gig.id, input.entityId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -63,9 +63,9 @@ export const create = protectedProcedure
     }
 
     // Проверяем дубликат
-    const existingResponse = await ctx.db.query.gigResponse.findFirst({
+    const existingResponse = await ctx.db.query.response.findFirst({
       where: and(
-        eq(gigResponse.gigId, input.gigId),
+        eq(gigResponse.entityId, input.entityId),
         eq(gigResponse.candidateId, input.candidateId),
       ),
     });
@@ -82,7 +82,7 @@ export const create = protectedProcedure
       const result = await ctx.db
         .insert(gigResponse)
         .values({
-          gigId: input.gigId,
+          gigId: input.entityId,
           candidateId: input.candidateId,
           candidateName: input.candidateName,
           profileUrl: input.profileUrl,
@@ -132,14 +132,14 @@ export const create = protectedProcedure
         responses: sql`COALESCE(${gig.responses}, 0) + 1`,
         newResponses: sql`COALESCE(${gig.newResponses}, 0) + 1`,
       })
-      .where(eq(gig.id, input.gigId));
+      .where(eq(gig.id, input.entityId));
 
     // Отправляем событие в Inngest для пересчета рейтинга
     try {
       await inngest.send({
         name: "gig/ranking.recalculate",
         data: {
-          gigId: input.gigId,
+          gigId: input.entityId,
           workspaceId: input.workspaceId,
           triggeredBy: "response.created",
         },

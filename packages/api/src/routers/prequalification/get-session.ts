@@ -37,7 +37,7 @@ export const getSession = publicProcedure
       return {
         id: session.id,
         status: session.status,
-        vacancyId: session.vacancyId,
+        vacancyId: session.entityId,
         hasResume: !!session.parsedResume,
         hasInterviewSession: !!session.interviewSessionId,
         fitScore: session.fitScore,

@@ -3,7 +3,7 @@ import {
   interviewScoring as interviewScoringTable,
   interviewSession,
   responseScreening as responseScreeningTable,
-  vacancyResponse,
+  response as responseTable,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
@@ -29,7 +29,7 @@ export const get = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(vacancyResponse.id, input.id),
     });
 
@@ -39,7 +39,7 @@ export const get = protectedProcedure
 
     // Query vacancy separately to check workspace access
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancyTable.id, response.vacancyId),
+      where: eq(vacancyTable.id, response.entityId),
       columns: { workspaceId: true },
     });
 
@@ -72,7 +72,7 @@ export const get = protectedProcedure
 
     // Query interviewSession separately
     const session = await ctx.db.query.interviewSession.findFirst({
-      where: eq(interviewSession.vacancyResponseId, response.id),
+      where: eq(interviewSession.responseId, response.id),
       with: {
         messages: {
           with: {

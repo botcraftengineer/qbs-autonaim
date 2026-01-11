@@ -1,9 +1,9 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
-  gigResponse,
+  response as responseTable,
   interviewMessage,
   interviewSession,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
@@ -128,7 +128,7 @@ async function handleVacancyInterview(
     with: {
       workspace: {
         with: {
-          companySettings: true,
+          botSettings: true,
         },
       },
     },
@@ -151,9 +151,9 @@ async function handleVacancyInterview(
   );
 
   // Проверяем дубликаты
-  const existingResponse = await ctx.db.query.vacancyResponse.findFirst({
+  const existingResponse = await ctx.db.query.response.findFirst({
     where: and(
-      eq(vacancyResponse.vacancyId, vacancyLink.entityId),
+      eq(vacancyResponse.entityId, vacancyLink.entityId),
       eq(vacancyResponse.platformProfileUrl, normalizedProfileUrl),
     ),
   });
@@ -200,7 +200,7 @@ async function handleVacancyInterview(
     .insert(interviewSession)
     .values({
       entityType: "vacancy_response",
-      vacancyResponseId: response.id,
+      responseId: response.id,
       status: "active",
       lastChannel: "web",
       metadata: {
@@ -222,9 +222,9 @@ async function handleVacancyInterview(
 
   // Генерируем приветственное сообщение
   const botName =
-    vacancy.workspace?.companySettings?.botName || "Ассистент по найму";
+    vacancy.workspace?.botSettings?.botName || "Ассистент по найму";
   const companyName =
-    vacancy.workspace?.companySettings?.name || "нашей компании";
+    vacancy.workspace?.botSettings?.name || "нашей компании";
 
   const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
 
@@ -246,7 +246,7 @@ async function handleVacancyInterview(
     type: "vacancy" as const,
     sessionId: session.id,
     responseId: response.id,
-    entityId: response.vacancyId,
+    entityId: response.entityId,
     welcomeMessage,
   };
 }
@@ -272,11 +272,11 @@ async function handleGigInterview(
 ) {
   // Получаем гиг
   const gig = await ctx.db.query.gig.findFirst({
-    where: (g, { eq }) => eq(g.id, gigLink.gigId),
+    where: (g, { eq }) => eq(g.id, gigLink.entityId),
     with: {
       workspace: {
         with: {
-          companySettings: true,
+          botSettings: true,
         },
       },
     },
@@ -284,13 +284,13 @@ async function handleGigInterview(
 
   if (!gig) {
     throw await errorHandler.handleNotFoundError("Задание", {
-      gigId: gigLink.gigId,
+      gigId: gigLink.entityId,
     });
   }
 
   if (!gig.isActive) {
     throw await errorHandler.handleValidationError("Задание закрыто", {
-      gigId: gigLink.gigId,
+      gigId: gigLink.entityId,
     });
   }
 
@@ -299,10 +299,10 @@ async function handleGigInterview(
   );
 
   // Проверяем дубликаты
-  const existingResponse = await ctx.db.query.gigResponse.findFirst({
+  const existingResponse = await ctx.db.query.response.findFirst({
     where: (response, { and, eq }) =>
       and(
-        eq(response.gigId, gigLink.gigId),
+        eq(response.entityId, gigLink.entityId),
         eq(response.candidateId, normalizedCandidateId),
       ),
   });
@@ -311,7 +311,7 @@ async function handleGigInterview(
     throw await errorHandler.handleConflictError(
       "Вы уже откликнулись на это задание",
       {
-        gigId: gigLink.gigId,
+        gigId: gigLink.entityId,
         candidateId: normalizedCandidateId,
       },
     );
@@ -321,7 +321,7 @@ async function handleGigInterview(
   const [response] = await ctx.db
     .insert(gigResponse)
     .values({
-      gigId: gigLink.gigId,
+      gigId: gigLink.entityId,
       candidateId: normalizedCandidateId,
       candidateName: freelancerInfo.name,
       profileUrl: freelancerInfo.platformProfileUrl,
@@ -343,7 +343,7 @@ async function handleGigInterview(
     throw await errorHandler.handleInternalError(
       new Error("Failed to create gig response"),
       {
-        gigId: gigLink.gigId,
+        gigId: gigLink.entityId,
         freelancerName: freelancerInfo.name,
       },
     );
@@ -354,7 +354,7 @@ async function handleGigInterview(
     .insert(interviewSession)
     .values({
       entityType: "gig_response",
-      gigResponseId: response.id,
+      responseId: response.id,
       status: "active",
       lastChannel: "web",
       metadata: {
@@ -376,8 +376,8 @@ async function handleGigInterview(
 
   // Генерируем приветственное сообщение
   const botName =
-    gig.workspace?.companySettings?.botName || "Ассистент по найму";
-  const companyName = gig.workspace?.companySettings?.name || "нашей компании";
+    gig.workspace?.botSettings?.botName || "Ассистент по найму";
+  const companyName = gig.workspace?.botSettings?.name || "нашей компании";
 
   const welcomeMessage = `Здравствуйте! 👋
 
@@ -399,7 +399,7 @@ async function handleGigInterview(
     type: "gig" as const,
     sessionId: session.id,
     responseId: response.id,
-    entityId: response.gigId,
+    entityId: response.entityId,
     welcomeMessage,
   };
 }

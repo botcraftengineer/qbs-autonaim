@@ -1,8 +1,8 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
   interviewLink,
-  gigInvitation,
-  gigResponse,
+  responseInvitation,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -52,7 +52,7 @@ export const generateInvitation = protectedProcedure
     }
 
     // Получаем отклик с гигом
-    const response = await ctx.db.query.gigResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(gigResponse.id, input.responseId),
       with: {
         gig: true,
@@ -74,8 +74,8 @@ export const generateInvitation = protectedProcedure
     }
 
     // Проверяем, есть ли уже приглашение
-    const existingInvitation = await ctx.db.query.gigInvitation.findFirst({
-      where: eq(gigInvitation.responseId, input.responseId),
+    const existingInvitation = await ctx.db.query.responseInvitation.findFirst({
+      where: eq(responseInvitation.responseId, input.responseId),
     });
 
     if (existingInvitation) {
@@ -91,7 +91,7 @@ export const generateInvitation = protectedProcedure
     let link = await ctx.db.query.interviewLink.findFirst({
       where: and(
         eq(interviewLink.entityType, "gig"),
-        eq(interviewLink.entityId, response.gigId),
+        eq(interviewLink.entityId, response.entityId),
         eq(interviewLink.isActive, true),
       ),
     });
@@ -109,7 +109,7 @@ export const generateInvitation = protectedProcedure
             .insert(interviewLink)
             .values({
               entityType: "gig",
-              entityId: response.gigId,
+              entityId: response.entityId,
               token,
               isActive: true,
             })
@@ -172,7 +172,7 @@ export const generateInvitation = protectedProcedure
 
     // Сохраняем приглашение
     const [invitation] = await ctx.db
-      .insert(gigInvitation)
+      .insert(responseInvitation)
       .values({
         responseId: input.responseId,
         invitationText,

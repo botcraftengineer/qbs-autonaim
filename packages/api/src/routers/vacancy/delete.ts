@@ -30,7 +30,7 @@ export const deleteVacancy = protectedProcedure
     // Проверка существования вакансии
     const existingVacancy = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.id, input.entityId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -64,7 +64,7 @@ export const deleteVacancy = protectedProcedure
             .where(
               and(
                 eq(responseTable.entityType, "vacancy"),
-                eq(responseTable.entityId, input.vacancyId),
+                eq(responseTable.entityId, input.entityId),
               ),
             );
 
@@ -75,7 +75,7 @@ export const deleteVacancy = protectedProcedure
               isActive: false,
               updatedAt: new Date(),
             })
-            .where(eq(vacancy.id, input.vacancyId));
+            .where(eq(vacancy.id, input.entityId));
         });
 
         return {
@@ -96,7 +96,7 @@ export const deleteVacancy = protectedProcedure
       .delete(vacancy)
       .where(
         and(
-          eq(vacancy.id, input.vacancyId),
+          eq(vacancy.id, input.entityId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       );

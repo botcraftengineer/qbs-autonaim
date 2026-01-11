@@ -28,7 +28,7 @@ export const generateInterviewLink = protectedProcedure
 
     const foundGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.gigId),
+        eq(gig.id, input.entityId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -41,11 +41,11 @@ export const generateInterviewLink = protectedProcedure
     }
 
     const linkGenerator = new GigInterviewLinkGenerator();
-    const link = await linkGenerator.generateLink(input.gigId);
+    const link = await linkGenerator.generateLink(input.entityId);
 
     return {
       id: link.id,
-      gigId: link.gigId,
+      gigId: link.entityId,
       token: link.token,
       url: link.url,
       isActive: link.isActive,

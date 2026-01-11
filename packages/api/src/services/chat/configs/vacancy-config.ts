@@ -70,8 +70,8 @@ function formatCandidate(candidate: CandidateData): string {
     candidate.candidateName || `Кандидат ${candidate.id.slice(0, 8)}`;
   parts.push(`### ${name}`);
 
-  if (candidate.salaryExpectations) {
-    parts.push(`- **Ожидания по зарплате:** ${candidate.salaryExpectations}`);
+  if (candidate.salaryExpectationsAmount) {
+    parts.push(`- **Ожидания по зарплате:** ${candidate.salaryExpectationsAmount}`);
   }
 
   if (candidate.profileUrl) {

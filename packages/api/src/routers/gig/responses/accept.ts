@@ -1,5 +1,5 @@
 import { eq, sql } from "@qbs-autonaim/db";
-import { gig, gigResponse } from "@qbs-autonaim/db/schema";
+import { gig, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -25,7 +25,7 @@ export const accept = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.gigResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(gigResponse.id, input.responseId),
       with: {
         gig: true,
@@ -65,7 +65,7 @@ export const accept = protectedProcedure
         .set({
           newResponses: sql`GREATEST(COALESCE(${gig.newResponses}, 0) - 1, 0)`,
         })
-        .where(eq(gig.id, response.gigId));
+        .where(eq(gig.id, response.entityId));
     }
 
     return updated;

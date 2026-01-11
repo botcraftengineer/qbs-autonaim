@@ -1,4 +1,4 @@
-import type { CompanySettings } from "@qbs-autonaim/db/schema";
+import type { botSettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -58,22 +58,22 @@ const generateInvitationTemplateInputSchema = z.object({
 function buildInvitationPrompt(
   gigTitle: string,
   gigDescription?: string,
-  companySettings?: CompanySettings | null,
+  botSettings?: typeof botSettings | null,
 ): string {
-  const companySection = companySettings
+  const companySection = botSettings
     ? `
 ИНФОРМАЦИЯ О КОМПАНИИ:
-Название: ${companySettings.name}
-${companySettings.description ? `Описание: ${companySettings.description}` : ""}
-${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
-${companySettings.botName ? `Имя рекрутера: ${companySettings.botName}` : ""}
-${companySettings.botRole ? `Должность рекрутера: ${companySettings.botRole}` : ""}
+Название: ${botSettings.name}
+${botSettings.description ? `Описание: ${botSettings.description}` : ""}
+${botSettings.website ? `Сайт: ${botSettings.website}` : ""}
+${botSettings.botName ? `Имя рекрутера: ${botSettings.botName}` : ""}
+${botSettings.botRole ? `Должность рекрутера: ${botSettings.botRole}` : ""}
 `
     : "";
 
-  const companyName = companySettings?.name || "";
-  const recruiterName = companySettings?.botName || "";
-  const recruiterRole = companySettings?.botRole || "";
+  const companyName = botSettings?.name || "";
+  const recruiterName = botSettings?.botName || "";
+  const recruiterRole = botSettings?.botRole || "";
 
   return `Ты — эксперт по написанию кратких приглашений для кандидатов на фриланс-проекты.
 
@@ -151,15 +151,15 @@ export const generateInvitationTemplate = protectedProcedure
     }
 
     // Загружаем настройки компании для персонализации
-    const companySettings = await ctx.db.query.companySettings.findFirst({
-      where: (companySettings, { eq }) =>
-        eq(companySettings.workspaceId, workspaceId),
+    const botSettings = await ctx.db.query.botSettings.findFirst({
+      where: (botSettings, { eq }) =>
+        eq(botSettings.workspaceId, workspaceId),
     });
 
     const prompt = buildInvitationPrompt(
       gig.title,
       gig.description || undefined,
-      companySettings,
+      botSettings,
     );
 
     try {

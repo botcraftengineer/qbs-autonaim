@@ -90,7 +90,7 @@ export const exportAnalytics = protectedProcedure
       await ctx.auditLogger.logDataExport({
         userId: ctx.session.user.id,
         resourceType: "VACANCY",
-        resourceId: row.vacancyId,
+        resourceId: row.entityId,
         exportFormat: "csv",
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
@@ -113,7 +113,7 @@ export const exportAnalytics = protectedProcedure
     ];
 
     const rows = analyticsData.map((row) => [
-      row.vacancyId,
+      row.entityId,
       `"${row.vacancyTitle.replace(/"/g, '""')}"`, // Экранирование кавычек
       row.platform,
       new Date(row.vacancyCreatedAt).toLocaleDateString("ru-RU"),

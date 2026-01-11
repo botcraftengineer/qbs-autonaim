@@ -35,7 +35,7 @@ export const trackEvent = publicProcedure
     try {
       const event = await analyticsTracker.trackEvent({
         workspaceId: input.workspaceId,
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         sessionId: input.sessionId,
         eventType: input.eventType,
         metadata: input.metadata,

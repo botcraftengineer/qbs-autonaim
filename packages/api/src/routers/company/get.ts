@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { companySettings } from "@qbs-autonaim/db/schema";
+import { botSettings } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -7,8 +7,8 @@ import { protectedProcedure } from "../../trpc";
 export const get = protectedProcedure
   .input(z.object({ workspaceId: workspaceIdSchema }))
   .query(async ({ ctx, input }) => {
-    const result = await ctx.db.query.companySettings.findFirst({
-      where: eq(companySettings.workspaceId, input.workspaceId),
+    const result = await ctx.db.query.botSettings.findFirst({
+      where: eq(botSettings.workspaceId, input.workspaceId),
     });
 
     return result ?? null;

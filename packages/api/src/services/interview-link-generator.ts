@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Сервис генерации ссылок на интервью для фриланс-платформ
  *
  * Генерирует уникальные ссылки на интервью для вакансий,
@@ -106,7 +106,7 @@ export class InterviewLinkGenerator {
     const existingLink = await db.query.interviewLink.findFirst({
       where: and(
         eq(interviewLink.entityType, "vacancy"),
-        eq(interviewLink.entityId, vacancyId),
+        eq(interviewLink.vacancyId, vacancyId),
         eq(interviewLink.isActive, true),
       ),
     });
@@ -192,7 +192,7 @@ export class InterviewLinkGenerator {
 
     return {
       id: link.id,
-      entityId: link.entityId,
+      entityId: link.vacancyId,
       token: link.token,
       url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,

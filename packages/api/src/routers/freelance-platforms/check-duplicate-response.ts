@@ -16,7 +16,7 @@ export const checkDuplicateResponse = publicProcedure
     // Проверяем авторизацию: либо валидный токен для этой вакансии, либо авторизованный пользователь
     const hasTokenAccess = hasVacancyAccess(
       ctx.interviewToken,
-      input.vacancyId,
+      input.entityId,
     );
     const isAuthenticated = !!ctx.session?.user;
 
@@ -30,7 +30,7 @@ export const checkDuplicateResponse = publicProcedure
     // Если пользователь авторизован, проверяем доступ к workspace вакансии
     if (isAuthenticated && !hasTokenAccess) {
       const vacancy = await ctx.db.query.vacancy.findFirst({
-        where: (v, { eq }) => eq(v.id, input.vacancyId),
+        where: (v, { eq }) => eq(v.id, input.entityId),
       });
 
       if (!vacancy) {
@@ -62,7 +62,7 @@ export const checkDuplicateResponse = publicProcedure
     // Проверяем дубликаты по profileUrl + vacancyId
     const existingResponse = await ctx.db.query.response.findFirst({
       where: and(
-        eq(responseTable.entityId, input.vacancyId),
+        eq(responseTable.entityId, input.entityId),
         eq(responseTable.entityType, "vacancy"),
         eq(responseTable.profileUrl, input.platformProfileUrl),
       ),

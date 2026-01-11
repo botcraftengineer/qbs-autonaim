@@ -66,7 +66,7 @@ export const updateSalaryExpectations = protectedProcedure
     await ctx.db
       .update(responseTable)
       .set({
-        salaryExpectations: input.salaryExpectations,
+        salaryExpectations: input.salaryExpectationsAmount,
         updatedAt: new Date(),
       })
       .where(

@@ -36,9 +36,9 @@ export const getImageUrl = protectedProcedure
       where: (files, { eq }) => eq(files.id, input.fileId),
       with: {
         // Проверяем связь через vacancyResponse (resumePdfFileId)
-        vacancyResponsesAsResumePdf: true,
+        responsesAsResumePdf: true,
         // Проверяем связь через vacancyResponse (photoFileId)
-        vacancyResponsesAsPhoto: true,
+        responsesAsPhoto: true,
         // Проверяем связь через interviewMessage
         interviewMessages: {
           with: {
@@ -57,10 +57,10 @@ export const getImageUrl = protectedProcedure
 
     // Get all response IDs to check workspace access
     const responseIds = [
-      ...fileRecord.vacancyResponsesAsResumePdf.map((r) => r.id),
-      ...fileRecord.vacancyResponsesAsPhoto.map((r) => r.id),
+      ...fileRecord.responsesAsResumePdf.map((r) => r.id),
+      ...fileRecord.responsesAsPhoto.map((r) => r.id),
       ...fileRecord.interviewMessages
-        .map((m) => m.session?.vacancyResponseId)
+        .map((m) => m.session?.responseId)
         .filter((id): id is string => id !== null && id !== undefined),
     ].filter((id): id is string => id !== undefined);
 
@@ -72,12 +72,12 @@ export const getImageUrl = protectedProcedure
     }
 
     // Query all responses to get their vacancyIds
-    const responses = await ctx.db.query.vacancyResponse.findMany({
+    const responses = await ctx.db.query.response.findMany({
       where: (response, { inArray }) => inArray(response.id, responseIds),
       columns: { id: true, vacancyId: true },
     });
 
-    const vacancyIds = [...new Set(responses.map((r) => r.vacancyId))].filter(
+    const vacancyIds = [...new Set(responses.map((r) => r.entityId))].filter(
       (id): id is string => id !== undefined,
     );
 

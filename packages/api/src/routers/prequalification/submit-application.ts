@@ -8,8 +8,8 @@
 
 import {
   prequalificationSession,
+  response as responseTable,
   vacancy,
-  response as vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
@@ -81,7 +81,7 @@ export const submitApplication = publicProcedure
       const [vacancyData] = await ctx.db
         .select()
         .from(vacancy)
-        .where(eq(vacancy.id, session.vacancyId))
+        .where(eq(vacancy.id, session.entityId))
         .limit(1);
 
       if (!vacancyData) {
@@ -110,7 +110,7 @@ export const submitApplication = publicProcedure
         .insert(vacancyResponse)
         .values({
           entityType: "vacancy",
-          entityId: session.vacancyId,
+          entityId: session.entityId,
           candidateId: resumeId,
           candidateName: candidateInfo?.name ?? null,
           phone: candidateInfo?.phone ?? null,

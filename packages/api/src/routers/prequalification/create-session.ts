@@ -26,7 +26,7 @@ export const createSession = publicProcedure
     try {
       const result = await sessionManager.createSession({
         workspaceId: input.workspaceId,
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         candidateConsent: input.candidateConsent,
         source: input.source,
         userAgent: ctx.userAgent,

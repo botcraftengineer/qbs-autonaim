@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Сервис генерации шортлиста кандидатов
  *
  * Ранжирует фрилансеров на основе оценок анализа откликов и интервью.
@@ -65,7 +65,7 @@ export class ShortlistGenerator {
     // Получаем все отклики для вакансии
     const responses = await db.query.response.findMany({
       where: (r, { eq, and }) =>
-        and(eq(r.entityType, "vacancy"), eq(r.entityId, vacancyId)),
+        and(eq(r.entityType, "vacancy"), eq(r.vacancyId, vacancyId)),
     });
 
     // Get all screenings separately

@@ -1,7 +1,7 @@
 import { eq } from "@qbs-autonaim/db";
 import {
   interviewSession,
-  vacancyResponse,
+  response as responseTable,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
@@ -35,7 +35,7 @@ export const sendWelcome = protectedProcedure
     }
 
     // Получаем данные отклика
-    const response = await ctx.db.query.vacancyResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(vacancyResponse.id, responseId),
     });
 
@@ -48,7 +48,7 @@ export const sendWelcome = protectedProcedure
 
     // Query vacancy separately to check workspace access
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancyTable.id, response.vacancyId),
+      where: eq(vacancyTable.id, response.entityId),
       columns: { workspaceId: true },
     });
 
@@ -74,7 +74,7 @@ export const sendWelcome = protectedProcedure
 
     // Проверяем существующую interviewSession
     const existingSession = await ctx.db.query.interviewSession.findFirst({
-      where: eq(interviewSession.vacancyResponseId, responseId),
+      where: eq(interviewSession.responseId, responseId),
     });
 
     if (existingSession) {
@@ -87,7 +87,7 @@ export const sendWelcome = protectedProcedure
         ...existingMetadata,
         telegramUsername: cleanUsername,
         responseId,
-        vacancyId: response.vacancyId,
+        vacancyId: response.entityId,
       };
 
       // Обновляем существующую session
@@ -103,13 +103,13 @@ export const sendWelcome = protectedProcedure
       // Создаем новую interviewSession
       await ctx.db.insert(interviewSession).values({
         entityType: "vacancy_response",
-        vacancyResponseId: responseId,
+        responseId: responseId,
         status: "active",
         lastChannel: "telegram",
         metadata: {
           telegramUsername: cleanUsername,
           responseId,
-          vacancyId: response.vacancyId,
+          vacancyId: response.entityId,
         },
       });
     }

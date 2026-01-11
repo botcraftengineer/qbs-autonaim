@@ -1,6 +1,6 @@
 import {
   interviewSession,
-  vacancyResponse,
+  response as responseTable,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -29,14 +29,14 @@ export const getConversationByUsernameRouter = protectedProcedure
     }
 
     // Check workspace access through vacancyResponse
-    if (session.vacancyResponseId) {
-      const response = await ctx.db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, session.vacancyResponseId),
+    if (session.responseId) {
+      const response = await ctx.db.query.response.findFirst({
+        where: eq(vacancyResponse.id, session.responseId),
       });
 
       if (response) {
         const vacancy = await ctx.db.query.vacancy.findFirst({
-          where: eq(vacancyTable.id, response.vacancyId),
+          where: eq(vacancyTable.id, response.entityId),
           columns: { workspaceId: true },
         });
 

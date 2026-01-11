@@ -19,9 +19,9 @@ export const analytics = protectedProcedure
 
     const workspaceVacancyIds = vacancies.map((v) => v.id);
 
-    const vacancyIds = input.vacancyId
-      ? workspaceVacancyIds.includes(input.vacancyId)
-        ? [input.vacancyId]
+    const vacancyIds = input.entityId
+      ? workspaceVacancyIds.includes(input.entityId)
+        ? [input.entityId]
         : []
       : workspaceVacancyIds;
 

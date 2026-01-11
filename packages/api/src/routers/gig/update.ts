@@ -35,7 +35,7 @@ export const update = protectedProcedure
 
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.gigId),
+        eq(gig.id, input.entityId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -116,7 +116,7 @@ export const update = protectedProcedure
         // Delete existing associations
         await tx
           .delete(gigInterviewMedia)
-          .where(eq(gigInterviewMedia.gigId, input.gigId));
+          .where(eq(gigInterviewMedia.entityId, input.entityId));
 
         // Insert new associations
         if (
@@ -125,7 +125,7 @@ export const update = protectedProcedure
         ) {
           await tx.insert(gigInterviewMedia).values(
             input.settings.interviewMediaFileIds.map((fileId) => ({
-              gigId: input.gigId,
+              gigId: input.entityId,
               fileId,
             })),
           );
@@ -137,7 +137,7 @@ export const update = protectedProcedure
       .update(gig)
       .set(patch)
       .where(
-        and(eq(gig.id, input.gigId), eq(gig.workspaceId, input.workspaceId)),
+        and(eq(gig.id, input.entityId), eq(gig.workspaceId, input.workspaceId)),
       )
       .returning();
 

@@ -19,15 +19,15 @@ export const vacancyStats = protectedProcedure
 
     const workspaceVacancyIds = new Set(vacancies.map((v) => v.id));
 
-    if (input.vacancyId && !workspaceVacancyIds.has(input.vacancyId)) {
+    if (input.entityId && !workspaceVacancyIds.has(input.entityId)) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Вакансия не найдена в указанном workspace",
       });
     }
 
-    const vacancyIds = input.vacancyId
-      ? [input.vacancyId]
+    const vacancyIds = input.entityId
+      ? [input.entityId]
       : Array.from(workspaceVacancyIds);
 
     if (vacancyIds.length === 0) {

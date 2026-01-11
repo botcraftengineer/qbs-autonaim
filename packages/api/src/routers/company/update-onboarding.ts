@@ -1,4 +1,4 @@
-import { companySettings, eq } from "@qbs-autonaim/db";
+import { botSettings, eq } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -27,8 +27,8 @@ export const updateOnboarding = protectedProcedure
     }
 
     // Проверяем существующие настройки
-    const existing = await ctx.db.query.companySettings.findFirst({
-      where: eq(companySettings.workspaceId, input.workspaceId),
+    const existing = await ctx.db.query.botSettings.findFirst({
+      where: eq(botSettings.workspaceId, input.workspaceId),
     });
 
     const updateData: Record<string, Date | boolean> = {
@@ -52,9 +52,9 @@ export const updateOnboarding = protectedProcedure
     if (existing) {
       // Обновляем существующие
       const [updated] = await ctx.db
-        .update(companySettings)
+        .update(botSettings)
         .set(updateData)
-        .where(eq(companySettings.id, existing.id))
+        .where(eq(botSettings.id, existing.id))
         .returning();
 
       return updated;
@@ -62,7 +62,7 @@ export const updateOnboarding = protectedProcedure
 
     // Создаем новые с базовыми значениями
     const [created] = await ctx.db
-      .insert(companySettings)
+      .insert(botSettings)
       .values({
         workspaceId: input.workspaceId,
         name: "Моя компания", // Значение по умолчанию

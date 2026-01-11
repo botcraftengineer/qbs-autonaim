@@ -31,7 +31,7 @@ export const updateDetails = protectedProcedure
 
     const existingVacancy = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.id, input.entityId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -52,7 +52,7 @@ export const updateDetails = protectedProcedure
       })
       .where(
         and(
-          eq(vacancy.id, input.vacancyId),
+          eq(vacancy.id, input.entityId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )

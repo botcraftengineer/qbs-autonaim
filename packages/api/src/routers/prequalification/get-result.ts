@@ -79,7 +79,7 @@ export const getResult = publicProcedure
       const [vacancyData] = await ctx.db
         .select()
         .from(vacancy)
-        .where(eq(vacancy.id, session.vacancyId))
+        .where(eq(vacancy.id, session.entityId))
         .limit(1);
 
       if (!vacancyData) {

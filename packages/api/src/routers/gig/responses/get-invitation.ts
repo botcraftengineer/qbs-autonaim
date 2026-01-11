@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { gigInvitation, gigResponse } from "@qbs-autonaim/db/schema";
+import { responseInvitation, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -26,7 +26,7 @@ export const getInvitation = protectedProcedure
     }
 
     // Получаем отклик с гигом
-    const response = await ctx.db.query.gigResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(gigResponse.id, input.responseId),
       with: {
         gig: true,
@@ -48,8 +48,8 @@ export const getInvitation = protectedProcedure
     }
 
     // Получаем приглашение
-    const invitation = await ctx.db.query.gigInvitation.findFirst({
-      where: eq(gigInvitation.responseId, input.responseId),
+    const invitation = await ctx.db.query.responseInvitation.findFirst({
+      where: eq(responseInvitation.responseId, input.responseId),
     });
 
     if (!invitation) {

@@ -253,7 +253,7 @@ export const getAnalytics = protectedProcedure
         },
         // Детальные данные
         timeToShortlist: timeToShortlist.map((v) => ({
-          vacancyId: v.vacancyId,
+          vacancyId: v.entityId,
           vacancyTitle: v.vacancyTitle,
           source: v.source,
           createdAt: v.createdAt,

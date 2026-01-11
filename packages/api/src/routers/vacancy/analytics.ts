@@ -28,7 +28,7 @@ export const analytics = protectedProcedure
     // Проверка принадлежности вакансии к workspace
     const vacancyCheck = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.id, input.entityId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -46,7 +46,7 @@ export const analytics = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
         ),
       );
 
@@ -63,7 +63,7 @@ export const analytics = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
         ),
       );
 
@@ -80,7 +80,7 @@ export const analytics = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
           gte(responseScreening.score, 3),
         ),
       );
@@ -98,7 +98,7 @@ export const analytics = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
           gte(responseScreening.score, 4),
         ),
       );
@@ -118,7 +118,7 @@ export const analytics = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
         ),
       );
 

@@ -52,8 +52,8 @@ export const list = protectedProcedure
       inArray(responseTable.entityId, vacancyIds),
     ];
 
-    if (input.vacancyId) {
-      conditions.push(eq(responseTable.entityId, input.vacancyId));
+    if (input.entityId) {
+      conditions.push(eq(responseTable.entityId, input.entityId));
     }
 
     if (input.cursor) {

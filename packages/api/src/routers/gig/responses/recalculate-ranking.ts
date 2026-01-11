@@ -36,7 +36,7 @@ export const recalculateRanking = protectedProcedure
       await inngest.send({
         name: "gig/ranking.recalculate",
         data: {
-          gigId: input.gigId,
+          gigId: input.entityId,
           workspaceId: input.workspaceId,
           triggeredBy: ctx.session.user.id,
         },
@@ -45,7 +45,7 @@ export const recalculateRanking = protectedProcedure
       // Структурированное логирование ошибки
       console.log({
         msg: "Не удалось поставить задачу на пересчет рейтинга",
-        gigId: input.gigId,
+        gigId: input.entityId,
         workspaceId: input.workspaceId,
         errorMessage: String((err as Error)?.message || err),
         errorStack: (err as Error)?.stack,

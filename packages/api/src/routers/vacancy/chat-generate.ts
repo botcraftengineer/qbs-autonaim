@@ -1,4 +1,4 @@
-import type { CompanySettings } from "@qbs-autonaim/db/schema";
+import type { botSettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -104,7 +104,7 @@ function buildVacancyGenerationPrompt(
     customOrganizationalQuestions?: string;
   },
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
-  companySettings?: CompanySettings | null,
+  botSettings?: typeof botSettings | null,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -134,26 +134,26 @@ ${currentDocument.customOrganizationalQuestions ? `Организационны�
     : "ТЕКУЩИЙ ДОКУМЕНТ: (пусто)";
 
   // Настройки компании для персонализации
-  const companySection = companySettings
+  const companySection = botSettings
     ? `
 НАСТРОЙКИ КОМПАНИИ:
-Название компании: ${companySettings.name}
-${companySettings.description ? `Описание компании: ${companySettings.description}` : ""}
-${companySettings.website ? `Сайт: ${companySettings.website}` : ""}
-${companySettings.botName ? `Имя бота-рекрутера: ${companySettings.botName}` : ""}
-${companySettings.botRole ? `Роль бота: ${companySettings.botRole}` : ""}
+Название компании: ${botSettings.name}
+${botSettings.description ? `Описание компании: ${botSettings.description}` : ""}
+${botSettings.website ? `Сайт: ${botSettings.website}` : ""}
+${botSettings.botName ? `Имя бота-рекрутера: ${botSettings.botName}` : ""}
+${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
 `
     : "";
 
   const botPersonality =
-    companySettings?.botName && companySettings?.botRole
-      ? `Ты — ${companySettings.botName}, ${companySettings.botRole} компании "${companySettings.name}".`
-      : companySettings?.name
-        ? `Ты — эксперт по подбору персонала для компании "${companySettings.name}".`
+    botSettings?.botName && botSettings?.botRole
+      ? `Ты — ${botSettings.botName}, ${botSettings.botRole} компании "${botSettings.name}".`
+      : typeof botSettings?.name
+        ? `Ты — эксперт по подбору персонала для компании "${botSettings.name}".`
         : "Ты — эксперт по подбору персонала и созданию вакансий.";
 
-  const companyContext = companySettings?.description
-    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${companySettings.description}\nУчитывай специфику и потребности этой компании при создании вакансий.`
+  const companyContext = botSettings?.description
+    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${botSettings.description}\nУчитывай специфику и потребности этой компании при создании вакансий.`
     : "";
 
   return `${botPersonality}
@@ -166,7 +166,7 @@ ${documentSection}
 
 ИНСТРУКЦИИ:
 - Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
-- Учитывай специфику и потребности компании "${companySettings?.name || "клиента"}"
+- Учитывай специфику и потребности компании "${botSettings?.name || "клиента"}"
 - Обнови соответствующие разделы документа
 - Если пользователь указывает название должности - обнови title
 - Если описывает компанию/проект - обнови description
@@ -222,16 +222,16 @@ export const chatGenerate = protectedProcedure
     }
 
     // Загружаем настройки компании для персонализации промпта
-    const companySettings = await ctx.db.query.companySettings.findFirst({
-      where: (companySettings, { eq }) =>
-        eq(companySettings.workspaceId, workspaceId),
+    const botSettings = await ctx.db.query.botSettings.findFirst({
+      where: (botSettings, { eq }) =>
+        eq(botSettings.workspaceId, workspaceId),
     });
 
     const prompt = buildVacancyGenerationPrompt(
       message,
       currentDocument,
       conversationHistory,
-      companySettings,
+      botSettings,
     );
 
     try {

@@ -29,7 +29,7 @@ export const getCount = protectedProcedure
     // Проверка принадлежности вакансии к workspace
     const vacancyCheck = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.id, input.entityId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -47,7 +47,7 @@ export const getCount = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
         ),
       );
 

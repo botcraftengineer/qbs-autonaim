@@ -33,7 +33,7 @@ export const update = protectedProcedure
     // Проверяем, что вакансия существует и принадлежит workspace
     const existingVacancy = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.id, input.entityId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -76,7 +76,7 @@ export const update = protectedProcedure
       .set(patch)
       .where(
         and(
-          eq(vacancy.id, input.vacancyId),
+          eq(vacancy.id, input.entityId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )

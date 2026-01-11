@@ -148,7 +148,7 @@ export class VacancyContextLoader implements ContextLoader {
         id: resp.id,
         candidateId: resp.candidateId,
         candidateName: resp.candidateName,
-        salaryExpectations: resp.salaryExpectations,
+        salaryExpectations: resp.salaryExpectationsAmount,
         coverLetter: resp.coverLetter,
         experience: resp.experience,
         profileUrl: resp.profileUrl,

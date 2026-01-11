@@ -29,7 +29,7 @@ export class AnalyticsTracker {
         .insert(analyticsEvent)
         .values({
           workspaceId: input.workspaceId,
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
           sessionId: input.sessionId,
           eventType: input.eventType,
           metadata: input.metadata,
@@ -197,7 +197,7 @@ export class AnalyticsTracker {
         .values(
           events.map((e) => ({
             workspaceId: e.workspaceId,
-            vacancyId: e.vacancyId,
+            vacancyId: e.entityId,
             sessionId: e.sessionId,
             eventType: e.eventType,
             metadata: e.metadata,

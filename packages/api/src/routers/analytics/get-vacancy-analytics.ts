@@ -40,7 +40,7 @@ export const getVacancyAnalytics = protectedProcedure
 
     try {
       const vacancyAnalytics = await analyticsAggregator.getVacancyAnalytics({
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         workspaceId: input.workspaceId,
         period: input.period,
       });

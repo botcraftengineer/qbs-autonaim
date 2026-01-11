@@ -6,7 +6,7 @@
 
 import {
   gig,
-  gigResponse,
+  response as responseTable,
   gigResponseScreening,
   interviewScoring,
 } from "@qbs-autonaim/db";
@@ -141,8 +141,8 @@ export async function loadCandidatesContext(
   gigId: string,
 ): Promise<CandidatesContext> {
   // Загружаем все отклики с screening и interview данными
-  const responses = await database.query.gigResponse.findMany({
-    where: eq(gigResponse.gigId, gigId),
+  const responses = await database.query.response.findMany({
+    where: eq(gigResponse.entityId, gigId),
     columns: {
       id: true,
       candidateId: true,
@@ -196,7 +196,7 @@ export async function loadCandidatesContext(
 
   // Загружаем interview данные для всех откликов
   const interviews: Array<{
-    gigResponseId: string | null;
+    responseId: string | null;
     score: number;
     analysis: string | null;
   }> = [];
@@ -204,9 +204,9 @@ export async function loadCandidatesContext(
   if (responseIds.length > 0) {
     for (const responseId of responseIds) {
       const interview = await database.query.interviewScoring.findFirst({
-        where: eq(interviewScoring.gigResponseId, responseId),
+        where: eq(interviewScoring.responseId, responseId),
         columns: {
-          gigResponseId: true,
+          responseId: true,
           score: true,
           analysis: true,
         },
@@ -220,8 +220,8 @@ export async function loadCandidatesContext(
   // Создаем map для быстрого доступа к interview данным
   const interviewMap = new Map(
     interviews
-      .filter((i) => i.gigResponseId !== null)
-      .map((i) => [i.gigResponseId!, i]),
+      .filter((i) => i.responseId !== null)
+      .map((i) => [i.responseId!, i]),
   );
 
   // Формируем контекст кандидатов

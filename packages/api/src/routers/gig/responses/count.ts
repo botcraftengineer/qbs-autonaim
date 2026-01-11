@@ -1,5 +1,5 @@
 import { and, count, eq } from "@qbs-autonaim/db";
-import { gig, gigResponse } from "@qbs-autonaim/db/schema";
+import { gig, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -28,7 +28,7 @@ export const countResponses = protectedProcedure
     // Проверяем что gig принадлежит workspace
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.gigId),
+        eq(gig.id, input.entityId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -43,17 +43,17 @@ export const countResponses = protectedProcedure
     // Подсчитываем реальное количество откликов
     const totalResult = await ctx.db
       .select({ count: count() })
-      .from(gigResponse)
-      .where(eq(gigResponse.gigId, input.gigId));
+      .from(response)
+      .where(eq(gigResponse.entityId, input.entityId));
 
     const total = totalResult[0]?.count ?? 0;
 
     // Подсчитываем новые отклики (статус NEW)
     const newResult = await ctx.db
       .select({ count: count() })
-      .from(gigResponse)
+      .from(response)
       .where(
-        and(eq(gigResponse.gigId, input.gigId), eq(gigResponse.status, "NEW")),
+        and(eq(gigResponse.entityId, input.entityId), eq(gigResponse.status, "NEW")),
       );
 
     const newCount = newResult[0]?.count ?? 0;

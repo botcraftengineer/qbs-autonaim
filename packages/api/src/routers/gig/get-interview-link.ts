@@ -28,7 +28,7 @@ export const getInterviewLink = protectedProcedure
 
     const foundGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.gigId),
+        eq(gig.id, input.entityId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -43,7 +43,7 @@ export const getInterviewLink = protectedProcedure
     const link = await ctx.db.query.interviewLink.findFirst({
       where: and(
         eq(interviewLink.entityType, "gig"),
-        eq(interviewLink.entityId, input.gigId),
+        eq(interviewLink.entityId, input.entityId),
         eq(interviewLink.isActive, true),
       ),
     });

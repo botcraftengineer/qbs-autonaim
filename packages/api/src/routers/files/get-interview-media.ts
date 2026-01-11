@@ -42,7 +42,7 @@ export const getInterviewMedia = protectedProcedure
 
     // Получаем gig
     const gigRecord = await ctx.db.query.gig.findFirst({
-      where: eq(gig.id, input.gigId),
+      where: eq(gig.id, input.entityId),
     });
 
     if (!gigRecord) {
@@ -61,7 +61,7 @@ export const getInterviewMedia = protectedProcedure
 
     // Получаем медиафайлы через join table с relations
     const mediaRecords = await ctx.db.query.gigInterviewMedia.findMany({
-      where: eq(gigInterviewMedia.gigId, input.gigId),
+      where: eq(gigInterviewMedia.entityId, input.entityId),
       with: {
         file: true,
       },

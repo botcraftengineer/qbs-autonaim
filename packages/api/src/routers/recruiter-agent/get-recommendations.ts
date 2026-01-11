@@ -207,7 +207,7 @@ export const getUndoableActions = protectedProcedure
         ruleId: action.ruleId,
         ruleName: action.ruleName,
         candidateId: action.candidateId,
-        vacancyId: action.vacancyId,
+        vacancyId: action.entityId,
         actionType: action.action.type,
         status: action.status,
         explanation: action.explanation,

@@ -23,8 +23,7 @@ export const getInterviewContext = publicProcedure
     const session = await ctx.db.query.interviewSession.findFirst({
       where: (interviewSession, { eq }) =>
         eq(interviewSession.id, input.interviewSessionId),
-      with: {
-        vacancyResponse: true,
+      with: { response: true,
         gigResponse: {
           with: {
             gig: true,
@@ -41,9 +40,9 @@ export const getInterviewContext = publicProcedure
     }
 
     // Если это интервью по вакансии
-    if (session.vacancyResponse) {
+    if (session.response) {
       const vacancy = await ctx.db.query.vacancy.findFirst({
-        where: eq(vacancyTable.id, session.vacancyResponse.vacancyId),
+        where: eq(vacancyTable.id, session.response.entityId),
       });
 
       if (vacancy) {
@@ -58,8 +57,8 @@ export const getInterviewContext = publicProcedure
     }
 
     // Если это интервью по гигу
-    if (session.gigResponse?.gig) {
-      const gig = session.gigResponse.gig;
+    if (session.response?.gig) {
+      const gig = session.response.gig;
       return {
         type: "gig" as const,
         title: gig.title,

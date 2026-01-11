@@ -29,7 +29,7 @@ export const generateInterviewLink = protectedProcedure
     const vacancy = await ctx.db.query.vacancy.findFirst({
       where: (vacancy, { and, eq }) =>
         and(
-          eq(vacancy.id, input.vacancyId),
+          eq(vacancy.id, input.entityId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
     });
@@ -43,7 +43,7 @@ export const generateInterviewLink = protectedProcedure
 
     // Генерируем ссылку на интервью
     const linkGenerator = new InterviewLinkGenerator();
-    const interviewLink = await linkGenerator.generateLink(input.vacancyId);
+    const interviewLink = await linkGenerator.generateLink(input.entityId);
 
     return {
       id: interviewLink.id,

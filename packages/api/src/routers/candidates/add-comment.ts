@@ -1,7 +1,7 @@
 import {
+  responseComment,
   response as responseTable,
   vacancy,
-  vacancyResponseComment,
 } from "@qbs-autonaim/db";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
@@ -40,7 +40,7 @@ export const addComment = protectedProcedure
         workspaceId: vacancy.workspaceId,
       })
       .from(vacancy)
-      .where(eq(vacancy.id, candidate.vacancyId))
+      .where(eq(vacancy.id, candidate.entityId))
       .limit(1);
 
     if (!vacancyRecord || vacancyRecord.workspaceId !== input.workspaceId) {
@@ -48,7 +48,7 @@ export const addComment = protectedProcedure
     }
 
     const [comment] = await ctx.db
-      .insert(vacancyResponseComment)
+      .insert(responseComment)
       .values({
         responseId: input.candidateId,
         authorId: ctx.session.user.id,

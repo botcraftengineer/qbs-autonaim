@@ -43,21 +43,21 @@ export const getShortlist = protectedProcedure
       const vacancy = await ctx.db.query.vacancy.findFirst({
         where: (vacancy, { eq, and }) =>
           and(
-            eq(vacancy.id, input.vacancyId),
+            eq(vacancy.id, input.entityId),
             eq(vacancy.workspaceId, input.workspaceId),
           ),
       });
 
       if (!vacancy) {
         throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
           workspaceId: input.workspaceId,
         });
       }
 
       // Генерируем шортлист
       const generator = new ShortlistGenerator();
-      const shortlist = await generator.generateShortlist(input.vacancyId, {
+      const shortlist = await generator.generateShortlist(input.entityId, {
         minScore: input.minScore,
         maxCandidates: input.maxCandidates,
         sortBy: input.sortBy,
@@ -79,7 +79,7 @@ export const getShortlist = protectedProcedure
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         operation: "get_shortlist",
       });
     }

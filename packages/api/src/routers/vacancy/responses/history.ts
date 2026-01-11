@@ -1,7 +1,7 @@
 import { desc, eq } from "@qbs-autonaim/db";
 import {
   response as responseTable,
-  vacancyResponseHistory,
+  responseHistory,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -55,9 +55,9 @@ export const getHistory = protectedProcedure
       });
     }
 
-    const history = await ctx.db.query.vacancyResponseHistory.findMany({
-      where: eq(vacancyResponseHistory.responseId, input.responseId),
-      orderBy: [desc(vacancyResponseHistory.createdAt)],
+    const history = await ctx.db.query.responseHistory.findMany({
+      where: eq(responseHistory.responseId, input.responseId),
+      orderBy: [desc(responseHistory.createdAt)],
     });
 
     return history;

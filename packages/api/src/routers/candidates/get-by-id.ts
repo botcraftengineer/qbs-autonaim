@@ -99,7 +99,7 @@ export const getById = protectedProcedure
 
     // Find interview session for this response
     const interview = await ctx.db.query.interviewSession.findFirst({
-      where: eq(interviewSessionTable.vacancyResponseId, response.id),
+      where: eq(interviewSessionTable.responseId, response.id),
     });
 
     let interviewScoring = null;
@@ -178,7 +178,7 @@ export const getById = protectedProcedure
       scoreAnalysis: interviewScoring?.analysis ?? undefined,
       screeningAnalysis: screening?.analysis ?? undefined,
       availability: "Не указано",
-      salaryExpectation: response.salaryExpectations || "Не указано",
+      salaryExpectation: response.salaryExpectationsAmount || "Не указано",
       stage,
       status: response.status,
       hrSelectionStatus: response.hrSelectionStatus,

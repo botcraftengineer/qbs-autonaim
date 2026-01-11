@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Сервис генерации ссылок на интервью для гигов
  *
  * Генерирует уникальные ссылки на интервью для разовых заданий,
@@ -117,7 +117,7 @@ export class GigInterviewLinkGenerator {
     const existingLink = await db.query.interviewLink.findFirst({
       where: and(
         eq(interviewLink.entityType, "gig"),
-        eq(interviewLink.entityId, gigId),
+        eq(interviewLink.vacancyId, gigId),
         eq(interviewLink.isActive, true),
       ),
     });
@@ -197,12 +197,12 @@ export class GigInterviewLinkGenerator {
   private async mapToGigInterviewLink(
     link: typeof interviewLink.$inferSelect,
   ): Promise<GigInterviewLink> {
-    const customDomainUrl = await this.getInterviewDomain(link.entityId);
+    const customDomainUrl = await this.getInterviewDomain(link.vacancyId);
     const baseUrl = getInterviewBaseUrl(customDomainUrl);
 
     return {
       id: link.id,
-      gigId: link.entityId,
+      gigId: link.vacancyId,
       token: link.token,
       url: `${baseUrl}/${link.token}`,
       isActive: link.isActive,

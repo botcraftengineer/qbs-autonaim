@@ -1,7 +1,7 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
+  responseHistory,
   response as responseTable,
-  vacancyResponseHistory,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -73,8 +73,8 @@ export const listActivities = protectedProcedure
     }
 
     // Получаем историю активностей
-    const activities = await ctx.db.query.vacancyResponseHistory.findMany({
-      where: eq(vacancyResponseHistory.responseId, candidateId),
+    const activities = await ctx.db.query.responseHistory.findMany({
+      where: eq(responseHistory.responseId, candidateId),
       with: {
         user: true,
       },

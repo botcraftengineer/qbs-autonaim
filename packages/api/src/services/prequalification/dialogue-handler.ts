@@ -71,7 +71,7 @@ export class DialogueHandler {
       .select({
         id: prequalificationSession.id,
         workspaceId: prequalificationSession.workspaceId,
-        vacancyId: prequalificationSession.vacancyId,
+        vacancyId: prequalificationSession.entityId,
         interviewSessionId: prequalificationSession.interviewSessionId,
         parsedResume: prequalificationSession.parsedResume,
         status: prequalificationSession.status,
@@ -190,13 +190,12 @@ export class DialogueHandler {
   async createInterviewSession(
     prequalSessionId: string,
     workspaceId: string,
-    vacancyResponseId?: string,
+    responseId?: string,
   ): Promise<string> {
     const [newSession] = await this.db
       .insert(interviewSession)
       .values({
-        entityType: "vacancy_response",
-        vacancyResponseId: vacancyResponseId ?? null,
+        responseId: responseId!,
         status: "active",
         lastChannel: "web",
         metadata: {

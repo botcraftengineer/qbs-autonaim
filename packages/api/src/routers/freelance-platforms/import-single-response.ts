@@ -42,7 +42,7 @@ export const importSingleResponse = protectedProcedure
 
     // Проверка существования вакансии
     const existingVacancy = await ctx.db.query.vacancy.findFirst({
-      where: (vacancy, { eq }) => eq(vacancy.id, input.vacancyId),
+      where: (vacancy, { eq }) => eq(vacancy.id, input.entityId),
     });
 
     if (!existingVacancy) {
@@ -69,7 +69,7 @@ export const importSingleResponse = protectedProcedure
     if (input.contactInfo?.platformProfileUrl) {
       const existingResponse = await ctx.db.query.response.findFirst({
         where: and(
-          eq(responseTable.entityId, input.vacancyId),
+          eq(responseTable.entityId, input.entityId),
           eq(responseTable.entityType, "vacancy"),
           eq(responseTable.profileUrl, input.contactInfo.platformProfileUrl),
         ),
@@ -87,7 +87,7 @@ export const importSingleResponse = protectedProcedure
     const [createdResponse] = await ctx.db
       .insert(responseTable)
       .values({
-        entityId: input.vacancyId,
+        entityId: input.entityId,
         entityType: "vacancy",
         candidateId:
           input.contactInfo?.platformProfileUrl || crypto.randomUUID(),
@@ -119,7 +119,7 @@ export const importSingleResponse = protectedProcedure
 
     // Создаём запись в истории импорта
     await ctx.db.insert(freelanceImportHistory).values({
-      vacancyId: input.vacancyId,
+      vacancyId: input.entityId,
       importedBy: ctx.session.user.id,
       importMode: "SINGLE",
       platformSource: input.platformSource,

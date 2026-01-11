@@ -30,7 +30,7 @@ export const getInterviewLink = protectedProcedure
     // Проверяем, существует ли вакансия и принадлежит ли она workspace
     const vacancyData = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.vacancyId),
+        eq(vacancy.id, input.entityId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -46,7 +46,7 @@ export const getInterviewLink = protectedProcedure
     const activeInterviewLink = await ctx.db.query.interviewLink.findFirst({
       where: and(
         eq(interviewLink.entityType, "vacancy"),
-        eq(interviewLink.entityId, input.vacancyId),
+        eq(interviewLink.entityId, input.entityId),
         eq(interviewLink.isActive, true),
       ),
     });

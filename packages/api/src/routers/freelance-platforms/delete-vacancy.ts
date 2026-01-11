@@ -39,14 +39,14 @@ export const deleteVacancy = protectedProcedure
       const existingVacancy = await ctx.db.query.vacancy.findFirst({
         where: (vacancy, { eq, and }) =>
           and(
-            eq(vacancy.id, input.vacancyId),
+            eq(vacancy.id, input.entityId),
             eq(vacancy.workspaceId, input.workspaceId),
           ),
       });
 
       if (!existingVacancy) {
         throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
           workspaceId: input.workspaceId,
         });
       }
@@ -67,7 +67,7 @@ export const deleteVacancy = protectedProcedure
           })
           .where(
             and(
-              eq(responseTable.entityId, input.vacancyId),
+              eq(responseTable.entityId, input.entityId),
               eq(responseTable.entityType, "vacancy"),
             ),
           );
@@ -78,12 +78,12 @@ export const deleteVacancy = protectedProcedure
           .set({
             isActive: false,
           })
-          .where(eq(vacancy.id, input.vacancyId));
+          .where(eq(vacancy.id, input.entityId));
 
         // Логируем анонимизацию
         await ctx.auditLogger.logVacancyDeletion({
           userId: ctx.session.user.id,
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
           deletionType: "anonymize",
           ipAddress: ctx.ipAddress,
           userAgent: ctx.userAgent,
@@ -97,14 +97,14 @@ export const deleteVacancy = protectedProcedure
         // Логируем удаление перед фактическим удалением
         await ctx.auditLogger.logVacancyDeletion({
           userId: ctx.session.user.id,
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
           deletionType: "delete",
           ipAddress: ctx.ipAddress,
           userAgent: ctx.userAgent,
         });
 
         // Удаляем вакансию (каскадное удаление удалит и отклики)
-        await ctx.db.delete(vacancy).where(eq(vacancy.id, input.vacancyId));
+        await ctx.db.delete(vacancy).where(eq(vacancy.id, input.entityId));
 
         return {
           success: true,
@@ -116,7 +116,7 @@ export const deleteVacancy = protectedProcedure
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         operation: "delete_vacancy",
       });
     }

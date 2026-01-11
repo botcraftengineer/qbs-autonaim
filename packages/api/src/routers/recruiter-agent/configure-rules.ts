@@ -451,7 +451,7 @@ export const getRules = protectedProcedure
         autonomyLevel: rule.autonomyLevel,
         priority: rule.priority,
         enabled: rule.enabled,
-        vacancyId: rule.vacancyId,
+        vacancyId: rule.entityId,
         stats: rule.stats,
         createdAt: rule.createdAt,
         updatedAt: rule.updatedAt,

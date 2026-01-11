@@ -1,8 +1,8 @@
 import {
+  responseComment,
   response as responseTable,
   user,
   vacancy,
-  vacancyResponseComment,
 } from "@qbs-autonaim/db";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -32,22 +32,22 @@ export const listComments = protectedProcedure
 
     const comments = await ctx.db
       .select({
-        id: vacancyResponseComment.id,
-        responseId: vacancyResponseComment.responseId,
-        content: vacancyResponseComment.content,
-        isPrivate: vacancyResponseComment.isPrivate,
-        createdAt: vacancyResponseComment.createdAt,
+        id: responseComment.id,
+        responseId: responseComment.responseId,
+        content: responseComment.content,
+        isPrivate: responseComment.isPrivate,
+        createdAt: responseComment.createdAt,
         authorId: user.id,
         authorName: user.name,
         authorImage: user.image,
       })
-      .from(vacancyResponseComment)
+      .from(responseComment)
       .innerJoin(
         responseTable,
-        eq(vacancyResponseComment.responseId, responseTable.id),
+        eq(responseComment.responseId, responseTable.id),
       )
       .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
-      .innerJoin(user, eq(vacancyResponseComment.authorId, user.id))
+      .innerJoin(user, eq(responseComment.authorId, user.id))
       .where(
         and(
           eq(responseTable.id, input.candidateId),
@@ -55,7 +55,7 @@ export const listComments = protectedProcedure
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )
-      .orderBy(desc(vacancyResponseComment.createdAt));
+      .orderBy(desc(responseComment.createdAt));
 
     return comments.map((comment) => ({
       id: comment.id,

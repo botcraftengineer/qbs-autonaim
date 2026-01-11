@@ -50,7 +50,7 @@ export const uploadInterviewMedia = protectedProcedure
 
     // Проверяем что gig принадлежит workspace
     const gigRecord = await ctx.db.query.gig.findFirst({
-      where: (gigs, { eq }) => eq(gigs.id, input.gigId),
+      where: (gigs, { eq }) => eq(gigs.id, input.entityId),
     });
 
     if (!gigRecord) {
@@ -116,7 +116,7 @@ export const uploadInterviewMedia = protectedProcedure
 
       // Связываем файл с gig через join-таблицу
       await db.insert(gigInterviewMedia).values({
-        gigId: input.gigId,
+        gigId: input.entityId,
         fileId: fileRecord.id,
       });
 

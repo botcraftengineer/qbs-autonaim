@@ -100,8 +100,8 @@ export const list = protectedProcedure
       inArray(responseTable.entityId, vacancyIds),
     ];
 
-    if (input.vacancyId) {
-      conditions.push(eq(responseTable.entityId, input.vacancyId));
+    if (input.entityId) {
+      conditions.push(eq(responseTable.entityId, input.entityId));
     }
 
     if (input.search) {
@@ -206,7 +206,7 @@ export const list = protectedProcedure
 
     // Find interview sessions for vacancy responses
     const interviewSessions = await ctx.db.query.interviewSession.findMany({
-      where: inArray(interviewSessionTable.vacancyResponseId, responseIds),
+      where: inArray(interviewSessionTable.responseId, responseIds),
     });
 
     const interviewSessionIds = interviewSessions.map((s) => s.id);
@@ -227,8 +227,8 @@ export const list = protectedProcedure
         where: eq(interviewMessageTable.sessionId, session.id),
         columns: { id: true },
       });
-      if (session.vacancyResponseId) {
-        messageCounts.set(session.vacancyResponseId, messages.length);
+      if (session.responseId) {
+        messageCounts.set(session.responseId, messages.length);
       }
     }
 
@@ -249,7 +249,7 @@ export const list = protectedProcedure
 
       const screening = screenings.find((s) => s.responseId === r.id);
       const interviewSession = interviewSessions.find(
-        (s) => s.vacancyResponseId === r.id,
+        (s) => s.responseId === r.id,
       );
       const interviewScoring = interviewSession
         ? interviewScorings.find(

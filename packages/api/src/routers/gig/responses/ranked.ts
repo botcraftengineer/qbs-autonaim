@@ -51,7 +51,7 @@ export const ranked = protectedProcedure
 
     // Получаем ранжированных кандидатов из БД
     const result = await rankingService.getRankedCandidates(
-      input.gigId,
+      input.entityId,
       input.workspaceId,
       {
         minScore: input.minScore,

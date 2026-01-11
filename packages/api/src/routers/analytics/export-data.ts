@@ -44,7 +44,7 @@ export const exportData = protectedProcedure
         workspaceId: input.workspaceId,
         period: input.period,
         format: input.format,
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
       });
 
       // Log audit event
@@ -59,7 +59,7 @@ export const exportData = protectedProcedure
           format: input.format,
           periodFrom: input.period.from.toISOString(),
           periodTo: input.period.to.toISOString(),
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
         },
       });
 

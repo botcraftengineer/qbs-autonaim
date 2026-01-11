@@ -120,7 +120,7 @@ export class GigContextLoader implements ContextLoader {
 
     // Загрузка interview данных (пока остается в старой таблице)
     const interviews: Array<{
-      gigResponseId: string | null;
+      responseId: string | null;
       score: number;
       analysis: string | null;
     }> = [];
@@ -128,9 +128,9 @@ export class GigContextLoader implements ContextLoader {
     if (responseIds.length > 0) {
       for (const responseId of responseIds) {
         const interview = await database.query.interviewScoring.findFirst({
-          where: eq(interviewScoring.gigResponseId, responseId),
+          where: eq(interviewScoring.responseId, responseId),
           columns: {
-            gigResponseId: true,
+            responseId: true,
             score: true,
             analysis: true,
           },
@@ -143,8 +143,8 @@ export class GigContextLoader implements ContextLoader {
 
     const interviewMap = new Map(
       interviews
-        .filter((i) => i.gigResponseId !== null)
-        .map((i) => [i.gigResponseId!, i]),
+        .filter((i) => i.responseId !== null)
+        .map((i) => [i.responseId!, i]),
     );
 
     // Формирование данных кандидатов

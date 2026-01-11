@@ -2,7 +2,7 @@ import {
   interviewMessage,
   interviewSession,
   vacancy,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { and, desc, eq } from "drizzle-orm";
@@ -38,9 +38,9 @@ export const getRecentMessagesRouter = protectedProcedure
       )
       .innerJoin(
         vacancyResponse,
-        eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+        eq(interviewSession.responseId, vacancyResponse.id),
       )
-      .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
+      .innerJoin(vacancy, eq(vacancyResponse.entityId, vacancy.id))
       .where(
         and(
           eq(interviewSession.entityType, "vacancy_response"),

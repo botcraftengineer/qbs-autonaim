@@ -1,6 +1,6 @@
 import {
   interviewSession,
-  vacancyResponse,
+  response as responseTable,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -19,7 +19,7 @@ export const getConversationByResponseIdRouter = protectedProcedure
       ctx.session.user.id,
     );
 
-    const response = await ctx.db.query.vacancyResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(vacancyResponse.id, input.responseId),
     });
 
@@ -32,7 +32,7 @@ export const getConversationByResponseIdRouter = protectedProcedure
 
     // Check workspace access
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancyTable.id, response.vacancyId),
+      where: eq(vacancyTable.id, response.entityId),
       columns: { workspaceId: true },
     });
 
@@ -44,7 +44,7 @@ export const getConversationByResponseIdRouter = protectedProcedure
     }
 
     const session = await ctx.db.query.interviewSession.findFirst({
-      where: eq(interviewSession.vacancyResponseId, input.responseId),
+      where: eq(interviewSession.responseId, input.responseId),
     });
 
     return session;

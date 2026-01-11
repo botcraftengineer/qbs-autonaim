@@ -97,7 +97,7 @@ export const sendMessage = publicProcedure
         generationName: "prequalification-dialogue",
         metadata: {
           sessionId: input.sessionId,
-          vacancyId: dialogueContext.vacancyId,
+          vacancyId: dialogueContext.entityId,
         },
       });
 

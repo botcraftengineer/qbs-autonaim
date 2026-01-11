@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { gigResponse, interviewSession } from "@qbs-autonaim/db/schema";
+import { response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -25,7 +25,7 @@ export const get = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.gigResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(gigResponse.id, input.responseId),
       with: {
         screening: true,
@@ -51,7 +51,7 @@ export const get = protectedProcedure
 
     // Получаем interviewSession с сообщениями
     const sessionData = await ctx.db.query.interviewSession.findFirst({
-      where: eq(interviewSession.gigResponseId, input.responseId),
+      where: eq(interviewSession.responseId, input.responseId),
       with: {
         messages: {
           with: {

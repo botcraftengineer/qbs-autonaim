@@ -2,7 +2,7 @@ import { desc, eq } from "@qbs-autonaim/db";
 import {
   interviewMessage,
   interviewSession,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -32,7 +32,7 @@ export const listMessages = protectedProcedure
 
     // Find interview session for this vacancy response
     const interview = await ctx.db.query.interviewSession.findFirst({
-      where: eq(interviewSession.vacancyResponseId, input.candidateId),
+      where: eq(interviewSession.responseId, input.candidateId),
     });
 
     if (!interview) {
@@ -40,8 +40,8 @@ export const listMessages = protectedProcedure
     }
 
     // Get vacancy response for candidate name
-    const response = await ctx.db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, input.candidateId),
+    const response = await ctx.db.query.response.findFirst({
+      where: eq(responseTable.id, input.candidateId),
       columns: { candidateName: true },
     });
 

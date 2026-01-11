@@ -93,21 +93,21 @@ export const chat = protectedProcedure
     }
 
     // Загружаем настройки компании (Requirements: 7.5)
-    const companySettings = await ctx.db.query.companySettings.findFirst({
+    const botSettings = await ctx.db.query.botSettings.findFirst({
       where: (cs, { eq }) => eq(cs.workspaceId, workspaceId),
     });
 
     // Преобразуем настройки из БД в формат для агентов
-    const recruiterCompanySettings = mapDBSettingsToRecruiterSettings(
-      companySettings
+    const recruiterbotSettings = mapDBSettingsToRecruiterSettings(
+      botSettings
         ? {
-            id: companySettings.id,
-            workspaceId: companySettings.workspaceId,
-            name: companySettings.name,
-            website: companySettings.website,
-            description: companySettings.description,
-            botName: companySettings.botName,
-            botRole: companySettings.botRole,
+            id: typeof botSettings.id,
+            workspaceId: typeof botSettings.workspaceId,
+            name: typeof botSettings.name,
+            website: typeof botSettings.website,
+            description: typeof botSettings.description,
+            botName: typeof botSettings.botName,
+            botRole: typeof botSettings.botRole,
           }
         : null,
     );
@@ -178,7 +178,7 @@ export const chat = protectedProcedure
           candidateId,
           conversationHistory: history,
         },
-        recruiterCompanySettings,
+        recruiterbotSettings,
         enqueueEvent,
       )
       .then((output) => {

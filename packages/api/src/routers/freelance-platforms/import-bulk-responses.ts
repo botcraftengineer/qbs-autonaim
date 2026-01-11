@@ -35,12 +35,12 @@ export const importBulkResponses = protectedProcedure
     try {
       // Проверка существования вакансии
       const existingVacancy = await ctx.db.query.vacancy.findFirst({
-        where: (vacancy, { eq }) => eq(vacancy.id, input.vacancyId),
+        where: (vacancy, { eq }) => eq(vacancy.id, input.entityId),
       });
 
       if (!existingVacancy) {
         throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
         });
       }
 
@@ -52,7 +52,7 @@ export const importBulkResponses = protectedProcedure
 
       if (!hasAccess) {
         throw await errorHandler.handleAuthorizationError("вакансии", {
-          vacancyId: input.vacancyId,
+          vacancyId: input.entityId,
           workspaceId: existingVacancy.workspaceId,
           userId: ctx.session.user.id,
         });
@@ -66,7 +66,7 @@ export const importBulkResponses = protectedProcedure
         throw await errorHandler.handleValidationError(
           "Не удалось распарсить отклики из предоставленного текста",
           {
-            vacancyId: input.vacancyId,
+            vacancyId: input.entityId,
             textLength: input.rawText.length,
           },
         );
@@ -109,7 +109,7 @@ export const importBulkResponses = protectedProcedure
           // Проверка дубликатов по platformProfileUrl + vacancyId
           const existingResponse = await ctx.db.query.response.findFirst({
             where: and(
-              eq(responseTable.entityId, input.vacancyId),
+              eq(responseTable.entityId, input.entityId),
               eq(responseTable.entityType, "vacancy"),
               eq(responseTable.profileUrl, parsed.contactInfo.platformProfile),
             ),
@@ -131,7 +131,7 @@ export const importBulkResponses = protectedProcedure
           const [createdResponse] = await ctx.db
             .insert(responseTable)
             .values({
-              entityId: input.vacancyId,
+              entityId: input.entityId,
               entityType: "vacancy",
               candidateId: parsed.contactInfo.platformProfile,
               candidateName: parsed.freelancerName,
@@ -181,7 +181,7 @@ export const importBulkResponses = protectedProcedure
             message: `Failed to import response: ${error instanceof Error ? error.message : "Unknown error"}`,
             userMessage: "Ошибка при импорте отклика",
             context: {
-              vacancyId: input.vacancyId,
+              vacancyId: input.entityId,
               freelancerName: parsed.freelancerName,
               platformProfileUrl: parsed.contactInfo.platformProfile,
             },
@@ -194,7 +194,7 @@ export const importBulkResponses = protectedProcedure
 
       // Создаём запись в истории импорта
       await ctx.db.insert(freelanceImportHistory).values({
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         importedBy: ctx.session.user.id,
         importMode: "BULK",
         platformSource: input.platformSource,
@@ -217,7 +217,7 @@ export const importBulkResponses = protectedProcedure
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
-        vacancyId: input.vacancyId,
+        vacancyId: input.entityId,
         operation: "import_bulk_responses",
       });
     }

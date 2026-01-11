@@ -2,7 +2,7 @@ import {
   eq,
   interviewMessage,
   interviewSession,
-  vacancyResponse,
+  response as responseTable,
 } from "@qbs-autonaim/db";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
@@ -46,7 +46,7 @@ export const sendMessageRouter = protectedProcedure
       .from(interviewSession)
       .leftJoin(
         vacancyResponse,
-        eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+        eq(interviewSession.responseId, vacancyResponse.id),
       )
       .where(eq(interviewSession.id, input.sessionId))
       .limit(1);

@@ -1,4 +1,4 @@
-import { companySettings, eq } from "@qbs-autonaim/db";
+import { botSettings, eq } from "@qbs-autonaim/db";
 import {
   companyPartialSchema,
   workspaceIdSchema,
@@ -27,8 +27,8 @@ export const updatePartial = protectedProcedure
       });
     }
 
-    const existing = await ctx.db.query.companySettings.findFirst({
-      where: eq(companySettings.workspaceId, input.workspaceId),
+    const existing = await ctx.db.query.botSettings.findFirst({
+      where: eq(botSettings.workspaceId, input.workspaceId),
     });
 
     if (!existing) {
@@ -51,9 +51,9 @@ export const updatePartial = protectedProcedure
       updateData.botRole = input.data.botRole;
 
     const [updated] = await ctx.db
-      .update(companySettings)
+      .update(botSettings)
       .set(updateData)
-      .where(eq(companySettings.id, existing.id))
+      .where(eq(botSettings.id, existing.id))
       .returning();
 
     return updated;

@@ -1,5 +1,5 @@
 import { eq } from "@qbs-autonaim/db";
-import { gigResponse } from "@qbs-autonaim/db/schema";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -35,7 +35,7 @@ export const update = protectedProcedure
       });
     }
 
-    const response = await ctx.db.query.gigResponse.findFirst({
+    const response = await ctx.db.query.response.findFirst({
       where: eq(gigResponse.id, input.responseId),
       with: {
         gig: true,
