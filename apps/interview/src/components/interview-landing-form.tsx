@@ -11,7 +11,7 @@ const platformProfileUrlSchema = z
   .string()
   .min(1, "URL профиля обязателен")
   .regex(
-    /(kwork\.ru|fl\.ru|weblancer\.net|upwork\.com|freelancer\.com)/i,
+    /(kwork\.ru|fl\.ru|freelance\.ru)/i,
     "Некорректный URL профиля платформы",
   );
 
@@ -40,10 +40,8 @@ const getPlatformPlaceholder = (source: string): string => {
       return "https://kwork.ru/user/username…";
     case "fl":
       return "https://fl.ru/users/username/…";
-    case "weblancer":
-      return "https://weblancer.net/users/username/…";
-    case "upwork":
-      return "https://upwork.com/freelancers/username…";
+    case "freelance":
+      return "https://freelance.ru/users/username/…";
     default:
       return "https://kwork.ru/user/username…";
   }

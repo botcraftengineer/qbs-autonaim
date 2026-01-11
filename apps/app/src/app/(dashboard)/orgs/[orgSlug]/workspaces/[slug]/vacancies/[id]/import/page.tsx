@@ -72,10 +72,7 @@ export default function ImportResponsesPage() {
   const platformSource = vacancy?.source as
     | "kwork"
     | "fl"
-    | "weblancer"
-    | "upwork"
-    | "freelancer"
-    | "fiverr"
+    | "freelance"
     | undefined;
 
   // Мутация для импорта

@@ -24,12 +24,12 @@ export interface BaseAgentContext {
     phone?: string;
     language?: string; // Язык резюме: "ru", "en", и т.д.
   };
-  // Настройки компании
-  companySettings?: {
+  // Настройки бота
+  botSettings?: {
     botName?: string;
     botRole?: string;
-    name?: string;
-    description?: string;
+    companyName?: string;
+    companyDescription?: string;
   };
   // Настройки вакансии
   customBotInstructions?: string | null;

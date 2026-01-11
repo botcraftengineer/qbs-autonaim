@@ -31,7 +31,7 @@ const platformProfileUrlSchema = z
   .string()
   .min(1, "URL профиля обязателен")
   .regex(
-    /(kwork\.ru|fl\.ru|weblancer\.net|upwork\.com|freelancer\.com)/i,
+    /(kwork\.ru|fl\.ru|freelance\.ru)/i,
     "Некорректный URL профиля платформы",
   );
 

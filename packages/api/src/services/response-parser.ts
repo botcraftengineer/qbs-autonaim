@@ -60,12 +60,8 @@ export class ResponseParser {
       pattern: /(?:https?:\/\/)?(?:www\.)?fl\.ru\/users\/[\w-]+/gi,
     },
     {
-      name: "weblancer",
-      pattern: /(?:https?:\/\/)?(?:www\.)?weblancer\.net\/users\/[\w-]+/gi,
-    },
-    {
-      name: "upwork",
-      pattern: /(?:https?:\/\/)?(?:www\.)?upwork\.com\/freelancers\/[\w-]+/gi,
+      name: "freelance",
+      pattern: /(?:https?:\/\/)?(?:www\.)?freelance\.ru\/users\/[\w-]+/gi,
     },
   ];
 

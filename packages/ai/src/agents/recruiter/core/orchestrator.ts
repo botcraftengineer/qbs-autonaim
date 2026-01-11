@@ -1215,12 +1215,6 @@ ${candidatesList}
         content: msg.content,
         timestamp: msg.timestamp,
       })),
-      companySettings: {
-        botName: companySettings.botName,
-        botRole: companySettings.botRole,
-        name: companySettings.name,
-        description: companySettings.description,
-      },
 
       // RecruiterAgentContext fields
       workspaceId: input.workspaceId,

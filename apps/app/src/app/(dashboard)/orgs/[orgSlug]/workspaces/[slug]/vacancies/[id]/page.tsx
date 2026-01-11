@@ -88,13 +88,11 @@ ${data.interviewLink.url}
     const platforms: Record<string, string> = {
       kwork: "Kwork",
       fl: "FL.ru",
-      weblancer: "Weblancer",
-      upwork: "Upwork",
-      freelancer: "Freelancer",
-      fiverr: "Fiverr",
+      freelance: "Freelance.ru",
       hh: "HeadHunter",
       avito: "Avito",
       superjob: "SuperJob",
+      habr: "Хабр Карьера",
     };
     return platforms[source] || source;
   };
@@ -124,14 +122,9 @@ ${data.interviewLink.url}
   }
 
   const { vacancy, responseStats, interviewLink } = data;
-  const isFreelancePlatform = [
-    "kwork",
-    "fl",
-    "weblancer",
-    "upwork",
-    "freelancer",
-    "fiverr",
-  ].includes(vacancy.source);
+  const isFreelancePlatform = ["kwork", "fl", "freelance"].includes(
+    vacancy.source,
+  );
 
   return (
     <div className="space-y-4">

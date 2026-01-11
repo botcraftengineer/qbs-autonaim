@@ -4,7 +4,6 @@ export * from "./candidate";
 export * from "./chat";
 export * from "./company";
 export * from "./custom-domain";
-export * from "./document";
 export * from "./file";
 export * from "./gig";
 export * from "./integration";

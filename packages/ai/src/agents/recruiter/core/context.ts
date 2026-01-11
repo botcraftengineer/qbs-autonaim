@@ -122,12 +122,6 @@ export class RecruiterContextManager {
       vacancyRequirements: input.vacancy?.requirements
         ? JSON.stringify(input.vacancy.requirements)
         : undefined,
-      companySettings: {
-        botName: companySettings.botName,
-        botRole: companySettings.botRole,
-        name: companySettings.name,
-        description: companySettings.description,
-      },
       customBotInstructions: input.vacancy?.customBotInstructions,
       customInterviewQuestions: input.vacancy?.customInterviewQuestions,
       customOrganizationalQuestions:
