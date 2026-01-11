@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
+﻿import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
 import {
   interviewScoring as interviewScoringTable,
   response as responseTable,
@@ -52,8 +52,8 @@ export const list = protectedProcedure
       inArray(responseTable.entityId, vacancyIds),
     ];
 
-    if (input.entityId) {
-      conditions.push(eq(responseTable.entityId, input.entityId));
+    if (input.vacancyId) {
+      conditions.push(eq(responseTable.entityId, input.vacancyId));
     }
 
     if (input.cursor) {

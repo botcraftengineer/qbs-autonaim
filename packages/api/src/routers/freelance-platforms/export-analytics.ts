@@ -1,4 +1,4 @@
-import { and, eq, gte, lte, sql } from "@qbs-autonaim/db";
+﻿import { and, eq, gte, lte, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
   response as responseTable,
@@ -90,7 +90,7 @@ export const exportAnalytics = protectedProcedure
       await ctx.auditLogger.logDataExport({
         userId: ctx.session.user.id,
         resourceType: "VACANCY",
-        resourceId: row.entityId,
+        resourceId: row.vacancyId,
         exportFormat: "csv",
         ipAddress: ctx.ipAddress,
         userAgent: ctx.userAgent,
@@ -113,7 +113,7 @@ export const exportAnalytics = protectedProcedure
     ];
 
     const rows = analyticsData.map((row) => [
-      row.entityId,
+      row.vacancyId,
       `"${row.vacancyTitle.replace(/"/g, '""')}"`, // Экранирование кавычек
       row.platform,
       new Date(row.vacancyCreatedAt).toLocaleDateString("ru-RU"),

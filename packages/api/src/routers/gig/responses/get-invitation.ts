@@ -27,10 +27,8 @@ export const getInvitation = protectedProcedure
 
     // Получаем отклик с гигом
     const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, input.responseId),
-      with: {
-        gig: true,
-      },
+      where: eq(responseTable.id, input.responseId),
+      ,
     });
 
     if (!response) {

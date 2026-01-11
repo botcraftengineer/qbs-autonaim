@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "@qbs-autonaim/db";
+﻿import { and, eq, inArray } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -19,15 +19,15 @@ export const vacancyStats = protectedProcedure
 
     const workspaceVacancyIds = new Set(vacancies.map((v) => v.id));
 
-    if (input.entityId && !workspaceVacancyIds.has(input.entityId)) {
+    if (input.vacancyId && !workspaceVacancyIds.has(input.vacancyId)) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Вакансия не найдена в указанном workspace",
       });
     }
 
-    const vacancyIds = input.entityId
-      ? [input.entityId]
+    const vacancyIds = input.vacancyId
+      ? [input.vacancyId]
       : Array.from(workspaceVacancyIds);
 
     if (vacancyIds.length === 0) {

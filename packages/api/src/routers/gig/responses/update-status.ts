@@ -33,10 +33,8 @@ export const updateStatus = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, input.responseId),
-      with: {
-        gig: true,
-      },
+      where: eq(responseTable.id, input.responseId),
+      ,
     });
 
     if (!response) {
@@ -69,9 +67,9 @@ export const updateStatus = protectedProcedure
     }
 
     const [updated] = await ctx.db
-      .update(response)
+      .update(responseTable)
       .set(patch)
-      .where(eq(response.id, input.responseId))
+      .where(eq(responseTable.id, input.responseId))
       .returning();
 
     // Обновляем счетчик новых откликов, если статус изменился

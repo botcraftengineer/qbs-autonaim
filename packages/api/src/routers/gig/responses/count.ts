@@ -44,7 +44,7 @@ export const countResponses = protectedProcedure
     const totalResult = await ctx.db
       .select({ count: count() })
       .from(response)
-      .where(eq(response.entityId, input.gigId));
+      .where(eq(responseTable.entityId, input.gigId));
 
     const total = totalResult[0]?.count ?? 0;
 
@@ -53,7 +53,7 @@ export const countResponses = protectedProcedure
       .select({ count: count() })
       .from(response)
       .where(
-        and(eq(response.entityId, input.gigId), eq(response.status, "NEW")),
+        and(eq(responseTable.entityId, input.gigId), eq(responseTable.status, "NEW")),
       );
 
     const newCount = newResult[0]?.count ?? 0;

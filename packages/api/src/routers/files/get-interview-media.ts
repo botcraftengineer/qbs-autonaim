@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import { gig, gigInterviewMedia } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -42,7 +42,7 @@ export const getInterviewMedia = protectedProcedure
 
     // Получаем gig
     const gigRecord = await ctx.db.query.gig.findFirst({
-      where: eq(gig.id, input.entityId),
+      where: eq(gig.id, input.gigId),
     });
 
     if (!gigRecord) {
@@ -61,7 +61,7 @@ export const getInterviewMedia = protectedProcedure
 
     // Получаем медиафайлы через join table с relations
     const mediaRecords = await ctx.db.query.gigInterviewMedia.findMany({
-      where: eq(gigInterviewMedia.entityId, input.entityId),
+      where: eq(gigInterviewMedia.gigId, input.gigId),
       with: {
         file: true,
       },

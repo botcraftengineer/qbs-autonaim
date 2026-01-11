@@ -27,10 +27,8 @@ export const sendMessage = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, input.responseId),
-      with: {
-        gig: true,
-      },
+      where: eq(responseTable.id, input.responseId),
+      ,
     });
 
     if (!response) {
@@ -58,12 +56,12 @@ export const sendMessage = protectedProcedure
     // TODO: Integrate with telegram sending system
     // For now, we'll just update the response status to indicate message was sent
     const [updated] = await ctx.db
-      .update(response)
+      .update(responseTable)
       .set({
         status: "EVALUATED",
         updatedAt: new Date(),
       })
-      .where(eq(response.id, input.responseId))
+      .where(eq(responseTable.id, input.responseId))
       .returning();
 
     return updated;

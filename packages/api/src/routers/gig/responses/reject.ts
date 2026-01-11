@@ -26,10 +26,8 @@ export const reject = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, input.responseId),
-      with: {
-        gig: true,
-      },
+      where: eq(responseTable.id, input.responseId),
+      ,
     });
 
     if (!response) {
@@ -49,13 +47,13 @@ export const reject = protectedProcedure
     const wasNew = response.status === "NEW";
 
     const [updated] = await ctx.db
-      .update(response)
+      .update(responseTable)
       .set({
         status: "EVALUATED",
         hrSelectionStatus: "REJECTED",
         updatedAt: new Date(),
       })
-      .where(eq(response.id, input.responseId))
+      .where(eq(responseTable.id, input.responseId))
       .returning();
 
     // Если отклик был NEW, уменьшаем счетчик новых откликов

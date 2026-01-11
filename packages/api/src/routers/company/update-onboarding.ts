@@ -1,4 +1,4 @@
-import { botSettings, eq } from "@qbs-autonaim/db";
+﻿import { botSettings, eq } from "@qbs-autonaim/db";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -65,7 +65,7 @@ export const updateOnboarding = protectedProcedure
       .insert(botSettings)
       .values({
         workspaceId: input.workspaceId,
-        name: "Моя компания", // Значение по умолчанию
+        companyName: "Моя компания", // Значение по умолчанию
         ...updateData,
       })
       .returning();

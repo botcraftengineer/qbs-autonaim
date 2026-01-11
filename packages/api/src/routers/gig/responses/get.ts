@@ -26,12 +26,8 @@ export const get = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, input.responseId),
-      with: {
-        screening: true,
-        gig: true,
-        interviewScoring: true,
-      },
+      where: eq(responseTable.id, input.responseId),
+      with: { globalCandidate: true },
     });
 
     if (!response) {

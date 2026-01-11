@@ -1,8 +1,8 @@
 ﻿import { and, eq, sql } from "@qbs-autonaim/db";
 import {
-  type response,
   gig,
   importSourceValues,
+  type Response,
   response as responseTable,
 } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
@@ -65,8 +65,9 @@ export const create = protectedProcedure
     // Проверяем дубликат
     const existingResponse = await ctx.db.query.response.findFirst({
       where: and(
-        eq(response.entityId, input.gigId),
-        eq(response.candidateId, input.candidateId),
+        eq(responseTable.entityType, "gig"),
+        eq(responseTable.entityId, input.gigId),
+        eq(responseTable.candidateId, input.candidateId),
       ),
     });
 
@@ -77,12 +78,13 @@ export const create = protectedProcedure
       });
     }
 
-    let newResponse: response | undefined;
+    let newResponse: Response | undefined;
     try {
       const result = await ctx.db
-        .insert(response)
+        .insert(responseTable)
         .values({
-          gigId: input.gigId,
+          entityType: "gig",
+          entityId: input.gigId,
           candidateId: input.candidateId,
           candidateName: input.candidateName,
           profileUrl: input.profileUrl,
@@ -90,7 +92,6 @@ export const create = protectedProcedure
           phone: input.phone,
           email: input.email,
           proposedPrice: input.proposedPrice,
-
           proposedDeliveryDays: input.proposedDeliveryDays,
           coverLetter: input.coverLetter,
           portfolioLinks: input.portfolioLinks,

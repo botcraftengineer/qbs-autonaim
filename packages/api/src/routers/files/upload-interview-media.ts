@@ -1,4 +1,4 @@
-import { db } from "@qbs-autonaim/db/client";
+﻿import { db } from "@qbs-autonaim/db/client";
 import { file, gigInterviewMedia } from "@qbs-autonaim/db/schema";
 import { uploadFile } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -50,7 +50,7 @@ export const uploadInterviewMedia = protectedProcedure
 
     // Проверяем что gig принадлежит workspace
     const gigRecord = await ctx.db.query.gig.findFirst({
-      where: (gigs, { eq }) => eq(gigs.id, input.entityId),
+      where: (gigs, { eq }) => eq(gigs.id, input.gigId),
     });
 
     if (!gigRecord) {
@@ -116,7 +116,7 @@ export const uploadInterviewMedia = protectedProcedure
 
       // Связываем файл с gig через join-таблицу
       await db.insert(gigInterviewMedia).values({
-        gigId: input.entityId,
+        gigId: input.gigId,
         fileId: fileRecord.id,
       });
 

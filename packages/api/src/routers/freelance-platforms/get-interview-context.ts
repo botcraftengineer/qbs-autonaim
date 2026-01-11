@@ -23,24 +23,20 @@ export const getInterviewContext = publicProcedure
     const session = await ctx.db.query.interviewSession.findFirst({
       where: (interviewSession, { eq }) =>
         eq(interviewSession.id, input.interviewSessionId),
-      with: { response: true,
-        response: {
-          with: {
-            gig: true,
-          },
-        },
+      with: {
+        response: true,
       },
     });
 
-    if (!session) {
+    if (!session || !session.response) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Интервью не найдено",
       });
     }
 
-    // Если это интервью по вакансии
-    if (session.response) {
+    // Определяем тип сущности и загружаем соответствующие данные
+    if (session.response.entityType === "vacancy") {
       const vacancy = await ctx.db.query.vacancy.findFirst({
         where: eq(vacancyTable.id, session.response.entityId),
       });
@@ -57,26 +53,31 @@ export const getInterviewContext = publicProcedure
     }
 
     // Если это интервью по гигу
-    if (session.response?.gig) {
-      const gig = session.response.gig;
-      return {
-        type: "gig" as const,
-        title: gig.title,
-        description: gig.description,
-        requirements: gig.requirements,
-        gigType: gig.type,
-        budget:
-          gig.budgetMin || gig.budgetMax
-            ? {
-                min: gig.budgetMin,
-                max: gig.budgetMax,
-                currency: "RUB",
-              }
-            : null,
-        deadline: gig.deadline,
-        estimatedDuration: gig.estimatedDuration,
-        customInterviewQuestions: gig.customInterviewQuestions,
-      };
+    if (session.response.entityType === "gig") {
+      const gig = await ctx.db.query.gig.findFirst({
+        where: (g, { eq }) => eq(g.id, session.response.entityId),
+      });
+
+      if (gig) {
+        return {
+          type: "gig" as const,
+          title: gig.title,
+          description: gig.description,
+          requirements: gig.requirements,
+          gigType: gig.type,
+          budget:
+            gig.budgetMin || gig.budgetMax
+              ? {
+                  min: gig.budgetMin,
+                  max: gig.budgetMax,
+                  currency: "RUB",
+                }
+              : null,
+          deadline: gig.deadline,
+          estimatedDuration: gig.estimatedDuration,
+          customInterviewQuestions: gig.customInterviewQuestions,
+        };
+      }
     }
 
     throw new TRPCError({

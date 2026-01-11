@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "@qbs-autonaim/db";
+﻿import { and, eq, inArray } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -19,9 +19,9 @@ export const analytics = protectedProcedure
 
     const workspaceVacancyIds = vacancies.map((v) => v.id);
 
-    const vacancyIds = input.entityId
-      ? workspaceVacancyIds.includes(input.entityId)
-        ? [input.entityId]
+    const vacancyIds = input.vacancyId
+      ? workspaceVacancyIds.includes(input.vacancyId)
+        ? [input.vacancyId]
         : []
       : workspaceVacancyIds;
 

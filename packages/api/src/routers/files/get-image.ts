@@ -74,7 +74,7 @@ export const getImageUrl = protectedProcedure
     // Query all responses to get their vacancyIds
     const responses = await ctx.db.query.response.findMany({
       where: (response, { inArray }) => inArray(response.id, responseIds),
-      columns: { id: true, vacancyId: true },
+      columns: { id: true, entityId: true, entityType: true },
     });
 
     const vacancyIds = [...new Set(responses.map((r) => r.entityId))].filter(

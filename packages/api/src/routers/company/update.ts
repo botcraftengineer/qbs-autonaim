@@ -35,9 +35,9 @@ export const update = protectedProcedure
       const [updated] = await ctx.db
         .update(botSettings)
         .set({
-          name: input.data.name,
-          website: input.data.website || null,
-          description: input.data.description || null,
+          companyName: input.data.name,
+          companyWebsite: input.data.website || null,
+          companyDescription: input.data.description || null,
           botName: input.data.botName,
           botRole: input.data.botRole,
           updatedAt: new Date(),
@@ -53,9 +53,9 @@ export const update = protectedProcedure
       .insert(botSettings)
       .values({
         workspaceId: input.workspaceId,
-        name: input.data.name,
-        website: input.data.website || null,
-        description: input.data.description || null,
+        companyName: input.data.name,
+        companyWebsite: input.data.website || null,
+        companyDescription: input.data.description || null,
         botName: input.data.botName,
         botRole: input.data.botRole,
       })

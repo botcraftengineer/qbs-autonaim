@@ -41,7 +41,7 @@ export const list = protectedProcedure
     }
 
     return ctx.db.query.response.findMany({
-      where: eq(response.entityId, input.gigId),
+      where: eq(responseTable.entityId, input.gigId),
       with: {
         screening: true,
         interviewScoring: true,
