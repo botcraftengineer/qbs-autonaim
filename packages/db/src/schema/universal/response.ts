@@ -60,9 +60,7 @@ export const response = pgTable(
 
     // Предложение (для gig)
     proposedPrice: integer("proposed_price"),
-    proposedCurrency: varchar("proposed_currency", { length: 3 }).default(
-      "RUB",
-    ),
+
     proposedDeliveryDays: integer("proposed_delivery_days"),
 
     // Ожидания (для vacancy)
@@ -162,7 +160,7 @@ export const CreateResponseSchema = createInsertSchema(response, {
   phone: z.string().max(50).optional(),
   email: z.string().email().max(255).optional(),
   proposedPrice: z.number().int().positive().optional(),
-  proposedCurrency: z.string().length(3).default("RUB"),
+
   proposedDeliveryDays: z.number().int().positive().optional(),
   salaryExpectations: z.string().max(200).optional(),
   resumeId: z.string().max(100).optional(),

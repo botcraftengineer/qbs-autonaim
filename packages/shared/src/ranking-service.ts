@@ -75,7 +75,7 @@ export class RankingService {
         requirements: true,
         budgetMin: true,
         budgetMax: true,
-        budgetCurrency: true,
+
         deadline: true,
       },
     });
@@ -91,7 +91,7 @@ export class RankingService {
         id: true,
         candidateName: true,
         proposedPrice: true,
-        proposedCurrency: true,
+
         proposedDeliveryDays: true,
         coverLetter: true,
         experience: true,
@@ -115,7 +115,7 @@ export class RankingService {
       id: c.id,
       candidateName: c.candidateName,
       proposedPrice: c.proposedPrice,
-      proposedCurrency: c.proposedCurrency ?? "RUB",
+
       proposedDeliveryDays: c.proposedDeliveryDays,
       coverLetter: c.coverLetter,
       experience: c.experience,
@@ -142,7 +142,7 @@ export class RankingService {
     const gigBudget: GigBudget = {
       budgetMin: gigData.budgetMin,
       budgetMax: gigData.budgetMax,
-      budgetCurrency: gigData.budgetCurrency ?? "RUB",
+
       deadline: gigData.deadline,
     };
 

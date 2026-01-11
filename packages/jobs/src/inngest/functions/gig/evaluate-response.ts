@@ -114,7 +114,6 @@ export const evaluateGigResponseFunction = inngest.createFunction(
         interviewSessionId: chatSessionId,
         gigResponseId: responseId,
         score: scoring.score,
-        detailedScore: scoring.detailedScore,
         analysis: scoring.analysis,
       });
 
@@ -122,7 +121,6 @@ export const evaluateGigResponseFunction = inngest.createFunction(
         chatSessionId,
         responseId,
         score: scoring.score,
-        detailedScore: scoring.detailedScore,
       });
     });
 
@@ -161,7 +159,6 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       responseId,
       scoring: {
         score: scoring.score,
-        detailedScore: scoring.detailedScore,
       },
     };
   },

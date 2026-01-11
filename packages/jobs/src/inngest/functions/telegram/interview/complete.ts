@@ -69,14 +69,12 @@ export const completeInterviewFunction = inngest.createFunction(
             interviewSessionId: chatSessionId,
             responseId,
             score: Math.round(scoring.score),
-            detailedScore: Math.round(scoring.detailedScore),
             analysis: scoring.analysis,
           })
           .onConflictDoUpdate({
             target: interviewScoring.interviewSessionId,
             set: {
               score: sql`excluded.score`,
-              detailedScore: sql`excluded.detailed_score`,
               analysis: sql`excluded.analysis`,
             },
           });
@@ -209,14 +207,14 @@ export const completeInterviewFunction = inngest.createFunction(
 
           await db
             .update(vacancyResponse)
-            .set({ salaryExpectations: trimmedSalary })
+            .set({ salaryExpectationsComment: trimmedSalary })
             .where(eq(vacancyResponse.id, responseId));
 
           await logResponseEvent({
             db,
             responseId,
             eventType: "SALARY_UPDATED",
-            oldValue: current?.salaryExpectations,
+            oldValue: current?.salaryExpectationsComment,
             newValue: trimmedSalary,
           });
         }
@@ -273,7 +271,6 @@ export const completeInterviewFunction = inngest.createFunction(
           where: eq(interviewScoring.interviewSessionId, chatSessionId),
         });
         score = scoring?.score ?? undefined;
-        detailedScore = scoring?.detailedScore ?? undefined;
       }
 
       const conversationHistory =

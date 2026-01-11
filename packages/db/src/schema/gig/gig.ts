@@ -75,7 +75,7 @@ export const gig = pgTable(
     // Бюджет
     budgetMin: integer("budget_min"),
     budgetMax: integer("budget_max"),
-    budgetCurrency: varchar("budget_currency", { length: 3 }).default("RUB"),
+
 
     // Сроки
     deadline: timestamp("deadline", { withTimezone: true, mode: "date" }),
@@ -145,7 +145,7 @@ export const CreateGigSchema = createInsertSchema(gig, {
   type: z.enum(gigTypeValues).default("OTHER"),
   budgetMin: z.number().int().positive().optional(),
   budgetMax: z.number().int().positive().optional(),
-  budgetCurrency: z.string().length(3).default("RUB"),
+
   deadline: z.coerce.date().optional(),
   estimatedDuration: z.string().max(100).optional(),
   source: z.enum(platformSourceValues).default("MANUAL"),

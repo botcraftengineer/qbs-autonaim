@@ -18,7 +18,7 @@ interface CandidateData {
   candidateId: string;
   candidateName: string | null;
   proposedPrice: number | null;
-  proposedCurrency: string | null;
+
   proposedDeliveryDays: number | null;
   coverLetter: string | null;
   experience: string | null;
@@ -55,7 +55,7 @@ export class GigContextLoader implements ContextLoader {
         type: true,
         budgetMin: true,
         budgetMax: true,
-        budgetCurrency: true,
+
         deadline: true,
         estimatedDuration: true,
         customBotInstructions: true,
@@ -74,7 +74,7 @@ export class GigContextLoader implements ContextLoader {
         candidateId: true,
         candidateName: true,
         proposedPrice: true,
-        proposedCurrency: true,
+
         proposedDeliveryDays: true,
         coverLetter: true,
         experience: true,
@@ -159,7 +159,7 @@ export class GigContextLoader implements ContextLoader {
         candidateId: resp.candidateId,
         candidateName: resp.candidateName,
         proposedPrice: resp.proposedPrice,
-        proposedCurrency: resp.proposedCurrency,
+
         proposedDeliveryDays: resp.proposedDeliveryDays,
         coverLetter: resp.coverLetter,
         experience: resp.experience,
@@ -195,7 +195,7 @@ export class GigContextLoader implements ContextLoader {
         type: gigData.type,
         budgetMin: gigData.budgetMin,
         budgetMax: gigData.budgetMax,
-        budgetCurrency: gigData.budgetCurrency,
+
         deadline: gigData.deadline,
         estimatedDuration: gigData.estimatedDuration,
         customBotInstructions: gigData.customBotInstructions,
@@ -227,15 +227,7 @@ export class GigContextLoader implements ContextLoader {
 
     const pricesInRub = candidates
       .filter((c) => c.proposedPrice !== null)
-      .map((c) => {
-        if (c.proposedCurrency === "USD") {
-          return c.proposedPrice! * 90;
-        }
-        if (c.proposedCurrency === "EUR") {
-          return c.proposedPrice! * 100;
-        }
-        return c.proposedPrice!;
-      });
+      .map((c) => c.proposedPrice!);
     const avgPrice =
       pricesInRub.length > 0
         ? Math.round(

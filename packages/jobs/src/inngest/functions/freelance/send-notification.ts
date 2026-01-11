@@ -210,8 +210,8 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
         const safeTitle = escapeHtml(title);
         const safeProfileUrl = sanitizeUrl(profileUrl);
         const safeErrorMessage = escapeHtml(errorMessage);
-        const safeScore = scoring?.detailedScore
-          ? escapeHtml(String(scoring.detailedScore))
+        const safeScore = scoring?.score
+          ? escapeHtml(String(scoring.score))
           : null;
 
         let message = "";
@@ -229,7 +229,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           htmlMessage += `<p><strong>${isGig ? "Задание" : "Вакансия"}:</strong> ${safeTitle}</p>`;
 
           if (scoring && safeScore) {
-            message += `Оценка: ${scoring.detailedScore}/100\n`;
+            message += `Оценка: ${scoring.score}/100\n`;
             htmlMessage += `<p><strong>Оценка:</strong> ${safeScore}/100</p>`;
           }
 
@@ -246,7 +246,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           htmlMessage += `<p><strong>${isGig ? "Задание" : "Вакансия"}:</strong> ${safeTitle}</p>`;
 
           if (scoring && safeScore) {
-            message += `Оценка: ${scoring.detailedScore}/100 ⭐\n`;
+            message += `Оценка: ${scoring.score}/100 ⭐\n`;
             htmlMessage += `<p><strong>Оценка:</strong> ${safeScore}/100 ⭐</p>`;
           }
 
@@ -282,7 +282,7 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
           profileUrl,
           candidateName,
           title,
-          score: scoring?.detailedScore,
+          score: scoring?.score,
         };
       },
     );

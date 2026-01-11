@@ -21,7 +21,7 @@ const createResponseSchema = z.object({
   phone: z.string().max(50).optional(),
   email: z.email().max(255).optional(),
   proposedPrice: z.number().int().positive().optional(),
-  proposedCurrency: z.string().length(3).default("RUB"),
+
   proposedDeliveryDays: z.number().int().positive().optional(),
   coverLetter: z.string().optional(),
   portfolioLinks: z.array(z.url()).optional(),
@@ -90,7 +90,7 @@ export const create = protectedProcedure
           phone: input.phone,
           email: input.email,
           proposedPrice: input.proposedPrice,
-          proposedCurrency: input.proposedCurrency,
+
           proposedDeliveryDays: input.proposedDeliveryDays,
           coverLetter: input.coverLetter,
           portfolioLinks: input.portfolioLinks,

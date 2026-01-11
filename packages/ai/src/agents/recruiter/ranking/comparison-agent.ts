@@ -54,7 +54,7 @@ export const comparisonAgentInputSchema = z.object({
   gigBudget: z.object({
     budgetMin: z.number().int().nullable().optional(),
     budgetMax: z.number().int().nullable().optional(),
-    budgetCurrency: z.string().default("RUB"),
+
     deadline: z.date().nullable().optional(),
   }),
 });
@@ -198,13 +198,13 @@ ${leadersInfo}
     if (budget.budgetMin !== null && budget.budgetMin !== undefined) {
       if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
         parts.push(
-          `Бюджет: ${budget.budgetMin}-${budget.budgetMax} ${budget.budgetCurrency}`,
+          `Бюджет: ${budget.budgetMin}-${budget.budgetMax} RUB`,
         );
       } else {
-        parts.push(`Бюджет от: ${budget.budgetMin} ${budget.budgetCurrency}`);
+        parts.push(`Бюджет от: ${budget.budgetMin} RUB`);
       }
     } else if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
-      parts.push(`Бюджет до: ${budget.budgetMax} ${budget.budgetCurrency}`);
+      parts.push(`Бюджет до: ${budget.budgetMax} RUB`);
     }
 
     if (budget.deadline) {

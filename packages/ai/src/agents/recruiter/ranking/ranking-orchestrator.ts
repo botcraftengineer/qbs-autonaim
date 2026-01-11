@@ -30,7 +30,7 @@ export const candidateInputSchema = z.object({
   id: z.string(),
   candidateName: z.string().nullable().optional(),
   proposedPrice: z.number().int().nullable().optional(),
-  proposedCurrency: z.string().default("RUB"),
+
   proposedDeliveryDays: z.number().int().nullable().optional(),
   coverLetter: z.string().nullable().optional(),
   experience: z.string().nullable().optional(),
@@ -86,7 +86,7 @@ export type GigRequirements = z.infer<typeof gigRequirementsSchema>;
 export const gigBudgetSchema = z.object({
   budgetMin: z.number().int().nullable().optional(),
   budgetMax: z.number().int().nullable().optional(),
-  budgetCurrency: z.string().default("RUB"),
+
   deadline: z.date().nullable().optional(),
 });
 
@@ -283,7 +283,7 @@ export class RankingOrchestrator {
             id: candidate.id,
             candidateName: candidate.candidateName,
             proposedPrice: candidate.proposedPrice,
-            proposedCurrency: candidate.proposedCurrency,
+
             proposedDeliveryDays: candidate.proposedDeliveryDays,
             coverLetter: candidate.coverLetter,
             experience: candidate.experience,
@@ -423,7 +423,7 @@ export class RankingOrchestrator {
             id: candidate.id,
             candidateName: candidate.candidateName,
             proposedPrice: candidate.proposedPrice,
-            proposedCurrency: candidate.proposedCurrency,
+
             proposedDeliveryDays: candidate.proposedDeliveryDays,
             coverLetter: candidate.coverLetter,
             experience: candidate.experience,

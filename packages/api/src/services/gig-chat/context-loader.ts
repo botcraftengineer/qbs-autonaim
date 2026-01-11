@@ -37,7 +37,7 @@ export interface GigContext {
   type: string;
   budgetMin: number | null;
   budgetMax: number | null;
-  budgetCurrency: string | null;
+
   deadline: Date | null;
   estimatedDuration: string | null;
   customBotInstructions: string | null;
@@ -51,7 +51,7 @@ export interface CandidateContext {
   candidateId: string;
   candidateName: string | null;
   proposedPrice: number | null;
-  proposedCurrency: string | null;
+
   proposedDeliveryDays: number | null;
   coverLetter: string | null;
   experience: string | null;
@@ -107,7 +107,7 @@ export async function loadGigContext(
       type: true,
       budgetMin: true,
       budgetMax: true,
-      budgetCurrency: true,
+
       deadline: true,
       estimatedDuration: true,
       customBotInstructions: true,
@@ -126,7 +126,7 @@ export async function loadGigContext(
     type: gigData.type,
     budgetMin: gigData.budgetMin,
     budgetMax: gigData.budgetMax,
-    budgetCurrency: gigData.budgetCurrency,
+
     deadline: gigData.deadline,
     estimatedDuration: gigData.estimatedDuration,
     customBotInstructions: gigData.customBotInstructions,
@@ -148,7 +148,7 @@ export async function loadCandidatesContext(
       candidateId: true,
       candidateName: true,
       proposedPrice: true,
-      proposedCurrency: true,
+
       proposedDeliveryDays: true,
       coverLetter: true,
       experience: true,
@@ -236,7 +236,7 @@ export async function loadCandidatesContext(
       candidateId: response.candidateId,
       candidateName: response.candidateName,
       proposedPrice: response.proposedPrice,
-      proposedCurrency: response.proposedCurrency,
+
       proposedDeliveryDays: response.proposedDeliveryDays,
       coverLetter: response.coverLetter,
       experience: response.experience,
@@ -295,16 +295,7 @@ function calculateCandidatesStats(
   // Средняя цена
   const pricesInRub = candidates
     .filter((c) => c.proposedPrice !== null)
-    .map((c) => {
-      // Конвертируем в RUB для усреднения (упрощенная логика)
-      if (c.proposedCurrency === "USD") {
-        return c.proposedPrice! * 90; // Примерный курс
-      }
-      if (c.proposedCurrency === "EUR") {
-        return c.proposedPrice! * 100;
-      }
-      return c.proposedPrice!;
-    });
+    .map((c) => c.proposedPrice!);
   const avgPrice =
     pricesInRub.length > 0
       ? Math.round(pricesInRub.reduce((a, b) => a + b, 0) / pricesInRub.length)

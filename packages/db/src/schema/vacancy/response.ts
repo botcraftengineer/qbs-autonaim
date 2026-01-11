@@ -55,6 +55,9 @@ export const vacancyResponse = pgTable(
     // Контактные данные
     ...candidateContactColumns,
 
+    // Опыт и навыки кандидата
+    ...candidateExperienceColumns,
+
     // Файлы кандидата
     ...candidateFileColumns,
 

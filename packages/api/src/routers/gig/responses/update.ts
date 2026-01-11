@@ -15,7 +15,7 @@ export const update = protectedProcedure
       phone: z.string().max(50).nullish(),
       email: z.email().max(255).nullish(),
       proposedPrice: z.number().int().positive().nullish(),
-      proposedCurrency: z.string().length(3).nullish(),
+
       proposedDeliveryDays: z.number().int().positive().nullish(),
       coverLetter: z.string().nullish(),
       experience: z.string().nullish(),

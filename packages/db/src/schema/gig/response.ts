@@ -66,9 +66,7 @@ export const gigResponse = pgTable(
 
     // Предложение кандидата (специфично для gig)
     proposedPrice: integer("proposed_price"),
-    proposedCurrency: varchar("proposed_currency", { length: 3 }).default(
-      "RUB",
-    ),
+
     proposedDeliveryDays: integer("proposed_delivery_days"),
 
     // Сопроводительное письмо
@@ -122,7 +120,7 @@ export const gigResponse = pgTable(
 export const CreateGigResponseSchema = createInsertSchema(gigResponse, {
   candidateId: z.string().max(100),
   proposedPrice: z.number().int().positive().optional(),
-  proposedCurrency: z.string().length(3).default("RUB"),
+
   proposedDeliveryDays: z.number().int().positive().optional(),
   coverLetter: z.string().optional(),
   portfolioLinks: z.string().url().array().optional(),

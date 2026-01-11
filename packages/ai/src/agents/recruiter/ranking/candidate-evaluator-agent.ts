@@ -16,7 +16,7 @@ export const candidateEvaluatorInputSchema = z.object({
     id: z.string(),
     candidateName: z.string().nullable().optional(),
     proposedPrice: z.number().int().nullable().optional(),
-    proposedCurrency: z.string().default("RUB"),
+
     proposedDeliveryDays: z.number().int().nullable().optional(),
     coverLetter: z.string().nullable().optional(),
     experience: z.string().nullable().optional(),
@@ -39,7 +39,7 @@ export const candidateEvaluatorInputSchema = z.object({
   gigBudget: z.object({
     budgetMin: z.number().int().nullable().optional(),
     budgetMax: z.number().int().nullable().optional(),
-    budgetCurrency: z.string().default("RUB"),
+
     deadline: z.date().nullable().optional(),
   }),
 
@@ -183,7 +183,7 @@ ${marketInfo}
       candidate.proposedPrice !== undefined
     ) {
       parts.push(
-        `Предложенная цена: ${candidate.proposedPrice} ${candidate.proposedCurrency}`,
+        `Предложенная цена: ${candidate.proposedPrice} RUB`,
       );
     } else {
       parts.push(`Предложенная цена: не указана`);
@@ -264,13 +264,13 @@ ${marketInfo}
     if (budget.budgetMin !== null && budget.budgetMin !== undefined) {
       if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
         parts.push(
-          `Бюджет: ${budget.budgetMin}-${budget.budgetMax} ${budget.budgetCurrency}`,
+          `Бюджет: ${budget.budgetMin}-${budget.budgetMax} RUB`,
         );
       } else {
-        parts.push(`Бюджет от: ${budget.budgetMin} ${budget.budgetCurrency}`);
+        parts.push(`Бюджет от: ${budget.budgetMin} RUB`);
       }
     } else if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
-      parts.push(`Бюджет до: ${budget.budgetMax} ${budget.budgetCurrency}`);
+      parts.push(`Бюджет до: ${budget.budgetMax} RUB`);
     } else {
       parts.push(`Бюджет: не указан`);
     }

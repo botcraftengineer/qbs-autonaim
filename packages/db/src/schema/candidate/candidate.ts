@@ -13,9 +13,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { organization } from "../organization/organization";
 import { file } from "../file";
-import { platformSourceEnum, platformSourceValues } from "../shared/response-enums";
+import { organization } from "../organization/organization";
+import {
+  platformSourceEnum,
+  platformSourceValues,
+} from "../shared/response-enums";
 import type { StoredProfileData } from "../types";
 
 /**
@@ -71,11 +74,6 @@ export const candidate = pgTable(
     email: varchar("email", { length: 255 }),
     phone: varchar("phone", { length: 50 }),
     telegramUsername: varchar("telegram_username", { length: 100 }),
-    telegramChatId: varchar("telegram_chat_id", { length: 100 }),
-    telegramPinCode: varchar("telegram_pin_code", { length: 4 }),
-    preferredContactMethod: varchar("preferred_contact_method", {
-      length: 20,
-    }).default("telegram"),
     resumeLanguage: varchar("resume_language", { length: 10 }).default("ru"),
 
     // Файлы
@@ -83,14 +81,7 @@ export const candidate = pgTable(
       onDelete: "set null",
     }),
 
-    // Ссылки на внешние ресурсы
-    hhUrl: text("hh_url"), // Ссылка на hh.ru (Main source in RF)
-    habrUrl: text("habr_profile_url"), // Хабр Карьера
-    vkUrl: text("vk_profile_url"), // ВКонтакте
-    githubUrl: text("github_url"),
-    resumeUrl: text("resume_url"), // Файл резюме
-    portfolioUrl: text("portfolio_url"),
-
+    resumeUrl: text("resume_url"),
     // Распаршенные/обогащенные данные
     profileData: jsonb("profile_data").$type<StoredProfileData>(),
     skills: jsonb("skills").$type<string[]>(),
@@ -161,9 +152,6 @@ export const CreateCandidateSchema = createInsertSchema(candidate, {
   location: z.string().max(200).optional(),
   salaryExpectationsAmount: z.number().int().optional(),
   telegramUsername: z.string().max(100).optional(),
-  hhUrl: z.string().url().optional().or(z.literal("")),
-  vkUrl: z.string().url().optional().or(z.literal("")),
-  habrUrl: z.string().url().optional().or(z.literal("")),
   profileData: z.any(),
   skills: z.array(z.string()).optional(),
   experienceYears: z.number().int().min(0).optional(),

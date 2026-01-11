@@ -111,7 +111,7 @@ export const parseNewResumesFunction = inngest.createFunction(
 
     // Запускаем enricher для парсинга резюме
     await step.run("enrich-resumes", async () => {
-      const workspaceId = responses[0]?.vacancy.workspaceId;
+      const workspaceId = responses[0]?.vacancy?.workspaceId;
       if (!workspaceId) {
         throw new Error("workspaceId не найден");
       }

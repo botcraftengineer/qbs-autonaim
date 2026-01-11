@@ -93,8 +93,11 @@ export async function generateFreelanceInvitation(
 
   // Проверяем, что это фриланс-отклик
   if (
-    response.importSource !== "FREELANCE_MANUAL" &&
-    response.importSource !== "FREELANCE_LINK"
+    response.importSource !== "KWORK" &&
+    response.importSource !== "FL_RU" &&
+    response.importSource !== "WEBLANCER" &&
+    response.importSource !== "UPWORK" &&
+    response.importSource !== "FREELANCE_RU"
   ) {
     logger.info(
       `Skipping invitation: not a freelance response (source: ${response.importSource})`,

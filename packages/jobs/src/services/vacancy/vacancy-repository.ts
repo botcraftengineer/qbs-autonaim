@@ -1,5 +1,6 @@
 import { eq, isNull, or } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import type { PlatformSource } from "@qbs-autonaim/db/schema";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import type { VacancyData } from "../../parsers/types";
 import { createLogger, type Result, tryCatch } from "../base";
@@ -15,7 +16,7 @@ interface VacancyDbData {
   workspaceId: string;
   title: string;
   url?: string;
-  source: string;
+  source: PlatformSource;
   externalId?: string;
   views: number;
   responses: number;
@@ -40,7 +41,7 @@ function mapVacancyData(
     workspaceId,
     title: vacancyData.title,
     url: vacancyData.url || undefined,
-    source: vacancyData.source,
+    source: vacancyData.source as PlatformSource,
     externalId: vacancyData.externalId,
     views: Number.parseInt(vacancyData.views, 10) || 0,
     responses: Number.parseInt(vacancyData.responses, 10) || 0,

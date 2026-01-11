@@ -103,7 +103,6 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         console.log("✅ Scoring created", {
           chatSessionId,
           score: result.score,
-          detailedScore: result.detailedScore,
         });
 
         await db
@@ -113,14 +112,12 @@ export const webCompleteInterviewFunction = inngest.createFunction(
             responseId: responseId ?? undefined,
             gigResponseId: gigResponseId ?? undefined,
             score: result.score,
-            detailedScore: result.detailedScore,
             analysis: result.analysis,
           })
           .onConflictDoUpdate({
             target: interviewScoring.interviewSessionId,
             set: {
               score: sql`excluded.score`,
-              detailedScore: sql`excluded.detailed_score`,
               analysis: sql`excluded.analysis`,
             },
           });
@@ -234,7 +231,6 @@ export const webCompleteInterviewFunction = inngest.createFunction(
               notificationType: "INTERVIEW_COMPLETED",
               candidateName: response.candidateName ?? undefined,
               score: scoring.score,
-              detailedScore: scoring.detailedScore,
               profileUrl: response.platformProfileUrl ?? response.resumeUrl,
             },
           });
@@ -250,7 +246,6 @@ export const webCompleteInterviewFunction = inngest.createFunction(
                 notificationType: "HIGH_SCORE_CANDIDATE",
                 candidateName: response.candidateName ?? undefined,
                 score: scoring.score,
-                detailedScore: scoring.detailedScore,
                 profileUrl: response.platformProfileUrl ?? response.resumeUrl,
               },
             });
@@ -258,8 +253,8 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
           console.log("✅ Уведомления отправлены", {
             responseId,
-            detailedScore: scoring.detailedScore,
-            isHighScore: scoring.detailedScore >= 85,
+            score: scoring.score,
+            isHighScore: scoring.score >= 85,
           });
         });
       }
@@ -361,7 +356,6 @@ export const webCompleteInterviewFunction = inngest.createFunction(
               notificationType: "INTERVIEW_COMPLETED",
               candidateName: response.candidateName ?? undefined,
               score: scoring.score,
-              detailedScore: scoring.detailedScore,
               profileUrl: response.profileUrl ?? undefined,
             },
           });
@@ -377,7 +371,6 @@ export const webCompleteInterviewFunction = inngest.createFunction(
                 notificationType: "HIGH_SCORE_CANDIDATE",
                 candidateName: response.candidateName ?? undefined,
                 score: scoring.score,
-                detailedScore: scoring.detailedScore,
                 profileUrl: response.profileUrl ?? undefined,
               },
             });
@@ -385,8 +378,8 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
           console.log("✅ Уведомления для gig отправлены", {
             gigResponseId,
-            detailedScore: scoring.detailedScore,
-            isHighScore: scoring.detailedScore >= 85,
+            score: scoring.score,
+            isHighScore: scoring.score >= 85,
           });
         });
       }

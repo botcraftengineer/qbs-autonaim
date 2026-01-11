@@ -35,7 +35,7 @@ function formatGigContext(gigContext: GigContext): string {
 
   // Бюджет
   if (gigContext.budgetMin !== null || gigContext.budgetMax !== null) {
-    const currency = gigContext.budgetCurrency || "RUB";
+    const currency = "RUB";
     if (gigContext.budgetMin !== null && gigContext.budgetMax !== null) {
       parts.push(
         `**Бюджет:** ${gigContext.budgetMin}-${gigContext.budgetMax} ${currency}`,
@@ -121,7 +121,7 @@ function formatCandidate(candidate: CandidateContext): string {
 
   // Основная информация
   if (candidate.proposedPrice !== null) {
-    const currency = candidate.proposedCurrency || "RUB";
+    const currency = "RUB";
     parts.push(`- **Цена:** ${candidate.proposedPrice} ${currency}`);
   } else {
     parts.push(`- **Цена:** не указана`);

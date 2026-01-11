@@ -10,7 +10,7 @@ const createGigSchema = z.object({
   type: z.enum(gigTypeValues).default("OTHER"),
   budgetMin: z.number().int().positive().optional(),
   budgetMax: z.number().int().positive().optional(),
-  budgetCurrency: z.string().length(3).default("RUB"),
+
   deadline: z.coerce.date().optional(),
   estimatedDuration: z.string().max(100).optional(),
   deliverables: z.string().optional(),
@@ -53,7 +53,7 @@ export const create = protectedProcedure
         type: input.type,
         budgetMin: input.budgetMin,
         budgetMax: input.budgetMax,
-        budgetCurrency: input.budgetCurrency,
+
         deadline: input.deadline ? new Date(input.deadline) : null,
         estimatedDuration: input.estimatedDuration,
         source: "manual",

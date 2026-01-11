@@ -51,7 +51,6 @@ export const parseMissingContactsFunction = inngest.createFunction(
             candidateName: true,
             telegramUsername: true,
             phone: true,
-            experience: true,
             contacts: true,
           },
         });
