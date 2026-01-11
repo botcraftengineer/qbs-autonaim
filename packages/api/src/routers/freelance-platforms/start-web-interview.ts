@@ -1,6 +1,5 @@
 ﻿import { and, eq } from "@qbs-autonaim/db";
 import {
-  response as responseTable,
   interviewMessage,
   interviewSession,
   response as responseTable,
@@ -153,8 +152,9 @@ async function handleVacancyInterview(
   // Проверяем дубликаты
   const existingResponse = await ctx.db.query.response.findFirst({
     where: and(
-      eq(response.entityId, vacancyLink.entityId),
-      eq(response.platformProfileUrl, normalizedProfileUrl),
+      eq(responseTable.entityType, "vacancy"),
+      eq(responseTable.entityId, vacancyLink.entityId),
+      eq(responseTable.platformProfileUrl, normalizedProfileUrl),
     ),
   });
 
@@ -170,9 +170,11 @@ async function handleVacancyInterview(
 
   // Создаём отклик
   const [response] = await ctx.db
-    .insert(response)
+    .insert(responseTable)
     .values({
-      vacancyId: vacancyLink.entityId,
+      entityType: "vacancy",
+      entityId: vacancyLink.entityId,
+      candidateId: normalizedProfileUrl,
       resumeId: normalizedProfileUrl,
       resumeUrl: freelancerInfo.platformProfileUrl,
       candidateName: freelancerInfo.name,
@@ -272,7 +274,7 @@ async function handleGigInterview(
 ) {
   // Получаем гиг
   const gig = await ctx.db.query.gig.findFirst({
-    where: (g, { eq }) => eq(g.id, gigLink.entityId),
+    where: (g, { eq }) => eq(g.id, gigLink.gigId),
     with: {
       workspace: {
         with: {
@@ -284,13 +286,13 @@ async function handleGigInterview(
 
   if (!gig) {
     throw await errorHandler.handleNotFoundError("Задание", {
-      gigId: gigLink.entityId,
+      gigId: gigLink.gigId,
     });
   }
 
   if (!gig.isActive) {
     throw await errorHandler.handleValidationError("Задание закрыто", {
-      gigId: gigLink.entityId,
+      gigId: gigLink.gigId,
     });
   }
 
@@ -302,7 +304,8 @@ async function handleGigInterview(
   const existingResponse = await ctx.db.query.response.findFirst({
     where: (response, { and, eq }) =>
       and(
-        eq(response.entityId, gigLink.entityId),
+        eq(response.entityType, "gig"),
+        eq(response.entityId, gigLink.gigId),
         eq(response.candidateId, normalizedCandidateId),
       ),
   });
@@ -311,7 +314,7 @@ async function handleGigInterview(
     throw await errorHandler.handleConflictError(
       "Вы уже откликнулись на это задание",
       {
-        gigId: gigLink.entityId,
+        gigId: gigLink.gigId,
         candidateId: normalizedCandidateId,
       },
     );
@@ -319,9 +322,10 @@ async function handleGigInterview(
 
   // Создаём отклик для гига
   const [response] = await ctx.db
-    .insert(response)
+    .insert(responseTable)
     .values({
-      gigId: gigLink.entityId,
+      entityType: "gig",
+      entityId: gigLink.gigId,
       candidateId: normalizedCandidateId,
       candidateName: freelancerInfo.name,
       profileUrl: freelancerInfo.platformProfileUrl,
@@ -343,7 +347,7 @@ async function handleGigInterview(
     throw await errorHandler.handleInternalError(
       new Error("Failed to create gig response"),
       {
-        gigId: gigLink.entityId,
+        gigId: gigLink.gigId,
         freelancerName: freelancerInfo.name,
       },
     );

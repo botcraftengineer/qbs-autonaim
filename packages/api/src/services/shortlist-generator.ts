@@ -65,7 +65,7 @@ export class ShortlistGenerator {
     // Получаем все отклики для вакансии
     const responses = await db.query.response.findMany({
       where: (r, { eq, and }) =>
-        and(eq(r.entityType, "vacancy"), eq(r.vacancyId, vacancyId)),
+        and(eq(r.entityType, "vacancy"), eq(r.entityId, vacancyId)),
     });
 
     // Get all screenings separately

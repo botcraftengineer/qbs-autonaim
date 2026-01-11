@@ -68,7 +68,7 @@ export class GigContextLoader implements ContextLoader {
 
     // Загрузка откликов кандидатов из универсальной таблицы
     const responses = await database.query.response.findMany({
-      where: and(eq(response.entityType, "gig"), eq(response.vacancyId, gigId)),
+      where: and(eq(response.entityType, "gig"), eq(response.entityId, gigId)),
       columns: {
         id: true,
         candidateId: true,

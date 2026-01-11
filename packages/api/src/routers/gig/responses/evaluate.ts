@@ -1,5 +1,5 @@
-﻿import { eq } from "@qbs-autonaim/db";
-import { response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
+﻿import { and, eq } from "@qbs-autonaim/db";
+import { gig, response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -27,8 +27,10 @@ export const evaluate = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(responseTable.id, input.responseId),
-      ,
+      where: and(
+        eq(responseTable.id, input.responseId),
+        eq(responseTable.entityType, "gig"),
+      ),
     });
 
     if (!response) {
@@ -38,7 +40,14 @@ export const evaluate = protectedProcedure
       });
     }
 
-    if (response.gig.workspaceId !== input.workspaceId) {
+    const existingGig = await ctx.db.query.gig.findFirst({
+      where: and(
+        eq(gig.id, response.entityId),
+        eq(gig.workspaceId, input.workspaceId),
+      ),
+    });
+
+    if (!existingGig) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому отклику",

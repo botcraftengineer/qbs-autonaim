@@ -1,5 +1,6 @@
 ﻿import { and, eq } from "@qbs-autonaim/db";
 import {
+  gig,
   interviewLink,
   responseInvitation,
   response as responseTable,
@@ -51,10 +52,12 @@ export const generateInvitation = protectedProcedure
       });
     }
 
-    // Получаем отклик с гигом
+    // Получаем отклик
     const response = await ctx.db.query.response.findFirst({
-      where: eq(responseTable.id, input.responseId),
-      ,
+      where: and(
+        eq(responseTable.id, input.responseId),
+        eq(responseTable.entityType, "gig"),
+      ),
     });
 
     if (!response) {
@@ -64,7 +67,14 @@ export const generateInvitation = protectedProcedure
       });
     }
 
-    if (response.gig.workspaceId !== input.workspaceId) {
+    const existingGig = await ctx.db.query.gig.findFirst({
+      where: and(
+        eq(gig.id, response.entityId),
+        eq(gig.workspaceId, input.workspaceId),
+      ),
+    });
+
+    if (!existingGig) {
       throw new TRPCError({
         code: "FORBIDDEN",
         message: "Нет доступа к этому отклику",
@@ -164,7 +174,7 @@ export const generateInvitation = protectedProcedure
     // Генерируем текст приглашения
     const invitationText = generateInvitationText(
       response.candidateName,
-      response.gig.title,
+      existingGig.title,
       interviewUrl,
     );
 

@@ -41,11 +41,13 @@ export const list = protectedProcedure
     }
 
     return ctx.db.query.response.findMany({
-      where: eq(responseTable.entityId, input.gigId),
+      where: and(
+        eq(responseTable.entityType, "gig"),
+        eq(responseTable.entityId, input.gigId),
+      ),
       with: {
         screening: true,
-        interviewScoring: true,
       },
-      orderBy: [desc(response.createdAt)],
+      orderBy: [desc(responseTable.createdAt)],
     });
   });

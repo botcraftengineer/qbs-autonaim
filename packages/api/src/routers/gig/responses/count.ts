@@ -43,17 +43,26 @@ export const countResponses = protectedProcedure
     // Подсчитываем реальное количество откликов
     const totalResult = await ctx.db
       .select({ count: count() })
-      .from(response)
-      .where(eq(responseTable.entityId, input.gigId));
+      .from(responseTable)
+      .where(
+        and(
+          eq(responseTable.entityType, "gig"),
+          eq(responseTable.entityId, input.gigId),
+        ),
+      );
 
     const total = totalResult[0]?.count ?? 0;
 
     // Подсчитываем новые отклики (статус NEW)
     const newResult = await ctx.db
       .select({ count: count() })
-      .from(response)
+      .from(responseTable)
       .where(
-        and(eq(responseTable.entityId, input.gigId), eq(responseTable.status, "NEW")),
+        and(
+          eq(responseTable.entityType, "gig"),
+          eq(responseTable.entityId, input.gigId),
+          eq(responseTable.status, "NEW"),
+        ),
       );
 
     const newCount = newResult[0]?.count ?? 0;

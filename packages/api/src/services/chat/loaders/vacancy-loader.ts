@@ -17,7 +17,7 @@ interface CandidateData {
   id: string;
   candidateId: string;
   candidateName: string | null;
-  salaryExpectationsAmount: string | null;
+  salaryExpectationsAmount: number | null;
   coverLetter: string | null;
   experience: string | null;
   profileUrl: string | null;
@@ -62,7 +62,7 @@ export class VacancyContextLoader implements ContextLoader {
     const responses = await database.query.response.findMany({
       where: and(
         eq(response.entityType, "vacancy"),
-        eq(response.vacancyId, vacancyId),
+        eq(response.entityId, vacancyId),
       ),
       columns: {
         id: true,

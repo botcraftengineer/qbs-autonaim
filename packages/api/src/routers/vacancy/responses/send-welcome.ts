@@ -1,4 +1,4 @@
-﻿import { eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import {
   interviewSession,
   response as responseTable,
@@ -36,7 +36,10 @@ export const sendWelcome = protectedProcedure
 
     // Получаем данные отклика
     const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, responseId),
+      where: and(
+        eq(responseTable.id, responseId),
+        eq(responseTable.entityType, "vacancy"),
+      ),
     });
 
     if (!response) {
@@ -102,7 +105,6 @@ export const sendWelcome = protectedProcedure
     } else {
       // Создаем новую interviewSession
       await ctx.db.insert(interviewSession).values({
-        entityType: "vacancy_response",
         responseId: responseId,
         status: "active",
         lastChannel: "telegram",

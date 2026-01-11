@@ -11,7 +11,7 @@ import {
   interviewScoring,
 } from "@qbs-autonaim/db";
 import type { db } from "@qbs-autonaim/db/client";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 /**
  * Контекст gig задания
@@ -142,7 +142,10 @@ export async function loadCandidatesContext(
 ): Promise<CandidatesContext> {
   // Загружаем все отклики с screening и interview данными
   const responses = await database.query.response.findMany({
-    where: eq(response.vacancyId, gigId),
+    where: and(
+      eq(responseTable.entityType, "gig"),
+      eq(responseTable.entityId, gigId),
+    ),
     columns: {
       id: true,
       candidateId: true,

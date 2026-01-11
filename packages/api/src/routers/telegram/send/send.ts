@@ -40,11 +40,11 @@ export const sendMessageRouter = protectedProcedure
     const sessionData = await ctx.db
       .select({
         id: interviewSession.id,
-        chatId: response.chatId,
-        entityType: response.entityType,
+        chatId: responseTable.chatId,
+        entityType: responseTable.entityType,
       })
       .from(interviewSession)
-      .leftJoin(response, eq(interviewSession.responseId, response.id))
+      .leftJoin(responseTable, eq(interviewSession.responseId, responseTable.id))
       .where(eq(interviewSession.id, input.sessionId))
       .limit(1);
 

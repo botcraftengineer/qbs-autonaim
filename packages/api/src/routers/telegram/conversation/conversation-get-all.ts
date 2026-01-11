@@ -28,19 +28,19 @@ export const getAllConversationsRouter = protectedProcedure
       .select()
       .from(interviewSession)
       .innerJoin(
-        response,
-        eq(interviewSession.responseId, response.id),
+        responseTable,
+        eq(interviewSession.responseId, responseTable.id),
       )
-      .innerJoin(vacancy, eq(response.entityId, vacancy.id))
+      .innerJoin(vacancy, eq(responseTable.entityId, vacancy.id))
       .where(
-        input.entityId
+        input.vacancyId
           ? and(
-              eq("vacancy_response"),
+              eq(responseTable.entityType, "vacancy"),
               eq(vacancy.workspaceId, input.workspaceId),
-              eq(response.entityId, input.entityId),
+              eq(responseTable.entityId, input.vacancyId),
             )
           : and(
-              eq("vacancy_response"),
+              eq(responseTable.entityType, "vacancy"),
               eq(vacancy.workspaceId, input.workspaceId),
             ),
       );
@@ -70,7 +70,7 @@ export const getAllConversationsRouter = protectedProcedure
         ...s.interview_sessions,
         messages: lastMessage ? [lastMessage] : [],
         response: {
-          ...s.vacancy_responses,
+          ...s.responses,
           vacancy: s.vacancies,
         },
       };
