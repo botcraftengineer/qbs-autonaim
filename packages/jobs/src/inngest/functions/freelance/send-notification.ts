@@ -1,10 +1,9 @@
 import { eq, inArray } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  gigResponse,
   interviewScoring,
+  response,
   user,
-  vacancyResponse,
   workspaceMember,
 } from "@qbs-autonaim/db/schema";
 import { sendEmailHtml } from "@qbs-autonaim/emails/send";
@@ -87,30 +86,31 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     const responseData = await step.run("get-response-data", async () => {
       if (isGigResponse && gigResponseId) {
         // Обработка gig response
-        const response = await db.query.gigResponse.findFirst({
-          where: eq(gigResponse.id, gigResponseId),
-          with: {
-            gig: {
-              with: {
-                workspace: true,
-              },
-            },
-          },
+        const responseRecord = await db.query.response.findFirst({
+          where: eq(response.id, gigResponseId),
         });
 
-        if (!response) {
+        if (!responseRecord) {
           throw new Error(`Gig response ${gigResponseId} не найден`);
         }
 
+        // Получаем gig отдельно через entityId
+        const gig = await db.query.gig.findFirst({
+          where: (g, { eq }) => eq(g.id, responseRecord.entityId),
+          with: {
+            workspace: true,
+          },
+        });
+
         // Получаем скоринг если есть
         const scoring = await db.query.interviewScoring.findFirst({
-          where: eq(interviewScoring.gigResponseId, gigResponseId),
+          where: eq(interviewScoring.responseId, gigResponseId),
         });
 
         return {
-          response,
+          response: { ...responseRecord, gig },
           scoring,
-          workspaceId: response.gig.workspaceId,
+          workspaceId: gig?.workspaceId,
           isGig: true as const,
         };
       }
@@ -120,20 +120,21 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
       }
 
       // Обработка vacancy response (responseId гарантированно string здесь)
-      const response = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, responseId as string),
-        with: {
-          vacancy: {
-            with: {
-              workspace: true,
-            },
-          },
-        },
+      const responseRecord = await db.query.response.findFirst({
+        where: eq(response.id, responseId as string),
       });
 
-      if (!response) {
+      if (!responseRecord) {
         throw new Error(`Response ${responseId} не найден`);
       }
+
+      // Получаем vacancy отдельно через entityId
+      const vacancy = await db.query.vacancy.findFirst({
+        where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+        with: {
+          workspace: true,
+        },
+      });
 
       // Получаем скоринг если есть
       const scoring = await db.query.interviewScoring.findFirst({
@@ -141,9 +142,9 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
       });
 
       return {
-        response,
+        response: { ...responseRecord, vacancy },
         scoring,
-        workspaceId: response.vacancy.workspaceId,
+        workspaceId: vacancy?.workspaceId,
         isGig: false as const,
       };
     });
@@ -152,6 +153,14 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     const workspaceMembers = await step.run(
       "get-workspace-members",
       async () => {
+        if (!responseData.workspaceId) {
+          console.warn("⚠️ Workspace ID не найден", {
+            responseId,
+            gigResponseId,
+          });
+          return [];
+        }
+
         const members = await db.query.workspaceMember.findMany({
           where: eq(workspaceMember.workspaceId, responseData.workspaceId),
         });
@@ -182,25 +191,28 @@ export const sendFreelanceNotificationFunction = inngest.createFunction(
     const { htmlMessage, subject } = await step.run(
       "format-notification",
       async () => {
-        const { response, scoring, isGig } = responseData;
-        const candidateName = response.candidateName || "Кандидат без имени";
+        const { response: responseRecord, scoring, isGig } = responseData;
+        const candidateName =
+          responseRecord.candidateName || "Кандидат без имени";
 
         // Type-safe access to title and profileUrl
         const title = isGig
-          ? "gig" in response && response.gig
-            ? response.gig.title
+          ? "gig" in responseRecord && responseRecord.gig
+            ? responseRecord.gig.title
             : "Задание"
-          : "vacancy" in response && response.vacancy
-            ? response.vacancy.title
+          : "vacancy" in responseRecord && responseRecord.vacancy
+            ? responseRecord.vacancy.title
             : "Вакансия";
 
         const profileUrl = isGig
-          ? "profileUrl" in response
-            ? response.profileUrl
+          ? "profileUrl" in responseRecord
+            ? responseRecord.profileUrl
             : undefined
-          : "platformProfileUrl" in response
-            ? response.platformProfileUrl ||
-              ("resumeUrl" in response ? response.resumeUrl : undefined)
+          : "platformProfileUrl" in responseRecord
+            ? responseRecord.platformProfileUrl ||
+              ("resumeUrl" in responseRecord
+                ? responseRecord.resumeUrl
+                : undefined)
             : undefined;
 
         const errorMessage = error;

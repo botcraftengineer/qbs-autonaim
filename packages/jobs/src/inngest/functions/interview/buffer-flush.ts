@@ -24,12 +24,12 @@ export const bufferFlushFunction = inngest.createFunction(
   },
   { event: "interview/buffer.flush" },
   async ({ event, step }) => {
-    const { userId, chatSessionId, interviewStep, flushId } = event.data;
+    const { userId, interviewSessionId, interviewStep, flushId } = event.data;
 
     // Определяем источник разговора для отправки правильных событий
     const sessionSource = await step.run("get-session-source", async () => {
       const session = await db.query.interviewSession.findFirst({
-        where: eq(interviewSession.id, chatSessionId),
+        where: eq(interviewSession.id, interviewSessionId),
       });
 
       return session?.lastChannel ?? "telegram";
@@ -39,7 +39,7 @@ export const bufferFlushFunction = inngest.createFunction(
     const messages = await step.run("get-buffered-messages", async () => {
       const bufferedMessages = await messageBufferService.getMessages({
         userId,
-        chatSessionId,
+        chatSessionId: interviewSessionId,
         interviewStep,
       });
 
@@ -60,7 +60,7 @@ export const bufferFlushFunction = inngest.createFunction(
 
     // Получение полного контекста интервью
     const context = await step.run("get-interview-context", async () => {
-      const ctx = await getInterviewContext(chatSessionId);
+      const ctx = await getInterviewContext(interviewSessionId);
 
       if (!ctx) {
         throw new Error("Interview context not found");
@@ -86,7 +86,7 @@ export const bufferFlushFunction = inngest.createFunction(
           errorMessage.includes("AI_APICallError");
 
         console.error("❌ LLM request failed", {
-          chatSessionId,
+          interviewSessionId,
           error: errorMessage,
           isAPIError,
           stack: error instanceof Error ? error.stack : undefined,
@@ -103,7 +103,7 @@ export const bufferFlushFunction = inngest.createFunction(
     // Проверяем успешность запроса к LLM
     if (!llmResponse.success) {
       console.error("❌ Skipping response due to LLM error", {
-        chatSessionId,
+        interviewSessionId,
         error: "error" in llmResponse ? llmResponse.error : "Unknown error",
         isAPIError:
           "isAPIError" in llmResponse ? llmResponse.isAPIError : false,
@@ -113,7 +113,7 @@ export const bufferFlushFunction = inngest.createFunction(
       await step.run("clear-buffer-on-error", async () => {
         await messageBufferService.clearBuffer({
           userId,
-          chatSessionId,
+          chatSessionId: interviewSessionId,
           interviewStep,
         });
 
@@ -202,7 +202,7 @@ export const bufferFlushFunction = inngest.createFunction(
     await step.run("clear-buffer", async () => {
       await messageBufferService.clearBuffer({
         userId,
-        chatSessionId,
+        chatSessionId: interviewSessionId,
         interviewStep,
       });
 

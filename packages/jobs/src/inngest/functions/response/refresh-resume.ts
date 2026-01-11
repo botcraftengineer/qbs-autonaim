@@ -1,7 +1,7 @@
 import os from "node:os";
 import { eq, getIntegrationCredentials } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response } from "@qbs-autonaim/db/schema";
 import { Log } from "crawlee";
 import type { Browser, Page } from "puppeteer";
 import puppeteer from "puppeteer-extra";

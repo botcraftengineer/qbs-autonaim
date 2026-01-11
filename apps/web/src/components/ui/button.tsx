@@ -49,6 +49,7 @@ function Button({
   const Comp = asChild ? Slot : 'button'
 
   return (
+    // @ts-expect-error - React 19 ref type incompatibility
     <Comp
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}

@@ -1,11 +1,11 @@
 import { env } from "@qbs-autonaim/config";
-import { and, eq } from "@qbs-autonaim/db";
+import { eq, inArray } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,
   interviewSession,
+  response,
   telegramSession,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { removeNullBytes } from "@qbs-autonaim/lib";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
@@ -43,24 +43,18 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
     // Получаем данные откликов с username или телефоном
     const responses = await step.run("fetch-responses", async () => {
-      const results = await db.query.vacancyResponse.findMany({
-        where: (fields, { inArray }) => inArray(fields.id, allResponseIds),
-        columns: {
-          id: true,
-          telegramUsername: true,
-          phone: true,
-          candidateName: true,
-          vacancyId: true,
-          chatId: true,
-        },
-        with: {
-          vacancy: {
-            columns: {
-              workspaceId: true,
-            },
-          },
-        },
-      });
+      const results = await db
+        .select({
+          id: response.id,
+          telegramUsername: response.telegramUsername,
+          phone: response.phone,
+          candidateName: response.candidateName,
+          entityId: response.entityId,
+          chatId: response.chatId,
+          entityType: response.entityType,
+        })
+        .from(response)
+        .where(inArray(response.id, allResponseIds));
 
       console.log(`✅ Найдено откликов в БД: ${results.length}`);
       return results;
@@ -78,11 +72,24 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
     // Обрабатываем каждый отклик
     const results = await Promise.allSettled(
-      responsesWithContact.map(async (response) => {
-        return await step.run(`send-welcome-${response.id}`, async () => {
+      responsesWithContact.map(async (responseItem) => {
+        return await step.run(`send-welcome-${responseItem.id}`, async () => {
           try {
-            // Получаем активную сессию для workspace
-            const workspaceId = response.vacancy.workspaceId;
+            // Получаем workspace через entityId (vacancyId)
+            const vacancy = await db.query.vacancy.findFirst({
+              where: (v, { eq }) => eq(v.id, responseItem.entityId),
+              columns: {
+                workspaceId: true,
+              },
+            });
+
+            if (!vacancy) {
+              throw new Error(
+                `Вакансия не найдена для отклика ${responseItem.id}`,
+              );
+            }
+
+            const workspaceId = vacancy.workspaceId;
             const session = await db.query.telegramSession.findFirst({
               where: eq(telegramSession.workspaceId, workspaceId),
               orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
@@ -95,7 +102,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             }
 
             // Генерируем приветственное сообщение
-            const welcomeResult = await generateWelcomeMessage(response.id);
+            const welcomeResult = await generateWelcomeMessage(responseItem.id);
             if (!welcomeResult.success) {
               throw new Error(welcomeResult.error);
             }
@@ -110,18 +117,18 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             let actualSentMessage = welcomeMessage;
 
             // Пытаемся отправить по username, если он есть
-            if (response.telegramUsername) {
+            if (responseItem.telegramUsername) {
               console.log(
-                `📨 Попытка отправки по username: @${response.telegramUsername}`,
+                `📨 Попытка отправки по username: @${responseItem.telegramUsername}`,
               );
               try {
                 sendResult = await tgClientSDK.sendMessageByUsername({
                   workspaceId,
-                  username: response.telegramUsername,
+                  username: responseItem.telegramUsername,
                   text: welcomeMessage,
                 });
               } catch (_error) {
-                if (response.phone) {
+                if (responseItem.phone) {
                   console.log(
                     `⚠️ Не удалось отправить по username, пробуем по телефону`,
                   );
@@ -130,15 +137,15 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             }
 
             // Если username не сработал или его нет, пробуем по телефону
-            if (!sendResult && response.phone) {
+            if (!sendResult && responseItem.phone) {
               console.log(
-                `📞 Попытка отправки по номеру телефона: ${response.phone}`,
+                `📞 Попытка отправки по номеру телефона: ${responseItem.phone}`,
               );
               sendResult = await tgClientSDK.sendMessageByPhone({
                 workspaceId,
-                phone: response.phone,
+                phone: responseItem.phone,
                 text: welcomeMessage,
-                firstName: response.candidateName || undefined,
+                firstName: responseItem.candidateName || undefined,
               });
             }
 
@@ -148,12 +155,12 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
               // Generate PIN code first
               const pinCodeResult = await generateTelegramInvite({
-                responseId: response.id,
+                responseId: responseItem.id,
                 botUsername: "", // Not needed anymore
               });
 
               const inviteMessageResult = await generateTelegramInviteMessage(
-                response.id,
+                responseItem.id,
               );
 
               let messageWithInvite = inviteMessageResult.success
@@ -161,7 +168,9 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 : welcomeMessage;
 
               // Get telegram username from session userInfo
-              const userInfo = session.userInfo as { username?: string } | null;
+              const userInfo = session.userInfo as {
+                username?: string;
+              } | null;
               const telegramUsername =
                 userInfo?.username || env.TELEGRAM_BOT_USERNAME;
 
@@ -173,7 +182,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
               const hhResult = await sendHHChatMessage({
                 workspaceId,
-                responseId: response.id,
+                responseId: responseItem.id,
                 text: messageWithInvite,
               });
 
@@ -182,16 +191,16 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
                 // Обновляем статус отправки приветствия
                 await db
-                  .update(vacancyResponse)
+                  .update(response)
                   .set({
                     welcomeSentAt: new Date(),
                   })
-                  .where(eq(vacancyResponse.id, response.id));
+                  .where(eq(response.id, responseItem.id));
 
                 return {
-                  responseId: response.id,
-                  username: response.telegramUsername,
-                  chatId: response.chatId || "",
+                  responseId: responseItem.id,
+                  username: responseItem.telegramUsername,
+                  chatId: responseItem.chatId || "",
                   success: true,
                   method: "hh",
                   sentMessage: actualSentMessage,
@@ -217,13 +226,12 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             if (sendResult.chatId) {
               // Проверяем, есть ли уже interviewSession для этого response
               const existing = await db.query.interviewSession.findFirst({
-                where: and(
-                  eq(interviewSession.entityType, "vacancy_response"),
-                  eq(interviewSession.vacancyResponseId, response.id),
-                ),
+                where: eq(interviewSession.responseId, responseItem.id),
               });
 
-              let session: typeof interviewSession.$inferSelect | undefined;
+              let interviewSessionRecord:
+                | typeof interviewSession.$inferSelect
+                | undefined;
               if (existing) {
                 // Получаем существующие метаданные
                 const existingMetadata = existing.metadata || {};
@@ -231,7 +239,7 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 // Объединяем с новыми данными
                 const updatedMetadata = {
                   ...existingMetadata,
-                  telegramUsername: response.telegramUsername ?? undefined,
+                  telegramUsername: responseItem.telegramUsername ?? undefined,
                   telegramChatId: sendResult.chatId,
                   questionAnswers: existingMetadata.questionAnswers || [],
                 };
@@ -246,11 +254,11 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                   })
                   .where(eq(interviewSession.id, existing.id))
                   .returning();
-                session = updated;
+                interviewSessionRecord = updated;
               } else {
                 // Создаем новую interviewSession
                 const newMetadata = {
-                  telegramUsername: response.telegramUsername ?? undefined,
+                  telegramUsername: responseItem.telegramUsername ?? undefined,
                   telegramChatId: sendResult.chatId,
                   questionAnswers: [] as Array<{
                     question: string;
@@ -262,20 +270,19 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
                 const [created] = await db
                   .insert(interviewSession)
                   .values({
-                    entityType: "vacancy_response",
-                    vacancyResponseId: response.id,
+                    responseId: responseItem.id,
                     status: "active",
                     lastChannel: "telegram",
                     metadata: newMetadata,
                   })
                   .returning();
-                session = created;
+                interviewSessionRecord = created;
               }
 
               // Сохраняем приветственное сообщение в историю
-              if (session) {
+              if (interviewSessionRecord) {
                 await db.insert(interviewMessage).values({
-                  sessionId: session.id,
+                  sessionId: interviewSessionRecord.id,
                   role: "assistant",
                   type: "text",
                   content: removeNullBytes(actualSentMessage),
@@ -287,19 +294,19 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
 
             // Обновляем статус отправки приветствия
             await db
-              .update(vacancyResponse)
+              .update(response)
               .set({
                 welcomeSentAt: new Date(),
               })
-              .where(eq(vacancyResponse.id, response.id));
+              .where(eq(response.id, responseItem.id));
 
             console.log(
-              `✅ Приветствие отправлено: ${response.id} (@${response.telegramUsername})`,
+              `✅ Приветствие отправлено: ${responseItem.id} (@${responseItem.telegramUsername})`,
             );
 
             return {
-              responseId: response.id,
-              username: response.telegramUsername,
+              responseId: responseItem.id,
+              username: responseItem.telegramUsername,
               chatId: sendResult.chatId,
               success: true,
               method: "telegram",
@@ -307,12 +314,12 @@ export const sendCandidateWelcomeBatchFunction = inngest.createFunction(
             };
           } catch (error) {
             console.error(
-              `❌ Ошибка отправки приветствия для ${response.id}:`,
+              `❌ Ошибка отправки приветствия для ${responseItem.id}:`,
               error,
             );
             return {
-              responseId: response.id,
-              username: response.telegramUsername,
+              responseId: responseItem.id,
+              username: responseItem.telegramUsername,
               success: false,
               error: error instanceof Error ? error.message : "Unknown error",
             };

@@ -9,9 +9,9 @@ import {
   type botSettings,
   interviewMessage,
   interviewSession,
+  response,
+  type responseScreening,
   type vacancy,
-  vacancyResponse,
-  type vacancyResponseScreening,
   type workspace,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent } from "./vacancy-response-history";
@@ -47,11 +47,11 @@ export async function identifyByPinCode(
 ): Promise<IdentificationResult> {
   try {
     // Ищем отклик по пин-коду с проверкой workspaceId
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, pinCode),
+    const responseData = await db.query.response.findFirst({
+      where: eq(response.telegramPinCode, pinCode),
     });
 
-    if (!response) {
+    if (!responseData) {
       return {
         success: false,
         error: "Отклик не найден по указанному пин-коду",
@@ -60,7 +60,7 @@ export async function identifyByPinCode(
 
     // Загружаем вакансию отдельно
     const vacancy = await db.query.vacancy.findFirst({
-      where: (v, { eq }) => eq(v.id, response.vacancyId),
+      where: (v, { eq }) => eq(v.id, responseData.entityId),
       columns: {
         title: true,
         id: true,
@@ -78,8 +78,8 @@ export async function identifyByPinCode(
 
     // Создаем или обновляем chat session
     const sessionData: ChatSessionData = {
-      responseId: response.id,
-      candidateName: response.candidateName || firstName,
+      responseId: responseData.id,
+      candidateName: responseData.candidateName || firstName,
       username,
       firstName,
       identifiedBy: "pin_code",
@@ -89,21 +89,21 @@ export async function identifyByPinCode(
     const session = await createOrUpdateChatSession(sessionData);
 
     // Обновляем chatId и username в response
-    const hadChatId = !!response.chatId;
-    const hadUsername = !!response.telegramUsername;
+    const hadChatId = !!responseData.chatId;
+    const hadUsername = !!responseData.telegramUsername;
 
     await db
-      .update(vacancyResponse)
+      .update(response)
       .set({
         chatId: chatId,
-        telegramUsername: username || response.telegramUsername,
+        telegramUsername: username || responseData.telegramUsername,
       })
-      .where(eq(vacancyResponse.id, response.id));
+      .where(eq(response.id, responseData.id));
 
     if (!hadChatId) {
       await logResponseEvent({
         db,
-        responseId: response.id,
+        responseId: responseData.id,
         eventType: "CHAT_ID_ADDED",
         newValue: chatId,
       });
@@ -112,7 +112,7 @@ export async function identifyByPinCode(
     if (username && !hadUsername) {
       await logResponseEvent({
         db,
-        responseId: response.id,
+        responseId: responseData.id,
         eventType: "TELEGRAM_USERNAME_ADDED",
         newValue: username,
       });
@@ -121,8 +121,8 @@ export async function identifyByPinCode(
     return {
       success: true,
       chatSessionId: session.id,
-      responseId: response.id,
-      candidateName: response.candidateName || firstName,
+      responseId: responseData.id,
+      candidateName: responseData.candidateName || firstName,
       vacancyTitle: vacancy.title,
     };
   } catch (error) {
@@ -146,15 +146,15 @@ export async function identifyByVacancy(
 ): Promise<IdentificationResult> {
   try {
     // Ищем отклик по username и вакансии с проверкой workspaceId
-    const response = await db.query.vacancyResponse.findFirst({
+    const responseData = await db.query.response.findFirst({
       where: and(
-        ilike(vacancyResponse.telegramUsername, username),
-        eq(vacancyResponse.vacancyId, vacancyId),
+        ilike(response.telegramUsername, username),
+        eq(response.entityId, vacancyId),
       ),
-      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
+      orderBy: (fields: any, { desc }: any) => [desc(fields.createdAt)],
     });
 
-    if (!response) {
+    if (!responseData) {
       return {
         success: false,
         error: "Отклик не найден",
@@ -163,7 +163,7 @@ export async function identifyByVacancy(
 
     // Загружаем вакансию отдельно
     const vacancy = await db.query.vacancy.findFirst({
-      where: (v, { eq }) => eq(v.id, response.vacancyId),
+      where: (v, { eq }) => eq(v.id, responseData.entityId),
       columns: {
         title: true,
         workspaceId: true,
@@ -180,8 +180,8 @@ export async function identifyByVacancy(
 
     // Создаем или обновляем chat session
     const sessionData: ChatSessionData = {
-      responseId: response.id,
-      candidateName: response.candidateName || firstName,
+      responseId: responseData.id,
+      candidateName: responseData.candidateName || firstName,
       username,
       firstName,
       identifiedBy: "vacancy_search",
@@ -191,15 +191,15 @@ export async function identifyByVacancy(
 
     // Обновляем chatId
     await db
-      .update(vacancyResponse)
+      .update(response)
       .set({ chatId })
-      .where(eq(vacancyResponse.id, response.id));
+      .where(eq(response.id, responseData.id));
 
     return {
       success: true,
       chatSessionId: session.id,
-      responseId: response.id,
-      candidateName: response.candidateName || firstName,
+      responseId: responseData.id,
+      candidateName: responseData.candidateName || firstName,
       vacancyTitle: vacancy.title,
     };
   } catch (error) {
@@ -219,7 +219,7 @@ async function createOrUpdateChatSession(
 ): Promise<{ id: string }> {
   // Проверяем, есть ли уже interview session для этого responseId
   const existing = await db.query.interviewSession.findFirst({
-    where: eq(interviewSession.vacancyResponseId, data.responseId),
+    where: eq(interviewSession.responseId, data.responseId),
   });
 
   if (existing) {
@@ -270,8 +270,7 @@ async function createOrUpdateChatSession(
   const [created] = await db
     .insert(interviewSession)
     .values({
-      entityType: "vacancy_response",
-      vacancyResponseId: data.responseId,
+      responseId: data.responseId,
       status: "active",
       metadata: newMetadata,
     })
@@ -319,7 +318,7 @@ export async function saveMessage(
  * Получает данные для начала интервью
  */
 export async function getInterviewStartData(responseId: string): Promise<{
-  response: typeof vacancyResponse.$inferSelect & {
+  response: typeof response.$inferSelect & {
     vacancy:
       | (typeof vacancy.$inferSelect & {
           workspace: typeof workspace.$inferSelect & {
@@ -327,33 +326,41 @@ export async function getInterviewStartData(responseId: string): Promise<{
           };
         })
       | null;
-    screening: typeof vacancyResponseScreening.$inferSelect | null;
+    screening: typeof responseScreening.$inferSelect | null;
   };
 } | null> {
   try {
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    const responseData = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
       with: {
-        vacancy: {
-          with: {
-            workspace: {
-              with: {
-                botSettings: true,
-              },
-            },
-          },
-        },
+        globalCandidate: true,
         screening: true,
       },
     });
 
-    if (!response) {
+    if (!responseData) {
       return null;
     }
 
+    // Загружаем vacancy отдельно
+    const vacancyData = await db.query.vacancy.findFirst({
+      where: (v, { eq }) => eq(v.id, responseData.entityId),
+      with: {
+        workspace: {
+          with: {
+            botSettings: true,
+          },
+        },
+      },
+    });
+
     // Возвращаем данные в правильной структуре
     return {
-      response: response as typeof vacancyResponse.$inferSelect & {
+      response: {
+        ...responseData,
+        vacancy: vacancyData,
+        screening: responseData.screening,
+      } as typeof response.$inferSelect & {
         vacancy:
           | (typeof vacancy.$inferSelect & {
               workspace: typeof workspace.$inferSelect & {
@@ -361,7 +368,7 @@ export async function getInterviewStartData(responseId: string): Promise<{
               };
             })
           | null;
-        screening: typeof vacancyResponseScreening.$inferSelect | null;
+        screening: typeof responseScreening.$inferSelect | null;
       },
     };
   } catch (error) {

@@ -1,5 +1,5 @@
 import type { db as dbType } from "@qbs-autonaim/db/client";
-import { vacancyResponseHistory } from "@qbs-autonaim/db/schema";
+import { responseHistory } from "@qbs-autonaim/db/schema";
 
 type EventType =
   | "STATUS_CHANGED"
@@ -35,7 +35,7 @@ export async function logResponseEvent({
   newValue,
   metadata,
 }: LogEventParams) {
-  await db.insert(vacancyResponseHistory).values({
+  await db.insert(responseHistory).values({
     responseId,
     eventType,
     userId: userId ?? null,

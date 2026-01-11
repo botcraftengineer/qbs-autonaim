@@ -3,7 +3,7 @@ import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,
   interviewSession,
-  vacancyResponse,
+  response,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent, removeNullBytes } from "@qbs-autonaim/lib";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
@@ -19,9 +19,9 @@ export const sendOfferFunction = inngest.createFunction(
   async ({ event, step }) => {
     const { responseId, workspaceId, offerDetails } = event.data;
 
-    const response = await step.run("fetch-response-data", async () => {
-      const result = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, responseId),
+    const responseData = await step.run("fetch-response-data", async () => {
+      const result = await db.query.response.findFirst({
+        where: eq(response.id, responseId),
         with: {
           vacancy: true,
         },
@@ -37,10 +37,7 @@ export const sendOfferFunction = inngest.createFunction(
     // Проверяем, есть ли interviewSession для этого кандидата
     const session = await step.run("fetch-interview-session", async () => {
       return await db.query.interviewSession.findFirst({
-        where: and(
-          eq(interviewSession.entityType, "vacancy_response"),
-          eq(interviewSession.vacancyResponseId, responseId),
-        ),
+        where: eq(interviewSession.responseId, responseId),
       });
     });
 
@@ -67,7 +64,7 @@ ${offerDetails.message ? `\n${offerDetails.message}\n` : ""}
         // Отправляем сообщение через SDK
         const tgResult = await tgClientSDK.sendMessage({
           workspaceId,
-          chatId: Number(response.chatId),
+          chatId: Number(responseData.chatId),
           text: offerMessage,
         });
 

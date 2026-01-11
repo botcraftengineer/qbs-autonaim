@@ -1,11 +1,11 @@
 import { env } from "@qbs-autonaim/config";
-import { and, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,
   interviewSession,
+  response,
   telegramSession,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { logResponseEvent, removeNullBytes } from "@qbs-autonaim/lib";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
@@ -31,19 +31,25 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
     const { responseId, username, phone } = event.data;
 
     // Получаем данные отклика
-    const response = await step.run("fetch-response-data", async () => {
-      const result = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, responseId),
-        with: {
-          vacancy: true,
-        },
+    const responseData = await step.run("fetch-response-data", async () => {
+      const result = await db.query.response.findFirst({
+        where: eq(response.id, responseId),
       });
 
       if (!result) {
         throw new Error(`Отклик не найден: ${responseId}`);
       }
 
-      return result;
+      // Получаем vacancy отдельно через entityId
+      const vacancy = await db.query.vacancy.findFirst({
+        where: (v, { eq }) => eq(v.id, result.entityId),
+      });
+
+      if (!vacancy) {
+        throw new Error(`Вакансия не найдена для отклика: ${responseId}`);
+      }
+
+      return { ...result, vacancy };
     });
 
     const welcomeMessage = await step.run(
@@ -88,7 +94,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
 
       try {
         // Получаем активную сессию для workspace
-        const workspaceId = response.vacancy.workspaceId;
+        const workspaceId = responseData.vacancy.workspaceId;
         const session = await db.query.telegramSession.findFirst({
           where: eq(telegramSession.workspaceId, workspaceId),
           orderBy: (sessions, { desc }) => [desc(sessions.lastUsedAt)],
@@ -134,7 +140,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
 
               sendResult = {
                 ...tgResult,
-                channel: "TELEGRAM",
+                channel: "TELEGRAM" as const,
                 sentMessage: welcomeMessage,
               };
               return sendResult;
@@ -172,7 +178,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
 
               sendResult = {
                 ...tgResult,
-                channel: "TELEGRAM",
+                channel: "TELEGRAM" as const,
                 sentMessage: welcomeMessage,
               };
               return sendResult;
@@ -211,7 +217,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           }
 
           const hhResult = await sendHHChatMessage({
-            workspaceId: response.vacancy.workspaceId,
+            workspaceId: responseData.vacancy.workspaceId,
             responseId,
             text: messageWithInvite,
           });
@@ -221,17 +227,17 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
 
             // Обновляем статус отправки приветствия
             await db
-              .update(vacancyResponse)
+              .update(response)
               .set({
                 welcomeSentAt: new Date(),
               })
-              .where(eq(vacancyResponse.id, responseId));
+              .where(eq(response.id, responseId));
 
             sendResult = {
               success: true,
               messageId: "",
-              chatId: response.chatId || "",
-              channel: "HH",
+              chatId: responseData.chatId || "",
+              channel: "HH" as const,
               sentMessage: messageWithInvite,
             };
             return sendResult;
@@ -305,8 +311,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
           };
 
           await db.insert(interviewSession).values({
-            entityType: "vacancy_response",
-            vacancyResponseId: responseId,
+            responseId: responseId,
             status: "active",
             lastChannel: result.channel === "TELEGRAM" ? "telegram" : "web",
             metadata: newMetadata,
@@ -314,10 +319,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
         }
 
         const session = await db.query.interviewSession.findFirst({
-          where: and(
-            eq(interviewSession.entityType, "vacancy_response"),
-            eq(interviewSession.vacancyResponseId, responseId),
-          ),
+          where: eq(interviewSession.responseId, responseId),
         });
 
         if (!session) {
@@ -340,9 +342,9 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       // Обновляем welcomeSentAt только после успешной отправки
       await step.run("update-welcome-sent", async () => {
         await db
-          .update(vacancyResponse)
+          .update(response)
           .set({ welcomeSentAt: new Date() })
-          .where(eq(vacancyResponse.id, responseId));
+          .where(eq(response.id, responseId));
 
         await logResponseEvent({
           db,

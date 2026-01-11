@@ -4,7 +4,7 @@
 
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { vacancyResponse } from "@qbs-autonaim/db/schema";
+import { response } from "@qbs-autonaim/db/schema";
 
 /**
  * Проверяет валидность пин-кода в базе данных
@@ -33,12 +33,12 @@ export async function validatePinCode(
     }
 
     // Ищем отклик по пин-коду
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, pinCode),
+    const responseData = await db.query.response.findFirst({
+      where: eq(response.telegramPinCode, pinCode),
     });
 
     // Пин-код не найден
-    if (!response) {
+    if (!responseData) {
       return {
         valid: false,
         error: "Пин-код не найден в системе",
@@ -47,7 +47,7 @@ export async function validatePinCode(
 
     // Загружаем вакансию отдельно для проверки workspace
     const vacancy = await db.query.vacancy.findFirst({
-      where: (v, { eq }) => eq(v.id, response.vacancyId),
+      where: (v, { eq }) => eq(v.id, responseData.entityId),
       columns: {
         id: true,
         title: true,
@@ -66,9 +66,9 @@ export async function validatePinCode(
     // Пин-код валидный
     return {
       valid: true,
-      responseId: response.id,
-      vacancyId: response.vacancyId,
-      candidateName: response.candidateName || undefined,
+      responseId: responseData.id,
+      vacancyId: responseData.entityId,
+      candidateName: responseData.candidateName || undefined,
     };
   } catch (error) {
     console.error("Ошибка при валидации пин-кода:", error);
