@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import { workspace } from "../workspace/workspace";
+import { workspace } from "./workspace";
 
 export const botSettings = pgTable(
   "bot_settings",

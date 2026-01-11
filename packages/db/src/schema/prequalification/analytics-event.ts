@@ -16,7 +16,7 @@ import { workspace } from "../workspace/workspace";
 import { prequalificationSession } from "./session";
 
 // Analytics Event Type Enum
-export const analyticsEventTypeEnum = pgEnum("analytics_event_type", [
+export const analyticsEventTypeEnum = pgEnum("prequalification_analytics_event_type", [
   "widget_view",
   "session_start",
   "resume_upload",
@@ -28,7 +28,7 @@ export const analyticsEventTypeEnum = pgEnum("analytics_event_type", [
 
 // Analytics Event Table
 export const analyticsEvent = pgTable(
-  "analytics_events",
+  "prequalification_analytics_events",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
@@ -59,17 +59,17 @@ export const analyticsEvent = pgTable(
       .notNull(),
   },
   (table) => ({
-    workspaceIdx: index("analytics_workspace_idx").on(table.workspaceId),
-    vacancyIdx: index("analytics_vacancy_idx").on(table.vacancyId),
-    eventTypeIdx: index("analytics_event_type_idx").on(table.eventType),
-    timestampIdx: index("analytics_timestamp_idx").on(table.timestamp),
+    workspaceIdx: index("preq_analytics_workspace_idx").on(table.workspaceId),
+    vacancyIdx: index("preq_analytics_vacancy_idx").on(table.vacancyId),
+    eventTypeIdx: index("preq_analytics_event_type_idx").on(table.eventType),
+    timestampIdx: index("preq_analytics_timestamp_idx").on(table.timestamp),
     // Composite index для dashboard queries
-    workspaceTimestampIdx: index("analytics_workspace_timestamp_idx").on(
+    workspaceTimestampIdx: index("preq_analytics_workspace_timestamp_idx").on(
       table.workspaceId,
       table.timestamp,
     ),
     // Composite index для vacancy analytics
-    vacancyTimestampIdx: index("analytics_vacancy_timestamp_idx").on(
+    vacancyTimestampIdx: index("preq_analytics_vacancy_timestamp_idx").on(
       table.vacancyId,
       table.timestamp,
     ),
