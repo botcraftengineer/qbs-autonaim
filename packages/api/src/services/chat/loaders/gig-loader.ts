@@ -133,7 +133,6 @@ export class GigContextLoader implements ContextLoader {
           columns: {
             gigResponseId: true,
             score: true,
-            detailedScore: true,
             analysis: true,
           },
         });

@@ -137,7 +137,7 @@ export const getById = protectedProcedure
     );
 
     const resumeScore = screening?.detailedScore;
-    const interviewScore = interviewScoring?.detailedScore;
+    const interviewScore = interviewScoring?.score;
 
     const matchScore =
       resumeScore !== undefined && interviewScore !== undefined

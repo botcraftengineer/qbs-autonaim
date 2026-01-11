@@ -251,9 +251,7 @@ export default function EditGigPage({ params }: PageProps) {
                     <div className="text-sm font-medium text-muted-foreground">
                       Мин. бюджет
                     </div>
-                    <p className="text-sm">
-                      {gig.budgetMin} RUB
-                    </p>
+                    <p className="text-sm">{gig.budgetMin} ₽</p>
                   </div>
                 )}
                 {gig.budgetMax && (
@@ -261,9 +259,7 @@ export default function EditGigPage({ params }: PageProps) {
                     <div className="text-sm font-medium text-muted-foreground">
                       Макс. бюджет
                     </div>
-                    <p className="text-sm">
-                      {gig.budgetMax} RUB
-                    </p>
+                    <p className="text-sm">{gig.budgetMax} ₽</p>
                   </div>
                 )}
                 <div>

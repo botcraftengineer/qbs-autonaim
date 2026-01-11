@@ -33,7 +33,7 @@ interface GigCardProps {
     type: string;
     budgetMin?: number | null;
     budgetMax?: number | null;
-    budgetCurrency?: string | null;
+
     deadline?: Date | null;
     estimatedDuration?: string | null;
     views?: number | null;
@@ -51,14 +51,10 @@ interface GigCardProps {
   onDelete?: (gigId: string) => void;
 }
 
-function formatBudget(
-  min?: number | null,
-  max?: number | null,
-  currency?: string | null,
-) {
+function formatBudget(min?: number | null, max?: number | null) {
   if (!min && !max) return null;
 
-  const curr = currency || "RUB";
+  const curr = "₽";
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("ru-RU").format(amount);
   };
@@ -126,7 +122,7 @@ export function GigCard({
   workspaceSlug,
   onDelete,
 }: GigCardProps) {
-  const budget = formatBudget(gig.budgetMin, gig.budgetMax, gig.budgetCurrency);
+  const budget = formatBudget(gig.budgetMin, gig.budgetMax);
   const isOverdue = gig.deadline && gig.deadline < new Date();
 
   return (

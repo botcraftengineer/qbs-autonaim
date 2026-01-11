@@ -206,10 +206,7 @@ function GigError({
   );
 }
 
-function formatBudget(
-  min?: number | null,
-  max?: number | null,
-) {
+function formatBudget(min?: number | null, max?: number | null) {
   if (!min && !max) return "Не указан";
 
   const formatAmount = (amount: number) => {
@@ -217,15 +214,15 @@ function formatBudget(
   };
 
   if (min && max) {
-    return `${formatAmount(min)}–${formatAmount(max)}\u00A0RUB`;
+    return `${formatAmount(min)}–${formatAmount(max)}\u00A0₽`;
   }
 
   if (min) {
-    return `от\u00A0${formatAmount(min)}\u00A0RUB`;
+    return `от\u00A0${formatAmount(min)}\u00A0₽`;
   }
 
   if (max) {
-    return `до\u00A0${formatAmount(max)}\u00A0RUB`;
+    return `до\u00A0${formatAmount(max)}\u00A0₽`;
   }
 
   return "Не указан";
@@ -720,7 +717,6 @@ export function GigDetailClient({
           <ProjectDetails
             budgetMin={gig.budgetMin}
             budgetMax={gig.budgetMax}
-
             estimatedDuration={gig.estimatedDuration}
             deadline={gig.deadline}
           />

@@ -116,7 +116,7 @@ export const list = protectedProcedure
         skills: [],
         matchScore: screening?.detailedScore || 0,
         resumeScore: screening?.detailedScore,
-        interviewScore: interviewScoring?.detailedScore,
+        interviewScore: interviewScoring?.score,
         scoreAnalysis: interviewScoring?.analysis ?? undefined,
         availability: "Не указано",
         salaryExpectation: "Не указано",

@@ -145,7 +145,6 @@ export const get = protectedProcedure
             interviewScoring: sessionInterviewScoring
               ? {
                   score: sessionInterviewScoring.score,
-                  detailedScore: sessionInterviewScoring.detailedScore,
                   analysis: sessionInterviewScoring.analysis ?? undefined,
                 }
               : undefined,

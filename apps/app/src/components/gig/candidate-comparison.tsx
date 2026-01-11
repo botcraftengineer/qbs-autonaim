@@ -54,11 +54,9 @@ function getProgressColor(score: number): string {
   return "bg-red-500";
 }
 
-function formatCurrency(amount: number | null, currency: string | null) {
+function formatCurrency(amount: number | null) {
   if (!amount) return "—";
-  const currencySymbol =
-    currency === "USD" ? "$" : currency === "EUR" ? "€" : "₽";
-  return `${amount.toLocaleString("ru-RU")} ${currencySymbol}`;
+  return `${amount.toLocaleString("ru-RU")} ₽`;
 }
 
 export function CandidateComparison({
@@ -237,7 +235,6 @@ export function CandidateComparison({
                     <span className="text-sm font-medium">
                       {formatCurrency(
                         candidate.proposedPrice,
-                        candidate.proposedCurrency,
                       )}
                     </span>
                   </div>

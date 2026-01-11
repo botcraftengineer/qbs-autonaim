@@ -117,7 +117,7 @@ export class ShortlistGenerator {
         const responseScore = screening?.detailedScore ?? 0;
 
         // Получаем оценку интервью (если есть завершённое интервью)
-        const interviewScore = interviewScoring?.detailedScore ?? null;
+        const interviewScore = interviewScoring?.score ?? null;
 
         // Рассчитываем общую оценку
         const overallScore = this.calculateOverallScore(

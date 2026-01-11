@@ -365,57 +365,8 @@ user/
 └── delete.ts         # mutation - удалить аккаунт
 ```
 
-### Домен с вложенными роутерами
 
-```
-workspace/
-├── index.ts                    # Экспорт основного роутера
-├── list.ts                     # query - список workspace
-├── get.ts                      # query - получить workspace
-├── get-by-slug.ts              # query - получить по slug
-├── create.ts                   # mutation - создать
-├── update.ts                   # mutation - обновить
-├── delete.ts                   # mutation - удалить
-├── members/
-│   ├── index.ts                # Экспорт members роутера
-│   ├── list.ts                 # query - список участников
-│   ├── add.ts                  # mutation - добавить участника
-│   ├── remove.ts               # mutation - удалить участника
-│   └── update-role.ts          # mutation - обновить роль
-└── invites/
-    ├── index.ts                # Экспорт invites роутера
-    ├── list.ts                 # query - список приглашений
-    ├── create-link.ts          # mutation - создать ссылку
-    ├── accept.ts               # mutation - принять приглашение
-    └── cancel.ts               # mutation - отменить приглашение
-```
 
-### Сложный домен с множественными действиями
-
-```
-vacancy/
-├── index.ts                    # Экспорт vacancy роутера
-├── list.ts                     # query - все вакансии
-├── list-active.ts              # query - активные вакансии
-├── get.ts                      # query - одна вакансия
-├── create.ts                   # mutation - создать
-├── update.ts                   # mutation - обновить
-├── delete.ts                   # mutation - удалить
-├── analytics.ts                # query - аналитика
-├── dashboard-stats.ts          # query - статистика для дашборда
-├── responses-chart.ts          # query - график откликов
-├── improve-instructions.ts     # mutation - улучшить инструкции (AI)
-└── responses/
-    ├── index.ts                # Экспорт responses роутера
-    ├── list.ts                 # query - список откликов
-    ├── list-all.ts             # query - все отклики
-    ├── list-recent.ts          # query - недавние отклики
-    ├── list-top.ts             # query - топ отклики
-    ├── get.ts                  # query - один отклик
-    ├── count.ts                # query - количество откликов
-    ├── send-welcome.ts         # mutation - отправить приветствие
-    └── send-by-username.ts     # mutation - отправить по username
-```
 
 ## Правила и best practices
 
@@ -460,24 +411,3 @@ vacancy/
 - [ ] Типы корректны (нет any, unknown без проверок)
 - [ ] Сообщения об ошибках на русском языке
 - [ ] Код следует существующим паттернам проекта
-
-## Примеры использования на клиенте
-
-```typescript
-// Query
-const { data, isLoading } = api.workspace.list.useQuery();
-
-// Mutation
-const createMutation = api.workspace.create.useMutation();
-await createMutation.mutateAsync({ name: "New Workspace" });
-
-// Вложенный роутер
-const { data: members } = api.workspace.members.list.useQuery({ 
-  workspaceId: "123" 
-});
-
-// Глубоко вложенный роутер
-const { data: responses } = api.vacancy.responses.list.useQuery({ 
-  vacancyId: "456" 
-});
-```

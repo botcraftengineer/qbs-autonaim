@@ -246,7 +246,6 @@ export const list = protectedProcedure
             columns: {
               responseId: true,
               score: true,
-              detailedScore: true,
               analysis: true,
             },
           })
@@ -308,7 +307,6 @@ export const list = protectedProcedure
         interviewScoring: interviewScoring
           ? {
               score: interviewScoring.score,
-              detailedScore: interviewScoring.detailedScore,
               analysis: interviewScoring.analysis
                 ? sanitizeHtml(interviewScoring.analysis)
                 : null,

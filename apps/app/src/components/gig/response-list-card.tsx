@@ -89,8 +89,11 @@ const HR_STATUS_CONFIG = {
   NOT_RECOMMENDED: { label: "Не рекомендован", variant: "outline" as const },
   REJECTED: { label: "Отклонен", variant: "destructive" as const },
   SELECTED: { label: "Выбран", variant: "default" as const },
+  OFFER: { label: "Оффер", variant: "default" as const },
+  SECURITY_PASSED: { label: "СБ пройдена", variant: "secondary" as const },
   CONTRACT_SENT: { label: "Контракт отправлен", variant: "secondary" as const },
   IN_PROGRESS: { label: "В работе", variant: "default" as const },
+  ONBOARDING: { label: "Онбординг", variant: "default" as const },
   DONE: { label: "Выполнено", variant: "secondary" as const },
 };
 
@@ -101,6 +104,7 @@ const IMPORT_SOURCE_LABELS = {
   WEBLANCER: "Weblancer",
   UPWORK: "Upwork",
   FREELANCE_RU: "Freelance.ru",
+  HH_API: "HeadHunter",
   WEB_LINK: "Веб-ссылка",
 };
 

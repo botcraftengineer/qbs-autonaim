@@ -85,11 +85,9 @@ function getProgressColor(score: number): string {
   return "bg-red-500";
 }
 
-function formatCurrency(amount: number | null, currency: string | null) {
+function formatCurrency(amount: number | null) {
   if (!amount) return null;
-  const currencySymbol =
-    currency === "USD" ? "$" : currency === "EUR" ? "€" : "₽";
-  return `${amount.toLocaleString("ru-RU")} ${currencySymbol}`;
+  return `${amount.toLocaleString("ru-RU")} ₽`;
 }
 
 export function RankedCandidateCard({
@@ -230,7 +228,6 @@ export function RankedCandidateCard({
                         Предложенная цена:{" "}
                         {formatCurrency(
                           candidate.proposedPrice,
-                          candidate.proposedCurrency,
                         )}
                       </p>
                     )}

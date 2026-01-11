@@ -311,7 +311,7 @@ export default function CreateGigPage({ params }: PageProps) {
           requiredSkills: draft.requiredSkills,
           budgetRange:
             draft.budgetMin && draft.budgetMax
-              ? `${draft.budgetMin}-${draft.budgetMax} RUB`
+              ? `${draft.budgetMin}-${draft.budgetMax} ₽`
               : undefined,
           timeline: draft.estimatedDuration,
         },
