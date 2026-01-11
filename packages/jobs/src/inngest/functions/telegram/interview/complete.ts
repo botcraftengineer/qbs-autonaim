@@ -115,7 +115,13 @@ export const completeInterviewFunction = inngest.createFunction(
 
         await db
           .update(response)
-          .set(updateData)
+          .set({
+            status: updateData.status,
+            hrSelectionStatus: updateData.hrSelectionStatus,
+            profileData: updateData.profileData as
+              | Record<string, unknown>
+              | undefined,
+          })
           .where(eq(response.id, responseId));
       });
 
@@ -157,7 +163,9 @@ export const completeInterviewFunction = inngest.createFunction(
             candidateName: responseRecord.candidateName ?? undefined,
             score: scoringResult.score,
             profileUrl:
-              responseRecord.platformProfileUrl ?? responseRecord.resumeUrl,
+              responseRecord.platformProfileUrl ??
+              responseRecord.resumeUrl ??
+              undefined,
           },
         });
 
@@ -173,7 +181,9 @@ export const completeInterviewFunction = inngest.createFunction(
               candidateName: responseRecord.candidateName ?? undefined,
               score: scoringResult.score,
               profileUrl:
-                responseRecord.platformProfileUrl ?? responseRecord.resumeUrl,
+                responseRecord.platformProfileUrl ??
+                responseRecord.resumeUrl ??
+                undefined,
             },
           });
         }

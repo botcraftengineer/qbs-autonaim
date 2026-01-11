@@ -107,7 +107,6 @@ export const evaluateGigResponseFunction = inngest.createFunction(
         chatSessionId,
         responseId,
         score: result.score,
-        detailedScore: result.detailedScore,
       });
 
       return result;
@@ -147,7 +146,12 @@ export const evaluateGigResponseFunction = inngest.createFunction(
 
       await db
         .update(response)
-        .set(updateData)
+        .set({
+          status: updateData.status,
+          profileData: updateData.profileData as
+            | Record<string, unknown>
+            | undefined,
+        })
         .where(eq(response.id, responseId));
 
       console.log("✅ Статус отклика обновлен", {

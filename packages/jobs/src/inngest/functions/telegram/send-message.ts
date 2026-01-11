@@ -1,6 +1,7 @@
 import {
   eq,
   interviewMessage,
+  interviewSession,
   response,
   telegramSession,
 } from "@qbs-autonaim/db";

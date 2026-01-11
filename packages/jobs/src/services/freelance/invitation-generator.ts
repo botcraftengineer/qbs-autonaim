@@ -1,9 +1,10 @@
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
-  freelanceInvitation,
+  response,
+  responseInvitation,
+  responseScreening,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
 import { getInterviewUrl } from "@qbs-autonaim/shared";
@@ -73,67 +74,75 @@ export async function generateFreelanceInvitation(
 
   // Получаем отклик с оценкой
   const responseResult = await tryCatch(async () => {
-    return await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
-      with: {
-        screening: true,
-      },
+    const resp = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
+
+    if (!resp) {
+      return null;
+    }
+
+    // Получаем screening отдельно
+    const screening = await db.query.responseScreening.findFirst({
+      where: eq(responseScreening.responseId, responseId),
+    });
+
+    return { ...resp, screening };
   }, "Failed to fetch response");
 
   if (!responseResult.success) {
     return err(responseResult.error);
   }
 
-  const response = responseResult.data;
-  if (!response) {
+  const responseData = responseResult.data;
+  if (!responseData) {
     return err(`Response ${responseId} not found`);
   }
 
   // Проверяем, что это фриланс-отклик
   if (
-    response.importSource !== "KWORK" &&
-    response.importSource !== "FL_RU" &&
-    response.importSource !== "FREELANCE_RU"
+    responseData.importSource !== "KWORK" &&
+    responseData.importSource !== "FL_RU" &&
+    responseData.importSource !== "FREELANCE_RU"
   ) {
     logger.info(
-      `Skipping invitation: not a freelance response (source: ${response.importSource})`,
+      `Skipping invitation: not a freelance response (source: ${responseData.importSource})`,
     );
     return ok(null);
   }
 
   // Проверяем наличие скрининга
-  if (!response.screening) {
+  if (!responseData.screening) {
     return err(`Screening not found for response ${responseId}`);
   }
 
   // Проверяем порог оценки
-  if (response.screening.detailedScore < MIN_SCORE_THRESHOLD) {
+  if (responseData.screening.score < MIN_SCORE_THRESHOLD) {
     logger.info(
-      `Skipping invitation: score ${response.screening.detailedScore} below threshold ${MIN_SCORE_THRESHOLD}`,
+      `Skipping invitation: score ${responseData.screening.score} below threshold ${MIN_SCORE_THRESHOLD}`,
     );
     return ok(null);
   }
 
   // Проверяем, не было ли уже отправлено приглашение
-  const existingInvitation = await db.query.freelanceInvitation.findFirst({
-    where: eq(freelanceInvitation.responseId, responseId),
+  const existingInvitation = await db.query.responseInvitation.findFirst({
+    where: eq(responseInvitation.responseId, responseId),
   });
 
   if (existingInvitation) {
     logger.info(`Invitation already exists for response ${responseId}`);
     return ok({
       invitationId: existingInvitation.id,
-      invitationText: existingInvitation.invitationText,
-      interviewUrl: existingInvitation.interviewUrl,
-      score: response.screening.detailedScore,
+      invitationText: existingInvitation.invitationText ?? "",
+      interviewUrl: existingInvitation.interviewUrl ?? "",
+      score: responseData.screening.score,
     });
   }
 
   // Получаем вакансию с workspace
   const vacancyResult = await tryCatch(async () => {
     return await db.query.vacancy.findFirst({
-      where: eq(vacancy.id, response.vacancyId),
+      where: eq(vacancy.id, responseData.entityId),
       with: {
         workspace: {
           columns: {
@@ -150,7 +159,7 @@ export async function generateFreelanceInvitation(
 
   const vacancyData = vacancyResult.data;
   if (!vacancyData) {
-    return err(`Vacancy ${response.vacancyId} not found`);
+    return err(`Vacancy ${responseData.entityId} not found`);
   }
 
   // Получаем ссылку на интервью
@@ -159,7 +168,7 @@ export async function generateFreelanceInvitation(
       where: (link, { eq, and }) =>
         and(
           eq(link.entityType, "vacancy"),
-          eq(link.entityId, response.vacancyId),
+          eq(link.entityId, responseData.entityId),
           eq(link.isActive, true),
         ),
     });
@@ -171,7 +180,7 @@ export async function generateFreelanceInvitation(
 
   const link = interviewLinkResult.data;
   if (!link) {
-    return err(`Interview link not found for vacancy ${response.vacancyId}`);
+    return err(`Interview link not found for vacancy ${responseData.entityId}`);
   }
 
   const interviewUrl = getInterviewUrl(
@@ -182,7 +191,7 @@ export async function generateFreelanceInvitation(
   // Генерируем текст приглашения
   logger.info("Generating invitation text with AI");
 
-  const screeningScore = response.screening?.detailedScore;
+  const screeningScore = responseData.screening?.score;
   if (!screeningScore) {
     return err("Screening score not found");
   }
@@ -190,7 +199,7 @@ export async function generateFreelanceInvitation(
   const textResult = await tryCatch(
     async () =>
       await generateInvitationText(
-        response.candidateName,
+        responseData.candidateName,
         vacancyData.title,
         interviewUrl,
         screeningScore,
@@ -205,7 +214,7 @@ export async function generateFreelanceInvitation(
   // Сохраняем приглашение
   const saveResult = await tryCatch(async () => {
     const [invitation] = await db
-      .insert(freelanceInvitation)
+      .insert(responseInvitation)
       .values({
         responseId,
         invitationText: textResult.data,
@@ -221,9 +230,9 @@ export async function generateFreelanceInvitation(
 
     return {
       invitationId: invitation.id,
-      invitationText: invitation.invitationText,
-      interviewUrl: invitation.interviewUrl,
-      score: response.screening?.detailedScore ?? 0,
+      invitationText: invitation.invitationText ?? "",
+      interviewUrl: invitation.interviewUrl ?? "",
+      score: responseData.screening?.score ?? 0,
     };
   }, "Failed to save invitation");
 

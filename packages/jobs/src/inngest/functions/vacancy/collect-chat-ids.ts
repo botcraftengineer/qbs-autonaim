@@ -192,7 +192,9 @@ export const collectChatIdsFunction = inngest.createFunction(
       // Обновляем chat_id и сопроводительное письмо для каждого отклика
       for (const resp of responses) {
         // Пытаемся извлечь resumeId из URL
-        const resumeIdFromUrl = extractResumeIdFromUrl(resp.resumeUrl);
+        const resumeIdFromUrl = resp.resumeUrl
+          ? extractResumeIdFromUrl(resp.resumeUrl)
+          : null;
 
         // Ищем соответствующий чат по resumeId в resources.RESUME
         const chat = allChats.find((c) => {
@@ -208,7 +210,7 @@ export const collectChatIdsFunction = inngest.createFunction(
             .update(response)
             .set({
               chatId: chat.id,
-              coverLetter: coverLetter,
+              coverLetter: coverLetter ?? undefined,
             })
             .where(eq(response.id, resp.id));
 

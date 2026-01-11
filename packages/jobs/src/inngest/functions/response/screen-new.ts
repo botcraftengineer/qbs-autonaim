@@ -130,18 +130,12 @@ export const screenNewResponsesFunction = inngest.createFunction(
     );
 
     const successful = results.filter(
-      (
-        r,
-      ): r is PromiseFulfilledResult<{
-        responseId: string;
-        vacancyId: string;
-        success: boolean;
-        score?: number;
-        error?: string;
-      }> => r.status === "fulfilled",
+      (r) => r.status === "fulfilled" && r.value.success,
     ).length;
     const failed = results.filter(
-      (r): r is PromiseRejectedResult => r.status === "rejected",
+      (r) =>
+        r.status === "rejected" ||
+        (r.status === "fulfilled" && !r.value.success),
     ).length;
 
     console.log(

@@ -26,15 +26,10 @@ export const interviewScoringSchema = z.object({
   score: z
     .number()
     .min(0)
-    .max(5)
-    .describe(
-      "Оценка от 0 до 5, где 0 - совсем не подходит, 5 - отлично подходит",
-    ),
-  detailedScore: z
-    .number()
-    .min(0)
     .max(100)
-    .describe("Детальная оценка от 0 до 100"),
+    .describe(
+      "Оценка от 0 до 100, где 0 - совсем не подходит, 100 - отлично подходит",
+    ),
   analysis: z
     .string()
     .describe("Подробный анализ кандидата на основе интервью, 3-5 предложений"),

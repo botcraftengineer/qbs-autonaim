@@ -2,11 +2,13 @@ import {
   and,
   desc,
   eq,
+  gig,
   interviewMessage,
   interviewScoring,
   interviewSession,
   response,
   sql,
+  vacancy,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
@@ -109,7 +111,6 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           .values({
             interviewSessionId: chatSessionId,
             responseId: responseId ?? undefined,
-            gigResponseId: gigResponseId ?? undefined,
             score: result.score,
             analysis: result.analysis,
           })
@@ -142,11 +143,11 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         const profileData = await step.run(
           "parse-profile",
           async (): Promise<ProfileData | null> => {
-            const response = await db.query.vacancyResponse.findFirst({
-              where: eq(vacancyResponse.id, responseId),
+            const responseRecord = await db.query.response.findFirst({
+              where: (r, { eq }) => eq(r.id, responseId),
             });
 
-            if (!response?.platformProfileUrl) {
+            if (!responseRecord?.platformProfileUrl) {
               console.log(
                 "⚠️ platformProfileUrl отсутствует, пропускаем парсинг профиля",
               );
@@ -155,7 +156,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
             try {
               const profile = await parseFreelancerProfile(
-                response.platformProfileUrl,
+                responseRecord.platformProfileUrl,
               );
 
               console.log("✅ Профиль распарсен", {
@@ -186,9 +187,14 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           }
 
           await db
-            .update(vacancyResponse)
-            .set(updateData)
-            .where(eq(vacancyResponse.id, responseId));
+            .update(response)
+            .set({
+              status: updateData.status,
+              profileData: updateData.profileData as
+                | Record<string, unknown>
+                | undefined,
+            })
+            .where(eq(response.id, responseId));
 
           console.log("✅ Response status updated to COMPLETED", {
             responseId,
@@ -198,21 +204,41 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
         // Отправляем уведомления
         await step.run("send-notifications", async () => {
-          const response = await db.query.vacancyResponse.findFirst({
-            where: eq(vacancyResponse.id, responseId),
-            with: {
-              vacancy: true,
-            },
+          const responseRecord = await db.query.response.findFirst({
+            where: (r, { eq }) => eq(r.id, responseId),
           });
 
-          if (!response?.vacancy?.workspaceId) {
+          if (!responseRecord) {
+            console.warn("⚠️ Response не найден для уведомления");
+            return;
+          }
+
+          // Получаем workspaceId из vacancy или gig
+          let workspaceId: string | undefined;
+          let entityId: string | undefined;
+
+          if (responseRecord.entityType === "vacancy") {
+            const vacancy = await db.query.vacancy.findFirst({
+              where: (v, { eq }) => eq(v.id, responseRecord.entityId),
+            });
+            workspaceId = vacancy?.workspaceId;
+            entityId = vacancy?.id;
+          } else if (responseRecord.entityType === "gig") {
+            const gig = await db.query.gig.findFirst({
+              where: (g, { eq }) => eq(g.id, responseRecord.entityId),
+            });
+            workspaceId = gig?.workspaceId;
+            entityId = gig?.id;
+          }
+
+          if (!workspaceId || !entityId) {
             console.warn("⚠️ Не удалось получить workspaceId для уведомления");
             return;
           }
 
           // Получаем скоринг
           const scoring = await db.query.interviewScoring.findFirst({
-            where: eq(interviewScoring.responseId, responseId),
+            where: (s, { eq }) => eq(s.responseId, responseId),
           });
 
           if (!scoring) {
@@ -224,28 +250,38 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           await inngest.send({
             name: "freelance/notification.send",
             data: {
-              workspaceId: response.vacancy.workspaceId,
-              vacancyId: response.vacancyId,
+              workspaceId,
+              vacancyId:
+                responseRecord.entityType === "vacancy" ? entityId : undefined,
               responseId,
               notificationType: "INTERVIEW_COMPLETED",
-              candidateName: response.candidateName ?? undefined,
+              candidateName: responseRecord.candidateName ?? undefined,
               score: scoring.score,
-              profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+              profileUrl:
+                responseRecord.platformProfileUrl ??
+                responseRecord.resumeUrl ??
+                undefined,
             },
           });
 
           // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
-          if (scoring.detailedScore >= 85) {
+          if (scoring.score >= 85) {
             await inngest.send({
               name: "freelance/notification.send",
               data: {
-                workspaceId: response.vacancy.workspaceId,
-                vacancyId: response.vacancyId,
+                workspaceId,
+                vacancyId:
+                  responseRecord.entityType === "vacancy"
+                    ? entityId
+                    : undefined,
                 responseId,
                 notificationType: "HIGH_SCORE_CANDIDATE",
-                candidateName: response.candidateName ?? undefined,
+                candidateName: responseRecord.candidateName ?? undefined,
                 score: scoring.score,
-                profileUrl: response.platformProfileUrl ?? response.resumeUrl,
+                profileUrl:
+                  responseRecord.platformProfileUrl ??
+                  responseRecord.resumeUrl ??
+                  undefined,
               },
             });
           }
@@ -264,11 +300,11 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         const gigProfileData = await step.run(
           "parse-gig-profile",
           async (): Promise<ProfileData | null> => {
-            const response = await db.query.gigResponse.findFirst({
-              where: eq(gigResponse.id, gigResponseId),
+            const responseRecord = await db.query.response.findFirst({
+              where: (r, { eq }) => eq(r.id, gigResponseId),
             });
 
-            if (!response?.profileUrl) {
+            if (!responseRecord?.profileUrl) {
               console.log(
                 "⚠️ profileUrl отсутствует, пропускаем парсинг профиля",
               );
@@ -276,7 +312,9 @@ export const webCompleteInterviewFunction = inngest.createFunction(
             }
 
             try {
-              const profile = await parseFreelancerProfile(response.profileUrl);
+              const profile = await parseFreelancerProfile(
+                responseRecord.profileUrl,
+              );
 
               console.log("✅ Профиль gig распарсен", {
                 platform: profile.platform,
@@ -295,11 +333,9 @@ export const webCompleteInterviewFunction = inngest.createFunction(
         await step.run("update-gig-response-status", async () => {
           const updateData: {
             status: "INTERVIEW";
-            updatedAt: Date;
             profileData?: StoredProfileData;
           } = {
             status: "INTERVIEW",
-            updatedAt: new Date(),
           };
 
           // Сохраняем данные профиля в поле profileData
@@ -309,9 +345,14 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           }
 
           await db
-            .update(gigResponse)
-            .set(updateData)
-            .where(eq(gigResponse.id, gigResponseId));
+            .update(response)
+            .set({
+              status: updateData.status,
+              profileData: updateData.profileData as
+                | Record<string, unknown>
+                | undefined,
+            })
+            .where(eq(response.id, gigResponseId));
 
           console.log("✅ Gig response status updated to INTERVIEW", {
             gigResponseId,
@@ -321,14 +362,21 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
         // Отправляем уведомления для gig
         await step.run("send-gig-notifications", async () => {
-          const response = await db.query.gigResponse.findFirst({
-            where: eq(gigResponse.id, gigResponseId),
-            with: {
-              gig: true,
-            },
+          const responseRecord = await db.query.response.findFirst({
+            where: (r, { eq }) => eq(r.id, gigResponseId),
           });
 
-          if (!response?.gig?.workspaceId) {
+          if (!responseRecord) {
+            console.warn("⚠️ Response не найден для уведомления gig");
+            return;
+          }
+
+          // Получаем workspaceId из gig
+          const gig = await db.query.gig.findFirst({
+            where: (g, { eq }) => eq(g.id, responseRecord.entityId),
+          });
+
+          if (!gig?.workspaceId) {
             console.warn(
               "⚠️ Не удалось получить workspaceId для уведомления gig",
             );
@@ -337,7 +385,7 @@ export const webCompleteInterviewFunction = inngest.createFunction(
 
           // Получаем скоринг
           const scoring = await db.query.interviewScoring.findFirst({
-            where: eq(interviewScoring.gigResponseId, gigResponseId),
+            where: (s, { eq }) => eq(s.responseId, gigResponseId),
           });
 
           if (!scoring) {
@@ -349,28 +397,28 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           await inngest.send({
             name: "freelance/notification.send",
             data: {
-              workspaceId: response.gig.workspaceId,
-              gigId: response.gigId,
+              workspaceId: gig.workspaceId,
+              gigId: gig.id,
               gigResponseId,
               notificationType: "INTERVIEW_COMPLETED",
-              candidateName: response.candidateName ?? undefined,
+              candidateName: responseRecord.candidateName ?? undefined,
               score: scoring.score,
-              profileUrl: response.profileUrl ?? undefined,
+              profileUrl: responseRecord.profileUrl ?? undefined,
             },
           });
 
           // Если кандидат высокооценённый (85+), отправляем приоритетное уведомление
-          if (scoring.detailedScore >= 85) {
+          if (scoring.score >= 85) {
             await inngest.send({
               name: "freelance/notification.send",
               data: {
-                workspaceId: response.gig.workspaceId,
-                gigId: response.gigId,
+                workspaceId: gig.workspaceId,
+                gigId: gig.id,
                 gigResponseId,
                 notificationType: "HIGH_SCORE_CANDIDATE",
-                candidateName: response.candidateName ?? undefined,
+                candidateName: responseRecord.candidateName ?? undefined,
                 score: scoring.score,
-                profileUrl: response.profileUrl ?? undefined,
+                profileUrl: responseRecord.profileUrl ?? undefined,
               },
             });
           }

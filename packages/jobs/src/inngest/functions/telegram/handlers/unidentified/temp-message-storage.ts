@@ -33,7 +33,7 @@ export async function saveTempMessage(params: {
 
   try {
     await db.insert(tempInterviewMessage).values({
-      tempConversationId,
+      tempSessionId: tempConversationId,
       chatId,
       sender,
       contentType,
@@ -91,7 +91,7 @@ export async function flushTempMessageBuffer(
     await db.transaction(async (tx) => {
       const messagesToInsert = bufferedMessages.map(
         (msg: BufferedTempMessageData) => ({
-          tempConversationId,
+          tempSessionId: tempConversationId,
           chatId,
           sender: msg.sender,
           contentType: msg.contentType,
@@ -139,7 +139,7 @@ export async function migrateTempMessages(
       const tempMessages = await tx
         .select()
         .from(tempInterviewMessage)
-        .where(eq(tempInterviewMessage.tempConversationId, tempConversationId))
+        .where(eq(tempInterviewMessage.tempSessionId, tempConversationId))
         .orderBy(tempInterviewMessage.createdAt);
 
       if (tempMessages.length === 0) {
@@ -168,7 +168,7 @@ export async function migrateTempMessages(
       // Удаляем временные сообщения
       await tx
         .delete(tempInterviewMessage)
-        .where(eq(tempInterviewMessage.tempConversationId, tempConversationId));
+        .where(eq(tempInterviewMessage.tempSessionId, tempConversationId));
 
       console.log("✅ Временные сообщения перенесены", {
         tempConversationId,

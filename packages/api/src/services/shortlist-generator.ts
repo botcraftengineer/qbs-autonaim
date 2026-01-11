@@ -63,8 +63,9 @@ export class ShortlistGenerator {
     const { minScore = 60, maxCandidates = 10, sortBy = "SCORE" } = options;
 
     // Получаем все отклики для вакансии
-    const responses = await db.query.vacancyResponse.findMany({
-      where: (response, { eq }) => eq(response.vacancyId, vacancyId),
+    const responses = await db.query.response.findMany({
+      where: (r, { eq, and }) =>
+        and(eq(r.entityType, "vacancy"), eq(r.entityId, vacancyId)),
     });
 
     // Get all screenings separately
@@ -84,11 +85,11 @@ export class ShortlistGenerator {
       responseIds.length > 0
         ? await db.query.interviewSession.findMany({
             where: (session, { inArray }) =>
-              inArray(session.vacancyResponseId, responseIds),
+              inArray(session.responseId, responseIds),
           })
         : [];
 
-    const sessionMap = new Map(sessions.map((s) => [s.vacancyResponseId, s]));
+    const sessionMap = new Map(sessions.map((s) => [s.responseId, s]));
 
     // Get all interview scorings separately
     const sessionIds = sessions.map((s) => s.id);
@@ -114,7 +115,7 @@ export class ShortlistGenerator {
           : null;
 
         // Получаем оценку анализа отклика
-        const responseScore = screening?.detailedScore ?? 0;
+        const responseScore = screening?.score ?? 0;
 
         // Получаем оценку интервью (если есть завершённое интервью)
         const interviewScore = interviewScoring?.score ?? null;

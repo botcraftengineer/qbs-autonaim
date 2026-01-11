@@ -68,12 +68,12 @@ export async function generateWelcomeMessage(
       {
         companyName: bot?.companyName || "",
         vacancyTitle: responseData.vacancy?.title || undefined,
-        candidateName: responseData.candidateName || null,
+        candidateName: responseData.candidateName ?? undefined,
         customWelcomeMessage: bot?.companyDescription || undefined,
       },
       {
         conversationHistory: [],
-        candidateName: responseData.candidateName || null,
+        candidateName: responseData.candidateName ?? undefined,
         vacancyTitle: responseData.vacancy?.title || undefined,
       },
     );
@@ -94,8 +94,8 @@ export async function generateWelcomeMessage(
   let finalMessage = aiResult.data.trim();
 
   // Add vacancy link
-  if (response.vacancy) {
-    finalMessage += `\n\n🔗 Ссылка на вакансию: https://hh.ru/vacancy/${response.vacancy.id}`;
+  if (responseData.vacancy) {
+    finalMessage += `\n\n🔗 Ссылка на вакансию: https://hh.ru/vacancy/${responseData.vacancy.id}`;
   }
 
   return { success: true, data: finalMessage };
@@ -168,8 +168,8 @@ export async function generateTelegramInviteMessage(
       entityId: responseId,
       metadata: {
         responseId,
-        entityId: response.entityId,
-        candidateName: response.candidateName,
+        entityId: responseData.entityId,
+        candidateName: responseData.candidateName ?? undefined,
       },
     });
     return text;
@@ -184,8 +184,8 @@ export async function generateTelegramInviteMessage(
   let finalMessage = aiResult.data.trim();
 
   // Добавляем пин-код в конце сообщения
-  if (response.telegramPinCode) {
-    finalMessage += `\n\nВаш пин-код: ${response.telegramPinCode}`;
+  if (responseData.telegramPinCode) {
+    finalMessage += `\n\nВаш пин-код: ${responseData.telegramPinCode}`;
   }
 
   return { success: true, data: finalMessage };
