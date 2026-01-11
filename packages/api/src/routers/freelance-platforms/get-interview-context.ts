@@ -71,7 +71,7 @@ export const getInterviewContext = publicProcedure
             ? {
                 min: gig.budgetMin,
                 max: gig.budgetMax,
-                currency: gig.budgetCurrency,
+                currency: "RUB",
               }
             : null,
         deadline: gig.deadline,

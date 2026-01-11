@@ -209,7 +209,6 @@ function GigError({
 function formatBudget(
   min?: number | null,
   max?: number | null,
-  currency = "RUB",
 ) {
   if (!min && !max) return "Не указан";
 
@@ -218,15 +217,15 @@ function formatBudget(
   };
 
   if (min && max) {
-    return `${formatAmount(min)}–${formatAmount(max)}\u00A0${currency}`;
+    return `${formatAmount(min)}–${formatAmount(max)}\u00A0RUB`;
   }
 
   if (min) {
-    return `от\u00A0${formatAmount(min)}\u00A0${currency}`;
+    return `от\u00A0${formatAmount(min)}\u00A0RUB`;
   }
 
   if (max) {
-    return `до\u00A0${formatAmount(max)}\u00A0${currency}`;
+    return `до\u00A0${formatAmount(max)}\u00A0RUB`;
   }
 
   return "Не указан";
@@ -320,13 +319,12 @@ const GigStats = memo(function GigStats({
 const ProjectDetails = memo(function ProjectDetails({
   budgetMin,
   budgetMax,
-  budgetCurrency,
+
   estimatedDuration,
   deadline,
 }: {
   budgetMin?: number | null;
   budgetMax?: number | null;
-  budgetCurrency?: string | null;
   estimatedDuration?: string | null;
   deadline?: Date | null;
 }) {
@@ -342,7 +340,7 @@ const ProjectDetails = memo(function ProjectDetails({
             Бюджет
           </div>
           <p className="font-medium text-sm sm:text-base hyphens-auto">
-            {formatBudget(budgetMin, budgetMax, budgetCurrency || "RUB")}
+            {formatBudget(budgetMin, budgetMax)}
           </p>
         </div>
 
@@ -722,7 +720,7 @@ export function GigDetailClient({
           <ProjectDetails
             budgetMin={gig.budgetMin}
             budgetMax={gig.budgetMax}
-            budgetCurrency={gig.budgetCurrency}
+
             estimatedDuration={gig.estimatedDuration}
             deadline={gig.deadline}
           />

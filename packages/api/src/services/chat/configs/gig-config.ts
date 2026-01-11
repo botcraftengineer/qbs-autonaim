@@ -25,7 +25,7 @@ interface GigMainContext {
   type: string;
   budgetMin: number | null;
   budgetMax: number | null;
-  budgetCurrency: string | null;
+
   deadline: Date | null;
   estimatedDuration: string | null;
   customBotInstructions: string | null;
@@ -36,7 +36,7 @@ interface CandidateData {
   candidateId: string;
   candidateName: string | null;
   proposedPrice: number | null;
-  proposedCurrency: string | null;
+
   proposedDeliveryDays: number | null;
   coverLetter: string | null;
   experience: string | null;
@@ -70,13 +70,12 @@ function formatGigMain(ctx: Record<string, unknown>): string {
   parts.push(`**Тип:** ${gig.type}`);
 
   if (gig.budgetMin !== null || gig.budgetMax !== null) {
-    const currency = gig.budgetCurrency || "RUB";
     if (gig.budgetMin !== null && gig.budgetMax !== null) {
-      parts.push(`**Бюджет:** ${gig.budgetMin}-${gig.budgetMax} ${currency}`);
+      parts.push(`**Бюджет:** ${gig.budgetMin}-${gig.budgetMax} RUB`);
     } else if (gig.budgetMin !== null) {
-      parts.push(`**Бюджет:** от ${gig.budgetMin} ${currency}`);
+      parts.push(`**Бюджет:** от ${gig.budgetMin} RUB`);
     } else if (gig.budgetMax !== null) {
-      parts.push(`**Бюджет:** до ${gig.budgetMax} ${currency}`);
+      parts.push(`**Бюджет:** до ${gig.budgetMax} RUB`);
     }
   }
 
@@ -145,8 +144,7 @@ function formatCandidate(candidate: CandidateData): string {
   parts.push(`### ${name}`);
 
   if (candidate.proposedPrice !== null) {
-    const currency = candidate.proposedCurrency || "RUB";
-    parts.push(`- **Цена:** ${candidate.proposedPrice} ${currency}`);
+    parts.push(`- **Цена:** ${candidate.proposedPrice} RUB`);
   } else {
     parts.push(`- **Цена:** не указана`);
   }

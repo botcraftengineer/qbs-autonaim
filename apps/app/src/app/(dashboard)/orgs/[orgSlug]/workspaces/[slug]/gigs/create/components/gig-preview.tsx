@@ -166,18 +166,18 @@ function PreviewContent({
             {draft.budgetMin === draft.budgetMax
               ? new Intl.NumberFormat("ru-RU", {
                   style: "currency",
-                  currency: draft.budgetCurrency || "RUB",
+                  currency: "RUB",
                   maximumFractionDigits: 0,
                 }).format(draft.budgetMin || 0)
               : `${new Intl.NumberFormat("ru-RU", {
                   style: "currency",
-                  currency: draft.budgetCurrency || "RUB",
+                  currency: "RUB",
                   maximumFractionDigits: 0,
                 }).format(draft.budgetMin || 0)} – ${new Intl.NumberFormat(
                   "ru-RU",
                   {
                     style: "currency",
-                    currency: draft.budgetCurrency || "RUB",
+                    currency: "RUB",
                     maximumFractionDigits: 0,
                   },
                 ).format(draft.budgetMax || 0)}`}

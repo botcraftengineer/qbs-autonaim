@@ -31,7 +31,7 @@ export interface GigDraft {
   requiredSkills: string;
   budgetMin: number | undefined;
   budgetMax: number | undefined;
-  budgetCurrency: string;
+
   estimatedDuration: string;
 }
 
@@ -55,7 +55,7 @@ export const formSchema = z.object({
   ]),
   budgetMin: z.number().optional(),
   budgetMax: z.number().optional(),
-  budgetCurrency: z.string().length(3),
+
   deadline: z.string(),
   estimatedDuration: z.string().max(100),
   deliverables: z.string(),

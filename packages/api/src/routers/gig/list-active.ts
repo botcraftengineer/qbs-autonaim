@@ -35,7 +35,7 @@ export const listActive = protectedProcedure
         type: true,
         budgetMin: true,
         budgetMax: true,
-        budgetCurrency: true,
+
         deadline: true,
         estimatedDuration: true,
         source: true,

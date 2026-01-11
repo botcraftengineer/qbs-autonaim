@@ -265,7 +265,7 @@ export async function POST(request: Request) {
           type: gig.type,
           budgetMin: gig.budgetMin,
           budgetMax: gig.budgetMax,
-          budgetCurrency: gig.budgetCurrency,
+
           estimatedDuration: gig.estimatedDuration,
           deadline: gig.deadline,
           customBotInstructions: gig.customBotInstructions,

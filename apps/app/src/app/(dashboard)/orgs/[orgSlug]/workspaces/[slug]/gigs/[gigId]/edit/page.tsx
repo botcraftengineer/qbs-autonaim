@@ -252,7 +252,7 @@ export default function EditGigPage({ params }: PageProps) {
                       Мин. бюджет
                     </div>
                     <p className="text-sm">
-                      {gig.budgetMin} {gig.budgetCurrency}
+                      {gig.budgetMin} RUB
                     </p>
                   </div>
                 )}
@@ -262,7 +262,7 @@ export default function EditGigPage({ params }: PageProps) {
                       Макс. бюджет
                     </div>
                     <p className="text-sm">
-                      {gig.budgetMax} {gig.budgetCurrency}
+                      {gig.budgetMax} RUB
                     </p>
                   </div>
                 )}

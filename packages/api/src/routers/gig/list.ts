@@ -32,7 +32,7 @@ export const list = protectedProcedure
         type: true,
         budgetMin: true,
         budgetMax: true,
-        budgetCurrency: true,
+
         deadline: true,
         estimatedDuration: true,
         source: true,

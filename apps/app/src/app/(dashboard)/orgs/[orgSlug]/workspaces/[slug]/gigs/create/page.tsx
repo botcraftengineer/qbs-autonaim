@@ -115,7 +115,7 @@ export default function CreateGigPage({ params }: PageProps) {
     requiredSkills: "",
     budgetMin: undefined,
     budgetMax: undefined,
-    budgetCurrency: "RUB",
+
     estimatedDuration: "",
   });
 
@@ -127,7 +127,7 @@ export default function CreateGigPage({ params }: PageProps) {
       type: "OTHER",
       budgetMin: undefined,
       budgetMax: undefined,
-      budgetCurrency: "RUB",
+
       deadline: "",
       estimatedDuration: "",
       deliverables: "",
@@ -239,7 +239,7 @@ export default function CreateGigPage({ params }: PageProps) {
           requiredSkills: "",
           budgetMin: wizardStateParam.budget?.min,
           budgetMax: wizardStateParam.budget?.max,
-          budgetCurrency: "RUB",
+
           estimatedDuration: wizardStateParam.timeline?.days
             ? String(wizardStateParam.timeline.days)
             : "",
@@ -267,7 +267,7 @@ export default function CreateGigPage({ params }: PageProps) {
           requiredSkills: validDoc.requiredSkills || "",
           budgetMin,
           budgetMax,
-          budgetCurrency: "RUB",
+
           estimatedDuration,
         };
 
@@ -311,7 +311,7 @@ export default function CreateGigPage({ params }: PageProps) {
           requiredSkills: draft.requiredSkills,
           budgetRange:
             draft.budgetMin && draft.budgetMax
-              ? `${draft.budgetMin}-${draft.budgetMax} ${draft.budgetCurrency}`
+              ? `${draft.budgetMin}-${draft.budgetMax} RUB`
               : undefined,
           timeline: draft.estimatedDuration,
         },
@@ -398,7 +398,7 @@ export default function CreateGigPage({ params }: PageProps) {
       type: draft.type,
       budgetMin: draft.budgetMin,
       budgetMax: draft.budgetMax,
-      budgetCurrency: "RUB",
+
       estimatedDuration: draft.estimatedDuration || undefined,
       deliverables: draft.deliverables || undefined,
       requiredSkills: draft.requiredSkills || undefined,
@@ -417,7 +417,7 @@ export default function CreateGigPage({ params }: PageProps) {
       type: v.type,
       budgetMin: v.budgetMin,
       budgetMax: v.budgetMax,
-      budgetCurrency: v.budgetCurrency,
+
       deadline: v.deadline ? new Date(v.deadline).toISOString() : undefined,
       estimatedDuration: v.estimatedDuration || undefined,
       deliverables: v.deliverables || undefined,

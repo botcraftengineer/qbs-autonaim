@@ -35,7 +35,7 @@ export interface GigData {
   type: string | null;
   budgetMin: number | null;
   budgetMax: number | null;
-  budgetCurrency: string | null;
+
   estimatedDuration: string | null;
   deadline: Date | null;
   customBotInstructions: string | null;

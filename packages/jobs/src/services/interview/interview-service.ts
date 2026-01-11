@@ -463,7 +463,6 @@ export async function createInterviewScoring(
 
     return {
       score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
-      detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
       analysis: "Failed to analyze interview automatically",
     };
   }
@@ -471,7 +470,6 @@ export async function createInterviewScoring(
   // Возвращаем результат
   return {
     score: result.data.score,
-    detailedScore: result.data.detailedScore,
     analysis: result.data.analysis,
   };
 }

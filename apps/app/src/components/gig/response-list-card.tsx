@@ -114,11 +114,9 @@ function formatDate(date: Date | null) {
   }).format(new Date(date));
 }
 
-function formatCurrency(amount: number | null, currency: string | null) {
+function formatCurrency(amount: number | null) {
   if (!amount) return null;
-  const currencySymbol =
-    currency === "USD" ? "$" : currency === "EUR" ? "€" : "₽";
-  return `${amount.toLocaleString("ru-RU")} ${currencySymbol}`;
+  return `${amount.toLocaleString("ru-RU")} ₽`;
 }
 
 export function ResponseListCard({
@@ -337,7 +335,6 @@ export function ResponseListCard({
                   <div className="font-medium truncate">
                     {formatCurrency(
                       response.proposedPrice,
-                      response.proposedCurrency,
                     )}
                   </div>
                 </div>
