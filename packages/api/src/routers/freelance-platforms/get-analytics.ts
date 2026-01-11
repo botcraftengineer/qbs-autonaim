@@ -1,4 +1,4 @@
-import { and, count, eq, gte, lte, sql } from "@qbs-autonaim/db";
+﻿import { and, count, eq, gte, lte, sql } from "@qbs-autonaim/db";
 import {
   responseScreening,
   response as responseTable,
@@ -253,7 +253,7 @@ export const getAnalytics = protectedProcedure
         },
         // Детальные данные
         timeToShortlist: timeToShortlist.map((v) => ({
-          vacancyId: v.entityId,
+          vacancyId: v.vacancyId,
           vacancyTitle: v.vacancyTitle,
           source: v.source,
           createdAt: v.createdAt,

@@ -1,8 +1,8 @@
-/**
+﻿/**
  * Submit Application Procedure
  *
  * Подаёт заявку кандидата после успешной преквалификации.
- * Создаёт vacancyResponse и связывает с сессией.
+ * Создаёт response и связывает с сессией.
  * Публичная процедура - не требует авторизации пользователя.
  */
 
@@ -81,7 +81,7 @@ export const submitApplication = publicProcedure
       const [vacancyData] = await ctx.db
         .select()
         .from(vacancy)
-        .where(eq(vacancy.id, session.entityId))
+        .where(eq(vacancy.id, session.vacancyId))
         .limit(1);
 
       if (!vacancyData) {
@@ -107,10 +107,10 @@ export const submitApplication = publicProcedure
       // Note: response schema requires candidateId and entityType/entityId
       // For prequalification, we use the session ID as reference
       const [newResponse] = await ctx.db
-        .insert(vacancyResponse)
+        .insert(response)
         .values({
           entityType: "vacancy",
-          entityId: session.entityId,
+          entityId: session.vacancyId,
           candidateId: resumeId,
           candidateName: candidateInfo?.name ?? null,
           phone: candidateInfo?.phone ?? null,

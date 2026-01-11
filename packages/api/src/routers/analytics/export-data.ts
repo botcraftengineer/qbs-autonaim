@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Export Data Procedure
  *
  * Экспортирует данные аналитики в CSV или JSON формате.
@@ -44,7 +44,7 @@ export const exportData = protectedProcedure
         workspaceId: input.workspaceId,
         period: input.period,
         format: input.format,
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
       });
 
       // Log audit event
@@ -59,7 +59,7 @@ export const exportData = protectedProcedure
           format: input.format,
           periodFrom: input.period.from.toISOString(),
           periodTo: input.period.to.toISOString(),
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
         },
       });
 

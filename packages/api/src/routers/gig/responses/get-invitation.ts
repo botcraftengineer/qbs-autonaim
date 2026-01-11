@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import { responseInvitation, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -27,7 +27,7 @@ export const getInvitation = protectedProcedure
 
     // Получаем отклик с гигом
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         gig: true,
       },

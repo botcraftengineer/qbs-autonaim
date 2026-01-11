@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Dialogue Handler for Prequalification Service
  *
  * Обрабатывает сообщения диалога между кандидатом и AI-ассистентом.
@@ -71,7 +71,7 @@ export class DialogueHandler {
       .select({
         id: prequalificationSession.id,
         workspaceId: prequalificationSession.workspaceId,
-        vacancyId: prequalificationSession.entityId,
+        vacancyId: prequalificationSession.vacancyId,
         interviewSessionId: prequalificationSession.interviewSessionId,
         parsedResume: prequalificationSession.parsedResume,
         status: prequalificationSession.status,

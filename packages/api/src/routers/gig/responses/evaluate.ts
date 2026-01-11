@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import { response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -27,7 +27,7 @@ export const evaluate = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         gig: true,
       },

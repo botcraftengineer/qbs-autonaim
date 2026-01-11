@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import { gig } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -27,7 +27,7 @@ export const deleteGig = protectedProcedure
 
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.entityId),
+        eq(gig.id, input.gigId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -42,7 +42,7 @@ export const deleteGig = protectedProcedure
     await ctx.db
       .delete(gig)
       .where(
-        and(eq(gig.id, input.entityId), eq(gig.workspaceId, input.workspaceId)),
+        and(eq(gig.id, input.gigId), eq(gig.workspaceId, input.workspaceId)),
       );
 
     return { success: true };

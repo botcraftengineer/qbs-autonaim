@@ -1,4 +1,4 @@
-import type { botSettings } from "@qbs-autonaim/db/schema";
+﻿import type { botSettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -63,15 +63,15 @@ function buildInvitationPrompt(
   const companySection = botSettings
     ? `
 ИНФОРМАЦИЯ О КОМПАНИИ:
-Название: ${botSettings.name}
-${botSettings.description ? `Описание: ${botSettings.description}` : ""}
-${botSettings.website ? `Сайт: ${botSettings.website}` : ""}
+Название: ${botSettings.companyName}
+${botSettings.companyDescription ? `Описание: ${botSettings.companyDescription}` : ""}
+${botSettings.companyWebsite ? `Сайт: ${botSettings.companyWebsite}` : ""}
 ${botSettings.botName ? `Имя рекрутера: ${botSettings.botName}` : ""}
 ${botSettings.botRole ? `Должность рекрутера: ${botSettings.botRole}` : ""}
 `
     : "";
 
-  const companyName = botSettings?.name || "";
+  const companyName = botSettings?.companyName || "";
   const recruiterName = botSettings?.botName || "";
   const recruiterRole = botSettings?.botRole || "";
 

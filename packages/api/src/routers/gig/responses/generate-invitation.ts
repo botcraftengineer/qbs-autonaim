@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import {
   interviewLink,
   responseInvitation,
@@ -53,7 +53,7 @@ export const generateInvitation = protectedProcedure
 
     // Получаем отклик с гигом
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         gig: true,
       },

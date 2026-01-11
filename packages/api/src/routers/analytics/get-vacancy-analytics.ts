@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Get Vacancy Analytics Procedure
  *
  * Получает аналитику по конкретной вакансии.
@@ -40,7 +40,7 @@ export const getVacancyAnalytics = protectedProcedure
 
     try {
       const vacancyAnalytics = await analyticsAggregator.getVacancyAnalytics({
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
         workspaceId: input.workspaceId,
         period: input.period,
       });

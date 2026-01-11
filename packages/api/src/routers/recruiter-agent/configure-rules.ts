@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Configure Rules procedure для AI-ассистента рекрутера
  *
  * Управление правилами автоматизации:
@@ -451,7 +451,7 @@ export const getRules = protectedProcedure
         autonomyLevel: rule.autonomyLevel,
         priority: rule.priority,
         enabled: rule.enabled,
-        vacancyId: rule.entityId,
+        vacancyId: rule.vacancyId,
         stats: rule.stats,
         createdAt: rule.createdAt,
         updatedAt: rule.updatedAt,

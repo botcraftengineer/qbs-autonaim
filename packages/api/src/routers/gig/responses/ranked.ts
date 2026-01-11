@@ -1,4 +1,4 @@
-import { getAIModel } from "@qbs-autonaim/lib/ai";
+﻿import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { RankingService } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -51,7 +51,7 @@ export const ranked = protectedProcedure
 
     // Получаем ранжированных кандидатов из БД
     const result = await rankingService.getRankedCandidates(
-      input.entityId,
+      input.gigId,
       input.workspaceId,
       {
         minScore: input.minScore,

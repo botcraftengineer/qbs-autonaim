@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Get Result Procedure
  *
  * Получает результат преквалификации для кандидата.
@@ -79,7 +79,7 @@ export const getResult = publicProcedure
       const [vacancyData] = await ctx.db
         .select()
         .from(vacancy)
-        .where(eq(vacancy.id, session.entityId))
+        .where(eq(vacancy.id, session.vacancyId))
         .limit(1);
 
       if (!vacancyData) {

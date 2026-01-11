@@ -1,4 +1,4 @@
-import { and, count, eq } from "@qbs-autonaim/db";
+﻿import { and, count, eq } from "@qbs-autonaim/db";
 import { gig, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -28,7 +28,7 @@ export const countResponses = protectedProcedure
     // Проверяем что gig принадлежит workspace
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.entityId),
+        eq(gig.id, input.gigId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -44,7 +44,7 @@ export const countResponses = protectedProcedure
     const totalResult = await ctx.db
       .select({ count: count() })
       .from(response)
-      .where(eq(gigResponse.entityId, input.entityId));
+      .where(eq(response.entityId, input.gigId));
 
     const total = totalResult[0]?.count ?? 0;
 
@@ -53,7 +53,7 @@ export const countResponses = protectedProcedure
       .select({ count: count() })
       .from(response)
       .where(
-        and(eq(gigResponse.entityId, input.entityId), eq(gigResponse.status, "NEW")),
+        and(eq(response.entityId, input.gigId), eq(response.status, "NEW")),
       );
 
     const newCount = newResult[0]?.count ?? 0;

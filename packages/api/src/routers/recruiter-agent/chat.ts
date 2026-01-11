@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Chat procedure для AI-ассистента рекрутера
  *
  * Реализует streaming диалог с агентом через SSE
@@ -103,9 +103,9 @@ export const chat = protectedProcedure
         ? {
             id: typeof botSettings.id,
             workspaceId: typeof botSettings.workspaceId,
-            name: typeof botSettings.name,
-            website: typeof botSettings.website,
-            description: typeof botSettings.description,
+            name: typeof botSettings.companyName,
+            website: typeof botSettings.companyWebsite,
+            description: typeof botSettings.companyDescription,
             botName: typeof botSettings.botName,
             botRole: typeof botSettings.botRole,
           }

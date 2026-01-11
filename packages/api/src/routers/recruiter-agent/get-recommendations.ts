@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Get Recommendations procedure для AI-ассистента рекрутера
  *
  * Получает рекомендации агента для:
@@ -207,7 +207,7 @@ export const getUndoableActions = protectedProcedure
         ruleId: action.ruleId,
         ruleName: action.ruleName,
         candidateId: action.candidateId,
-        vacancyId: action.entityId,
+        vacancyId: action.vacancyId,
         actionType: action.action.type,
         status: action.status,
         explanation: action.explanation,

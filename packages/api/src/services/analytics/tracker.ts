@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Tracker Service
  *
  * Сервис для записи событий аналитики преквалификации.
@@ -29,7 +29,7 @@ export class AnalyticsTracker {
         .insert(analyticsEvent)
         .values({
           workspaceId: input.workspaceId,
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
           sessionId: input.sessionId,
           eventType: input.eventType,
           metadata: input.metadata,
@@ -197,7 +197,7 @@ export class AnalyticsTracker {
         .values(
           events.map((e) => ({
             workspaceId: e.workspaceId,
-            vacancyId: e.entityId,
+            vacancyId: e.vacancyId,
             sessionId: e.sessionId,
             eventType: e.eventType,
             metadata: e.metadata,

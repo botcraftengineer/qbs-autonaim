@@ -1,4 +1,4 @@
-import { env, paths } from "@qbs-autonaim/config";
+﻿import { env, paths } from "@qbs-autonaim/config";
 
 import { WorkspaceInviteEmail } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
@@ -65,9 +65,9 @@ export const add = protectedProcedure
 
       await sendEmail({
         to: [input.email],
-        subject: `Приглашение в ${workspace.botSettings?.companyName}`,
+        subject: `Приглашение в ${workspace.name}`,
         react: WorkspaceInviteEmail({
-          workspaceName: workspace.botSettings?.companyName,
+          workspaceName: workspace.name,
           workspaceLogo: workspace.logo || undefined,
           inviterName: ctx.session.user.name || ctx.session.user.email,
           inviteLink,

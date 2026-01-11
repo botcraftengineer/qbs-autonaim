@@ -1,6 +1,6 @@
-import { and, eq, sql } from "@qbs-autonaim/db";
+﻿import { and, eq, sql } from "@qbs-autonaim/db";
 import {
-  type GigResponse,
+  type response,
   gig,
   importSourceValues,
   response as responseTable,
@@ -50,7 +50,7 @@ export const create = protectedProcedure
     // Проверяем что gig существует и принадлежит workspace
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.entityId),
+        eq(gig.id, input.gigId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -65,8 +65,8 @@ export const create = protectedProcedure
     // Проверяем дубликат
     const existingResponse = await ctx.db.query.response.findFirst({
       where: and(
-        eq(gigResponse.entityId, input.entityId),
-        eq(gigResponse.candidateId, input.candidateId),
+        eq(response.entityId, input.gigId),
+        eq(response.candidateId, input.candidateId),
       ),
     });
 
@@ -77,12 +77,12 @@ export const create = protectedProcedure
       });
     }
 
-    let newResponse: GigResponse | undefined;
+    let newResponse: response | undefined;
     try {
       const result = await ctx.db
-        .insert(gigResponse)
+        .insert(response)
         .values({
-          gigId: input.entityId,
+          gigId: input.gigId,
           candidateId: input.candidateId,
           candidateName: input.candidateName,
           profileUrl: input.profileUrl,
@@ -132,14 +132,14 @@ export const create = protectedProcedure
         responses: sql`COALESCE(${gig.responses}, 0) + 1`,
         newResponses: sql`COALESCE(${gig.newResponses}, 0) + 1`,
       })
-      .where(eq(gig.id, input.entityId));
+      .where(eq(gig.id, input.gigId));
 
     // Отправляем событие в Inngest для пересчета рейтинга
     try {
       await inngest.send({
         name: "gig/ranking.recalculate",
         data: {
-          gigId: input.entityId,
+          gigId: input.gigId,
           workspaceId: input.workspaceId,
           triggeredBy: "response.created",
         },

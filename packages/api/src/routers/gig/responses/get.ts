@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import { response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -26,7 +26,7 @@ export const get = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         screening: true,
         gig: true,

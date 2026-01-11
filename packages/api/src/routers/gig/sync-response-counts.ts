@@ -1,4 +1,4 @@
-import { and, count, eq } from "@qbs-autonaim/db";
+﻿import { and, count, eq } from "@qbs-autonaim/db";
 import { gig, response } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -32,7 +32,7 @@ export const syncResponseCounts = protectedProcedure
     // Проверяем что gig принадлежит workspace
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.entityId),
+        eq(gig.id, input.gigId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -49,7 +49,7 @@ export const syncResponseCounts = protectedProcedure
       .select({ count: count() })
       .from(response)
       .where(
-        and(eq(response.entityType, "gig"), eq(response.entityId, input.entityId)),
+        and(eq(response.entityType, "gig"), eq(response.entityId, input.gigId)),
       );
 
     const total = totalResult[0]?.count ?? 0;
@@ -61,7 +61,7 @@ export const syncResponseCounts = protectedProcedure
       .where(
         and(
           eq(response.entityType, "gig"),
-          eq(response.entityId, input.entityId),
+          eq(response.entityId, input.gigId),
           eq(response.status, "NEW"),
         ),
       );
@@ -75,7 +75,7 @@ export const syncResponseCounts = protectedProcedure
         responses: total,
         newResponses: newCount,
       })
-      .where(eq(gig.id, input.entityId));
+      .where(eq(gig.id, input.gigId));
 
     return {
       total,

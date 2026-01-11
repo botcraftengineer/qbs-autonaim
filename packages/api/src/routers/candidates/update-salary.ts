@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import {
   response as responseTable,
   vacancy as vacancyTable,
@@ -13,7 +13,7 @@ export const updateSalaryExpectations = protectedProcedure
     z.object({
       candidateId: uuidv7Schema,
       workspaceId: workspaceIdSchema,
-      salaryExpectations: z.string().max(200).optional(),
+      salaryExpectationsAmount: z.string().max(200).optional(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
@@ -66,7 +66,7 @@ export const updateSalaryExpectations = protectedProcedure
     await ctx.db
       .update(responseTable)
       .set({
-        salaryExpectations: input.salaryExpectationsAmount,
+        salaryExpectationsAmount: input.salaryExpectationsAmount,
         updatedAt: new Date(),
       })
       .where(

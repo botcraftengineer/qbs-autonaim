@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Send Message Procedure
  *
  * Отправляет сообщение от кандидата в диалог преквалификации.
@@ -97,7 +97,7 @@ export const sendMessage = publicProcedure
         generationName: "prequalification-dialogue",
         metadata: {
           sessionId: input.sessionId,
-          vacancyId: dialogueContext.entityId,
+          vacancyId: dialogueContext.vacancyId,
         },
       });
 

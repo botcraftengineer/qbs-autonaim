@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Конфигурация промпта для vacancy
  */
 
@@ -17,7 +17,7 @@ interface CandidateData {
   id: string;
   candidateId: string;
   candidateName: string | null;
-  salaryExpectations: string | null;
+  salaryExpectationsAmount: string | null;
   coverLetter: string | null;
   experience: string | null;
   profileUrl: string | null;

@@ -1,4 +1,4 @@
-import {
+﻿import {
   interviewSession,
   response as responseTable,
   vacancy as vacancyTable,
@@ -20,7 +20,7 @@ export const getConversationByResponseIdRouter = protectedProcedure
     );
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(vacancyResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
     });
 
     if (!response) {

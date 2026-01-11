@@ -1,4 +1,4 @@
-import { inngest } from "@qbs-autonaim/jobs/client";
+﻿import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -36,7 +36,7 @@ export const recalculateRanking = protectedProcedure
       await inngest.send({
         name: "gig/ranking.recalculate",
         data: {
-          gigId: input.entityId,
+          gigId: input.gigId,
           workspaceId: input.workspaceId,
           triggeredBy: ctx.session.user.id,
         },
@@ -45,7 +45,7 @@ export const recalculateRanking = protectedProcedure
       // Структурированное логирование ошибки
       console.log({
         msg: "Не удалось поставить задачу на пересчет рейтинга",
-        gigId: input.entityId,
+        gigId: input.gigId,
         workspaceId: input.workspaceId,
         errorMessage: String((err as Error)?.message || err),
         errorStack: (err as Error)?.stack,

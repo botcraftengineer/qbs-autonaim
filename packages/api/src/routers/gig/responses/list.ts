@@ -1,4 +1,4 @@
-import { and, desc, eq } from "@qbs-autonaim/db";
+﻿import { and, desc, eq } from "@qbs-autonaim/db";
 import { gig, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -28,7 +28,7 @@ export const list = protectedProcedure
     // Проверяем что gig принадлежит workspace
     const existingGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.entityId),
+        eq(gig.id, input.gigId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -41,11 +41,11 @@ export const list = protectedProcedure
     }
 
     return ctx.db.query.response.findMany({
-      where: eq(gigResponse.entityId, input.entityId),
+      where: eq(response.entityId, input.gigId),
       with: {
         screening: true,
         interviewScoring: true,
       },
-      orderBy: [desc(gigResponse.createdAt)],
+      orderBy: [desc(response.createdAt)],
     });
   });

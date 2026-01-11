@@ -1,4 +1,4 @@
-import { workspaceIdSchema } from "@qbs-autonaim/validators";
+﻿import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { InterviewLinkGenerator } from "../../services";
@@ -29,7 +29,7 @@ export const generateInterviewLink = protectedProcedure
     const vacancy = await ctx.db.query.vacancy.findFirst({
       where: (vacancy, { and, eq }) =>
         and(
-          eq(vacancy.id, input.entityId),
+          eq(vacancy.id, input.vacancyId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
     });
@@ -43,7 +43,7 @@ export const generateInterviewLink = protectedProcedure
 
     // Генерируем ссылку на интервью
     const linkGenerator = new InterviewLinkGenerator();
-    const interviewLink = await linkGenerator.generateLink(input.entityId);
+    const interviewLink = await linkGenerator.generateLink(input.vacancyId);
 
     return {
       id: interviewLink.id,

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Create Prequalification Session Procedure
  *
  * Создаёт новую сессию преквалификации для кандидата.
@@ -26,7 +26,7 @@ export const createSession = publicProcedure
     try {
       const result = await sessionManager.createSession({
         workspaceId: input.workspaceId,
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
         candidateConsent: input.candidateConsent,
         source: input.source,
         userAgent: ctx.userAgent,

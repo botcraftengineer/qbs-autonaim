@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import { interviewLink, vacancy } from "@qbs-autonaim/db/schema";
 import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
@@ -30,7 +30,7 @@ export const getInterviewLink = protectedProcedure
     // Проверяем, существует ли вакансия и принадлежит ли она workspace
     const vacancyData = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.entityId),
+        eq(vacancy.id, input.vacancyId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -46,7 +46,7 @@ export const getInterviewLink = protectedProcedure
     const activeInterviewLink = await ctx.db.query.interviewLink.findFirst({
       where: and(
         eq(interviewLink.entityType, "vacancy"),
-        eq(interviewLink.entityId, input.entityId),
+        eq(interviewLink.entityId, input.vacancyId),
         eq(interviewLink.isActive, true),
       ),
     });

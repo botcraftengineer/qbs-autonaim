@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import { vacancy as vacancyTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -24,7 +24,7 @@ export const getInterviewContext = publicProcedure
       where: (interviewSession, { eq }) =>
         eq(interviewSession.id, input.interviewSessionId),
       with: { response: true,
-        gigResponse: {
+        response: {
           with: {
             gig: true,
           },

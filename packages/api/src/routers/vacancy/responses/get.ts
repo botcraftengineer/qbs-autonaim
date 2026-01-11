@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import {
   interviewScoring as interviewScoringTable,
   interviewSession,
@@ -30,7 +30,7 @@ export const get = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(vacancyResponse.id, input.id),
+      where: eq(response.id, input.id),
     });
 
     if (!response) {

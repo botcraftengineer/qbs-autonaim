@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Gig AI Chat Context Loaders
  *
  * Сервисы для загрузки контекста gig задания и кандидатов для AI чата.
@@ -7,7 +7,7 @@
 import {
   gig,
   response as responseTable,
-  gigResponseScreening,
+  responseScreening,
   interviewScoring,
 } from "@qbs-autonaim/db";
 import type { db } from "@qbs-autonaim/db/client";
@@ -142,7 +142,7 @@ export async function loadCandidatesContext(
 ): Promise<CandidatesContext> {
   // Загружаем все отклики с screening и interview данными
   const responses = await database.query.response.findMany({
-    where: eq(gigResponse.entityId, gigId),
+    where: eq(response.vacancyId, gigId),
     columns: {
       id: true,
       candidateId: true,
@@ -176,8 +176,8 @@ export async function loadCandidatesContext(
 
   if (responseIds.length > 0) {
     for (const responseId of responseIds) {
-      const screening = await database.query.gigResponseScreening.findFirst({
-        where: eq(gigResponseScreening.responseId, responseId),
+      const screening = await database.query.responseScreening.findFirst({
+        where: eq(responseScreening.responseId, responseId),
         columns: {
           responseId: true,
           score: true,

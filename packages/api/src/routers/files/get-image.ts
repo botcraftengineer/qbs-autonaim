@@ -1,4 +1,4 @@
-import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
+﻿import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -30,14 +30,14 @@ export const getImageUrl = protectedProcedure
 
     // Получаем файл из БД с проверкой принадлежности к workspace
     // Файлы могут быть связаны через:
-    // 1. vacancyResponse (resumePdfFileId, photoFileId) → vacancy → workspace
-    // 2. interviewMessage (fileId) → interviewSession → vacancyResponse → vacancy → workspace
+    // 1. response (resumePdfFileId, photoFileId) → vacancy → workspace
+    // 2. interviewMessage (fileId) → interviewSession → response → vacancy → workspace
     const fileRecord = await ctx.db.query.file.findFirst({
       where: (files, { eq }) => eq(files.id, input.fileId),
       with: {
-        // Проверяем связь через vacancyResponse (resumePdfFileId)
+        // Проверяем связь через response (resumePdfFileId)
         responsesAsResumePdf: true,
-        // Проверяем связь через vacancyResponse (photoFileId)
+        // Проверяем связь через response (photoFileId)
         responsesAsPhoto: true,
         // Проверяем связь через interviewMessage
         interviewMessages: {

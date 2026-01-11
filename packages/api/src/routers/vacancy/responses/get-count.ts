@@ -1,4 +1,4 @@
-import { and, count as countFn, eq } from "@qbs-autonaim/db";
+﻿import { and, count as countFn, eq } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -29,7 +29,7 @@ export const getCount = protectedProcedure
     // Проверка принадлежности вакансии к workspace
     const vacancyCheck = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.entityId),
+        eq(vacancy.id, input.vacancyId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -47,7 +47,7 @@ export const getCount = protectedProcedure
       .where(
         and(
           eq(responseTable.entityType, "vacancy"),
-          eq(responseTable.entityId, input.entityId),
+          eq(responseTable.entityId, input.vacancyId),
         ),
       );
 

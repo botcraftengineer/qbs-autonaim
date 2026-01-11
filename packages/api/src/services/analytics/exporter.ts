@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Exporter Service
  *
  * Сервис для экспорта данных аналитики в различных форматах.
@@ -84,13 +84,13 @@ export class AnalyticsExporter {
     ];
 
     if (vacancyId) {
-      conditions.push(eq(prequalificationSession.entityId, vacancyId));
+      conditions.push(eq(prequalificationSession.vacancyId, vacancyId));
     }
 
     const sessions = await this.db
       .select({
         sessionId: prequalificationSession.id,
-        vacancyId: prequalificationSession.entityId,
+        vacancyId: prequalificationSession.vacancyId,
         vacancyTitle: vacancy.title,
         status: prequalificationSession.status,
         source: prequalificationSession.source,
@@ -100,13 +100,13 @@ export class AnalyticsExporter {
         updatedAt: prequalificationSession.updatedAt,
       })
       .from(prequalificationSession)
-      .innerJoin(vacancy, eq(prequalificationSession.entityId, vacancy.id))
+      .innerJoin(vacancy, eq(prequalificationSession.vacancyId, vacancy.id))
       .where(and(...conditions))
       .orderBy(prequalificationSession.createdAt);
 
     return sessions.map((s) => ({
       sessionId: s.sessionId,
-      vacancyId: s.entityId,
+      vacancyId: s.vacancyId,
       vacancyTitle: s.vacancyTitle,
       status: s.status,
       source: s.source,
@@ -169,7 +169,7 @@ export class AnalyticsExporter {
     // Строки данных
     const rows = sessions.map((s) => [
       this.escapeCsvValue(s.sessionId),
-      this.escapeCsvValue(s.entityId),
+      this.escapeCsvValue(s.vacancyId),
       this.escapeCsvValue(s.vacancyTitle),
       this.escapeCsvValue(s.status),
       this.escapeCsvValue(s.source),

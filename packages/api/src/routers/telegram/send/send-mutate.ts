@@ -1,4 +1,4 @@
-import {
+﻿import {
   eq,
   interviewMessage,
   interviewSession,
@@ -34,12 +34,12 @@ export const sendMutateRouter = protectedProcedure
     const sessionData = await ctx.db
       .select({
         id: interviewSession.id,
-        chatId: vacancyResponse.chatId,
+        chatId: response.chatId,
       })
       .from(interviewSession)
       .leftJoin(
-        vacancyResponse,
-        eq(interviewSession.responseId, vacancyResponse.id),
+        response,
+        eq(interviewSession.responseId, response.id),
       )
       .where(eq(interviewSession.id, input.sessionId))
       .limit(1);

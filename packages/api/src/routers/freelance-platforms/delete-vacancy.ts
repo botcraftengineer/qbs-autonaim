@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
@@ -39,14 +39,14 @@ export const deleteVacancy = protectedProcedure
       const existingVacancy = await ctx.db.query.vacancy.findFirst({
         where: (vacancy, { eq, and }) =>
           and(
-            eq(vacancy.id, input.entityId),
+            eq(vacancy.id, input.vacancyId),
             eq(vacancy.workspaceId, input.workspaceId),
           ),
       });
 
       if (!existingVacancy) {
         throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
           workspaceId: input.workspaceId,
         });
       }
@@ -67,7 +67,7 @@ export const deleteVacancy = protectedProcedure
           })
           .where(
             and(
-              eq(responseTable.entityId, input.entityId),
+              eq(responseTable.entityId, input.vacancyId),
               eq(responseTable.entityType, "vacancy"),
             ),
           );
@@ -78,12 +78,12 @@ export const deleteVacancy = protectedProcedure
           .set({
             isActive: false,
           })
-          .where(eq(vacancy.id, input.entityId));
+          .where(eq(vacancy.id, input.vacancyId));
 
         // Логируем анонимизацию
         await ctx.auditLogger.logVacancyDeletion({
           userId: ctx.session.user.id,
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
           deletionType: "anonymize",
           ipAddress: ctx.ipAddress,
           userAgent: ctx.userAgent,
@@ -97,14 +97,14 @@ export const deleteVacancy = protectedProcedure
         // Логируем удаление перед фактическим удалением
         await ctx.auditLogger.logVacancyDeletion({
           userId: ctx.session.user.id,
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
           deletionType: "delete",
           ipAddress: ctx.ipAddress,
           userAgent: ctx.userAgent,
         });
 
         // Удаляем вакансию (каскадное удаление удалит и отклики)
-        await ctx.db.delete(vacancy).where(eq(vacancy.id, input.entityId));
+        await ctx.db.delete(vacancy).where(eq(vacancy.id, input.vacancyId));
 
         return {
           success: true,
@@ -116,7 +116,7 @@ export const deleteVacancy = protectedProcedure
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
         operation: "delete_vacancy",
       });
     }

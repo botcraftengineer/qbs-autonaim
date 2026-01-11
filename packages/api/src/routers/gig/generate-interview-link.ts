@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import { gig } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -28,7 +28,7 @@ export const generateInterviewLink = protectedProcedure
 
     const foundGig = await ctx.db.query.gig.findFirst({
       where: and(
-        eq(gig.id, input.entityId),
+        eq(gig.id, input.gigId),
         eq(gig.workspaceId, input.workspaceId),
       ),
     });
@@ -41,7 +41,7 @@ export const generateInterviewLink = protectedProcedure
     }
 
     const linkGenerator = new GigInterviewLinkGenerator();
-    const link = await linkGenerator.generateLink(input.entityId);
+    const link = await linkGenerator.generateLink(input.gigId);
 
     return {
       id: link.id,

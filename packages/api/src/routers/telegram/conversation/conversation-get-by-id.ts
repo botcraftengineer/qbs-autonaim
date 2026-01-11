@@ -1,4 +1,4 @@
-import {
+﻿import {
   interviewSession,
   response as responseTable,
   vacancy as vacancyTable,
@@ -27,10 +27,10 @@ export const getConversationByIdRouter = protectedProcedure
       return null;
     }
 
-    // Check workspace access through vacancyResponse
+    // Check workspace access through response
     if (session.responseId) {
       const response = await ctx.db.query.response.findFirst({
-        where: eq(vacancyResponse.id, session.responseId),
+        where: eq(response.id, session.responseId),
       });
 
       if (response) {

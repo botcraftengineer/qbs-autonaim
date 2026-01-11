@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import {
   response as responseTable,
   interviewMessage,
@@ -153,8 +153,8 @@ async function handleVacancyInterview(
   // Проверяем дубликаты
   const existingResponse = await ctx.db.query.response.findFirst({
     where: and(
-      eq(vacancyResponse.entityId, vacancyLink.entityId),
-      eq(vacancyResponse.platformProfileUrl, normalizedProfileUrl),
+      eq(response.entityId, vacancyLink.entityId),
+      eq(response.platformProfileUrl, normalizedProfileUrl),
     ),
   });
 
@@ -170,7 +170,7 @@ async function handleVacancyInterview(
 
   // Создаём отклик
   const [response] = await ctx.db
-    .insert(vacancyResponse)
+    .insert(response)
     .values({
       vacancyId: vacancyLink.entityId,
       resumeId: normalizedProfileUrl,
@@ -224,7 +224,7 @@ async function handleVacancyInterview(
   const botName =
     vacancy.workspace?.botSettings?.botName || "Ассистент по найму";
   const companyName =
-    vacancy.workspace?.botSettings?.name || "нашей компании";
+    vacancy.workspace?.botSettings?.companyName || "нашей компании";
 
   const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
 
@@ -319,7 +319,7 @@ async function handleGigInterview(
 
   // Создаём отклик для гига
   const [response] = await ctx.db
-    .insert(gigResponse)
+    .insert(response)
     .values({
       gigId: gigLink.entityId,
       candidateId: normalizedCandidateId,
@@ -377,7 +377,7 @@ async function handleGigInterview(
   // Генерируем приветственное сообщение
   const botName =
     gig.workspace?.botSettings?.botName || "Ассистент по найму";
-  const companyName = gig.workspace?.botSettings?.name || "нашей компании";
+  const companyName = gig.workspace?.botSettings?.companyName || "нашей компании";
 
   const welcomeMessage = `Здравствуйте! 👋
 

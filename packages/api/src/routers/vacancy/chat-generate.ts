@@ -1,4 +1,4 @@
-import type { botSettings } from "@qbs-autonaim/db/schema";
+﻿import type { botSettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -137,9 +137,9 @@ ${currentDocument.customOrganizationalQuestions ? `Организационны�
   const companySection = botSettings
     ? `
 НАСТРОЙКИ КОМПАНИИ:
-Название компании: ${botSettings.name}
-${botSettings.description ? `Описание компании: ${botSettings.description}` : ""}
-${botSettings.website ? `Сайт: ${botSettings.website}` : ""}
+Название компании: ${botSettings.companyName}
+${botSettings.companyDescription ? `Описание компании: ${botSettings.companyDescription}` : ""}
+${botSettings.companyWebsite ? `Сайт: ${botSettings.companyWebsite}` : ""}
 ${botSettings.botName ? `Имя бота-рекрутера: ${botSettings.botName}` : ""}
 ${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
 `
@@ -147,13 +147,13 @@ ${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
 
   const botPersonality =
     botSettings?.botName && botSettings?.botRole
-      ? `Ты — ${botSettings.botName}, ${botSettings.botRole} компании "${botSettings.name}".`
-      : typeof botSettings?.name
-        ? `Ты — эксперт по подбору персонала для компании "${botSettings.name}".`
+      ? `Ты — ${botSettings.botName}, ${botSettings.botRole} компании "${botSettings.companyName}".`
+      : typeof botSettings?.companyName
+        ? `Ты — эксперт по подбору персонала для компании "${botSettings.companyName}".`
         : "Ты — эксперт по подбору персонала и созданию вакансий.";
 
-  const companyContext = botSettings?.description
-    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${botSettings.description}\nУчитывай специфику и потребности этой компании при создании вакансий.`
+  const companyContext = botSettings?.companyDescription
+    ? `\n\nКОНТЕКСТ КОМПАНИИ: ${botSettings.companyDescription}\nУчитывай специфику и потребности этой компании при создании вакансий.`
     : "";
 
   return `${botPersonality}
@@ -166,7 +166,7 @@ ${documentSection}
 
 ИНСТРУКЦИИ:
 - Проанализируй сообщение пользователя и пойми, что он хочет добавить/изменить
-- Учитывай специфику и потребности компании "${botSettings?.name || "клиента"}"
+- Учитывай специфику и потребности компании "${botSettings?.companyName || "клиента"}"
 - Обнови соответствующие разделы документа
 - Если пользователь указывает название должности - обнови title
 - Если описывает компанию/проект - обнови description

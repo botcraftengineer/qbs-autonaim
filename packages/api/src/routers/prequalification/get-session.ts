@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Get Session Procedure
  *
  * Получает текущее состояние сессии преквалификации.
@@ -37,7 +37,7 @@ export const getSession = publicProcedure
       return {
         id: session.id,
         status: session.status,
-        vacancyId: session.entityId,
+        vacancyId: session.vacancyId,
         hasResume: !!session.parsedResume,
         hasInterviewSession: !!session.interviewSessionId,
         fitScore: session.fitScore,

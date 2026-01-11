@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+﻿import { eq } from "@qbs-autonaim/db";
 import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -36,7 +36,7 @@ export const update = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         gig: true,
       },
@@ -67,12 +67,12 @@ export const update = protectedProcedure
     }
 
     const [updated] = await ctx.db
-      .update(gigResponse)
+      .update(response)
       .set({
         ...updateData,
         updatedAt: new Date(),
       })
-      .where(eq(gigResponse.id, input.responseId))
+      .where(eq(response.id, input.responseId))
       .returning();
 
     return updated;

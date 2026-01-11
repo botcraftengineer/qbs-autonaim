@@ -1,4 +1,4 @@
-import { workspaceIdSchema } from "@qbs-autonaim/validators";
+﻿import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
 import { ShortlistGenerator } from "../../services";
 import { protectedProcedure } from "../../trpc";
@@ -43,21 +43,21 @@ export const getShortlist = protectedProcedure
       const vacancy = await ctx.db.query.vacancy.findFirst({
         where: (vacancy, { eq, and }) =>
           and(
-            eq(vacancy.id, input.entityId),
+            eq(vacancy.id, input.vacancyId),
             eq(vacancy.workspaceId, input.workspaceId),
           ),
       });
 
       if (!vacancy) {
         throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
           workspaceId: input.workspaceId,
         });
       }
 
       // Генерируем шортлист
       const generator = new ShortlistGenerator();
-      const shortlist = await generator.generateShortlist(input.entityId, {
+      const shortlist = await generator.generateShortlist(input.vacancyId, {
         minScore: input.minScore,
         maxCandidates: input.maxCandidates,
         sortBy: input.sortBy,
@@ -79,7 +79,7 @@ export const getShortlist = protectedProcedure
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
         operation: "get_shortlist",
       });
     }

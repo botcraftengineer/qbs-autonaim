@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Analytics Aggregator Service
  *
  * Сервис для агрегации метрик аналитики преквалификации.
@@ -223,7 +223,7 @@ export class AnalyticsAggregator {
   ): Promise<VacancySummary[]> {
     const vacancyStats = await this.db
       .select({
-        vacancyId: prequalificationSession.entityId,
+        vacancyId: prequalificationSession.vacancyId,
         title: vacancy.title,
         candidateCount: count(),
         passed: count(
@@ -232,7 +232,7 @@ export class AnalyticsAggregator {
         avgScore: avg(prequalificationSession.fitScore),
       })
       .from(prequalificationSession)
-      .innerJoin(vacancy, eq(prequalificationSession.entityId, vacancy.id))
+      .innerJoin(vacancy, eq(prequalificationSession.vacancyId, vacancy.id))
       .where(
         and(
           eq(prequalificationSession.workspaceId, workspaceId),
@@ -240,7 +240,7 @@ export class AnalyticsAggregator {
           lte(prequalificationSession.createdAt, period.to),
         ),
       )
-      .groupBy(prequalificationSession.entityId, vacancy.title)
+      .groupBy(prequalificationSession.vacancyId, vacancy.title)
       .orderBy(desc(count()))
       .limit(limit);
 
@@ -248,7 +248,7 @@ export class AnalyticsAggregator {
       const candidateCount = Number(v.candidateCount);
       const passed = Number(v.passed);
       return {
-        vacancyId: v.entityId,
+        vacancyId: v.vacancyId,
         title: v.title,
         candidateCount,
         passRate:
@@ -414,7 +414,7 @@ export class AnalyticsAggregator {
       .from(analyticsEvent)
       .where(
         and(
-          eq(analyticsEvent.entityId, vacancyId),
+          eq(analyticsEvent.vacancyId, vacancyId),
           gte(analyticsEvent.timestamp, period.from),
           lte(analyticsEvent.timestamp, period.to),
         ),
@@ -461,7 +461,7 @@ export class AnalyticsAggregator {
       .from(prequalificationSession)
       .where(
         and(
-          eq(prequalificationSession.entityId, vacancyId),
+          eq(prequalificationSession.vacancyId, vacancyId),
           gte(prequalificationSession.createdAt, period.from),
           lte(prequalificationSession.createdAt, period.to),
           eq(prequalificationSession.status, "completed"),
@@ -512,7 +512,7 @@ export class AnalyticsAggregator {
       .from(prequalificationSession)
       .where(
         and(
-          eq(prequalificationSession.entityId, vacancyId),
+          eq(prequalificationSession.vacancyId, vacancyId),
           gte(prequalificationSession.createdAt, period.from),
           lte(prequalificationSession.createdAt, period.to),
           sql`${prequalificationSession.fitScore} IS NOT NULL`,
@@ -561,7 +561,7 @@ export class AnalyticsAggregator {
       .from(prequalificationSession)
       .where(
         and(
-          eq(prequalificationSession.entityId, vacancyId),
+          eq(prequalificationSession.vacancyId, vacancyId),
           gte(prequalificationSession.createdAt, period.from),
           lte(prequalificationSession.createdAt, period.to),
         ),

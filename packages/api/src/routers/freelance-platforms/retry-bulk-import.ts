@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import {
   freelanceImportHistory,
   response as responseTable,
@@ -38,12 +38,12 @@ export const retryBulkImport = protectedProcedure
     try {
       // Проверка существования вакансии
       const existingVacancy = await ctx.db.query.vacancy.findFirst({
-        where: (vacancy, { eq }) => eq(vacancy.id, input.entityId),
+        where: (vacancy, { eq }) => eq(vacancy.id, input.vacancyId),
       });
 
       if (!existingVacancy) {
         throw await errorHandler.handleNotFoundError("Вакансия", {
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
         });
       }
 
@@ -55,7 +55,7 @@ export const retryBulkImport = protectedProcedure
 
       if (!hasAccess) {
         throw await errorHandler.handleAuthorizationError("вакансии", {
-          vacancyId: input.entityId,
+          vacancyId: input.vacancyId,
           workspaceId: existingVacancy.workspaceId,
           userId: ctx.session.user.id,
         });
@@ -90,7 +90,7 @@ export const retryBulkImport = protectedProcedure
           if (parsed.contactInfo.platformProfile) {
             const existingResponse = await ctx.db.query.response.findFirst({
               where: and(
-                eq(responseTable.entityId, input.entityId),
+                eq(responseTable.entityId, input.vacancyId),
                 eq(responseTable.entityType, "vacancy"),
                 eq(
                   responseTable.profileUrl,
@@ -115,7 +115,7 @@ export const retryBulkImport = protectedProcedure
           const [createdResponse] = await ctx.db
             .insert(responseTable)
             .values({
-              entityId: input.entityId,
+              entityId: input.vacancyId,
               entityType: "vacancy",
               candidateId:
                 parsed.contactInfo.platformProfile || crypto.randomUUID(),
@@ -173,7 +173,7 @@ export const retryBulkImport = protectedProcedure
             message: `Failed to retry import: ${error instanceof Error ? error.message : "Unknown error"}`,
             userMessage: "Ошибка при повторном импорте отклика",
             context: {
-              vacancyId: input.entityId,
+              vacancyId: input.vacancyId,
               freelancerName: failedRecord.freelancerName,
               platformProfileUrl: failedRecord.platformProfileUrl,
             },
@@ -186,7 +186,7 @@ export const retryBulkImport = protectedProcedure
 
       // Создаём запись в истории импорта
       await ctx.db.insert(freelanceImportHistory).values({
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
         importedBy: ctx.session.user.id,
         importMode: "BULK",
         platformSource: input.platformSource,
@@ -201,7 +201,7 @@ export const retryBulkImport = protectedProcedure
         userId: ctx.session.user.id,
         action: "UPDATE",
         resourceType: "VACANCY_RESPONSE",
-        resourceId: input.entityId,
+        resourceId: input.vacancyId,
         metadata: {
           action: "RETRY_BULK_IMPORT",
           totalRecords: input.failedRecords.length,
@@ -226,7 +226,7 @@ export const retryBulkImport = protectedProcedure
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
-        vacancyId: input.entityId,
+        vacancyId: input.vacancyId,
         operation: "retry_bulk_import",
       });
     }

@@ -1,4 +1,4 @@
-import { eq, sql } from "@qbs-autonaim/db";
+﻿import { eq, sql } from "@qbs-autonaim/db";
 import { gig, response as responseTable } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -26,7 +26,7 @@ export const reject = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         gig: true,
       },
@@ -49,13 +49,13 @@ export const reject = protectedProcedure
     const wasNew = response.status === "NEW";
 
     const [updated] = await ctx.db
-      .update(gigResponse)
+      .update(response)
       .set({
         status: "EVALUATED",
         hrSelectionStatus: "REJECTED",
         updatedAt: new Date(),
       })
-      .where(eq(gigResponse.id, input.responseId))
+      .where(eq(response.id, input.responseId))
       .returning();
 
     // Если отклик был NEW, уменьшаем счетчик новых откликов

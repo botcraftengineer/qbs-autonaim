@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -30,7 +30,7 @@ export const deleteVacancy = protectedProcedure
     // Проверка существования вакансии
     const existingVacancy = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.entityId),
+        eq(vacancy.id, input.vacancyId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -59,12 +59,12 @@ export const deleteVacancy = protectedProcedure
               profileUrl: null,
               resumePdfFileId: null,
               experience: null,
-              salaryExpectations: null,
+              salaryExpectationsAmount: null,
             })
             .where(
               and(
                 eq(responseTable.entityType, "vacancy"),
-                eq(responseTable.entityId, input.entityId),
+                eq(responseTable.entityId, input.vacancyId),
               ),
             );
 
@@ -75,7 +75,7 @@ export const deleteVacancy = protectedProcedure
               isActive: false,
               updatedAt: new Date(),
             })
-            .where(eq(vacancy.id, input.entityId));
+            .where(eq(vacancy.id, input.vacancyId));
         });
 
         return {
@@ -96,7 +96,7 @@ export const deleteVacancy = protectedProcedure
       .delete(vacancy)
       .where(
         and(
-          eq(vacancy.id, input.entityId),
+          eq(vacancy.id, input.vacancyId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       );

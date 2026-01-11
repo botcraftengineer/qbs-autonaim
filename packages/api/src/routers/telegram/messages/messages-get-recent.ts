@@ -1,4 +1,4 @@
-import {
+﻿import {
   interviewMessage,
   interviewSession,
   vacancy,
@@ -28,7 +28,7 @@ export const getRecentMessagesRouter = protectedProcedure
       .select({
         message: interviewMessage,
         session: interviewSession,
-        response: vacancyResponse,
+        response: response,
         vacancy: vacancy,
       })
       .from(interviewMessage)
@@ -37,13 +37,13 @@ export const getRecentMessagesRouter = protectedProcedure
         eq(interviewMessage.sessionId, interviewSession.id),
       )
       .innerJoin(
-        vacancyResponse,
-        eq(interviewSession.responseId, vacancyResponse.id),
+        response,
+        eq(interviewSession.responseId, response.id),
       )
-      .innerJoin(vacancy, eq(vacancyResponse.entityId, vacancy.id))
+      .innerJoin(vacancy, eq(response.entityId, vacancy.id))
       .where(
         and(
-          eq(interviewSession.entityType, "vacancy_response"),
+          eq("vacancy_response"),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )

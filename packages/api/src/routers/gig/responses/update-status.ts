@@ -1,4 +1,4 @@
-import { eq, sql } from "@qbs-autonaim/db";
+﻿import { eq, sql } from "@qbs-autonaim/db";
 import {
   gig,
   hrSelectionStatusValues,
@@ -33,7 +33,7 @@ export const updateStatus = protectedProcedure
     }
 
     const response = await ctx.db.query.response.findFirst({
-      where: eq(gigResponse.id, input.responseId),
+      where: eq(response.id, input.responseId),
       with: {
         gig: true,
       },
@@ -69,9 +69,9 @@ export const updateStatus = protectedProcedure
     }
 
     const [updated] = await ctx.db
-      .update(gigResponse)
+      .update(response)
       .set(patch)
-      .where(eq(gigResponse.id, input.responseId))
+      .where(eq(response.id, input.responseId))
       .returning();
 
     // Обновляем счетчик новых откликов, если статус изменился

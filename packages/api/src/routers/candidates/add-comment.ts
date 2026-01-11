@@ -1,4 +1,4 @@
-import {
+﻿import {
   responseComment,
   response as responseTable,
   vacancy,
@@ -40,7 +40,7 @@ export const addComment = protectedProcedure
         workspaceId: vacancy.workspaceId,
       })
       .from(vacancy)
-      .where(eq(vacancy.id, candidate.entityId))
+      .where(eq(vacancy.id, candidate.vacancyId))
       .limit(1);
 
     if (!vacancyRecord || vacancyRecord.workspaceId !== input.workspaceId) {

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Загрузчик контекста для vacancy
  * Использует универсальные таблицы откликов
  */
@@ -17,7 +17,7 @@ interface CandidateData {
   id: string;
   candidateId: string;
   candidateName: string | null;
-  salaryExpectations: string | null;
+  salaryExpectationsAmount: string | null;
   coverLetter: string | null;
   experience: string | null;
   profileUrl: string | null;
@@ -62,13 +62,13 @@ export class VacancyContextLoader implements ContextLoader {
     const responses = await database.query.response.findMany({
       where: and(
         eq(response.entityType, "vacancy"),
-        eq(response.entityId, vacancyId),
+        eq(response.vacancyId, vacancyId),
       ),
       columns: {
         id: true,
         candidateId: true,
         candidateName: true,
-        salaryExpectations: true,
+        salaryExpectationsAmount: true,
         coverLetter: true,
         experience: true,
         profileUrl: true,
@@ -148,7 +148,7 @@ export class VacancyContextLoader implements ContextLoader {
         id: resp.id,
         candidateId: resp.candidateId,
         candidateName: resp.candidateName,
-        salaryExpectations: resp.salaryExpectationsAmount,
+        salaryExpectationsAmount: resp.salaryExpectationsAmount,
         coverLetter: resp.coverLetter,
         experience: resp.experience,
         profileUrl: resp.profileUrl,

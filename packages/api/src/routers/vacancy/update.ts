@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, eq } from "@qbs-autonaim/db";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import {
   updateVacancySettingsSchema,
@@ -33,7 +33,7 @@ export const update = protectedProcedure
     // Проверяем, что вакансия существует и принадлежит workspace
     const existingVacancy = await ctx.db.query.vacancy.findFirst({
       where: and(
-        eq(vacancy.id, input.entityId),
+        eq(vacancy.id, input.vacancyId),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
@@ -76,7 +76,7 @@ export const update = protectedProcedure
       .set(patch)
       .where(
         and(
-          eq(vacancy.id, input.entityId),
+          eq(vacancy.id, input.vacancyId),
           eq(vacancy.workspaceId, input.workspaceId),
         ),
       )
