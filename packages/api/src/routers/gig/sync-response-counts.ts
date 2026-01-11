@@ -1,5 +1,5 @@
 import { and, count, eq } from "@qbs-autonaim/db";
-import { gig, gigResponse } from "@qbs-autonaim/db/schema";
+import { gig, response } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -47,17 +47,23 @@ export const syncResponseCounts = protectedProcedure
     // Подсчитываем реальное количество откликов
     const totalResult = await ctx.db
       .select({ count: count() })
-      .from(gigResponse)
-      .where(eq(gigResponse.gigId, input.gigId));
+      .from(response)
+      .where(
+        and(eq(response.entityType, "gig"), eq(response.entityId, input.gigId)),
+      );
 
     const total = totalResult[0]?.count ?? 0;
 
     // Подсчитываем новые отклики (статус NEW)
     const newResult = await ctx.db
       .select({ count: count() })
-      .from(gigResponse)
+      .from(response)
       .where(
-        and(eq(gigResponse.gigId, input.gigId), eq(gigResponse.status, "NEW")),
+        and(
+          eq(response.entityType, "gig"),
+          eq(response.entityId, input.gigId),
+          eq(response.status, "NEW"),
+        ),
       );
 
     const newCount = newResult[0]?.count ?? 0;

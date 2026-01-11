@@ -127,7 +127,7 @@ const integrationLogos = [
 ]
 
 export function FeaturesSection() {
-  const [activeFeature, setActiveFeature] = useState(features[0])
+  const [activeFeature, setActiveFeature] = useState(features[0]!)
 
   return (
     <section id="features" className="relative bg-background py-24 md:py-32 overflow-hidden">

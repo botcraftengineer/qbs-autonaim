@@ -65,7 +65,7 @@ export function TestimonialsSection() {
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (entry?.isIntersecting) {
           setIsVisible(true)
         }
       },
@@ -126,33 +126,33 @@ export function TestimonialsSection() {
             <div className="pt-4">
               {/* Stars */}
               <div className="flex gap-1 mb-6">
-                {[...Array(testimonials[activeIndex].rating)].map((_, i) => (
+                {[...Array(testimonials[activeIndex]!.rating)].map((_, i) => (
                   <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
 
               {/* Text */}
               <blockquote className="text-xl md:text-2xl font-medium leading-relaxed mb-8 text-foreground">
-                "{testimonials[activeIndex].text}"
+                "{testimonials[activeIndex]!.text}"
               </blockquote>
 
               {/* Metric badge */}
               <div className="inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary mb-8">
-                {testimonials[activeIndex].metric}
+                {testimonials[activeIndex]!.metric}
               </div>
 
               {/* Author */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <img
-                    src={testimonials[activeIndex].avatar || "/placeholder.svg"}
-                    alt={testimonials[activeIndex].name}
+                    src={testimonials[activeIndex]!.avatar || "/placeholder.svg"}
+                    alt={testimonials[activeIndex]!.name}
                     className="w-14 h-14 rounded-full object-cover border-2 border-border"
                   />
                   <div>
-                    <div className="font-semibold text-foreground">{testimonials[activeIndex].name}</div>
+                    <div className="font-semibold text-foreground">{testimonials[activeIndex]!.name}</div>
                     <div className="text-sm text-muted-foreground">
-                      {testimonials[activeIndex].role}, {testimonials[activeIndex].company}
+                      {testimonials[activeIndex]!.role}, {testimonials[activeIndex]!.company}
                     </div>
                   </div>
                 </div>

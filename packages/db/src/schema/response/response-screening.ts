@@ -79,9 +79,3 @@ export const CreateResponseScreeningSchema = createInsertSchema(
 
 export type ResponseScreening = typeof responseScreening.$inferSelect;
 export type NewResponseScreening = typeof responseScreening.$inferInsert;
-
-// Backward compatibility aliases
-export const gigResponseScreening = responseScreening;
-export const vacancyResponseScreening = responseScreening;
-export type GigResponseScreening = ResponseScreening;
-export type VacancyResponseScreening = ResponseScreening;

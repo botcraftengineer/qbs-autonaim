@@ -83,7 +83,7 @@ export function ROICalculator() {
                   </div>
                   <Slider
                     value={[vacancies]}
-                    onValueChange={(value) => setVacancies(value[0])}
+                    onValueChange={(value) => setVacancies(value[0]!)}
                     min={1}
                     max={50}
                     step={1}
@@ -105,7 +105,7 @@ export function ROICalculator() {
                   </div>
                   <Slider
                     value={[hireTimeManual]}
-                    onValueChange={(value) => setHireTimeManual(value[0])}
+                    onValueChange={(value) => setHireTimeManual(value[0]!)}
                     min={7}
                     max={45}
                     step={1}
@@ -127,7 +127,7 @@ export function ROICalculator() {
                   </div>
                   <Slider
                     value={[hrSalary]}
-                    onValueChange={(value) => setHrSalary(value[0])}
+                    onValueChange={(value) => setHrSalary(value[0]!)}
                     min={40000}
                     max={200000}
                     step={5000}

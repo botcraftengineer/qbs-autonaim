@@ -70,6 +70,3 @@ export const SelectBufferedMessageSchema = createSelectSchema(bufferedMessage);
 
 export type BufferedMessage = z.infer<typeof SelectBufferedMessageSchema>;
 export type CreateBufferedMessage = z.infer<typeof CreateBufferedMessageSchema>;
-
-// Backward compatibility alias
-export const bufferedTempMessage = bufferedMessage;

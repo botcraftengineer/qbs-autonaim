@@ -14,8 +14,8 @@ import {
   interviewMessage,
   interviewSession,
   responseScreening,
+  response as responseTable,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -97,22 +97,28 @@ export const list = protectedProcedure
         .select({ responseId: responseScreening.responseId })
         .from(responseScreening)
         .innerJoin(
-          vacancyResponse,
-          eq(responseScreening.responseId, vacancyResponse.id),
-        )
-        .where(eq(vacancyResponse.vacancyId, vacancyId));
-      filteredResponseIds = screenedResponses.map((r) => r.responseId);
-    } else if (screeningFilter === "not-evaluated") {
-      const notEvaluated = await ctx.db
-        .select({ id: vacancyResponse.id })
-        .from(vacancyResponse)
-        .leftJoin(
-          responseScreening,
-          eq(vacancyResponse.id, responseScreening.responseId),
+          responseTable,
+          eq(responseScreening.responseId, responseTable.id),
         )
         .where(
           and(
-            eq(vacancyResponse.vacancyId, vacancyId),
+            eq(responseTable.entityType, "vacancy"),
+            eq(responseTable.entityId, vacancyId),
+          ),
+        );
+      filteredResponseIds = screenedResponses.map((r) => r.responseId);
+    } else if (screeningFilter === "not-evaluated") {
+      const notEvaluated = await ctx.db
+        .select({ id: responseTable.id })
+        .from(responseTable)
+        .leftJoin(
+          responseScreening,
+          eq(responseTable.id, responseScreening.responseId),
+        )
+        .where(
+          and(
+            eq(responseTable.entityType, "vacancy"),
+            eq(responseTable.entityId, vacancyId),
             sql`${responseScreening.responseId} IS NULL`,
           ),
         );
@@ -122,12 +128,13 @@ export const list = protectedProcedure
         .select({ responseId: responseScreening.responseId })
         .from(responseScreening)
         .innerJoin(
-          vacancyResponse,
-          eq(responseScreening.responseId, vacancyResponse.id),
+          responseTable,
+          eq(responseScreening.responseId, responseTable.id),
         )
         .where(
           and(
-            eq(vacancyResponse.vacancyId, vacancyId),
+            eq(responseTable.entityType, "vacancy"),
+            eq(responseTable.entityId, vacancyId),
             gte(responseScreening.score, 4),
           ),
         );
@@ -137,12 +144,13 @@ export const list = protectedProcedure
         .select({ responseId: responseScreening.responseId })
         .from(responseScreening)
         .innerJoin(
-          vacancyResponse,
-          eq(responseScreening.responseId, vacancyResponse.id),
+          responseTable,
+          eq(responseScreening.responseId, responseTable.id),
         )
         .where(
           and(
-            eq(vacancyResponse.vacancyId, vacancyId),
+            eq(responseTable.entityType, "vacancy"),
+            eq(responseTable.entityId, vacancyId),
             lt(responseScreening.score, 4),
           ),
         );
@@ -150,7 +158,10 @@ export const list = protectedProcedure
     }
 
     // Базовое условие WHERE
-    const whereConditions: SQL[] = [eq(vacancyResponse.vacancyId, vacancyId)];
+    const whereConditions: SQL[] = [
+      eq(responseTable.entityType, "vacancy"),
+      eq(responseTable.entityId, vacancyId),
+    ];
     if (filteredResponseIds !== null) {
       if (filteredResponseIds.length === 0) {
         return {
@@ -161,19 +172,19 @@ export const list = protectedProcedure
           totalPages: 0,
         };
       }
-      whereConditions.push(inArray(vacancyResponse.id, filteredResponseIds));
+      whereConditions.push(inArray(responseTable.id, filteredResponseIds));
     }
 
     // Добавляем поиск по ФИО кандидата
     if (search?.trim()) {
       whereConditions.push(
-        ilike(vacancyResponse.candidateName, `%${search.trim()}%`),
+        ilike(responseTable.candidateName, `%${search.trim()}%`),
       );
     }
 
     // Добавляем фильтр по статусу
     if (statusFilter && statusFilter.length > 0) {
-      whereConditions.push(inArray(vacancyResponse.status, statusFilter));
+      whereConditions.push(inArray(responseTable.status, statusFilter));
     }
 
     const whereCondition = and(...whereConditions);
@@ -183,31 +194,31 @@ export const list = protectedProcedure
     if (sortField === "createdAt") {
       orderByClause =
         sortDirection === "asc"
-          ? asc(vacancyResponse.createdAt)
-          : desc(vacancyResponse.createdAt);
+          ? asc(responseTable.createdAt)
+          : desc(responseTable.createdAt);
     } else if (sortField === "status") {
       orderByClause =
         sortDirection === "asc"
-          ? asc(vacancyResponse.status)
-          : desc(vacancyResponse.status);
+          ? asc(responseTable.status)
+          : desc(responseTable.status);
     } else if (sortField === "respondedAt") {
       orderByClause =
         sortDirection === "asc"
-          ? asc(vacancyResponse.respondedAt)
-          : desc(vacancyResponse.respondedAt);
+          ? asc(responseTable.respondedAt)
+          : desc(responseTable.respondedAt);
     } else {
-      orderByClause = desc(vacancyResponse.createdAt);
+      orderByClause = desc(responseTable.createdAt);
     }
 
     // Получаем отфильтрованные данные с пагинацией
-    const responsesRaw = await ctx.db.query.vacancyResponse.findMany({
+    const responsesRaw = await ctx.db.query.response.findMany({
       where: whereCondition,
       orderBy: [orderByClause],
       limit,
       offset,
       columns: {
         id: true,
-        vacancyId: true,
+        entityId: true,
         candidateName: true,
         photoFileId: true,
         status: true,
@@ -254,11 +265,10 @@ export const list = protectedProcedure
     const sessions =
       responseIds.length > 0
         ? await ctx.db.query.interviewSession.findMany({
-            where: (s, { inArray }) =>
-              inArray(s.vacancyResponseId, responseIds),
+            where: (s, { inArray }) => inArray(s.responseId, responseIds),
             columns: {
               id: true,
-              vacancyResponseId: true,
+              responseId: true,
               status: true,
               createdAt: true,
               updatedAt: true,
@@ -291,7 +301,7 @@ export const list = protectedProcedure
       const interviewScoring = interviewScorings.find(
         (is) => is.responseId === r.id,
       );
-      const session = sessions.find((s) => s.vacancyResponseId === r.id);
+      const session = sessions.find((s) => s.responseId === r.id);
 
       return {
         ...r,
@@ -342,7 +352,7 @@ export const list = protectedProcedure
     // Получаем общее количество для пагинации
     const totalResult = await ctx.db
       .select({ count: sql<number>`count(*)` })
-      .from(vacancyResponse)
+      .from(responseTable)
       .where(whereCondition);
 
     const total = Number(totalResult[0]?.count ?? 0);
