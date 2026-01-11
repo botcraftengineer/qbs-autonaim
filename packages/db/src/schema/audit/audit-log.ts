@@ -87,6 +87,7 @@ export const auditLog = pgTable(
       table.workspaceId,
       table.createdAt,
     ),
+    metadataIdx: index("audit_log_metadata_idx").using("gin", table.metadata),
   }),
 );
 

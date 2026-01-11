@@ -135,8 +135,14 @@ export const candidate = pgTable(
     emailIdx: index("candidate_email_idx").on(table.email),
     phoneIdx: index("candidate_phone_idx").on(table.phone),
     telegramIdx: index("candidate_telegram_idx").on(table.telegramUsername),
-    // Индекс для поиска по навыкам (если используется GIN для JSONB, но пока btree)
-    // skillsIdx: index("candidate_skills_idx").on(table.skills),
+    skillsIdx: index("candidate_skills_idx").using("gin", table.skills),
+    profileDataIdx: index("candidate_profile_data_idx").using(
+      "gin",
+      table.profileData,
+    ),
+    tagsIdx: index("candidate_tags_idx").using("gin", table.tags),
+    statusIdx: index("candidate_status_idx").on(table.status),
+    sourceIdx: index("candidate_source_idx").on(table.source),
   }),
 );
 

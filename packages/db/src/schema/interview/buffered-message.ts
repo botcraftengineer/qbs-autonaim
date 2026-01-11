@@ -22,8 +22,7 @@ export const bufferedMessage = pgTable(
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
     messageId: varchar("message_id", { length: 100 }).notNull(),
-    // TODO: Переименовать в interview_session_id после миграции БД
-    interviewSessionId: uuid("chat_session_id")
+    interviewSessionId: uuid("interview_session_id")
       .notNull()
       .references(() => interviewSession.id, {
         onDelete: "cascade",
@@ -40,10 +39,9 @@ export const bufferedMessage = pgTable(
       .notNull(),
   },
   (table) => ({
-    interviewSessionStepIdx: index("buffered_message_interview_session_step_idx").on(
-      table.interviewSessionId,
-      table.interviewStep,
-    ),
+    interviewSessionStepIdx: index(
+      "buffered_message_interview_session_step_idx",
+    ).on(table.interviewSessionId, table.interviewStep),
     userIdx: index("buffered_message_user_idx").on(table.userId),
     messageIdIdx: index("buffered_message_id_idx").on(table.messageId),
     timestampIdx: index("buffered_message_timestamp_idx").on(table.timestamp),

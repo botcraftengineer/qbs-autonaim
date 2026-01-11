@@ -12,7 +12,10 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { platformSourceEnum, platformSourceValues } from "../shared/response-enums";
+import {
+  platformSourceEnum,
+  platformSourceValues,
+} from "../shared/response-enums";
 import { workspace } from "../workspace/workspace";
 
 export interface VacancyRequirements {
@@ -82,6 +85,10 @@ export const vacancy = pgTable(
     sourceExternalIdx: index("vacancy_source_external_idx").on(
       table.source,
       table.externalId,
+    ),
+    requirementsIdx: index("vacancy_requirements_idx").using(
+      "gin",
+      table.requirements,
     ),
   }),
 );

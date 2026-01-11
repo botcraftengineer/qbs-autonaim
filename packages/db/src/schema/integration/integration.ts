@@ -73,6 +73,11 @@ export const integration = pgTable(
     activeIntegrationsIdx: index("integration_active_idx")
       .on(table.workspaceId, table.isActive)
       .where(sql`${table.isActive} = true`),
+    credentialsIdx: index("integration_credentials_idx").using(
+      "gin",
+      table.credentials,
+    ),
+    metadataIdx: index("integration_metadata_idx").using("gin", table.metadata),
   }),
 );
 

@@ -14,7 +14,10 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { customDomain } from "../custom-domain/custom-domain";
-import { platformSourceEnum, platformSourceValues } from "../shared/response-enums";
+import {
+  platformSourceEnum,
+  platformSourceValues,
+} from "../shared/response-enums";
 import { workspace } from "../workspace/workspace";
 
 /**
@@ -76,7 +79,6 @@ export const gig = pgTable(
     budgetMin: integer("budget_min"),
     budgetMax: integer("budget_max"),
 
-
     // Сроки
     deadline: timestamp("deadline", { withTimezone: true, mode: "date" }),
     estimatedDuration: varchar("estimated_duration", { length: 100 }), // "1-2 дня", "неделя"
@@ -122,6 +124,10 @@ export const gig = pgTable(
       table.externalId,
     ),
     deadlineIdx: index("gig_deadline_idx").on(table.deadline),
+    requirementsIdx: index("gig_requirements_idx").using(
+      "gin",
+      table.requirements,
+    ),
   }),
 );
 

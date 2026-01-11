@@ -104,7 +104,10 @@ export const interviewSession = pgTable(
 
     // Timestamps
     startedAt: timestamp("started_at", { withTimezone: true, mode: "date" }),
-    completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" }),
+    completedAt: timestamp("completed_at", {
+      withTimezone: true,
+      mode: "date",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
@@ -123,6 +126,13 @@ export const interviewSession = pgTable(
     statusIdx: index("interview_session_status_idx").on(table.status),
     entityTypeIdx: index("interview_session_entity_type_idx").on(
       table.entityType,
+    ),
+    metadataIdx: index("interview_session_metadata_idx").using(
+      "gin",
+      table.metadata,
+    ),
+    lastMessageAtIdx: index("interview_session_last_message_at_idx").on(
+      table.lastMessageAt,
     ),
   }),
 );
@@ -213,6 +223,14 @@ export const interviewMessage = pgTable(
       table.externalId,
     ),
     channelIdx: index("interview_message_channel_idx").on(table.channel),
+    metadataIdx: index("interview_message_metadata_idx").using(
+      "gin",
+      table.metadata,
+    ),
+    quickRepliesIdx: index("interview_message_quick_replies_idx").using(
+      "gin",
+      table.quickReplies,
+    ),
   }),
 );
 

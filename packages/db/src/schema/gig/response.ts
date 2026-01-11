@@ -114,6 +114,23 @@ export const gigResponse = pgTable(
     rankingPositionIdx: index("gig_response_ranking_position_idx").on(
       table.rankingPosition,
     ),
+    skillsIdx: index("gig_response_skills_idx").using("gin", table.skills),
+    profileDataIdx: index("gig_response_profile_data_idx").using(
+      "gin",
+      table.profileData,
+    ),
+    portfolioLinksIdx: index("gig_response_portfolio_links_idx").using(
+      "gin",
+      table.portfolioLinks,
+    ),
+    strengthsIdx: index("gig_response_strengths_idx").using(
+      "gin",
+      table.strengths,
+    ),
+    weaknessesIdx: index("gig_response_weaknesses_idx").using(
+      "gin",
+      table.weaknesses,
+    ),
   }),
 );
 

@@ -101,6 +101,11 @@ export const vacancyResponse = pgTable(
       table.vacancyId,
       table.platformProfileUrl,
     ),
+    skillsIdx: index("vacancy_response_skills_idx").using("gin", table.skills),
+    profileDataIdx: index("vacancy_response_profile_data_idx").using(
+      "gin",
+      table.profileData,
+    ),
   }),
 );
 

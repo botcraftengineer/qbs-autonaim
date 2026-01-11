@@ -191,6 +191,14 @@ export const prequalificationSession = pgTable(
     interviewSessionIdx: index("preq_session_interview_idx").on(
       table.interviewSessionId,
     ),
+    parsedResumeIdx: index("preq_session_parsed_resume_idx").using(
+      "gin",
+      table.parsedResume,
+    ),
+    evaluationIdx: index("preq_session_evaluation_idx").using(
+      "gin",
+      table.evaluation,
+    ),
   }),
 );
 

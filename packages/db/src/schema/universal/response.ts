@@ -146,6 +146,12 @@ export const response = pgTable(
     index("response_recommendation_idx").on(table.recommendation),
     index("response_ranking_position_idx").on(table.rankingPosition),
     index("response_candidate_idx").on(table.candidateId),
+    index("response_skills_idx").using("gin", table.skills),
+    index("response_profile_data_idx").using("gin", table.profileData),
+    index("response_portfolio_links_idx").using("gin", table.portfolioLinks),
+    index("response_strengths_idx").using("gin", table.strengths),
+    index("response_weaknesses_idx").using("gin", table.weaknesses),
+    index("response_contacts_idx").using("gin", table.contacts),
   ],
 );
 
