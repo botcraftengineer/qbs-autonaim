@@ -107,7 +107,7 @@ export const submitApplication = publicProcedure
       // Note: response schema requires candidateId and entityType/entityId
       // For prequalification, we use the session ID as reference
       const [newResponse] = await ctx.db
-        .insert(response)
+        .insert(responseTable)
         .values({
           entityType: "vacancy",
           entityId: session.vacancyId,

@@ -1,4 +1,4 @@
-﻿import type { botSettings } from "@qbs-autonaim/db/schema";
+﻿import type { BotSettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -58,7 +58,7 @@ const generateInvitationTemplateInputSchema = z.object({
 function buildInvitationPrompt(
   gigTitle: string,
   gigDescription?: string,
-  botSettings?: typeof botSettings | null,
+  botSettings?: BotSettings | null,
 ): string {
   const companySection = botSettings
     ? `

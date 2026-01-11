@@ -4,7 +4,7 @@ import { InterviewChat } from "~/components/interview-chat";
 
 interface PageProps {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ responseId?: string }>;
+  searchParams: Promise<{ sessionId?: string }>;
 }
 
 export const metadata: Metadata = {
@@ -17,15 +17,15 @@ export default async function InterviewChatPage({
   searchParams,
 }: PageProps) {
   const { token } = await params;
-  const { responseId } = await searchParams;
+  const { sessionId } = await searchParams;
 
-  if (!responseId) {
+  if (!sessionId) {
     redirect(`/${token}`);
   }
 
   return (
     <main className="flex h-screen flex-col bg-muted/30">
-      <InterviewChat conversationId={responseId} />
+      <InterviewChat interviewSessionId={sessionId} />
     </main>
   );
 }

@@ -1,4 +1,4 @@
-﻿import type { botSettings } from "@qbs-autonaim/db/schema";
+﻿import type { BotSettings } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -91,7 +91,7 @@ function buildGigGenerationPrompt(
     timeline?: string;
   },
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
-  botSettings?: typeof botSettings | null,
+  botSettings?: BotSettings | null,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -167,7 +167,7 @@ ${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
   const botPersonality =
     botSettings?.botName && botSettings?.botRole
       ? `Ты — ${botSettings.botName}, ${botSettings.botRole} компании "${botSettings.companyName}".`
-      : typeof botSettings?.companyName
+      : botSettings?.companyName
         ? `Ты — эксперт по созданию технических заданий для компании "${botSettings.companyName}".`
         : "Ты — эксперт по созданию технических заданий для фрилансеров.";
 

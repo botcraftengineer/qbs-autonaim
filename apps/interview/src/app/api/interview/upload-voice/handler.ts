@@ -76,10 +76,8 @@ export async function POST(request: Request) {
       throw new Error("Failed to create file record");
     }
 
-    // Форматируем длительность
-    const voiceDuration = duration
-      ? `${Math.floor(duration / 60)}:${String(Math.floor(duration % 60)).padStart(2, "0")}`
-      : undefined;
+    // Длительность в секундах (как в схеме interviewMessage.voiceDuration)
+    const voiceDuration = duration !== undefined ? Math.round(duration) : undefined;
 
     // Создаем сообщение в БД
     const [message] = await db

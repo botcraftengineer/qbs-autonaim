@@ -65,7 +65,7 @@ function InterviewLandingClient({ token }: { token: string }) {
       token,
       freelancerInfo: formData,
     });
-    return { conversationId: result.conversationId };
+    return { interviewSessionId: result.sessionId };
   };
 
   const handleCheckDuplicate = async (

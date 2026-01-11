@@ -201,7 +201,6 @@ async function handleVacancyInterview(
   const [session] = await ctx.db
     .insert(interviewSession)
     .values({
-      entityType: "vacancy_response",
       responseId: response.id,
       status: "active",
       lastChannel: "web",
@@ -357,7 +356,6 @@ async function handleGigInterview(
   const [session] = await ctx.db
     .insert(interviewSession)
     .values({
-      entityType: "gig_response",
       responseId: response.id,
       status: "active",
       lastChannel: "web",

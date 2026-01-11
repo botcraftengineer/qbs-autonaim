@@ -19,11 +19,11 @@ export const getConversationByResponseIdRouter = protectedProcedure
       ctx.session.user.id,
     );
 
-    const response = await ctx.db.query.response.findFirst({
-      where: eq(response.id, input.responseId),
+    const responseRow = await ctx.db.query.response.findFirst({
+      where: eq(responseTable.id, input.responseId),
     });
 
-    if (!response) {
+    if (!responseRow) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "Отклик не найден",
@@ -32,7 +32,7 @@ export const getConversationByResponseIdRouter = protectedProcedure
 
     // Check workspace access
     const vacancy = await ctx.db.query.vacancy.findFirst({
-      where: eq(vacancyTable.id, response.entityId),
+      where: eq(vacancyTable.id, responseRow.entityId),
       columns: { workspaceId: true },
     });
 

@@ -13,7 +13,7 @@ export const updateSalaryExpectations = protectedProcedure
     z.object({
       candidateId: uuidv7Schema,
       workspaceId: workspaceIdSchema,
-      salaryExpectationsAmount: z.string().max(200).optional(),
+      salaryExpectationsAmount: z.number().int().optional(),
     }),
   )
   .mutation(async ({ input, ctx }) => {
@@ -61,6 +61,10 @@ export const updateSalaryExpectations = protectedProcedure
         code: "FORBIDDEN",
         message: "Нет доступа к этому кандидату",
       });
+    }
+
+    if (input.salaryExpectationsAmount === undefined) {
+      return { success: true };
     }
 
     await ctx.db

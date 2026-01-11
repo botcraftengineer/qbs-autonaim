@@ -255,20 +255,20 @@ function MessagesList({
   );
 }
 
-// Конвертация legacy сообщений в новый формат
-function convertLegacyMessage(message: {
+// Конвертация сообщений из getChatHistory в формат UI
+function convertHistoryMessage(message: {
   id: string;
-  sender: "BOT" | "CANDIDATE" | "ADMIN";
-  content: string;
-  contentType: "TEXT" | "VOICE";
+  role: "user" | "assistant" | "system";
+  content: string | null;
+  type: "text" | "voice" | "file" | "event";
   createdAt: Date;
-  voiceTranscription?: string | null;
-  fileUrl?: string | null;
+  voiceTranscription: string | null;
+  fileUrl: string | null;
 }): ChatMessage {
-  const role = message.sender === "CANDIDATE" ? "user" : "assistant";
+  const role = message.role;
   const parts: MessagePart[] = [];
 
-  if (message.contentType === "VOICE") {
+  if (message.type === "voice") {
     // Добавляем аудиофайл, если есть URL
     if (message.fileUrl) {
       parts.push({
@@ -283,7 +283,7 @@ function convertLegacyMessage(message: {
     }
   } else {
     // Обычное текстовое сообщение
-    parts.push({ type: "text", text: message.content });
+    parts.push({ type: "text", text: message.content ?? "" });
   }
 
   return { id: message.id, role, parts, createdAt: message.createdAt };
@@ -320,36 +320,38 @@ function generateUUID(): string {
 }
 
 interface InterviewChatProps {
-  conversationId: string;
+  interviewSessionId: string;
   apiEndpoint?: string;
   className?: string;
 }
 
 export function InterviewChat({
-  conversationId,
+  interviewSessionId,
   apiEndpoint = "/api/interview/chat/stream",
   className,
 }: InterviewChatProps) {
   const trpc = useTRPC();
   const isInitializedRef = useRef(false);
-  const currentConversationIdRef = useRef(conversationId);
+  const currentConversationIdRef = useRef(interviewSessionId);
 
   // Загрузка истории чата
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery(
-    trpc.freelancePlatforms.getChatHistory.queryOptions({ conversationId }),
+    trpc.freelancePlatforms.getChatHistory.queryOptions({
+      interviewSessionId,
+    }),
   );
 
   // Загрузка контекста интервью (вакансия/задание)
   const { data: interviewContext, isLoading: isLoadingContext } = useQuery(
     trpc.freelancePlatforms.getInterviewContext.queryOptions({
-      conversationId,
+      interviewSessionId,
     }),
   );
 
   // Конвертация истории в формат для отображения
   const historyMessages = useMemo(() => {
     if (!chatHistory?.messages) return [];
-    return chatHistory.messages.map(convertLegacyMessage);
+    return chatHistory.messages.map(convertHistoryMessage);
   }, [chatHistory?.messages]);
 
   // useChat из AI SDK с нативным стримингом
@@ -361,12 +363,12 @@ export function InterviewChat({
     stop,
     setMessages,
   } = useChat({
-    id: conversationId,
+    id: interviewSessionId,
     experimental_throttle: 50,
     generateId: generateUUID,
     transport: new DefaultChatTransport({
       api: apiEndpoint,
-      body: { conversationId },
+      body: { sessionId: interviewSessionId },
     }),
     onError: (err) => {
       console.error("[InterviewChat] Error:", err);
@@ -388,9 +390,9 @@ export function InterviewChat({
 
   // Синхронизация истории при загрузке
   useEffect(() => {
-    if (currentConversationIdRef.current !== conversationId) {
+    if (currentConversationIdRef.current !== interviewSessionId) {
       isInitializedRef.current = false;
-      currentConversationIdRef.current = conversationId;
+      currentConversationIdRef.current = interviewSessionId;
     }
     if (
       !isInitializedRef.current &&
@@ -409,7 +411,7 @@ export function InterviewChat({
       setMessages(sdkMessages);
       isInitializedRef.current = true;
     }
-  }, [conversationId, historyMessages, rawMessages.length, setMessages]);
+  }, [interviewSessionId, historyMessages, rawMessages.length, setMessages]);
 
   // Отправка сообщения
   const handleSendMessage = useCallback(
@@ -469,7 +471,7 @@ export function InterviewChat({
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              conversationId,
+              sessionId: interviewSessionId,
               audioFile: base64Audio,
               fileName: audioFile.name,
               mimeType: audioFile.type,
@@ -536,12 +538,12 @@ export function InterviewChat({
         parts: [{ type: "text", text: content }],
       });
     },
-    [conversationId, sendMessage],
+    [interviewSessionId, sendMessage],
   );
 
-  const chatStatus = chatHistory?.status || "ACTIVE";
-  const isCompleted = chatStatus === "COMPLETED";
-  const isCancelled = chatStatus === "CANCELLED";
+  const chatStatus = chatHistory?.status || "active";
+  const isCompleted = chatStatus === "completed";
+  const isCancelled = chatStatus === "cancelled";
   const isReadonly = isCompleted || isCancelled;
 
   if (isLoadingHistory || isLoadingContext) {

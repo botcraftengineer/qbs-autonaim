@@ -10,7 +10,12 @@
 import { WebInterviewOrchestrator } from "@qbs-autonaim/ai";
 import { env } from "@qbs-autonaim/config";
 import { db, eq } from "@qbs-autonaim/db";
-import { interviewMessage } from "@qbs-autonaim/db/schema";
+import {
+  gig as gigTable,
+  interviewMessage,
+  response as responseTable,
+  vacancy as vacancyTable,
+} from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
@@ -112,42 +117,59 @@ export async function POST(request: Request) {
     let gig = null;
     let companySettings = null;
 
-    if (session.vacancyResponseId) {
-      const response = await db.query.vacancyResponse.findFirst({
-        where: (r, { eq }) => eq(r.id, session.vacancyResponseId as string),
-        with: {
-          vacancy: {
-            with: {
-              workspace: {
-                with: {
-                  companySettings: true,
-                },
-              },
-            },
-          },
-        },
-      });
-      vacancy = response?.vacancy;
-      companySettings = response?.vacancy?.workspace?.companySettings;
+    const responseRecord = await db.query.response.findFirst({
+      where: eq(responseTable.id, session.responseId),
+    });
+
+    if (!responseRecord) {
+      return NextResponse.json(
+        { error: "Response not found" },
+        { status: 404 },
+      );
     }
 
-    if (session.gigResponseId) {
-      const gigResp = await db.query.gigResponse.findFirst({
-        where: (r, { eq }) => eq(r.id, session.gigResponseId as string),
+    if (responseRecord.entityType === "vacancy") {
+      vacancy = await db.query.vacancy.findFirst({
+        where: eq(vacancyTable.id, responseRecord.entityId),
         with: {
-          gig: {
+          workspace: {
             with: {
-              workspace: {
-                with: {
-                  companySettings: true,
-                },
-              },
+              botSettings: true,
             },
           },
         },
       });
-      gig = gigResp?.gig;
-      companySettings = gigResp?.gig?.workspace?.companySettings;
+
+      const bot = vacancy?.workspace?.botSettings;
+      companySettings = bot
+        ? {
+            botName: bot.botName,
+            botRole: bot.botRole,
+            name: bot.companyName,
+          }
+        : null;
+    }
+
+    if (responseRecord.entityType === "gig") {
+      gig = await db.query.gig.findFirst({
+        where: eq(gigTable.id, responseRecord.entityId),
+        with: {
+          workspace: {
+            with: {
+              botSettings: true,
+            },
+          },
+        },
+      });
+
+      const bot = gig?.workspace?.botSettings;
+      companySettings = bot
+        ? {
+            botName: bot.botName,
+            botRole: bot.botRole,
+            name: bot.companyName,
+          }
+        : null;
     }
 
     // Получаем последнее сообщение пользователя
@@ -199,7 +221,7 @@ export async function POST(request: Request) {
         sender: (msg.role === "user" ? "CANDIDATE" : "BOT") as
           | "CANDIDATE"
           | "BOT",
-        content: msg.content,
+        content: msg.content ?? "",
       }));
 
     // Добавляем текущее сообщение в историю
@@ -223,7 +245,7 @@ export async function POST(request: Request) {
     // Если нужна эскалация — возвращаем специальный ответ
     if (contextAnalysis.shouldEscalate) {
       console.warn("[Interview Stream] Escalation triggered:", {
-        conversationId,
+        conversationId: sessionId,
         reason: contextAnalysis.escalationReason,
       });
       // TODO: можно добавить логику эскалации

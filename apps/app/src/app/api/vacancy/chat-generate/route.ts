@@ -1,7 +1,7 @@
 import { AuditLoggerService } from "@qbs-autonaim/api";
 import { db } from "@qbs-autonaim/db";
 import {
-  companySettings,
+  botSettings,
   workspace,
   workspaceMember,
 } from "@qbs-autonaim/db/schema";
@@ -523,9 +523,19 @@ export async function POST(request: Request) {
     // Загружаем настройки компании для персонализации промпта (Requirements 1.5, 7.1)
     let companySettingsData = null;
     try {
-      companySettingsData = await db.query.companySettings.findFirst({
-        where: eq(companySettings.workspaceId, workspaceId),
+      const botSettingsRow = await db.query.botSettings.findFirst({
+        where: eq(botSettings.workspaceId, workspaceId),
       });
+
+      companySettingsData = botSettingsRow
+        ? {
+            name: botSettingsRow.companyName,
+            description: botSettingsRow.companyDescription,
+            website: botSettingsRow.companyWebsite,
+            botName: botSettingsRow.botName,
+            botRole: botSettingsRow.botRole,
+          }
+        : null;
     } catch (dbError) {
       console.error("Database error loading company settings:", dbError);
       // Continue without company settings - not critical

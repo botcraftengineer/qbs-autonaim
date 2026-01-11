@@ -30,13 +30,13 @@ export const getConversationByUsernameRouter = protectedProcedure
 
     // Check workspace access through response
     if (session.responseId) {
-      const response = await ctx.db.query.response.findFirst({
-        where: eq(response.id, session.responseId),
+      const responseRow = await ctx.db.query.response.findFirst({
+        where: eq(responseTable.id, session.responseId),
       });
 
-      if (response) {
+      if (responseRow) {
         const vacancy = await ctx.db.query.vacancy.findFirst({
-          where: eq(vacancyTable.id, response.entityId),
+          where: eq(vacancyTable.id, responseRow.entityId),
           columns: { workspaceId: true },
         });
 

@@ -45,7 +45,7 @@ export const generateInterviewLink = protectedProcedure
 
     return {
       id: link.id,
-      gigId: link.entityId,
+      gigId: link.gigId,
       token: link.token,
       url: link.url,
       isActive: link.isActive,

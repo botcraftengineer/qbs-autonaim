@@ -27,7 +27,7 @@ interface InterviewLandingFormProps {
   entityId: string;
   entityType: "vacancy" | "gig";
   platformSource: string;
-  onSubmit: (data: FreelancerInfo) => Promise<{ conversationId: string }>;
+  onSubmit: (data: FreelancerInfo) => Promise<{ interviewSessionId: string }>;
   onCheckDuplicate?: (
     vacancyId: string,
     platformProfileUrl: string,
@@ -98,7 +98,7 @@ export function InterviewLandingForm({
 
     try {
       const result = await onSubmit(trimmedData);
-      router.push(`/${token}/chat?responseId=${result.conversationId}`);
+      router.push(`/${token}/chat?sessionId=${result.interviewSessionId}`);
     } catch (error: unknown) {
       setIsSubmitting(false);
       const duplicateMessage =
