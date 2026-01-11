@@ -7,8 +7,8 @@ import { and, eq, ilike } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   type botSettings,
-  chatMessage,
-  chatSession,
+  interviewMessage,
+  interviewSession,
   type vacancy,
   vacancyResponse,
   type vacancyResponseScreening,
@@ -217,12 +217,9 @@ export async function identifyByVacancy(
 async function createOrUpdateChatSession(
   data: ChatSessionData,
 ): Promise<{ id: string }> {
-  // Проверяем, есть ли уже chat session для этого responseId
-  const existing = await db.query.chatSession.findFirst({
-    where: and(
-      eq(chatSession.entityType, "vacancy_response"),
-      eq(chatSession.entityId, data.responseId),
-    ),
+  // Проверяем, есть ли уже interview session для этого responseId
+  const existing = await db.query.interviewSession.findFirst({
+    where: eq(interviewSession.vacancyResponseId, data.responseId),
   });
 
   if (existing) {
@@ -230,7 +227,7 @@ async function createOrUpdateChatSession(
     const existingMetadata: Record<string, unknown> = existing.metadata || {};
 
     // Объединяем с новыми данными, сохраняя существующие поля
-    const updatedMetadata = {
+    const updatedMetadata: Record<string, unknown> = {
       ...existingMetadata,
       identifiedBy: data.identifiedBy,
       ...(data.pinCode && { pinCode: data.pinCode }),
@@ -242,26 +239,25 @@ async function createOrUpdateChatSession(
       questionAnswers: existingMetadata.questionAnswers || [],
     };
 
-    // Обновляем существующую chat session
+    // Обновляем существующую interview session
     const [updated] = await db
-      .update(chatSession)
+      .update(interviewSession)
       .set({
-        title: data.candidateName,
         status: "active",
         metadata: updatedMetadata,
       })
-      .where(eq(chatSession.id, existing.id))
+      .where(eq(interviewSession.id, existing.id))
       .returning();
 
     if (!updated) {
-      throw new Error("Failed to update chat session");
+      throw new Error("Failed to update interview session");
     }
 
     return updated;
   }
 
-  // Создаем новую chat session с начальными метаданными
-  const newMetadata = {
+  // Создаем новую interview session с начальными метаданными
+  const newMetadata: Record<string, unknown> = {
     identifiedBy: data.identifiedBy,
     ...(data.pinCode && { pinCode: data.pinCode }),
     ...(data.searchQuery && { searchQuery: data.searchQuery }),
@@ -272,25 +268,24 @@ async function createOrUpdateChatSession(
   };
 
   const [created] = await db
-    .insert(chatSession)
+    .insert(interviewSession)
     .values({
       entityType: "vacancy_response",
-      entityId: data.responseId,
-      title: data.candidateName,
+      vacancyResponseId: data.responseId,
       status: "active",
       metadata: newMetadata,
     })
     .returning();
 
   if (!created) {
-    throw new Error("Failed to create chat session");
+    throw new Error("Failed to create interview session");
   }
 
   return created;
 }
 
 /**
- * Сохраняет сообщение в chat session
+ * Сохраняет сообщение в interview session
  */
 export async function saveMessage(
   sessionId: string,
@@ -302,7 +297,7 @@ export async function saveMessage(
 ): Promise<string | null> {
   try {
     const [message] = await db
-      .insert(chatMessage)
+      .insert(interviewMessage)
       .values({
         sessionId,
         role,

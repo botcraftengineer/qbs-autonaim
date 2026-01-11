@@ -54,8 +54,8 @@
   "devDependencies": {
     "@qbs-autonaim/tailwind-config": "workspace:*",
     "@qbs-autonaim/tsconfig": "workspace:*",
-    "@types/node": "25.0.5",
-    "@types/react": "19.2.7",
+    "@types/node": "25.0.6",
+    "@types/react": "19.2.8",
     "@types/react-dom": "19.2.3",
     "jiti": "2.6.1",
     "tailwindcss": "4.1.18",
