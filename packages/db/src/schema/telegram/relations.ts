@@ -1,7 +1,4 @@
 import { relations } from "drizzle-orm";
-import { chatMessage } from "../chat/chat-message";
-import { chatSession } from "../chat/chat-session";
-import { file } from "../file/file";
 import { workspace } from "../workspace/workspace";
 import { telegramSession } from "./telegram-session";
 
@@ -17,18 +14,3 @@ export const telegramSessionRelations = relations(
     }),
   }),
 );
-
-/**
- * Relations для chat сообщений с файлами
- */
-export const chatMessageFileRelations = relations(chatMessage, ({ one }) => ({
-  file: one(file, {
-    fields: [chatMessage.fileId],
-    references: [file.id],
-    relationName: "file",
-  }),
-  session: one(chatSession, {
-    fields: [chatMessage.sessionId],
-    references: [chatSession.id],
-  }),
-}));

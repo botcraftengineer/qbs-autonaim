@@ -1,24 +1,19 @@
 import { relations } from "drizzle-orm";
 import { chatMessage } from "../chat/chat-message";
-import { gigResponse } from "../gig/response";
 import { interviewMessage } from "../interview/interview-message";
-import { vacancyResponse } from "../vacancy/response";
+import { response } from "../response/response";
 import { file } from "./file";
 
 export const fileRelations = relations(file, ({ many }) => ({
-  // Vacancy response files
-  vacancyResponsesAsResumePdf: many(vacancyResponse, {
-    relationName: "resumePdfFile",
+  // Response files (universal)
+  responsesAsResumePdf: many(response, {
+    relationName: "response_resume_pdf_file",
   }),
-  vacancyResponsesAsPhoto: many(vacancyResponse, {
-    relationName: "photoFile",
+  responsesAsPhoto: many(response, {
+    relationName: "response_photo_file",
   }),
-  // Gig response files
-  gigResponsesAsPortfolio: many(gigResponse, {
-    relationName: "portfolioFile",
-  }),
-  gigResponsesAsPhoto: many(gigResponse, {
-    relationName: "photoFile",
+  responsesAsPortfolio: many(response, {
+    relationName: "response_portfolio_file",
   }),
   // Chat messages with files (admin chats)
   chatMessages: many(chatMessage, {

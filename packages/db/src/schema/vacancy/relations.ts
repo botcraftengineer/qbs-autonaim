@@ -1,51 +1,26 @@
 import { relations } from "drizzle-orm";
-import { file } from "../file";
-import { interviewSession } from "../interview/interview-session";
-import { interviewScoring } from "../interview/scoring";
+import { user } from "../auth";
 import { workspace } from "../workspace/workspace";
-import { vacancyResponse } from "./response";
-import { vacancyResponseHistory } from "./response-history";
-import { vacancyResponseScreening } from "./screening";
+import { freelanceImportHistory } from "./freelance-import-history";
 import { vacancy } from "./vacancy";
 
-export const vacancyRelations = relations(vacancy, ({ one, many }) => ({
+export const vacancyRelations = relations(vacancy, ({ one }) => ({
   workspace: one(workspace, {
     fields: [vacancy.workspaceId],
     references: [workspace.id],
   }),
-  responses: many(vacancyResponse),
 }));
 
-export const vacancyResponseRelations = relations(
-  vacancyResponse,
-  ({ one, many }) => ({
+export const freelanceImportHistoryRelations = relations(
+  freelanceImportHistory,
+  ({ one }) => ({
     vacancy: one(vacancy, {
-      fields: [vacancyResponse.vacancyId],
+      fields: [freelanceImportHistory.vacancyId],
       references: [vacancy.id],
     }),
-    screening: one(vacancyResponseScreening, {
-      fields: [vacancyResponse.id],
-      references: [vacancyResponseScreening.responseId],
+    importedByUser: one(user, {
+      fields: [freelanceImportHistory.importedBy],
+      references: [user.id],
     }),
-    // Сессия интервью с AI-ботом
-    interviewSession: one(interviewSession, {
-      fields: [vacancyResponse.id],
-      references: [interviewSession.vacancyResponseId],
-    }),
-    resumePdfFile: one(file, {
-      fields: [vacancyResponse.resumePdfFileId],
-      references: [file.id],
-      relationName: "resumePdfFile",
-    }),
-    photoFile: one(file, {
-      fields: [vacancyResponse.photoFileId],
-      references: [file.id],
-      relationName: "photoFile",
-    }),
-    interviewScoring: one(interviewScoring, {
-      fields: [vacancyResponse.id],
-      references: [interviewScoring.responseId],
-    }),
-    history: many(vacancyResponseHistory),
   }),
 );

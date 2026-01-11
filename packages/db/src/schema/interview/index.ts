@@ -1,5 +1,6 @@
 export * from "./buffered-message";
 export * from "./buffered-temp-message";
+export * from "./interview-link";
 export * from "./interview-message";
 export * from "./interview-session";
 export * from "./relations";

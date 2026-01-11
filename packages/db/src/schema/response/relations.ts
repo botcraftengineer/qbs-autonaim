@@ -1,11 +1,18 @@
 import { relations } from "drizzle-orm";
+import { user } from "../auth";
+import { candidate } from "../candidate/candidate";
 import { file } from "../file";
-import { interviewLink } from "./interview-link";
-import { responseInvitation } from "./invitation";
 import { response } from "./response";
-import { responseScreening } from "./screening";
+import { responseComment } from "./response-comment";
+import { responseHistory } from "./response-history";
+import { responseInvitation } from "./response-invitation";
+import { responseScreening } from "./response-screening";
 
 export const responseRelations = relations(response, ({ one, many }) => ({
+  globalCandidate: one(candidate, {
+    fields: [response.globalCandidateId],
+    references: [candidate.id],
+  }),
   portfolioFile: one(file, {
     fields: [response.portfolioFileId],
     references: [file.id],
@@ -26,6 +33,8 @@ export const responseRelations = relations(response, ({ one, many }) => ({
     references: [responseScreening.responseId],
   }),
   invitations: many(responseInvitation),
+  comments: many(responseComment),
+  history: many(responseHistory),
 }));
 
 export const responseScreeningRelations = relations(
@@ -48,6 +57,30 @@ export const responseInvitationRelations = relations(
   }),
 );
 
-export const interviewLinkRelations = relations(interviewLink, ({ one }) => ({
-  // Связь через entityId будет определяться в runtime
-}));
+export const responseCommentRelations = relations(
+  responseComment,
+  ({ one }) => ({
+    response: one(response, {
+      fields: [responseComment.responseId],
+      references: [response.id],
+    }),
+    author: one(user, {
+      fields: [responseComment.authorId],
+      references: [user.id],
+    }),
+  }),
+);
+
+export const responseHistoryRelations = relations(
+  responseHistory,
+  ({ one }) => ({
+    response: one(response, {
+      fields: [responseHistory.responseId],
+      references: [response.id],
+    }),
+    user: one(user, {
+      fields: [responseHistory.userId],
+      references: [user.id],
+    }),
+  }),
+);

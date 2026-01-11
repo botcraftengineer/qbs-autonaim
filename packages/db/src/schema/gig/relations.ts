@@ -1,59 +1,15 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
-import { interviewSession } from "../interview/interview-session";
-import { interviewScoring } from "../interview/scoring";
-import { interviewLink } from "../universal/interview-link";
 import { workspace } from "../workspace/workspace";
 import { gig } from "./gig";
 import { gigInterviewMedia } from "./gig-interview-media";
-import { gigInvitation } from "./invitation";
-import { gigResponse } from "./response";
-import { gigResponseScreening } from "./screening";
 
 export const gigRelations = relations(gig, ({ one, many }) => ({
   workspace: one(workspace, {
     fields: [gig.workspaceId],
     references: [workspace.id],
   }),
-  responses: many(gigResponse),
   interviewMedia: many(gigInterviewMedia),
-}));
-
-export const gigInvitationRelations = relations(gigInvitation, ({ one }) => ({
-  response: one(gigResponse, {
-    fields: [gigInvitation.responseId],
-    references: [gigResponse.id],
-  }),
-}));
-
-export const gigResponseRelations = relations(gigResponse, ({ one }) => ({
-  gig: one(gig, {
-    fields: [gigResponse.gigId],
-    references: [gig.id],
-  }),
-  screening: one(gigResponseScreening, {
-    fields: [gigResponse.id],
-    references: [gigResponseScreening.responseId],
-  }),
-  // Сессия интервью с AI-ботом
-  interviewSession: one(interviewSession, {
-    fields: [gigResponse.id],
-    references: [interviewSession.gigResponseId],
-  }),
-  interviewScoring: one(interviewScoring, {
-    fields: [gigResponse.id],
-    references: [interviewScoring.gigResponseId],
-  }),
-  portfolioFile: one(file, {
-    fields: [gigResponse.portfolioFileId],
-    references: [file.id],
-    relationName: "portfolioFile",
-  }),
-  photoFile: one(file, {
-    fields: [gigResponse.photoFileId],
-    references: [file.id],
-    relationName: "photoFile",
-  }),
 }));
 
 export const gigInterviewMediaRelations = relations(

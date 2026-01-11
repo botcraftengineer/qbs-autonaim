@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
-import { customDomain } from "..";
 import { chatSession } from "../chat/chat-session";
-import { vacancyResponse } from "../vacancy/response";
+import { interviewSession } from "../interview/interview-session";
+import { response } from "../response/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
 import { analyticsEvent } from "./analytics-event";
@@ -20,13 +20,17 @@ export const prequalificationSessionRelations = relations(
       fields: [prequalificationSession.vacancyId],
       references: [vacancy.id],
     }),
-    response: one(vacancyResponse, {
+    response: one(response, {
       fields: [prequalificationSession.responseId],
-      references: [vacancyResponse.id],
+      references: [response.id],
     }),
     chatSession: one(chatSession, {
       fields: [prequalificationSession.chatSessionId],
       references: [chatSession.id],
+    }),
+    interviewSession: one(interviewSession, {
+      fields: [prequalificationSession.interviewSessionId],
+      references: [interviewSession.id],
     }),
     analyticsEvents: many(analyticsEvent),
   }),
@@ -36,14 +40,6 @@ export const prequalificationSessionRelations = relations(
 export const widgetConfigRelations = relations(widgetConfig, ({ one }) => ({
   workspace: one(workspace, {
     fields: [widgetConfig.workspaceId],
-    references: [workspace.id],
-  }),
-}));
-
-// Custom Domain Relations
-export const customDomainRelations = relations(customDomain, ({ one }) => ({
-  workspace: one(workspace, {
-    fields: [customDomain.workspaceId],
     references: [workspace.id],
   }),
 }));

@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
-import { gigResponse } from "../gig/response";
-import { vacancyResponse } from "../vacancy/response";
+import { response } from "../response/response";
+import { interviewLink } from "./interview-link";
 import { interviewMessage } from "./interview-message";
 import { interviewSession } from "./interview-session";
 import { interviewScoring } from "./scoring";
@@ -12,13 +12,9 @@ import { interviewScoring } from "./scoring";
 export const interviewSessionRelations = relations(
   interviewSession,
   ({ one, many }) => ({
-    vacancyResponse: one(vacancyResponse, {
-      fields: [interviewSession.vacancyResponseId],
-      references: [vacancyResponse.id],
-    }),
-    gigResponse: one(gigResponse, {
-      fields: [interviewSession.gigResponseId],
-      references: [gigResponse.id],
+    response: one(response, {
+      fields: [interviewSession.responseId],
+      references: [response.id],
     }),
     messages: many(interviewMessage),
     scoring: one(interviewScoring, {
@@ -56,13 +52,17 @@ export const interviewScoringRelations = relations(
       fields: [interviewScoring.interviewSessionId],
       references: [interviewSession.id],
     }),
-    response: one(vacancyResponse, {
+    response: one(response, {
       fields: [interviewScoring.responseId],
-      references: [vacancyResponse.id],
-    }),
-    gigResponse: one(gigResponse, {
-      fields: [interviewScoring.gigResponseId],
-      references: [gigResponse.id],
+      references: [response.id],
     }),
   }),
 );
+
+/**
+ * Relations для interviewLink
+ * Полиморфная связь через entityType + entityId
+ */
+export const interviewLinkRelations = relations(interviewLink, () => ({
+  // Конкретные связи определяются в runtime
+}));

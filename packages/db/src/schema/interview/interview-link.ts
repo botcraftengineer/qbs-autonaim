@@ -5,6 +5,7 @@ import {
   pgEnum,
   pgTable,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -21,44 +22,43 @@ export const interviewLinkEntityTypeEnum = pgEnum(
 
 /**
  * Ссылки на интервью для сущностей
+ * Позволяет создавать уникальные ссылки для прохождения интервью
  */
 export const interviewLink = pgTable(
   "interview_links",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
-    // Полиморфная связь
+    // Полиморфная связь с сущностью
     entityType: interviewLinkEntityTypeEnum("entity_type").notNull(),
     entityId: uuid("entity_id").notNull(),
 
-    // Backward compatibility - прямая связь с vacancy
-    vacancyId: uuid("vacancy_id"),
-
-    // Токен ссылки
+    // Токен ссылки (уникальный идентификатор для URL)
     token: varchar("token", { length: 100 }).notNull().unique(),
 
     // Активна ли ссылка
     isActive: boolean("is_active").default(true).notNull(),
 
-    // Дата истечения
-    expiresAt: timestamp("expires_at", { withTimezone: true }),
+    // Дата истечения (опционально)
+    expiresAt: timestamp("expires_at", { withTimezone: true, mode: "date" }),
 
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
       .notNull(),
   },
   (table) => [
+    // Уникальность: одна активная ссылка на сущность
+    unique("interview_link_entity_unique").on(table.entityType, table.entityId),
     index("interview_link_entity_idx").on(table.entityType, table.entityId),
-    index("interview_link_vacancy_idx").on(table.vacancyId),
     index("interview_link_token_idx").on(table.token),
     index("interview_link_active_idx").on(table.isActive),
+    index("interview_link_expires_idx").on(table.expiresAt),
   ],
 );
 
 export const CreateInterviewLinkSchema = createInsertSchema(interviewLink, {
   entityType: z.enum(["gig", "vacancy", "project"]),
   entityId: z.string().uuid(),
-  vacancyId: z.string().uuid().optional(),
   token: z.string().max(100),
   isActive: z.boolean().default(true),
   expiresAt: z.coerce.date().optional(),

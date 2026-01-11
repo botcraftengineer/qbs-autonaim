@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  index,
   pgEnum,
   pgTable,
   text,
@@ -25,21 +26,33 @@ export const tempMessageContentTypeEnum = pgEnum("temp_message_content_type", [
  * Хранятся до момента идентификации по пин-коду
  * После идентификации переносятся в interview_messages
  */
-export const tempInterviewMessage = pgTable("temp_interview_messages", {
-  id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-  // Временный ID формата temp_{chatId}
-  tempSessionId: varchar("temp_session_id", {
-    length: 100,
-  }).notNull(),
-  chatId: varchar("chat_id", { length: 100 }).notNull(),
-  sender: tempMessageSenderEnum("sender").notNull(),
-  contentType: tempMessageContentTypeEnum("content_type")
-    .default("TEXT")
-    .notNull(),
-  content: text("content").notNull(),
-  externalMessageId: varchar("external_message_id", { length: 100 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const tempInterviewMessage = pgTable(
+  "temp_interview_messages",
+  {
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+    // Временный ID формата temp_{chatId}
+    tempSessionId: varchar("temp_session_id", {
+      length: 100,
+    }).notNull(),
+    chatId: varchar("chat_id", { length: 100 }).notNull(),
+    sender: tempMessageSenderEnum("sender").notNull(),
+    contentType: tempMessageContentTypeEnum("content_type")
+      .default("TEXT")
+      .notNull(),
+    content: text("content").notNull(),
+    externalMessageId: varchar("external_message_id", { length: 100 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    tempSessionIdx: index("temp_interview_message_session_idx").on(
+      table.tempSessionId,
+    ),
+    chatIdx: index("temp_interview_message_chat_idx").on(table.chatId),
+    createdAtIdx: index("temp_interview_message_created_at_idx").on(
+      table.createdAt,
+    ),
+  }),
+);
 
 export const CreateTempInterviewMessageSchema = createInsertSchema(
   tempInterviewMessage,

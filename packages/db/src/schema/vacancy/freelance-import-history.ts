@@ -12,6 +12,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+import { user } from "../auth";
 import { vacancy } from "./vacancy";
 
 export const importModeEnum = pgEnum("import_mode", ["SINGLE", "BULK"]);
@@ -23,7 +24,10 @@ export const freelanceImportHistory = pgTable(
     vacancyId: uuid("vacancy_id")
       .notNull()
       .references(() => vacancy.id, { onDelete: "cascade" }),
-    importedBy: uuid("imported_by").notNull(),
+    // Исправлено: тип text для соответствия user.id (Clerk ID)
+    importedBy: text("imported_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
     importMode: importModeEnum("import_mode").notNull(),
     platformSource: varchar("platform_source", { length: 50 }).notNull(),
     rawText: text("raw_text"),
@@ -34,14 +38,12 @@ export const freelanceImportHistory = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => ({
-    vacancyIdx: index("freelance_import_vacancy_idx").on(table.vacancyId),
-    importedByIdx: index("freelance_import_user_idx").on(table.importedBy),
-    platformIdx: index("freelance_import_platform_idx").on(
-      table.platformSource,
-    ),
-    createdAtIdx: index("freelance_import_created_idx").on(table.createdAt),
-  }),
+  (table) => [
+    index("freelance_import_vacancy_idx").on(table.vacancyId),
+    index("freelance_import_user_idx").on(table.importedBy),
+    index("freelance_import_platform_idx").on(table.platformSource),
+    index("freelance_import_created_idx").on(table.createdAt),
+  ],
 );
 
 export const CreateFreelanceImportHistorySchema = createInsertSchema(

@@ -12,6 +12,7 @@
 
 import { sql } from "drizzle-orm";
 import {
+  check,
   index,
   integer,
   jsonb,
@@ -23,6 +24,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import type { z } from "zod";
+
+import { user } from "../auth";
+import { workspace } from "../workspace/workspace";
 
 /**
  * Тип обратной связи
@@ -42,11 +46,15 @@ export const agentFeedback = pgTable(
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
-    // Workspace для tenant isolation
-    workspaceId: text("workspace_id").notNull(),
+    // Workspace для tenant isolation (с FK)
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
 
-    // Пользователь, оставивший feedback
-    userId: text("user_id").notNull(),
+    // Пользователь, оставивший feedback (с FK)
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
 
     // ID действия агента (опционально)
     actionId: uuid("action_id"),
@@ -76,28 +84,34 @@ export const agentFeedback = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => ({
+  (table) => [
     // Индекс по workspace для tenant isolation
-    workspaceIdx: index("agent_feedback_workspace_idx").on(table.workspaceId),
+    index("agent_feedback_workspace_idx").on(table.workspaceId),
 
     // Индекс по пользователю
-    userIdx: index("agent_feedback_user_idx").on(table.userId),
+    index("agent_feedback_user_idx").on(table.userId),
 
     // Индекс по типу feedback
-    feedbackTypeIdx: index("agent_feedback_type_idx").on(table.feedbackType),
+    index("agent_feedback_type_idx").on(table.feedbackType),
 
     // Composite индекс для поиска по workspace и времени
-    workspaceCreatedAtIdx: index("agent_feedback_workspace_created_at_idx").on(
+    index("agent_feedback_workspace_created_at_idx").on(
       table.workspaceId,
       table.createdAt,
     ),
 
     // Composite индекс для поиска по пользователю и workspace
-    userWorkspaceIdx: index("agent_feedback_user_workspace_idx").on(
+    index("agent_feedback_user_workspace_idx").on(
       table.userId,
       table.workspaceId,
     ),
-  }),
+
+    // CHECK constraint для rating
+    check(
+      "agent_feedback_rating_check",
+      sql`${table.rating} IS NULL OR ${table.rating} BETWEEN 1 AND 5`,
+    ),
+  ],
 );
 
 /**

@@ -8,16 +8,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { gigResponse } from "../gig/response";
-import { vacancyResponse } from "../vacancy/response";
-
-/**
- * Тип сущности для интервью
- */
-export const interviewEntityTypeEnum = pgEnum("interview_entity_type", [
-  "vacancy_response", // Интервью кандидата на вакансию
-  "gig_response", // Интервью фрилансера на гиг
-]);
+import { response } from "../response/response";
 
 /**
  * Статус интервью
@@ -62,24 +53,18 @@ export interface InterviewSessionMetadata {
 
 /**
  * Сессия интервью с AI-ботом
- * Отдельная таблица для интервью кандидатов/фрилансеров
+ * Связана с универсальной таблицей responses
  */
 export const interviewSession = pgTable(
   "interview_sessions",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
-    // Полиморфная связь с откликом
-    entityType: interviewEntityTypeEnum("entity_type").notNull(),
-
-    // FK на vacancy_response или gig_response (одно из двух)
-    vacancyResponseId: uuid("vacancy_response_id").references(
-      () => vacancyResponse.id,
-      { onDelete: "cascade" },
-    ),
-    gigResponseId: uuid("gig_response_id").references(() => gigResponse.id, {
-      onDelete: "cascade",
-    }),
+    // FK на универсальную таблицу откликов
+    responseId: uuid("response_id")
+      .notNull()
+      .unique()
+      .references(() => response.id, { onDelete: "cascade" }),
 
     // Статус и канал
     status: interviewStatusEnum("status").default("pending").notNull(),
@@ -113,30 +98,20 @@ export const interviewSession = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => ({
-    vacancyResponseIdx: index("interview_session_vacancy_response_idx").on(
-      table.vacancyResponseId,
-    ),
-    gigResponseIdx: index("interview_session_gig_response_idx").on(
-      table.gigResponseId,
-    ),
-    statusIdx: index("interview_session_status_idx").on(table.status),
-    entityTypeIdx: index("interview_session_entity_type_idx").on(
-      table.entityType,
-    ),
-    metadataIdx: index("interview_session_metadata_idx").using(
-      "gin",
-      table.metadata,
-    ),
-    lastMessageAtIdx: index("interview_session_last_message_at_idx").on(
+  (table) => [
+    index("interview_session_response_idx").on(table.responseId),
+    index("interview_session_status_idx").on(table.status),
+    index("interview_session_last_channel_idx").on(table.lastChannel),
+    index("interview_session_metadata_idx").using("gin", table.metadata),
+    index("interview_session_last_message_at_idx").on(table.lastMessageAt),
+    index("interview_session_status_last_message_idx").on(
+      table.status,
       table.lastMessageAt,
     ),
-  }),
+  ],
 );
 
 export type InterviewSession = typeof interviewSession.$inferSelect;
 export type NewInterviewSession = typeof interviewSession.$inferInsert;
-export type InterviewEntityType =
-  (typeof interviewEntityTypeEnum.enumValues)[number];
 export type InterviewStatus = (typeof interviewStatusEnum.enumValues)[number];
 export type InterviewChannel = (typeof interviewChannelEnum.enumValues)[number];

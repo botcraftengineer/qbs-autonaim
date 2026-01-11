@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  check,
   index,
   integer,
   pgTable,
@@ -12,7 +13,7 @@ import { z } from "zod";
 import { response } from "./response";
 
 /**
- * Универсальная таблица результатов скрининга откликов
+ * Результаты скрининга откликов
  */
 export const responseScreening = pgTable(
   "response_screenings",
@@ -47,6 +48,14 @@ export const responseScreening = pgTable(
     index("response_screening_response_idx").on(table.responseId),
     index("response_screening_score_idx").on(table.score),
     index("response_screening_detailed_score_idx").on(table.detailedScore),
+    check(
+      "response_screening_score_check",
+      sql`${table.score} BETWEEN 0 AND 5`,
+    ),
+    check(
+      "response_screening_detailed_score_check",
+      sql`${table.detailedScore} BETWEEN 0 AND 100`,
+    ),
   ],
 );
 

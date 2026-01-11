@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { DbClient } from "../index";
-import { vacancyResponse } from "../schema";
+import { response } from "../schema";
 
 export interface ResponseByPinCode {
   id: string;
@@ -41,9 +41,9 @@ export async function findResponseByPinCode(
   }
 
   try {
-    // Query vacancy response table for matching pin code
-    const responseData = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.telegramPinCode, trimmedPinCode),
+    // Query response table for matching pin code
+    const responseData = await db.query.response.findFirst({
+      where: eq(response.telegramPinCode, trimmedPinCode),
     });
 
     if (!responseData) {

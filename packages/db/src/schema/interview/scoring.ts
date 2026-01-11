@@ -11,13 +11,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import { gigResponse } from "../gig/response";
-import { vacancyResponse } from "../vacancy/response";
+import { response } from "../response/response";
 import { interviewSession } from "./interview-session";
 
 /**
  * Результаты скоринга интервью
- * Связан с interviewSession (не chatSession)
+ * Связан с interviewSession
  */
 export const interviewScoring = pgTable(
   "interview_scorings",
@@ -30,14 +29,8 @@ export const interviewScoring = pgTable(
       .unique()
       .references(() => interviewSession.id, { onDelete: "cascade" }),
 
-    // FK на conversation (универсальная таблица)
-    conversationId: uuid("conversation_id"),
-
-    // Опциональные FK на отклики (для удобства запросов)
-    responseId: uuid("response_id").references(() => vacancyResponse.id, {
-      onDelete: "cascade",
-    }),
-    gigResponseId: uuid("gig_response_id").references(() => gigResponse.id, {
+    // FK на отклик (для удобства запросов)
+    responseId: uuid("response_id").references(() => response.id, {
       onDelete: "cascade",
     }),
 
@@ -50,32 +43,26 @@ export const interviewScoring = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => ({
-    interviewSessionIdx: index("interview_scoring_session_idx").on(
-      table.interviewSessionId,
-    ),
-    responseIdx: index("interview_scoring_response_idx").on(table.responseId),
-    gigResponseIdx: index("interview_scoring_gig_response_idx").on(
-      table.gigResponseId,
-    ),
-    scoreCheck: check(
+  (table) => [
+    index("interview_scoring_session_idx").on(table.interviewSessionId),
+    index("interview_scoring_response_idx").on(table.responseId),
+    index("interview_scoring_score_idx").on(table.score),
+    check(
       "interview_scoring_score_check",
       sql`${table.score} BETWEEN 0 AND 100`,
     ),
-    ratingCheck: check(
+    check(
       "interview_scoring_rating_check",
       sql`${table.rating} IS NULL OR ${table.rating} BETWEEN 0 AND 5`,
     ),
-  }),
+  ],
 );
 
 export const CreateInterviewScoringSchema = createInsertSchema(
   interviewScoring,
   {
     interviewSessionId: uuidv7Schema,
-    conversationId: uuidv7Schema.optional(),
     responseId: uuidv7Schema.optional(),
-    gigResponseId: uuidv7Schema.optional(),
     rating: z.number().int().min(0).max(5).optional(),
     score: z.number().int().min(0).max(100),
     analysis: z.string().optional(),
@@ -84,3 +71,6 @@ export const CreateInterviewScoringSchema = createInsertSchema(
   id: true,
   createdAt: true,
 });
+
+export type InterviewScoring = typeof interviewScoring.$inferSelect;
+export type NewInterviewScoring = typeof interviewScoring.$inferInsert;

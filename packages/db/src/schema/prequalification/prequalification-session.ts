@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  check,
   index,
   integer,
   jsonb,
@@ -15,7 +16,7 @@ import { z } from "zod";
 
 import { chatSession } from "../chat/chat-session";
 import { interviewSession } from "../interview/interview-session";
-import { vacancyResponse } from "../vacancy/response";
+import { response } from "../response/response";
 import { vacancy } from "../vacancy/vacancy";
 import { workspace } from "../workspace/workspace";
 
@@ -125,7 +126,7 @@ export const prequalificationSession = pgTable(
       .references(() => vacancy.id, { onDelete: "cascade" }),
 
     // Связь с откликом (создаётся после успешной преквалификации)
-    responseId: uuid("response_id").references(() => vacancyResponse.id, {
+    responseId: uuid("response_id").references(() => response.id, {
       onDelete: "set null",
     }),
 
@@ -182,24 +183,21 @@ export const prequalificationSession = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => ({
-    workspaceIdx: index("preq_session_workspace_idx").on(table.workspaceId),
-    vacancyIdx: index("preq_session_vacancy_idx").on(table.vacancyId),
-    statusIdx: index("preq_session_status_idx").on(table.status),
-    fitScoreIdx: index("preq_session_fit_score_idx").on(table.fitScore),
-    chatSessionIdx: index("preq_session_chat_idx").on(table.chatSessionId),
-    interviewSessionIdx: index("preq_session_interview_idx").on(
-      table.interviewSessionId,
+  (table) => [
+    index("preq_session_workspace_idx").on(table.workspaceId),
+    index("preq_session_vacancy_idx").on(table.vacancyId),
+    index("preq_session_response_idx").on(table.responseId),
+    index("preq_session_status_idx").on(table.status),
+    index("preq_session_fit_score_idx").on(table.fitScore),
+    index("preq_session_chat_idx").on(table.chatSessionId),
+    index("preq_session_interview_idx").on(table.interviewSessionId),
+    index("preq_session_parsed_resume_idx").using("gin", table.parsedResume),
+    index("preq_session_evaluation_idx").using("gin", table.evaluation),
+    check(
+      "preq_session_fit_score_check",
+      sql`${table.fitScore} IS NULL OR ${table.fitScore} BETWEEN 0 AND 100`,
     ),
-    parsedResumeIdx: index("preq_session_parsed_resume_idx").using(
-      "gin",
-      table.parsedResume,
-    ),
-    evaluationIdx: index("preq_session_evaluation_idx").using(
-      "gin",
-      table.evaluation,
-    ),
-  }),
+  ],
 );
 
 // Zod schemas
