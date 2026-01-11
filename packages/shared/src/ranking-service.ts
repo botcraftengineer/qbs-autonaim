@@ -16,7 +16,7 @@ import type {
 import { RankingOrchestrator } from "@qbs-autonaim/ai";
 import { and, desc, eq, gte, sql } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { gig, gigResponse } from "@qbs-autonaim/db/schema";
+import { gig, response } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
 
 /**
@@ -85,8 +85,8 @@ export class RankingService {
     }
 
     // 2. Загружаем всех кандидатов
-    const candidates = await db.query.gigResponse.findMany({
-      where: eq(gigResponse.gigId, gigId),
+    const candidates = await db.query.response.findMany({
+      where: and(eq(response.entityType, "gig"), eq(response.entityId, gigId)),
       columns: {
         id: true,
         candidateName: true,
@@ -169,7 +169,7 @@ export class RankingService {
     workspaceId: string,
     filters: GetRankedCandidatesFilters = { limit: 50, offset: 0 },
   ): Promise<{
-    candidates: Array<typeof gigResponse.$inferSelect>;
+    candidates: Array<typeof response.$inferSelect>;
     totalCount: number;
     rankedAt: Date | null;
   }> {
@@ -184,23 +184,23 @@ export class RankingService {
     }
 
     // Строим условия фильтрации
-    const conditions = [eq(gigResponse.gigId, gigId)];
+    const conditions = [
+      eq(response.entityType, "gig"),
+      eq(response.entityId, gigId),
+    ];
 
     if (filters.minScore !== undefined) {
-      conditions.push(gte(gigResponse.compositeScore, filters.minScore));
+      conditions.push(gte(response.compositeScore, filters.minScore));
     }
 
     if (filters.recommendation) {
-      conditions.push(eq(gigResponse.recommendation, filters.recommendation));
+      conditions.push(eq(response.recommendation, filters.recommendation));
     }
 
     // Получаем кандидатов с пагинацией
-    const candidates = await db.query.gigResponse.findMany({
+    const candidates = await db.query.response.findMany({
       where: and(...conditions),
-      orderBy: [
-        desc(gigResponse.compositeScore),
-        desc(gigResponse.rankingPosition),
-      ],
+      orderBy: [desc(response.compositeScore), desc(response.rankingPosition)],
       limit: filters.limit,
       offset: filters.offset,
     });
@@ -208,22 +208,23 @@ export class RankingService {
     // Получаем общее количество
     const [countResult] = await db
       .select({ count: sql<number>`count(*)::int` })
-      .from(gigResponse)
+      .from(response)
       .where(and(...conditions));
 
     const totalCount = countResult?.count ?? 0;
 
     // Получаем дату последнего ранжирования
     const [latestRanked] = await db
-      .select({ rankedAt: gigResponse.rankedAt })
-      .from(gigResponse)
+      .select({ rankedAt: response.rankedAt })
+      .from(response)
       .where(
         and(
-          eq(gigResponse.gigId, gigId),
-          sql`${gigResponse.rankedAt} IS NOT NULL`,
+          eq(response.entityType, "gig"),
+          eq(response.entityId, gigId),
+          sql`${response.rankedAt} IS NOT NULL`,
         ),
       )
-      .orderBy(desc(gigResponse.rankedAt))
+      .orderBy(desc(response.rankedAt))
       .limit(1);
 
     return {
@@ -267,7 +268,7 @@ export class RankingService {
       // Обновляем каждого кандидата
       for (const rankedCandidate of result.candidates) {
         await tx
-          .update(gigResponse)
+          .update(response)
           .set({
             compositeScore: rankedCandidate.scores.compositeScore,
             priceScore: rankedCandidate.scores.priceScore,
@@ -281,7 +282,7 @@ export class RankingService {
             recommendation: rankedCandidate.recommendation.status,
             rankedAt: result.rankedAt,
           })
-          .where(eq(gigResponse.id, rankedCandidate.candidate.id));
+          .where(eq(response.id, rankedCandidate.candidate.id));
       }
     });
   }

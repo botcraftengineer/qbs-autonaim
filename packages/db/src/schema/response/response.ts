@@ -276,3 +276,13 @@ export {
   recommendationValues,
   responseStatusValues,
 } from "../shared/response-enums";
+
+// Backward compatibility aliases
+export const gigResponse = response;
+export const vacancyResponse = response;
+export type GigResponse = Response;
+export type VacancyResponse = Response;
+export const gigResponseStatusValues = responseStatusValues;
+export const vacancyResponseStatusValues = responseStatusValues;
+export const gigHrSelectionStatusValues = hrSelectionStatusValues;
+export const vacancyHrSelectionStatusValues = hrSelectionStatusValues;

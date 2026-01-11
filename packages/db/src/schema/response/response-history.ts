@@ -98,3 +98,9 @@ export const CreateResponseHistorySchema = createInsertSchema(responseHistory, {
 export type ResponseHistory = typeof responseHistory.$inferSelect;
 export type NewResponseHistory = typeof responseHistory.$inferInsert;
 export type ResponseEventType = (typeof responseEventTypeValues)[number];
+
+// Backward compatibility aliases
+export const vacancyResponseHistory = responseHistory;
+export const gigResponseHistory = responseHistory;
+export type VacancyResponseHistory = ResponseHistory;
+export type GigResponseHistory = ResponseHistory;

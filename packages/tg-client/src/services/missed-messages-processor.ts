@@ -7,15 +7,14 @@
  */
 
 import type { TelegramClient } from "@mtcute/bun";
-import { and, desc, eq } from "@qbs-autonaim/db";
+import { and, desc, eq, sql } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   gig,
-  gigResponse,
   interviewMessage,
   interviewSession,
+  response,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import type { MessageData } from "../schemas/message-data.schema";
 import { messageDataSchema } from "../schemas/message-data.schema";
@@ -32,7 +31,6 @@ export interface MissedMessagesProcessorConfig {
 
 type InterviewSessionWithChatId = {
   id: string;
-  entityType: "vacancy_response" | "gig_response";
   status: "pending" | "active" | "completed" | "cancelled" | "paused";
   metadata: Record<string, unknown> | null;
   createdAt: Date;
@@ -110,52 +108,33 @@ export async function processMissedMessages(
   const startTime = Date.now();
   console.log("🔍 Проверка пропущенных сообщений...");
 
-  // Get active interview sessions for gig_response with their chatId and workspaceId
-  const gigSessions = await db
+  // Get active interview sessions with their chatId and workspaceId
+  const sessions = await db
     .select({
       id: interviewSession.id,
-      entityType: interviewSession.entityType,
       status: interviewSession.status,
       metadata: interviewSession.metadata,
       createdAt: interviewSession.createdAt,
-      chatId: gigResponse.chatId,
-      workspaceId: gig.workspaceId,
+      chatId: response.chatId,
+      workspaceId:
+        sql<string>`COALESCE(${gig.workspaceId}, ${vacancy.workspaceId})`.as(
+          "workspaceId",
+        ),
     })
     .from(interviewSession)
-    .innerJoin(gigResponse, eq(interviewSession.gigResponseId, gigResponse.id))
-    .innerJoin(gig, eq(gigResponse.gigId, gig.id))
-    .where(
-      and(
-        eq(interviewSession.entityType, "gig_response"),
-        eq(interviewSession.status, "active"),
-      ),
-    );
-
-  // Get active interview sessions for vacancy_response
-  const vacancySessions = await db
-    .select({
-      id: interviewSession.id,
-      entityType: interviewSession.entityType,
-      status: interviewSession.status,
-      metadata: interviewSession.metadata,
-      createdAt: interviewSession.createdAt,
-      chatId: vacancyResponse.chatId,
-      workspaceId: vacancy.workspaceId,
-    })
-    .from(interviewSession)
-    .innerJoin(
-      vacancyResponse,
-      eq(interviewSession.vacancyResponseId, vacancyResponse.id),
+    .innerJoin(response, eq(interviewSession.responseId, response.id))
+    .leftJoin(
+      gig,
+      and(eq(response.entityType, "gig"), eq(response.entityId, gig.id)),
     )
-    .innerJoin(vacancy, eq(vacancyResponse.vacancyId, vacancy.id))
-    .where(
+    .leftJoin(
+      vacancy,
       and(
-        eq(interviewSession.entityType, "vacancy_response"),
-        eq(interviewSession.status, "active"),
+        eq(response.entityType, "vacancy"),
+        eq(response.entityId, vacancy.id),
       ),
-    );
-
-  const sessions = [...gigSessions, ...vacancySessions];
+    )
+    .where(eq(interviewSession.status, "active"));
 
   if (sessions.length === 0) {
     console.log("ℹ️ Нет активных сессий интервью для проверки");
