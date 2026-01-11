@@ -1,5 +1,5 @@
 import { env } from "@qbs-autonaim/config";
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,
@@ -160,7 +160,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
               workspaceId,
               phone,
               text: welcomeMessage,
-              firstName: response.candidateName || undefined,
+              firstName: responseData.candidateName || undefined,
             });
 
             if (tgResult) {
@@ -275,10 +275,7 @@ export const sendCandidateWelcomeFunction = inngest.createFunction(
       await step.run("save-interview-session", async () => {
         // Проверяем, есть ли уже interviewSession для этого response
         const existing = await db.query.interviewSession.findFirst({
-          where: and(
-            eq(interviewSession.entityType, "vacancy_response"),
-            eq(interviewSession.vacancyResponseId, responseId),
-          ),
+          where: eq(interviewSession.responseId, responseId),
         });
 
         if (existing) {

@@ -3,9 +3,9 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   RESPONSE_STATUS,
+  response,
   responseScreening,
   vacancy,
-  vacancyResponse,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
@@ -54,21 +54,21 @@ export async function screenResponse(
     return err(responseResult.error);
   }
 
-  const response = responseResult.data;
-  if (!response) {
+  const resp = responseResult.data;
+  if (!resp) {
     return err(`Response ${responseId} not found`);
   }
 
-  const requirements = await getVacancyRequirements(response.vacancyId);
+  const requirements = await getVacancyRequirements(resp.entityId);
 
   if (!requirements) {
-    return err(`Requirements for vacancy ${response.vacancyId} not found`);
+    return err(`Requirements for vacancy ${resp.entityId} not found`);
   }
 
   // Получаем кастомный промпт из вакансии
   const vacancyResult = await tryCatch(async () => {
     return await db.query.vacancy.findFirst({
-      where: eq(vacancy.id, response.vacancyId),
+      where: eq(vacancy.id, resp.entityId),
       columns: {
         customScreeningPrompt: true,
       },
@@ -81,11 +81,9 @@ export async function screenResponse(
 
   const prompt = buildResponseScreeningPrompt(
     {
-      candidateName: response.candidateName,
-      experience: response.experience
-        ? stripHtml(response.experience).result
-        : response.experience,
-      coverLetter: response.coverLetter,
+      candidateName: resp.candidateName || null,
+      experience: resp.experience ? stripHtml(resp.experience).result : null,
+      coverLetter: resp.coverLetter || null,
     },
     requirements,
     customPrompt,
@@ -100,7 +98,7 @@ export async function screenResponse(
       entityId: responseId,
       metadata: {
         responseId,
-        vacancyId: response.vacancyId,
+        vacancyId: resp.entityId,
       },
     });
     return text;
@@ -140,12 +138,12 @@ export async function screenResponse(
 
     // Обновляем статус и язык резюме
     await db
-      .update(vacancyResponse)
+      .update(response)
       .set({
         status: RESPONSE_STATUS.EVALUATED,
         resumeLanguage: result.resumeLanguage,
       })
-      .where(eq(vacancyResponse.id, responseId));
+      .where(eq(response.id, responseId));
 
     logger.info(
       `Screening result saved: score ${result.score}/5 (${result.detailedScore}/100), language: ${result.resumeLanguage}`,

@@ -1,4 +1,6 @@
+import { and, eq, isNull } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { response, responseScreening } from "@qbs-autonaim/db/schema";
 import { screenResponse, unwrap } from "../../../services/response";
 import { screenNewResponsesChannel } from "../../channels/client";
 import { inngest } from "../../client";
@@ -29,20 +31,33 @@ export const screenNewResponsesFunction = inngest.createFunction(
 
     // Получаем новые отклики (без скрининга)
     const responses = await step.run("fetch-new-responses", async () => {
-      const allResponses = await db.query.vacancyResponse.findMany({
-        where: (vacancyResponse, { eq }) =>
-          eq(vacancyResponse.vacancyId, vacancyId),
+      // Получаем все отклики для вакансии
+      const allResponses = await db.query.response.findMany({
+        where: and(
+          eq(response.entityType, "vacancy"),
+          eq(response.entityId, vacancyId),
+        ),
         columns: {
           id: true,
-          vacancyId: true,
-        },
-        with: {
-          screening: true,
+          entityId: true,
         },
       });
 
+      // Получаем ID откликов, у которых уже есть скрининг
+      const screenedResponseIds = await db
+        .select({ responseId: responseScreening.responseId })
+        .from(responseScreening)
+        .where(
+          eq(
+            responseScreening.responseId,
+            allResponses.map((r) => r.id)[0] ?? "",
+          ),
+        );
+
+      const screenedIds = new Set(screenedResponseIds.map((s) => s.responseId));
+
       // Фильтруем только отклики без скрининга
-      const results = allResponses.filter((r) => !r.screening);
+      const results = allResponses.filter((r) => !screenedIds.has(r.id));
 
       console.log(`✅ Найдено новых откликов: ${results.length}`);
       return results;
@@ -83,30 +98,29 @@ export const screenNewResponsesFunction = inngest.createFunction(
 
     // Обрабатываем каждый отклик
     const results = await Promise.allSettled(
-      responses.map(async (response) => {
-        return await step.run(`screen-response-${response.id}`, async () => {
+      responses.map(async (resp) => {
+        return await step.run(`screen-response-${resp.id}`, async () => {
           try {
-            console.log(`🎯 Скрининг отклика: ${response.id}`);
+            console.log(`🎯 Скрининг отклика: ${resp.id}`);
 
-            const resultWrapper = await screenResponse(response.id);
+            const resultWrapper = await screenResponse(resp.id);
             const result = unwrap(resultWrapper);
 
-            console.log(`✅ Скрининг завершен: ${response.id}`, {
+            console.log(`✅ Скрининг завершен: ${resp.id}`, {
               score: result.score,
-              detailedScore: result.detailedScore,
             });
 
             return {
-              responseId: response.id,
-              vacancyId: response.vacancyId,
+              responseId: resp.id,
+              vacancyId: resp.entityId,
               success: true,
               score: result.score,
             };
           } catch (error) {
-            console.error(`❌ Ошибка скрининга для ${response.id}:`, error);
+            console.error(`❌ Ошибка скрининга для ${resp.id}:`, error);
             return {
-              responseId: response.id,
-              vacancyId: response.vacancyId,
+              responseId: resp.id,
+              vacancyId: resp.entityId,
               success: false,
               error: error instanceof Error ? error.message : "Unknown error",
             };
@@ -115,8 +129,20 @@ export const screenNewResponsesFunction = inngest.createFunction(
       }),
     );
 
-    const successful = results.filter((r) => r.status === "fulfilled").length;
-    const failed = results.filter((r) => r.status === "rejected").length;
+    const successful = results.filter(
+      (
+        r,
+      ): r is PromiseFulfilledResult<{
+        responseId: string;
+        vacancyId: string;
+        success: boolean;
+        score?: number;
+        error?: string;
+      }> => r.status === "fulfilled",
+    ).length;
+    const failed = results.filter(
+      (r): r is PromiseRejectedResult => r.status === "rejected",
+    ).length;
 
     console.log(
       `✅ Завершено: успешно ${successful}, ошибок ${failed} из ${responses.length}`,

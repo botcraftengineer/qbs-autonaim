@@ -56,8 +56,7 @@ export const parseNewResumesFunction = inngest.createFunction(
 
         // Фильтруем только отклики без детальной информации
         const results = allResponses.filter(
-          (r: typeof response.$inferSelect) =>
-            !r.experience || r.experience === "",
+          (r) => !r.experience || r.experience === "",
         );
 
         console.log(`✅ Найдено откликов без деталей: ${results.length}`);
@@ -65,7 +64,7 @@ export const parseNewResumesFunction = inngest.createFunction(
         // Отправляем прогресс для каждой вакансии
         for (const vacancyId of vacancyIds) {
           const vacancyResponses = results.filter(
-            (r: typeof response.$inferSelect) => r.entityId === vacancyId,
+            (r) => r.entityId === vacancyId,
           );
           await publish(
             parseNewResumesChannel(vacancyId).progress({
@@ -105,17 +104,30 @@ export const parseNewResumesFunction = inngest.createFunction(
 
     // Запускаем enricher для парсинга резюме
     await step.run("enrich-resumes", async () => {
-      const workspaceId = responses[0]?.vacancy?.workspaceId;
-      if (!workspaceId) {
+      // Получаем workspaceId через vacancy
+      if (responses.length === 0) {
+        throw new Error("Нет откликов для обработки");
+      }
+
+      const firstResponse = responses[0];
+      if (!firstResponse) {
+        throw new Error("Не удалось получить первый отклик");
+      }
+
+      const vacancy = await db.query.vacancy.findFirst({
+        where: (v, { eq }) => eq(v.id, firstResponse.entityId),
+      });
+
+      if (!vacancy?.workspaceId) {
         throw new Error("workspaceId не найден");
       }
 
-      await runEnricher(workspaceId);
+      await runEnricher(vacancy.workspaceId);
 
       // Отправляем финальный статус для каждой вакансии
       for (const vacancyId of vacancyIds) {
         const vacancyResponses = responses.filter(
-          (r) => r.vacancyId === vacancyId,
+          (r) => r.entityId === vacancyId,
         );
         await publish(
           parseNewResumesChannel(vacancyId).result({

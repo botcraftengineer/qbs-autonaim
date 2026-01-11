@@ -117,24 +117,17 @@ export const refreshSingleResumeFunction = inngest.createFunction(
   async ({ event, step }) => {
     const { responseId } = event.data;
 
-    const response = await step.run("fetch-response", async () => {
+    const responseData = await step.run("fetch-response", async () => {
       console.log(`🚀 Запуск обновления резюме для отклика: ${responseId}`);
 
-      const result = await db.query.vacancyResponse.findFirst({
-        where: eq(vacancyResponse.id, responseId),
+      const result = await db.query.response.findFirst({
+        where: eq(response.id, responseId),
         columns: {
           id: true,
-          vacancyId: true,
+          entityId: true,
           resumeId: true,
           resumeUrl: true,
           candidateName: true,
-        },
-        with: {
-          vacancy: {
-            columns: {
-              workspaceId: true,
-            },
-          },
         },
       });
 
@@ -142,18 +135,26 @@ export const refreshSingleResumeFunction = inngest.createFunction(
         throw new Error(`Отклик ${responseId} не найден`);
       }
 
-      if (!result.vacancy?.workspaceId) {
+      // Получаем vacancy отдельно
+      const vacancy = await db.query.vacancy.findFirst({
+        where: (v, { eq }) => eq(v.id, result.entityId),
+        columns: {
+          workspaceId: true,
+        },
+      });
+
+      if (!vacancy?.workspaceId) {
         throw new Error(`WorkspaceId не найден для отклика ${responseId}`);
       }
 
-      return result;
+      return { ...result, vacancy };
     });
 
     const credentials = await step.run("get-credentials", async () => {
       const creds = await getIntegrationCredentials(
         db,
         "hh",
-        response.vacancy.workspaceId,
+        responseData.vacancy.workspaceId,
       );
       if (!creds?.email || !creds?.password) {
         throw new Error("HH credentials не найдены в интеграциях");
@@ -164,7 +165,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
     await step.run("parse-resume", async () => {
       const savedCookies = await loadCookies(
         "hh",
-        response.vacancy.workspaceId,
+        responseData.vacancy.workspaceId,
       );
       const browser = await setupBrowser();
 
@@ -174,15 +175,15 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           page,
           credentials.email,
           credentials.password,
-          response.vacancy.workspaceId,
+          responseData.vacancy.workspaceId,
         );
 
-        console.log(`📊 Парсинг резюме: ${response.candidateName}`);
+        console.log(`📊 Парсинг резюме: ${responseData.candidateName}`);
 
         const experienceData = await parseResumeExperience(
           page,
-          response.resumeUrl,
-          response.candidateName ?? undefined,
+          responseData.resumeUrl ?? "",
+          responseData.candidateName ?? undefined,
         );
 
         let telegramUsername: string | null = null;
@@ -199,7 +200,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
         if (experienceData.pdfBuffer) {
           const result = await uploadResumePdf(
             experienceData.pdfBuffer,
-            response.resumeId,
+            responseData.resumeId ?? "",
           );
           if (result.success) {
             resumePdfFileId = result.data;
@@ -213,7 +214,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
           );
           const uploadResult = await uploadCandidatePhoto(
             experienceData.photoBuffer,
-            response.resumeId,
+            responseData.resumeId ?? "",
             experienceData.photoMimeType,
           );
           if (uploadResult.success) {
@@ -229,10 +230,10 @@ export const refreshSingleResumeFunction = inngest.createFunction(
         }
 
         const updateResult = await updateResponseDetails({
-          vacancyId: response.vacancyId,
-          resumeId: response.resumeId,
-          resumeUrl: response.resumeUrl,
-          candidateName: response.candidateName ?? "",
+          vacancyId: responseData.entityId,
+          resumeId: responseData.resumeId ?? "",
+          resumeUrl: responseData.resumeUrl ?? "",
+          candidateName: responseData.candidateName ?? "",
           experience: experienceData.experience || "",
           contacts: experienceData.contacts,
           phone: experienceData.phone,
@@ -248,7 +249,7 @@ export const refreshSingleResumeFunction = inngest.createFunction(
         }
 
         console.log(
-          `✅ Резюме обновлено для: ${response.candidateName ?? "кандидата"}`,
+          `✅ Резюме обновлено для: ${responseData.candidateName ?? "кандидата"}`,
         );
       } finally {
         // Properly close browser to avoid resource locks on Windows

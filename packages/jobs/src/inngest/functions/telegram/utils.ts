@@ -3,7 +3,8 @@ import { db } from "@qbs-autonaim/db/client";
 import {
   botSettings,
   interviewMessage,
-  vacancyResponse,
+  interviewSession,
+  response,
 } from "@qbs-autonaim/db/schema";
 import {
   type BufferedTempMessageData,
@@ -76,7 +77,7 @@ export async function getChatHistory(chatSessionId: string) {
     const allMessages = [
       ...tempMessages.map((msg) => ({
         id: msg.id,
-        sessionId: msg.tempConversationId,
+        sessionId: msg.tempSessionId,
         role:
           msg.sender === "CANDIDATE"
             ? "user"
@@ -144,28 +145,26 @@ export async function getChatHistory(chatSessionId: string) {
 }
 
 /**
- * Находит interviewSession по chatId через связь с vacancyResponse
+ * Находит interviewSession по chatId через связь с response
  */
 export async function findInterviewSessionByChatId(chatId: string) {
-  // Сначала находим vacancyResponse по chatId
-  const response = await db.query.vacancyResponse.findFirst({
-    where: eq(vacancyResponse.chatId, chatId),
-    with: {
-      vacancy: true,
-    },
+  // Сначала находим response по chatId
+  const resp = await db.query.response.findFirst({
+    where: eq(response.chatId, chatId),
   });
 
-  if (!response) {
+  if (!resp) {
     return null;
   }
 
-  // Затем находим interviewSession по vacancyResponseId
+  // Получаем vacancy для дополнительной информации
+  const vacancy = await db.query.vacancy.findFirst({
+    where: (v, { eq }) => eq(v.id, resp.entityId),
+  });
+
+  // Затем находим interviewSession по responseId
   const session = await db.query.interviewSession.findFirst({
-    where: (fields, { and, eq }) =>
-      and(
-        eq(fields.entityType, "vacancy_response"),
-        eq(fields.vacancyResponseId, response.id),
-      ),
+    where: eq(interviewSession.responseId, resp.id),
   });
 
   if (!session) {
@@ -175,8 +174,8 @@ export async function findInterviewSessionByChatId(chatId: string) {
   return {
     ...session,
     response: {
-      ...response,
-      vacancy: response.vacancy,
+      ...resp,
+      vacancy: vacancy,
     },
   };
 }

@@ -61,7 +61,6 @@ function Item({
   VariantProps<typeof itemVariants> & { asChild?: boolean }) {
   const Comp = asChild ? Slot : 'div'
   return (
-    // @ts-expect-error - React 19 ref type incompatibility
     <Comp
       data-slot="item"
       data-variant={variant}

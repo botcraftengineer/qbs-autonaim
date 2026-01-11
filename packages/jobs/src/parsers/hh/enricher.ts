@@ -147,9 +147,9 @@ export async function runEnricher(workspaceId: string) {
 
     // Последовательно обрабатываем каждое резюме
     for (let i = 0; i < responsesToEnrich.length; i++) {
-      const response = responsesToEnrich[i];
-      if (!response) continue;
-      const { resumeId, vacancyId, candidateName, resumeUrl } = response;
+      const resp = responsesToEnrich[i];
+      if (!resp) continue;
+      const { resumeId, entityId, candidateName, resumeUrl } = resp;
 
       try {
         // Добавляем случайную задержку между 3-5 секунд для имитации человеческого поведения
@@ -158,10 +158,13 @@ export async function runEnricher(workspaceId: string) {
         await new Promise((resolve) => setTimeout(resolve, delay));
 
         console.log(
-          `📊 [${i + 1}/${responsesToEnrich.length}] Парсинг резюме: ${candidateName}`,
+          `📊 [${i + 1}/${responsesToEnrich.length}] Парсинг резюме: ${candidateName ?? ""}`,
         );
 
-        const experienceData = await parseResumeExperience(page, resumeUrl);
+        const experienceData = await parseResumeExperience(
+          page,
+          resumeUrl ?? "",
+        );
 
         // Extract Telegram username from contacts if available
         let telegramUsername: string | null = null;
@@ -178,7 +181,7 @@ export async function runEnricher(workspaceId: string) {
         }
 
         let resumePdfFileId: string | null = null;
-        if (experienceData.pdfBuffer) {
+        if (experienceData.pdfBuffer && resumeId) {
           const uploadResult = await uploadResumePdf(
             experienceData.pdfBuffer,
             resumeId,
@@ -189,11 +192,11 @@ export async function runEnricher(workspaceId: string) {
         }
 
         const updateResult = await updateResponseDetails({
-          vacancyId,
-          resumeId,
-          resumeUrl,
+          vacancyId: entityId,
+          resumeId: resumeId ?? "",
+          resumeUrl: resumeUrl ?? "",
           candidateName: candidateName ?? "",
-          experience: experienceData.experience,
+          experience: experienceData.experience || "",
           contacts: experienceData.contacts,
           phone: experienceData.phone,
           telegramUsername,
@@ -206,7 +209,7 @@ export async function runEnricher(workspaceId: string) {
           );
         }
 
-        console.log(`✅ Данные обновлены для: ${candidateName}`);
+        console.log(`✅ Данные обновлены для: ${candidateName ?? "кандидата"}`);
       } catch (error) {
         console.error(`❌ Ошибка парсинга для ${candidateName}: ${error}`);
         // Продолжаем обработку следующих резюме

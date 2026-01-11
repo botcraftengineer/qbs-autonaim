@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { integration, response, vacancy } from "@qbs-autonaim/db/schema";
 import axios from "axios";
@@ -205,12 +205,12 @@ export const collectChatIdsFunction = inngest.createFunction(
           const coverLetter = extractCoverLetter(chat);
 
           await db
-            .update(vacancyResponse)
+            .update(response)
             .set({
               chatId: chat.id,
               coverLetter: coverLetter,
             })
-            .where(eq(vacancyResponse.id, resp.id));
+            .where(eq(response.id, resp.id));
 
           updatedCount++;
           console.log(

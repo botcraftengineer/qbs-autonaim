@@ -57,7 +57,7 @@ export const parseMissingContactsFunction = inngest.createFunction(
 
         // Фильтруем только отклики с полем contacts, но без telegram username или телефона
         const results = allResponses.filter(
-          (r: typeof response.$inferSelect) =>
+          (r) =>
             r.contacts &&
             (!r.telegramUsername ||
               r.telegramUsername === "" ||
@@ -70,7 +70,7 @@ export const parseMissingContactsFunction = inngest.createFunction(
         // Отправляем прогресс для каждой вакансии
         for (const vacancyId of vacancyIds) {
           const vacancyResponses = results.filter(
-            (r: typeof response.$inferSelect) => r.entityId === vacancyId,
+            (r) => r.entityId === vacancyId,
           );
           await publish(
             parseMissingContactsChannel(vacancyId).progress({
@@ -110,9 +110,7 @@ export const parseMissingContactsFunction = inngest.createFunction(
 
     // Извлекаем контакты из поля contacts
     const results = await step.run("extract-contacts", async () => {
-      const responseIds = responses.map(
-        (r: typeof response.$inferSelect) => r.id,
-      );
+      const responseIds = responses.map((r) => r.id);
       const result = await extractContactsFromResponses(responseIds);
       if (!result.success) {
         throw new Error(result.error);
@@ -123,7 +121,7 @@ export const parseMissingContactsFunction = inngest.createFunction(
     // Отправляем финальный результат для каждой вакансии
     for (const vacancyId of vacancyIds) {
       const vacancyResponses = responses.filter(
-        (r: typeof response.$inferSelect) => r.entityId === vacancyId,
+        (r) => r.entityId === vacancyId,
       );
       await publish(
         parseMissingContactsChannel(vacancyId).result({

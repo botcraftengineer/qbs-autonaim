@@ -1,4 +1,4 @@
-import { eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { response } from "@qbs-autonaim/db/schema";
 import { screenResponse, unwrap } from "../../../services/response";
@@ -112,30 +112,29 @@ export const screenAllResponsesFunction = inngest.createFunction(
 
     // Обрабатываем каждый отклик
     const results = await Promise.allSettled(
-      responses.map(async (response) => {
-        return await step.run(`screen-response-${response.id}`, async () => {
+      responses.map(async (resp) => {
+        return await step.run(`screen-response-${resp.id}`, async () => {
           try {
-            console.log(`🎯 Скрининг отклика: ${response.id}`);
+            console.log(`🎯 Скрининг отклика: ${resp.id}`);
 
-            const resultWrapper = await screenResponse(response.id);
+            const resultWrapper = await screenResponse(resp.id);
             const result = unwrap(resultWrapper);
 
-            console.log(`✅ Скрининг завершен: ${response.id}`, {
+            console.log(`✅ Скрининг завершен: ${resp.id}`, {
               score: result.score,
-              detailedScore: result.detailedScore,
             });
 
             return {
-              responseId: response.id,
-              vacancyId: response.vacancyId,
+              responseId: resp.id,
+              vacancyId: resp.entityId,
               success: true,
               score: result.score,
             };
           } catch (error) {
-            console.error(`❌ Ошибка скрининга для ${response.id}:`, error);
+            console.error(`❌ Ошибка скрининга для ${resp.id}:`, error);
             return {
-              responseId: response.id,
-              vacancyId: response.vacancyId,
+              responseId: resp.id,
+              vacancyId: resp.entityId,
               success: false,
               error: error instanceof Error ? error.message : "Unknown error",
             };

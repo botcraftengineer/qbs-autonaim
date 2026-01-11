@@ -135,11 +135,9 @@ export const evaluateGigResponseFunction = inngest.createFunction(
 
       const updateData: {
         status: "EVALUATED";
-        updatedAt: Date;
         profileData?: StoredProfileData;
       } = {
         status: "EVALUATED",
-        updatedAt: new Date(),
       };
 
       // Сохраняем данные профиля в поле profileData

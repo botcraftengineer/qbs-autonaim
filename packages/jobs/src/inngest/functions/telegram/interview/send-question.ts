@@ -3,7 +3,7 @@ import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,
   interviewSession,
-  vacancyResponse,
+  response,
 } from "@qbs-autonaim/db/schema";
 import { saveQuestionAnswer } from "../../../../services/interview";
 import { inngest } from "../../../client";
@@ -66,22 +66,19 @@ export const sendNextQuestionFunction = inngest.createFunction(
         throw new Error("InterviewSession не найден");
       }
 
-      if (
-        session.entityType === "vacancy_response" &&
-        session.vacancyResponseId
-      ) {
-        const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.id, session.vacancyResponseId),
-        });
-
-        if (!response?.chatId) {
-          throw new Error("ChatId не найден в response");
-        }
-
-        return response.chatId;
+      if (!session.responseId) {
+        throw new Error("ResponseId не найден в session");
       }
 
-      throw new Error("Не удалось получить chatId");
+      const resp = await db.query.response.findFirst({
+        where: eq(response.id, session.responseId),
+      });
+
+      if (!resp?.chatId) {
+        throw new Error("ChatId не найден в response");
+      }
+
+      return resp.chatId;
     });
 
     const delay = await step.run("calculate-delay", () => {

@@ -1,4 +1,4 @@
-import { eq, file, interviewMessage } from "@qbs-autonaim/db";
+import { eq, file, interviewMessage, interviewSession } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { RESPONSE_STATUS, response } from "@qbs-autonaim/db/schema";
 import { getDownloadUrl } from "@qbs-autonaim/lib";
@@ -239,10 +239,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
         }
 
         // Устанавливаем статус INTERVIEW при первом голосовом сообщении
-        if (
-          session.entityType === "vacancy_response" &&
-          session.vacancyResponseId
-        ) {
+        if (session.responseId) {
           const candidateMessagesCount =
             await db.query.interviewMessage.findMany({
               where: (fields, { and, eq }) =>
@@ -254,23 +251,23 @@ export const transcribeVoiceFunction = inngest.createFunction(
 
           // Если это первое сообщение от кандидата
           if (candidateMessagesCount.length === 1) {
-            const response = await db.query.vacancyResponse.findFirst({
-              where: eq(vacancyResponse.id, session.vacancyResponseId),
+            const resp = await db.query.response.findFirst({
+              where: eq(response.id, session.responseId),
             });
 
             if (
-              response &&
-              (response.status === "NEW" || response.status === "EVALUATED")
+              resp &&
+              (resp.status === "NEW" || resp.status === "EVALUATED")
             ) {
               await db
-                .update(vacancyResponse)
+                .update(response)
                 .set({ status: RESPONSE_STATUS.INTERVIEW })
-                .where(eq(vacancyResponse.id, response.id));
+                .where(eq(response.id, resp.id));
 
               console.log("✅ Статус изменен на INTERVIEW (первое голосовое)", {
                 interviewSessionId: message.sessionId,
-                responseId: response.id,
-                previousStatus: response.status,
+                responseId: resp.id,
+                previousStatus: resp.status,
               });
             }
           }

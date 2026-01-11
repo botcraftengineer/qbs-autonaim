@@ -129,7 +129,6 @@ function Calendar({
           return (
             <div
               data-slot="calendar"
-              // @ts-expect-error - React 19 ref type incompatibility
               ref={rootRef}
               className={cn(className)}
               {...props}

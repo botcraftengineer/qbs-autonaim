@@ -50,7 +50,7 @@ export const screenResponsesBatchFunction = inngest.createFunction(
 
     // Обрабатываем каждый отклик
     const results = await Promise.allSettled(
-      responses.map(async (responseItem: typeof response.$inferSelect) => {
+      responses.map(async (responseItem) => {
         return await step.run(
           `screen-response-${responseItem.id}`,
           async () => {
@@ -60,20 +60,22 @@ export const screenResponsesBatchFunction = inngest.createFunction(
               const resultWrapper = await screenResponse(responseItem.id);
               const result = unwrap(resultWrapper);
 
-              console.log(`✅ Скрининг завершен: ${response.id}`, {
+              console.log(`✅ Скрининг завершен: ${responseItem.id}`, {
                 score: result.score,
-                detailedScore: result.detailedScore,
               });
 
               return {
-                responseId: response.id,
+                responseId: responseItem.id,
                 success: true,
                 score: result.score,
               };
             } catch (error) {
-              console.error(`❌ Ошибка скрининга для ${response.id}:`, error);
+              console.error(
+                `❌ Ошибка скрининга для ${responseItem.id}:`,
+                error,
+              );
               return {
-                responseId: response.id,
+                responseId: responseItem.id,
                 success: false,
                 error: error instanceof Error ? error.message : "Unknown error",
               };

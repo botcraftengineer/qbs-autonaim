@@ -7,7 +7,7 @@
 
 import { asc, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { bufferedTempMessage } from "@qbs-autonaim/db/schema";
+import { bufferedTempInterviewMessage } from "@qbs-autonaim/db/schema";
 import { createLogger } from "../base";
 
 const logger = createLogger("TempMessageBufferService");
@@ -38,9 +38,9 @@ export class TempMessageBufferService {
     }
 
     try {
-      await db.insert(bufferedTempMessage).values({
+      await db.insert(bufferedTempInterviewMessage).values({
         messageId: params.message.id,
-        tempConversationId: params.tempConversationId,
+        tempSessionId: params.tempConversationId,
         chatId: params.chatId,
         sender: params.message.sender,
         contentType: params.message.contentType,
@@ -69,12 +69,12 @@ export class TempMessageBufferService {
     tempConversationId: string;
   }): Promise<BufferedTempMessageData[]> {
     try {
-      const messages = await db.query.bufferedTempMessage.findMany({
+      const messages = await db.query.bufferedTempInterviewMessage.findMany({
         where: eq(
-          bufferedTempMessage.tempConversationId,
+          bufferedTempInterviewMessage.tempSessionId,
           params.tempConversationId,
         ),
-        orderBy: [asc(bufferedTempMessage.timestamp)],
+        orderBy: [asc(bufferedTempInterviewMessage.timestamp)],
       });
 
       return messages.map((msg) => ({
@@ -100,9 +100,12 @@ export class TempMessageBufferService {
   async clearBuffer(params: { tempConversationId: string }): Promise<void> {
     try {
       await db
-        .delete(bufferedTempMessage)
+        .delete(bufferedTempInterviewMessage)
         .where(
-          eq(bufferedTempMessage.tempConversationId, params.tempConversationId),
+          eq(
+            bufferedTempInterviewMessage.tempSessionId,
+            params.tempConversationId,
+          ),
         );
 
       logger.info("Буфер очищен", {
@@ -122,9 +125,9 @@ export class TempMessageBufferService {
    */
   async hasMessages(params: { tempConversationId: string }): Promise<boolean> {
     try {
-      const message = await db.query.bufferedTempMessage.findFirst({
+      const message = await db.query.bufferedTempInterviewMessage.findFirst({
         where: eq(
-          bufferedTempMessage.tempConversationId,
+          bufferedTempInterviewMessage.tempSessionId,
           params.tempConversationId,
         ),
       });

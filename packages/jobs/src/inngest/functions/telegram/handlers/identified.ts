@@ -3,7 +3,7 @@ import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,
   RESPONSE_STATUS,
-  vacancyResponse,
+  response,
 } from "@qbs-autonaim/db/schema";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
 import { inngest } from "../../../client";
@@ -211,24 +211,24 @@ async function updateStatusOnFirstMessage(
 
   // Если это первое сообщение, устанавливаем статус INTERVIEW
   if (candidateMessagesCount.length === 1) {
-    const response = await db.query.vacancyResponse.findFirst({
-      where: eq(vacancyResponse.id, responseId),
+    const resp = await db.query.response.findFirst({
+      where: eq(response.id, responseId),
     });
 
     if (
-      response &&
-      (response.status === RESPONSE_STATUS.NEW ||
-        response.status === RESPONSE_STATUS.EVALUATED)
+      resp &&
+      (resp.status === RESPONSE_STATUS.NEW ||
+        resp.status === RESPONSE_STATUS.EVALUATED)
     ) {
       await db
-        .update(vacancyResponse)
+        .update(response)
         .set({ status: RESPONSE_STATUS.INTERVIEW })
-        .where(eq(vacancyResponse.id, responseId));
+        .where(eq(response.id, responseId));
 
       console.log("✅ Статус изменен на INTERVIEW (первое сообщение)", {
         chatSessionId,
         responseId,
-        previousStatus: response.status,
+        previousStatus: resp.status,
       });
     }
   }

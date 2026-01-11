@@ -1,8 +1,8 @@
 import {
   eq,
   interviewMessage,
+  response,
   telegramSession,
-  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { tgClientSDK } from "@qbs-autonaim/tg-client/sdk";
@@ -33,27 +33,29 @@ export const sendTelegramMessageFunction = inngest.createFunction(
       });
 
       try {
-        // Получаем vacancyResponse по chatId
-        const response = await db.query.vacancyResponse.findFirst({
-          where: eq(vacancyResponse.chatId, chatId),
-          with: {
-            vacancy: true,
-          },
+        // Получаем response по chatId
+        const resp = await db.query.response.findFirst({
+          where: eq(response.chatId, chatId),
         });
 
-        if (!response?.vacancy?.workspaceId) {
+        if (!resp) {
+          throw new Error("Не удалось найти response по chatId");
+        }
+
+        // Получаем vacancy для workspaceId
+        const vacancy = await db.query.vacancy.findFirst({
+          where: (v, { eq }) => eq(v.id, resp.entityId),
+        });
+
+        if (!vacancy?.workspaceId) {
           throw new Error("Не удалось определить workspace для сообщения");
         }
 
-        const workspaceId = response.vacancy.workspaceId;
+        const workspaceId = vacancy.workspaceId;
 
         // Получаем interviewSession для метаданных
         const session = await db.query.interviewSession.findFirst({
-          where: (fields, { and, eq }) =>
-            and(
-              eq(fields.entityType, "vacancy_response"),
-              eq(fields.vacancyResponseId, response.id),
-            ),
+          where: eq(interviewSession.responseId, resp.id),
         });
 
         // Получаем активную Telegram сессию для workspace
@@ -77,9 +79,9 @@ export const sendTelegramMessageFunction = inngest.createFunction(
           username = metadata.username as string | undefined;
         }
 
-        // 2. Проверяем vacancy_response.telegramUsername
-        if (!username && response.telegramUsername) {
-          username = response.telegramUsername;
+        // 2. Проверяем response.telegramUsername
+        if (!username && resp.telegramUsername) {
+          username = resp.telegramUsername;
         }
 
         // Отправляем сообщение через SDK

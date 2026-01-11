@@ -35,7 +35,6 @@ function Badge({
   const Comp = asChild ? Slot : 'span'
 
   return (
-    // @ts-expect-error - React 19 ref type incompatibility
     <Comp
       data-slot="badge"
       className={cn(badgeVariants({ variant }), className)}

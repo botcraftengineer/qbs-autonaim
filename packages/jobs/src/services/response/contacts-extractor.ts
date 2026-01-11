@@ -37,7 +37,7 @@ export async function extractContactsFromResponse(
       where: eq(response.id, responseId),
       columns: {
         id: true,
-        vacancyId: true,
+        entityId: true,
         resumeId: true,
         candidateName: true,
         contacts: true,
@@ -51,20 +51,20 @@ export async function extractContactsFromResponse(
     return err(responseResult.error);
   }
 
-  const response = responseResult.data;
-  if (!response) {
+  const resp = responseResult.data;
+  if (!resp) {
     logger.warn(`Response ${responseId} not found`);
     return err("Response not found");
   }
 
-  if (!response.contacts) {
+  if (!resp.contacts) {
     logger.warn(`Response ${responseId} has no contacts field`);
     return err("No contacts field");
   }
 
-  const contacts = response.contacts as HHContacts;
-  let telegramUsername: string | null = response.telegramUsername;
-  let phone: string | null = response.phone;
+  const contacts = resp.contacts as HHContacts;
+  let telegramUsername: string | null = resp.telegramUsername;
+  let phone: string | null = resp.phone;
 
   // Extract telegram username if not present
   if (!telegramUsername) {
@@ -90,17 +90,17 @@ export async function extractContactsFromResponse(
 
   // Update only if we found new data
   if (
-    (telegramUsername && telegramUsername !== response.telegramUsername) ||
-    (phone && phone !== response.phone)
+    (telegramUsername && telegramUsername !== resp.telegramUsername) ||
+    (phone && phone !== resp.phone)
   ) {
     const updateResult = await tryCatch(async () => {
       await db
-        .update(vacancyResponse)
+        .update(response)
         .set({
-          telegramUsername: telegramUsername || response.telegramUsername,
-          phone: phone || response.phone,
+          telegramUsername: telegramUsername || resp.telegramUsername,
+          phone: phone || resp.phone,
         })
-        .where(eq(vacancyResponse.id, responseId));
+        .where(eq(response.id, responseId));
     }, "Failed to update contacts");
 
     if (!updateResult.success) {
@@ -108,11 +108,11 @@ export async function extractContactsFromResponse(
     }
 
     logger.info(
-      `Contacts updated for response ${response.candidateName || responseId}`,
+      `Contacts updated for response ${resp.candidateName || responseId}`,
     );
   } else {
     logger.info(
-      `No new contacts found for ${response.candidateName || responseId}`,
+      `No new contacts found for ${resp.candidateName || responseId}`,
     );
   }
 

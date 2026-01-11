@@ -2,12 +2,11 @@ import {
   and,
   desc,
   eq,
-  gigResponse,
   interviewMessage,
   interviewScoring,
   interviewSession,
+  response,
   sql,
-  vacancyResponse,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {

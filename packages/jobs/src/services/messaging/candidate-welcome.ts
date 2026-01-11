@@ -48,14 +48,14 @@ export async function generateWelcomeMessage(
     });
 
     // Bot settings are optional - we can generate message without them
-    return { response: { ...responseRecord, vacancy }, screening, bot };
+    return { responseData: { ...responseRecord, vacancy }, screening, bot };
   }, "Failed to fetch data for welcome message");
 
   if (!dataResult.success) {
     return err(dataResult.error);
   }
 
-  const { response, bot } = dataResult.data;
+  const { responseData, bot } = dataResult.data;
 
   logger.info("Generating welcome message with WelcomeAgent");
 
@@ -67,14 +67,14 @@ export async function generateWelcomeMessage(
     const result = await welcomeAgent.execute(
       {
         companyName: bot?.companyName || "",
-        vacancyTitle: response.vacancy?.title || undefined,
-        candidateName: response.candidateName || undefined,
+        vacancyTitle: responseData.vacancy?.title || undefined,
+        candidateName: responseData.candidateName || null,
         customWelcomeMessage: bot?.companyDescription || undefined,
       },
       {
         conversationHistory: [],
-        candidateName: response.candidateName || undefined,
-        vacancyTitle: response.vacancy?.title || undefined,
+        candidateName: responseData.candidateName || null,
+        vacancyTitle: responseData.vacancy?.title || undefined,
       },
     );
 
@@ -136,27 +136,27 @@ export async function generateTelegramInviteMessage(
     });
 
     // Bot settings are optional - we can generate message without them
-    return { response: { ...responseRecord, vacancy }, screening, bot };
+    return { responseData: { ...responseRecord, vacancy }, screening, bot };
   }, "Failed to fetch data for invite message");
 
   if (!dataResult.success) {
     return err(dataResult.error);
   }
 
-  const { response, screening, bot } = dataResult.data;
+  const { responseData, screening, bot } = dataResult.data;
 
   const prompt = buildTelegramInvitePrompt({
     companyName: bot?.companyName || "",
     companyDescription: bot?.companyDescription || undefined,
     companyWebsite: bot?.companyWebsite || undefined,
-    vacancyTitle: response.vacancy?.title || null,
-    vacancyDescription: response.vacancy?.description
-      ? stripHtml(response.vacancy.description).result.substring(0, 200)
+    vacancyTitle: responseData.vacancy?.title || null,
+    vacancyDescription: responseData.vacancy?.description
+      ? stripHtml(responseData.vacancy.description).result.substring(0, 200)
       : undefined,
-    candidateName: response.candidateName,
+    candidateName: responseData.candidateName || null,
     screeningScore: screening?.score,
     screeningAnalysis: screening?.analysis || undefined,
-    resumeLanguage: response.resumeLanguage || "ru",
+    resumeLanguage: responseData.resumeLanguage || "ru",
   });
 
   logger.info("Sending request to AI for invite message generation");

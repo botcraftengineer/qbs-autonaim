@@ -1,8 +1,8 @@
 import { db } from "@qbs-autonaim/db/client";
 import {
-  bufferedTempMessage,
+  bufferedTempInterviewMessage,
   interviewMessage,
-  tempConversationMessage,
+  tempInterviewMessage,
 } from "@qbs-autonaim/db/schema";
 import { removeNullBytes } from "@qbs-autonaim/lib";
 import { eq } from "drizzle-orm";
@@ -32,7 +32,7 @@ export async function saveTempMessage(params: {
   } = params;
 
   try {
-    await db.insert(tempConversationMessage).values({
+    await db.insert(tempInterviewMessage).values({
       tempConversationId,
       chatId,
       sender,
@@ -100,12 +100,14 @@ export async function flushTempMessageBuffer(
         }),
       );
 
-      await tx.insert(tempConversationMessage).values(messagesToInsert);
+      await tx.insert(tempInterviewMessage).values(messagesToInsert);
 
       // Clear buffer within the same transaction to ensure atomicity
       await tx
-        .delete(bufferedTempMessage)
-        .where(eq(bufferedTempMessage.tempConversationId, tempConversationId));
+        .delete(bufferedTempInterviewMessage)
+        .where(
+          eq(bufferedTempInterviewMessage.tempSessionId, tempConversationId),
+        );
     });
 
     console.log(
@@ -136,11 +138,9 @@ export async function migrateTempMessages(
       // Получаем все временные сообщения
       const tempMessages = await tx
         .select()
-        .from(tempConversationMessage)
-        .where(
-          eq(tempConversationMessage.tempConversationId, tempConversationId),
-        )
-        .orderBy(tempConversationMessage.createdAt);
+        .from(tempInterviewMessage)
+        .where(eq(tempInterviewMessage.tempConversationId, tempConversationId))
+        .orderBy(tempInterviewMessage.createdAt);
 
       if (tempMessages.length === 0) {
         console.log("Нет временных сообщений для переноса", {
@@ -167,10 +167,8 @@ export async function migrateTempMessages(
 
       // Удаляем временные сообщения
       await tx
-        .delete(tempConversationMessage)
-        .where(
-          eq(tempConversationMessage.tempConversationId, tempConversationId),
-        );
+        .delete(tempInterviewMessage)
+        .where(eq(tempInterviewMessage.tempConversationId, tempConversationId));
 
       console.log("✅ Временные сообщения перенесены", {
         tempConversationId,
@@ -195,9 +193,9 @@ export async function getTempMessageHistory(tempConversationId: string) {
   try {
     return await db
       .select()
-      .from(tempConversationMessage)
-      .where(eq(tempConversationMessage.tempConversationId, tempConversationId))
-      .orderBy(tempConversationMessage.createdAt);
+      .from(tempInterviewMessage)
+      .where(eq(tempInterviewMessage.tempSessionId, tempConversationId))
+      .orderBy(tempInterviewMessage.createdAt);
   } catch (error) {
     console.error("❌ Ошибка получения временных сообщений:", {
       tempConversationId,

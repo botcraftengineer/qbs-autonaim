@@ -22,9 +22,6 @@ export const sendOfferFunction = inngest.createFunction(
     const responseData = await step.run("fetch-response-data", async () => {
       const result = await db.query.response.findFirst({
         where: eq(response.id, responseId),
-        with: {
-          vacancy: true,
-        },
       });
 
       if (!result) {
