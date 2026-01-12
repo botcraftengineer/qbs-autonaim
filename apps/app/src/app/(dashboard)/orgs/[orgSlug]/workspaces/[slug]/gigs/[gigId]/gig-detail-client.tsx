@@ -22,7 +22,6 @@ import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
-import { GigAIChatPanel } from "~/components/gig/ai-chat/gig-ai-chat-panel";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -53,7 +52,6 @@ export function GigDetailClient({
   const router = useRouter();
   const queryClient = useQueryClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [isAIChatOpen, setIsAIChatOpen] = useState(false);
 
   const {
     workspace,
@@ -231,7 +229,6 @@ export function GigDetailClient({
             gigId={gigId}
             responseCounts={responseCounts}
             onShare={handleShare}
-            onOpenAIChat={() => setIsAIChatOpen(true)}
           />
         </aside>
       </div>
@@ -259,12 +256,6 @@ export function GigDetailClient({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      <GigAIChatPanel
-        gigId={gigId}
-        isOpen={isAIChatOpen}
-        onClose={() => setIsAIChatOpen(false)}
-      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   SelectValue,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useTRPC } from "~/trpc/react";
 
 interface CustomDomainSelectProps {
@@ -42,6 +43,14 @@ export function CustomDomainSelect({
 
   const isLoading = isLoadingCustom || isLoadingPresets;
   const verifiedCustomDomains = customDomains.filter((d) => d.isVerified);
+  const allDomains = [...presetDomains, ...verifiedCustomDomains];
+
+  // Автоматически выбираем первый доступный домен, если значение не установлено
+  useEffect(() => {
+    if (!isLoading && !value && allDomains.length > 0) {
+      onChange(allDomains[0]?.id ?? null);
+    }
+  }, [isLoading, value, allDomains, onChange]);
 
   if (isLoading) {
     return (
@@ -70,7 +79,6 @@ export function CustomDomainSelect({
     );
   }
 
-  const allDomains = [...presetDomains, ...verifiedCustomDomains];
   const hasNoDomains = allDomains.length === 0;
 
   // Если нет доменов, показываем предупреждение

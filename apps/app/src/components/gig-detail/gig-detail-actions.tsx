@@ -19,7 +19,6 @@ interface GigDetailActionsProps {
   gigId: string;
   responseCounts?: { total: number; new: number } | null;
   onShare: () => void;
-  onOpenAIChat: () => void;
 }
 
 export function GigDetailActions({
@@ -29,7 +28,6 @@ export function GigDetailActions({
   gigId,
   responseCounts,
   onShare,
-  onOpenAIChat,
 }: GigDetailActionsProps) {
   return (
     <Card>
@@ -39,12 +37,16 @@ export function GigDetailActions({
       <CardContent className="space-y-3">
         <div className="space-y-2">
           <Button
+            asChild
             className="w-full min-h-[44px] touch-manipulation bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
-            onClick={onOpenAIChat}
           >
-            <Bot className="h-4 w-4 mr-2" aria-hidden="true" />
-            AI Помощник
-            <span className="ml-auto text-xs opacity-75">Новинка</span>
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/chat`}
+            >
+              <Bot className="h-4 w-4 mr-2" aria-hidden="true" />
+              AI Помощник
+              <span className="ml-auto text-xs opacity-75">Новинка</span>
+            </Link>
           </Button>
 
           <Button
