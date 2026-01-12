@@ -11,9 +11,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@qbs-autonaim/ui";
-import { Calendar, Clock, Edit, MoreHorizontal, Settings, Share2, Trash2 } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Edit,
+  MoreHorizontal,
+  Settings,
+  Share2,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
-import { getGigTypeLabel, formatDate } from "./gig-detail-utils";
+import { formatDate, getGigTypeLabel } from "./gig-detail-utils";
 
 interface GigDetailHeaderProps {
   gig: {
@@ -54,10 +62,7 @@ export function GigDetailHeader({
                 {getGigTypeLabel(gig.type)}
               </Badge>
               {gig.isActive === false && (
-                <Badge
-                  variant="secondary"
-                  className="text-muted-foreground"
-                >
+                <Badge variant="secondary" className="text-muted-foreground">
                   Неактивно
                 </Badge>
               )}
@@ -71,12 +76,13 @@ export function GigDetailHeader({
                   <Calendar className="h-4 w-4" />
                   Создано {formatDate(gig.createdAt)}
                 </span>
-                {gig.updatedAt && gig.updatedAt !== gig.createdAt && (
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4" />
-                    Обновлено {formatDate(gig.updatedAt)}
-                  </span>
-                )}
+                {gig.updatedAt &&
+                  gig.updatedAt.getTime() !== gig.createdAt.getTime() && (
+                    <span className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      Обновлено {formatDate(gig.updatedAt)}
+                    </span>
+                  )}
               </div>
             </div>
           </div>
@@ -102,10 +108,7 @@ export function GigDetailHeader({
                   Редактировать задание
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={onShare}
-                className="cursor-pointer"
-              >
+              <DropdownMenuItem onSelect={onShare} className="cursor-pointer">
                 <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />
                 Поделиться
               </DropdownMenuItem>

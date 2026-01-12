@@ -319,7 +319,23 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
       {/* Response Detail */}
       <ResponseDetailCard
-        response={response}
+        response={{
+          ...response,
+          conversation: response.interviewSession
+            ? {
+                id: response.interviewSession.id,
+                status: response.interviewSession.status,
+                messages: response.interviewSession.messages.map((msg) => ({
+                  id: msg.id,
+                  sender: msg.role === "assistant" ? "BOT" : "USER",
+                  content: msg.content ?? "",
+                  contentType: msg.type === "voice" ? "VOICE" : "TEXT",
+                  voiceTranscription: msg.voiceTranscription,
+                  createdAt: msg.createdAt,
+                })),
+              }
+            : undefined,
+        }}
         onAccept={handleAccept}
         onReject={handleReject}
         onMessage={handleMessage}

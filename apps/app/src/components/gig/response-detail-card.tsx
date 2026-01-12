@@ -216,12 +216,22 @@ export function ResponseDetailCard({
   const hasConversation =
     !!response.conversation && response.conversation.messages.length > 0;
 
+  // Проверяем, есть ли данные для оценки (портфолио, опыт, профиль)
+  const hasEvaluationData =
+    !!response.experience ||
+    !!response.profileData ||
+    (!!response.portfolioLinks && response.portfolioLinks.length > 0) ||
+    !!response.portfolioFileId ||
+    !!response.coverLetter;
+
   // Показываем кнопку оценки только если:
-  // 1. Есть диалог с сообщениями
+  // 1. Есть диалог с сообщениями ИЛИ есть данные для оценки
   // 2. Нет результатов оценки
   // 3. Статус не EVALUATED (чтобы избежать повторной оценки)
   const canEvaluate =
-    hasConversation && !hasInterviewScoring && response.status !== "EVALUATED";
+    (hasConversation || hasEvaluationData) &&
+    !hasInterviewScoring &&
+    response.status !== "EVALUATED";
 
   return (
     <div className="space-y-4 sm:space-y-6">
