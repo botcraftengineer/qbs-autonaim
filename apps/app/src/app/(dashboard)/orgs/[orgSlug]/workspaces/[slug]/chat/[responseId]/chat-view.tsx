@@ -74,7 +74,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     error,
   } = useQuery({
     ...trpc.telegram.messages.getByConversationId.queryOptions({
-      conversationId,
+      sessionId: conversationId,
       workspaceId: workspaceId ?? "",
     }),
     enabled: Boolean(conversationId) && Boolean(workspaceId),
@@ -104,7 +104,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       queryClient.invalidateQueries({
         queryKey: [
           ["telegram", "messages", "getByConversationId"],
-          { input: { conversationId }, type: "query" },
+          { input: { sessionId: conversationId }, type: "query" },
         ],
       });
     },
@@ -131,7 +131,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
         queryClient.invalidateQueries({
           queryKey: [
             ["telegram", "messages", "getByConversationId"],
-            { input: { conversationId }, type: "query" },
+            { input: { sessionId: conversationId }, type: "query" },
           ],
         });
         setTranscribingMessageId(null);
@@ -157,10 +157,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
     if (!message.trim() || !conversationId) return;
 
     sendMessage({
-      conversationId,
-      channel: "TELEGRAM",
-      sender: "ADMIN",
-      contentType: "TEXT",
+      sessionId: conversationId,
       content: message,
     });
   };
@@ -197,9 +194,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
               <div className="flex-1 min-w-0">
                 <ChatHeader
-                  candidateName={
-                    currentConversation.candidateName ?? "Кандидат"
-                  }
+                  candidateName="Кандидат"
                   candidateEmail={responseData?.chatId ?? undefined}
                 />
               </div>
@@ -216,9 +211,8 @@ export function ChatView({ conversationId }: { conversationId: string }) {
                 </SheetTrigger>
                 <SheetContent side="right" className="w-full sm:w-96 p-0">
                   <ChatSidebar
-                    candidateName={currentConversation.candidateName ?? null}
+                    candidateName={null}
                     chatId={responseData?.chatId ?? ""}
-                    responseData={responseData}
                   />
                 </SheetContent>
               </Sheet>
@@ -228,9 +222,26 @@ export function ChatView({ conversationId }: { conversationId: string }) {
 
         <div className="flex-1 min-h-0 bg-muted/30">
           <ChatMessages
-            messages={messages}
-            candidateName={currentConversation.candidateName ?? null}
-            companyName={companyData?.name ?? workspace?.name ?? ""}
+            messages={messages.map(
+              (msg) =>
+                ({
+                  id: msg.id,
+                  sender:
+                    msg.role === "user"
+                      ? "CANDIDATE"
+                      : msg.role === "assistant"
+                        ? "BOT"
+                        : "ADMIN",
+                  contentType: msg.type === "voice" ? "VOICE" : "TEXT",
+                  content: msg.content ?? "",
+                  createdAt: msg.createdAt,
+                  fileUrl: msg.fileUrl,
+                  fileId: msg.fileId,
+                  voiceTranscription: msg.voiceTranscription,
+                }) as const,
+            )}
+            candidateName={null}
+            companyName={companyData?.companyName ?? workspace?.name ?? ""}
             onTranscribe={handleTranscribe}
             transcribingMessageId={transcribingMessageId}
           />
@@ -242,11 +253,7 @@ export function ChatView({ conversationId }: { conversationId: string }) {
       </div>
 
       <div className="hidden lg:block">
-        <ChatSidebar
-          candidateName={currentConversation.candidateName ?? null}
-          chatId={responseData?.chatId ?? ""}
-          responseData={responseData}
-        />
+        <ChatSidebar candidateName={null} chatId={responseData?.chatId ?? ""} />
       </div>
     </div>
   );

@@ -55,14 +55,14 @@ export default function VacanciesPage() {
     ...api.freelancePlatforms.getVacancies.queryOptions({
       workspaceId: workspace?.id ?? "",
       ...(sourceFilter !== "all" && {
-        source: sourceFilter as
-          | "hh"
-          | "kwork"
-          | "fl"
-          | "freelance"
-          | "avito"
-          | "superjob"
-          | "habr",
+        source: sourceFilter.toUpperCase() as
+          | "HH"
+          | "KWORK"
+          | "FL_RU"
+          | "FREELANCE_RU"
+          | "AVITO"
+          | "SUPERJOB"
+          | "HABR",
       }),
     }),
     enabled: !!workspace?.id,
@@ -220,13 +220,15 @@ export default function VacanciesPage() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">Все источники</SelectItem>
-                        <SelectItem value="hh">HeadHunter</SelectItem>
-                        <SelectItem value="kwork">Kwork</SelectItem>
-                        <SelectItem value="fl">FL.ru</SelectItem>
-                        <SelectItem value="freelance">Freelance.ru</SelectItem>
-                        <SelectItem value="avito">Avito</SelectItem>
-                        <SelectItem value="superjob">SuperJob</SelectItem>
-                        <SelectItem value="habr">Хабр Карьера</SelectItem>
+                        <SelectItem value="HH">HeadHunter</SelectItem>
+                        <SelectItem value="KWORK">Kwork</SelectItem>
+                        <SelectItem value="FL_RU">FL.ru</SelectItem>
+                        <SelectItem value="FREELANCE_RU">
+                          Freelance.ru
+                        </SelectItem>
+                        <SelectItem value="AVITO">Avito</SelectItem>
+                        <SelectItem value="SUPERJOB">SuperJob</SelectItem>
+                        <SelectItem value="HABR">Хабр Карьера</SelectItem>
                       </SelectContent>
                     </Select>
 
@@ -482,19 +484,19 @@ export default function VacanciesPage() {
                           </TableCell>
                           <TableCell>
                             <Badge variant="outline">
-                              {vacancy.source === "hh"
+                              {vacancy.source === "HH"
                                 ? "HeadHunter"
-                                : vacancy.source === "kwork"
+                                : vacancy.source === "KWORK"
                                   ? "Kwork"
-                                  : vacancy.source === "fl"
+                                  : vacancy.source === "FL_RU"
                                     ? "FL.ru"
-                                    : vacancy.source === "freelance"
+                                    : vacancy.source === "FREELANCE_RU"
                                       ? "Freelance.ru"
-                                      : vacancy.source === "avito"
+                                      : vacancy.source === "AVITO"
                                         ? "Avito"
-                                        : vacancy.source === "superjob"
+                                        : vacancy.source === "SUPERJOB"
                                           ? "SuperJob"
-                                          : vacancy.source === "habr"
+                                          : vacancy.source === "HABR"
                                             ? "Хабр Карьера"
                                             : vacancy.source}
                             </Badge>

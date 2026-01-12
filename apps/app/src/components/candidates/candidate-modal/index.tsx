@@ -310,8 +310,8 @@ export function CandidateModal({
                       void handleRate();
                       break;
                     case "view-resume":
-                      if (candidateDetail.resumeUrl) {
-                        window.open(candidateDetail.resumeUrl, "_blank");
+                      if (candidateDetail.resumePdfUrl) {
+                        window.open(candidateDetail.resumePdfUrl, "_blank");
                       } else {
                         toast.error("Резюме недоступно");
                       }

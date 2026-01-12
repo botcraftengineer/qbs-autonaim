@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { ChatPreviewCard } from "~/components/chat";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -25,21 +24,6 @@ export function RecentChats({ workspaceSlug, orgSlug }: RecentChatsProps) {
     recentMessagesQueryOptions,
   );
 
-  // Группируем по беседам и берем последнее сообщение из каждой
-  const conversationMap = new Map();
-
-  for (const message of recentMessages) {
-    if (!conversationMap.has(message.conversationId)) {
-      conversationMap.set(message.conversationId, {
-        conversation: message.conversation,
-        lastMessage: message,
-        messageCount: 1,
-      });
-    }
-  }
-
-  const chats = Array.from(conversationMap.values());
-
   if (isPending) {
     return (
       <div className="space-y-4">
@@ -48,7 +32,7 @@ export function RecentChats({ workspaceSlug, orgSlug }: RecentChatsProps) {
         </div>
         <div className="text-center py-8 text-muted-foreground">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-500 mx-auto mb-2" />
-          <p className="text-sm">Загрузка...</p>
+          <p className="text-sm">Загрузка…</p>
         </div>
       </div>
     );
@@ -61,23 +45,19 @@ export function RecentChats({ workspaceSlug, orgSlug }: RecentChatsProps) {
       </div>
 
       <div className="grid gap-3">
-        {chats.map(({ conversation, lastMessage }) => (
-          <ChatPreviewCard
-            key={conversation.id}
-            orgSlug={orgSlug}
-            candidateId={conversation.id}
-            candidateName={conversation.candidateName ?? "Кандидат"}
-            lastMessage={lastMessage.content}
-            lastMessageTime={lastMessage.createdAt}
-            messageCount={0}
-            unreadCount={0}
-            status={conversation.status === "ACTIVE" ? "active" : "completed"}
-            workspaceSlug={workspaceSlug}
-          />
+        {recentMessages.map((message) => (
+          <div
+            key={message.id}
+            className="p-3 rounded-lg border bg-card text-card-foreground"
+          >
+            <p className="text-sm text-muted-foreground truncate">
+              {message.content}
+            </p>
+          </div>
         ))}
       </div>
 
-      {chats.length === 0 && (
+      {recentMessages.length === 0 && (
         <div className="text-center py-8 text-muted-foreground">
           <p>Нет активных чатов</p>
         </div>

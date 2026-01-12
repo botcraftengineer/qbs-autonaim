@@ -23,7 +23,7 @@ interface ChatSidebarProps {
     } | null;
     interviewScoring?: {
       score: number | null;
-      detailedScore: number | null;
+      detailedScore?: number | null;
       analysis?: string | null;
     } | null;
     vacancy?: {

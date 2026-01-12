@@ -114,7 +114,7 @@ export function ResponseInvitationButton({
             ) : invitation ? (
               <>
                 <Textarea
-                  value={invitation.invitationText}
+                  value={invitation.invitationText ?? ""}
                   readOnly
                   rows={10}
                   className="resize-none font-mono text-sm"

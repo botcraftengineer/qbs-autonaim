@@ -43,7 +43,10 @@ const createVacancySchema = z.object({
     .max(500, "Максимум 500 символов"),
   description: z.string().optional(),
   requirements: z.string().optional(),
-  platformSource: z.enum(["kwork", "fl", "freelance"], "Выберите платформу"),
+  platformSource: z.enum(
+    ["KWORK", "FL_RU", "FREELANCE_RU"],
+    "Выберите платформу",
+  ),
   platformUrl: z
     .string()
     .url("Введите корректный URL")
@@ -54,9 +57,9 @@ const createVacancySchema = z.object({
 type CreateVacancyFormValues = z.infer<typeof createVacancySchema>;
 
 const platformLabels: Record<string, string> = {
-  kwork: "Kwork",
-  fl: "FL.ru",
-  freelance: "Freelance.ru",
+  KWORK: "Kwork",
+  FL_RU: "FL.ru",
+  FREELANCE_RU: "Freelance.ru",
 };
 
 export default function CreateVacancyPage() {

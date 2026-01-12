@@ -70,9 +70,10 @@ export default function ImportResponsesPage() {
 
   const vacancy = vacancyData?.vacancy;
   const platformSource = vacancy?.source as
-    | "kwork"
-    | "fl"
-    | "freelance"
+    | "KWORK"
+    | "FL_RU"
+    | "FREELANCE_RU"
+    | "WEB_LINK"
     | undefined;
 
   // Мутация для импорта

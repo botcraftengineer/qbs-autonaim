@@ -158,13 +158,18 @@ const HR_STATUS_CONFIG = {
   DONE: { label: "Выполнено", variant: "secondary" as const },
 };
 
-const IMPORT_SOURCE_LABELS = {
+const IMPORT_SOURCE_LABELS: Record<string, string> = {
   MANUAL: "Вручную",
   KWORK: "Kwork",
   FL_RU: "FL.ru",
   FREELANCE_RU: "Freelance.ru",
   HH_API: "HeadHunter",
   WEB_LINK: "Веб-ссылка",
+  TELEGRAM: "Telegram",
+  HH: "HeadHunter",
+  AVITO: "Avito",
+  SUPERJOB: "SuperJob",
+  HABR: "Хабр Карьера",
 };
 
 function formatDate(date: Date | null) {
@@ -194,7 +199,14 @@ export function ResponseDetailCard({
 }: ResponseDetailCardProps) {
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
-  const hasScreening = !!response.screening;
+  const screening = response.interviewSession?.scoring as {
+    score: number;
+    detailedScore: number;
+    analysis: string | null;
+    priceAnalysis?: string | null;
+    deliveryAnalysis?: string | null;
+  } | null;
+  const hasScreening = !!screening;
   const hasInterviewScoring = !!response.interviewScoring;
   const hasConversation =
     !!response.conversation && response.conversation.messages.length > 0;

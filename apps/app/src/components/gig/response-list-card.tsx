@@ -97,13 +97,18 @@ const HR_STATUS_CONFIG = {
   DONE: { label: "Выполнено", variant: "secondary" as const },
 };
 
-const IMPORT_SOURCE_LABELS = {
+const IMPORT_SOURCE_LABELS: Record<string, string> = {
   MANUAL: "Вручную",
   KWORK: "Kwork",
   FL_RU: "FL.ru",
   FREELANCE_RU: "Freelance.ru",
   HH_API: "HeadHunter",
   WEB_LINK: "Веб-ссылка",
+  TELEGRAM: "Telegram",
+  HH: "HeadHunter",
+  AVITO: "Avito",
+  SUPERJOB: "SuperJob",
+  HABR: "Хабр Карьера",
 };
 
 function formatDate(date: Date | null) {

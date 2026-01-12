@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 
 interface TelegramInterviewScoringProps {
   score: number | null;
-  detailedScore: number | null;
+  detailedScore?: number | null;
   analysis?: string | null;
 }
 

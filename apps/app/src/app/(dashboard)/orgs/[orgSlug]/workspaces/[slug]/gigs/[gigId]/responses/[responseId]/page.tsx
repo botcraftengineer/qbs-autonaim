@@ -199,7 +199,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
   // Stop polling when interview scoring appears
   React.useEffect(() => {
-    if (response?.interviewScoring && isPolling) {
+    if (response?.interviewSession && isPolling) {
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
         pollingIntervalRef.current = null;
@@ -207,7 +207,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
       setIsPolling(false);
       toast.success("Оценка кандидата завершена");
     }
-  }, [response?.interviewScoring, isPolling]);
+  }, [response?.interviewSession, isPolling]);
 
   // Evaluate mutation
   const evaluateMutation = useMutation(

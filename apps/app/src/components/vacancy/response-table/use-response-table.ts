@@ -1,8 +1,15 @@
-import type { ResponseStatus } from "@qbs-autonaim/db/schema";
 import { useState } from "react";
 import type { ScreeningFilter } from "~/components/response";
 import { useDebounce } from "~/hooks/use-debounce";
 import type { SortDirection, SortField } from "./types";
+
+type ResponseStatusFilter =
+  | "NEW"
+  | "EVALUATED"
+  | "INTERVIEW"
+  | "NEGOTIATION"
+  | "COMPLETED"
+  | "SKIPPED";
 
 export function useResponseTable() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -11,7 +18,7 @@ export function useResponseTable() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [screeningFilter, setScreeningFilter] =
     useState<ScreeningFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<ResponseStatus[]>([]);
+  const [statusFilter, setStatusFilter] = useState<ResponseStatusFilter[]>([]);
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 500);
 

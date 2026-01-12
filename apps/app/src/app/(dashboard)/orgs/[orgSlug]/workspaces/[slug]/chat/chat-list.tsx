@@ -158,9 +158,7 @@ export function ChatList() {
         {conversations
           .filter((conversation) => {
             if (!searchQuery) return true;
-            const candidateName =
-              conversation.candidateName?.toLowerCase() ?? "";
-            return candidateName.includes(searchQuery.toLowerCase());
+            return true; // Фильтрация по имени временно отключена
           })
           .map((conversation) => {
             const lastMessage = conversation.messages[0];
@@ -201,7 +199,7 @@ export function ChatList() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-baseline justify-between gap-2 mb-1">
                       <h3 className="font-semibold truncate text-sm md:text-base">
-                        {conversation.candidateName ?? "Без имени"}
+                        Кандидат
                       </h3>
                       {lastMessage && (
                         <span className="text-xs text-muted-foreground shrink-0">
@@ -223,7 +221,7 @@ export function ChatList() {
 
                     {lastMessage && (
                       <p className="text-xs md:text-sm text-muted-foreground truncate">
-                        {lastMessage.sender === "ADMIN" && "Вы: "}
+                        {lastMessage.role === "assistant" && "Вы: "}
                         {lastMessage.content}
                       </p>
                     )}

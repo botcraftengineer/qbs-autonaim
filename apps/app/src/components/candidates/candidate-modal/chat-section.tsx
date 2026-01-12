@@ -40,7 +40,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
     }),
   });
 
-  const conversationId = messages[0]?.conversationId as string | undefined;
+  const sessionId = messages[0]?.interviewSessionId as string | undefined;
 
   const { mutate: sendMessage, isPending: isSending } = useMutation(
     trpc.telegram.send.send.mutationOptions({
@@ -75,12 +75,9 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
   }, []);
 
   const handleSend = async () => {
-    if (!messageText.trim() || !conversationId) return;
+    if (!messageText.trim() || !sessionId) return;
     sendMessage({
-      conversationId,
-      channel: "TELEGRAM",
-      sender: "ADMIN",
-      contentType: "TEXT",
+      sessionId,
       content: messageText.trim(),
     });
   };
@@ -291,7 +288,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
             <Button
               size="icon"
               onClick={handleSend}
-              disabled={!messageText.trim() || isSending || !conversationId}
+              disabled={!messageText.trim() || isSending || !sessionId}
               aria-label="Отправить сообщение"
               className="h-[44px] w-[44px] shrink-0"
             >

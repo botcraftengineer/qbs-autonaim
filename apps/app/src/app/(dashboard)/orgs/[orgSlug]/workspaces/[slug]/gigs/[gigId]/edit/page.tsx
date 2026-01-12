@@ -291,9 +291,11 @@ export default function EditGigPage({ params }: PageProps) {
                             ` (${companySettings.botRole})`}
                         </div>
                       )}
-                      <div>Компания: {companySettings.name}</div>
-                      {companySettings.description && (
-                        <div>Описание: {companySettings.description}</div>
+                      <div>Компания: {companySettings.companyName}</div>
+                      {companySettings.companyDescription && (
+                        <div>
+                          Описание: {companySettings.companyDescription}
+                        </div>
                       )}
                     </div>
                   </div>
@@ -325,7 +327,7 @@ export default function EditGigPage({ params }: PageProps) {
                             {companySettings.botName || "бот"}
                             {companySettings.botRole &&
                               ` - ${companySettings.botRole}`}{" "}
-                            компании "{companySettings.name}".
+                            компании "{companySettings.companyName}".
                           </span>
                         )}
                     </FormDescription>
@@ -351,7 +353,8 @@ export default function EditGigPage({ params }: PageProps) {
                       Используется для автоматической оценки откликов.
                       {companySettings && (
                         <span className="block mt-1 text-xs">
-                          Учитывает специфику компании "{companySettings.name}".
+                          Учитывает специфику компании "
+                          {companySettings.companyName}".
                         </span>
                       )}
                     </FormDescription>

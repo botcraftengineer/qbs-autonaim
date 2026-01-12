@@ -303,9 +303,9 @@ ${data.interviewLink.url}
           <div className="mt-4 text-sm text-muted-foreground">
             Всего откликов:{" "}
             <span className="font-semibold tabular-nums">
-              {responseStats.HH_API +
-                responseStats.FREELANCE_MANUAL +
-                responseStats.FREELANCE_LINK}
+              {(responseStats.HH_API ?? 0) +
+                (responseStats.FREELANCE_MANUAL ?? 0) +
+                (responseStats.FREELANCE_LINK ?? 0)}
             </span>
           </div>
         </CardContent>

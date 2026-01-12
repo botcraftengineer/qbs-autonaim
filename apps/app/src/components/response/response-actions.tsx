@@ -27,7 +27,7 @@ import {
 
 interface ResponseActionsProps {
   responseId: string;
-  resumeUrl: string;
+  resumeUrl?: string | null;
   candidateName?: string | null;
   telegramUsername?: string | null;
   phone?: string | null;
@@ -64,7 +64,9 @@ export function ResponseActions({
   };
 
   const handleOpenResume = () => {
-    window.open(resumeUrl, "_blank", "noopener,noreferrer");
+    if (resumeUrl) {
+      window.open(resumeUrl, "_blank", "noopener,noreferrer");
+    }
   };
 
   const handleOpenChat = () => {
@@ -161,7 +163,7 @@ export function ResponseActions({
           {isRefreshing ? "Обновление…" : "Обновить резюме"}
         </DropdownMenuItem>
 
-        <DropdownMenuItem onClick={handleOpenResume}>
+        <DropdownMenuItem onClick={handleOpenResume} disabled={!resumeUrl}>
           <IconExternalLink className="h-4 w-4" />
           Открыть резюме на HH.ru
         </DropdownMenuItem>

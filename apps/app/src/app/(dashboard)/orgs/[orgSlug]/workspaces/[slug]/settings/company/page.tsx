@@ -35,9 +35,9 @@ export default function SettingsCompanyPage() {
       <CompanyForm
         workspaceId={workspaceId}
         initialData={{
-          name: company?.name || "",
-          website: company?.website || "",
-          description: company?.description || "",
+          name: company?.companyName || "",
+          website: company?.companyWebsite || "",
+          description: company?.companyDescription || "",
         }}
         userRole={userRole}
       />

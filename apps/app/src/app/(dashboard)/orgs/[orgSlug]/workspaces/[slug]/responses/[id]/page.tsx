@@ -94,7 +94,7 @@ export default function ResponseDetailPage({
                     Назад
                   </Button>
                 </Link>
-                {response.conversation && (
+                {response.interviewSession && (
                   <Link href={paths.workspace.chat(orgSlug, workspaceSlug, id)}>
                     <Button variant="default" size="sm">
                       <MessageSquare className="mr-2 h-4 w-4" />
@@ -108,9 +108,36 @@ export default function ResponseDetailPage({
                 <ResponseHeader response={response} />
                 <ScreeningCard screening={response.screening} />
                 <InterviewCard
-                  conversation={response.conversation ?? null}
+                  conversation={
+                    response.interviewSession
+                      ? {
+                          interviewScoring: response.interviewSession.scoring
+                            ? {
+                                score: response.interviewSession.scoring.score,
+                                detailedScore:
+                                  response.interviewSession.scoring
+                                    .detailedScore ?? undefined,
+                                analysis:
+                                  response.interviewSession.scoring.analysis ??
+                                  undefined,
+                              }
+                            : undefined,
+                          messages: response.interviewSession.messages?.map(
+                            (m) => ({
+                              id: m.id,
+                              sender: m.role as "CANDIDATE" | "BOT" | "ADMIN",
+                              contentType: m.contentType as "TEXT" | "VOICE",
+                              content: m.content,
+                              voiceTranscription:
+                                m.voiceTranscription ?? undefined,
+                              createdAt: m.createdAt,
+                            }),
+                          ),
+                        }
+                      : null
+                  }
                   candidateName={response.candidateName}
-                  workspaceName={response.vacancy?.workspace?.name}
+                  workspaceName={undefined}
                 />
                 {response.experience && (
                   <ExperienceCard experience={response.experience} />

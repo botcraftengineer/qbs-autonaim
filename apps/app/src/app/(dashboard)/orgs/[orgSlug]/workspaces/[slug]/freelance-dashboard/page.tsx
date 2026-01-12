@@ -27,7 +27,7 @@ import { useState } from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
-type PlatformFilter = "all" | "kwork" | "fl" | "freelance";
+type PlatformFilter = "all" | "KWORK" | "FL_RU" | "FREELANCE_RU";
 
 export default function FreelanceDashboardPage() {
   const { orgSlug, slug: workspaceSlug } = useParams<{
@@ -46,19 +46,16 @@ export default function FreelanceDashboardPage() {
     ...api.freelancePlatforms.getDashboardStats.queryOptions({
       workspaceId: workspace?.id ?? "",
       status: statusFilter,
-      platformSource:
-        platformFilter === "all"
-          ? undefined
-          : (platformFilter as "kwork" | "fl" | "freelance"),
+      platformSource: platformFilter === "all" ? undefined : platformFilter,
     }),
     enabled: !!workspace?.id,
   });
 
   const getPlatformName = (source: string) => {
     const platforms: Record<string, string> = {
-      kwork: "Kwork",
-      fl: "FL.ru",
-      freelance: "Freelance.ru",
+      KWORK: "Kwork",
+      FL_RU: "FL.ru",
+      FREELANCE_RU: "Freelance.ru",
     };
     return platforms[source] || source;
   };
@@ -243,9 +240,9 @@ export default function FreelanceDashboardPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Все платформы</SelectItem>
-                  <SelectItem value="kwork">Kwork</SelectItem>
-                  <SelectItem value="fl">FL.ru</SelectItem>
-                  <SelectItem value="freelance">Freelance.ru</SelectItem>
+                  <SelectItem value="KWORK">Kwork</SelectItem>
+                  <SelectItem value="FL_RU">FL.ru</SelectItem>
+                  <SelectItem value="FREELANCE_RU">Freelance.ru</SelectItem>
                 </SelectContent>
               </Select>
             </div>

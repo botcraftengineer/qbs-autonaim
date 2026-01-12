@@ -336,20 +336,47 @@ export function InterviewChat({
 
   // Загрузка истории чата
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery(
-    trpc.freelancePlatforms.getChatHistory.queryOptions({ conversationId }),
+    trpc.freelancePlatforms.getChatHistory.queryOptions({
+      interviewSessionId: conversationId,
+    }),
   );
 
   // Загрузка контекста интервью (вакансия/задание)
   const { data: interviewContext, isLoading: isLoadingContext } = useQuery(
     trpc.freelancePlatforms.getInterviewContext.queryOptions({
-      conversationId,
+      interviewSessionId: conversationId,
     }),
   );
 
   // Конвертация истории в формат для отображения
   const historyMessages = useMemo(() => {
     if (!chatHistory?.messages) return [];
-    return chatHistory.messages.map(convertLegacyMessage);
+    return chatHistory.messages.map((msg) => {
+      const role = msg.role === "user" ? "user" : "assistant";
+      const parts: MessagePart[] = [];
+
+      if (msg.type === "voice") {
+        if (msg.fileUrl) {
+          parts.push({
+            type: "file",
+            url: msg.fileUrl,
+            mediaType: "audio/webm",
+          });
+        }
+        if (msg.voiceTranscription) {
+          parts.push({ type: "text", text: msg.voiceTranscription });
+        }
+      } else {
+        parts.push({ type: "text", text: msg.content ?? "" });
+      }
+
+      return {
+        id: msg.id,
+        role,
+        parts,
+        createdAt: msg.createdAt,
+      } as ChatMessage;
+    });
   }, [chatHistory?.messages]);
 
   // useChat из AI SDK с нативным стримингом
@@ -539,9 +566,9 @@ export function InterviewChat({
     [conversationId, sendMessage],
   );
 
-  const chatStatus = chatHistory?.status || "ACTIVE";
-  const isCompleted = chatStatus === "COMPLETED";
-  const isCancelled = chatStatus === "CANCELLED";
+  const chatStatus = chatHistory?.status || "active";
+  const isCompleted = chatStatus === "completed";
+  const isCancelled = chatStatus === "cancelled";
   const isReadonly = isCompleted || isCancelled;
 
   if (isLoadingHistory || isLoadingContext) {

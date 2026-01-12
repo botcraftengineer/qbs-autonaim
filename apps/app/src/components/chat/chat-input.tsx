@@ -5,7 +5,8 @@ import { Send } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend?: (message: string) => void;
+  onSendMessage?: (message: string) => void;
   disabled: boolean;
   placeholder?: string;
 }
@@ -17,9 +18,11 @@ interface ChatInputProps {
  */
 export function ChatInput({
   onSend,
+  onSendMessage,
   disabled,
   placeholder = "Введите сообщение…",
 }: ChatInputProps) {
+  const handleSend = onSend ?? onSendMessage;
   const [message, setMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -37,9 +40,9 @@ export function ChatInput({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedMessage = message.trim();
-    if (!trimmedMessage || disabled) return;
+    if (!trimmedMessage || disabled || !handleSend) return;
 
-    onSend(trimmedMessage);
+    handleSend(trimmedMessage);
     setMessage("");
 
     // Reset textarea height after sending
