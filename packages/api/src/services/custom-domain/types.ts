@@ -199,7 +199,7 @@ export const ERROR_MESSAGES: Record<CustomDomainErrorCode, string> = {
 /**
  * Базовый CNAME target для всех кастомных доменов
  */
-export const BASE_CNAME_TARGET = "widget.hh.qbs.ru";
+export const BASE_CNAME_TARGET = "widget.hrbot.pro";
 
 /**
  * Минимальный интервал между попытками верификации (в миллисекундах)
