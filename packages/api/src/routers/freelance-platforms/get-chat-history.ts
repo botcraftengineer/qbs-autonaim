@@ -111,11 +111,11 @@ export const getChatHistory = publicProcedure
           const placeholderMessage = {
             id: originalMessage.id,
             role: originalMessage.role,
-            content: originalMessage.content || "",
+            content: originalMessage.content,
             type: originalMessage.type,
             createdAt: originalMessage.createdAt,
             voiceTranscription: originalMessage.voiceTranscription ?? null,
-            fileUrl: null as string | null,
+            fileUrl: null,
           };
 
           messages.push(placeholderMessage);

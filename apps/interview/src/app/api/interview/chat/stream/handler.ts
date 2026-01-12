@@ -278,6 +278,7 @@ export async function POST(request: Request) {
     };
 
     const { tools, systemPrompt } = createWebInterviewRuntime({
+      model,
       sessionId,
       gig,
       vacancy,

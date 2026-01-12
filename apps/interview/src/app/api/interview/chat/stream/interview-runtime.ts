@@ -3,6 +3,8 @@ import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
 } from "@qbs-autonaim/shared";
+import type { LanguageModel } from "ai";
+import { generateText } from "ai";
 import { z } from "zod";
 
 type EntityType = "gig" | "vacancy" | "unknown";
@@ -44,6 +46,92 @@ type VacancyLike = {
   requirements?: unknown;
 };
 
+function extractJsonObject(text: string): unknown | null {
+  try {
+    const fencedMatch = text.match(/```json\s*([\s\S]*?)\s*```/i);
+    if (fencedMatch?.[1]) {
+      try {
+        return JSON.parse(fencedMatch[1]);
+      } catch {}
+    }
+
+    const firstBrace = text.indexOf("{");
+    if (firstBrace === -1) {
+      return null;
+    }
+
+    let startIndex = firstBrace;
+    while (startIndex < text.length) {
+      let depth = 0;
+      let inString = false;
+      let escapeNext = false;
+      let endIndex = -1;
+
+      for (let i = startIndex; i < text.length; i++) {
+        const char = text[i];
+
+        if (escapeNext) {
+          escapeNext = false;
+          continue;
+        }
+
+        if (char === "\\") {
+          escapeNext = true;
+          continue;
+        }
+
+        if (char === '"' && !inString) {
+          inString = true;
+          continue;
+        }
+
+        if (char === '"' && inString) {
+          inString = false;
+          continue;
+        }
+
+        if (inString) {
+          continue;
+        }
+
+        if (char === "{") {
+          depth++;
+        } else if (char === "}") {
+          depth--;
+          if (depth === 0) {
+            endIndex = i;
+            break;
+          }
+        }
+      }
+
+      if (endIndex !== -1) {
+        const jsonStr = text.slice(startIndex, endIndex + 1);
+        try {
+          return JSON.parse(jsonStr);
+        } catch {
+          const nextBrace = text.indexOf("{", startIndex + 1);
+          if (nextBrace === -1) {
+            return null;
+          }
+          startIndex = nextBrace;
+          continue;
+        }
+      }
+
+      const nextBrace = text.indexOf("{", startIndex + 1);
+      if (nextBrace === -1) {
+        return null;
+      }
+      startIndex = nextBrace;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 function parseQuestions(raw: string | null | undefined): string[] {
   if (!raw) return [];
 
@@ -56,6 +144,7 @@ function parseQuestions(raw: string | null | undefined): string[] {
 }
 
 export function createWebInterviewRuntime(params: {
+  model: LanguageModel;
   sessionId: string;
   gig: GigLike | null;
   vacancy: VacancyLike | null;
@@ -72,9 +161,21 @@ export function createWebInterviewRuntime(params: {
   >;
   systemPrompt: string;
 } {
-  const { sessionId, gig, vacancy, interviewContext, isFirstResponse } = params;
+  const { model, sessionId, gig, vacancy, interviewContext, isFirstResponse } =
+    params;
 
   const entityType: EntityType = gig ? "gig" : vacancy ? "vacancy" : "unknown";
+
+  const normalizeQuestionsSchema = z.object({
+    organizational: z.array(z.string()),
+    technical: z.array(z.string()),
+  });
+
+  let questionBankMemo: {
+    entityType: EntityType;
+    organizational: string[];
+    technical: string[];
+  } | null = null;
 
   const getInterviewSettings = {
     description:
@@ -176,6 +277,8 @@ export function createWebInterviewRuntime(params: {
       "Возвращает нормализованный банк вопросов для интервью (организационные и технические) в виде массивов строк.",
     inputSchema: z.object({}),
     execute: async () => {
+      if (questionBankMemo) return questionBankMemo;
+
       const orgDefaults =
         entityType === "gig"
           ? [
@@ -190,21 +293,85 @@ export function createWebInterviewRuntime(params: {
               "Какой формат работы предпочитаете?",
             ];
 
-      const orgCustom = parseQuestions(
+      const orgRaw =
         (gig?.customOrganizationalQuestions ??
           vacancy?.customOrganizationalQuestions) ||
-          null,
-      );
-      const techCustom = parseQuestions(
+        null;
+      const techRaw =
         (gig?.customInterviewQuestions ?? vacancy?.customInterviewQuestions) ||
-          null,
-      );
+        null;
 
-      return {
+      try {
+        const prompt = `Ты помогаешь нормализовать вопросы для интервью.
+
+У тебя есть два поля с произвольным текстом. Иногда это может быть:
+- список с маркерами/нумерацией
+- текст с несколькими предложениями
+- markdown
+- одна строка
+
+Нужно выделить из каждого поля список вопросов.
+
+ТРЕБОВАНИЯ:
+- Верни ТОЛЬКО JSON объект (без markdown, без пояснений).
+- Формат строго такой:
+{
+  "organizational": string[],
+  "technical": string[]
+}
+- Каждый элемент массива: один вопрос (строка), без нумерации/маркеров.
+- Удали пустые элементы.
+- Если в поле нет вопросов или поле пустое/undefined/null, верни пустой массив.
+
+INPUT:
+organizational_raw: ${JSON.stringify(orgRaw)}
+technical_raw: ${JSON.stringify(techRaw)}
+`;
+
+        const result = await generateText({
+          model,
+          prompt,
+        });
+
+        const jsonObject = extractJsonObject(result.text);
+        const parsed = normalizeQuestionsSchema.safeParse(jsonObject);
+
+        if (parsed.success) {
+          const normalizeList = (list: string[]) =>
+            Array.from(
+              new Set(
+                list
+                  .map((q) => q.trim())
+                  .filter(Boolean)
+                  .map((q) => q.replace(/^[-*\d.)\s]+/, "").trim())
+                  .filter(Boolean),
+              ),
+            );
+
+          const organizational = normalizeList(parsed.data.organizational);
+          const technical = normalizeList(parsed.data.technical);
+
+          questionBankMemo = {
+            entityType,
+            organizational:
+              organizational.length > 0 ? organizational : orgDefaults,
+            technical,
+          };
+
+          return questionBankMemo;
+        }
+      } catch {}
+
+      const orgCustom = parseQuestions(orgRaw);
+      const techCustom = parseQuestions(techRaw);
+
+      questionBankMemo = {
         entityType,
         organizational: orgCustom.length > 0 ? orgCustom : orgDefaults,
         technical: techCustom,
       };
+
+      return questionBankMemo;
     },
   };
 
