@@ -12,7 +12,7 @@
     "format": "biome format .",
     "lint": "biome lint .",
     "check": "biome check .",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false",
+    "typecheck": "tsc --noEmit",
     "ui-add": "bunx shadcn@latest add && biome format --write src"
   },
   "dependencies": {

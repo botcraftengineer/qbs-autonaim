@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1768193328934,
-      "tag": "0000_majestic_bishop",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1768223738329,
-      "tag": "0001_brave_colonel_america",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1768224058458,
-      "tag": "0002_premium_changeling",
+      "when": 1768232690908,
+      "tag": "0000_outstanding_cassandra_nova",
       "breakpoints": true
     }
   ]
