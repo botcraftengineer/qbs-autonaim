@@ -114,17 +114,18 @@ export function ResponseListCard({
                     </span>
                   </div>
 
-                  {response.importSource && response.importSource !== "MANUAL" && (
-                    <>
-                      <Separator orientation="vertical" className="h-3" />
-                      <div className="flex items-center gap-1.5">
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        <span className="text-xs">
-                          {IMPORT_SOURCE_LABELS[response.importSource]}
-                        </span>
-                      </div>
-                    </>
-                  )}
+                  {response.importSource &&
+                    response.importSource !== "MANUAL" && (
+                      <>
+                        <Separator orientation="vertical" className="h-3" />
+                        <div className="flex items-center gap-1.5">
+                          <ExternalLink className="h-3.5 w-3.5" />
+                          <span className="text-xs">
+                            {IMPORT_SOURCE_LABELS[response.importSource]}
+                          </span>
+                        </div>
+                      </>
+                    )}
                 </div>
               </div>
             </div>
@@ -183,10 +184,16 @@ export function ResponseListCard({
                       </div>
                     </div>
                   </HoverCardTrigger>
-                  <HoverCardContent className="w-80" align="start" side="bottom">
+                  <HoverCardContent
+                    className="w-80"
+                    align="start"
+                    side="bottom"
+                  >
                     <div className="space-y-3">
                       <div>
-                        <h4 className="font-semibold text-sm">Результаты скрининга</h4>
+                        <h4 className="font-semibold text-sm">
+                          Результаты скрининга
+                        </h4>
                         <p className="text-xs text-muted-foreground mt-1">
                           Автоматическая оценка соответствия требованиям
                         </p>
@@ -232,10 +239,16 @@ export function ResponseListCard({
                       </div>
                     </div>
                   </HoverCardTrigger>
-                  <HoverCardContent className="w-80" align="start" side="bottom">
+                  <HoverCardContent
+                    className="w-80"
+                    align="start"
+                    side="bottom"
+                  >
                     <div className="space-y-3">
                       <div>
-                        <h4 className="font-semibold text-sm">Результаты интервью</h4>
+                        <h4 className="font-semibold text-sm">
+                          Результаты интервью
+                        </h4>
                         <p className="text-xs text-muted-foreground mt-1">
                           Оценка кандидата на основе AI-интервью
                         </p>
@@ -266,7 +279,8 @@ export function ResponseListCard({
                   Портфолио распарсено
                 </div>
                 <div className="text-xs text-green-700 dark:text-green-300">
-                  {response.profileData.platform || "Не указан"} • {response.profileData.username || "—"}
+                  {response.profileData.platform || "Не указан"} •{" "}
+                  {response.profileData.username || "—"}
                 </div>
               </div>
             </div>
@@ -305,8 +319,8 @@ export function ResponseListCard({
                       {response.proposedDeliveryDays === 1
                         ? "день"
                         : response.proposedDeliveryDays < 5
-                        ? "дня"
-                        : "дней"}
+                          ? "дня"
+                          : "дней"}
                     </div>
                   </div>
                 </div>
@@ -343,7 +357,9 @@ export function ResponseListCard({
                     size="sm"
                     variant="default"
                     className="gap-2 h-9 px-4 bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"
-                    onClick={(e) => handleAction(e, () => onAccept(response.id))}
+                    onClick={(e) =>
+                      handleAction(e, () => onAccept(response.id))
+                    }
                   >
                     <CheckCircle2 className="h-4 w-4" />
                     Принять
@@ -355,7 +371,9 @@ export function ResponseListCard({
                     size="sm"
                     variant="outline"
                     className="gap-2 h-9 px-4 border-border hover:bg-muted"
-                    onClick={(e) => handleAction(e, () => onMessage(response.id))}
+                    onClick={(e) =>
+                      handleAction(e, () => onMessage(response.id))
+                    }
                   >
                     <MessageSquare className="h-4 w-4" />
                     Написать
@@ -367,7 +385,9 @@ export function ResponseListCard({
                     size="sm"
                     variant="ghost"
                     className="gap-2 h-9 px-4 ml-auto text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    onClick={(e) => handleAction(e, () => onReject(response.id))}
+                    onClick={(e) =>
+                      handleAction(e, () => onReject(response.id))
+                    }
                   >
                     <XCircle className="h-4 w-4" />
                     Отклонить

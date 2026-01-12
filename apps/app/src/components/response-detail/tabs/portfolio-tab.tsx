@@ -1,7 +1,12 @@
 "use client";
 
 import { Button } from "@qbs-autonaim/ui";
-import { ExternalLink, FileText, Image as ImageIcon, Download } from "lucide-react";
+import {
+  ExternalLink,
+  FileText,
+  Image as ImageIcon,
+  Download,
+} from "lucide-react";
 import type { RouterOutputs } from "@qbs-autonaim/api";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
@@ -28,17 +33,17 @@ export function PortfolioTab({ response }: PortfolioTabProps) {
   });
 
   // Получаем URL портфолио файла если есть portfolioFileId
-  const { 
-    data: portfolioData, 
+  const {
+    data: portfolioData,
     isPending: isPortfolioLoading,
-    error: portfolioError 
+    error: portfolioError,
   } = useQuery(
     workspace?.id && response.portfolioFileId
       ? trpc.files.getFileUrl.queryOptions({
           workspaceId: workspace.id,
           fileId: response.portfolioFileId,
         })
-      : skipToken
+      : skipToken,
   );
 
   const handleViewPhoto = () => {
@@ -63,48 +68,41 @@ export function PortfolioTab({ response }: PortfolioTabProps) {
   };
   return (
     <div className="space-y-3 sm:space-y-4 mt-0">
-      {response.portfolioLinks &&
-        response.portfolioLinks.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-xs sm:text-sm font-semibold">
-              Ссылки на работы
-            </h4>
-            <div className="space-y-2">
-              {response.portfolioLinks.map((link) => (
-                <Button
-                  key={link}
-                  variant="outline"
-                  size="sm"
-                  className="w-full justify-start gap-2 min-h-[44px] sm:min-h-[36px] touch-manipulation"
-                  asChild
-                >
-                  <a
-                    href={link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <ExternalLink className="h-4 w-4 flex-shrink-0" />
-                    <span className="truncate text-xs sm:text-sm">
-                      {link}
-                    </span>
-                  </a>
-                </Button>
-              ))}
-            </div>
+      {response.portfolioLinks && response.portfolioLinks.length > 0 && (
+        <div className="space-y-3">
+          <h4 className="text-xs sm:text-sm font-semibold">Ссылки на работы</h4>
+          <div className="space-y-2">
+            {response.portfolioLinks.map((link) => (
+              <Button
+                key={link}
+                variant="outline"
+                size="sm"
+                className="w-full justify-start gap-2 min-h-[44px] sm:min-h-[36px] touch-manipulation"
+                asChild
+              >
+                <a href={link} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 flex-shrink-0" />
+                  <span className="truncate text-xs sm:text-sm">{link}</span>
+                </a>
+              </Button>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
       {response.portfolioFileId && (
         <div className="space-y-3">
-          <h4 className="text-xs sm:text-sm font-semibold">
-            Файл портфолио
-          </h4>
+          <h4 className="text-xs sm:text-sm font-semibold">Файл портфолио</h4>
           <Button
             variant="outline"
             size="sm"
             className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
             onClick={handleDownloadPortfolio}
-            disabled={isPortfolioLoading || !portfolioData?.url || Boolean(portfolioError)}
+            disabled={
+              isPortfolioLoading ||
+              !portfolioData?.url ||
+              Boolean(portfolioError)
+            }
           >
             {isPortfolioLoading ? (
               <>
@@ -147,9 +145,7 @@ export function PortfolioTab({ response }: PortfolioTabProps) {
         !response.photoFileId && (
           <div className="rounded-lg border border-dashed bg-muted/20 text-center py-8 text-muted-foreground">
             <FileText className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 opacity-50" />
-            <p className="text-xs sm:text-sm">
-              Портфолио не предоставлено
-            </p>
+            <p className="text-xs sm:text-sm">Портфолио не предоставлено</p>
           </div>
         )}
     </div>

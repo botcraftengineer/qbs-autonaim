@@ -1,6 +1,12 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qbs-autonaim/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@qbs-autonaim/ui";
 import { CheckCircle2 } from "lucide-react";
 import type { ProfileData } from "./types";
 
@@ -27,16 +33,10 @@ export function ParsedProfileCard({ profileData }: ParsedProfileCardProps) {
       <CardContent>
         <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
           <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
-            <span className="text-xs sm:text-sm font-medium">
-              Платформа
-            </span>
+            <span className="text-xs sm:text-sm font-medium">Платформа</span>
             <span className="text-xs sm:text-sm text-muted-foreground">
-              {(profileData.platform || profileData.username) !==
-              undefined
-                ? [
-                    profileData.platform,
-                    profileData.username,
-                  ]
+              {(profileData.platform || profileData.username) !== undefined
+                ? [profileData.platform, profileData.username]
                     .filter((value): value is string => Boolean(value))
                     .join(" • ") || "—"
                 : "—"}
@@ -44,16 +44,13 @@ export function ParsedProfileCard({ profileData }: ParsedProfileCardProps) {
           </div>
           {profileData.statistics?.rating !== undefined && (
             <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
-              <span className="text-xs sm:text-sm font-medium">
-                Рейтинг
-              </span>
+              <span className="text-xs sm:text-sm font-medium">Рейтинг</span>
               <span className="text-xs sm:text-sm text-muted-foreground">
                 {profileData.statistics.rating}
               </span>
             </div>
           )}
-          {profileData.statistics?.ordersCompleted !==
-            undefined && (
+          {profileData.statistics?.ordersCompleted !== undefined && (
             <div className="flex items-center justify-between p-3 rounded-lg border bg-background">
               <span className="text-xs sm:text-sm font-medium">
                 Заказов выполнено

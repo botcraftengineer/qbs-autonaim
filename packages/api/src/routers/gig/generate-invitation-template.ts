@@ -152,8 +152,7 @@ export const generateInvitationTemplate = protectedProcedure
 
     // Загружаем настройки компании для персонализации
     const botSettings = await ctx.db.query.botSettings.findFirst({
-      where: (botSettings, { eq }) =>
-        eq(botSettings.workspaceId, workspaceId),
+      where: (botSettings, { eq }) => eq(botSettings.workspaceId, workspaceId),
     });
 
     const prompt = buildInvitationPrompt(

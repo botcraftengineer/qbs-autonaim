@@ -44,7 +44,10 @@ export const sendMessageRouter = protectedProcedure
         entityType: responseTable.entityType,
       })
       .from(interviewSession)
-      .leftJoin(responseTable, eq(interviewSession.responseId, responseTable.id))
+      .leftJoin(
+        responseTable,
+        eq(interviewSession.responseId, responseTable.id),
+      )
       .where(eq(interviewSession.id, input.sessionId))
       .limit(1);
 

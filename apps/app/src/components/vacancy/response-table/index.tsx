@@ -107,7 +107,8 @@ export function ResponseTable({
   const totalPages = data?.totalPages ?? 0;
 
   const allSelected =
-    responses.length > 0 && responses.every((r: ResponseListItem) => selectedIds.has(r.id));
+    responses.length > 0 &&
+    responses.every((r: ResponseListItem) => selectedIds.has(r.id));
 
   const handleSelectAll = () => {
     if (allSelected) {

@@ -1,4 +1,10 @@
-import { FileText, CheckCircle2, MessageSquare, TrendingUp, XCircle } from "lucide-react";
+import {
+  FileText,
+  CheckCircle2,
+  MessageSquare,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
 
 export const RESPONSE_STATUS_CONFIG = {
   NEW: { label: "Новый", variant: "default" as const, icon: FileText },

@@ -182,9 +182,7 @@ ${marketInfo}
       candidate.proposedPrice !== null &&
       candidate.proposedPrice !== undefined
     ) {
-      parts.push(
-        `Предложенная цена: ${candidate.proposedPrice} RUB`,
-      );
+      parts.push(`Предложенная цена: ${candidate.proposedPrice} RUB`);
     } else {
       parts.push(`Предложенная цена: не указана`);
     }
@@ -263,9 +261,7 @@ ${marketInfo}
 
     if (budget.budgetMin !== null && budget.budgetMin !== undefined) {
       if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
-        parts.push(
-          `Бюджет: ${budget.budgetMin}-${budget.budgetMax} RUB`,
-        );
+        parts.push(`Бюджет: ${budget.budgetMin}-${budget.budgetMax} RUB`);
       } else {
         parts.push(`Бюджет от: ${budget.budgetMin} RUB`);
       }

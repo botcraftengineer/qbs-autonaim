@@ -4,7 +4,12 @@ import { Badge, Button, TableCell, TableRow } from "@qbs-autonaim/ui";
 import { Check, MessageSquare, X } from "lucide-react";
 import Link from "next/link";
 import type { Response } from "./use-response-filters";
-import { formatDate, getHrStatusLabel, getStatusLabel, getStatusVariant } from "./response-helpers";
+import {
+  formatDate,
+  getHrStatusLabel,
+  getStatusLabel,
+  getStatusVariant,
+} from "./response-helpers";
 
 interface ResponseRowProps {
   response: Response;

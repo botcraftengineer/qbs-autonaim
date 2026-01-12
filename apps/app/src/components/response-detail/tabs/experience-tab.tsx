@@ -71,9 +71,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                 <>
                   <Separator />
                   <div className="space-y-2">
-                    <h4 className="text-xs sm:text-sm font-semibold">
-                      О себе
-                    </h4>
+                    <h4 className="text-xs sm:text-sm font-semibold">О себе</h4>
                     <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                       {profile.aboutMe}
                     </p>
@@ -86,9 +84,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                 <>
                   <Separator />
                   <div className="space-y-3">
-                    <h4 className="text-xs sm:text-sm font-semibold">
-                      Навыки
-                    </h4>
+                    <h4 className="text-xs sm:text-sm font-semibold">Навыки</h4>
                     <div className="flex flex-wrap gap-1.5 sm:gap-2">
                       {profile.skills.map((skill) => (
                         <Badge
@@ -123,8 +119,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                           </span>
                         </div>
                       )}
-                      {profile.statistics.ordersCompleted !==
-                        undefined && (
+                      {profile.statistics.ordersCompleted !== undefined && (
                         <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
                           <span className="text-xs sm:text-sm font-medium">
                             Заказов выполнено
@@ -134,8 +129,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                           </span>
                         </div>
                       )}
-                      {profile.statistics.reviewsReceived !==
-                        undefined && (
+                      {profile.statistics.reviewsReceived !== undefined && (
                         <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
                           <span className="text-xs sm:text-sm font-medium">
                             Отзывов получено
@@ -165,8 +159,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                           </span>
                         </div>
                       )}
-                      {profile.statistics.repeatOrdersRate !==
-                        undefined && (
+                      {profile.statistics.repeatOrdersRate !== undefined && (
                         <div className="flex items-center justify-between p-2 rounded-lg border gap-2">
                           <span className="text-xs sm:text-sm font-medium">
                             Повторные заказы
@@ -198,9 +191,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
         if (experienceData.text) {
           return (
             <div className="space-y-2">
-              <h4 className="text-xs sm:text-sm font-semibold">
-                Опыт работы
-              </h4>
+              <h4 className="text-xs sm:text-sm font-semibold">Опыт работы</h4>
               <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                 {experienceData.text}
               </p>

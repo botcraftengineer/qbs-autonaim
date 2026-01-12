@@ -18,9 +18,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
             <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs sm:text-sm font-medium mb-1">
-                Email
-              </div>
+              <div className="text-xs sm:text-sm font-medium mb-1">Email</div>
               <a
                 href={`mailto:${response.email}`}
                 className="text-xs sm:text-sm text-primary hover:underline break-all"
@@ -35,9 +33,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
             <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs sm:text-sm font-medium mb-1">
-                Телефон
-              </div>
+              <div className="text-xs sm:text-sm font-medium mb-1">Телефон</div>
               <a
                 href={`tel:${response.phone}`}
                 className="text-xs sm:text-sm text-primary hover:underline"
@@ -71,9 +67,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
             <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs sm:text-sm font-medium mb-1">
-                Профиль
-              </div>
+              <div className="text-xs sm:text-sm font-medium mb-1">Профиль</div>
               <a
                 href={response.profileUrl}
                 target="_blank"

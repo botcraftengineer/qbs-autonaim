@@ -106,13 +106,15 @@ export default function ResponseDetailPage({
 
               <div className="space-y-6 md:space-y-8">
                 <ResponseHeaderCard response={response} />
-                {response.screening && <ScreeningResultsCard screening={response.screening} />}
+                {response.screening && (
+                  <ScreeningResultsCard screening={response.screening} />
+                )}
                 {response.interviewScoring && (
-                  <InterviewScoringCard interviewScoring={response.interviewScoring} />
+                  <InterviewScoringCard
+                    interviewScoring={response.interviewScoring}
+                  />
                 )}
-                {response.experience && (
-                  <ExperienceTab response={response} />
-                )}
+                {response.experience && <ExperienceTab response={response} />}
               </div>
             </div>
           </div>

@@ -41,7 +41,9 @@ export function MessageDialog({
           <DialogDescription className="text-sm sm:text-base">
             Напишите сообщение кандидату{" "}
             {candidateName && (
-              <span className="font-medium wrap-break-word">{candidateName}</span>
+              <span className="font-medium wrap-break-word">
+                {candidateName}
+              </span>
             )}
           </DialogDescription>
         </DialogHeader>

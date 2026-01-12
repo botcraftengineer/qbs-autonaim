@@ -252,7 +252,9 @@ export async function loadCandidatesContext(
       screeningDetailedScore: screening?.detailedScore ?? null,
       screeningAnalysis: screening?.analysis ?? null,
       // Interview data
-      interviewScore: interview ? (interview.rating ?? Math.round(interview.score / 20)) : null,
+      interviewScore: interview
+        ? (interview.rating ?? Math.round(interview.score / 20))
+        : null,
       interviewDetailedScore: interview?.score ?? null,
       interviewAnalysis: interview?.analysis ?? null,
       // Ranking data

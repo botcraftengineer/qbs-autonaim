@@ -1,6 +1,14 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Progress, Separator } from "@qbs-autonaim/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Progress,
+  Separator,
+} from "@qbs-autonaim/ui";
 import { MessageSquare } from "lucide-react";
 import { SafeHtml } from "~/components/response-detail/safe-html";
 
@@ -12,7 +20,9 @@ interface InterviewScoringCardProps {
   };
 }
 
-export function InterviewScoringCard({ interviewScoring }: InterviewScoringCardProps) {
+export function InterviewScoringCard({
+  interviewScoring,
+}: InterviewScoringCardProps) {
   return (
     <Card>
       <CardHeader>

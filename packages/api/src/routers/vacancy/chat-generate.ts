@@ -223,8 +223,7 @@ export const chatGenerate = protectedProcedure
 
     // Загружаем настройки компании для персонализации промпта
     const botSettings = await ctx.db.query.botSettings.findFirst({
-      where: (botSettings, { eq }) =>
-        eq(botSettings.workspaceId, workspaceId),
+      where: (botSettings, { eq }) => eq(botSettings.workspaceId, workspaceId),
     });
 
     const prompt = buildVacancyGenerationPrompt(

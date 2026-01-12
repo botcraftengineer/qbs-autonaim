@@ -92,7 +92,8 @@ export function useGettingStarted() {
         workspace?.slug || "",
       ),
       completed: !!(
-        companySettings?.companyName && companySettings.companyName !== "Моя компания"
+        companySettings?.companyName &&
+        companySettings.companyName !== "Моя компания"
       ),
     },
     {
