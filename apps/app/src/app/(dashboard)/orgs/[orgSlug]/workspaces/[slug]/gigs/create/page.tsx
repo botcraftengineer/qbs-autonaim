@@ -210,9 +210,19 @@ export default function CreateGigPage({ params }: PageProps) {
       const result = await generateWithAi({
         workspaceId: workspace.id,
         message,
-        currentDocument: {},
+        currentDocument: {
+          budgetRange:
+            wizardStateParam.budget?.min && wizardStateParam.budget?.max
+              ? `${wizardStateParam.budget.min}-${wizardStateParam.budget.max} ₽`
+              : undefined,
+          timeline: wizardStateParam.timeline?.days
+            ? String(wizardStateParam.timeline.days)
+            : undefined,
+        },
         conversationHistory: [],
       });
+
+      console.log("[gig-create] Received result from AI:", result);
 
       if (!isMountedRef.current) return;
 
@@ -224,26 +234,32 @@ export default function CreateGigPage({ params }: PageProps) {
       // Validate AI response shape
       const parsed = aiDocumentSchema.safeParse(doc);
 
+      let newDraft: GigDraft;
+
       if (!parsed.success) {
         console.error(
           "[gig-create] AI response validation failed:",
           parsed.error,
         );
         console.error("[gig-create] Document that failed validation:", doc);
-        // Use safe defaults from wizard state
-        setDraft({
-          title: "",
-          description: "",
+
+        // Используем fallback с данными wizard, но показываем хоть что-то
+        newDraft = {
+          title: "Новое задание",
+          description: message,
           type: wizardStateParam.category?.id || "OTHER",
           deliverables: "",
           requiredSkills: "",
           budgetMin: wizardStateParam.budget?.min,
           budgetMax: wizardStateParam.budget?.max,
-
           estimatedDuration: wizardStateParam.timeline?.days
             ? String(wizardStateParam.timeline.days)
             : "",
-        });
+        };
+
+        toast.warning(
+          "AI вернул неполный ответ. Используются данные из визарда.",
+        );
       } else {
         const validDoc = parsed.data;
         // Нормализуем estimatedDuration к строке: приоритет AI-ответу, затем wizard
@@ -259,29 +275,44 @@ export default function CreateGigPage({ params }: PageProps) {
         const budgetMax =
           budgetFromAI.budgetMax ?? wizardStateParam.budget?.max;
 
-        const newDraft = {
-          title: validDoc.title || "",
+        newDraft = {
+          title: validDoc.title || "Новое задание",
           description: validDoc.description || "",
           type: wizardStateParam.category?.id || "OTHER",
           deliverables: validDoc.deliverables || "",
           requiredSkills: validDoc.requiredSkills || "",
           budgetMin,
           budgetMax,
-
           estimatedDuration,
         };
 
-        setDraft(newDraft);
+        toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
       }
+
+      // Обновляем draft синхронно
+      setDraft(newDraft);
 
       // Формируем сообщение ассистента для чата
       const assistantMessage = `Готово! Сгенерировал ТЗ${parsed.success && parsed.data.title ? ` "${parsed.data.title}"` : ""}. Можете уточнить детали или попросить изменения.`;
       setPendingAssistantMessage(assistantMessage);
-
-      toast.success("ТЗ сгенерировано! Проверьте и создайте задание.");
     } catch (err) {
       if (!isMountedRef.current) return;
+      console.error("[gig-create] Generation error:", err);
       toast.error(err instanceof Error ? err.message : "Ошибка генерации");
+
+      // Даже при ошибке показываем хоть что-то
+      setDraft({
+        title: "Новое задание",
+        description: message,
+        type: wizardStateParam.category?.id || "OTHER",
+        deliverables: "",
+        requiredSkills: "",
+        budgetMin: wizardStateParam.budget?.min,
+        budgetMax: wizardStateParam.budget?.max,
+        estimatedDuration: wizardStateParam.timeline?.days
+          ? String(wizardStateParam.timeline.days)
+          : "",
+      });
     } finally {
       if (isMountedRef.current) {
         setIsGenerating(false);
@@ -320,6 +351,8 @@ export default function CreateGigPage({ params }: PageProps) {
           .map(({ role, content }) => ({ role, content })), // Последние 10 сообщений
       });
 
+      console.log("[gig-create] Chat message result:", result);
+
       if (!isMountedRef.current) return;
 
       const doc = result.document;
@@ -353,10 +386,20 @@ export default function CreateGigPage({ params }: PageProps) {
 
         // Формируем сообщение ассистента о том, что изменилось
         const changes: string[] = [];
-        if (validDoc.title) changes.push("название");
-        if (validDoc.description) changes.push("описание");
-        if (validDoc.deliverables) changes.push("результаты");
-        if (validDoc.requiredSkills) changes.push("навыки");
+        if (validDoc.title && validDoc.title !== draft.title)
+          changes.push("название");
+        if (validDoc.description && validDoc.description !== draft.description)
+          changes.push("описание");
+        if (
+          validDoc.deliverables &&
+          validDoc.deliverables !== draft.deliverables
+        )
+          changes.push("результаты");
+        if (
+          validDoc.requiredSkills &&
+          validDoc.requiredSkills !== draft.requiredSkills
+        )
+          changes.push("навыки");
         if (validDoc.budgetRange) changes.push("бюджет");
         if (validDoc.timeline) changes.push("сроки");
 
@@ -371,10 +414,20 @@ export default function CreateGigPage({ params }: PageProps) {
           parsed.error,
         );
         console.error("[gig-create] Document that failed:", doc);
+
+        // Показываем сообщение об ошибке пользователю
+        toast.warning(
+          "AI вернул неполный ответ. Попробуйте переформулировать запрос.",
+        );
+        setPendingAssistantMessage(
+          "Извините, не смог обработать запрос. Попробуйте переформулировать.",
+        );
       }
     } catch (err) {
       if (!isMountedRef.current) return;
+      console.error("[gig-create] Chat message error:", err);
       toast.error(err instanceof Error ? err.message : "Ошибка обновления");
+      setPendingAssistantMessage("Произошла ошибка. Попробуйте ещё раз.");
     } finally {
       if (isMountedRef.current) {
         setIsGenerating(false);
