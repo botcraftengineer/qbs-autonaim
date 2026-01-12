@@ -46,6 +46,15 @@ export class GigInterviewLinkGenerator {
 
     // Если у gig указан кастомный домен, используем его
     if (gigData.customDomainId) {
+      // Проверяем, является ли это предустановленным доменом
+      const { getPresetDomain } = await import("@qbs-autonaim/db/schema");
+      const presetDomain = getPresetDomain(gigData.customDomainId);
+
+      if (presetDomain) {
+        return `https://${presetDomain.domain}`;
+      }
+
+      // Иначе ищем в кастомных доменах
       const domain = await db.query.customDomain.findFirst({
         where: and(
           eq(customDomain.id, gigData.customDomainId),

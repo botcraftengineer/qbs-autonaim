@@ -12,6 +12,7 @@ import {
   organizationInvite,
   organizationMember,
   workspace,
+  workspaceMember,
 } from "../schema";
 
 export class OrganizationRepository {
@@ -354,5 +355,36 @@ export class OrganizationRepository {
     return this.db.query.workspace.findFirst({
       where: and(eq(workspace.organizationId, orgId), eq(workspace.slug, slug)),
     });
+  }
+
+  /**
+   * Получить воркспейсы организации, доступные пользователю
+   * Если пользователь имеет доступ к организации, возвращает все воркспейсы.
+   * Если нет, возвращает только те воркспейсы, к которым у него есть прямой доступ.
+   */
+  async getUserWorkspacesInOrganization(orgId: string, userId: string) {
+    // Проверяем, имеет ли пользователь доступ к организации
+    const orgAccess = await this.checkAccess(orgId, userId);
+
+    if (orgAccess) {
+      // Если пользователь имеет доступ к организации, возвращаем все воркспейсы
+      return this.getWorkspaces(orgId);
+    }
+
+    // Если нет доступа к организации, возвращаем только воркспейсы с прямым доступом
+    const userWorkspaceMembers = await this.db.query.workspaceMember.findMany({
+      where: eq(workspaceMember.userId, userId),
+      with: {
+        workspace: true,
+      },
+    });
+
+    // Фильтруем воркспейсы: оставляем только те, которые принадлежат указанной организации
+    const accessibleWorkspaces = userWorkspaceMembers
+      .filter(member => member.workspace.organizationId === orgId)
+      .map(member => member.workspace)
+      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+
+    return accessibleWorkspaces;
   }
 }

@@ -11,7 +11,7 @@ interface WorkspaceListClientProps {
   organizationId: string;
   organizationSlug: string;
   initialWorkspaces: Workspace[];
-  userRole: OrganizationRole;
+  userRole: OrganizationRole | null;
 }
 
 export function WorkspaceListClient({

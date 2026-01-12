@@ -23,25 +23,29 @@ export default async function WorkspacesPage({
     redirect(paths.dashboard.root);
   }
 
-  const access = await organizationRepository.checkAccess(
+  // Проверяем доступ к организации
+  const orgAccess = await organizationRepository.checkAccess(
     organization.id,
     session.user.id,
   );
 
-  if (!access) {
+  // Получаем доступные пользователю воркспейсы в этой организации
+  const workspaces = await organizationRepository.getUserWorkspacesInOrganization(
+    organization.id,
+    session.user.id,
+  );
+
+  // Если нет доступа к организации И нет доступных воркспейсов, отказываем в доступе
+  if (!orgAccess && workspaces.length === 0) {
     redirect(paths.accessDenied);
   }
-
-  const workspaces = await organizationRepository.getWorkspaces(
-    organization.id,
-  );
 
   return (
     <WorkspaceListClient
       organizationId={organization.id}
       organizationSlug={organization.slug}
       initialWorkspaces={workspaces}
-      userRole={access.role}
+      userRole={orgAccess?.role || null}
     />
   );
 }

@@ -23,6 +23,15 @@ export const domainTypeEnum = pgEnum("domain_type", [
 ]);
 
 /**
+ * Предустановленные домены для интервью
+ */
+export const presetInterviewDomains = [
+  { id: "hrbot.pro", domain: "hrbot.pro", label: "hrbot.pro" },
+] as const;
+
+export type PresetInterviewDomain = (typeof presetInterviewDomains)[number];
+
+/**
  * SSL статус для кастомного домена
  */
 export const sslStatusEnum = pgEnum("ssl_status", [
@@ -115,3 +124,17 @@ export type CreateCustomDomain = z.infer<typeof createCustomDomainSchema>;
 export type UpdateCustomDomain = z.infer<typeof updateCustomDomainSchema>;
 export type DomainType = (typeof domainTypeEnum.enumValues)[number];
 export type SSLStatus = (typeof sslStatusEnum.enumValues)[number];
+
+/**
+ * Проверяет, является ли домен предустановленным
+ */
+export function isPresetDomain(domain: string): boolean {
+  return presetInterviewDomains.some((preset) => preset.domain === domain);
+}
+
+/**
+ * Получает предустановленный домен по ID
+ */
+export function getPresetDomain(id: string) {
+  return presetInterviewDomains.find((preset) => preset.id === id);
+}
