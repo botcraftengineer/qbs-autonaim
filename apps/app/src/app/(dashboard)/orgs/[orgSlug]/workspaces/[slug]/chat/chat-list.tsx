@@ -156,7 +156,7 @@ export function ChatList() {
 
       <div className="flex-1 overflow-y-auto">
         {conversations
-          .filter((conversation) => {
+          .filter((_conversation) => {
             if (!searchQuery) return true;
             return true; // Фильтрация по имени временно отключена
           })

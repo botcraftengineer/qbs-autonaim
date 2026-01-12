@@ -67,7 +67,7 @@ export function ResponseTable({
       search: debouncedSearch,
     }),
     enabled: !!workspace?.id,
-    placeholderData: (previousData) => previousData,
+    placeholderData: (previousData: typeof data) => previousData,
   });
 
   const {

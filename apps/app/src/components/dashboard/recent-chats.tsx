@@ -9,7 +9,10 @@ interface RecentChatsProps {
   orgSlug: string;
 }
 
-export function RecentChats({ workspaceSlug, orgSlug }: RecentChatsProps) {
+export function RecentChats({
+  workspaceSlug: _workspaceSlug,
+  orgSlug: _orgSlug,
+}: RecentChatsProps) {
   const trpc = useTRPC();
   const { workspace } = useWorkspace();
 

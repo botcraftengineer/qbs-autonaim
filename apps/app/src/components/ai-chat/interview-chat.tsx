@@ -256,7 +256,7 @@ function MessagesList({
 }
 
 // Конвертация legacy сообщений в новый формат
-function convertLegacyMessage(message: {
+function _convertLegacyMessage(message: {
   id: string;
   sender: "BOT" | "CANDIDATE" | "ADMIN";
   content: string;

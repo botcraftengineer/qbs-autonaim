@@ -14,10 +14,7 @@ import {
 import { RefreshDialog } from "./refresh-dialog";
 import { ScreeningDialog } from "./screening-dialog";
 import { useRefreshSubscription } from "./use-refresh-subscription";
-import type {
-  ResponseStatusFilter,
-  ResponseStatusFilterUI,
-} from "./use-response-table";
+import type { ResponseStatusFilterUI } from "./use-response-table";
 import {
   type ScreeningProgress,
   useScreeningSubscription,
