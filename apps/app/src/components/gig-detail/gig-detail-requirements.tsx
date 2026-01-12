@@ -38,8 +38,7 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
   if (!hasRequirements) return null;
 
   return (
-    <>
-      <Card>
+    <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -75,9 +74,9 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
                 <div className="pl-6">
                   <ul className="space-y-2">
                     {requirements.deliverables.map(
-                      (item: string, idx: number) => (
+                      (item: string, _idx: number) => (
                         <li
-                          key={`${item}-${idx}`}
+                          key={item}
                           className="flex items-start gap-3"
                         >
                           <div className="w-1.5 h-1.5 rounded-full bg-primary mt-2 shrink-0" />
@@ -104,9 +103,9 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
                 <div className="pl-6">
                   <div className="flex flex-wrap gap-2">
                     {requirements.required_skills.map(
-                      (skill: string, idx: number) => (
+                      (skill: string, _idx: number) => (
                         <Badge
-                          key={`${skill}-${idx}`}
+                          key={skill}
                           variant="default"
                           className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
                         >
@@ -131,9 +130,9 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
                 <div className="pl-6">
                   <div className="flex flex-wrap gap-2">
                     {requirements.nice_to_have_skills.map(
-                      (skill: string, idx: number) => (
+                      (skill: string, _idx: number) => (
                         <Badge
-                          key={`${skill}-${idx}`}
+                          key={skill}
                           variant="outline"
                           className="border-dashed"
                         >
@@ -156,9 +155,9 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
               </div>
               <div className="pl-6">
                 <div className="flex flex-wrap gap-2">
-                  {requirements.tech_stack.map((tech: string, idx: number) => (
+                  {requirements.tech_stack.map((tech: string, _idx: number) => (
                     <Badge
-                      key={`${tech}-${idx}`}
+                      key={tech}
                       variant="secondary"
                       className="bg-muted text-muted-foreground hover:bg-muted/80"
                     >
@@ -171,6 +170,5 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
           )}
         </CardContent>
       </Card>
-    </>
   );
 }

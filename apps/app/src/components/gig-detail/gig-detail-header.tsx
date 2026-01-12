@@ -133,15 +133,13 @@ export function GigDetailHeader({
       </CardHeader>
 
       {gig.description && (
-        <>
-          <CardContent className="pt-4 sm:pt-5">
-            <div className="prose prose-sm max-w-none">
-              <p className="whitespace-pre-wrap hyphens-auto text-sm sm:text-base leading-relaxed text-muted-foreground">
-                {gig.description}
-              </p>
-            </div>
-          </CardContent>
-        </>
+        <CardContent className="pt-4 sm:pt-5">
+          <div className="prose prose-sm max-w-none">
+            <p className="whitespace-pre-wrap hyphens-auto text-sm sm:text-base leading-relaxed text-muted-foreground">
+              {gig.description}
+            </p>
+          </div>
+        </CardContent>
       )}
     </Card>
   );
