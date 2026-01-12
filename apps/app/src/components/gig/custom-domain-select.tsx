@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useTRPC } from "~/trpc/react";
 
 interface CustomDomainSelectProps {
@@ -43,7 +43,10 @@ export function CustomDomainSelect({
 
   const isLoading = isLoadingCustom || isLoadingPresets;
   const verifiedCustomDomains = customDomains.filter((d) => d.isVerified);
-  const allDomains = [...presetDomains, ...verifiedCustomDomains];
+  const allDomains = useMemo(
+    () => [...presetDomains, ...verifiedCustomDomains],
+    [presetDomains, verifiedCustomDomains],
+  );
 
   // Автоматически выбираем первый доступный домен, если значение не установлено
   useEffect(() => {

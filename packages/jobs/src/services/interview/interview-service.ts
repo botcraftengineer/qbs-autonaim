@@ -6,7 +6,6 @@ import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
 import type {
   InterviewAnalysis,
-  InterviewScoring,
 } from "../../schemas/interview";
 import { createLogger, INTERVIEW } from "../base";
 

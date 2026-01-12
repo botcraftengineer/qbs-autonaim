@@ -386,7 +386,7 @@ export function InterviewChat({
     experimental_throttle: 50,
     generateId: generateUUID,
     transport,
-    onError: (err) => {
+    onError: (_err) => {
       // Error handling
     },
   });

@@ -37,8 +37,8 @@ export const clearHistory = protectedProcedure
       : await ctx.db.query.chatSession.findFirst({
           where: (chatSession, { and, eq }) =>
             and(
-              eq(chatSession.entityType, entityType!),
-              eq(chatSession.entityId, entityId!),
+              eq(chatSession.entityType, entityType as NonNullable<typeof entityType>),
+              eq(chatSession.entityId, entityId as NonNullable<typeof entityId>),
               eq(chatSession.userId, userId),
             ),
         });

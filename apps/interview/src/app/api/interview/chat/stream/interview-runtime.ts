@@ -70,7 +70,7 @@ export function createWebInterviewRuntime(params: {
     {
       description: string;
       inputSchema: z.ZodTypeAny;
-      execute: (args: any) => Promise<any>;
+      execute: (args: Record<string, unknown>) => Promise<unknown>;
     }
   >;
   systemPrompt: string;

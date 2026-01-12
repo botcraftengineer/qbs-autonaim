@@ -1,6 +1,4 @@
 import type { db as DbType } from "@qbs-autonaim/db/client";
-import { TRPCError } from "@trpc/server";
-
 /**
  * Результат валидации токена интервью
  */
