@@ -12,7 +12,7 @@ interface UseResponseMutationsProps {
 export const useResponseMutations = ({
   gigId,
   workspaceId,
-  responses,
+  responses: _responses,
 }: UseResponseMutationsProps) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();

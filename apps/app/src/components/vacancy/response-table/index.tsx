@@ -30,7 +30,8 @@ interface ResponseTableProps {
 const ITEMS_PER_PAGE = 25;
 
 type ResponsesListData = RouterOutputs["vacancy"]["responses"]["list"];
-type Response = ResponsesListData["responses"][0];
+
+type ResponseListItem = ResponsesListData["responses"][0];
 
 export function ResponseTable({
   vacancyId,
@@ -101,12 +102,12 @@ export function ResponseTable({
     debouncedSearch,
   ]);
 
-  const responses = (data as any)?.responses ?? [];
-  const total = (data as any)?.total ?? 0;
-  const totalPages = (data as any)?.totalPages ?? 0;
+  const responses = data?.responses ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = data?.totalPages ?? 0;
 
   const allSelected =
-    responses.length > 0 && responses.every((r: any) => selectedIds.has(r.id));
+    responses.length > 0 && responses.every((r: ResponseListItem) => selectedIds.has(r.id));
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -164,7 +165,7 @@ export function ResponseTable({
       return <EmptyState hasResponses={total > 0} colSpan={9} />;
     }
 
-    return responses.map((response: any) => (
+    return responses.map((response: ResponseListItem) => (
       <ResponseRow
         key={response.id}
         orgSlug={orgSlug ?? ""}

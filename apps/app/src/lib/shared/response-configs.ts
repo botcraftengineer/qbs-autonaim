@@ -1,4 +1,3 @@
-import type { LucideIcon } from "lucide-react";
 import { FileText, CheckCircle2, MessageSquare, TrendingUp, XCircle } from "lucide-react";
 
 export const RESPONSE_STATUS_CONFIG = {
