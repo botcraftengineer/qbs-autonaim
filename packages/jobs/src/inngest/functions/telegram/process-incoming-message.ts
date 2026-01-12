@@ -154,7 +154,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
       return { processed: true, identified: false };
     }
 
-    const interviewSessionId = sessionData.session!.id;
+    const interviewSessionId = sessionData.session?.id;
 
     // Обработка идентифицированных сообщений
     if (messageData.text) {
@@ -294,9 +294,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
           await triggerTextAnalysis({
             chatSessionId: interviewSessionId,
             text: groupedText,
-            responseId: sessionData.response!.id,
-            status: sessionData.session!.status,
-            metadata: sessionData.session!.metadata,
+            responseId: sessionData.response?.id,
+            status: sessionData.session?.status,
+            metadata: sessionData.session?.metadata,
           });
         });
 
@@ -320,9 +320,9 @@ export const processIncomingMessageFunction = inngest.createFunction(
         await triggerTextAnalysis({
           chatSessionId: interviewSessionId,
           text: textToProcess,
-          responseId: sessionData.response!.id,
-          status: sessionData.session!.status,
-          metadata: sessionData.session!.metadata,
+          responseId: sessionData.response?.id,
+          status: sessionData.session?.status,
+          metadata: sessionData.session?.metadata,
         });
       });
 
@@ -377,7 +377,7 @@ export const processIncomingMessageFunction = inngest.createFunction(
           messageIdStr: messageData.id.toString(),
           mediaType,
           workspaceId,
-          responseId: sessionData.response!.id,
+          responseId: sessionData.response?.id,
         });
       });
 

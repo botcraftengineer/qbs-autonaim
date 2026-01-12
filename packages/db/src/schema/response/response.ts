@@ -7,7 +7,6 @@ import {
   pgEnum,
   pgTable,
   text,
-  timestamp,
   unique,
   uuid,
   varchar,
@@ -17,13 +16,7 @@ import { z } from "zod";
 import { candidate } from "../candidate/candidate";
 import { file } from "../file";
 import {
-  hrSelectionStatusEnum,
-  hrSelectionStatusValues,
-  importSourceEnum,
   importSourceValues,
-  recommendationEnum,
-  recommendationValues,
-  responseStatusEnum,
   responseStatusValues,
 } from "../shared/response-enums";
 

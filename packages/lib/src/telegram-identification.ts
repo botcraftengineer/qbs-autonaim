@@ -151,7 +151,7 @@ export async function identifyByVacancy(
         ilike(response.telegramUsername, username),
         eq(response.entityId, vacancyId),
       ),
-      orderBy: (fields: any, { desc }: any) => [desc(fields.createdAt)],
+      orderBy: (fields, { desc }) => [desc(fields.createdAt)],
     });
 
     if (!responseData) {

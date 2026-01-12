@@ -195,7 +195,7 @@ export class DialogueHandler {
     const [newSession] = await this.db
       .insert(interviewSession)
       .values({
-        responseId: responseId!,
+        responseId: responseId,
         status: "active",
         lastChannel: "web",
         metadata: {

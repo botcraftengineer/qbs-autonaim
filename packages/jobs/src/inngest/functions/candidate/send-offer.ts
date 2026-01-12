@@ -1,4 +1,4 @@
-import { and, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {
   interviewMessage,

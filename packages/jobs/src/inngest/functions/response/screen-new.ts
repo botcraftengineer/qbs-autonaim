@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { response, responseScreening } from "@qbs-autonaim/db/schema";
 import { screenResponse, unwrap } from "../../../services/response";
