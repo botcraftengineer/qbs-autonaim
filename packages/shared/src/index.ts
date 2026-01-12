@@ -25,6 +25,7 @@ export {
   getInterviewSessionMetadata,
   getInterviewUrl,
   getInterviewUrlFromDb,
+  getInterviewUrlFromEntity,
   getQuestionCount,
   updateChatSessionMetadata,
   updateConversationMetadata,

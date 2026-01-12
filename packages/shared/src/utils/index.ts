@@ -20,4 +20,5 @@ export {
   getInterviewBaseUrl,
   getInterviewUrl,
   getInterviewUrlFromDb,
+  getInterviewUrlFromEntity,
 } from "./get-interview-url";

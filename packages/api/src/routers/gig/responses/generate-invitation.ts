@@ -1,11 +1,11 @@
-﻿import { and, eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import {
   gig,
   interviewLink,
   responseInvitation,
   response as responseTable,
 } from "@qbs-autonaim/db/schema";
-import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
+import { getInterviewUrlFromEntity } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -165,10 +165,11 @@ export const generateInvitation = protectedProcedure
       }
     }
 
-    const interviewUrl = await getInterviewUrlFromDb(
+    const interviewUrl = await getInterviewUrlFromEntity(
       ctx.db,
       link.token,
-      input.workspaceId,
+      "gig",
+      existingGig.id,
     );
 
     // Генерируем текст приглашения

@@ -9,6 +9,7 @@ import {
 import {
   createInterviewScoring,
   getInterviewContext,
+  type InterviewScoringResult,
 } from "../../../services/interview";
 import { inngest } from "../../client";
 
@@ -100,17 +101,20 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       return ctx;
     });
 
-    const scoring = await step.run("create-scoring", async () => {
-      const result = await createInterviewScoring(context);
+    const scoring = await step.run(
+      "create-scoring",
+      async (): Promise<InterviewScoringResult> => {
+        const result = await createInterviewScoring(context);
 
-      console.log("✅ Скоринг создан", {
-        chatSessionId,
-        responseId,
-        score: result.score,
-      });
+        console.log("✅ Скоринг создан", {
+          chatSessionId,
+          responseId,
+          score: result.score,
+        });
 
-      return result;
-    });
+        return result;
+      },
+    );
 
     await step.run("save-interview-scoring", async () => {
       const { interviewScoring } = await import("@qbs-autonaim/db/schema");

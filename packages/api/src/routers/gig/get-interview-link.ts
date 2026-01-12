@@ -1,6 +1,6 @@
-﻿import { and, eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import { gig, interviewLink } from "@qbs-autonaim/db/schema";
-import { getInterviewUrlFromDb } from "@qbs-autonaim/shared";
+import { getInterviewUrlFromEntity } from "@qbs-autonaim/shared";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -52,10 +52,11 @@ export const getInterviewLink = protectedProcedure
       return null;
     }
 
-    const url = await getInterviewUrlFromDb(
+    const url = await getInterviewUrlFromEntity(
       ctx.db,
       link.token,
-      input.workspaceId,
+      "gig",
+      input.gigId,
     );
 
     return {

@@ -18,6 +18,7 @@ export {
   analyzeAndGenerateNextQuestion,
   createInterviewScoring,
   getInterviewContext,
+  type InterviewScoringResult,
   saveQuestionAnswer,
 } from "./interview-service";
 export {

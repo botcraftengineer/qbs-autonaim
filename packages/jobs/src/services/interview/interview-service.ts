@@ -421,11 +421,20 @@ export async function saveQuestionAnswer(
 }
 
 /**
+ * Результат скоринга интервью
+ */
+export interface InterviewScoringResult {
+  score: number; // 1-5 scale
+  detailedScore: number; // 0-100 scale
+  analysis: string;
+}
+
+/**
  * Creates final scoring based on entire interview
  */
 export async function createInterviewScoring(
   context: InterviewContext,
-): Promise<InterviewScoring> {
+): Promise<InterviewScoringResult> {
   const { candidateName, vacancyTitle, vacancyDescription } = context;
 
   // Создаем агента
@@ -453,6 +462,7 @@ export async function createInterviewScoring(
 
     return {
       score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
+      detailedScore: INTERVIEW.DEFAULT_FALLBACK_SCORE * 20, // Convert 1-5 to 0-100 scale
       analysis: "Failed to analyze interview automatically",
     };
   }
