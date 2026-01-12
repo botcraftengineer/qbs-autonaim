@@ -6,13 +6,13 @@ import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 const aiResponseSchema = z.object({
-  title: z.string(),
-  description: z.string(),
-  deliverables: z.string(),
-  requiredSkills: z.string(),
-  budgetRange: z.string(),
-  timeline: z.string(),
-  quickReplies: z.array(z.string()),
+  title: z.string().optional(),
+  description: z.string().optional(),
+  deliverables: z.string().optional(),
+  requiredSkills: z.string().optional(),
+  budgetRange: z.string().optional(),
+  timeline: z.string().optional(),
+  quickReplies: z.array(z.string()).optional(),
 });
 
 const chatGenerateInputSchema = z.object({

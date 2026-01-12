@@ -366,6 +366,8 @@ export default function CreateGigPage({ params }: PageProps) {
         const estimatedDuration: string =
           rawDuration != null ? String(rawDuration) : "";
 
+        let assistantMessage = "Готово! Что-то ещё уточнить?";
+
         setDraft((prev) => {
           // Парсим budgetRange из AI или оставляем текущие значения
           const budgetFromAI = parseBudgetRange(validDoc.budgetRange);
@@ -381,32 +383,38 @@ export default function CreateGigPage({ params }: PageProps) {
             budgetMax: budgetFromAI.budgetMax ?? prev.budgetMax,
           };
 
+          // Формируем сообщение ассистента о том, что изменилось
+          const changes: string[] = [];
+          if (validDoc.title && validDoc.title !== prev.title)
+            changes.push("название");
+          if (validDoc.description && validDoc.description !== prev.description)
+            changes.push("описание");
+          if (
+            validDoc.deliverables &&
+            validDoc.deliverables !== prev.deliverables
+          )
+            changes.push("результаты");
+          if (
+            validDoc.requiredSkills &&
+            validDoc.requiredSkills !== prev.requiredSkills
+          )
+            changes.push("навыки");
+          if (
+            validDoc.budgetRange &&
+            (budgetFromAI.budgetMin !== prev.budgetMin ||
+              budgetFromAI.budgetMax !== prev.budgetMax)
+          )
+            changes.push("бюджет");
+          if (validDoc.timeline && estimatedDuration !== prev.estimatedDuration)
+            changes.push("сроки");
+
+          if (changes.length > 0) {
+            assistantMessage = `Обновил ${changes.join(", ")}. Что-то ещё?`;
+          }
+
           return updatedDraft;
         });
 
-        // Формируем сообщение ассистента о том, что изменилось
-        const changes: string[] = [];
-        if (validDoc.title && validDoc.title !== draft.title)
-          changes.push("название");
-        if (validDoc.description && validDoc.description !== draft.description)
-          changes.push("описание");
-        if (
-          validDoc.deliverables &&
-          validDoc.deliverables !== draft.deliverables
-        )
-          changes.push("результаты");
-        if (
-          validDoc.requiredSkills &&
-          validDoc.requiredSkills !== draft.requiredSkills
-        )
-          changes.push("навыки");
-        if (validDoc.budgetRange) changes.push("бюджет");
-        if (validDoc.timeline) changes.push("сроки");
-
-        const assistantMessage =
-          changes.length > 0
-            ? `Обновил ${changes.join(", ")}. Что-то ещё?`
-            : "Готово! Что-то ещё уточнить?";
         setPendingAssistantMessage(assistantMessage);
       } else {
         console.error(
