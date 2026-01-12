@@ -1,6 +1,7 @@
 "use client";
 
 import type { RouterOutputs } from "@qbs-autonaim/api";
+import type { Candidate } from "@qbs-autonaim/db/schema";
 import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Separator } from "@qbs-autonaim/ui";
 import { Calendar, CheckCircle2, ExternalLink, Loader2, MessageSquare, Star, User, XCircle } from "lucide-react";
 import { STATUS_CONFIG, HR_STATUS_CONFIG, IMPORT_SOURCE_LABELS, formatDate } from "./constants";
@@ -9,7 +10,7 @@ type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
 
 interface ResponseHeaderCardProps {
   response: GigResponseDetail & {
-    globalCandidate?: any;
+    globalCandidate?: Candidate | null;
     interviewScoring?: {
       score: number;
       detailedScore?: number;
@@ -147,7 +148,7 @@ export function ResponseHeaderCard({
               onClick={onAccept}
               disabled={isProcessing}
               size="sm"
-              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
             >
               <CheckCircle2 className="h-4 w-4" />
               Принять
@@ -160,7 +161,7 @@ export function ResponseHeaderCard({
               disabled={isProcessing}
               variant="outline"
               size="sm"
-              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
             >
               <MessageSquare className="h-4 w-4" />
               Написать
@@ -173,7 +174,7 @@ export function ResponseHeaderCard({
               disabled={isProcessing || isPolling}
               variant="outline"
               size="sm"
-              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
             >
               {isPolling ? (
                 <>
@@ -195,7 +196,7 @@ export function ResponseHeaderCard({
               disabled={isProcessing}
               variant="ghost"
               size="sm"
-              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
             >
               <XCircle className="h-4 w-4" />
               Отклонить

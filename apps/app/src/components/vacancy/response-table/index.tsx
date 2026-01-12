@@ -8,7 +8,7 @@ import {
   TableCell,
   TableRow,
 } from "@qbs-autonaim/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
@@ -67,7 +67,7 @@ export function ResponseTable({
       search: debouncedSearch,
     }),
     enabled: !!workspace?.id,
-    placeholderData: (previousData: any) => previousData,
+    placeholderData: keepPreviousData,
   });
 
   const {

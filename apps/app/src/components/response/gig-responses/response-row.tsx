@@ -59,7 +59,7 @@ export function ResponseRow({
             size="sm"
             variant="ghost"
             onClick={() => onMessage(response.id)}
-            className="h-8 w-8 p-0 touch-action-manipulation"
+            className="h-8 w-8 p-0 touch-manipulation"
             title="Отправить сообщение"
             aria-label={`Отправить сообщение кандидату ${response.candidateName || "без имени"}`}
           >
@@ -69,7 +69,7 @@ export function ResponseRow({
             size="sm"
             variant="ghost"
             onClick={() => onAccept(response.id)}
-            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 touch-action-manipulation"
+            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 touch-manipulation"
             title="Принять"
             aria-label={`Принять кандидата ${response.candidateName || "без имени"}`}
           >
@@ -79,7 +79,7 @@ export function ResponseRow({
             size="sm"
             variant="ghost"
             onClick={() => onReject(response.id)}
-            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 touch-action-manipulation"
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 touch-manipulation"
             title="Отклонить"
             aria-label={`Отклонить кандидата ${response.candidateName || "без имени"}`}
           >

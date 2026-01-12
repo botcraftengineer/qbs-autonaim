@@ -51,7 +51,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+                    className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
                     asChild
                   >
                     <a

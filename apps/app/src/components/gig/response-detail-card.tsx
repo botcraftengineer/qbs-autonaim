@@ -120,32 +120,32 @@ export function ResponseDetailCard({
             >
               <TabsTrigger
                 value="proposal"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
               >
                 Предложение
               </TabsTrigger>
               <TabsTrigger
                 value="portfolio"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
               >
                 Портфолио
               </TabsTrigger>
               <TabsTrigger
                 value="experience"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
               >
                 Опыт
               </TabsTrigger>
               <TabsTrigger
                 value="contacts"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
               >
                 Контакты
               </TabsTrigger>
               {hasConversation && (
                 <TabsTrigger
                   value="dialog"
-                  className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation col-span-2 sm:col-span-1"
+                  className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation col-span-2 sm:col-span-1"
                 >
                   Диалог
                 </TabsTrigger>

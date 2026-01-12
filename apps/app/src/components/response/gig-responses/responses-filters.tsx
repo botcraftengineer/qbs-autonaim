@@ -1,6 +1,7 @@
 "use client";
 
 import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@qbs-autonaim/ui";
+import { RESPONSE_STATUS, RESPONSE_STATUS_LABELS } from "@qbs-autonaim/db/schema";
 import { Filter, Search } from "lucide-react";
 
 interface ResponsesFiltersProps {
@@ -32,18 +33,18 @@ export function ResponsesFilters({
       </div>
 
       <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-full sm:w-48 h-11 sm:h-10 touch-action-manipulation border-muted-foreground/20 focus:border-primary transition-colors">
+        <SelectTrigger className="w-full sm:w-48 h-11 sm:h-10 touch-manipulation border-muted-foreground/20 focus:border-primary transition-colors">
           <Filter className="h-4 w-4 mr-2 shrink-0 text-muted-foreground" />
           <SelectValue placeholder="Статус" />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Все статусы</SelectItem>
-          <SelectItem value="NEW">Новые</SelectItem>
-          <SelectItem value="EVALUATED">Оценены</SelectItem>
-          <SelectItem value="INTERVIEW">Интервью</SelectItem>
-          <SelectItem value="NEGOTIATION">Переговоры</SelectItem>
-          <SelectItem value="COMPLETED">Завершены</SelectItem>
-          <SelectItem value="SKIPPED">Пропущены</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.NEW}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.NEW]}</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.EVALUATED}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.EVALUATED]}</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.INTERVIEW}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.INTERVIEW]}</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.NEGOTIATION}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.NEGOTIATION]}</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.COMPLETED}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.COMPLETED]}</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.SKIPPED}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.SKIPPED]}</SelectItem>
         </SelectContent>
       </Select>
     </div>

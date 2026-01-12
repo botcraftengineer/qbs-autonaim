@@ -39,7 +39,7 @@ export function GigDetailActions({
       <CardContent className="space-y-3">
         <div className="space-y-2">
           <Button
-            className="w-full min-h-[44px] touch-action-manipulation bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            className="w-full min-h-[44px] touch-manipulation bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
             onClick={onOpenAIChat}
           >
             <Bot className="h-4 w-4 mr-2" aria-hidden="true" />
@@ -50,7 +50,7 @@ export function GigDetailActions({
           <Button
             asChild
             variant="default"
-            className="w-full min-h-[44px] touch-action-manipulation hover:shadow-lg transition-all duration-200 group"
+            className="w-full min-h-[44px] touch-manipulation hover:shadow-lg transition-all duration-200 group"
           >
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
@@ -89,7 +89,7 @@ export function GigDetailActions({
           <Button
             variant="outline"
             asChild
-            className="w-full min-h-[44px] touch-action-manipulation"
+            className="w-full min-h-[44px] touch-manipulation"
           >
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
@@ -101,7 +101,7 @@ export function GigDetailActions({
 
           <Button
             variant="outline"
-            className="w-full min-h-[44px] touch-action-manipulation"
+            className="w-full min-h-[44px] touch-manipulation"
             onClick={onShare}
           >
             <Share2 className="h-4 w-4 mr-2" aria-hidden="true" />

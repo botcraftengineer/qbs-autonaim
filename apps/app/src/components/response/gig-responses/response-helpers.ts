@@ -1,44 +1,21 @@
+import {
+  RESPONSE_STATUS_CONFIG,
+  HR_STATUS_CONFIG,
+  formatDate,
+  type StatusKey,
+  type HRStatusKey,
+} from "~/lib/shared/response-configs";
+
 export const getStatusLabel = (status: string) => {
-  const labels: Record<string, string> = {
-    NEW: "Новый",
-    EVALUATED: "Оценен",
-    INTERVIEW: "Интервью",
-    NEGOTIATION: "Переговоры",
-    COMPLETED: "Завершен",
-    SKIPPED: "Пропущен",
-  };
-  return labels[status] || status;
+  return RESPONSE_STATUS_CONFIG[status as StatusKey]?.label ?? status;
 };
 
 export const getStatusVariant = (status: string) => {
-  const variants: Record<
-    string,
-    "default" | "secondary" | "destructive" | "outline"
-  > = {
-    NEW: "default",
-    EVALUATED: "secondary",
-    INTERVIEW: "outline",
-    NEGOTIATION: "outline",
-    COMPLETED: "secondary",
-    SKIPPED: "destructive",
-  };
-  return variants[status] || "default";
+  return RESPONSE_STATUS_CONFIG[status as StatusKey]?.variant ?? "default";
 };
 
 export const getHrStatusLabel = (status: string | null) => {
-  if (!status) return null;
-  const labels: Record<string, string> = {
-    RECOMMENDED: "Рекомендован",
-    NOT_RECOMMENDED: "Не рекомендован",
-    PENDING: "На рассмотрении",
-  };
-  return labels[status] || status;
+  return status ? HR_STATUS_CONFIG[status as HRStatusKey]?.label ?? status : null;
 };
 
-export const formatDate = (date: Date | string) => {
-  return new Date(date).toLocaleDateString("ru-RU", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
+export { formatDate };

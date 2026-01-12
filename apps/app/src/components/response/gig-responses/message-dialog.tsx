@@ -60,14 +60,14 @@ export function MessageDialog({
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isProcessing}
-            className="w-full sm:w-auto min-h-11 sm:min-h-9 touch-action-manipulation"
+            className="w-full sm:w-auto min-h-11 sm:min-h-9 touch-manipulation"
           >
             Отмена
           </Button>
           <Button
             onClick={onSend}
             disabled={isProcessing || !messageText.trim()}
-            className="w-full sm:w-auto min-h-11 sm:min-h-9 touch-action-manipulation"
+            className="w-full sm:w-auto min-h-11 sm:min-h-9 touch-manipulation"
           >
             {isProcessing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
             Отправить

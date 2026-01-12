@@ -160,7 +160,7 @@ export function GigDetailClient({
       <nav className="mb-4 sm:mb-6" aria-label="Навигация">
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground focus-visible:text-foreground transition-colors touch-action-manipulation min-h-11 sm:min-h-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground focus-visible:text-foreground transition-colors touch-manipulation min-h-11 sm:min-h-6 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-sm"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Назад к заданиям
@@ -192,7 +192,7 @@ export function GigDetailClient({
                 <Button
                   variant="outline"
                   asChild
-                  className="w-full sm:w-auto min-h-11 touch-action-manipulation"
+                  className="w-full sm:w-auto min-h-11 touch-manipulation"
                 >
                   <a href={gig.url} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />

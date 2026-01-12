@@ -383,7 +383,7 @@ export function RankedCandidateCard({
               <Button
                 size="sm"
                 variant="default"
-                className="gap-1.5 min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+                className="gap-1.5 min-h-[44px] sm:min-h-[36px] touch-manipulation"
                 onClick={(e) => handleAction(e, () => onAccept(candidate.id))}
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -395,7 +395,7 @@ export function RankedCandidateCard({
               <Button
                 size="sm"
                 variant="outline"
-                className="gap-1.5 min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+                className="gap-1.5 min-h-[44px] sm:min-h-[36px] touch-manipulation"
                 onClick={(e) => handleAction(e, () => onMessage(candidate.id))}
               >
                 <MessageSquare className="h-3.5 w-3.5" />
@@ -407,7 +407,7 @@ export function RankedCandidateCard({
               <Button
                 size="sm"
                 variant="ghost"
-                className="gap-1.5 ml-auto min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
+                className="gap-1.5 ml-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
                 onClick={(e) => handleAction(e, () => onReject(candidate.id))}
               >
                 <XCircle className="h-3.5 w-3.5" />
