@@ -8,7 +8,7 @@ interface InterviewScoringCardProps {
   interviewScoring: {
     score: number;
     detailedScore?: number;
-    analysis: string | null;
+    analysis: string | null | undefined;
   };
 }
 

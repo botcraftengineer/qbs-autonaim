@@ -116,7 +116,6 @@ export function WorkspaceForm({
       data: {
         ...data,
         logo: data.logo ?? undefined,
-        customDomainId: data.customDomainId ?? undefined,
       },
     });
   }

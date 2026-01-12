@@ -91,15 +91,10 @@ export const listRecent = protectedProcedure
           interviewScoring: scoring ? {
             score: scoring.rating ?? Math.round(scoring.score / 20),
             detailedScore: scoring.score,
-            analysis: scoring.analysis,
-          } : null
-            ? {
-                ...scoring,
-                analysis: scoring.analysis
-                  ? sanitizeHtml(scoring.analysis)
-                  : null,
-              }
-            : null,
+            analysis: scoring.analysis
+              ? sanitizeHtml(scoring.analysis)
+              : null,
+          } : null,
         };
       }),
     );

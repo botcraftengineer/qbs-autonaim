@@ -9,9 +9,10 @@ type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
 
 interface ResponseHeaderCardProps {
   response: GigResponseDetail & {
+    globalCandidate?: any;
     interviewScoring?: {
       score: number;
-      detailedScore: number;
+      detailedScore?: number;
       analysis: string | null;
     } | null;
     conversation?: {

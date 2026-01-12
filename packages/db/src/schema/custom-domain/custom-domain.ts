@@ -28,7 +28,7 @@ export const domainTypeEnum = pgEnum("domain_type", [
  */
 export const presetInterviewDomains = [
   {
-    id: "00000000-0000-0000-0000-000000000001",
+    id: "019bb26a-bc59-799d-beb4-3dd5c1e34253",
     domain: "hrbot.pro",
     label: "hrbot.pro",
   },

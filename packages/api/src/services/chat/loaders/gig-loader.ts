@@ -122,6 +122,7 @@ export class GigContextLoader implements ContextLoader {
     const interviews: Array<{
       responseId: string | null;
       score: number;
+      rating: number | null;
       analysis: string | null;
     }> = [];
 
@@ -132,6 +133,7 @@ export class GigContextLoader implements ContextLoader {
           columns: {
             responseId: true,
             score: true,
+            rating: true,
             analysis: true,
           },
         });
@@ -173,7 +175,6 @@ export class GigContextLoader implements ContextLoader {
         screeningDetailedScore: screening?.detailedScore ?? null,
         interviewScore: interview?.rating ?? Math.round((interview?.score ?? 0) / 20),
         screeningAnalysis: screening?.analysis ?? null,
-        interviewScore: interview?.score ?? null,
         interviewDetailedScore: interview?.score ?? null,
         interviewAnalysis: interview?.analysis ?? null,
       };

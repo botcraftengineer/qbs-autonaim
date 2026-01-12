@@ -105,73 +105,13 @@ export default function ResponseDetailPage({
               </div>
 
               <div className="space-y-6 md:space-y-8">
-                <ResponseHeader response={response} />
-                <ScreeningResultsCard screening={response.screening} />
-                <InterviewScoringCard
-                  conversation={
-                    response.interviewSession
-                      ? {
-                          interviewScoring: (
-                            response.interviewSession as unknown as {
-                              scoring?: {
-                                score: number;
-                                detailedScore?: number | null;
-                                analysis?: string | null;
-                              } | null;
-                            }
-                          ).scoring
-                            ? {
-                                score: (
-                                  response.interviewSession as unknown as {
-                                    scoring: {
-                                      score: number;
-                                      detailedScore?: number | null;
-                                      analysis?: string | null;
-                                    };
-                                  }
-                                ).scoring.score,
-                                detailedScore:
-                                  (
-                                    response.interviewSession as unknown as {
-                                      scoring: {
-                                        score: number;
-                                        detailedScore?: number | null;
-                                        analysis?: string | null;
-                                      };
-                                    }
-                                  ).scoring.detailedScore ?? undefined,
-                                analysis:
-                                  (
-                                    response.interviewSession as unknown as {
-                                      scoring: {
-                                        score: number;
-                                        detailedScore?: number | null;
-                                        analysis?: string | null;
-                                      };
-                                    }
-                                  ).scoring.analysis ?? undefined,
-                              }
-                            : undefined,
-                          messages: response.interviewSession.messages?.map(
-                            (m) => ({
-                              id: m.id,
-                              sender: m.role as "CANDIDATE" | "BOT" | "ADMIN",
-                              contentType: (m as { contentType?: string })
-                                .contentType as "TEXT" | "VOICE",
-                              content: m.content ?? "",
-                              voiceTranscription:
-                                m.voiceTranscription ?? undefined,
-                              createdAt: m.createdAt,
-                            }),
-                          ),
-                        }
-                      : null
-                  }
-                  candidateName={response.candidateName}
-                  workspaceName={undefined}
-                />
+                <ResponseHeaderCard response={response} />
+                {response.screening && <ScreeningResultsCard screening={response.screening} />}
+                {response.interviewScoring && (
+                  <InterviewScoringCard interviewScoring={response.interviewScoring} />
+                )}
                 {response.experience && (
-                  <ExperienceTab experience={response.experience} />
+                  <ExperienceTab response={response} />
                 )}
               </div>
             </div>

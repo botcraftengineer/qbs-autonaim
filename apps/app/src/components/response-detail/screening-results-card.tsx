@@ -6,7 +6,7 @@ import { Award, Banknote, Clock, FileText } from "lucide-react";
 interface ScreeningData {
   score: number;
   detailedScore: number;
-  analysis: string | null;
+  analysis: string | null | undefined;
   priceAnalysis?: string | null;
   deliveryAnalysis?: string | null;
 }

@@ -257,6 +257,7 @@ export const list = protectedProcedure
             columns: {
               responseId: true,
               score: true,
+              rating: true,
               analysis: true,
             },
           })
