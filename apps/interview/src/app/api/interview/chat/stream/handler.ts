@@ -130,16 +130,17 @@ export async function POST(request: Request) {
     }
 
     if (responseRecord.entityType === "vacancy") {
-      vacancy = await db.query.vacancy.findFirst({
-        where: eq(vacancyTable.id, responseRecord.entityId),
-        with: {
-          workspace: {
-            with: {
-              botSettings: true,
+      vacancy =
+        (await db.query.vacancy.findFirst({
+          where: eq(vacancyTable.id, responseRecord.entityId),
+          with: {
+            workspace: {
+              with: {
+                botSettings: true,
+              },
             },
           },
-        },
-      });
+        })) ?? null;
 
       const bot = vacancy?.workspace?.botSettings;
       companySettings = bot
@@ -152,16 +153,17 @@ export async function POST(request: Request) {
     }
 
     if (responseRecord.entityType === "gig") {
-      gig = await db.query.gig.findFirst({
-        where: eq(gigTable.id, responseRecord.entityId),
-        with: {
-          workspace: {
-            with: {
-              botSettings: true,
+      gig =
+        (await db.query.gig.findFirst({
+          where: eq(gigTable.id, responseRecord.entityId),
+          with: {
+            workspace: {
+              with: {
+                botSettings: true,
+              },
             },
           },
-        },
-      });
+        })) ?? null;
 
       const bot = gig?.workspace?.botSettings;
       companySettings = bot
@@ -280,8 +282,8 @@ export async function POST(request: Request) {
     const { tools, systemPrompt } = createWebInterviewRuntime({
       model,
       sessionId,
-      gig,
-      vacancy,
+      gig: gig ?? null,
+      vacancy: vacancy ?? null,
       interviewContext,
       isFirstResponse,
     });

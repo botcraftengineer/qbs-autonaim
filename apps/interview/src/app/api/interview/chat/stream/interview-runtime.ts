@@ -1,4 +1,4 @@
-import { BASE_RULES } from "@qbs-autonaim/ai";
+import { BASE_RULES, extractJsonObject } from "@qbs-autonaim/ai";
 import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
@@ -45,92 +45,6 @@ type VacancyLike = {
   customInterviewQuestions?: string | null;
   requirements?: unknown;
 };
-
-function extractJsonObject(text: string): unknown | null {
-  try {
-    const fencedMatch = text.match(/```json\s*([\s\S]*?)\s*```/i);
-    if (fencedMatch?.[1]) {
-      try {
-        return JSON.parse(fencedMatch[1]);
-      } catch {}
-    }
-
-    const firstBrace = text.indexOf("{");
-    if (firstBrace === -1) {
-      return null;
-    }
-
-    let startIndex = firstBrace;
-    while (startIndex < text.length) {
-      let depth = 0;
-      let inString = false;
-      let escapeNext = false;
-      let endIndex = -1;
-
-      for (let i = startIndex; i < text.length; i++) {
-        const char = text[i];
-
-        if (escapeNext) {
-          escapeNext = false;
-          continue;
-        }
-
-        if (char === "\\") {
-          escapeNext = true;
-          continue;
-        }
-
-        if (char === '"' && !inString) {
-          inString = true;
-          continue;
-        }
-
-        if (char === '"' && inString) {
-          inString = false;
-          continue;
-        }
-
-        if (inString) {
-          continue;
-        }
-
-        if (char === "{") {
-          depth++;
-        } else if (char === "}") {
-          depth--;
-          if (depth === 0) {
-            endIndex = i;
-            break;
-          }
-        }
-      }
-
-      if (endIndex !== -1) {
-        const jsonStr = text.slice(startIndex, endIndex + 1);
-        try {
-          return JSON.parse(jsonStr);
-        } catch {
-          const nextBrace = text.indexOf("{", startIndex + 1);
-          if (nextBrace === -1) {
-            return null;
-          }
-          startIndex = nextBrace;
-          continue;
-        }
-      }
-
-      const nextBrace = text.indexOf("{", startIndex + 1);
-      if (nextBrace === -1) {
-        return null;
-      }
-      startIndex = nextBrace;
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
-}
 
 function parseQuestions(raw: string | null | undefined): string[] {
   if (!raw) return [];
@@ -196,7 +110,8 @@ export function createWebInterviewRuntime(params: {
           deadline: gig.deadline ?? null,
           customBotInstructions: gig.customBotInstructions ?? null,
           customScreeningPrompt: gig.customScreeningPrompt ?? null,
-          customOrganizationalQuestions: gig.customOrganizationalQuestions ?? null,
+          customOrganizationalQuestions:
+            gig.customOrganizationalQuestions ?? null,
           customInterviewQuestions: gig.customInterviewQuestions ?? null,
           requirements: gig.requirements ?? null,
         };
@@ -212,7 +127,8 @@ export function createWebInterviewRuntime(params: {
           region: vacancy.region ?? null,
           customBotInstructions: vacancy.customBotInstructions ?? null,
           customScreeningPrompt: vacancy.customScreeningPrompt ?? null,
-          customOrganizationalQuestions: vacancy.customOrganizationalQuestions ?? null,
+          customOrganizationalQuestions:
+            vacancy.customOrganizationalQuestions ?? null,
           customInterviewQuestions: vacancy.customInterviewQuestions ?? null,
           requirements: vacancy.requirements ?? null,
         };
@@ -236,7 +152,12 @@ export function createWebInterviewRuntime(params: {
           entityType,
           allowOrganizationalEmploymentQuestions: false,
           focusAreas: ["опыт", "навыки", "понимание задачи", "сроки", "оплата"],
-          forbiddenTopics: ["зарплата", "график работы", "оформление", "отпуск"],
+          forbiddenTopics: [
+            "зарплата",
+            "график работы",
+            "оформление",
+            "отпуск",
+          ],
           allowedOrgTopics: [
             "оплата за задачу",
             "сроки",
@@ -465,7 +386,15 @@ technical_raw: ${JSON.stringify(techRaw)}
       content: z.string().min(1).max(2000),
       tag: z.string().max(50).optional(),
     }),
-    execute: async ({ type, content, tag }: { type: "note" | "signal"; content: string; tag?: string }) => {
+    execute: async ({
+      type,
+      content,
+      tag,
+    }: {
+      type: "note" | "signal";
+      content: string;
+      tag?: string;
+    }) => {
       const metadata = await getInterviewSessionMetadata(sessionId);
       const existing = metadata.interviewNotes ?? [];
 
