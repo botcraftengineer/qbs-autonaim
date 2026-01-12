@@ -17,7 +17,6 @@ import {
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
-import { createWebInterviewRuntime } from "./interview-runtime";
 import {
   createUIMessageStream,
   JsonToSseTransformStream,
@@ -27,6 +26,7 @@ import {
 import { Langfuse } from "langfuse";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { createWebInterviewRuntime } from "./interview-runtime";
 
 // Langfuse для трассировки
 const langfuse = new Langfuse({

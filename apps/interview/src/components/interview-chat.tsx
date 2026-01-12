@@ -3,9 +3,13 @@
 import { useChat } from "@ai-sdk/react";
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
-import { DefaultChatTransport } from "ai";
+import {
+  DefaultChatTransport,
+  type UIDataTypes,
+  type UIMessage,
+  type UITools,
+} from "ai";
 import { AlertCircle, ArrowDown, Loader2, Sparkles } from "lucide-react";
-import { motion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import Markdown from "react-markdown";
 import { toast } from "sonner";
@@ -36,9 +40,7 @@ function InterviewGreeting() {
       <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
         <Sparkles className="size-6 text-primary" />
       </div>
-      <div className="font-semibold text-xl md:text-2xl">
-        Добро пожаловать!
-      </div>
+      <div className="font-semibold text-xl md:text-2xl">Добро пожаловать!</div>
       <div className="mt-1 text-muted-foreground text-xl md:text-2xl">
         Готовы начать интервью?
       </div>
@@ -287,7 +289,12 @@ function convertHistoryMessage(message: {
 function convertUIMessage(msg: {
   id: string;
   role: string;
-  parts?: Array<{ type: string; text?: string }>;
+  parts?: Array<{
+    type: string;
+    text?: string;
+    url?: string;
+    mediaType?: string;
+  }>;
   content?: string;
 }): ChatMessage {
   const parts: MessagePart[] = [];
@@ -296,6 +303,12 @@ function convertUIMessage(msg: {
     for (const part of msg.parts) {
       if (part.type === "text" && part.text) {
         parts.push({ type: "text", text: part.text });
+      } else if (part.type === "file" && part.url) {
+        parts.push({
+          type: "file",
+          url: part.url,
+          mediaType: part.mediaType,
+        });
       }
     }
   } else if (msg.content) {
@@ -374,7 +387,7 @@ export function InterviewChat({
     generateId: generateUUID,
     transport,
     onError: (err) => {
-      console.error("[InterviewChat] Error:", err);
+      // Error handling
     },
   });
 
@@ -397,22 +410,50 @@ export function InterviewChat({
       isInitializedRef.current = false;
       currentConversationIdRef.current = interviewSessionId;
     }
-    if (
-      !isInitializedRef.current &&
-      historyMessages.length > 0 &&
-      rawMessages.length === 0
-    ) {
+
+    if (!isInitializedRef.current && historyMessages.length > 0) {
       // Конвертируем в формат AI SDK
-      const sdkMessages = historyMessages.map((msg) => ({
-        id: msg.id,
-        role: msg.role as "user" | "assistant",
-        content: msg.parts.find((p) => p.type === "text")?.text || "",
-        parts: msg.parts
-          .filter((p) => p.type === "text")
-          .map((p) => ({ type: "text" as const, text: p.text || "" })),
-      }));
-      setMessages(sdkMessages);
-      isInitializedRef.current = true;
+      const sdkMessages = historyMessages.map((msg) => {
+        // Собираем все части в правильном формате для AI SDK
+        const sdkParts = msg.parts
+          .map((part) => {
+            if (part.type === "text" && part.text) {
+              return { type: "text" as const, text: part.text };
+            } else if (part.type === "file" && part.url) {
+              return {
+                type: "file" as const,
+                url: part.url,
+                mediaType: part.mediaType || "audio/webm",
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+
+        return {
+          id: msg.id,
+          role: msg.role as "user" | "assistant",
+          content: msg.parts.find((p) => p.type === "text")?.text || "",
+          parts: sdkParts,
+        };
+      });
+
+      // Если есть существующие сообщения, сначала сбрасываем их
+      if (rawMessages.length > 0) {
+        setMessages([]);
+        // Небольшая задержка для корректного сброса
+        setTimeout(() => {
+          setMessages(
+            sdkMessages as UIMessage<unknown, UIDataTypes, UITools>[],
+          );
+          isInitializedRef.current = true;
+        }, 0);
+      } else {
+        setMessages(
+          sdkMessages as unknown as UIMessage<unknown, UIDataTypes, UITools>[],
+        );
+        isInitializedRef.current = true;
+      }
     }
   }, [interviewSessionId, historyMessages, rawMessages.length, setMessages]);
 
@@ -526,7 +567,6 @@ export function InterviewChat({
             error instanceof Error
               ? error.message
               : "Не удалось отправить голосовое сообщение";
-          console.error("Failed to send voice message:", error);
 
           toast.error(errorMessage);
         }
