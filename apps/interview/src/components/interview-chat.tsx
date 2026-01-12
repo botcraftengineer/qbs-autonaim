@@ -593,8 +593,11 @@ export function InterviewChat({
       <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
         {/* Background elements */}
         <div
-          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[64px_64px]"
+        <div
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)]"
+          style={{ backgroundSize: '64px 64px' }}
           aria-hidden="true"
+        />
         />
         {/* Gradient orbs */}
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 animate-pulse">
