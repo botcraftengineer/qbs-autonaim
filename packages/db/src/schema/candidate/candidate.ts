@@ -15,9 +15,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { file } from "../file";
 import { organization } from "../organization/organization";
-import {
-  platformSourceEnum,
-} from "../shared/response-enums";
+import { platformSourceEnum } from "../shared/response-enums";
 import type { StoredProfileData } from "../types";
 
 /**

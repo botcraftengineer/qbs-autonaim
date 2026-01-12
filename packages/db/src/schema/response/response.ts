@@ -16,11 +16,6 @@ import { z } from "zod";
 import { candidate } from "../candidate/candidate";
 import { file } from "../file";
 import {
-  importSourceValues,
-  responseStatusValues,
-} from "../shared/response-enums";
-
-import {
   candidateContactColumns,
   candidateExperienceColumns,
   candidateFileColumns,
@@ -31,6 +26,12 @@ import {
   responseStatusColumns,
   responseTimestampColumns,
 } from "../shared/response-columns";
+import {
+  hrSelectionStatusValues,
+  importSourceValues,
+  recommendationValues,
+  responseStatusValues,
+} from "../shared/response-enums";
 
 /**
  * Тип сущности для откликов

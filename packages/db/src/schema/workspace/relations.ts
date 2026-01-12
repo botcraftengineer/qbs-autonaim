@@ -1,10 +1,10 @@
 import { relations } from "drizzle-orm";
 import { user } from "../auth/user";
-import { botSettings } from "./bot-settings";
 import { customDomain } from "../custom-domain/custom-domain";
 import { integration } from "../integration/integration";
 import { organization } from "../organization/organization";
 import { vacancy } from "../vacancy/vacancy";
+import { botSettings } from "./bot-settings";
 import { workspace } from "./workspace";
 import { workspaceInvite } from "./workspace-invite";
 import { workspaceMember } from "./workspace-member";
