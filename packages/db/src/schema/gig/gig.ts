@@ -176,7 +176,7 @@ export const UpdateGigSettingsSchema = z.object({
   customInterviewQuestions: z.string().max(5000).nullish(),
   customOrganizationalQuestions: z.string().max(5000).nullish(),
   customDomainId: z
-    .union([z.string().uuid(), z.literal(""), z.null(), z.undefined()])
+    .union([z.uuid(), z.literal(""), z.null(), z.undefined()])
     .transform((val) => (val === "" || val === undefined ? null : val))
     .nullable(),
 });

@@ -1,7 +1,17 @@
 "use client";
 
-import { Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@qbs-autonaim/ui";
-import { RESPONSE_STATUS, RESPONSE_STATUS_LABELS } from "@qbs-autonaim/db/schema";
+import {
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@qbs-autonaim/ui";
+import {
+  RESPONSE_STATUS,
+  RESPONSE_STATUS_LABELS,
+} from "@qbs-autonaim/db/schema";
 import { Filter, Search } from "lucide-react";
 
 interface ResponsesFiltersProps {
@@ -39,12 +49,24 @@ export function ResponsesFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="all">Все статусы</SelectItem>
-          <SelectItem value={RESPONSE_STATUS.NEW}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.NEW]}</SelectItem>
-          <SelectItem value={RESPONSE_STATUS.EVALUATED}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.EVALUATED]}</SelectItem>
-          <SelectItem value={RESPONSE_STATUS.INTERVIEW}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.INTERVIEW]}</SelectItem>
-          <SelectItem value={RESPONSE_STATUS.NEGOTIATION}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.NEGOTIATION]}</SelectItem>
-          <SelectItem value={RESPONSE_STATUS.COMPLETED}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.COMPLETED]}</SelectItem>
-          <SelectItem value={RESPONSE_STATUS.SKIPPED}>{RESPONSE_STATUS_LABELS[RESPONSE_STATUS.SKIPPED]}</SelectItem>
+          <SelectItem value={RESPONSE_STATUS.NEW}>
+            {RESPONSE_STATUS_LABELS[RESPONSE_STATUS.NEW]}
+          </SelectItem>
+          <SelectItem value={RESPONSE_STATUS.EVALUATED}>
+            {RESPONSE_STATUS_LABELS[RESPONSE_STATUS.EVALUATED]}
+          </SelectItem>
+          <SelectItem value={RESPONSE_STATUS.INTERVIEW}>
+            {RESPONSE_STATUS_LABELS[RESPONSE_STATUS.INTERVIEW]}
+          </SelectItem>
+          <SelectItem value={RESPONSE_STATUS.NEGOTIATION}>
+            {RESPONSE_STATUS_LABELS[RESPONSE_STATUS.NEGOTIATION]}
+          </SelectItem>
+          <SelectItem value={RESPONSE_STATUS.COMPLETED}>
+            {RESPONSE_STATUS_LABELS[RESPONSE_STATUS.COMPLETED]}
+          </SelectItem>
+          <SelectItem value={RESPONSE_STATUS.SKIPPED}>
+            {RESPONSE_STATUS_LABELS[RESPONSE_STATUS.SKIPPED]}
+          </SelectItem>
         </SelectContent>
       </Select>
     </div>

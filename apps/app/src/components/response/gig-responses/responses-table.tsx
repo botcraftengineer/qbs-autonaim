@@ -1,6 +1,12 @@
 "use client";
 
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@qbs-autonaim/ui";
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@qbs-autonaim/ui";
 import type { Response } from "./use-response-filters";
 import { ResponseRow } from "./response-row";
 

@@ -1,7 +1,5 @@
 import { desc, eq } from "@qbs-autonaim/db";
-import {
-  response as responseTable,
-} from "@qbs-autonaim/db/schema";
+import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";

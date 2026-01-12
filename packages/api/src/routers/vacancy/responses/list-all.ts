@@ -101,7 +101,9 @@ export const listAll = protectedProcedure
           : null,
         interviewScoring: interviewScoring
           ? {
-              score: interviewScoring.rating ?? Math.round(interviewScoring.score / 20),
+              score:
+                interviewScoring.rating ??
+                Math.round(interviewScoring.score / 20),
               detailedScore: interviewScoring.score,
               analysis: interviewScoring.analysis
                 ? sanitizeHtml(interviewScoring.analysis)

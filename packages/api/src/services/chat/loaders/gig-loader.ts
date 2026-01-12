@@ -173,7 +173,9 @@ export class GigContextLoader implements ContextLoader {
         recommendation: resp.recommendation,
         screeningScore: screening?.score ?? null,
         screeningDetailedScore: screening?.detailedScore ?? null,
-        interviewScore: interview ? (interview.rating ?? Math.round((interview.score ?? 0) / 20)) : null,
+        interviewScore: interview
+          ? (interview.rating ?? Math.round((interview.score ?? 0) / 20))
+          : null,
         screeningAnalysis: screening?.analysis ?? null,
         interviewDetailedScore: interview?.score ?? null,
         interviewAnalysis: interview?.analysis ?? null,

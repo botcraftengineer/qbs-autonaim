@@ -76,11 +76,15 @@ export const get = protectedProcedure
 
     return {
       ...response,
-      interviewScoring: response.interviewScoring ? {
-        score: response.interviewScoring.rating ?? Math.round(response.interviewScoring.score / 20),
-        detailedScore: response.interviewScoring.score,
-        analysis: response.interviewScoring.analysis,
-      } : null,
+      interviewScoring: response.interviewScoring
+        ? {
+            score:
+              response.interviewScoring.rating ??
+              Math.round(response.interviewScoring.score / 20),
+            detailedScore: response.interviewScoring.score,
+            analysis: response.interviewScoring.analysis,
+          }
+        : null,
       interviewSession: sessionData,
     };
   });

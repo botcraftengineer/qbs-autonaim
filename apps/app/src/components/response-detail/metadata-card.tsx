@@ -26,15 +26,11 @@ export function MetadataCard({ response }: MetadataCardProps) {
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">Создан</span>
-            <span className="text-right">
-              {formatDate(response.createdAt)}
-            </span>
+            <span className="text-right">{formatDate(response.createdAt)}</span>
           </div>
           <div className="flex items-center justify-between gap-2">
             <span className="text-muted-foreground">Обновлен</span>
-            <span className="text-right">
-              {formatDate(response.updatedAt)}
-            </span>
+            <span className="text-right">{formatDate(response.updatedAt)}</span>
           </div>
           {response.welcomeSentAt && (
             <div className="flex items-center justify-between gap-2">

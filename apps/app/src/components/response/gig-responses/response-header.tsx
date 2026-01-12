@@ -1,13 +1,22 @@
 "use client";
 
-import { Badge, Card, CardDescription, CardHeader, CardTitle } from "@qbs-autonaim/ui";
+import {
+  Badge,
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@qbs-autonaim/ui";
 
 interface ResponseHeaderProps {
   gigTitle: string;
   totalResponses: number;
 }
 
-export function ResponseHeader({ gigTitle, totalResponses }: ResponseHeaderProps) {
+export function ResponseHeader({
+  gigTitle,
+  totalResponses,
+}: ResponseHeaderProps) {
   return (
     <Card className="border shadow-sm">
       <CardHeader>

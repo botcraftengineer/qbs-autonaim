@@ -1,8 +1,5 @@
 import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
-import {
-  response as responseTable,
-  vacancy,
-} from "@qbs-autonaim/db/schema";
+import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -114,7 +111,9 @@ export const list = protectedProcedure
         skills: [],
         matchScore: screening?.detailedScore || 0,
         resumeScore: screening?.detailedScore,
-        interviewScore: interviewScoring?.rating ?? Math.round((interviewScoring?.score ?? 0) / 20),
+        interviewScore:
+          interviewScoring?.rating ??
+          Math.round((interviewScoring?.score ?? 0) / 20),
         scoreAnalysis: interviewScoring?.analysis ?? undefined,
         availability: "Не указано",
         salaryExpectation: "Не указано",

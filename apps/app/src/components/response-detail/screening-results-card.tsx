@@ -1,6 +1,14 @@
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, Progress, Separator } from "@qbs-autonaim/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Progress,
+  Separator,
+} from "@qbs-autonaim/ui";
 import { Award, Banknote, Clock, FileText } from "lucide-react";
 
 interface ScreeningData {
@@ -54,10 +62,7 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
                 {screening.detailedScore}/100
               </span>
             </div>
-            <Progress
-              value={screening.detailedScore ?? 0}
-              className="h-2"
-            />
+            <Progress value={screening.detailedScore ?? 0} className="h-2" />
           </div>
         </div>
 

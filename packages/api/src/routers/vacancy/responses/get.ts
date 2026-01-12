@@ -136,7 +136,9 @@ export const get = protectedProcedure
         : null,
       interviewScoring: directInterviewScoring
         ? {
-            score: directInterviewScoring.rating ?? Math.round(directInterviewScoring.score / 20),
+            score:
+              directInterviewScoring.rating ??
+              Math.round(directInterviewScoring.score / 20),
             detailedScore: directInterviewScoring.score,
             analysis: directInterviewScoring.analysis
               ? sanitizeHtml(directInterviewScoring.analysis)

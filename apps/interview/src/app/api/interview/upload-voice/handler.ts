@@ -77,7 +77,8 @@ export async function POST(request: Request) {
     }
 
     // Длительность в секундах (как в схеме interviewMessage.voiceDuration)
-    const voiceDuration = duration !== undefined ? Math.round(duration) : undefined;
+    const voiceDuration =
+      duration !== undefined ? Math.round(duration) : undefined;
 
     // Создаем сообщение в БД
     const [message] = await db

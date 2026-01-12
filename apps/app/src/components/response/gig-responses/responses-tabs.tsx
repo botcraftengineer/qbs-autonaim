@@ -42,9 +42,7 @@ export function ResponsesTabs({
           value="evaluated"
           className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all font-medium"
         >
-          <span className="hidden sm:inline">
-            Оценены ({stats.evaluated})
-          </span>
+          <span className="hidden sm:inline">Оценены ({stats.evaluated})</span>
           <span className="sm:hidden">Оценены</span>
         </TabsTrigger>
         <TabsTrigger

@@ -381,9 +381,12 @@ export class OrganizationRepository {
 
     // Фильтруем воркспейсы: оставляем только те, которые принадлежат указанной организации
     const accessibleWorkspaces = userWorkspaceMembers
-      .filter(member => member.workspace.organizationId === orgId)
-      .map(member => member.workspace)
-      .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      .filter((member) => member.workspace.organizationId === orgId)
+      .map((member) => member.workspace)
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
 
     return accessibleWorkspaces;
   }

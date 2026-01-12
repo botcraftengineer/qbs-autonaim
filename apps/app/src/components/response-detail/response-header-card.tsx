@@ -2,9 +2,31 @@
 
 import type { RouterOutputs } from "@qbs-autonaim/api";
 import type { Candidate } from "@qbs-autonaim/db/schema";
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Separator } from "@qbs-autonaim/ui";
-import { Calendar, CheckCircle2, ExternalLink, Loader2, MessageSquare, Star, User, XCircle } from "lucide-react";
-import { STATUS_CONFIG, HR_STATUS_CONFIG, IMPORT_SOURCE_LABELS, formatDate } from "./constants";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Separator,
+} from "@qbs-autonaim/ui";
+import {
+  Calendar,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  MessageSquare,
+  Star,
+  User,
+  XCircle,
+} from "lucide-react";
+import {
+  STATUS_CONFIG,
+  HR_STATUS_CONFIG,
+  IMPORT_SOURCE_LABELS,
+  formatDate,
+} from "./constants";
 
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
 
@@ -125,9 +147,7 @@ export function ResponseHeaderCard({
 
               {response.hrSelectionStatus && (
                 <Badge
-                  variant={
-                    HR_STATUS_CONFIG[response.hrSelectionStatus].variant
-                  }
+                  variant={HR_STATUS_CONFIG[response.hrSelectionStatus].variant}
                   className="text-xs sm:text-sm"
                 >
                   {HR_STATUS_CONFIG[response.hrSelectionStatus].label}

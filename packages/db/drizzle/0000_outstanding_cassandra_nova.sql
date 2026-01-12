@@ -167,12 +167,13 @@ CREATE TABLE "chat_sessions" (
 --> statement-breakpoint
 CREATE TABLE "custom_domains" (
 	"id" uuid PRIMARY KEY DEFAULT uuid_generate_v7() NOT NULL,
-	"workspace_id" text NOT NULL,
+	"workspace_id" text,
 	"domain" varchar(255) NOT NULL,
 	"type" "domain_type" DEFAULT 'interview' NOT NULL,
 	"cname_target" varchar(255) NOT NULL,
 	"is_verified" boolean DEFAULT false NOT NULL,
 	"is_primary" boolean DEFAULT false NOT NULL,
+	"is_preset" boolean DEFAULT false NOT NULL,
 	"verification_error" text,
 	"last_verification_attempt" timestamp with time zone,
 	"ssl_status" "ssl_status" DEFAULT 'pending' NOT NULL,
@@ -633,7 +634,7 @@ CREATE TABLE "workspaces" (
 	"description" text,
 	"website" text,
 	"logo" text,
-	"interview_domain" text,
+	"custom_domain_id" uuid,
 	"onboarding_completed" boolean DEFAULT false,
 	"onboarding_completed_at" timestamp with time zone,
 	"dismissed_getting_started" boolean DEFAULT false,
@@ -756,6 +757,7 @@ CREATE INDEX "chat_session_metadata_idx" ON "chat_sessions" USING gin ("metadata
 CREATE INDEX "custom_domain_workspace_idx" ON "custom_domains" USING btree ("workspace_id");--> statement-breakpoint
 CREATE INDEX "custom_domain_domain_idx" ON "custom_domains" USING btree ("domain");--> statement-breakpoint
 CREATE INDEX "custom_domain_type_idx" ON "custom_domains" USING btree ("type");--> statement-breakpoint
+CREATE INDEX "custom_domain_preset_idx" ON "custom_domains" USING btree ("is_preset","type") WHERE "custom_domains"."is_preset" = true;--> statement-breakpoint
 CREATE INDEX "custom_domain_primary_idx" ON "custom_domains" USING btree ("workspace_id","type","is_primary") WHERE "custom_domains"."is_primary" = true;--> statement-breakpoint
 CREATE INDEX "custom_domain_unique_domain_type" ON "custom_domains" USING btree ("domain","type");--> statement-breakpoint
 CREATE INDEX "file_key_idx" ON "files" USING btree ("key");--> statement-breakpoint

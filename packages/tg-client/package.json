@@ -23,7 +23,7 @@
     "dev": "tsdown --watch",
     "start": "bun run src/api/index.ts",
     "start:dev": "bun run --env-file ../../.env --watch src/api/index.ts",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@mtcute/bun": "0.27.6",

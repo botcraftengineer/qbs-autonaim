@@ -15,7 +15,9 @@ export const getStatusVariant = (status: string) => {
 };
 
 export const getHrStatusLabel = (status: string | null) => {
-  return status ? HR_STATUS_CONFIG[status as HRStatusKey]?.label ?? status : null;
+  return status
+    ? (HR_STATUS_CONFIG[status as HRStatusKey]?.label ?? status)
+    : null;
 };
 
 export { formatDate };

@@ -226,9 +226,7 @@ export function RankedCandidateCard({
                     {candidate.proposedPrice && (
                       <p className="text-xs font-medium mt-2">
                         Предложенная цена:{" "}
-                        {formatCurrency(
-                          candidate.proposedPrice,
-                        )}
+                        {formatCurrency(candidate.proposedPrice)}
                       </p>
                     )}
                   </div>
