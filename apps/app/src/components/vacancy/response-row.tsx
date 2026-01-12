@@ -102,10 +102,10 @@ export function ResponseRow({
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {response.conversation && (
+              {response.interviewSession && (
                 <ChatIndicator
-                  messageCount={response.conversation.messageCount}
-                  conversationId={response.conversation.id}
+                  messageCount={response.interviewSession.messageCount}
+                  conversationId={response.interviewSession.id}
                   orgSlug={orgSlug}
                   workspaceSlug={workspaceSlug}
                 />

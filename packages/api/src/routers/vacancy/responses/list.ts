@@ -225,6 +225,7 @@ export const list = protectedProcedure
         contacts: true,
         experience: true,
         profileUrl: true,
+        resumeUrl: true,
         telegramUsername: true,
         phone: true,
         respondedAt: true,

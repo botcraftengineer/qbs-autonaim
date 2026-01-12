@@ -14,6 +14,7 @@ import {
   interviewMessage,
   interviewSession,
   prequalificationSession,
+  response,
   vacancy,
 } from "@qbs-autonaim/db/schema";
 import { and, asc, eq } from "drizzle-orm";
@@ -190,12 +191,36 @@ export class DialogueHandler {
   async createInterviewSession(
     prequalSessionId: string,
     workspaceId: string,
-    responseId?: string,
+    candidateName?: string,
   ): Promise<string> {
+    // For prequalification, we need to create a minimal response record first
+    // since interviewSession requires a responseId
+    const [newResponse] = await this.db
+      .insert(response)
+      .values({
+        entityType: "vacancy", // Default to vacancy for prequalification
+        entityId: "00000000-0000-0000-0000-000000000000", // Placeholder UUID
+        candidateId: `preq_${prequalSessionId}`,
+        candidateName: candidateName || "Кандидат",
+        status: "NEW",
+        experience: "",
+        contacts: null,
+        phone: null,
+      })
+      .returning({ id: response.id });
+
+    if (!newResponse) {
+      throw new PrequalificationError(
+        "INTERVIEW_SESSION_CREATION_FAILED",
+        "Не удалось создать запись отклика",
+        { prequalSessionId },
+      );
+    }
+
     const [newSession] = await this.db
       .insert(interviewSession)
       .values({
-        responseId: responseId,
+        responseId: newResponse.id,
         status: "active",
         lastChannel: "web",
         metadata: {

@@ -6,6 +6,7 @@ import {
   interviewScoring,
   interviewSession,
   response,
+  sql,
 } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import {

@@ -92,7 +92,7 @@ export function useGettingStarted() {
         workspace?.slug || "",
       ),
       completed: !!(
-        companySettings?.name && companySettings.name !== "Моя компания"
+        companySettings?.companyName && companySettings.companyName !== "Моя компания"
       ),
     },
     {
@@ -139,7 +139,7 @@ export function useGettingStarted() {
   const shouldShowWidget =
     !isLoading &&
     workspace?.id &&
-    !companySettings?.dismissedGettingStarted &&
+    !companySettings && // Remove dismissedGettingStarted check since it doesn't exist in schema
     !isLocallyDismissed() &&
     progressPercentage < 100;
 
