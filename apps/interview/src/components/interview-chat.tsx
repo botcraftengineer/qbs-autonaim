@@ -3,6 +3,7 @@
 import { useChat } from "@ai-sdk/react";
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
+import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
 import { AlertCircle, ArrowDown, Loader2, Sparkles } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
@@ -445,15 +446,11 @@ export function InterviewChat({
         setMessages([]);
         // Небольшая задержка для корректного сброса
         setTimeout(() => {
-          setMessages(
-            sdkMessages as UIMessage<unknown, UIDataTypes, UITools>[],
-          );
+          setMessages(sdkMessages as UIMessage[]);
           isInitializedRef.current = true;
         }, 0);
       } else {
-        setMessages(
-          sdkMessages as unknown as UIMessage<unknown, UIDataTypes, UITools>[],
-        );
+        setMessages(sdkMessages as UIMessage[]);
         isInitializedRef.current = true;
       }
     }
@@ -596,11 +593,9 @@ export function InterviewChat({
       <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
         {/* Background elements */}
         <div
-        <div
           className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)]"
-          style={{ backgroundSize: '64px 64px' }}
+          style={{ backgroundSize: "64px 64px" }}
           aria-hidden="true"
-        />
         />
         {/* Gradient orbs */}
         <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 animate-pulse">

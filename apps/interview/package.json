@@ -20,6 +20,8 @@
     "@qbs-autonaim/auth": "workspace:*",
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/db": "workspace:*",
+    "@qbs-autonaim/jobs": "workspace:*",
+    "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/shared": "workspace:*",
     "@qbs-autonaim/ui": "workspace:*",
     "@t3-oss/env-nextjs": "0.13.10",

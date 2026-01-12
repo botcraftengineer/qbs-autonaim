@@ -386,15 +386,12 @@ technical_raw: ${JSON.stringify(techRaw)}
       content: z.string().min(1).max(2000),
       tag: z.string().max(50).optional(),
     }),
-    execute: async ({
-      type,
-      content,
-      tag,
-    }: {
-      type: "note" | "signal";
-      content: string;
-      tag?: string;
-    }) => {
+    execute: async (args: Record<string, unknown>) => {
+      const { type, content, tag } = args as {
+        type: "note" | "signal";
+        content: string;
+        tag?: string;
+      };
       const metadata = await getInterviewSessionMetadata(sessionId);
       const existing = metadata.interviewNotes ?? [];
 

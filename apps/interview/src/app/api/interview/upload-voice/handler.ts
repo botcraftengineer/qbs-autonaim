@@ -3,11 +3,12 @@
  * Доступен без авторизации, но защищён проверкой sessionId
  * Только для WEB интервью (lastChannel = 'web')
  */
+
+import { hasInterviewAccess, validateInterviewToken } from "@qbs-autonaim/api";
 import { db, eq } from "@qbs-autonaim/db";
 import { file, interviewMessage } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { uploadFile } from "@qbs-autonaim/lib/s3";
-import { validateInterviewToken, hasInterviewAccess } from "@qbs-autonaim/api/utils/interview-token-validator";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -25,8 +26,14 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const { sessionId, interviewToken, audioFile, fileName, mimeType, duration } =
-      requestSchema.parse(json);
+    const {
+      sessionId,
+      interviewToken,
+      audioFile,
+      fileName,
+      mimeType,
+      duration,
+    } = requestSchema.parse(json);
 
     // Валидируем токен из input
     let validatedToken = null;
@@ -47,10 +54,7 @@ export async function POST(request: Request) {
     );
 
     if (!hasAccess) {
-      return NextResponse.json(
-        { error: "Access denied" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     // Проверяем что interview session существует и это WEB интервью
