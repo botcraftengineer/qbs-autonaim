@@ -6,8 +6,10 @@ import {
   text,
   timestamp,
   unique,
+  uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { customDomain } from "../custom-domain/custom-domain";
 import { organization } from "../organization/organization";
 
 export const workspace = pgTable(
@@ -41,7 +43,9 @@ export const workspace = pgTable(
     logo: text("logo"),
 
     // Кастомный домен для интервью
-    interviewDomain: text("interview_domain"),
+    customDomainId: uuid("custom_domain_id").references(() => customDomain.id, {
+      onDelete: "set null",
+    }),
 
     // Настройки онбординга
     onboardingCompleted: boolean("onboarding_completed").default(false),

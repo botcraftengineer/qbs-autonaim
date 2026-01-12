@@ -1,29 +1,37 @@
 import { env } from "@qbs-autonaim/config";
-import { and, eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import type * as schema from "@qbs-autonaim/db/schema";
-import { customDomain } from "@qbs-autonaim/db/schema";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 /**
- * Получает primary interview domain для workspace
+ * Получает primary interview domain для workspace по customDomainId
  */
-async function getPrimaryInterviewDomain(
+async function getWorkspaceInterviewDomain(
   db: NodePgDatabase<typeof schema>,
   workspaceId: string,
 ): Promise<string | null> {
-  const domain = await db.query.customDomain.findFirst({
-    where: and(
-      eq(customDomain.workspaceId, workspaceId),
-      eq(customDomain.type, "interview"),
-      eq(customDomain.isPrimary, true),
-      eq(customDomain.isVerified, true),
-    ),
+  const { workspace } = await import("@qbs-autonaim/db/schema");
+
+  const ws = await db.query.workspace.findFirst({
+    where: eq(workspace.id, workspaceId),
     columns: {
-      domain: true,
+      customDomainId: true,
+    },
+    with: {
+      customDomain: {
+        columns: {
+          domain: true,
+          isVerified: true,
+        },
+      },
     },
   });
 
-  return domain?.domain ?? null;
+  if (!ws?.customDomain?.isVerified) {
+    return null;
+  }
+
+  return ws.customDomain.domain;
 }
 
 /**
@@ -69,6 +77,6 @@ export async function getInterviewUrlFromDb(
   token: string,
   workspaceId: string,
 ): Promise<string> {
-  const domain = await getPrimaryInterviewDomain(db, workspaceId);
+  const domain = await getWorkspaceInterviewDomain(db, workspaceId);
   return getInterviewUrl(token, domain);
 }
