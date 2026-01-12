@@ -17,6 +17,7 @@ import {
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
+import { createWebInterviewRuntime } from "./interview-runtime";
 import {
   createUIMessageStream,
   JsonToSseTransformStream,
@@ -267,55 +268,22 @@ export async function POST(request: Request) {
       vacancyTitle: vacancy?.title || gig?.title || null,
       vacancyDescription: vacancy?.description || gig?.description || null,
       conversationHistory,
-      companySettings: companySettings
+      botSettings: companySettings
         ? {
             botName: companySettings.botName || undefined,
             botRole: companySettings.botRole || undefined,
-            name: companySettings.name,
+            companyName: companySettings.name,
           }
         : undefined,
     };
 
-    // Генерируем промпт в зависимости от типа интервью
-    let systemPrompt: string;
-
-    if (gig) {
-      systemPrompt = orchestrator.buildGigPrompt(
-        {
-          title: gig.title,
-          description: gig.description,
-          type: gig.type,
-          budgetMin: gig.budgetMin,
-          budgetMax: gig.budgetMax,
-
-          estimatedDuration: gig.estimatedDuration,
-          deadline: gig.deadline,
-          customBotInstructions: gig.customBotInstructions,
-          customOrganizationalQuestions: gig.customOrganizationalQuestions,
-          customInterviewQuestions: gig.customInterviewQuestions,
-        },
-        interviewContext,
-        isFirstResponse,
-      );
-    } else if (vacancy) {
-      systemPrompt = orchestrator.buildVacancyPrompt(
-        {
-          title: vacancy.title,
-          description: vacancy.description,
-          region: vacancy.region,
-          customBotInstructions: vacancy.customBotInstructions,
-          customOrganizationalQuestions: vacancy.customOrganizationalQuestions,
-          customInterviewQuestions: vacancy.customInterviewQuestions,
-        },
-        interviewContext,
-        isFirstResponse,
-      );
-    } else {
-      // Fallback
-      systemPrompt = `Ты — опытный рекрутер, который проводит интервью с кандидатом.
-Пиши коротко и естественно, как живой человек.
-Задавай релевантные вопросы и будь вежливым.`;
-    }
+    const { tools, systemPrompt } = createWebInterviewRuntime({
+      sessionId,
+      gig,
+      vacancy,
+      interviewContext,
+      isFirstResponse,
+    });
 
     // Обновляем trace с дополнительной информацией
     trace.update({
@@ -362,6 +330,7 @@ export async function POST(request: Request) {
           model,
           system: systemPrompt,
           messages: formattedMessages,
+          tools,
           experimental_transform: smoothStream({ chunking: "word" }),
           onFinish: async ({ text }) => {
             generation.end({ output: text });

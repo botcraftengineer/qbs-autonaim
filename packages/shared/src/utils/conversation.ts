@@ -17,6 +17,26 @@ const QuestionAnswerSchema = z.object({
   timestamp: z.string().optional(),
 });
 
+const InterviewNoteSchema = z.object({
+  type: z.enum(["note", "signal"]),
+  content: z.string(),
+  tag: z.string().optional(),
+  timestamp: z.string(),
+});
+
+const InterviewRubricSchema = z.object({
+  version: z.string().optional(),
+  entityType: z.enum(["gig", "vacancy", "unknown"]).optional(),
+  criteria: z.array(
+    z.object({
+      key: z.string(),
+      title: z.string(),
+      description: z.string(),
+      weight: z.number(),
+    }),
+  ),
+});
+
 const ConversationMetadataSchema = z.object({
   identifiedBy: z
     .enum(["pin_code", "vacancy_search", "username", "phone", "none"])
@@ -32,6 +52,8 @@ const ConversationMetadataSchema = z.object({
   interviewCompleted: z.boolean().optional(),
   completedAt: z.string().optional(),
   candidateName: z.string().optional(),
+  interviewNotes: z.array(InterviewNoteSchema).optional(),
+  interviewRubric: InterviewRubricSchema.optional(),
 });
 
 /**

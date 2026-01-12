@@ -83,7 +83,10 @@ export const getChatHistory = publicProcedure
             try {
               baseMessage.fileUrl = await getDownloadUrl(msg.file.key);
             } catch (error) {
-              console.error(`Failed to generate download URL for message ${msg.id}:`, error);
+              console.error(
+                `Failed to generate download URL for message ${msg.id}:`,
+                error,
+              );
               // Продолжаем без URL, файл будет недоступен
             }
           }
@@ -93,12 +96,29 @@ export const getChatHistory = publicProcedure
       );
 
       // Добавляем результаты батча (успешные и неуспешные)
-      for (const result of batchResults) {
+      for (let j = 0; j < batchResults.length; j++) {
+        const result = batchResults[j];
         if (result.status === "fulfilled") {
           messages.push(result.value);
         } else {
-          console.error("Failed to process message:", result.reason);
-          // Пропускаем проблемное сообщение
+          const originalMessage = batch[j];
+          console.error(
+            `Failed to process message ${originalMessage.id} (role: ${originalMessage.role}, type: ${originalMessage.type}):`,
+            result.reason,
+          );
+
+          // Сохраняем слот сообщения с placeholder данными для сохранения порядка
+          const placeholderMessage = {
+            id: originalMessage.id,
+            role: originalMessage.role,
+            content: originalMessage.content || "",
+            type: originalMessage.type,
+            createdAt: originalMessage.createdAt,
+            voiceTranscription: originalMessage.voiceTranscription ?? null,
+            fileUrl: null as string | null,
+          };
+
+          messages.push(placeholderMessage);
         }
       }
     }

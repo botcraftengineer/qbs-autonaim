@@ -70,12 +70,13 @@ export function useScrollToBottom() {
       }
     };
 
-    // Оптимизируем observers - наблюдаем только за добавлением/удалением дочерних элементов
+    // Наблюдаем за добавлением/удалением дочерних элементов и изменениями текста
     const mutationObserver = new MutationObserver((mutations) => {
       const hasContentChanges = mutations.some(
         (mutation) =>
           mutation.type === "childList" ||
-          (mutation.type === "characterData" && mutation.target.textContent?.trim())
+          (mutation.type === "characterData" &&
+            mutation.target.textContent?.trim()),
       );
 
       if (hasContentChanges) {
@@ -85,7 +86,8 @@ export function useScrollToBottom() {
 
     mutationObserver.observe(container, {
       childList: true,
-      subtree: false, // Не наблюдаем за subtree для производительности
+      characterData: true,
+      subtree: true, // Наблюдаем за subtree для обнаружения изменений текста в потомках
     });
 
     // ResizeObserver только для контейнера

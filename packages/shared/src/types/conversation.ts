@@ -54,4 +54,24 @@ export interface ConversationMetadata {
 
   /** Время завершения интервью (ISO string) */
   completedAt?: string;
+
+  /** Внутренние заметки/сигналы по интервью (не показывать кандидату) */
+  interviewNotes?: Array<{
+    type: "note" | "signal";
+    content: string;
+    tag?: string;
+    timestamp: string;
+  }>;
+
+  /** Снапшот рубрики оценки, использованной в интервью (для воспроизводимости) */
+  interviewRubric?: {
+    version?: string;
+    entityType?: "gig" | "vacancy" | "unknown";
+    criteria: Array<{
+      key: string;
+      title: string;
+      description: string;
+      weight: number;
+    }>;
+  };
 }
