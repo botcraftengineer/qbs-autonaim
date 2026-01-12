@@ -325,14 +325,51 @@ export default function GigResponseDetailPage({ params }: PageProps) {
             ? {
                 id: response.interviewSession.id,
                 status: response.interviewSession.status,
-                messages: response.interviewSession.messages.map((msg) => ({
-                  id: msg.id,
-                  sender: msg.role === "assistant" ? "BOT" : "USER",
-                  content: msg.content ?? "",
-                  contentType: msg.type === "voice" ? "VOICE" : "TEXT",
-                  voiceTranscription: msg.voiceTranscription,
-                  createdAt: msg.createdAt,
-                })),
+                messages: response.interviewSession.messages.map((msg) => {
+                  // Маппинг role -> sender
+                  let sender: string;
+                  switch (msg.role) {
+                    case "assistant":
+                      sender = "BOT";
+                      break;
+                    case "user":
+                      sender = "USER";
+                      break;
+                    case "system":
+                      sender = "SYSTEM";
+                      break;
+                    default:
+                      sender = "USER";
+                  }
+
+                  // Маппинг type -> contentType
+                  let contentType: string;
+                  switch (msg.type) {
+                    case "voice":
+                      contentType = "VOICE";
+                      break;
+                    case "text":
+                      contentType = "TEXT";
+                      break;
+                    case "file":
+                      contentType = "FILE";
+                      break;
+                    case "event":
+                      contentType = "EVENT";
+                      break;
+                    default:
+                      contentType = "TEXT";
+                  }
+
+                  return {
+                    id: msg.id,
+                    sender,
+                    content: msg.content ?? "",
+                    contentType,
+                    voiceTranscription: msg.voiceTranscription,
+                    createdAt: msg.createdAt,
+                  };
+                }),
               }
             : undefined,
         }}
