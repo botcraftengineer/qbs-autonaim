@@ -367,7 +367,10 @@ export function InterviewChat({
     () =>
       new DefaultChatTransport({
         api: apiEndpoint,
-        body: { sessionId: interviewSessionId, interviewToken: interviewToken || null },
+        body: {
+          sessionId: interviewSessionId,
+          interviewToken: interviewToken || null,
+        },
       }),
     [apiEndpoint, interviewSessionId, interviewToken],
   );
@@ -608,7 +611,7 @@ export function InterviewChat({
         <div className="relative z-10 flex flex-col items-center gap-8 text-center">
           {/* Animated logo */}
           <div className="relative">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600 shadow-2xl shadow-violet-500/30">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-2xl shadow-violet-500/30">
               <svg
                 className="h-10 w-10 text-white animate-pulse"
                 fill="none"
@@ -646,7 +649,7 @@ export function InterviewChat({
             <div className="w-full max-w-xs">
               <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-linear-to-r from-violet-500 to-purple-600 rounded-full animate-pulse"
+                  className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full animate-pulse"
                   style={{
                     width: "60%",
                     animation: "shimmer 2s infinite linear",
