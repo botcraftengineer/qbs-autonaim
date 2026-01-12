@@ -1,7 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@qbs-autonaim/tailwind-config/theme";
-@import "shadcn/tailwind.css";
 
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
 

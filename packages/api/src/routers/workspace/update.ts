@@ -49,7 +49,7 @@ export const update = protectedProcedure
       }
     }
 
-    const { logo, interviewDomain, ...restData } = input.data;
+    const { logo, customDomainId, ...restData } = input.data;
 
     const dataToUpdate: {
       name?: string;
@@ -57,7 +57,7 @@ export const update = protectedProcedure
       description?: string;
       website?: string;
       logo?: string;
-      interviewDomain?: string;
+      customDomainId?: string | null;
     } = { ...restData };
 
     if (logo?.startsWith("data:image/")) {
@@ -66,8 +66,8 @@ export const update = protectedProcedure
       dataToUpdate.logo = logo ?? undefined;
     }
 
-    if (interviewDomain !== undefined) {
-      dataToUpdate.interviewDomain = interviewDomain || undefined;
+    if (customDomainId !== undefined) {
+      dataToUpdate.customDomainId = customDomainId || null;
     }
 
     const updated = await ctx.workspaceRepository.update(

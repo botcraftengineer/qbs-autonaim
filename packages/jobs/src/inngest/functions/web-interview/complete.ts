@@ -109,7 +109,8 @@ export const webCompleteInterviewFunction = inngest.createFunction(
           .values({
             interviewSessionId: chatSessionId,
             responseId: responseId ?? undefined,
-            score: result.score,
+            score: result.detailedScore,
+            rating: result.score,
             analysis: result.analysis,
           })
           .onConflictDoUpdate({

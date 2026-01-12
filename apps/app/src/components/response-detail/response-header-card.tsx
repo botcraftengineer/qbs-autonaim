@@ -1,0 +1,209 @@
+"use client";
+
+import type { RouterOutputs } from "@qbs-autonaim/api";
+import type { Candidate } from "@qbs-autonaim/db/schema";
+import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Separator } from "@qbs-autonaim/ui";
+import { Calendar, CheckCircle2, ExternalLink, Loader2, MessageSquare, Star, User, XCircle } from "lucide-react";
+import { STATUS_CONFIG, HR_STATUS_CONFIG, IMPORT_SOURCE_LABELS, formatDate } from "./constants";
+
+type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+
+interface ResponseHeaderCardProps {
+  response: GigResponseDetail & {
+    globalCandidate?: Candidate | null;
+    interviewScoring?: {
+      score: number;
+      detailedScore?: number;
+      analysis: string | null;
+    } | null;
+    conversation?: {
+      id: string;
+      status: string;
+      messages: Array<{
+        id: string;
+        sender: string;
+        content: string;
+        contentType: string;
+        voiceTranscription: string | null;
+        createdAt: Date;
+      }>;
+    } | null;
+  };
+  onAccept?: () => void;
+  onReject?: () => void;
+  onMessage?: () => void;
+  onEvaluate?: () => void;
+  isProcessing?: boolean;
+  isPolling?: boolean;
+}
+
+export function ResponseHeaderCard({
+  response,
+  onAccept,
+  onReject,
+  onMessage,
+  onEvaluate,
+  isProcessing,
+  isPolling,
+}: ResponseHeaderCardProps) {
+  const statusConfig = STATUS_CONFIG[response.status];
+  const StatusIcon = statusConfig.icon;
+
+  const hasConversation =
+    !!response.conversation && response.conversation.messages.length > 0;
+
+  // Проверяем, есть ли данные для оценки (портфолио, опыт, профиль)
+  const hasEvaluationData =
+    !!response.experience ||
+    !!response.profileData ||
+    (!!response.portfolioLinks && response.portfolioLinks.length > 0) ||
+    !!response.portfolioFileId ||
+    !!response.coverLetter;
+
+  // Показываем кнопку оценки только если:
+  // 1. Есть диалог с сообщениями ИЛИ есть данные для оценки
+  // 2. Нет результатов оценки
+  // 3. Статус не EVALUATED (чтобы избежать повторной оценки)
+  const canEvaluate =
+    (hasConversation || hasEvaluationData) &&
+    !response.interviewScoring &&
+    response.status !== "EVALUATED";
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col sm:flex-row items-start gap-4">
+          <div className="flex items-start gap-3 sm:gap-4 flex-1 w-full min-w-0">
+            <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20 shrink-0">
+              <User className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            </div>
+
+            <div className="flex-1 min-w-0">
+              <CardTitle className="text-lg sm:text-2xl mb-1.5 sm:mb-2 break-words">
+                {response.candidateName || response.candidateId}
+              </CardTitle>
+
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
+                <div className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="whitespace-nowrap">
+                    {formatDate(response.respondedAt || response.createdAt)}
+                  </span>
+                </div>
+
+                {response.rating && (
+                  <div className="flex items-center gap-1.5">
+                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                    <span className="font-medium text-foreground">
+                      {response.rating}
+                    </span>
+                  </div>
+                )}
+
+                {response.importSource &&
+                  response.importSource !== "MANUAL" && (
+                    <div className="flex items-center gap-1.5">
+                      <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <span className="whitespace-nowrap">
+                        {IMPORT_SOURCE_LABELS[response.importSource]}
+                      </span>
+                    </div>
+                  )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-row sm:flex-col items-start sm:items-end gap-2 shrink-0 w-full sm:w-auto">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+              <Badge
+                variant={statusConfig.variant}
+                className="gap-1 sm:gap-1.5 text-xs sm:text-sm"
+              >
+                <StatusIcon className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                {statusConfig.label}
+              </Badge>
+
+              {response.hrSelectionStatus && (
+                <Badge
+                  variant={
+                    HR_STATUS_CONFIG[response.hrSelectionStatus].variant
+                  }
+                  className="text-xs sm:text-sm"
+                >
+                  {HR_STATUS_CONFIG[response.hrSelectionStatus].label}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+
+      <Separator className="mx-6" />
+
+      {/* Quick Actions */}
+      <CardContent>
+        <div className="flex flex-col sm:flex-row flex-wrap gap-2">
+          {onAccept && (
+            <Button
+              onClick={onAccept}
+              disabled={isProcessing}
+              size="sm"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
+            >
+              <CheckCircle2 className="h-4 w-4" />
+              Принять
+            </Button>
+          )}
+
+          {onMessage && (
+            <Button
+              onClick={onMessage}
+              disabled={isProcessing}
+              variant="outline"
+              size="sm"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
+            >
+              <MessageSquare className="h-4 w-4" />
+              Написать
+            </Button>
+          )}
+
+          {onEvaluate && canEvaluate && (
+            <Button
+              onClick={onEvaluate}
+              disabled={isProcessing || isPolling}
+              variant="outline"
+              size="sm"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
+            >
+              {isPolling ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Обработка…
+                </>
+              ) : (
+                <>
+                  <Star className="h-4 w-4" />
+                  Оценить кандидата
+                </>
+              )}
+            </Button>
+          )}
+
+          {onReject && (
+            <Button
+              onClick={onReject}
+              disabled={isProcessing}
+              variant="ghost"
+              size="sm"
+              className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
+            >
+              <XCircle className="h-4 w-4" />
+              Отклонить
+            </Button>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

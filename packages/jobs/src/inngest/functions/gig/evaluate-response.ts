@@ -118,7 +118,8 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       await db.insert(interviewScoring).values({
         interviewSessionId: chatSessionId,
         responseId: responseId,
-        score: scoring.score,
+        score: scoring.detailedScore,
+        rating: scoring.score,
         analysis: scoring.analysis,
       });
 

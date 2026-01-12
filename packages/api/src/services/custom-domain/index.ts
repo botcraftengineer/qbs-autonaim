@@ -423,6 +423,10 @@ export class CustomDomainService {
    * Преобразует запись БД в CustomDomainConfig
    */
   private mapDbToConfig(domain: CustomDomain): CustomDomainConfig {
+    if (!domain.workspaceId) {
+      throw new Error("Cannot map preset domain to config");
+    }
+
     return {
       id: domain.id,
       workspaceId: domain.workspaceId,

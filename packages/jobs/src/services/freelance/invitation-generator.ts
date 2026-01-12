@@ -139,14 +139,22 @@ export async function generateFreelanceInvitation(
     });
   }
 
-  // Получаем вакансию с workspace
+  // Получаем вакансию с workspace и customDomain
   const vacancyResult = await tryCatch(async () => {
     return await db.query.vacancy.findFirst({
       where: eq(vacancy.id, responseData.entityId),
       with: {
         workspace: {
           columns: {
-            interviewDomain: true,
+            id: true,
+            customDomainId: true,
+          },
+          with: {
+            customDomain: {
+              columns: {
+                domain: true,
+              },
+            },
           },
         },
       },
@@ -185,7 +193,7 @@ export async function generateFreelanceInvitation(
 
   const interviewUrl = getInterviewUrl(
     link.token,
-    vacancyData.workspace.interviewDomain,
+    vacancyData.workspace.customDomain?.domain ?? null,
   );
 
   // Генерируем текст приглашения

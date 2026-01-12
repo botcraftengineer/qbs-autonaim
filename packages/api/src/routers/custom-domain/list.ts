@@ -40,5 +40,23 @@ export const list = protectedProcedure
         desc(domain.isPrimary),
         desc(domain.createdAt),
       ],
+      columns: {
+        id: true,
+        workspaceId: true,
+        domain: true,
+        type: true,
+        cnameTarget: true,
+        isVerified: true,
+        isPrimary: true,
+        isPreset: true,
+        verificationError: true,
+        lastVerificationAttempt: true,
+        sslStatus: true,
+        sslCertificateId: true,
+        sslExpiresAt: true,
+        createdAt: true,
+        verifiedAt: true,
+        updatedAt: true,
+      },
     });
   });

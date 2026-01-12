@@ -88,14 +88,13 @@ export const listRecent = protectedProcedure
                   : null,
               }
             : null,
-          interviewScoring: scoring
-            ? {
-                ...scoring,
-                analysis: scoring.analysis
-                  ? sanitizeHtml(scoring.analysis)
-                  : null,
-              }
-            : null,
+          interviewScoring: scoring ? {
+            score: scoring.rating ?? Math.round(scoring.score / 20),
+            detailedScore: scoring.score,
+            analysis: scoring.analysis
+              ? sanitizeHtml(scoring.analysis)
+              : null,
+          } : null,
         };
       }),
     );

@@ -19,6 +19,10 @@ export const workspaceRelations = relations(workspace, ({ many, one }) => ({
   vacancies: many(vacancy),
   invites: many(workspaceInvite),
   customDomains: many(customDomain),
+  customDomain: one(customDomain, {
+    fields: [workspace.customDomainId],
+    references: [customDomain.id],
+  }),
   botSettings: one(botSettings, {
     fields: [workspace.id],
     references: [botSettings.workspaceId],
