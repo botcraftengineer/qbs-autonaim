@@ -2,23 +2,16 @@
 import { vacancy as vacancyTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { publicProcedure } from "../../trpc";
-import { requireInterviewAccess } from "../../utils/interview-token-validator";
+import { withInterviewAccess } from "../../utils/interview-access-middleware";
 
 const getInterviewContextInputSchema = z.object({
   interviewSessionId: z.string().uuid(),
 });
 
-export const getInterviewContext = publicProcedure
+export const getInterviewContext = withInterviewAccess
   .input(getInterviewContextInputSchema)
   .query(async ({ input, ctx }) => {
-    // Проверяем доступ к interview session
-    await requireInterviewAccess(
-      input.interviewSessionId,
-      ctx.interviewToken,
-      ctx.session?.user?.id ?? null,
-      ctx.db,
-    );
+    // Доступ уже проверен в middleware
 
     const session = await ctx.db.query.interviewSession.findFirst({
       where: (interviewSession, { eq }) =>

@@ -1,25 +1,15 @@
 import { getDownloadUrl } from "@qbs-autonaim/lib/s3";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { publicProcedure } from "../../trpc";
-import { requireInterviewAccess } from "../../utils/interview-token-validator";
+import { withInterviewAccess } from "../../utils/interview-access-middleware";
 
 const getChatHistoryInputSchema = z.object({
-  interviewSessionId: z.string().uuid(),
+  interviewSessionId: z.uuid(),
 });
 
-export const getChatHistory = publicProcedure
+export const getChatHistory = withInterviewAccess
   .input(getChatHistoryInputSchema)
   .query(async ({ input, ctx }) => {
-    // Проверяем доступ к interview session
-    await requireInterviewAccess(
-      input.interviewSessionId,
-      ctx.interviewToken,
-      ctx.session?.user?.id ?? null,
-      ctx.db,
-    );
-
-    // Проверяем существование interview session
     const session = await ctx.db.query.interviewSession.findFirst({
       where: (interviewSession, { eq }) =>
         eq(interviewSession.id, input.interviewSessionId),
@@ -98,10 +88,15 @@ export const getChatHistory = publicProcedure
       // Добавляем результаты батча (успешные и неуспешные)
       for (let j = 0; j < batchResults.length; j++) {
         const result = batchResults[j];
+        const originalMessage = batch[j];
+
+        if (!result || !originalMessage) {
+          continue; // Пропускаем если результат или оригинальное сообщение отсутствуют
+        }
+
         if (result.status === "fulfilled") {
           messages.push(result.value);
         } else {
-          const originalMessage = batch[j];
           console.error(
             `Failed to process message ${originalMessage.id} (role: ${originalMessage.role}, type: ${originalMessage.type}):`,
             result.reason,

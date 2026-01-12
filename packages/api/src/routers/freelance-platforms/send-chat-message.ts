@@ -5,9 +5,8 @@ import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import type { BufferedMessage } from "@qbs-autonaim/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
-import { requireInterviewAccess } from "../../utils/interview-token-validator";
+import { withInterviewAccess } from "../../utils/interview-access-middleware";
 
 const sendChatMessageInputSchema = z.object({
   sessionId: z.string().uuid(),
@@ -27,7 +26,7 @@ const sessionMetadataSchema = z
   })
   .default({ questionAnswers: [] });
 
-export const sendChatMessage = publicProcedure
+export const sendChatMessage = withInterviewAccess
   .input(sendChatMessageInputSchema)
   .mutation(async ({ input, ctx }) => {
     const errorHandler = createErrorHandler(
@@ -38,13 +37,7 @@ export const sendChatMessage = publicProcedure
     );
 
     try {
-      // Проверяем доступ к interviewSession
-      await requireInterviewAccess(
-        input.sessionId,
-        ctx.interviewToken,
-        ctx.session?.user?.id ?? null,
-        ctx.db,
-      );
+      // Доступ уже проверен в middleware
 
       // Проверяем существование interviewSession
       const session = await ctx.db.query.interviewSession.findFirst({

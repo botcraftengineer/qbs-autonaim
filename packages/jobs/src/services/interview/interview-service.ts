@@ -462,7 +462,7 @@ export async function createInterviewScoring(
 
     return {
       score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
-      detailedScore: INTERVIEW.DEFAULT_FALLBACK_SCORE * 20, // Convert 1-5 to 0-100 scale
+      detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
       analysis: "Failed to analyze interview automatically",
     };
   }

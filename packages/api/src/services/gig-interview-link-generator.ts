@@ -41,7 +41,7 @@ export class GigInterviewLinkGenerator {
     });
 
     if (!gigData) {
-      throw new Error(`Gig not found: ${gigId}`);
+      throw new Error(`Гиг не найден: ${gigId}`);
     }
 
     // Если у gig указан кастомный домен, используем его
@@ -91,7 +91,9 @@ export class GigInterviewLinkGenerator {
     const { presetInterviewDomains } = await import("@qbs-autonaim/db/schema");
     const defaultPresetDomain = presetInterviewDomains[0];
     if (!defaultPresetDomain) {
-      throw new Error("No preset domain available for gig interviews");
+      throw new Error(
+        "Нет доступного предустановленного домена для интервью гигов",
+      );
     }
 
     return `https://${defaultPresetDomain.domain}`;
@@ -158,7 +160,7 @@ export class GigInterviewLinkGenerator {
       .returning();
 
     if (!created) {
-      throw new Error("Failed to create gig interview link");
+      throw new Error("Не удалось создать ссылку на интервью для гига");
     }
 
     return await this.mapToGigInterviewLink(created);
