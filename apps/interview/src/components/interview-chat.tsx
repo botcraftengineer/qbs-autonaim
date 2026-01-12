@@ -33,38 +33,18 @@ interface ChatMessage {
 function InterviewGreeting() {
   return (
     <div className="mx-auto mt-8 flex size-full max-w-3xl flex-col justify-center px-4 md:mt-16 md:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20"
-      >
+      <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
         <Sparkles className="size-6 text-primary" />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="font-semibold text-xl md:text-2xl"
-      >
+      </div>
+      <div className="font-semibold text-xl md:text-2xl">
         Добро пожаловать!
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="mt-1 text-muted-foreground text-xl md:text-2xl"
-      >
+      </div>
+      <div className="mt-1 text-muted-foreground text-xl md:text-2xl">
         Готовы начать интервью?
-      </motion.div>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-4 text-muted-foreground text-sm"
-      >
+      </div>
+      <p className="mt-4 text-muted-foreground text-sm">
         Напишите сообщение, чтобы начать диалог с AI-ассистентом
-      </motion.p>
+      </p>
     </div>
   );
 }
@@ -156,13 +136,27 @@ const Message = memo(function Message({ message, isLoading }: MessageProps) {
                 );
               }
 
-              // Ответ AI — рендерим markdown
+              // Ответ AI — рендерим markdown с оптимизацией
               return (
                 <div
                   key={`${message.id}-text-${index}`}
                   className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                 >
-                  <Markdown>{part.text}</Markdown>
+                  <Markdown
+                    components={{
+                      // Оптимизация: отключаем ненужные компоненты
+                      p: ({ children }) => <p>{children}</p>,
+                      strong: ({ children }) => <strong>{children}</strong>,
+                      em: ({ children }) => <em>{children}</em>,
+                      code: ({ children }) => <code>{children}</code>,
+                      pre: ({ children }) => <pre>{children}</pre>,
+                      ul: ({ children }) => <ul>{children}</ul>,
+                      ol: ({ children }) => <ol>{children}</ol>,
+                      li: ({ children }) => <li>{children}</li>,
+                    }}
+                  >
+                    {part.text}
+                  </Markdown>
                 </div>
               );
             }
@@ -341,18 +335,30 @@ export function InterviewChat({
     }),
   );
 
-  // Загрузка контекста интервью (вакансия/задание)
-  const { data: interviewContext, isLoading: isLoadingContext } = useQuery(
-    trpc.freelancePlatforms.getInterviewContext.queryOptions({
+  // Ленивая загрузка контекста интервью (вакансия/задание)
+  const { data: interviewContext, isLoading: isLoadingContext } = useQuery({
+    ...trpc.freelancePlatforms.getInterviewContext.queryOptions({
       interviewSessionId,
     }),
-  );
+    // Включаем только после загрузки истории чата
+    enabled: !!chatHistory,
+  });
 
   // Конвертация истории в формат для отображения
   const historyMessages = useMemo(() => {
     if (!chatHistory?.messages) return [];
     return chatHistory.messages.map(convertHistoryMessage);
   }, [chatHistory?.messages]);
+
+  // Оптимизируем transport для useChat
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: apiEndpoint,
+        body: { sessionId: interviewSessionId },
+      }),
+    [apiEndpoint, interviewSessionId],
+  );
 
   // useChat из AI SDK с нативным стримингом
   const {
@@ -366,10 +372,7 @@ export function InterviewChat({
     id: interviewSessionId,
     experimental_throttle: 50,
     generateId: generateUUID,
-    transport: new DefaultChatTransport({
-      api: apiEndpoint,
-      body: { sessionId: interviewSessionId },
-    }),
+    transport,
     onError: (err) => {
       console.error("[InterviewChat] Error:", err);
     },
@@ -383,7 +386,7 @@ export function InterviewChat({
     return "idle";
   }, [rawStatus]);
 
-  // Конвертация сообщений в наш формат
+  // Конвертация сообщений в наш формат с оптимизацией
   const messages: ChatMessage[] = useMemo(() => {
     return rawMessages.map(convertUIMessage);
   }, [rawMessages]);
