@@ -222,16 +222,21 @@ async function handleVacancyInterview(
   }
 
   // Генерируем приветственное сообщение
-  const botName =
-    vacancy.workspace?.botSettings?.botName || "Ассистент по найму";
-  const companyName =
-    vacancy.workspace?.botSettings?.companyName || "нашей компании";
+  const botSettings = vacancy.workspace?.botSettings;
+  const hasFullSettings =
+    botSettings?.botName && botSettings?.botRole && botSettings?.companyName;
 
-  const welcomeMessage = `Здравствуйте, ${freelancerInfo.name}! 👋
+  const welcomeMessage = hasFullSettings
+    ? `Здравствуйте, ${freelancerInfo.name}! 👋
 
-Меня зовут ${botName}, я помогаю ${companyName} в подборе кандидатов на вакансию "${vacancy.title}".
+Меня зовут ${botSettings.botName}, я ${botSettings.botRole} компании "${botSettings.companyName}". Я помогаю в подборе кандидатов на вакансию "${vacancy.title}".
 
 Я проведу с вами короткое интервью, чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
+
+Готовы начать?`
+    : `Здравствуйте, ${freelancerInfo.name}! 👋
+
+Я проведу с вами короткое интервью по вакансии "${vacancy.title}", чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
 
 Готовы начать?`;
 
@@ -377,15 +382,21 @@ async function handleGigInterview(
   }
 
   // Генерируем приветственное сообщение
-  const botName =
-    gig.workspace?.botSettings?.botName || "Ассистент по найму";
-  const companyName = gig.workspace?.botSettings?.companyName || "нашей компании";
+  const botSettings = gig.workspace?.botSettings;
+  const hasFullSettings =
+    botSettings?.botName && botSettings?.botRole && botSettings?.companyName;
 
-  const welcomeMessage = `Здравствуйте! 👋
+  const welcomeMessage = hasFullSettings
+    ? `Здравствуйте! 👋
 
-Меня зовут ${botName}, я помогаю ${companyName} в подборе исполнителей на задание "${gig.title}".
+Меня зовут ${botSettings.botName}, я ${botSettings.botRole} компании "${botSettings.companyName}". Я помогаю в подборе исполнителей на задание "${gig.title}".
 
 Я проведу с вами короткое интервью, чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
+
+Готовы начать?`
+    : `Здравствуйте! 👋
+
+Я проведу с вами короткое интервью по заданию "${gig.title}", чтобы лучше понять ваш опыт и навыки. Это займёт около 10-15 минут.
 
 Готовы начать?`;
 
