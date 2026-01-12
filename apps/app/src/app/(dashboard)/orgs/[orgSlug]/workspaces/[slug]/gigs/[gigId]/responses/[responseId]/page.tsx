@@ -41,7 +41,7 @@ function ResponseDetailSkeleton() {
       <Skeleton className="h-4 w-32" />
 
       <Card>
-        <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+        <CardContent>
           <div className="flex items-start gap-3 sm:gap-4">
             <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full flex-shrink-0" />
             <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
@@ -55,7 +55,7 @@ function ResponseDetailSkeleton() {
 
       {[1, 2, 3].map((i) => (
         <Card key={i}>
-          <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+          <CardContent>
             <Skeleton className="h-24 sm:h-32 w-full" />
           </CardContent>
         </Card>
@@ -308,13 +308,19 @@ export default function GigResponseDetailPage({ params }: PageProps) {
     <div className="container mx-auto max-w-5xl py-4 px-4 sm:py-6 sm:px-6">
       {/* Breadcrumb */}
       <div className="mb-4 sm:mb-6">
-        <Link
-          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors touch-action-manipulation min-h-[44px] sm:min-h-[24px]"
+        <Button
+          asChild
+          variant="ghost"
+          size="sm"
+          className="gap-2 px-2 -ml-2 min-h-[44px] sm:min-h-[36px] touch-action-manipulation"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Назад к откликам
-        </Link>
+          <Link
+            href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Назад к откликам
+          </Link>
+        </Button>
       </div>
 
       {/* Response Detail */}
