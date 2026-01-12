@@ -51,26 +51,57 @@ export const getChatHistory = publicProcedure
     }
 
     // Форматируем сообщения для клиента с поддержкой голосовых
-    const messages = await Promise.all(
-      session.messages.map(async (msg) => {
-        const baseMessage = {
-          id: msg.id,
-          role: msg.role,
-          content: msg.content,
-          type: msg.type,
-          createdAt: msg.createdAt,
-          voiceTranscription: msg.voiceTranscription ?? null,
-          fileUrl: null as string | null,
-        };
+    // Оптимизируем генерацию signed URLs с лимитом конкурентности
+    const messages: Array<{
+      id: string;
+      role: "user" | "assistant" | "system";
+      content: string | null;
+      type: "text" | "voice" | "file" | "event";
+      createdAt: Date;
+      voiceTranscription: string | null;
+      fileUrl: string | null;
+    }> = [];
 
-        // Если это голосовое сообщение с файлом, генерируем URL
-        if (msg.type === "voice" && msg.file) {
-          baseMessage.fileUrl = await getDownloadUrl(msg.file.key);
+    // Обрабатываем сообщения с лимитом конкурентности для генерации URLs
+    const concurrencyLimit = 3;
+    for (let i = 0; i < session.messages.length; i += concurrencyLimit) {
+      const batch = session.messages.slice(i, i + concurrencyLimit);
+      const batchResults = await Promise.allSettled(
+        batch.map(async (msg) => {
+          const baseMessage = {
+            id: msg.id,
+            role: msg.role,
+            content: msg.content,
+            type: msg.type,
+            createdAt: msg.createdAt,
+            voiceTranscription: msg.voiceTranscription ?? null,
+            fileUrl: null as string | null,
+          };
+
+          // Если это голосовое сообщение с файлом, генерируем URL
+          if (msg.type === "voice" && msg.file) {
+            try {
+              baseMessage.fileUrl = await getDownloadUrl(msg.file.key);
+            } catch (error) {
+              console.error(`Failed to generate download URL for message ${msg.id}:`, error);
+              // Продолжаем без URL, файл будет недоступен
+            }
+          }
+
+          return baseMessage;
+        }),
+      );
+
+      // Добавляем результаты батча (успешные и неуспешные)
+      for (const result of batchResults) {
+        if (result.status === "fulfilled") {
+          messages.push(result.value);
+        } else {
+          console.error("Failed to process message:", result.reason);
+          // Пропускаем проблемное сообщение
         }
-
-        return baseMessage;
-      }),
-    );
+      }
+    }
 
     return {
       interviewSessionId: session.id,

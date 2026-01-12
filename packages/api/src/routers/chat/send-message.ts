@@ -73,22 +73,29 @@ function extractJSON(text: string): string | null {
 
 export const sendMessage = protectedProcedure
   .input(
-    z.object({
-      sessionId: z.string().uuid().optional(),
-      entityType: z.enum(chatEntityTypeEnum.enumValues).optional(),
-      entityId: z.string().uuid().optional(),
-      message: z.string().min(1).max(2000),
-    })
+    z
+      .object({
+        sessionId: z.string().uuid().optional(),
+        entityType: z.enum(chatEntityTypeEnum.enumValues).optional(),
+        entityId: z.string().uuid().optional(),
+        message: z.string().min(1).max(2000),
+      })
       .refine(
-        (v) => Boolean(v.sessionId) || (Boolean(v.entityType) && Boolean(v.entityId)),
+        (v) =>
+          Boolean(v.sessionId) ||
+          (Boolean(v.entityType) && Boolean(v.entityId)),
         {
           message: "sessionId или (entityType, entityId) обязательны",
         },
       ),
   )
   .mutation(async ({ input, ctx }) => {
-    const { sessionId, entityType: inputEntityType, entityId: inputEntityId, message } =
-      input;
+    const {
+      sessionId,
+      entityType: inputEntityType,
+      entityId: inputEntityId,
+      message,
+    } = input;
     const userId = ctx.session.user.id;
 
     const existingSession = sessionId
@@ -158,18 +165,8 @@ export const sendMessage = protectedProcedure
     }
 
     if (!session) {
-      session = await ctx.db.query.chatSession.findFirst({
-        where: (chatSession, { and, eq }) =>
-          and(
-            eq(chatSession.entityType, entityType),
-            eq(chatSession.entityId, entityId),
-            eq(chatSession.userId, userId),
-          ),
-      });
-    }
-
-    if (!session) {
-      const [newSession] = await ctx.db
+      // Use upsert to handle race conditions - either find existing or create new
+      const [upsertedSession] = await ctx.db
         .insert(chatSession)
         .values({
           entityType,
@@ -177,16 +174,27 @@ export const sendMessage = protectedProcedure
           userId,
           messageCount: 0,
         })
+        .onConflictDoUpdate({
+          target: [
+            chatSession.entityType,
+            chatSession.entityId,
+            chatSession.userId,
+          ],
+          set: {
+            // On conflict, just return the existing session (no updates needed)
+            updatedAt: new Date(),
+          },
+        })
         .returning();
 
-      if (!newSession) {
+      if (!upsertedSession) {
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Не удалось создать сессию чата",
         });
       }
 
-      session = newSession;
+      session = upsertedSession;
     }
 
     // Загрузка истории диалога

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  Button,
-  toast,
-} from "@qbs-autonaim/ui";
+import { Button, toast } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
 import Link from "next/link";
@@ -13,7 +10,7 @@ import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
-import { getMessageText, type AIChatMessage } from "~/types/ai-chat";
+import { type AIChatMessage, getMessageText } from "~/types/ai-chat";
 
 interface GigChatViewProps {
   gigId: string;
@@ -27,7 +24,9 @@ export function GigChatView({ gigId, sessionId }: GigChatViewProps) {
   const { workspace } = useWorkspace();
   const workspaceId = workspace?.id;
 
-  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(null);
+  const [lastFailedMessage, setLastFailedMessage] = useState<string | null>(
+    null,
+  );
   const historyInitializedRef = useRef(false);
 
   const { data: gig } = useQuery({
@@ -112,7 +111,7 @@ export function GigChatView({ gigId, sessionId }: GigChatViewProps) {
 
     const normalized: AIChatMessage[] = historyQuery.data.messages
       .filter(
-        (m): m is (typeof m & { role: "user" | "assistant" }) =>
+        (m): m is typeof m & { role: "user" | "assistant" } =>
           m.role === "user" || m.role === "assistant",
       )
       .map((m) => ({
@@ -129,7 +128,7 @@ export function GigChatView({ gigId, sessionId }: GigChatViewProps) {
   const uiMessages = useMemo(() => {
     return streamMessages
       .filter(
-        (m): m is (typeof m & { role: "user" | "assistant" }) =>
+        (m): m is typeof m & { role: "user" | "assistant" } =>
           m.role === "user" || m.role === "assistant",
       )
       .map((m) => ({
@@ -140,7 +139,8 @@ export function GigChatView({ gigId, sessionId }: GigChatViewProps) {
       }));
   }, [streamMessages]);
 
-  const isLoading = streamStatus === "submitted" || streamStatus === "streaming";
+  const isLoading =
+    streamStatus === "submitted" || streamStatus === "streaming";
 
   const handleSendMessage = async (message: string) => {
     try {
@@ -171,14 +171,18 @@ export function GigChatView({ gigId, sessionId }: GigChatViewProps) {
         <div className="shrink-0">
           <div className="border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
             <div className="flex items-center gap-3 px-4 py-3">
-              <Link
-                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/chat`}
-                className="md:hidden"
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="h-9 w-9 md:hidden"
               >
-                <Button variant="ghost" size="icon" className="h-9 w-9">
+                <Link
+                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/chat`}
+                >
                   <ArrowLeft className="h-5 w-5" />
-                </Button>
-              </Link>
+                </Link>
+              </Button>
 
               <Button
                 asChild
@@ -201,19 +205,22 @@ export function GigChatView({ gigId, sessionId }: GigChatViewProps) {
                 </Link>
               </div>
 
-              <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
+              <Button
+                asChild
+                variant="outline"
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
                 <Link href={gigHref}>
-                  <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
-                  К заданию
+                  <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />К
+                  заданию
                 </Link>
               </Button>
 
               {uiMessages.length > 0 && (
                 <button
                   type="button"
-                  onClick={() =>
-                    clearHistoryMutation.mutate({ sessionId })
-                  }
+                  onClick={() => clearHistoryMutation.mutate({ sessionId })}
                   disabled={isLoading || clearHistoryMutation.isPending}
                   className="text-muted-foreground hover:text-foreground text-xs transition-colors disabled:opacity-50"
                   aria-label="Очистить историю"

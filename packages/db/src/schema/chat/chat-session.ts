@@ -7,6 +7,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -88,6 +89,12 @@ export const chatSession = pgTable(
     metadataIdx: index("chat_session_metadata_idx").using(
       "gin",
       table.metadata,
+    ),
+    // UNIQUE constraint to prevent race condition duplicates
+    uniqueEntityUser: unique("chat_session_entity_user_unique").on(
+      table.entityType,
+      table.entityId,
+      table.userId,
     ),
   }),
 );
