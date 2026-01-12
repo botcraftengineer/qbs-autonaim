@@ -111,23 +111,54 @@ export default function ResponseDetailPage({
                   conversation={
                     response.interviewSession
                       ? {
-                          interviewScoring: response.interviewSession.scoring
+                          interviewScoring: (
+                            response.interviewSession as unknown as {
+                              scoring?: {
+                                score: number;
+                                detailedScore?: number | null;
+                                analysis?: string | null;
+                              } | null;
+                            }
+                          ).scoring
                             ? {
-                                score: response.interviewSession.scoring.score,
+                                score: (
+                                  response.interviewSession as unknown as {
+                                    scoring: {
+                                      score: number;
+                                      detailedScore?: number | null;
+                                      analysis?: string | null;
+                                    };
+                                  }
+                                ).scoring.score,
                                 detailedScore:
-                                  response.interviewSession.scoring
-                                    .detailedScore ?? undefined,
+                                  (
+                                    response.interviewSession as unknown as {
+                                      scoring: {
+                                        score: number;
+                                        detailedScore?: number | null;
+                                        analysis?: string | null;
+                                      };
+                                    }
+                                  ).scoring.detailedScore ?? undefined,
                                 analysis:
-                                  response.interviewSession.scoring.analysis ??
-                                  undefined,
+                                  (
+                                    response.interviewSession as unknown as {
+                                      scoring: {
+                                        score: number;
+                                        detailedScore?: number | null;
+                                        analysis?: string | null;
+                                      };
+                                    }
+                                  ).scoring.analysis ?? undefined,
                               }
                             : undefined,
                           messages: response.interviewSession.messages?.map(
                             (m) => ({
                               id: m.id,
                               sender: m.role as "CANDIDATE" | "BOT" | "ADMIN",
-                              contentType: m.contentType as "TEXT" | "VOICE",
-                              content: m.content,
+                              contentType: (m as { contentType?: string })
+                                .contentType as "TEXT" | "VOICE",
+                              content: m.content ?? "",
                               voiceTranscription:
                                 m.voiceTranscription ?? undefined,
                               createdAt: m.createdAt,

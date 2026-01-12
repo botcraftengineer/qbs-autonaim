@@ -199,13 +199,18 @@ export function ResponseDetailCard({
 }: ResponseDetailCardProps) {
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
-  const screening = response.interviewSession?.scoring as {
-    score: number;
-    detailedScore: number;
-    analysis: string | null;
-    priceAnalysis?: string | null;
-    deliveryAnalysis?: string | null;
-  } | null;
+  const screening =
+    (
+      response.interviewSession as {
+        scoring?: {
+          score: number;
+          detailedScore: number;
+          analysis: string | null;
+          priceAnalysis?: string | null;
+          deliveryAnalysis?: string | null;
+        } | null;
+      } | null
+    )?.scoring ?? null;
   const hasScreening = !!screening;
   const hasInterviewScoring = !!response.interviewScoring;
   const hasConversation =
@@ -376,11 +381,11 @@ export function ResponseDetailCard({
                     Общая оценка
                   </span>
                   <span className="text-xl sm:text-2xl font-bold">
-                    {response.screening.score}/5
+                    {screening?.score}/5
                   </span>
                 </div>
                 <Progress
-                  value={(response.screening.score / 5) * 100}
+                  value={((screening?.score ?? 0) / 5) * 100}
                   className="h-2"
                 />
               </div>
@@ -391,11 +396,11 @@ export function ResponseDetailCard({
                     Детальная оценка
                   </span>
                   <span className="text-xl sm:text-2xl font-bold">
-                    {response.screening.detailedScore}/100
+                    {screening?.detailedScore}/100
                   </span>
                 </div>
                 <Progress
-                  value={response.screening.detailedScore}
+                  value={screening?.detailedScore ?? 0}
                   className="h-2"
                 />
               </div>
@@ -405,38 +410,38 @@ export function ResponseDetailCard({
 
             {/* Analysis Details */}
             <div className="space-y-3 sm:space-y-4">
-              {response.screening.analysis && (
+              {screening?.analysis && (
                 <div className="space-y-2">
                   <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
                     <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                     Анализ портфолио
                   </h4>
                   <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                    {response.screening.analysis}
+                    {screening.analysis}
                   </p>
                 </div>
               )}
 
-              {response.screening.priceAnalysis && (
+              {screening?.priceAnalysis && (
                 <div className="space-y-2">
                   <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
                     <Banknote className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                     Анализ цены
                   </h4>
                   <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                    {response.screening.priceAnalysis}
+                    {screening.priceAnalysis}
                   </p>
                 </div>
               )}
 
-              {response.screening.deliveryAnalysis && (
+              {screening?.deliveryAnalysis && (
                 <div className="space-y-2">
                   <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
                     <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
                     Анализ сроков
                   </h4>
                   <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
-                    {response.screening.deliveryAnalysis}
+                    {screening.deliveryAnalysis}
                   </p>
                 </div>
               )}
@@ -466,11 +471,11 @@ export function ResponseDetailCard({
                     Общая оценка
                   </span>
                   <span className="text-xl sm:text-2xl font-bold">
-                    {response.interviewScoring.score}/5
+                    {response.interviewScoring?.score}/5
                   </span>
                 </div>
                 <Progress
-                  value={(response.interviewScoring.score / 5) * 100}
+                  value={((response.interviewScoring?.score ?? 0) / 5) * 100}
                   className="h-2"
                 />
               </div>
@@ -481,11 +486,11 @@ export function ResponseDetailCard({
                     Детальная оценка
                   </span>
                   <span className="text-xl sm:text-2xl font-bold">
-                    {response.interviewScoring.detailedScore}/100
+                    {response.interviewScoring?.detailedScore}/100
                   </span>
                 </div>
                 <Progress
-                  value={response.interviewScoring.detailedScore}
+                  value={response.interviewScoring?.detailedScore ?? 0}
                   className="h-2"
                 />
               </div>
@@ -494,7 +499,7 @@ export function ResponseDetailCard({
             <Separator />
 
             {/* Analysis */}
-            {response.interviewScoring.analysis && (
+            {response.interviewScoring?.analysis && (
               <div className="space-y-2">
                 <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
                   <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />

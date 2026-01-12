@@ -47,7 +47,7 @@ export function TelegramInterviewScoring({
           </div>
         )}
 
-        {detailedScore !== null && (
+        {detailedScore != null && (
           <div>
             <p className="text-xs text-muted-foreground mb-1">
               Детальная оценка

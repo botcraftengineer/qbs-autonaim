@@ -1,4 +1,3 @@
-import type { ResponseStatus } from "@qbs-autonaim/db/schema";
 import { Button, Input } from "@qbs-autonaim/ui";
 import { Loader2, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -9,12 +8,16 @@ import {
 } from "~/actions/realtime";
 import {
   ResponseFilters,
-  ResponseStatusFilter,
+  ResponseStatusFilter as ResponseStatusFilterComponent,
   type ScreeningFilter,
 } from "~/components/response";
 import { RefreshDialog } from "./refresh-dialog";
 import { ScreeningDialog } from "./screening-dialog";
 import { useRefreshSubscription } from "./use-refresh-subscription";
+import type {
+  ResponseStatusFilter,
+  ResponseStatusFilterUI,
+} from "./use-response-table";
 import {
   type ScreeningProgress,
   useScreeningSubscription,
@@ -43,8 +46,8 @@ interface ResponseTableToolbarProps {
   totalResponses: number;
   screeningFilter: ScreeningFilter;
   onFilterChange: (filter: ScreeningFilter) => void;
-  statusFilter: ResponseStatus[];
-  onStatusFilterChange: (statuses: ResponseStatus[]) => void;
+  statusFilter: ResponseStatusFilterUI[];
+  onStatusFilterChange: (statuses: ResponseStatusFilterUI[]) => void;
   search: string;
   onSearchChange: (value: string) => void;
   isRefreshing: boolean;
@@ -319,7 +322,7 @@ export function ResponseTableToolbar({
               selectedFilter={screeningFilter}
               onFilterChange={onFilterChange}
             />
-            <ResponseStatusFilter
+            <ResponseStatusFilterComponent
               selectedStatuses={statusFilter}
               onStatusChange={onStatusFilterChange}
             />

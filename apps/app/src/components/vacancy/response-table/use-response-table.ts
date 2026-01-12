@@ -3,13 +3,15 @@ import type { ScreeningFilter } from "~/components/response";
 import { useDebounce } from "~/hooks/use-debounce";
 import type { SortDirection, SortField } from "./types";
 
-type ResponseStatusFilter =
+export type ResponseStatusFilter =
   | "NEW"
   | "EVALUATED"
   | "INTERVIEW"
-  | "NEGOTIATION"
   | "COMPLETED"
   | "SKIPPED";
+
+// Тип для UI компонента, который включает NEGOTIATION
+export type ResponseStatusFilterUI = ResponseStatusFilter | "NEGOTIATION";
 
 export function useResponseTable() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -18,9 +20,16 @@ export function useResponseTable() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [screeningFilter, setScreeningFilter] =
     useState<ScreeningFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<ResponseStatusFilter[]>([]);
+  const [statusFilter, setStatusFilter] = useState<ResponseStatusFilterUI[]>(
+    [],
+  );
   const [searchInput, setSearchInput] = useState("");
   const debouncedSearch = useDebounce(searchInput, 500);
+
+  // Фильтруем NEGOTIATION для API запроса
+  const apiStatusFilter = statusFilter.filter(
+    (s): s is ResponseStatusFilter => s !== "NEGOTIATION",
+  );
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -58,6 +67,7 @@ export function useResponseTable() {
     screeningFilter,
     setScreeningFilter,
     statusFilter,
+    apiStatusFilter,
     setStatusFilter,
     searchInput,
     debouncedSearch,
