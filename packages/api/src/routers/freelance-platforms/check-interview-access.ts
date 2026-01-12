@@ -1,7 +1,8 @@
+import { eq } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
-import { hasInterviewAccess } from "../../utils/interview-token-validator";
+import { hasInterviewAccess, validateInterviewToken } from "../../utils/interview-token-validator";
 
 const checkInterviewAccessInputSchema = z.object({
   interviewSessionId: z.uuid(),
@@ -10,10 +11,15 @@ const checkInterviewAccessInputSchema = z.object({
 export const checkInterviewAccess = publicProcedure
   .input(checkInterviewAccessInputSchema)
   .query(async ({ input, ctx }) => {
+    // Валидируем токен
+    const validatedToken = ctx.interviewToken
+      ? await validateInterviewToken(ctx.interviewToken, ctx.db)
+      : null;
+
     // Проверяем доступ к interview session
     const hasAccess = await hasInterviewAccess(
       input.interviewSessionId,
-      ctx.interviewToken,
+      validatedToken,
       ctx.session?.user?.id ?? null,
       ctx.db,
     );

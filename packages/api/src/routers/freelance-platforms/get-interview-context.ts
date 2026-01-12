@@ -1,11 +1,13 @@
-﻿import { eq } from "@qbs-autonaim/db";
+import { eq } from "@qbs-autonaim/db";
 import { vacancy as vacancyTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { withInterviewAccess } from "../../utils/interview-access-middleware";
 
 const getInterviewContextInputSchema = z.object({
-  interviewSessionId: z.string().uuid(),
+  interviewSessionId: z.uuid().optional(),
+  sessionId: z.uuid().optional(),
+  interviewToken: z.string().optional(),
 });
 
 export const getInterviewContext = withInterviewAccess
@@ -15,7 +17,7 @@ export const getInterviewContext = withInterviewAccess
 
     const session = await ctx.db.query.interviewSession.findFirst({
       where: (interviewSession, { eq }) =>
-        eq(interviewSession.id, input.interviewSessionId),
+        eq(interviewSession.id, ctx.verifiedInterviewSessionId),
       with: {
         response: true,
       },

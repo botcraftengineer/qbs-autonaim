@@ -9,7 +9,9 @@ import { createErrorHandler } from "../../utils/error-handler";
 import { withInterviewAccess } from "../../utils/interview-access-middleware";
 
 const sendChatMessageInputSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid().optional(),
+  interviewSessionId: z.uuid().optional(),
+  interviewToken: z.string().optional(),
   message: z.string().min(1, "Сообщение не может быть пустым").max(10000),
 });
 
@@ -43,21 +45,21 @@ export const sendChatMessage = withInterviewAccess
       const session = await ctx.db.query.interviewSession.findFirst({
         where: (interviewSession, { eq, and }) =>
           and(
-            eq(interviewSession.id, input.sessionId),
+            eq(interviewSession.id, ctx.verifiedInterviewSessionId),
             eq(interviewSession.lastChannel, "web"),
           ),
       });
 
       if (!session) {
         throw await errorHandler.handleNotFoundError("Интервью", {
-          sessionId: input.sessionId,
+          sessionId: ctx.verifiedInterviewSessionId,
         });
       }
 
       // Проверяем, что интервью активно
       if (session.status !== "active" && session.status !== "pending") {
         throw await errorHandler.handleValidationError("Интервью завершено", {
-          sessionId: input.sessionId,
+          sessionId: ctx.verifiedInterviewSessionId,
           status: session.status,
         });
       }
@@ -72,7 +74,7 @@ export const sendChatMessage = withInterviewAccess
       const [savedMessage] = await ctx.db
         .insert(interviewMessage)
         .values({
-          sessionId: input.sessionId,
+          sessionId: ctx.verifiedInterviewSessionId,
           role: "user",
           type: "text",
           channel: "web",
@@ -84,7 +86,7 @@ export const sendChatMessage = withInterviewAccess
         throw await errorHandler.handleInternalError(
           new Error("Failed to save message"),
           {
-            sessionId: input.sessionId,
+            sessionId: ctx.verifiedInterviewSessionId,
           },
         );
       }
@@ -107,7 +109,7 @@ export const sendChatMessage = withInterviewAccess
 
       await messageBufferService.addMessage({
         userId: username,
-        chatSessionId: input.sessionId,
+        chatSessionId: ctx.verifiedInterviewSessionId,
         interviewStep,
         message: bufferedMessage,
       });
@@ -127,7 +129,7 @@ export const sendChatMessage = withInterviewAccess
               name: "interview/message.buffered",
               data: {
                 userId: username,
-                sessionId: input.sessionId,
+                sessionId: ctx.verifiedInterviewSessionId,
                 interviewStep,
                 messageId,
                 timestamp,
@@ -151,7 +153,7 @@ export const sendChatMessage = withInterviewAccess
       }
       // Все остальные ошибки обрабатываем через errorHandler
       throw await errorHandler.handleDatabaseError(error as Error, {
-        sessionId: input.sessionId,
+        sessionId: ctx.verifiedInterviewSessionId,
         operation: "send_chat_message",
       });
     }
