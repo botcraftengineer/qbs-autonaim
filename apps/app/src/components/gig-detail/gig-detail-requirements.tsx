@@ -1,5 +1,18 @@
-import { Badge, Card, CardContent, CardHeader, CardTitle } from "@qbs-autonaim/ui";
-import { CheckCircle, FileText, Lightbulb, Settings, Target, Wrench } from "lucide-react";
+import {
+  Badge,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@qbs-autonaim/ui";
+import {
+  CheckCircle,
+  FileText,
+  Lightbulb,
+  Settings,
+  Target,
+  Wrench,
+} from "lucide-react";
 
 interface GigRequirementsProps {
   requirements?: {
@@ -14,17 +27,18 @@ interface GigRequirementsProps {
 export function GigRequirements({ requirements }: GigRequirementsProps) {
   if (!requirements) return null;
 
-  const hasRequirements = requirements.summary ||
+  const hasRequirements =
+    requirements.summary ||
     (requirements.deliverables && requirements.deliverables.length > 0) ||
     (requirements.required_skills && requirements.required_skills.length > 0) ||
-    (requirements.nice_to_have_skills && requirements.nice_to_have_skills.length > 0) ||
+    (requirements.nice_to_have_skills &&
+      requirements.nice_to_have_skills.length > 0) ||
     (requirements.tech_stack && requirements.tech_stack.length > 0);
 
   if (!hasRequirements) return null;
 
   return (
-    <>
-      <Card>
+    <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -60,7 +74,7 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
                 <div className="pl-6">
                   <ul className="space-y-2">
                     {requirements.deliverables.map(
-                      (item: string) => (
+                      (item: string, _idx: number) => (
                         <li
                           key={item}
                           className="flex items-start gap-3"
@@ -89,7 +103,7 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
                 <div className="pl-6">
                   <div className="flex flex-wrap gap-2">
                     {requirements.required_skills.map(
-                      (skill: string) => (
+                      (skill: string, _idx: number) => (
                         <Badge
                           key={skill}
                           variant="default"
@@ -116,7 +130,7 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
                 <div className="pl-6">
                   <div className="flex flex-wrap gap-2">
                     {requirements.nice_to_have_skills.map(
-                      (skill: string) => (
+                      (skill: string, _idx: number) => (
                         <Badge
                           key={skill}
                           variant="outline"
@@ -131,32 +145,30 @@ export function GigRequirements({ requirements }: GigRequirementsProps) {
               </section>
             )}
 
-          {requirements.tech_stack &&
-            requirements.tech_stack.length > 0 && (
-              <section className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-primary" />
-                  <h3 className="font-semibold text-sm sm:text-base">
-                    Технологии
-                  </h3>
+          {requirements.tech_stack && requirements.tech_stack.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Settings className="h-4 w-4 text-primary" />
+                <h3 className="font-semibold text-sm sm:text-base">
+                  Технологии
+                </h3>
+              </div>
+              <div className="pl-6">
+                <div className="flex flex-wrap gap-2">
+                  {requirements.tech_stack.map((tech: string, _idx: number) => (
+                    <Badge
+                      key={tech}
+                      variant="secondary"
+                      className="bg-muted text-muted-foreground hover:bg-muted/80"
+                    >
+                      {tech}
+                    </Badge>
+                  ))}
                 </div>
-                <div className="pl-6">
-                  <div className="flex flex-wrap gap-2">
-                    {requirements.tech_stack.map((tech: string) => (
-                      <Badge
-                        key={tech}
-                        variant="secondary"
-                        className="bg-muted text-muted-foreground hover:bg-muted/80"
-                      >
-                        {tech}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            )}
+              </div>
+            </section>
+          )}
         </CardContent>
       </Card>
-    </>
   );
 }

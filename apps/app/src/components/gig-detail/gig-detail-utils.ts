@@ -1,19 +1,19 @@
 function formatBudget(min?: number | null, max?: number | null) {
-  if (!min && !max) return "Не указан";
+  if (min == null && max == null) return "Не указан";
 
   const formatAmount = (amount: number) => {
     return new Intl.NumberFormat("ru-RU").format(amount);
   };
 
-  if (min && max) {
+  if (min != null && max != null) {
     return `${formatAmount(min)}–${formatAmount(max)}\u00A0₽`;
   }
 
-  if (min) {
+  if (min != null) {
     return `от\u00A0${formatAmount(min)}\u00A0₽`;
   }
 
-  if (max) {
+  if (max != null) {
     return `до\u00A0${formatAmount(max)}\u00A0₽`;
   }
 
