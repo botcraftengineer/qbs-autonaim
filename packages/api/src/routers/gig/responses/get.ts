@@ -1,5 +1,9 @@
 ﻿import { and, eq } from "@qbs-autonaim/db";
-import { gig, response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
+import {
+  gig,
+  interviewSession,
+  response as responseTable,
+} from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -30,7 +34,10 @@ export const get = protectedProcedure
         eq(responseTable.id, input.responseId),
         eq(responseTable.entityType, "gig"),
       ),
-      with: { globalCandidate: true },
+      with: {
+        globalCandidate: true,
+        interviewScoring: true,
+      },
     });
 
     if (!response) {

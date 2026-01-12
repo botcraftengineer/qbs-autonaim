@@ -30,22 +30,8 @@ import Link from "next/link";
 
 type GigResponseListItem = RouterOutputs["gig"]["responses"]["list"][number];
 
-// Extend the type to include interviewScoring relation
-type GigResponseWithInterviewScoring = GigResponseListItem & {
-  interviewScoring?: {
-    id: string;
-    conversationId: string;
-    responseId: string | null;
-    gigResponseId: string | null;
-    score: number;
-    detailedScore: number;
-    analysis: string | null;
-    createdAt: Date;
-  } | null;
-};
-
 interface ResponseListCardProps {
-  response: GigResponseWithInterviewScoring;
+  response: GigResponseListItem;
   orgSlug: string;
   workspaceSlug: string;
   gigId: string;
