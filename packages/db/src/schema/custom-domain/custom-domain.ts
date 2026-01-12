@@ -26,7 +26,11 @@ export const domainTypeEnum = pgEnum("domain_type", [
  * Предустановленные домены для интервью
  */
 export const presetInterviewDomains = [
-  { id: "hrbot.pro", domain: "hrbot.pro", label: "hrbot.pro" },
+  {
+    id: "hrbot.pro",
+    domain: "hrbot.pro",
+    label: "hrbot.pro",
+  },
 ] as const;
 
 export type PresetInterviewDomain = (typeof presetInterviewDomains)[number];
@@ -135,6 +139,8 @@ export function isPresetDomain(domain: string): boolean {
 /**
  * Получает предустановленный домен по ID
  */
-export function getPresetDomain(id: string) {
-  return presetInterviewDomains.find((preset) => preset.id === id);
+export function getPresetDomain(idOrDomain: string) {
+  return presetInterviewDomains.find(
+    (preset) => preset.id === idOrDomain || preset.domain === idOrDomain,
+  );
 }
