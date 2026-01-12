@@ -8,10 +8,10 @@ import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
-  ExperienceCard,
-  InterviewCard,
-  ResponseHeader,
-  ScreeningCard,
+  ExperienceTab,
+  InterviewScoringCard,
+  ResponseHeaderCard,
+  ScreeningResultsCard,
 } from "~/components/response-detail";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
@@ -106,8 +106,8 @@ export default function ResponseDetailPage({
 
               <div className="space-y-6 md:space-y-8">
                 <ResponseHeader response={response} />
-                <ScreeningCard screening={response.screening} />
-                <InterviewCard
+                <ScreeningResultsCard screening={response.screening} />
+                <InterviewScoringCard
                   conversation={
                     response.interviewSession
                       ? {
@@ -171,7 +171,7 @@ export default function ResponseDetailPage({
                   workspaceName={undefined}
                 />
                 {response.experience && (
-                  <ExperienceCard experience={response.experience} />
+                  <ExperienceTab experience={response.experience} />
                 )}
               </div>
             </div>

@@ -13,10 +13,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
-import {
-  customDomain,
-  presetInterviewDomains,
-} from "../custom-domain/custom-domain";
+import { customDomain } from "../custom-domain/custom-domain";
 import {
   platformSourceEnum,
   platformSourceValues,
@@ -173,32 +170,12 @@ export const CreateGigSchema = createInsertSchema(gig, {
   updatedAt: true,
 });
 
-const presetOrUuidSchema = z
-  .string()
-  .trim()
-  .refine(
-    (val) => {
-      // Проверяем, является ли это предустановленным доменом
-      const isPreset = presetInterviewDomains.some(
-        (preset) => preset.id === val || preset.domain === val,
-      );
-
-      // Проверяем, является ли это UUID (для кастомных доменов)
-      const isUuid = z.string().uuid().safeParse(val).success;
-
-      return isPreset || isUuid;
-    },
-    (val) => ({
-      message: `Invalid custom domain id: "${val}". Must be a preset domain or valid UUID.`,
-    }),
-  );
-
 export const UpdateGigSettingsSchema = z.object({
   customBotInstructions: z.string().max(5000).nullish(),
   customScreeningPrompt: z.string().max(5000).nullish(),
   customInterviewQuestions: z.string().max(5000).nullish(),
   customOrganizationalQuestions: z.string().max(5000).nullish(),
-  customDomainId: presetOrUuidSchema.nullish(),
+  customDomainId: z.string().uuid().nullish(),
 });
 
 export type Gig = typeof gig.$inferSelect;
