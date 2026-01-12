@@ -136,7 +136,7 @@ export class VacancyContextLoader implements ContextLoader {
     const interviewMap = new Map(
       interviews
         .filter((i) => i.responseId !== null)
-        .map((i) => [i.responseId!, i]),
+        .map((i) => [i.responseId as string, i]),
     );
 
     // Формирование данных кандидатов
@@ -209,7 +209,7 @@ export class VacancyContextLoader implements ContextLoader {
 
     const screeningScores = candidates
       .filter((c) => c.screeningDetailedScore !== null)
-      .map((c) => c.screeningDetailedScore!);
+      .map((c) => c.screeningDetailedScore as number);
     const avgScreeningScore =
       screeningScores.length > 0
         ? Math.round(
@@ -219,7 +219,7 @@ export class VacancyContextLoader implements ContextLoader {
 
     const interviewScores = candidates
       .filter((c) => c.interviewDetailedScore !== null)
-      .map((c) => c.interviewDetailedScore!);
+      .map((c) => c.interviewDetailedScore as number);
     const avgInterviewScore =
       interviewScores.length > 0
         ? Math.round(

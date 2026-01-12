@@ -224,7 +224,7 @@ export async function loadCandidatesContext(
   const interviewMap = new Map(
     interviews
       .filter((i) => i.responseId !== null)
-      .map((i) => [i.responseId!, i]),
+      .map((i) => [i.responseId as string, i]),
   );
 
   // Формируем контекст кандидатов
@@ -296,7 +296,7 @@ function calculateCandidatesStats(
   // Средняя цена
   const pricesInRub = candidates
     .filter((c) => c.proposedPrice !== null)
-    .map((c) => c.proposedPrice!);
+    .map((c) => c.proposedPrice as number);
   const avgPrice =
     pricesInRub.length > 0
       ? Math.round(pricesInRub.reduce((a, b) => a + b, 0) / pricesInRub.length)
@@ -305,7 +305,7 @@ function calculateCandidatesStats(
   // Средние сроки
   const deliveryDays = candidates
     .filter((c) => c.proposedDeliveryDays !== null)
-    .map((c) => c.proposedDeliveryDays!);
+    .map((c) => c.proposedDeliveryDays as number);
   const avgDeliveryDays =
     deliveryDays.length > 0
       ? Math.round(
@@ -316,7 +316,7 @@ function calculateCandidatesStats(
   // Средний screening score
   const screeningScores = candidates
     .filter((c) => c.screeningDetailedScore !== null)
-    .map((c) => c.screeningDetailedScore!);
+    .map((c) => c.screeningDetailedScore as number);
   const avgScreeningScore =
     screeningScores.length > 0
       ? Math.round(
@@ -327,7 +327,7 @@ function calculateCandidatesStats(
   // Средний interview score
   const interviewScores = candidates
     .filter((c) => c.interviewDetailedScore !== null)
-    .map((c) => c.interviewDetailedScore!);
+    .map((c) => c.interviewDetailedScore as number);
   const avgInterviewScore =
     interviewScores.length > 0
       ? Math.round(

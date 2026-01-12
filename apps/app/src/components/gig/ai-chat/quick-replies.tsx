@@ -27,11 +27,8 @@ export function QuickReplies({
       <p className="mb-2 text-xs font-medium text-muted-foreground">
         Быстрые вопросы:
       </p>
-      <div
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label="Быстрые ответы"
-      >
+      <fieldset className="flex flex-wrap gap-2">
+        <legend className="sr-only">Быстрые ответы</legend>
         {replies.map((reply) => (
           <Button
             key={reply}
@@ -47,7 +44,7 @@ export function QuickReplies({
             {reply}
           </Button>
         ))}
-      </div>
+      </fieldset>
     </div>
   );
 }

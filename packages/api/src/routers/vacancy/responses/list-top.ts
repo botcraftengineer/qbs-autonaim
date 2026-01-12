@@ -1,8 +1,6 @@
 import { desc, eq } from "@qbs-autonaim/db";
 import {
-  responseScreening as responseScreeningTable,
   response as responseTable,
-  vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { getFileUrl } from "@qbs-autonaim/lib/s3";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";

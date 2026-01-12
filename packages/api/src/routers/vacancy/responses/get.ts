@@ -64,7 +64,7 @@ export const get = protectedProcedure
     // Query resumePdfFile separately if exists
     const resumePdfFile = response.resumePdfFileId
       ? await ctx.db.query.file.findFirst({
-          where: (f, { eq }) => eq(f.id, response.resumePdfFileId!),
+          where: (f, { eq }) => eq(f.id, response.resumePdfFileId),
         })
       : null;
 

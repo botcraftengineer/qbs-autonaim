@@ -6,7 +6,7 @@ import {
 import { streamText } from "@qbs-autonaim/lib/ai";
 import type { TRPCRouterRecord } from "@trpc/server";
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import {
   loadCandidatesContext,

@@ -12,7 +12,6 @@ import {
 } from "@qbs-autonaim/db";
 import {
   interviewMessage,
-  interviewSession,
   responseScreening,
   response as responseTable,
   vacancy,

@@ -32,7 +32,7 @@ export function ChatInput({
     textarea.style.height = "auto";
     // Set height to scrollHeight (content height)
     textarea.style.height = `${textarea.scrollHeight}px`;
-  }, [message]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

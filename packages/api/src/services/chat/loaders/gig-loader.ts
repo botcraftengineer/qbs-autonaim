@@ -144,7 +144,7 @@ export class GigContextLoader implements ContextLoader {
     const interviewMap = new Map(
       interviews
         .filter((i) => i.responseId !== null)
-        .map((i) => [i.responseId!, i]),
+        .map((i) => [i.responseId as string, i]),
     );
 
     // Формирование данных кандидатов
@@ -225,7 +225,7 @@ export class GigContextLoader implements ContextLoader {
 
     const pricesInRub = candidates
       .filter((c) => c.proposedPrice !== null)
-      .map((c) => c.proposedPrice!);
+      .map((c) => c.proposedPrice as number);
     const avgPrice =
       pricesInRub.length > 0
         ? Math.round(
@@ -235,7 +235,7 @@ export class GigContextLoader implements ContextLoader {
 
     const deliveryDays = candidates
       .filter((c) => c.proposedDeliveryDays !== null)
-      .map((c) => c.proposedDeliveryDays!);
+      .map((c) => c.proposedDeliveryDays as number);
     const avgDeliveryDays =
       deliveryDays.length > 0
         ? Math.round(
@@ -245,7 +245,7 @@ export class GigContextLoader implements ContextLoader {
 
     const screeningScores = candidates
       .filter((c) => c.screeningDetailedScore !== null)
-      .map((c) => c.screeningDetailedScore!);
+      .map((c) => c.screeningDetailedScore as number);
     const avgScreeningScore =
       screeningScores.length > 0
         ? Math.round(
@@ -255,7 +255,7 @@ export class GigContextLoader implements ContextLoader {
 
     const interviewScores = candidates
       .filter((c) => c.interviewDetailedScore !== null)
-      .map((c) => c.interviewDetailedScore!);
+      .map((c) => c.interviewDetailedScore as number);
     const avgInterviewScore =
       interviewScores.length > 0
         ? Math.round(

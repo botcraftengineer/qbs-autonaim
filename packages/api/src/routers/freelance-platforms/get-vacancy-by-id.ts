@@ -1,6 +1,5 @@
 import { and, eq, sql } from "@qbs-autonaim/db";
 import {
-  interviewLink,
   response as responseTable,
   vacancy,
 } from "@qbs-autonaim/db/schema";
@@ -63,7 +62,7 @@ export const getVacancyById = protectedProcedure
 
     // Получаем активную ссылку на интервью
     const activeInterviewLink = await ctx.db.query.interviewLink.findFirst({
-      where: (link, { eq, and }: { eq: any; and: any }) =>
+      where: (link, { eq, and }) =>
         and(
           eq(link.entityId, input.id),
           eq(link.entityType, "vacancy"),

@@ -28,7 +28,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
   // Auto-scroll to latest message (Requirement 8.6)
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, []);
 
   if (isLoading) {
     return (

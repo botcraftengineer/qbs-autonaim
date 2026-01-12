@@ -1,8 +1,6 @@
 ﻿import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
 import {
-  interviewScoring as interviewScoringTable,
   response as responseTable,
-  responseScreening as screeningTable,
   vacancy,
 } from "@qbs-autonaim/db/schema";
 import { uuidv7Schema, workspaceIdSchema } from "@qbs-autonaim/validators";
