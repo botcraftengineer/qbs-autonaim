@@ -67,6 +67,21 @@ export const accept = protectedProcedure
       });
     }
 
+    // Проверяем доступ к организации воркспейса
+    const organizationAccess = await ctx.organizationRepository.checkAccess(
+      invite.workspace.organizationId,
+      ctx.session.user.id,
+    );
+
+    // Если пользователь не является членом организации, добавляем его
+    if (!organizationAccess) {
+      await ctx.organizationRepository.addMember(
+        invite.workspace.organizationId,
+        ctx.session.user.id,
+        "member", // Роль в организации всегда "member" при приглашении в воркспейс
+      );
+    }
+
     // Добавляем пользователя в workspace
     await ctx.workspaceRepository.addUser(
       invite.workspaceId,
