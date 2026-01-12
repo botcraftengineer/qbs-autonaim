@@ -25,10 +25,10 @@ export function CustomDomainSelect({
   const trpc = useTRPC();
 
   const {
-    data: domains = [],
-    isLoading,
-    isError,
-    error,
+    data: customDomains = [],
+    isLoading: isLoadingCustom,
+    isError: isCustomError,
+    error: customError,
   } = useQuery(
     trpc.customDomain.list.queryOptions({
       workspaceId,
@@ -36,7 +36,12 @@ export function CustomDomainSelect({
     }),
   );
 
-  const verifiedDomains = domains.filter((d) => d.isVerified);
+  const { data: presetDomains = [], isLoading: isLoadingPresets } = useQuery(
+    trpc.customDomain.listPresets.queryOptions(),
+  );
+
+  const isLoading = isLoadingCustom || isLoadingPresets;
+  const verifiedCustomDomains = customDomains.filter((d) => d.isVerified);
 
   if (isLoading) {
     return (
@@ -47,7 +52,7 @@ export function CustomDomainSelect({
     );
   }
 
-  if (isError) {
+  if (isCustomError) {
     return (
       <div className="space-y-2">
         <Label>Домен для интервью</Label>
@@ -55,9 +60,9 @@ export function CustomDomainSelect({
           <p className="text-sm text-destructive">
             Не удалось загрузить список доменов
           </p>
-          {error?.message && (
+          {customError?.message && (
             <p className="mt-1 text-xs text-muted-foreground">
-              {error.message}
+              {customError.message}
             </p>
           )}
         </div>
@@ -82,16 +87,25 @@ export function CustomDomainSelect({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="default">По умолчанию</SelectItem>
-          {verifiedDomains.map((domain) => (
-            <SelectItem key={domain.id} value={domain.id}>
-              {domain.domain}
-              {domain.isPrimary && " (основной)"}
-            </SelectItem>
-          ))}
+
+          {presetDomains.length > 0 &&
+            presetDomains.map((domain) => (
+              <SelectItem key={domain.id} value={domain.id}>
+                {domain.label}
+              </SelectItem>
+            ))}
+
+          {verifiedCustomDomains.length > 0 &&
+            verifiedCustomDomains.map((domain) => (
+              <SelectItem key={domain.id} value={domain.id}>
+                {domain.domain}
+                {domain.isPrimary && " (основной)"}
+              </SelectItem>
+            ))}
         </SelectContent>
       </Select>
       <p id="customDomain-hint" className="text-xs text-muted-foreground">
-        {verifiedDomains.length === 0
+        {presetDomains.length === 0 && verifiedCustomDomains.length === 0
           ? "У вас нет настроенных доменов. Будет использован домен по умолчанию"
           : "Выберите домен для ссылок на интервью или оставьте по умолчанию"}
       </p>
