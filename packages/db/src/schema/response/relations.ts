@@ -2,6 +2,8 @@ import { relations } from "drizzle-orm";
 import { user } from "../auth";
 import { candidate } from "../candidate/candidate";
 import { file } from "../file";
+import { gig } from "../gig/gig";
+import { vacancy } from "../vacancy/vacancy";
 import { response } from "./response";
 import { responseComment } from "./response-comment";
 import { responseHistory } from "./response-history";
@@ -12,6 +14,15 @@ export const responseRelations = relations(response, ({ one, many }) => ({
   globalCandidate: one(candidate, {
     fields: [response.globalCandidateId],
     references: [candidate.id],
+  }),
+  // Полиморфные связи с сущностями
+  gig: one(gig, {
+    fields: [response.entityId],
+    references: [gig.id],
+  }),
+  vacancy: one(vacancy, {
+    fields: [response.entityId],
+    references: [vacancy.id],
   }),
   portfolioFile: one(file, {
     fields: [response.portfolioFileId],

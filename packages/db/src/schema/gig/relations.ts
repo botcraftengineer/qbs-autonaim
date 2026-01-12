@@ -1,5 +1,6 @@
 import { relations } from "drizzle-orm";
 import { file } from "../file";
+import { response } from "../response/response";
 import { workspace } from "../workspace/workspace";
 import { gig } from "./gig";
 import { gigInterviewMedia } from "./gig-interview-media";
@@ -10,6 +11,7 @@ export const gigRelations = relations(gig, ({ one, many }) => ({
     references: [workspace.id],
   }),
   interviewMedia: many(gigInterviewMedia),
+  responses: many(response),
 }));
 
 export const gigInterviewMediaRelations = relations(
