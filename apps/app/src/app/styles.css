@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@qbs-autonaim/tailwind-config/theme";
+@import "shadcn/tailwind.css";
 
 @source "../../../../packages/ui/src/**/*.{ts,tsx}";
 
@@ -8,16 +9,6 @@
 @custom-variant light (&:where(.light, .light *));
 @custom-variant auto (&:where(.auto, .auto *));
 
-@utility container {
-  margin-inline: auto;
-  padding-inline: 2rem;
-  @media (width >= --theme(--breakpoint-sm)) {
-    max-width: none;
-  }
-  @media (width >= 1400px) {
-    max-width: 1400px;
-  }
-}
 
 @layer base {
   * {
