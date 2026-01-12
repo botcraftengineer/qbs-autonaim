@@ -3,6 +3,7 @@ import { user } from "../auth";
 import { candidate } from "../candidate/candidate";
 import { file } from "../file";
 import { gig } from "../gig/gig";
+import { interviewScoring } from "../interview/scoring";
 import { vacancy } from "../vacancy/vacancy";
 import { response } from "./response";
 import { responseComment } from "./response-comment";
@@ -42,6 +43,10 @@ export const responseRelations = relations(response, ({ one, many }) => ({
   screening: one(responseScreening, {
     fields: [response.id],
     references: [responseScreening.responseId],
+  }),
+  interviewScoring: one(interviewScoring, {
+    fields: [response.id],
+    references: [interviewScoring.responseId],
   }),
   invitations: many(responseInvitation),
   comments: many(responseComment),

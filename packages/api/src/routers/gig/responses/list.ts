@@ -47,6 +47,7 @@ export const list = protectedProcedure
       ),
       with: {
         screening: true,
+        interviewScoring: true,
       },
       orderBy: [desc(responseTable.createdAt)],
     });
