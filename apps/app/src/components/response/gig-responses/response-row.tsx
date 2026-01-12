@@ -31,7 +31,7 @@ export function ResponseRow({
       <TableCell>
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses/${response.id}`}
-          className="font-medium hover:underline"
+          className="font-medium text-foreground hover:text-primary transition-colors"
         >
           {response.candidateName || "Без имени"}
         </Link>
@@ -50,11 +50,11 @@ export function ResponseRow({
           <span className="text-muted-foreground text-sm">—</span>
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground text-sm">
+      <TableCell className="text-muted-foreground">
         {formatDate(response.createdAt)}
       </TableCell>
       <TableCell>
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-1">
           <Button
             size="sm"
             variant="ghost"
@@ -69,7 +69,7 @@ export function ResponseRow({
             size="sm"
             variant="ghost"
             onClick={() => onAccept(response.id)}
-            className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 touch-action-manipulation"
+            className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 touch-action-manipulation"
             title="Принять"
             aria-label={`Принять кандидата ${response.candidateName || "без имени"}`}
           >
@@ -79,7 +79,7 @@ export function ResponseRow({
             size="sm"
             variant="ghost"
             onClick={() => onReject(response.id)}
-            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 touch-action-manipulation"
+            className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10 touch-action-manipulation"
             title="Отклонить"
             aria-label={`Отклонить кандидата ${response.candidateName || "без имени"}`}
           >

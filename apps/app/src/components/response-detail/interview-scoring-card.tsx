@@ -7,7 +7,7 @@ import { SafeHtml } from "~/components/response-detail/safe-html";
 interface InterviewScoringCardProps {
   interviewScoring: {
     score: number;
-    detailedScore: number;
+    detailedScore?: number;
     analysis: string | null;
   };
 }
@@ -48,7 +48,7 @@ export function InterviewScoringCard({ interviewScoring }: InterviewScoringCardP
                 Детальная оценка
               </span>
               <span className="text-xl sm:text-2xl font-bold">
-                {interviewScoring.detailedScore}/100
+                {interviewScoring.detailedScore ?? 0}/100
               </span>
             </div>
             <Progress

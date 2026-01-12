@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Загрузчик контекста для gig заданий
  * Использует универсальные таблицы откликов
  */
@@ -171,6 +171,7 @@ export class GigContextLoader implements ContextLoader {
         recommendation: resp.recommendation,
         screeningScore: screening?.score ?? null,
         screeningDetailedScore: screening?.detailedScore ?? null,
+        interviewScore: interview?.rating ?? Math.round((interview?.score ?? 0) / 20),
         screeningAnalysis: screening?.analysis ?? null,
         interviewScore: interview?.score ?? null,
         interviewDetailedScore: interview?.score ?? null,

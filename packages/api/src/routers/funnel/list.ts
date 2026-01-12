@@ -1,4 +1,4 @@
-﻿import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
+import { and, desc, eq, inArray, lt } from "@qbs-autonaim/db";
 import {
   response as responseTable,
   vacancy,
@@ -114,7 +114,7 @@ export const list = protectedProcedure
         skills: [],
         matchScore: screening?.detailedScore || 0,
         resumeScore: screening?.detailedScore,
-        interviewScore: interviewScoring?.score,
+        interviewScore: interviewScoring?.rating ?? Math.round((interviewScoring?.score ?? 0) / 20),
         scoreAnalysis: interviewScoring?.analysis ?? undefined,
         availability: "Не указано",
         salaryExpectation: "Не указано",

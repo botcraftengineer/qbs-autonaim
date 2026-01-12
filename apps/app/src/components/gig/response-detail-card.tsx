@@ -30,7 +30,7 @@ interface ResponseDetailCardProps {
   response: GigResponseDetail & {
     interviewScoring?: {
       score: number;
-      detailedScore: number;
+      detailedScore?: number;
       analysis: string | null;
     } | null;
     conversation?: {

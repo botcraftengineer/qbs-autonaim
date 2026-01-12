@@ -25,15 +25,15 @@ export function ResponsesFilters({
             placeholder="Поиск по имени кандидата…"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-10 h-11 sm:h-10 text-base sm:text-sm"
+            className="pl-10 h-11 sm:h-10 text-base sm:text-sm border-muted-foreground/20 focus:border-primary transition-colors"
             style={{ fontSize: "16px" }}
           />
         </div>
       </div>
 
       <Select value={statusFilter} onValueChange={onStatusFilterChange}>
-        <SelectTrigger className="w-full sm:w-48 h-11 sm:h-10 touch-action-manipulation">
-          <Filter className="h-4 w-4 mr-2 shrink-0" />
+        <SelectTrigger className="w-full sm:w-48 h-11 sm:h-10 touch-action-manipulation border-muted-foreground/20 focus:border-primary transition-colors">
+          <Filter className="h-4 w-4 mr-2 shrink-0 text-muted-foreground" />
           <SelectValue placeholder="Статус" />
         </SelectTrigger>
         <SelectContent>

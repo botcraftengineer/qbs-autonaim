@@ -316,7 +316,8 @@ export const list = protectedProcedure
           : null,
         interviewScoring: interviewScoring
           ? {
-              score: interviewScoring.score,
+              score: interviewScoring.rating ?? Math.round(interviewScoring.score / 20),
+              detailedScore: interviewScoring.score,
               analysis: interviewScoring.analysis
                 ? sanitizeHtml(interviewScoring.analysis)
                 : null,

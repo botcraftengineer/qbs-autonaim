@@ -88,7 +88,11 @@ export const listRecent = protectedProcedure
                   : null,
               }
             : null,
-          interviewScoring: scoring
+          interviewScoring: scoring ? {
+            score: scoring.rating ?? Math.round(scoring.score / 20),
+            detailedScore: scoring.score,
+            analysis: scoring.analysis,
+          } : null
             ? {
                 ...scoring,
                 analysis: scoring.analysis

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Gig AI Chat Context Loaders
  *
  * Сервисы для загрузки контекста gig задания и кандидатов для AI чата.
@@ -248,6 +248,7 @@ export async function loadCandidatesContext(
       // Screening data
       screeningScore: screening?.score ?? null,
       screeningDetailedScore: screening?.detailedScore ?? null,
+    interviewScore: interview?.rating ?? Math.round((interview?.score ?? 0) / 20),
       screeningAnalysis: screening?.analysis ?? null,
       // Interview data
       interviewScore: interview?.score ?? null,

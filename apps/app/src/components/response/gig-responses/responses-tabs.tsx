@@ -22,25 +22,25 @@ export function ResponsesTabs({
   children,
 }: ResponsesTabsProps) {
   return (
-    <Tabs value={activeTab} onValueChange={onTabChange}>
-      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1 p-1">
+    <Tabs value={activeTab} onValueChange={onTabChange} className="w-full">
+      <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1.5 p-1.5 bg-muted/50 rounded-lg mb-6">
         <TabsTrigger
           value="all"
-          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all font-medium"
         >
           <span className="hidden sm:inline">Все ({stats.total})</span>
           <span className="sm:hidden">Все</span>
         </TabsTrigger>
         <TabsTrigger
           value="new"
-          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all font-medium"
         >
           <span className="hidden sm:inline">Новые ({stats.new})</span>
           <span className="sm:hidden">Новые</span>
         </TabsTrigger>
         <TabsTrigger
           value="evaluated"
-          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all font-medium"
         >
           <span className="hidden sm:inline">
             Оценены ({stats.evaluated})
@@ -49,7 +49,7 @@ export function ResponsesTabs({
         </TabsTrigger>
         <TabsTrigger
           value="recommended"
-          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation"
+          className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-action-manipulation data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all font-medium"
         >
           <span className="hidden sm:inline">
             Рекомендованы ({stats.recommended})

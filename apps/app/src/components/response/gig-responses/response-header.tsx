@@ -9,20 +9,20 @@ interface ResponseHeaderProps {
 
 export function ResponseHeader({ gigTitle, totalResponses }: ResponseHeaderProps) {
   return (
-    <Card>
-      <CardHeader className="p-4 sm:p-6">
+    <Card className="border shadow-sm">
+      <CardHeader>
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-lg sm:text-xl wrap-break-word">
+            <CardTitle className="text-xl sm:text-2xl font-semibold wrap-break-word">
               Отклики на задание
             </CardTitle>
-            <CardDescription className="mt-1.5 text-xs sm:text-sm wrap-break-word">
+            <CardDescription className="mt-2 text-sm sm:text-base wrap-break-word text-muted-foreground">
               {gigTitle}
             </CardDescription>
           </div>
           <Badge
             variant="secondary"
-            className="text-sm sm:text-base px-2 py-0.5 sm:px-3 sm:py-1 shrink-0"
+            className="text-sm sm:text-base px-3 py-1.5 sm:px-4 sm:py-2 shrink-0 font-semibold bg-primary/10 text-primary border-primary/20"
           >
             {totalResponses}
           </Badge>

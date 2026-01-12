@@ -31,14 +31,14 @@ export function ResponsesSkeleton() {
 
       <div className="space-y-4 sm:space-y-6">
         <Card>
-          <CardHeader className="p-4 sm:p-6">
+          <CardHeader>
             <Skeleton className="h-6 sm:h-8 w-48" />
             <Skeleton className="h-4 w-64" />
           </CardHeader>
         </Card>
 
         <Card>
-          <CardContent className="p-0">
+          <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -249,8 +249,8 @@ export default function GigResponsesPage({ params }: PageProps) {
         <ResponseHeader gigTitle={gig.title} totalResponses={stats.total} />
 
         {/* Filters */}
-        <Card>
-          <CardContent className="p-4 sm:pt-6 sm:px-6 sm:pb-6">
+        <Card className="border shadow-sm">
+          <CardContent>
             <ResponsesFilters
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}

@@ -457,9 +457,10 @@ export async function createInterviewScoring(
     };
   }
 
-  // Возвращаем результат (без detailedScore - его нет в схеме)
+  // Возвращаем результат
   return {
     score: result.data.score,
+    detailedScore: result.data.detailedScore,
     analysis: result.data.analysis,
   };
 }

@@ -68,7 +68,8 @@ export const completeInterviewFunction = inngest.createFunction(
           .values({
             interviewSessionId: chatSessionId,
             responseId,
-            score: Math.round(scoring.score),
+            score: scoring.detailedScore,
+            rating: scoring.score,
             analysis: scoring.analysis,
           })
           .onConflictDoUpdate({
