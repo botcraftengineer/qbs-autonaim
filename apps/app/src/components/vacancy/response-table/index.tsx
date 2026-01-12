@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   Pagination,
   Skeleton,
@@ -27,6 +28,9 @@ interface ResponseTableProps {
 }
 
 const ITEMS_PER_PAGE = 25;
+
+type ResponsesListData = RouterOutputs["vacancy"]["responses"]["list"];
+type Response = ResponsesListData["responses"][0];
 
 export function ResponseTable({
   vacancyId,
