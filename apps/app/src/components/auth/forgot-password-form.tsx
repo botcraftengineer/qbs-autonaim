@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "~/auth/client";
+import { translateAuthError } from "~/lib/auth-error-messages";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Неверный email адрес"),
@@ -52,9 +53,7 @@ export function ForgotPasswordForm({
       });
 
       if (error) {
-        toast.error(
-          error.message ?? "Не удалось отправить ссылку. Попробуйте снова.",
-        );
+        toast.error(translateAuthError(error.message));
         return;
       }
 

@@ -25,6 +25,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "~/auth/client";
+import { translateAuthError } from "~/lib/auth-error-messages";
 
 const signInSchema = z.object({
   email: z.string().email("Неверный email адрес"),
@@ -61,9 +62,7 @@ export function EmailPasswordForm({
         });
 
         if (error) {
-          toast.error(
-            error.message ?? "Не удалось создать аккаунт. Попробуйте снова.",
-          );
+          toast.error(translateAuthError(error.message));
           return;
         }
 
@@ -75,7 +74,7 @@ export function EmailPasswordForm({
         });
 
         if (error) {
-          toast.error(error.message ?? "Неверный email или пароль.");
+          toast.error(translateAuthError(error.message));
           return;
         }
 

@@ -26,6 +26,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
+import { translateAuthError } from "~/lib/auth-error-messages";
 import { isValidInternalPath } from "~/lib/auth-utils";
 
 export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
@@ -67,7 +68,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
         otp: data.otp,
       });
       if (error) {
-        toast.error(error.message || "Неверный код. Попробуйте снова.");
+        toast.error(translateAuthError(error.message));
         form.reset();
         return;
       }
@@ -102,9 +103,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       });
 
       if (error) {
-        toast.error(
-          error.message ?? "Не удалось отправить код. Попробуйте снова.",
-        );
+        toast.error(translateAuthError(error.message));
         return;
       }
 

@@ -61,6 +61,23 @@ export const hrSelectionStatusValues = [
 export type HrSelectionStatus = (typeof hrSelectionStatusValues)[number];
 
 /**
+ * Допустимые значения hrSelectionStatus для gig response'ов
+ * (ограниченный набор по сравнению с общим enum'ом)
+ */
+export const gigHrSelectionStatusValues = [
+  "INVITE",
+  "RECOMMENDED",
+  "NOT_RECOMMENDED",
+  "REJECTED",
+  "SELECTED",
+  "CONTRACT_SENT",
+  "IN_PROGRESS",
+  "DONE",
+] as const;
+
+export type GigHrSelectionStatus = (typeof gigHrSelectionStatusValues)[number];
+
+/**
  * Источник платформы (откуда пришла вакансия или отклик)
  */
 export const platformSourceValues = [
