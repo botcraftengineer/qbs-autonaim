@@ -16,7 +16,7 @@
     "format": "biome format .",
     "lint": "biome lint .",
     "check": "biome check .",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "zod": "4.3.5"

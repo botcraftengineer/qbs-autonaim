@@ -5,12 +5,13 @@ import { messageBufferService } from "@qbs-autonaim/jobs/services/buffer";
 import type { BufferedMessage } from "@qbs-autonaim/shared";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
-import { requireInterviewAccess } from "../../utils/interview-token-validator";
+import { withInterviewAccess } from "../../utils/interview-access-middleware";
 
 const sendChatMessageInputSchema = z.object({
-  sessionId: z.string().uuid(),
+  sessionId: z.uuid().optional(),
+  interviewSessionId: z.uuid().optional(),
+  interviewToken: z.string().optional(),
   message: z.string().min(1, "Сообщение не может быть пустым").max(10000),
 });
 
@@ -27,7 +28,7 @@ const sessionMetadataSchema = z
   })
   .default({ questionAnswers: [] });
 
-export const sendChatMessage = publicProcedure
+export const sendChatMessage = withInterviewAccess
   .input(sendChatMessageInputSchema)
   .mutation(async ({ input, ctx }) => {
     const errorHandler = createErrorHandler(
@@ -38,33 +39,27 @@ export const sendChatMessage = publicProcedure
     );
 
     try {
-      // Проверяем доступ к interviewSession
-      await requireInterviewAccess(
-        input.sessionId,
-        ctx.interviewToken,
-        ctx.session?.user?.id ?? null,
-        ctx.db,
-      );
+      // Доступ уже проверен в middleware
 
       // Проверяем существование interviewSession
       const session = await ctx.db.query.interviewSession.findFirst({
         where: (interviewSession, { eq, and }) =>
           and(
-            eq(interviewSession.id, input.sessionId),
+            eq(interviewSession.id, ctx.verifiedInterviewSessionId),
             eq(interviewSession.lastChannel, "web"),
           ),
       });
 
       if (!session) {
         throw await errorHandler.handleNotFoundError("Интервью", {
-          sessionId: input.sessionId,
+          sessionId: ctx.verifiedInterviewSessionId,
         });
       }
 
       // Проверяем, что интервью активно
       if (session.status !== "active" && session.status !== "pending") {
         throw await errorHandler.handleValidationError("Интервью завершено", {
-          sessionId: input.sessionId,
+          sessionId: ctx.verifiedInterviewSessionId,
           status: session.status,
         });
       }
@@ -79,7 +74,7 @@ export const sendChatMessage = publicProcedure
       const [savedMessage] = await ctx.db
         .insert(interviewMessage)
         .values({
-          sessionId: input.sessionId,
+          sessionId: ctx.verifiedInterviewSessionId,
           role: "user",
           type: "text",
           channel: "web",
@@ -91,7 +86,7 @@ export const sendChatMessage = publicProcedure
         throw await errorHandler.handleInternalError(
           new Error("Failed to save message"),
           {
-            sessionId: input.sessionId,
+            sessionId: ctx.verifiedInterviewSessionId,
           },
         );
       }
@@ -114,7 +109,7 @@ export const sendChatMessage = publicProcedure
 
       await messageBufferService.addMessage({
         userId: username,
-        chatSessionId: input.sessionId,
+        chatSessionId: ctx.verifiedInterviewSessionId,
         interviewStep,
         message: bufferedMessage,
       });
@@ -134,7 +129,7 @@ export const sendChatMessage = publicProcedure
               name: "interview/message.buffered",
               data: {
                 userId: username,
-                sessionId: input.sessionId,
+                sessionId: ctx.verifiedInterviewSessionId,
                 interviewStep,
                 messageId,
                 timestamp,
@@ -158,7 +153,7 @@ export const sendChatMessage = publicProcedure
       }
       // Все остальные ошибки обрабатываем через errorHandler
       throw await errorHandler.handleDatabaseError(error as Error, {
-        sessionId: input.sessionId,
+        sessionId: ctx.verifiedInterviewSessionId,
         operation: "send_chat_message",
       });
     }

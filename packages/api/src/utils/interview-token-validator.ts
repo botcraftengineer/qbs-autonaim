@@ -1,6 +1,4 @@
 import type { db as DbType } from "@qbs-autonaim/db/client";
-import { TRPCError } from "@trpc/server";
-
 /**
  * Результат валидации токена интервью
  */
@@ -171,29 +169,4 @@ export function extractTokenFromHeaders(headers: Headers): string | null {
   }
 
   return null;
-}
-
-/**
- * Middleware helper для проверки доступа к interviewSession
- * Бросает TRPC ошибку если доступа нет
- */
-export async function requireInterviewAccess(
-  sessionId: string,
-  validatedToken: ValidatedInterviewToken | null,
-  userId: string | null,
-  db: typeof DbType,
-): Promise<void> {
-  const hasAccess = await hasInterviewAccess(
-    sessionId,
-    validatedToken,
-    userId,
-    db,
-  );
-
-  if (!hasAccess) {
-    throw new TRPCError({
-      code: "FORBIDDEN",
-      message: "Нет доступа к этому интервью",
-    });
-  }
 }

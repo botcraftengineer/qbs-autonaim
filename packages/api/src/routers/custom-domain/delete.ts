@@ -32,6 +32,13 @@ export const deleteDomain = protectedProcedure
       });
     }
 
+    if (!domain.workspace) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Невозможно удалить предустановленный домен",
+      });
+    }
+
     const member = domain.workspace.members[0];
     if (!member || (member.role !== "owner" && member.role !== "admin")) {
       throw new TRPCError({

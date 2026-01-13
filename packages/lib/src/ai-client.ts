@@ -15,16 +15,16 @@ const DEFAULT_MODEL_OPENAI = "gpt-5.2";
 const DEFAULT_MODEL_DEEPSEEK = "deepseek-chat";
 
 // Создаём OpenAI провайдер с прокси
-const proxyBaseUrl = env.AI_PROXY_URL || env.APP_URL || "http://localhost:3000";
+const proxyBaseUrl = env.AI_PROXY_URL;
 const openaiProvider = createOpenAI({
-  apiKey: env.OPENAI_API_KEY || "dummy-key",
-  baseURL: `${proxyBaseUrl}/api/ai-proxy`,
+  apiKey: env.OPENAI_API_KEY,
+  baseURL: proxyBaseUrl,
 });
 
 /**
  * Определить фактически используемый провайдер с учётом fallback
  */
-function getActualProvider(): "openai" | "deepseek" {
+export function getActualProvider(): "openai" | "deepseek" {
   const provider = env.AI_PROVIDER;
   if (provider === "openai" && !env.OPENAI_API_KEY && env.DEEPSEEK_API_KEY) {
     return "deepseek";
@@ -207,6 +207,37 @@ export function getAIModelName(): string {
   }
 
   return provider === "openai" ? DEFAULT_MODEL_OPENAI : DEFAULT_MODEL_DEEPSEEK;
+}
+
+/**
+ * Получить fallback модель в случае недоступности основной
+ */
+export function getFallbackModel(): LanguageModel {
+  // Создаём OpenAI провайдер с прокси
+  const proxyBaseUrl = env.AI_PROXY_URL;
+  const openaiProvider = createOpenAI({
+    apiKey: env.OPENAI_API_KEY,
+    baseURL: proxyBaseUrl,
+  });
+
+  const actualProvider = getActualProvider();
+
+  if (actualProvider === "deepseek" && env.OPENAI_API_KEY) {
+    // DeepSeek недоступен, fallback на OpenAI
+    console.warn(
+      "[AI Client] DeepSeek недоступен, переключаюсь на OpenAI как fallback",
+    );
+    return openaiProvider(DEFAULT_MODEL_OPENAI);
+  } else if (actualProvider === "openai" && env.DEEPSEEK_API_KEY) {
+    // OpenAI недоступен, fallback на DeepSeek
+    console.warn(
+      "[AI Client] OpenAI недоступен, переключаюсь на DeepSeek как fallback",
+    );
+    return deepseek(DEFAULT_MODEL_DEEPSEEK);
+  }
+
+  // Нет доступной fallback модели
+  throw new Error("Ни основная, ни fallback модель не доступны");
 }
 
 interface GenerateTextOptions {

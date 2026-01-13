@@ -36,3 +36,11 @@ export { type AppRouter, appRouter } from "./root";
 export { AuditLoggerService } from "./services/audit-logger";
 export { createTRPCContext } from "./trpc";
 export type { RouterInputs, RouterOutputs };
+export type { ValidatedInterviewToken } from "./utils/interview-token-validator";
+export {
+  extractTokenFromHeaders,
+  hasGigAccess,
+  hasInterviewAccess,
+  hasVacancyAccess,
+  validateInterviewToken,
+} from "./utils/interview-token-validator";

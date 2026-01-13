@@ -71,7 +71,9 @@ function formatCandidate(candidate: CandidateData): string {
   parts.push(`### ${name}`);
 
   if (candidate.salaryExpectationsAmount) {
-    parts.push(`- **Ожидания по зарплате:** ${candidate.salaryExpectationsAmount}`);
+    parts.push(
+      `- **Ожидания по зарплате:** ${candidate.salaryExpectationsAmount}`,
+    );
   }
 
   if (candidate.profileUrl) {

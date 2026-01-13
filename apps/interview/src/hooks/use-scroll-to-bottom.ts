@@ -70,19 +70,29 @@ export function useScrollToBottom() {
       }
     };
 
-    const mutationObserver = new MutationObserver(scrollIfNeeded);
-    mutationObserver.observe(container, {
-      childList: true,
-      subtree: true,
-      characterData: true,
+    // Наблюдаем за добавлением/удалением дочерних элементов и изменениями текста
+    const mutationObserver = new MutationObserver((mutations) => {
+      const hasContentChanges = mutations.some(
+        (mutation) =>
+          mutation.type === "childList" ||
+          (mutation.type === "characterData" &&
+            mutation.target.textContent?.trim()),
+      );
+
+      if (hasContentChanges) {
+        scrollIfNeeded();
+      }
     });
 
+    mutationObserver.observe(container, {
+      childList: true,
+      characterData: true,
+      subtree: true, // Наблюдаем за subtree для обнаружения изменений текста в потомках
+    });
+
+    // ResizeObserver только для контейнера
     const resizeObserver = new ResizeObserver(scrollIfNeeded);
     resizeObserver.observe(container);
-
-    for (const child of container.children) {
-      resizeObserver.observe(child);
-    }
 
     return () => {
       mutationObserver.disconnect();

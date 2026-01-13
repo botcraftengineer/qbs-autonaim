@@ -1,4 +1,4 @@
-﻿import { and, desc, eq, ilike, inArray, lt, or } from "@qbs-autonaim/db";
+import { and, desc, eq, ilike, inArray, lt, or } from "@qbs-autonaim/db";
 import {
   file as fileTable,
   interviewMessage as interviewMessageTable,
@@ -258,7 +258,9 @@ export const list = protectedProcedure
         : null;
 
       const resumeScore = screening?.detailedScore;
-      const interviewScore = interviewScoring?.score;
+      const interviewScore =
+        interviewScoring?.rating ??
+        Math.round((interviewScoring?.score ?? 0) / 20);
 
       const matchScore =
         resumeScore !== undefined && interviewScore !== undefined

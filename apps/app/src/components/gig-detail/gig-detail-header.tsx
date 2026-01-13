@@ -93,7 +93,7 @@ export function GigDetailHeader({
                 variant="outline"
                 size="icon"
                 aria-label="Открыть меню действий"
-                className="min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] touch-action-manipulation shrink-0"
+                className="min-w-[44px] min-h-[44px] sm:min-w-[40px] sm:min-h-[40px] touch-manipulation shrink-0"
               >
                 <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
               </Button>

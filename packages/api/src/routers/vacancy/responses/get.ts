@@ -1,4 +1,4 @@
-﻿import { and, eq } from "@qbs-autonaim/db";
+import { and, eq } from "@qbs-autonaim/db";
 import {
   interviewScoring as interviewScoringTable,
   interviewSession,
@@ -136,7 +136,10 @@ export const get = protectedProcedure
         : null,
       interviewScoring: directInterviewScoring
         ? {
-            ...directInterviewScoring,
+            score:
+              directInterviewScoring.rating ??
+              Math.round(directInterviewScoring.score / 20),
+            detailedScore: directInterviewScoring.score,
             analysis: directInterviewScoring.analysis
               ? sanitizeHtml(directInterviewScoring.analysis)
               : undefined,

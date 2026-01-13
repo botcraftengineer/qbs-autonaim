@@ -90,7 +90,8 @@ export const listRecent = protectedProcedure
             : null,
           interviewScoring: scoring
             ? {
-                ...scoring,
+                score: scoring.rating ?? Math.round(scoring.score / 20),
+                detailedScore: scoring.score,
                 analysis: scoring.analysis
                   ? sanitizeHtml(scoring.analysis)
                   : null,

@@ -74,43 +74,38 @@ export const update = protectedProcedure
     if (input.settings.customDomainId !== undefined) {
       // Validate customDomainId if provided
       if (input.settings.customDomainId !== null) {
-        // Проверяем, является ли это предустановленным доменом
-        const { getPresetDomain } = await import("@qbs-autonaim/db/schema");
-        const presetDomain = getPresetDomain(input.settings.customDomainId);
+        // Проверяем домен в БД (включая пресеты)
+        const domain = await ctx.db.query.customDomain.findFirst({
+          where: eq(customDomain.id, input.settings.customDomainId),
+        });
 
-        if (!presetDomain) {
-          // Если не предустановленный, проверяем в кастомных доменах
-          const domain = await ctx.db.query.customDomain.findFirst({
-            where: eq(customDomain.id, input.settings.customDomainId),
+        if (!domain) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Домен не найден",
           });
+        }
 
-          if (!domain) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Домен не найден",
-            });
-          }
+        if (!domain.isVerified) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Домен не верифицирован",
+          });
+        }
 
-          if (!domain.isVerified) {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Домен не верифицирован",
-            });
-          }
+        if (domain.type !== "interview") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Домен должен иметь тип 'interview'",
+          });
+        }
 
-          if (domain.type !== "interview") {
-            throw new TRPCError({
-              code: "BAD_REQUEST",
-              message: "Домен должен иметь тип 'interview'",
-            });
-          }
-
-          if (domain.workspaceId !== input.workspaceId) {
-            throw new TRPCError({
-              code: "FORBIDDEN",
-              message: "Домен не принадлежит этому workspace",
-            });
-          }
+        // Проверяем права доступа только для не-пресетных доменов
+        if (!domain.isPreset && domain.workspaceId !== input.workspaceId) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Домен не принадлежит этому workspace",
+          });
         }
       }
 

@@ -228,14 +228,12 @@ ${competitionInfo}
     // Бюджет
     if (budget.budgetMin !== null && budget.budgetMin !== undefined) {
       if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
-        parts.push(
-          `Бюджет: ${budget.budgetMin}-${budget.budgetMax} RUB`,
-        );
+        parts.push(`Бюджет: ${budget.budgetMin}-${budget.budgetMax} ₽`);
       } else {
-        parts.push(`Бюджет от: ${budget.budgetMin} RUB`);
+        parts.push(`Бюджет от: ${budget.budgetMin} ₽`);
       }
     } else if (budget.budgetMax !== null && budget.budgetMax !== undefined) {
-      parts.push(`Бюджет до: ${budget.budgetMax} RUB`);
+      parts.push(`Бюджет до: ${budget.budgetMax} ₽`);
     }
 
     if (budget.deadline) {
@@ -263,9 +261,7 @@ ${competitionInfo}
       candidate.proposedPrice !== null &&
       candidate.proposedPrice !== undefined
     ) {
-      parts.push(
-        `Предложенная цена: ${candidate.proposedPrice} RUB`,
-      );
+      parts.push(`Предложенная цена: ${candidate.proposedPrice} ₽`);
     }
 
     if (

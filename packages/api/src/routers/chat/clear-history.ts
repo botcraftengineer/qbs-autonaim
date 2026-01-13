@@ -9,26 +9,39 @@ import { protectedProcedure } from "../../trpc";
 
 export const clearHistory = protectedProcedure
   .input(
-    z.object({
-      entityType: z.enum(chatEntityTypeEnum.enumValues),
-      entityId: z.string().uuid(),
-    }),
+    z
+      .object({
+        sessionId: z.string().uuid().optional(),
+        entityType: z.enum(chatEntityTypeEnum.enumValues).optional(),
+        entityId: z.string().uuid().optional(),
+      })
+      .refine(
+        (v) => Boolean(v.sessionId) || (Boolean(v.entityType) && Boolean(v.entityId)),
+        {
+          message: "sessionId или (entityType, entityId) обязательны",
+        },
+      ),
   )
   .mutation(async ({ input, ctx }) => {
-    const { entityType, entityId } = input;
+    const { sessionId, entityType, entityId } = input;
     const userId = ctx.session.user.id;
 
     // TODO: Проверка доступа к сущности
 
     // Загрузка сессии
-    const session = await ctx.db.query.chatSession.findFirst({
-      where: (chatSession, { and, eq }) =>
-        and(
-          eq(chatSession.entityType, entityType),
-          eq(chatSession.entityId, entityId),
-          eq(chatSession.userId, userId),
-        ),
-    });
+    const session = sessionId
+      ? await ctx.db.query.chatSession.findFirst({
+          where: (chatSession, { and, eq }) =>
+            and(eq(chatSession.id, sessionId), eq(chatSession.userId, userId)),
+        })
+      : await ctx.db.query.chatSession.findFirst({
+          where: (chatSession, { and, eq }) =>
+            and(
+              eq(chatSession.entityType, entityType as NonNullable<typeof entityType>),
+              eq(chatSession.entityId, entityId as NonNullable<typeof entityId>),
+              eq(chatSession.userId, userId),
+            ),
+        });
 
     if (!session) {
       return {

@@ -1,6 +1,7 @@
 import type { TRPCRouterRecord } from "@trpc/server";
 
 import { checkDuplicateResponse } from "./check-duplicate-response";
+import { checkInterviewAccess } from "./check-interview-access";
 import { createVacancy } from "./create-vacancy";
 import { deleteVacancy } from "./delete-vacancy";
 import { exportAnalytics } from "./export-analytics";
@@ -43,6 +44,7 @@ export const freelancePlatformsRouter = {
   getInterviewByToken,
   getInterviewLink,
   validateInterviewToken,
+  checkInterviewAccess,
   checkDuplicateResponse,
   startInterview,
   getShortlist,

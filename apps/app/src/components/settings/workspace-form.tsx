@@ -22,6 +22,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { CustomDomainSelect } from "~/components/gig/custom-domain-select";
 import { useTRPC } from "~/trpc/react";
 import { DeleteWorkspaceDialog } from "./delete-workspace-dialog";
 
@@ -36,9 +37,7 @@ const workspaceFormSchema = z.object({
     .max(48, "Максимум 48 символов")
     .regex(/^[a-z0-9-]+$/, "Только строчные буквы, цифры и дефисы"),
   logo: z.string().optional().nullable(),
-  interviewDomain: z
-    .union([z.string().url("Некорректный URL домена"), z.literal(""), z.null()])
-    .optional(),
+  customDomainId: z.string().uuid().nullish(),
 });
 
 type WorkspaceFormValues = z.infer<typeof workspaceFormSchema>;
@@ -72,7 +71,7 @@ export function WorkspaceForm({
       name: "",
       slug: "",
       logo: null,
-      interviewDomain: "",
+      customDomainId: null,
     },
   });
 
@@ -117,7 +116,6 @@ export function WorkspaceForm({
       data: {
         ...data,
         logo: data.logo ?? undefined,
-        interviewDomain: data.interviewDomain || undefined,
       },
     });
   }
@@ -294,42 +292,10 @@ export function WorkspaceForm({
           />
 
           {/* Interview Domain */}
-          <FormField
-            control={form.control}
-            name="interviewDomain"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center gap-2">
-                  <FormLabel className="text-foreground font-medium">
-                    Кастомный домен для интервью
-                  </FormLabel>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <p>
-                          Укажите кастомный домен для ссылок на интервью
-                          (например, https://interview.company.com). Если не
-                          указан, будет использоваться домен по умолчанию из
-                          переменной окружения NEXT_PUBLIC_INTERVIEW_URL.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Input
-                  placeholder="https://interview.company.com"
-                  {...field}
-                  value={field.value || ""}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Оставьте пустым для использования домена по умолчанию.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
+          <CustomDomainSelect
+            workspaceId={workspaceId}
+            value={form.watch("customDomainId")}
+            onChange={(value) => form.setValue("customDomainId", value)}
           />
 
           <Button

@@ -6,7 +6,6 @@ import {
   Rocket,
   ArrowRight,
   Zap,
-  DollarSign,
   Target,
   TrendingUp,
   Users,
@@ -34,7 +33,7 @@ export default function StartupsPage() {
       stat: "48 часов",
     },
     {
-      icon: DollarSign,
+      icon: TrendingUp,
       title: "До 10x дешевле рекрутера",
       description:
         "Вместо найма HR или оплаты агентства за $5000+, платите от $99/месяц и нанимайте неограниченное количество людей.",

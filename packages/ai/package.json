@@ -16,12 +16,12 @@
     "build": "tsdown",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsc",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@qbs-autonaim/config": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
-    "ai": "6.0.28",
+    "ai": "6.0.29",
     "langfuse": "3.38.6",
     "string-strip-html": "^13.5.0",
     "uuid": "^13.0.0",

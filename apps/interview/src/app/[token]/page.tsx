@@ -85,7 +85,7 @@ function InterviewLandingClient({ token }: { token: string }) {
     <main className="relative flex min-h-screen flex-col items-center justify-center px-4">
       {/* Grid background */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:64px_64px]"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-size-[64px_64px]"
         aria-hidden="true"
       />
       {/* Gradient blobs */}
@@ -117,7 +117,7 @@ function InterviewLandingClient({ token }: { token: string }) {
       <div className="relative z-10 w-full max-w-md">
         {/* Logo/Icon */}
         <div className="mb-8 flex justify-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-violet-500 to-purple-600 shadow-lg shadow-violet-500/25">
             <svg
               className="h-6 w-6 text-white"
               fill="none"

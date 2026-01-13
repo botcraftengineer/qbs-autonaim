@@ -30,10 +30,11 @@ export default async function WorkspacesPage({
   );
 
   // Получаем доступные пользователю воркспейсы в этой организации
-  const workspaces = await organizationRepository.getUserWorkspacesInOrganization(
-    organization.id,
-    session.user.id,
-  );
+  const workspaces =
+    await organizationRepository.getUserWorkspacesInOrganization(
+      organization.id,
+      session.user.id,
+    );
 
   // Если нет доступа к организации И нет доступных воркспейсов, отказываем в доступе
   if (!orgAccess && workspaces.length === 0) {

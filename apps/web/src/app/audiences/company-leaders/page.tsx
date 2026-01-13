@@ -7,7 +7,6 @@ import {
   ArrowRight,
   TrendingUp,
   Users,
-  DollarSign,
   Shield,
   BarChart3,
   Target,
@@ -33,7 +32,7 @@ export default function CompanyLeadersPage() {
       stat: "3x рост",
     },
     {
-      icon: DollarSign,
+      icon: TrendingUp,
       title: "ROI 400% за первый год",
       description:
         "Экономия на зарплатах рекрутеров ($60k+ каждый), агентствах ($5-10k per hire) и ускорение найма окупает инвестиции за 3 месяца.",

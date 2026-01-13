@@ -23,10 +23,15 @@ export const domainTypeEnum = pgEnum("domain_type", [
 ]);
 
 /**
- * Предустановленные домены для интервью
+ * Предустановленные домены для интервью (для UI)
+ * ID соответствуют записям в БД
  */
 export const presetInterviewDomains = [
-  { id: "hrbot.pro", domain: "hrbot.pro", label: "hrbot.pro" },
+  {
+    id: "019bb2f3-a10a-73b7-b76b-036cf88cbbd9",
+    domain: "hrbot.pro",
+    label: "hrbot.pro",
+  },
 ] as const;
 
 export type PresetInterviewDomain = (typeof presetInterviewDomains)[number];
@@ -44,19 +49,21 @@ export const sslStatusEnum = pgEnum("ssl_status", [
 /**
  * Кастомные домены для workspace
  * Позволяет каждому workspace использовать собственные домены для различных целей
+ * Также хранит предустановленные домены (isPreset = true, workspaceId = null)
  */
 export const customDomain = pgTable(
   "custom_domains",
   {
     id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
-    workspaceId: text("workspace_id")
-      .notNull()
-      .references(() => workspace.id, { onDelete: "cascade" }),
+    workspaceId: text("workspace_id").references(() => workspace.id, {
+      onDelete: "cascade",
+    }),
     domain: varchar("domain", { length: 255 }).notNull(),
     type: domainTypeEnum("type").notNull().default("interview"),
     cnameTarget: varchar("cname_target", { length: 255 }).notNull(),
     isVerified: boolean("is_verified").default(false).notNull(),
     isPrimary: boolean("is_primary").default(false).notNull(),
+    isPreset: boolean("is_preset").default(false).notNull(),
     verificationError: text("verification_error"),
     lastVerificationAttempt: timestamp("last_verification_attempt", {
       withTimezone: true,
@@ -80,6 +87,9 @@ export const customDomain = pgTable(
     workspaceIdx: index("custom_domain_workspace_idx").on(table.workspaceId),
     domainIdx: index("custom_domain_domain_idx").on(table.domain),
     typeIdx: index("custom_domain_type_idx").on(table.type),
+    presetIdx: index("custom_domain_preset_idx")
+      .on(table.isPreset, table.type)
+      .where(sql`${table.isPreset} = true`),
     primaryIdx: index("custom_domain_primary_idx")
       .on(table.workspaceId, table.type, table.isPrimary)
       .where(sql`${table.isPrimary} = true`),
@@ -87,6 +97,11 @@ export const customDomain = pgTable(
       table.domain,
       table.type,
     ),
+    // Constraint: либо пресет (workspaceId = null), либо привязан к workspace
+    workspaceOrPresetCheck: sql`CHECK (
+      (is_preset = true AND workspace_id IS NULL) OR 
+      (is_preset = false AND workspace_id IS NOT NULL)
+    )`,
   }),
 );
 
@@ -103,6 +118,7 @@ export const createCustomDomainSchema = createInsertSchema(customDomain, {
   cnameTarget: z.string().min(1).max(255),
   isVerified: z.boolean().default(false),
   isPrimary: z.boolean().default(false),
+  isPreset: z.boolean().default(false),
   sslStatus: z
     .enum(["pending", "active", "error", "expired"])
     .default("pending"),
@@ -126,15 +142,24 @@ export type DomainType = (typeof domainTypeEnum.enumValues)[number];
 export type SSLStatus = (typeof sslStatusEnum.enumValues)[number];
 
 /**
- * Проверяет, является ли домен предустановленным
+ * Проверяет, является ли домен предустановленным (по константам)
  */
 export function isPresetDomain(domain: string): boolean {
   return presetInterviewDomains.some((preset) => preset.domain === domain);
 }
 
 /**
- * Получает предустановленный домен по ID
+ * Получает предустановленный домен по ID из констант
  */
-export function getPresetDomain(id: string) {
-  return presetInterviewDomains.find((preset) => preset.id === id);
+export function getPresetDomain(idOrDomain: string) {
+  return presetInterviewDomains.find(
+    (preset) => preset.id === idOrDomain || preset.domain === idOrDomain,
+  );
 }
+
+/**
+ * ID предустановленных доменов для использования в seed/миграциях
+ */
+export const PRESET_DOMAIN_IDS = {
+  HRBOT_PRO: "00000000-0000-0000-0000-000000000001",
+} as const;

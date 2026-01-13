@@ -7,7 +7,6 @@ import {
   ArrowRight,
   Users,
   Zap,
-  DollarSign,
   Target,
   BarChart3,
   Clock,
@@ -40,7 +39,7 @@ export default function RecruitmentAgenciesPage() {
       stat: "10x скорость",
     },
     {
-      icon: DollarSign,
+      icon: TrendingUp,
       title: "Больше клиентов, тот же штат",
       description:
         "Один рекрутер с QBS закрывает столько вакансий, сколько раньше закрывали 3-4 человека. Масштабируйте бизнес без найма.",

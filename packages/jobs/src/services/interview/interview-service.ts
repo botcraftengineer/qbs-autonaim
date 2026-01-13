@@ -6,7 +6,6 @@ import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
 import type {
   InterviewAnalysis,
-  InterviewScoring,
 } from "../../schemas/interview";
 import { createLogger, INTERVIEW } from "../base";
 
@@ -421,11 +420,20 @@ export async function saveQuestionAnswer(
 }
 
 /**
+ * Результат скоринга интервью
+ */
+export interface InterviewScoringResult {
+  score: number; // 1-5 scale
+  detailedScore: number; // 0-100 scale
+  analysis: string;
+}
+
+/**
  * Creates final scoring based on entire interview
  */
 export async function createInterviewScoring(
   context: InterviewContext,
-): Promise<InterviewScoring> {
+): Promise<InterviewScoringResult> {
   const { candidateName, vacancyTitle, vacancyDescription } = context;
 
   // Создаем агента
@@ -453,13 +461,15 @@ export async function createInterviewScoring(
 
     return {
       score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
+      detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
       analysis: "Failed to analyze interview automatically",
     };
   }
 
-  // Возвращаем результат (без detailedScore - его нет в схеме)
+  // Возвращаем результат
   return {
     score: result.data.score,
+    detailedScore: result.data.detailedScore,
     analysis: result.data.analysis,
   };
 }

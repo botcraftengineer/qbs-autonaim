@@ -1,0 +1,80 @@
+[
+  {
+    "candidateId": "hh_candidate_001",
+    "candidateName": "Алексей Петров",
+    "photoUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male developer"
+  },
+  {
+    "candidateId": "hh_candidate_002",
+    "candidateName": "Мария Сидорова",
+    "photoUrl": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a female developer"
+  },
+  {
+    "candidateId": "hh_candidate_003",
+    "candidateName": "Дмитрий Козлов",
+    "photoUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male backend developer"
+  },
+  {
+    "candidateId": "sj_candidate_001",
+    "candidateName": "Сергей Волков",
+    "photoUrl": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male DevOps engineer"
+  },
+  {
+    "candidateId": "hh_candidate_004",
+    "candidateName": "Анна Новикова",
+    "photoUrl": "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a young female developer"
+  },
+  {
+    "candidateId": "hh_candidate_005",
+    "candidateName": "Игорь Смирнов",
+    "photoUrl": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male full stack developer"
+  },
+  {
+    "candidateId": "hh_candidate_006",
+    "candidateName": "Елена Васильева",
+    "photoUrl": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a female mobile developer"
+  },
+  {
+    "candidateId": "sj_candidate_002",
+    "candidateName": "Максим Орлов",
+    "photoUrl": "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male QA engineer"
+  },
+  {
+    "candidateId": "hh_candidate_007",
+    "candidateName": "Ольга Морозова",
+    "photoUrl": "https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a female data scientist"
+  },
+  {
+    "candidateId": "hh_candidate_008",
+    "candidateName": "Артем Лебедев",
+    "photoUrl": "https://images.unsplash.com/photo-1566492031773-4f4e44671d66?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male UI/UX designer"
+  },
+  {
+    "candidateId": "sj_candidate_003",
+    "candidateName": "Виктория Попова",
+    "photoUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a female Java developer"
+  },
+  {
+    "candidateId": "hh_candidate_009",
+    "candidateName": "Андрей Соколов",
+    "photoUrl": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a male product manager"
+  },
+  {
+    "candidateId": "hh_candidate_010",
+    "candidateName": "Татьяна Кузнецова",
+    "photoUrl": "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400&h=400&fit=crop&crop=face",
+    "photoDescription": "Professional headshot of a female frontend developer"
+  }
+]

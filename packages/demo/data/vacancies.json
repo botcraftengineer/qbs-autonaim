@@ -1,0 +1,563 @@
+[
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Senior Frontend Developer (React/TypeScript)",
+    "url": "https://hh.ru/vacancy/123456789",
+    "views": 245,
+    "responses": 18,
+    "newResponses": 5,
+    "resumesInProgress": 3,
+    "suitableResumes": 8,
+    "region": "Москва",
+    "description": "Мы ищем опытного Frontend разработчика для работы над современными веб-приложениями. В команде вы будете заниматься разработкой пользовательских интерфейсов с использованием React, TypeScript и современных инструментов разработки.",
+    "requirements": {
+      "job_title": "Senior Frontend Developer",
+      "summary": "Опытный разработчик для создания современных веб-приложений",
+      "mandatory_requirements": [
+        "Опыт работы с React от 3 лет",
+        "Знание TypeScript",
+        "Опыт работы с Redux или Zustand",
+        "Понимание принципов REST API"
+      ],
+      "nice_to_have_skills": [
+        "Next.js",
+        "GraphQL",
+        "Jest/Testing Library",
+        "Docker"
+      ],
+      "tech_stack": ["React", "TypeScript", "Redux", "Webpack", "SCSS"],
+      "experience_years": {
+        "min": 3,
+        "description": "От 3 лет коммерческого опыта разработки"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B1+"
+        }
+      ],
+      "location_type": "Офис/Удаленно",
+      "keywords_for_matching": [
+        "react",
+        "typescript",
+        "frontend",
+        "javascript",
+        "redux",
+        "nextjs"
+      ]
+    },
+    "source": "HH",
+    "externalId": "123456789",
+    "customBotInstructions": "При общении с кандидатами акцентируй внимание на опыте работы с современными фреймворками и готовности к работе в команде.",
+    "customScreeningPrompt": "Оцени технические навыки кандидата в области React и TypeScript, а также его опыт работы с состоянием приложения.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Python Backend Developer (Django/FastAPI)",
+    "url": "https://hh.ru/vacancy/987654321",
+    "views": 189,
+    "responses": 24,
+    "newResponses": 7,
+    "resumesInProgress": 4,
+    "suitableResumes": 12,
+    "region": "Санкт-Петербург",
+    "description": "Ищем Python разработчика для работы над высоконагруженными веб-сервисами. Вы будете участвовать в разработке API, оптимизации производительности и масштабировании системы.",
+    "requirements": {
+      "job_title": "Python Backend Developer",
+      "summary": "Разработчик для создания высоконагруженных веб-сервисов",
+      "mandatory_requirements": [
+        "Опыт работы с Python от 2 лет",
+        "Знание Django или FastAPI",
+        "Опыт работы с PostgreSQL",
+        "Понимание принципов REST API"
+      ],
+      "nice_to_have_skills": ["Redis", "Celery", "Docker", "Kubernetes", "AWS"],
+      "tech_stack": ["Python", "Django", "FastAPI", "PostgreSQL", "Redis"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет коммерческого опыта разработки на Python"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2"
+        }
+      ],
+      "location_type": "Гибрид",
+      "keywords_for_matching": [
+        "python",
+        "django",
+        "fastapi",
+        "backend",
+        "postgresql",
+        "api"
+      ]
+    },
+    "source": "HH",
+    "externalId": "987654321",
+    "customBotInstructions": "Обрати внимание на опыт работы с базами данных и понимание архитектуры веб-приложений.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "DevOps Engineer (Kubernetes/AWS)",
+    "url": "https://superjob.ru/vacancy/555666777",
+    "views": 156,
+    "responses": 12,
+    "newResponses": 3,
+    "resumesInProgress": 2,
+    "suitableResumes": 6,
+    "region": "Удаленно",
+    "description": "Требуется DevOps инженер для автоматизации процессов разработки и развертывания. Работа с контейнеризацией, оркестрацией и облачными платформами.",
+    "requirements": {
+      "job_title": "DevOps Engineer",
+      "summary": "Инженер для автоматизации процессов разработки и развертывания",
+      "mandatory_requirements": [
+        "Опыт работы с Docker",
+        "Знание Kubernetes",
+        "Опыт работы с AWS или другими облачными платформами",
+        "Знание CI/CD процессов"
+      ],
+      "nice_to_have_skills": [
+        "Terraform",
+        "Ansible",
+        "Prometheus",
+        "Grafana",
+        "Helm"
+      ],
+      "tech_stack": ["Docker", "Kubernetes", "AWS", "Jenkins", "GitLab CI"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет опыта в области DevOps"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2+"
+        }
+      ],
+      "location_type": "Удаленно",
+      "keywords_for_matching": [
+        "devops",
+        "docker",
+        "kubernetes",
+        "aws",
+        "ci/cd",
+        "terraform"
+      ]
+    },
+    "source": "SUPERJOB",
+    "externalId": "555666777",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Full Stack Developer (Node.js + React)",
+    "url": "https://hh.ru/vacancy/111222333",
+    "views": 312,
+    "responses": 28,
+    "newResponses": 8,
+    "resumesInProgress": 5,
+    "suitableResumes": 15,
+    "region": "Москва",
+    "description": "Ищем Full Stack разработчика для работы над веб-платформой электронной коммерции. Вы будете заниматься как frontend, так и backend разработкой, интеграцией с внешними API и оптимизацией производительности.",
+    "requirements": {
+      "job_title": "Full Stack Developer",
+      "summary": "Разработчик для создания веб-платформы электронной коммерции",
+      "mandatory_requirements": [
+        "Опыт работы с Node.js от 2 лет",
+        "Знание React и современного JavaScript",
+        "Опыт работы с базами данных (PostgreSQL/MongoDB)",
+        "Понимание REST API и GraphQL"
+      ],
+      "nice_to_have_skills": [
+        "Express.js",
+        "NestJS",
+        "TypeScript",
+        "Redis",
+        "Docker",
+        "AWS"
+      ],
+      "tech_stack": ["Node.js", "React", "PostgreSQL", "Express", "TypeScript"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет коммерческого опыта full stack разработки"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B1"
+        }
+      ],
+      "location_type": "Офис",
+      "keywords_for_matching": [
+        "nodejs",
+        "react",
+        "fullstack",
+        "javascript",
+        "postgresql",
+        "api"
+      ]
+    },
+    "source": "HH",
+    "externalId": "111222333",
+    "customBotInstructions": "Обрати внимание на опыт работы как с frontend, так и с backend технологиями.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Mobile Developer (React Native)",
+    "url": "https://hh.ru/vacancy/444555666",
+    "views": 198,
+    "responses": 15,
+    "newResponses": 4,
+    "resumesInProgress": 3,
+    "suitableResumes": 8,
+    "region": "Санкт-Петербург",
+    "description": "Требуется мобильный разработчик для создания кроссплатформенного приложения. Работа с React Native, интеграция с нативными модулями, публикация в App Store и Google Play.",
+    "requirements": {
+      "job_title": "Mobile Developer",
+      "summary": "Разработчик мобильных приложений на React Native",
+      "mandatory_requirements": [
+        "Опыт работы с React Native от 1.5 лет",
+        "Знание JavaScript/TypeScript",
+        "Опыт публикации приложений в сторы",
+        "Понимание мобильной разработки"
+      ],
+      "nice_to_have_skills": [
+        "Expo",
+        "Redux",
+        "Firebase",
+        "Push notifications",
+        "Native modules"
+      ],
+      "tech_stack": ["React Native", "TypeScript", "Redux", "Firebase"],
+      "experience_years": {
+        "min": 1.5,
+        "description": "От 1.5 лет опыта мобильной разработки"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B1+"
+        }
+      ],
+      "location_type": "Гибрид",
+      "keywords_for_matching": [
+        "react native",
+        "mobile",
+        "typescript",
+        "ios",
+        "android",
+        "expo"
+      ]
+    },
+    "source": "HH",
+    "externalId": "444555666",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "QA Engineer (Automation)",
+    "url": "https://superjob.ru/vacancy/777888999",
+    "views": 134,
+    "responses": 19,
+    "newResponses": 6,
+    "resumesInProgress": 4,
+    "suitableResumes": 9,
+    "region": "Удаленно",
+    "description": "Ищем QA инженера для автоматизации тестирования веб-приложений. Создание и поддержка автотестов, интеграция в CI/CD, работа с командой разработки.",
+    "requirements": {
+      "job_title": "QA Engineer",
+      "summary": "Инженер по автоматизации тестирования",
+      "mandatory_requirements": [
+        "Опыт автоматизации тестирования от 2 лет",
+        "Знание Selenium или Playwright",
+        "Опыт написания тестов на Python/JavaScript",
+        "Понимание методологий тестирования"
+      ],
+      "nice_to_have_skills": [
+        "Cypress",
+        "Jest",
+        "Postman",
+        "Docker",
+        "Jenkins",
+        "Allure"
+      ],
+      "tech_stack": ["Selenium", "Python", "Playwright", "Jenkins", "Docker"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет опыта в автоматизации тестирования"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2"
+        }
+      ],
+      "location_type": "Удаленно",
+      "keywords_for_matching": [
+        "qa",
+        "automation",
+        "selenium",
+        "playwright",
+        "testing",
+        "python"
+      ]
+    },
+    "source": "SUPERJOB",
+    "externalId": "777888999",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Data Scientist (Python/ML)",
+    "url": "https://hh.ru/vacancy/101112131",
+    "views": 267,
+    "responses": 22,
+    "newResponses": 7,
+    "resumesInProgress": 4,
+    "suitableResumes": 11,
+    "region": "Москва",
+    "description": "Требуется Data Scientist для анализа данных и создания ML моделей. Работа с большими данными, создание предиктивных моделей, визуализация результатов.",
+    "requirements": {
+      "job_title": "Data Scientist",
+      "summary": "Специалист по анализу данных и машинному обучению",
+      "mandatory_requirements": [
+        "Опыт работы с Python от 2 лет",
+        "Знание pandas, numpy, scikit-learn",
+        "Опыт создания ML моделей",
+        "Знание статистики и математики"
+      ],
+      "nice_to_have_skills": [
+        "TensorFlow",
+        "PyTorch",
+        "Jupyter",
+        "SQL",
+        "Docker",
+        "MLflow"
+      ],
+      "tech_stack": ["Python", "pandas", "scikit-learn", "SQL", "Jupyter"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет опыта в Data Science"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2+"
+        }
+      ],
+      "location_type": "Гибрид",
+      "keywords_for_matching": [
+        "data science",
+        "python",
+        "machine learning",
+        "pandas",
+        "ml",
+        "analytics"
+      ]
+    },
+    "source": "HH",
+    "externalId": "101112131",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "UI/UX Designer",
+    "url": "https://hh.ru/vacancy/141516171",
+    "views": 189,
+    "responses": 31,
+    "newResponses": 9,
+    "resumesInProgress": 6,
+    "suitableResumes": 16,
+    "region": "Санкт-Петербург",
+    "description": "Ищем UI/UX дизайнера для работы над пользовательскими интерфейсами веб и мобильных приложений. Создание wireframes, прототипов, дизайн-системы.",
+    "requirements": {
+      "job_title": "UI/UX Designer",
+      "summary": "Дизайнер пользовательских интерфейсов",
+      "mandatory_requirements": [
+        "Опыт UI/UX дизайна от 2 лет",
+        "Знание Figma или Sketch",
+        "Понимание принципов UX",
+        "Опыт создания дизайн-систем"
+      ],
+      "nice_to_have_skills": [
+        "Adobe Creative Suite",
+        "Principle",
+        "InVision",
+        "Zeplin",
+        "HTML/CSS"
+      ],
+      "tech_stack": ["Figma", "Sketch", "Adobe XD", "Principle"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет опыта в UI/UX дизайне"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B1"
+        }
+      ],
+      "location_type": "Офис",
+      "keywords_for_matching": [
+        "ui",
+        "ux",
+        "design",
+        "figma",
+        "sketch",
+        "designer"
+      ]
+    },
+    "source": "HH",
+    "externalId": "141516171",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Java Backend Developer (Spring)",
+    "url": "https://superjob.ru/vacancy/181920212",
+    "views": 223,
+    "responses": 26,
+    "newResponses": 8,
+    "resumesInProgress": 5,
+    "suitableResumes": 13,
+    "region": "Москва",
+    "description": "Требуется Java разработчик для работы над enterprise системами. Разработка микросервисов, интеграция с внешними системами, оптимизация производительности.",
+    "requirements": {
+      "job_title": "Java Backend Developer",
+      "summary": "Разработчик enterprise систем на Java",
+      "mandatory_requirements": [
+        "Опыт работы с Java от 3 лет",
+        "Знание Spring Framework",
+        "Опыт работы с базами данных",
+        "Понимание принципов ООП"
+      ],
+      "nice_to_have_skills": [
+        "Spring Boot",
+        "Hibernate",
+        "Maven",
+        "Gradle",
+        "Docker",
+        "Kafka"
+      ],
+      "tech_stack": ["Java", "Spring", "PostgreSQL", "Maven", "Docker"],
+      "experience_years": {
+        "min": 3,
+        "description": "От 3 лет коммерческого опыта разработки на Java"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2"
+        }
+      ],
+      "location_type": "Офис",
+      "keywords_for_matching": [
+        "java",
+        "spring",
+        "backend",
+        "hibernate",
+        "microservices",
+        "enterprise"
+      ]
+    },
+    "source": "SUPERJOB",
+    "externalId": "181920212",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Product Manager (IT)",
+    "url": "https://hh.ru/vacancy/222324252",
+    "views": 156,
+    "responses": 18,
+    "newResponses": 5,
+    "resumesInProgress": 3,
+    "suitableResumes": 10,
+    "region": "Удаленно",
+    "description": "Ищем Product Manager для управления IT продуктом. Работа с командой разработки, анализ метрик, планирование roadmap, взаимодействие с заказчиками.",
+    "requirements": {
+      "job_title": "Product Manager",
+      "summary": "Менеджер IT продукта",
+      "mandatory_requirements": [
+        "Опыт работы Product Manager от 2 лет",
+        "Понимание процессов разработки ПО",
+        "Опыт работы с аналитикой",
+        "Навыки планирования и приоритизации"
+      ],
+      "nice_to_have_skills": [
+        "Agile/Scrum",
+        "Jira",
+        "Confluence",
+        "Google Analytics",
+        "A/B тестирование"
+      ],
+      "tech_stack": ["Jira", "Confluence", "Analytics", "Figma"],
+      "experience_years": {
+        "min": 2,
+        "description": "От 2 лет опыта в продуктовом менеджменте"
+      },
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2+"
+        }
+      ],
+      "location_type": "Удаленно",
+      "keywords_for_matching": [
+        "product manager",
+        "pm",
+        "product",
+        "agile",
+        "scrum",
+        "analytics"
+      ]
+    },
+    "source": "HH",
+    "externalId": "222324252",
+    "isActive": true
+  }
+]

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Сервис генерации шортлиста кандидатов
  *
  * Ранжирует фрилансеров на основе оценок анализа откликов и интервью.
@@ -118,7 +118,9 @@ export class ShortlistGenerator {
         const responseScore = screening?.score ?? 0;
 
         // Получаем оценку интервью (если есть завершённое интервью)
-        const interviewScore = interviewScoring?.score ?? null;
+        const interviewScore = interviewScoring
+          ? (interviewScoring.rating ?? Math.round(interviewScoring.score / 20))
+          : null;
 
         // Рассчитываем общую оценку
         const overallScore = this.calculateOverallScore(

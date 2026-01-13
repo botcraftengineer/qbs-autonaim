@@ -32,6 +32,13 @@ export const setPrimary = protectedProcedure
       });
     }
 
+    if (!domain.workspace) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Невозможно изменить предустановленный домен",
+      });
+    }
+
     const member = domain.workspace.members[0];
     if (!member || (member.role !== "owner" && member.role !== "admin")) {
       throw new TRPCError({
@@ -48,6 +55,13 @@ export const setPrimary = protectedProcedure
     }
 
     await db.transaction(async (tx) => {
+      if (!domain.workspaceId) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Невозможно изменить предустановленный домен",
+        });
+      }
+
       await tx
         .update(customDomain)
         .set({ isPrimary: false, updatedAt: new Date() })

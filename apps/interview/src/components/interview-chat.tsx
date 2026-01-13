@@ -3,9 +3,9 @@
 import { useChat } from "@ai-sdk/react";
 import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
+import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
 import { AlertCircle, ArrowDown, Loader2, Sparkles } from "lucide-react";
-import { motion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import Markdown from "react-markdown";
 import { toast } from "sonner";
@@ -33,38 +33,16 @@ interface ChatMessage {
 function InterviewGreeting() {
   return (
     <div className="mx-auto mt-8 flex size-full max-w-3xl flex-col justify-center px-4 md:mt-16 md:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20"
-      >
+      <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20">
         <Sparkles className="size-6 text-primary" />
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="font-semibold text-xl md:text-2xl"
-      >
-        Добро пожаловать!
-      </motion.div>
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="mt-1 text-muted-foreground text-xl md:text-2xl"
-      >
+      </div>
+      <div className="font-semibold text-xl md:text-2xl">Добро пожаловать!</div>
+      <div className="mt-1 text-muted-foreground text-xl md:text-2xl">
         Готовы начать интервью?
-      </motion.div>
-      <motion.p
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-4 text-muted-foreground text-sm"
-      >
+      </div>
+      <p className="mt-4 text-muted-foreground text-sm">
         Напишите сообщение, чтобы начать диалог с AI-ассистентом
-      </motion.p>
+      </p>
     </div>
   );
 }
@@ -156,13 +134,27 @@ const Message = memo(function Message({ message, isLoading }: MessageProps) {
                 );
               }
 
-              // Ответ AI — рендерим markdown
+              // Ответ AI — рендерим markdown с оптимизацией
               return (
                 <div
                   key={`${message.id}-text-${index}`}
                   className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
                 >
-                  <Markdown>{part.text}</Markdown>
+                  <Markdown
+                    components={{
+                      // Оптимизация: отключаем ненужные компоненты
+                      p: ({ children }) => <p>{children}</p>,
+                      strong: ({ children }) => <strong>{children}</strong>,
+                      em: ({ children }) => <em>{children}</em>,
+                      code: ({ children }) => <code>{children}</code>,
+                      pre: ({ children }) => <pre>{children}</pre>,
+                      ul: ({ children }) => <ul>{children}</ul>,
+                      ol: ({ children }) => <ol>{children}</ol>,
+                      li: ({ children }) => <li>{children}</li>,
+                    }}
+                  >
+                    {part.text}
+                  </Markdown>
                 </div>
               );
             }
@@ -293,7 +285,12 @@ function convertHistoryMessage(message: {
 function convertUIMessage(msg: {
   id: string;
   role: string;
-  parts?: Array<{ type: string; text?: string }>;
+  parts?: Array<{
+    type: string;
+    text?: string;
+    url?: string;
+    mediaType?: string;
+  }>;
   content?: string;
 }): ChatMessage {
   const parts: MessagePart[] = [];
@@ -302,6 +299,12 @@ function convertUIMessage(msg: {
     for (const part of msg.parts) {
       if (part.type === "text" && part.text) {
         parts.push({ type: "text", text: part.text });
+      } else if (part.type === "file" && part.url) {
+        parts.push({
+          type: "file",
+          url: part.url,
+          mediaType: part.mediaType,
+        });
       }
     }
   } else if (msg.content) {
@@ -321,12 +324,14 @@ function generateUUID(): string {
 
 interface InterviewChatProps {
   interviewSessionId: string;
+  interviewToken?: string;
   apiEndpoint?: string;
   className?: string;
 }
 
 export function InterviewChat({
   interviewSessionId,
+  interviewToken,
   apiEndpoint = "/api/interview/chat/stream",
   className,
 }: InterviewChatProps) {
@@ -338,21 +343,38 @@ export function InterviewChat({
   const { data: chatHistory, isLoading: isLoadingHistory } = useQuery(
     trpc.freelancePlatforms.getChatHistory.queryOptions({
       interviewSessionId,
+      interviewToken,
     }),
   );
 
-  // Загрузка контекста интервью (вакансия/задание)
-  const { data: interviewContext, isLoading: isLoadingContext } = useQuery(
-    trpc.freelancePlatforms.getInterviewContext.queryOptions({
+  // Ленивая загрузка контекста интервью (вакансия/задание)
+  const { data: interviewContext, isLoading: isLoadingContext } = useQuery({
+    ...trpc.freelancePlatforms.getInterviewContext.queryOptions({
       interviewSessionId,
+      interviewToken,
     }),
-  );
+    // Включаем только после загрузки истории чата
+    enabled: !!chatHistory,
+  });
 
   // Конвертация истории в формат для отображения
   const historyMessages = useMemo(() => {
     if (!chatHistory?.messages) return [];
     return chatHistory.messages.map(convertHistoryMessage);
   }, [chatHistory?.messages]);
+
+  // Оптимизируем transport для useChat
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: apiEndpoint,
+        body: {
+          sessionId: interviewSessionId,
+          interviewToken: interviewToken || null,
+        },
+      }),
+    [apiEndpoint, interviewSessionId, interviewToken],
+  );
 
   // useChat из AI SDK с нативным стримингом
   const {
@@ -366,12 +388,9 @@ export function InterviewChat({
     id: interviewSessionId,
     experimental_throttle: 50,
     generateId: generateUUID,
-    transport: new DefaultChatTransport({
-      api: apiEndpoint,
-      body: { sessionId: interviewSessionId },
-    }),
-    onError: (err) => {
-      console.error("[InterviewChat] Error:", err);
+    transport,
+    onError: (_err) => {
+      // Error handling
     },
   });
 
@@ -383,7 +402,7 @@ export function InterviewChat({
     return "idle";
   }, [rawStatus]);
 
-  // Конвертация сообщений в наш формат
+  // Конвертация сообщений в наш формат с оптимизацией
   const messages: ChatMessage[] = useMemo(() => {
     return rawMessages.map(convertUIMessage);
   }, [rawMessages]);
@@ -394,22 +413,46 @@ export function InterviewChat({
       isInitializedRef.current = false;
       currentConversationIdRef.current = interviewSessionId;
     }
-    if (
-      !isInitializedRef.current &&
-      historyMessages.length > 0 &&
-      rawMessages.length === 0
-    ) {
+
+    if (!isInitializedRef.current && historyMessages.length > 0) {
       // Конвертируем в формат AI SDK
-      const sdkMessages = historyMessages.map((msg) => ({
-        id: msg.id,
-        role: msg.role as "user" | "assistant",
-        content: msg.parts.find((p) => p.type === "text")?.text || "",
-        parts: msg.parts
-          .filter((p) => p.type === "text")
-          .map((p) => ({ type: "text" as const, text: p.text || "" })),
-      }));
-      setMessages(sdkMessages);
-      isInitializedRef.current = true;
+      const sdkMessages = historyMessages.map((msg) => {
+        // Собираем все части в правильном формате для AI SDK
+        const sdkParts = msg.parts
+          .map((part) => {
+            if (part.type === "text" && part.text) {
+              return { type: "text" as const, text: part.text };
+            } else if (part.type === "file" && part.url) {
+              return {
+                type: "file" as const,
+                url: part.url,
+                mediaType: part.mediaType || "audio/webm",
+              };
+            }
+            return null;
+          })
+          .filter(Boolean);
+
+        return {
+          id: msg.id,
+          role: msg.role as "user" | "assistant",
+          content: msg.parts.find((p) => p.type === "text")?.text || "",
+          parts: sdkParts,
+        };
+      });
+
+      // Если есть существующие сообщения, сначала сбрасываем их
+      if (rawMessages.length > 0) {
+        setMessages([]);
+        // Небольшая задержка для корректного сброса
+        setTimeout(() => {
+          setMessages(sdkMessages as UIMessage[]);
+          isInitializedRef.current = true;
+        }, 0);
+      } else {
+        setMessages(sdkMessages as UIMessage[]);
+        isInitializedRef.current = true;
+      }
     }
   }, [interviewSessionId, historyMessages, rawMessages.length, setMessages]);
 
@@ -523,7 +566,6 @@ export function InterviewChat({
             error instanceof Error
               ? error.message
               : "Не удалось отправить голосовое сообщение";
-          console.error("Failed to send voice message:", error);
 
           toast.error(errorMessage);
         }
@@ -548,14 +590,101 @@ export function InterviewChat({
 
   if (isLoadingHistory || isLoadingContext) {
     return (
-      <div className={cn("flex h-dvh min-w-0 flex-col bg-muted/30", className)}>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="flex flex-col items-center gap-3 text-muted-foreground">
-            <Loader2 className="size-8 animate-spin" />
-            <p className="text-sm">Загрузка…</p>
+      <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden">
+        {/* Background elements */}
+        <div
+          className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)]"
+          style={{ backgroundSize: "64px 64px" }}
+          aria-hidden="true"
+        />
+        {/* Gradient orbs */}
+        <div className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2 animate-pulse">
+          <div className="h-[400px] w-[600px] bg-[radial-gradient(ellipse_at_center,rgba(255,182,193,0.15)_0%,transparent_70%)] blur-3xl" />
+        </div>
+        <div className="pointer-events-none absolute left-1/4 top-20 animate-pulse delay-1000">
+          <div className="h-[300px] w-[300px] bg-[radial-gradient(ellipse_at_center,rgba(255,218,185,0.15)_0%,transparent_70%)] blur-3xl" />
+        </div>
+
+        {/* Main loading content */}
+        <div className="relative z-10 flex flex-col items-center gap-8 text-center">
+          {/* Animated logo */}
+          <div className="relative">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-2xl shadow-violet-500/30">
+              <svg
+                className="h-10 w-10 text-white animate-pulse"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+                />
+              </svg>
+            </div>
+            {/* Pulsing rings */}
+            <div className="absolute inset-0 rounded-full border-2 border-violet-500/30 animate-ping" />
+            <div className="absolute inset-2 rounded-full border border-purple-400/20 animate-ping animation-delay-300" />
+          </div>
+
+          {/* Loading steps */}
+          <div className="flex flex-col items-center gap-4 max-w-sm">
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce" />
+                <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce animation-delay-100" />
+                <div className="w-2 h-2 bg-violet-500 rounded-full animate-bounce animation-delay-200" />
+              </div>
+              <span className="text-sm font-medium">
+                Подготовка AI-интервью
+              </span>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full max-w-xs">
+              <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full animate-pulse"
+                  style={{
+                    width: "60%",
+                    animation: "shimmer 2s infinite linear",
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Animated text */}
+            <div className="flex flex-col items-center gap-2">
+              <p className="text-sm text-muted-foreground animate-fade-in">
+                Загрузка персонализированных вопросов…
+              </p>
+              <p className="text-xs text-muted-foreground/70">
+                Это займет всего несколько секунд
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+
+        <style jsx>{`
+          @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+          }
+          .animation-delay-100 { animation-delay: 0.1s; }
+          .animation-delay-200 { animation-delay: 0.2s; }
+          .animation-delay-300 { animation-delay: 0.3s; }
+          .animate-fade-in {
+            animation: fadeIn 2s ease-in-out infinite alternate;
+          }
+          @keyframes fadeIn {
+            from { opacity: 0.7; }
+            to { opacity: 1; }
+          }
+        `}</style>
+      </main>
     );
   }
 

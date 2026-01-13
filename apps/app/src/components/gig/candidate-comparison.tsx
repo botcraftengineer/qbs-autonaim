@@ -233,9 +233,7 @@ export function CandidateComparison({
                     className="p-3 rounded-lg border bg-background"
                   >
                     <span className="text-sm font-medium">
-                      {formatCurrency(
-                        candidate.proposedPrice,
-                      )}
+                      {formatCurrency(candidate.proposedPrice)}
                     </span>
                   </div>
                 ))}

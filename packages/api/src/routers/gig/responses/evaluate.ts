@@ -1,5 +1,9 @@
 ﻿import { and, eq } from "@qbs-autonaim/db";
-import { gig, response as responseTable, interviewSession } from "@qbs-autonaim/db/schema";
+import {
+  gig,
+  response as responseTable,
+  interviewSession,
+} from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";

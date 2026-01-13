@@ -156,16 +156,73 @@ async function handleVacancyInterview(
       eq(responseTable.entityId, vacancyLink.entityId),
       eq(responseTable.platformProfileUrl, normalizedProfileUrl),
     ),
+    with: {
+      interviewSessions: {
+        orderBy: (session, { desc }) => [desc(session.createdAt)],
+        limit: 1,
+      },
+    },
   });
 
   if (existingResponse) {
-    throw await errorHandler.handleConflictError(
-      "Вы уже откликнулись на эту вакансию",
-      {
-        vacancyId: vacancyLink.entityId,
-        platformProfileUrl: normalizedProfileUrl,
-      },
-    );
+    // Если есть активная сессия - возвращаем её
+    const activeSession = existingResponse.interviewSessions[0];
+    if (activeSession && activeSession.status === "active") {
+      const welcomeMessage = `Добро пожаловать! У вас уже есть активное интервью по этой вакансии. Продолжим?`;
+
+      return {
+        type: "vacancy" as const,
+        sessionId: activeSession.id,
+        responseId: existingResponse.id,
+        entityId: existingResponse.entityId,
+        welcomeMessage,
+        isExisting: true,
+      };
+    }
+
+    // Если сессия завершена - создаём новую
+    if (activeSession && activeSession.status === "completed") {
+      const [newSession] = await ctx.db
+        .insert(interviewSession)
+        .values({
+          responseId: existingResponse.id,
+          status: "active",
+          lastChannel: "web",
+          metadata: {
+            candidateName: freelancerInfo.name,
+            email: freelancerInfo.email,
+          },
+        })
+        .returning();
+
+      if (!newSession) {
+        throw await errorHandler.handleInternalError(
+          new Error("Failed to create new interview session"),
+          {
+            responseId: existingResponse.id,
+          },
+        );
+      }
+
+      const welcomeMessage = `Добро пожаловать снова! Начнём новое интервью по этой вакансии.`;
+
+      await ctx.db.insert(interviewMessage).values({
+        sessionId: newSession.id,
+        role: "assistant",
+        type: "text",
+        channel: "web",
+        content: welcomeMessage,
+      });
+
+      return {
+        type: "vacancy" as const,
+        sessionId: newSession.id,
+        responseId: existingResponse.id,
+        entityId: existingResponse.entityId,
+        welcomeMessage,
+        isExisting: true,
+      };
+    }
   }
 
   // Создаём отклик
@@ -312,16 +369,73 @@ async function handleGigInterview(
         eq(response.entityId, gigLink.gigId),
         eq(response.candidateId, normalizedCandidateId),
       ),
+    with: {
+      interviewSessions: {
+        orderBy: (session, { desc }) => [desc(session.createdAt)],
+        limit: 1,
+      },
+    },
   });
 
   if (existingResponse) {
-    throw await errorHandler.handleConflictError(
-      "Вы уже откликнулись на это задание",
-      {
-        gigId: gigLink.gigId,
-        candidateId: normalizedCandidateId,
-      },
-    );
+    // Если есть активная сессия - возвращаем её
+    const activeSession = existingResponse.interviewSessions[0];
+    if (activeSession && activeSession.status === "active") {
+      const welcomeMessage = `Добро пожаловать! У вас уже есть активное интервью по этому заданию. Продолжим?`;
+
+      return {
+        type: "gig" as const,
+        sessionId: activeSession.id,
+        responseId: existingResponse.id,
+        entityId: existingResponse.entityId,
+        welcomeMessage,
+        isExisting: true,
+      };
+    }
+
+    // Если сессия завершена - создаём новую
+    if (activeSession && activeSession.status === "completed") {
+      const [newSession] = await ctx.db
+        .insert(interviewSession)
+        .values({
+          responseId: existingResponse.id,
+          status: "active",
+          lastChannel: "web",
+          metadata: {
+            candidateName: freelancerInfo.name,
+            email: freelancerInfo.email,
+          },
+        })
+        .returning();
+
+      if (!newSession) {
+        throw await errorHandler.handleInternalError(
+          new Error("Failed to create new interview session"),
+          {
+            responseId: existingResponse.id,
+          },
+        );
+      }
+
+      const welcomeMessage = `Добро пожаловать снова! Начнём новое интервью по этому заданию.`;
+
+      await ctx.db.insert(interviewMessage).values({
+        sessionId: newSession.id,
+        role: "assistant",
+        type: "text",
+        channel: "web",
+        content: welcomeMessage,
+      });
+
+      return {
+        type: "gig" as const,
+        sessionId: newSession.id,
+        responseId: existingResponse.id,
+        entityId: existingResponse.entityId,
+        welcomeMessage,
+        isExisting: true,
+      };
+    }
   }
 
   // Создаём отклик для гига

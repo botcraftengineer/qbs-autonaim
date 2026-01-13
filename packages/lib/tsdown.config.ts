@@ -6,6 +6,7 @@ export default defineConfig({
     index: "src/index.ts",
     s3: "src/s3.ts",
     image: "src/image.ts",
+    instrumentation: "src/instrumentation.ts",
   },
   format: ["esm", "cjs"],
   dts: true,

@@ -175,7 +175,10 @@ export const UpdateGigSettingsSchema = z.object({
   customScreeningPrompt: z.string().max(5000).nullish(),
   customInterviewQuestions: z.string().max(5000).nullish(),
   customOrganizationalQuestions: z.string().max(5000).nullish(),
-  customDomainId: z.string().uuid().nullish(),
+  customDomainId: z
+    .union([z.uuid(), z.literal(""), z.null(), z.undefined()])
+    .transform((val) => (val === "" || val === undefined ? null : val))
+    .nullable(),
 });
 
 export type Gig = typeof gig.$inferSelect;

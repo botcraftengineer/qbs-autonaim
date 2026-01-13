@@ -21,3 +21,5 @@ export * from "./utils/sanitize";
 export * from "./vacancy-response-history";
 // Pin code validation utilities
 export * from "./validate-pin-code";
+// Langfuse instrumentation utilities
+export * from "./instrumentation";

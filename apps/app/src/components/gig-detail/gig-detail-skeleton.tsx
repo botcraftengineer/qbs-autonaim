@@ -100,7 +100,7 @@ function GigNotFound({
           </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col items-center gap-4">
-          <Button asChild className="min-h-[44px] touch-action-manipulation">
+          <Button asChild className="min-h-[44px] touch-manipulation">
             <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}>
               <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
               Вернуться к заданиям
@@ -140,7 +140,7 @@ function GigError({
             <Button
               variant="outline"
               asChild
-              className="min-h-[44px] touch-action-manipulation"
+              className="min-h-[44px] touch-manipulation"
             >
               <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}>
                 <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />К
@@ -149,7 +149,7 @@ function GigError({
             </Button>
             <Button
               onClick={() => window.location.reload()}
-              className="min-h-[44px] touch-action-manipulation"
+              className="min-h-[44px] touch-manipulation"
             >
               Обновить страницу
             </Button>

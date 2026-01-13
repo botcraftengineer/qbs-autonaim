@@ -1,5 +1,6 @@
 "use client";
 
+import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   Pagination,
   Skeleton,
@@ -8,7 +9,7 @@ import {
   TableCell,
   TableRow,
 } from "@qbs-autonaim/ui";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
@@ -27,6 +28,10 @@ interface ResponseTableProps {
 }
 
 const ITEMS_PER_PAGE = 25;
+
+type ResponsesListData = RouterOutputs["vacancy"]["responses"]["list"];
+
+type ResponseListItem = ResponsesListData["responses"][0];
 
 export function ResponseTable({
   vacancyId,
@@ -67,7 +72,7 @@ export function ResponseTable({
       search: debouncedSearch,
     }),
     enabled: !!workspace?.id,
-    placeholderData: (previousData: typeof data) => previousData,
+    placeholderData: keepPreviousData,
   });
 
   const {
@@ -102,7 +107,8 @@ export function ResponseTable({
   const totalPages = data?.totalPages ?? 0;
 
   const allSelected =
-    responses.length > 0 && responses.every((r) => selectedIds.has(r.id));
+    responses.length > 0 &&
+    responses.every((r: ResponseListItem) => selectedIds.has(r.id));
 
   const handleSelectAll = () => {
     if (allSelected) {
@@ -160,7 +166,7 @@ export function ResponseTable({
       return <EmptyState hasResponses={total > 0} colSpan={9} />;
     }
 
-    return responses.map((response) => (
+    return responses.map((response: ResponseListItem) => (
       <ResponseRow
         key={response.id}
         orgSlug={orgSlug ?? ""}

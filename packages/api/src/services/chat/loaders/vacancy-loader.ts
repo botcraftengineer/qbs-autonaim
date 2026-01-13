@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Загрузчик контекста для vacancy
  * Использует универсальные таблицы откликов
  */
@@ -114,6 +114,7 @@ export class VacancyContextLoader implements ContextLoader {
     const interviews: Array<{
       responseId: string | null;
       score: number;
+      rating: number | null;
       analysis: string | null;
     }> = [];
 
@@ -124,6 +125,7 @@ export class VacancyContextLoader implements ContextLoader {
           columns: {
             responseId: true,
             score: true,
+            rating: true,
             analysis: true,
           },
         });
@@ -160,8 +162,10 @@ export class VacancyContextLoader implements ContextLoader {
         recommendation: resp.recommendation,
         screeningScore: screening?.score ?? null,
         screeningDetailedScore: screening?.detailedScore ?? null,
+        interviewScore: interview
+          ? (interview.rating ?? Math.round((interview.score ?? 0) / 20))
+          : null,
         screeningAnalysis: screening?.analysis ?? null,
-        interviewScore: interview?.score ?? null,
         interviewDetailedScore: interview?.score ?? null,
         interviewAnalysis: interview?.analysis ?? null,
       };

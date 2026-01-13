@@ -1,4 +1,4 @@
-import { chatSession, db, eq, vacancy } from "@qbs-autonaim/db";
+import { chatMessage, chatSession, db, eq, gig, vacancy } from "@qbs-autonaim/db";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
@@ -26,6 +26,7 @@ const requestSchema = z.object({
   message: messageSchema.optional(),
   messages: z.array(messageSchema).optional(),
   chatSessionId: z.string().optional(),
+  conversationId: z.string().optional(),
 });
 
 export const maxDuration = 60;
@@ -56,17 +57,28 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { message, messages, chatSessionId } = requestBody;
+    const { message, messages, chatSessionId, conversationId, id } = requestBody;
+
+    const resolvedChatSessionId = chatSessionId ?? conversationId ?? id;
+    if (!resolvedChatSessionId) {
+      return NextResponse.json({ error: "Bad request" }, { status: 400 });
+    }
 
     // Проверка доступа к chatSession
     let chatContext = "";
-    if (chatSessionId) {
+    let userMessageText = "";
+    let userMessageSaved = false;
+    if (resolvedChatSessionId) {
       const chat = await db.query.chatSession.findFirst({
-        where: eq(chatSession.id, chatSessionId),
+        where: eq(chatSession.id, resolvedChatSessionId),
       });
 
       if (!chat) {
         return NextResponse.json({ error: "Not found" }, { status: 404 });
+      }
+
+      if (chat.userId && chat.userId !== session.user.id) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
 
       // Получаем контекст в зависимости от типа сущности
@@ -97,6 +109,58 @@ export async function POST(request: Request) {
 - Описание: ${vac.description || "Не указано"}
 `;
         }
+      }
+
+      if (chat.entityType === "gig") {
+        const currentGig = await db.query.gig.findFirst({
+          where: eq(gig.id, chat.entityId),
+        });
+
+        if (currentGig) {
+          const workspaceId = currentGig.workspaceId;
+          if (workspaceId) {
+            const member = await db.query.workspaceMember.findFirst({
+              where: (wm, { and }) =>
+                and(
+                  eq(wm.workspaceId, workspaceId),
+                  eq(wm.userId, session.user.id),
+                ),
+            });
+
+            if (!member) {
+              return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            }
+          }
+
+          chatContext = `
+Контекст задания:
+- Название: ${currentGig.title || "Не указано"}
+- Описание: ${currentGig.description || "Не указано"}
+`;
+        }
+      }
+
+      const lastUserMessage = message
+        ? message
+        : messages
+            ?.filter((m) => m.role === "user")
+            .at(-1);
+
+      userMessageText = lastUserMessage
+        ? lastUserMessage.parts
+            .filter((p) => p.type === "text")
+            .map((p) => p.text)
+            .join("\n")
+        : "";
+
+      if (userMessageText) {
+        await db.insert(chatMessage).values({
+          sessionId: chat.id,
+          userId: session.user.id,
+          role: "user",
+          content: userMessageText,
+        });
+        userMessageSaved = true;
       }
     }
 
@@ -133,6 +197,43 @@ ${historyContext}
         writer.merge(result.toUIMessageStream());
       },
       generateId: generateUUID,
+      onFinish: async ({ messages: finishedMessages }) => {
+        const assistant = finishedMessages
+          .filter((m) => m.role === "assistant")
+          .at(-1);
+
+        const assistantText = assistant?.parts
+          ?.filter((p): p is { type: "text"; text: string } =>
+            Boolean(p) && p.type === "text" && "text" in p,
+          )
+          .map((p) => p.text)
+          .join("\n");
+
+        if (assistantText) {
+          await db.insert(chatMessage).values({
+            sessionId: resolvedChatSessionId,
+            userId: "system",
+            role: "assistant",
+            content: assistantText,
+          });
+
+          const currentSession = await db.query.chatSession.findFirst({
+            where: eq(chatSession.id, resolvedChatSessionId),
+          });
+
+          if (currentSession) {
+            const increment =
+              (userMessageSaved ? 1 : 0) + (assistantText ? 1 : 0);
+            await db
+              .update(chatSession)
+              .set({
+                messageCount: currentSession.messageCount + increment,
+                lastMessageAt: new Date(),
+              })
+              .where(eq(chatSession.id, resolvedChatSessionId));
+          }
+        }
+      },
       onError: (error) => {
         console.error("Stream error:", error);
         return error instanceof Error ? error.message : "Unknown error";

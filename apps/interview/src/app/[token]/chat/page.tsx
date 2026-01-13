@@ -25,7 +25,7 @@ export default async function InterviewChatPage({
 
   return (
     <main className="flex h-screen flex-col bg-muted/30">
-      <InterviewChat interviewSessionId={sessionId} />
+      <InterviewChat interviewSessionId={sessionId} interviewToken={token} />
     </main>
   );
 }

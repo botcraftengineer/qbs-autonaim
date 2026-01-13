@@ -35,7 +35,7 @@ function formatGigContext(gigContext: GigContext): string {
 
   // Бюджет
   if (gigContext.budgetMin !== null || gigContext.budgetMax !== null) {
-    const currency = "RUB";
+    const currency = "₽";
     if (gigContext.budgetMin !== null && gigContext.budgetMax !== null) {
       parts.push(
         `**Бюджет:** ${gigContext.budgetMin}-${gigContext.budgetMax} ${currency}`,
@@ -121,7 +121,7 @@ function formatCandidate(candidate: CandidateContext): string {
 
   // Основная информация
   if (candidate.proposedPrice !== null) {
-    const currency = "RUB";
+    const currency = "₽";
     parts.push(`- **Цена:** ${candidate.proposedPrice} ${currency}`);
   } else {
     parts.push(`- **Цена:** не указана`);
@@ -238,7 +238,7 @@ function formatCandidatesStats(stats: CandidatesContext["stats"]): string {
 
   // Средние значения
   if (stats.avgPrice !== null) {
-    parts.push(`\n**Средняя цена:** ${stats.avgPrice} RUB`);
+    parts.push(`\n**Средняя цена:** ${stats.avgPrice} ₽`);
   }
 
   if (stats.avgDeliveryDays !== null) {

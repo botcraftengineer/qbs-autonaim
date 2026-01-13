@@ -71,11 +71,11 @@ function formatGigMain(ctx: Record<string, unknown>): string {
 
   if (gig.budgetMin !== null || gig.budgetMax !== null) {
     if (gig.budgetMin !== null && gig.budgetMax !== null) {
-      parts.push(`**Бюджет:** ${gig.budgetMin}-${gig.budgetMax} RUB`);
+      parts.push(`**Бюджет:** ${gig.budgetMin}-${gig.budgetMax} ₽`);
     } else if (gig.budgetMin !== null) {
-      parts.push(`**Бюджет:** от ${gig.budgetMin} RUB`);
+      parts.push(`**Бюджет:** от ${gig.budgetMin} ₽`);
     } else if (gig.budgetMax !== null) {
-      parts.push(`**Бюджет:** до ${gig.budgetMax} RUB`);
+      parts.push(`**Бюджет:** до ${gig.budgetMax} ₽`);
     }
   }
 
@@ -144,7 +144,7 @@ function formatCandidate(candidate: CandidateData): string {
   parts.push(`### ${name}`);
 
   if (candidate.proposedPrice !== null) {
-    parts.push(`- **Цена:** ${candidate.proposedPrice} RUB`);
+    parts.push(`- **Цена:** ${candidate.proposedPrice} ₽`);
   } else {
     parts.push(`- **Цена:** не указана`);
   }
@@ -313,7 +313,7 @@ function formatGigStatistics(ctx: Record<string, unknown>): string {
   }
 
   if (stats.avgPrice !== null) {
-    parts.push(`\n**Средняя цена:** ${stats.avgPrice} RUB`);
+    parts.push(`\n**Средняя цена:** ${stats.avgPrice} ₽`);
   }
 
   if (stats.avgDeliveryDays !== null) {

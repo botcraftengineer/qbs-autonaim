@@ -8,10 +8,10 @@ import Link from "next/link";
 import { use } from "react";
 import { SiteHeader } from "~/components/layout";
 import {
-  ExperienceCard,
-  InterviewCard,
-  ResponseHeader,
-  ScreeningCard,
+  ExperienceTab,
+  InterviewScoringCard,
+  ResponseHeaderCard,
+  ScreeningResultsCard,
 } from "~/components/response-detail";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
@@ -105,74 +105,16 @@ export default function ResponseDetailPage({
               </div>
 
               <div className="space-y-6 md:space-y-8">
-                <ResponseHeader response={response} />
-                <ScreeningCard screening={response.screening} />
-                <InterviewCard
-                  conversation={
-                    response.interviewSession
-                      ? {
-                          interviewScoring: (
-                            response.interviewSession as unknown as {
-                              scoring?: {
-                                score: number;
-                                detailedScore?: number | null;
-                                analysis?: string | null;
-                              } | null;
-                            }
-                          ).scoring
-                            ? {
-                                score: (
-                                  response.interviewSession as unknown as {
-                                    scoring: {
-                                      score: number;
-                                      detailedScore?: number | null;
-                                      analysis?: string | null;
-                                    };
-                                  }
-                                ).scoring.score,
-                                detailedScore:
-                                  (
-                                    response.interviewSession as unknown as {
-                                      scoring: {
-                                        score: number;
-                                        detailedScore?: number | null;
-                                        analysis?: string | null;
-                                      };
-                                    }
-                                  ).scoring.detailedScore ?? undefined,
-                                analysis:
-                                  (
-                                    response.interviewSession as unknown as {
-                                      scoring: {
-                                        score: number;
-                                        detailedScore?: number | null;
-                                        analysis?: string | null;
-                                      };
-                                    }
-                                  ).scoring.analysis ?? undefined,
-                              }
-                            : undefined,
-                          messages: response.interviewSession.messages?.map(
-                            (m) => ({
-                              id: m.id,
-                              sender: m.role as "CANDIDATE" | "BOT" | "ADMIN",
-                              contentType: (m as { contentType?: string })
-                                .contentType as "TEXT" | "VOICE",
-                              content: m.content ?? "",
-                              voiceTranscription:
-                                m.voiceTranscription ?? undefined,
-                              createdAt: m.createdAt,
-                            }),
-                          ),
-                        }
-                      : null
-                  }
-                  candidateName={response.candidateName}
-                  workspaceName={undefined}
-                />
-                {response.experience && (
-                  <ExperienceCard experience={response.experience} />
+                <ResponseHeaderCard response={response} />
+                {response.screening && (
+                  <ScreeningResultsCard screening={response.screening} />
                 )}
+                {response.interviewScoring && (
+                  <InterviewScoringCard
+                    interviewScoring={response.interviewScoring}
+                  />
+                )}
+                {response.experience && <ExperienceTab response={response} />}
               </div>
             </div>
           </div>

@@ -2,14 +2,10 @@
   "mcpServers": {
     "fetch": {
       "command": "uvx",
-      "args": [
-        "mcp-server-fetch"
-      ],
+      "args": ["mcp-server-fetch"],
       "env": {},
       "disabled": false,
-      "autoApprove": [
-        "fetch"
-      ]
+      "autoApprove": ["fetch"]
     },
     "Context7": {
       "command": "bunx",
@@ -21,17 +17,11 @@
       ],
       "env": {},
       "disabled": false,
-      "autoApprove": [
-        "resolve-library-id",
-        "get-library-docs",
-        "query-docs"
-      ]
+      "autoApprove": ["resolve-library-id", "get-library-docs", "query-docs"]
     },
     "playwright": {
       "command": "bunx",
-      "args": [
-        "@playwright/mcp@latest"
-      ],
+      "args": ["@playwright/mcp@latest"],
       "autoApprove": [
         "browser_navigate",
         "browser_evaluate",

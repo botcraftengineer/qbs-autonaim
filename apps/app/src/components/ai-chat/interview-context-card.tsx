@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge, Card, CardContent } from "@qbs-autonaim/ui";
-import { Briefcase, Calendar, Clock, DollarSign } from "lucide-react";
+import { Briefcase, Calendar, Clock } from "lucide-react";
 
 interface InterviewContext {
   type: "vacancy" | "gig";
@@ -60,10 +60,6 @@ export function InterviewContextCard({ context }: InterviewContextCardProps) {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {isGig && context.budget && (
                 <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <DollarSign
-                    className="size-4 text-muted-foreground"
-                    aria-hidden="true"
-                  />
                   <span>
                     {context.budget.min && context.budget.max
                       ? `${context.budget.min}–${context.budget.max}`

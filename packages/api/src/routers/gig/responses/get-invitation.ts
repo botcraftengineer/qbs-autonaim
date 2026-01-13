@@ -1,5 +1,9 @@
 ﻿import { and, eq } from "@qbs-autonaim/db";
-import { gig, responseInvitation, response as responseTable } from "@qbs-autonaim/db/schema";
+import {
+  gig,
+  responseInvitation,
+  response as responseTable,
+} from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

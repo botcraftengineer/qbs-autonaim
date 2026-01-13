@@ -7,8 +7,10 @@
  * Трассировка через Langfuse
  */
 
+import { observe, updateActiveTrace } from "@langfuse/tracing";
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { WebInterviewOrchestrator } from "@qbs-autonaim/ai";
-import { env } from "@qbs-autonaim/config";
+import { hasInterviewAccess, validateInterviewToken } from "@qbs-autonaim/api";
 import { db, eq } from "@qbs-autonaim/db";
 import {
   gig as gigTable,
@@ -16,23 +18,18 @@ import {
   response as responseTable,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
-import { getAIModel } from "@qbs-autonaim/lib/ai";
+import { getAIModel, getFallbackModel } from "@qbs-autonaim/lib/ai";
+import "@qbs-autonaim/lib/instrumentation";
 import {
   createUIMessageStream,
   JsonToSseTransformStream,
   smoothStream,
+  stepCountIs,
   streamText,
 } from "ai";
-import { Langfuse } from "langfuse";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-
-// Langfuse для трассировки
-const langfuse = new Langfuse({
-  secretKey: env.LANGFUSE_SECRET_KEY,
-  publicKey: env.LANGFUSE_PUBLIC_KEY,
-  baseUrl: env.LANGFUSE_BASE_URL,
-});
+import { createWebInterviewRuntime } from "./interview-runtime";
 
 // Гибкая схема для parts — AI SDK отправляет разные типы
 const partSchema = z
@@ -56,6 +53,7 @@ const requestSchema = z
     id: z.string().optional(),
     messages: z.array(messageSchema),
     sessionId: z.string().uuid(),
+    interviewToken: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -65,7 +63,7 @@ function generateUUID(): string {
   return crypto.randomUUID();
 }
 
-export async function POST(request: Request) {
+async function handler(request: Request) {
   let requestBody: z.infer<typeof requestSchema>;
 
   try {
@@ -76,14 +74,37 @@ export async function POST(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request", details: error.issues },
-        { status: 400 },
+        { status: 400 }
       );
     }
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
   try {
-    const { messages, sessionId } = requestBody;
+    const { messages, sessionId, interviewToken } = requestBody;
+
+    let validatedToken = null;
+    if (interviewToken) {
+      try {
+        validatedToken = await validateInterviewToken(interviewToken, db);
+      } catch (error) {
+        console.error(
+          "[Interview Stream] Failed to validate interview token:",
+          error
+        );
+      }
+    }
+
+    const accessAllowed = await hasInterviewAccess(
+      sessionId,
+      validatedToken,
+      null,
+      db
+    );
+
+    if (!accessAllowed) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
     // Проверяем что interview session существует и это WEB интервью
     const session = await db.query.interviewSession.findFirst({
@@ -101,14 +122,14 @@ export async function POST(request: Request) {
     if (!session) {
       return NextResponse.json(
         { error: "Interview not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (session.status !== "active") {
       return NextResponse.json(
         { error: "Interview is not active" },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -124,21 +145,22 @@ export async function POST(request: Request) {
     if (!responseRecord) {
       return NextResponse.json(
         { error: "Response not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (responseRecord.entityType === "vacancy") {
-      vacancy = await db.query.vacancy.findFirst({
-        where: eq(vacancyTable.id, responseRecord.entityId),
-        with: {
-          workspace: {
-            with: {
-              botSettings: true,
+      vacancy =
+        (await db.query.vacancy.findFirst({
+          where: eq(vacancyTable.id, responseRecord.entityId),
+          with: {
+            workspace: {
+              with: {
+                botSettings: true,
+              },
             },
           },
-        },
-      });
+        })) ?? null;
 
       const bot = vacancy?.workspace?.botSettings;
       companySettings = bot
@@ -151,16 +173,17 @@ export async function POST(request: Request) {
     }
 
     if (responseRecord.entityType === "gig") {
-      gig = await db.query.gig.findFirst({
-        where: eq(gigTable.id, responseRecord.entityId),
-        with: {
-          workspace: {
-            with: {
-              botSettings: true,
+      gig =
+        (await db.query.gig.findFirst({
+          where: eq(gigTable.id, responseRecord.entityId),
+          with: {
+            workspace: {
+              with: {
+                botSettings: true,
+              },
             },
           },
-        },
-      });
+        })) ?? null;
 
       const bot = gig?.workspace?.botSettings;
       companySettings = bot
@@ -185,7 +208,7 @@ export async function POST(request: Request) {
     // Сохраняем текстовое сообщение пользователя в БД
     if (lastUserMessage && userMessageText) {
       const hasVoiceFile = lastUserMessage.parts?.some(
-        (p) => p.type === "file",
+        (p) => p.type === "file"
       );
       if (!hasVoiceFile) {
         await db.insert(interviewMessage).values({
@@ -198,10 +221,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // Создаём trace в Langfuse (раньше, чтобы связать все запросы)
-    const trace = langfuse.trace({
+    // Устанавливаем метаданные для активного trace
+    updateActiveTrace({
       name: "web-interview-chat",
       userId: sessionId,
+      sessionId: sessionId,
       metadata: {
         source: "WEB",
         vacancyId: vacancy?.id,
@@ -211,8 +235,7 @@ export async function POST(request: Request) {
 
     // Создаём оркестратор
     const model = getAIModel();
-    const orchestrator = new WebInterviewOrchestrator({ model, langfuse });
-    orchestrator.setTraceId(trace.id);
+    const orchestrator = new WebInterviewOrchestrator({ model });
 
     // Формируем историю диалога для оркестратора
     const conversationHistory = session.messages
@@ -233,13 +256,15 @@ export async function POST(request: Request) {
     }
 
     // Определяем, это первый ответ после приветствия
-    const messageCount = messages.filter((m) => m.role === "user").length;
-    const isFirstResponse = messageCount === 1;
+    const existingUserMessageCount = session.messages.filter(
+      (m) => m.role === "user"
+    ).length;
+    const isFirstResponse = existingUserMessageCount === 0;
 
     // Анализируем контекст сообщения (для эскалации и типа)
     const contextAnalysis = await orchestrator.analyzeContext(
       userMessageText,
-      conversationHistory,
+      conversationHistory
     );
 
     // Если нужна эскалация — возвращаем специальный ответ
@@ -267,108 +292,116 @@ export async function POST(request: Request) {
       vacancyTitle: vacancy?.title || gig?.title || null,
       vacancyDescription: vacancy?.description || gig?.description || null,
       conversationHistory,
-      companySettings: companySettings
+      botSettings: companySettings
         ? {
             botName: companySettings.botName || undefined,
             botRole: companySettings.botRole || undefined,
-            name: companySettings.name,
+            companyName: companySettings.name,
           }
         : undefined,
     };
 
-    // Генерируем промпт в зависимости от типа интервью
-    let systemPrompt: string;
-
-    if (gig) {
-      systemPrompt = orchestrator.buildGigPrompt(
-        {
-          title: gig.title,
-          description: gig.description,
-          type: gig.type,
-          budgetMin: gig.budgetMin,
-          budgetMax: gig.budgetMax,
-
-          estimatedDuration: gig.estimatedDuration,
-          deadline: gig.deadline,
-          customBotInstructions: gig.customBotInstructions,
-          customOrganizationalQuestions: gig.customOrganizationalQuestions,
-          customInterviewQuestions: gig.customInterviewQuestions,
-        },
-        interviewContext,
-        isFirstResponse,
-      );
-    } else if (vacancy) {
-      systemPrompt = orchestrator.buildVacancyPrompt(
-        {
-          title: vacancy.title,
-          description: vacancy.description,
-          region: vacancy.region,
-          customBotInstructions: vacancy.customBotInstructions,
-          customOrganizationalQuestions: vacancy.customOrganizationalQuestions,
-          customInterviewQuestions: vacancy.customInterviewQuestions,
-        },
-        interviewContext,
-        isFirstResponse,
-      );
-    } else {
-      // Fallback
-      systemPrompt = `Ты — опытный рекрутер, который проводит интервью с кандидатом.
-Пиши коротко и естественно, как живой человек.
-Задавай релевантные вопросы и будь вежливым.`;
-    }
-
-    // Обновляем trace с дополнительной информацией
-    trace.update({
-      metadata: {
-        source: "WEB",
-        vacancyId: vacancy?.id,
-        gigId: gig?.id,
-        messageType: contextAnalysis.messageType,
-        isFirstResponse,
-      },
+    const { tools, systemPrompt } = createWebInterviewRuntime({
+      model,
+      sessionId,
+      gig: gig ?? null,
+      vacancy: vacancy ?? null,
+      interviewContext,
+      isFirstResponse,
     });
+
+    // Метаданные уже установлены в updateActiveTrace выше
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        const generation = trace.generation({
-          name: "interview-response",
-          model: env.AI_MODEL || "default",
-          input: {
-            system: systemPrompt,
-            userMessage: userMessageText,
-            contextAnalysis,
-          },
-        });
+        const formattedMessages: Array<{
+          role: "user" | "assistant";
+          content: string;
+        }> = session.messages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => {
+            const baseText =
+              m.type === "voice"
+                ? (m.voiceTranscription ?? m.content ?? "")
+                : (m.content ?? "");
 
-        // Формируем сообщения для AI
-        const formattedMessages = messages.map((m) => {
-          let content =
-            m.parts?.map((p) => p.text).join("\n") || m.content || "";
+            const content =
+              m.type === "voice"
+                ? `[Голосовое сообщение]\n${baseText}`
+                : baseText;
 
-          if (m.role === "user") {
-            const hasVoiceFile = m.parts?.some((p) => p.type === "file");
-            if (hasVoiceFile) {
-              content = `[Голосовое сообщение]\n${content}`;
-            }
+            return {
+              role: m.role as "user" | "assistant",
+              content,
+            };
+          });
+
+        if (userMessageText) {
+          const last = formattedMessages.at(-1);
+          if (last?.role !== "user" || last.content !== userMessageText) {
+            formattedMessages.push({ role: "user", content: userMessageText });
           }
+        }
 
-          return {
-            role: m.role as "user" | "assistant" | "system",
-            content,
-          };
-        });
+        // biome-ignore lint/suspicious/noExplicitAny: Complex generic types cause compatibility issues
+        let result: any;
 
-        const result = streamText({
-          model,
-          system: systemPrompt,
-          messages: formattedMessages,
-          experimental_transform: smoothStream({ chunking: "word" }),
-          onFinish: async ({ text }) => {
-            generation.end({ output: text });
-            trace.update({ output: text });
-            await langfuse.flushAsync();
-          },
-        });
+        try {
+          result = streamText({
+            model,
+            system: systemPrompt,
+            messages: formattedMessages,
+            tools,
+            stopWhen: stepCountIs(5), // Allow up to 5 steps for tool calls and final response
+            experimental_transform: smoothStream({ chunking: "word" }),
+            experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
+            onFinish: async () => {
+              // End span manually after stream has finished
+              trace.getActiveSpan()?.end();
+            },
+          });
+        } catch (error) {
+          console.warn(
+            "[Interview Stream] Ошибка с основной моделью, пробую fallback:",
+            error
+          );
+
+          try {
+            const fallbackModel = getFallbackModel();
+
+            // Добавляем информацию о fallback в метаданные trace
+
+            result = streamText({
+              model: fallbackModel,
+              system: systemPrompt,
+              messages: formattedMessages,
+              tools,
+              stopWhen: stepCountIs(5), // Allow up to 5 steps for tool calls and final response
+              experimental_transform: smoothStream({ chunking: "word" }),
+              experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
+              onFinish: async () => {
+                // End span manually after stream has finished
+                trace.getActiveSpan()?.end();
+              },
+            });
+
+            console.log(
+              "[Interview Stream] Успешно переключился на fallback модель"
+            );
+          } catch (fallbackError) {
+            console.error(
+              "[Interview Stream] Fallback модель также недоступна:",
+              fallbackError
+            );
+            // End span with error
+            trace.getActiveSpan()?.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: `Основная модель: ${error instanceof Error ? error.message : String(error)}. Fallback: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
+            });
+            trace.getActiveSpan()?.end();
+            throw fallbackError;
+          }
+        }
 
         result.consumeStream();
         writer.merge(result.toUIMessageStream());
@@ -376,13 +409,15 @@ export async function POST(request: Request) {
       generateId: generateUUID,
       onFinish: async ({ messages: finishedMessages }) => {
         const assistantMessages = finishedMessages.filter(
-          (m) => m.role === "assistant",
+          (m) => m.role === "assistant"
         );
+
         for (const msg of assistantMessages) {
           const textParts = msg.parts?.filter(
             (p): p is { type: "text"; text: string } =>
-              p.type === "text" && "text" in p,
+              p.type === "text" && "text" in p
           );
+
           const content = textParts?.map((p) => p.text).join("\n") || "";
 
           if (content) {
@@ -402,6 +437,8 @@ export async function POST(request: Request) {
       },
     });
 
+    // Traces will be flushed automatically by OpenTelemetry
+
     return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
       headers: {
         "Content-Type": "text/event-stream",
@@ -411,9 +448,21 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[Interview Stream] Error:", error);
+    // End span with error on exception
+    trace.getActiveSpan()?.setStatus({
+      code: SpanStatusCode.ERROR,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    trace.getActiveSpan()?.end();
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
+
+// Wrap handler with observe() to create a Langfuse trace
+export const POST = observe(handler, {
+  name: "interview-chat-stream",
+  endOnExit: false, // Don't end observation until stream finishes
+});

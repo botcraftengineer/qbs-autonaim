@@ -43,6 +43,21 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           headers() {
             const headers = new Headers();
             headers.set("x-trpc-source", "nextjs-react");
+
+            // Для интервью приложений добавляем токен из URL pathname
+            if (typeof window !== "undefined") {
+              const pathParts = window.location.pathname
+                .split("/")
+                .filter(Boolean);
+              if (pathParts.length > 0) {
+                const token = pathParts[0];
+                // Проверяем что это не стандартный маршрут (interview, auth, etc.)
+                if (token && !["interview", "auth", "api"].includes(token)) {
+                  headers.set("x-interview-token", token);
+                }
+              }
+            }
+
             return headers;
           },
         }),

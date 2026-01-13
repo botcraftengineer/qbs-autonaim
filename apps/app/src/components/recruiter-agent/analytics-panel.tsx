@@ -15,7 +15,6 @@ import {
   ArrowRight,
   BarChart3,
   CheckCircle,
-  DollarSign,
   FileText,
   Lightbulb,
   TrendingDown,
@@ -97,7 +96,6 @@ export const VacancyAnalyticsPanel = memo(function VacancyAnalyticsPanel({
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-base">
-            <DollarSign className="size-4" />
             Сравнение с рынком
           </CardTitle>
           <CardDescription>
@@ -113,7 +111,7 @@ export const VacancyAnalyticsPanel = memo(function VacancyAnalyticsPanel({
               description={getSalaryDescription(
                 marketComparison.salaryPercentile,
               )}
-              icon={<DollarSign className="size-4" />}
+              icon={null}
             />
             <MarketComparisonItem
               label="Сложность требований"

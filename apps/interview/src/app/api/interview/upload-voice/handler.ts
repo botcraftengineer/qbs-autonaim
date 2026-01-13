@@ -3,6 +3,8 @@
  * Доступен без авторизации, но защищён проверкой sessionId
  * Только для WEB интервью (lastChannel = 'web')
  */
+
+import { hasInterviewAccess, validateInterviewToken } from "@qbs-autonaim/api";
 import { db, eq } from "@qbs-autonaim/db";
 import { file, interviewMessage } from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
@@ -12,6 +14,7 @@ import { z } from "zod";
 
 const requestSchema = z.object({
   sessionId: z.string().uuid(),
+  interviewToken: z.string().optional(),
   audioFile: z.string(), // base64
   fileName: z.string(),
   mimeType: z.string(),
@@ -23,8 +26,36 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   try {
     const json = await request.json();
-    const { sessionId, audioFile, fileName, mimeType, duration } =
-      requestSchema.parse(json);
+    const {
+      sessionId,
+      interviewToken,
+      audioFile,
+      fileName,
+      mimeType,
+      duration,
+    } = requestSchema.parse(json);
+
+    // Валидируем токен из input
+    let validatedToken = null;
+    if (interviewToken) {
+      try {
+        validatedToken = await validateInterviewToken(interviewToken, db);
+      } catch (error) {
+        console.error("Failed to validate interview token:", error);
+      }
+    }
+
+    // Проверяем доступ к interview session
+    const hasAccess = await hasInterviewAccess(
+      sessionId,
+      validatedToken,
+      null, // нет авторизованного пользователя
+      db,
+    );
+
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
     // Проверяем что interview session существует и это WEB интервью
     const session = await db.query.interviewSession.findFirst({
@@ -77,7 +108,8 @@ export async function POST(request: Request) {
     }
 
     // Длительность в секундах (как в схеме interviewMessage.voiceDuration)
-    const voiceDuration = duration !== undefined ? Math.round(duration) : undefined;
+    const voiceDuration =
+      duration !== undefined ? Math.round(duration) : undefined;
 
     // Создаем сообщение в БД
     const [message] = await db

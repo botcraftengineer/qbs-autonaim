@@ -18,6 +18,10 @@
     "./image": {
       "types": "./dist/image.d.mts",
       "default": "./dist/image.mjs"
+    },
+    "./instrumentation": {
+      "types": "./dist/instrumentation.d.mts",
+      "default": "./dist/instrumentation.mjs"
     }
   },
   "main": "./dist/index.mjs",
@@ -27,15 +31,18 @@
     "build": "tsdown",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "tsdown --watch",
-    "typecheck": "tsc --noEmit --emitDeclarationOnly false"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@ai-sdk/deepseek": "2.0.4",
     "@ai-sdk/openai": "3.0.8",
     "@aws-sdk/client-s3": "3.966.0",
     "@aws-sdk/s3-request-presigner": "3.966.0",
+    "@langfuse/otel": "^4.5.1",
+    "@langfuse/tracing": "^4.5.1",
+    "@opentelemetry/sdk-node": "^0.209.0",
     "@qbs-autonaim/config": "workspace:*",
-    "ai": "6.0.28",
+    "ai": "6.0.29",
     "langfuse": "3.38.6",
     "sharp": "0.34.5",
     "zod": "4.3.5"
