@@ -66,6 +66,15 @@ export class InterviewScoringAgent extends BaseAgent<
       conversationHistory,
     } = context;
 
+    console.log("🤖 InterviewScoringAgent buildPrompt", {
+      conversationHistoryLength: conversationHistory?.length || 0,
+      conversationHistory: conversationHistory?.map(msg => ({
+        sender: msg.sender,
+        content: msg.content?.substring(0, 100) + "...",
+        contentType: msg.contentType,
+      })),
+    });
+
     // Извлекаем пары вопрос-ответ из истории диалога
     const qaText = (conversationHistory || [])
       .filter((msg) => msg.sender === "BOT" || msg.sender === "CANDIDATE")
@@ -87,6 +96,11 @@ export class InterviewScoringAgent extends BaseAgent<
         (qa, i) => `${i + 1}. Вопрос: ${qa.question}\n   Ответ: ${qa.answer}`,
       )
       .join("\n\n");
+
+    console.log("🤖 Extracted Q&A pairs", {
+      qaCount: qaText.split("\n\n").length,
+      qaText: qaText.substring(0, 500) + "...",
+    });
 
     return `КОНТЕКСТ:
 ${candidateName ? `Кандидат: ${candidateName}` : ""}

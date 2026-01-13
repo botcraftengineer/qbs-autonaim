@@ -134,6 +134,23 @@ export const evaluateGigResponseFunction = inngest.createFunction(
       });
     });
 
+    // Обновляем compositeScore в response для работы шортлиста
+    await step.run("update-response-composite-score", async () => {
+      const { response } = await import("@qbs-autonaim/db/schema");
+
+      await db
+        .update(response)
+        .set({
+          compositeScore: scoring.detailedScore, // 0-100 шкала для шортлиста
+        })
+        .where(eq(response.id, responseId));
+
+      console.log("✅ Composite score обновлен в response", {
+        responseId,
+        compositeScore: scoring.detailedScore,
+      });
+    });
+
     await step.run("update-response-status", async () => {
       const { response } = await import("@qbs-autonaim/db/schema");
 
