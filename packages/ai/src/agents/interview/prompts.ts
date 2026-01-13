@@ -161,7 +161,7 @@ export function buildGigInterviewPrompt(
 
   // Форматируем бюджет
   let budgetInfo = "Не указан";
-  const currency = "RUB";
+  const currency = "₽";
   if (gig.budgetMin != null && gig.budgetMax != null) {
     budgetInfo = `${gig.budgetMin.toLocaleString("ru-RU")} - ${gig.budgetMax.toLocaleString("ru-RU")} ${currency}`;
   } else if (gig.budgetMin != null) {

@@ -5,7 +5,7 @@ import {
   ArrowRight,
   Calendar,
   CheckCircle,
-  DollarSign,
+  TrendingUp,
   FileText,
   Image,
   Mail,
@@ -30,7 +30,7 @@ const ACTIVITY_ICONS = {
   PHOTO_ADDED: Image,
   WELCOME_SENT: Mail,
   COMMENT_ADDED: MessageSquare,
-  SALARY_UPDATED: DollarSign,
+  SALARY_UPDATED: TrendingUp,
   CONTACT_INFO_UPDATED: User,
   CREATED: ArrowRight,
 } as const;

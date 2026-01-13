@@ -82,7 +82,7 @@ export function VacancyEditor({
                 salary: {
                   ...data.salary,
                   from: Number(e.target.value),
-                  currency: data.salary?.currency ?? "RUB",
+                  currency: data.salary?.currency ?? "₽",
                 },
               })
             }
@@ -101,7 +101,7 @@ export function VacancyEditor({
                 salary: {
                   ...data.salary,
                   to: Number(e.target.value),
-                  currency: data.salary?.currency ?? "RUB",
+                  currency: data.salary?.currency ?? "₽",
                 },
               })
             }

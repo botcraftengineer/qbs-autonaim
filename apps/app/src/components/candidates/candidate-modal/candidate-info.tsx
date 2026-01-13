@@ -5,7 +5,6 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  DollarSign,
   Download,
   FileText,
   Github,
@@ -87,7 +86,6 @@ export function CandidateInfo({
           <h3 className="text-sm font-semibold">Детали</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">{candidate.salaryExpectation}</span>
             </div>
             <div className="flex items-center gap-3">

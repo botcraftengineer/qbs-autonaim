@@ -15,7 +15,6 @@ import {
 import {
   Calendar,
   Clock,
-  DollarSign,
   Edit,
   ExternalLink,
   Eye,
@@ -237,7 +236,6 @@ export function GigCard({
           <div className="flex items-center gap-4">
             {budget && (
               <div className="flex items-center gap-1 text-muted-foreground">
-                <DollarSign className="h-4 w-4" />
                 <span className="font-medium text-foreground">{budget}</span>
               </div>
             )}

@@ -109,7 +109,7 @@ export default function RootLayout({
               offers: {
                 "@type": "Offer",
                 price: "0",
-                priceCurrency: "RUB",
+                priceCurrency: "₽",
                 description: "Бесплатный тариф до 50 кандидатов в месяц",
               },
               aggregateRating: {

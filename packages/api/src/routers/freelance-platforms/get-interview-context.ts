@@ -65,7 +65,7 @@ export const getInterviewContext = withInterviewAccess
               ? {
                   min: gig.budgetMin,
                   max: gig.budgetMax,
-                  currency: "RUB",
+                  currency: "₽",
                 }
               : null,
           deadline: gig.deadline,
