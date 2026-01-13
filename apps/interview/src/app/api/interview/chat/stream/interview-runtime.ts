@@ -4,7 +4,7 @@ import {
   updateInterviewSessionMetadata,
 } from "@qbs-autonaim/shared";
 import type { LanguageModel } from "ai";
-import { generateText } from "ai";
+import { generateText, tool } from "ai";
 import { z } from "zod";
 
 type EntityType = "gig" | "vacancy" | "unknown";
@@ -64,17 +64,7 @@ export function createWebInterviewRuntime(params: {
   vacancy: VacancyLike | null;
   interviewContext: InterviewContextLite;
   isFirstResponse: boolean;
-}): {
-  tools: Record<
-    string,
-    {
-      description: string;
-      inputSchema: z.ZodTypeAny;
-      execute: (args: Record<string, unknown>) => Promise<unknown>;
-    }
-  >;
-  systemPrompt: string;
-} {
+}) {
   const { model, sessionId, gig, vacancy, interviewContext, isFirstResponse } =
     params;
 
@@ -91,7 +81,7 @@ export function createWebInterviewRuntime(params: {
     technical: string[];
   } | null = null;
 
-  const getInterviewSettings = {
+  const getInterviewSettings = tool({
     description:
       "Возвращает настройки интервью (gig/vacancy): инструкции бота, вопросы, ограничения, контекст задачи/вакансии, а также настройки бота компании.",
     inputSchema: z.object({}),
@@ -140,9 +130,9 @@ export function createWebInterviewRuntime(params: {
         candidateName: interviewContext.candidateName ?? null,
       };
     },
-  };
+  });
 
-  const getInterviewPolicy = {
+  const getInterviewPolicy = tool({
     description:
       "Возвращает правила проведения интервью для текущего типа сущности (gig/vacancy): какие темы разрешены/запрещены и на что делать фокус.",
     inputSchema: z.object({}),
@@ -191,9 +181,9 @@ export function createWebInterviewRuntime(params: {
         allowedOrgTopics: [],
       };
     },
-  };
+  });
 
-  const getInterviewQuestionBank = {
+  const getInterviewQuestionBank = tool({
     description:
       "Возвращает нормализованный банк вопросов для интервью (организационные и технические) в виде массивов строк.",
     inputSchema: z.object({}),
@@ -294,9 +284,9 @@ technical_raw: ${JSON.stringify(techRaw)}
 
       return questionBankMemo;
     },
-  };
+  });
 
-  const getScoringRubric = {
+  const getScoringRubric = tool({
     description:
       "Возвращает рубрику для внутренней оценки интервью. Можно использовать при итоговой оценке и для фиксации критериев в метаданных.",
     inputSchema: z.object({}),
@@ -376,9 +366,9 @@ technical_raw: ${JSON.stringify(techRaw)}
 
       return rubric;
     },
-  };
+  });
 
-  const saveInterviewNote = {
+  const saveInterviewNote = tool({
     description:
       "Сохраняет внутреннюю заметку/сигнал по интервью в метаданные interview session. Это НЕ отправляется кандидату.",
     inputSchema: z.object({
@@ -414,7 +404,7 @@ technical_raw: ${JSON.stringify(techRaw)}
         count: next.length,
       };
     },
-  };
+  });
 
   const tools = {
     getInterviewSettings,

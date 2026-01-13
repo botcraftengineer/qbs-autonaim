@@ -52,12 +52,11 @@ async function uploadCandidatePhotos() {
         const [uploadedFile] = await db
           .insert(file)
           .values({
-            originalName: `${photo.candidateId}_photo.${fileExtension}`,
+            provider: "S3",
+            key: `/uploads/candidates/${photo.candidateId}_photo.${fileExtension}`,
+            fileName: `${photo.candidateId}_photo.${fileExtension}`,
             mimeType: mimeType,
-            size: imageData.length,
-            // В реальной системе здесь будет путь к файлу в S3 или локальном хранилище
-            path: `/uploads/candidates/${photo.candidateId}_photo.${fileExtension}`,
-            // Для демо сохраняем оригинальный URL
+            fileSize: imageData.length.toString(),
             metadata: {
               originalUrl: photo.photoUrl,
               description: photo.photoDescription,
@@ -65,6 +64,10 @@ async function uploadCandidatePhotos() {
             },
           })
           .returning();
+
+        if (!uploadedFile) {
+          throw new Error("Failed to insert file record");
+        }
 
         uploadedFiles.push({
           candidateId: photo.candidateId,

@@ -7,8 +7,9 @@
  * Трассировка через Langfuse
  */
 
+import { observe, updateActiveTrace } from "@langfuse/tracing";
+import { trace } from "@opentelemetry/api";
 import { WebInterviewOrchestrator } from "@qbs-autonaim/ai";
-import { env } from "@qbs-autonaim/config";
 import { db, eq } from "@qbs-autonaim/db";
 import {
   gig as gigTable,
@@ -17,23 +18,17 @@ import {
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
 import { getAIModel, getFallbackModel } from "@qbs-autonaim/lib/ai";
+import "@qbs-autonaim/lib/instrumentation";
 import {
   createUIMessageStream,
   JsonToSseTransformStream,
   smoothStream,
+  stepCountIs,
   streamText,
 } from "ai";
-import { Langfuse } from "langfuse";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createWebInterviewRuntime } from "./interview-runtime";
-
-// Langfuse для трассировки
-const langfuse = new Langfuse({
-  secretKey: env.LANGFUSE_SECRET_KEY,
-  publicKey: env.LANGFUSE_PUBLIC_KEY,
-  baseUrl: env.LANGFUSE_BASE_URL,
-});
 
 // Гибкая схема для parts — AI SDK отправляет разные типы
 const partSchema = z
@@ -66,7 +61,7 @@ function generateUUID(): string {
   return crypto.randomUUID();
 }
 
-export async function POST(request: Request) {
+async function handler(request: Request) {
   let requestBody: z.infer<typeof requestSchema>;
 
   try {
@@ -201,10 +196,11 @@ export async function POST(request: Request) {
       }
     }
 
-    // Создаём trace в Langfuse (раньше, чтобы связать все запросы)
-    const trace = langfuse.trace({
+    // Устанавливаем метаданные для активного trace
+    updateActiveTrace({
       name: "web-interview-chat",
       userId: sessionId,
+      sessionId: sessionId,
       metadata: {
         source: "WEB",
         vacancyId: vacancy?.id,
@@ -214,8 +210,7 @@ export async function POST(request: Request) {
 
     // Создаём оркестратор
     const model = getAIModel();
-    const orchestrator = new WebInterviewOrchestrator({ model, langfuse });
-    orchestrator.setTraceId(trace.id);
+    const orchestrator = new WebInterviewOrchestrator({ model });
 
     // Формируем историю диалога для оркестратора
     const conversationHistory = session.messages
@@ -288,29 +283,10 @@ export async function POST(request: Request) {
       isFirstResponse,
     });
 
-    // Обновляем trace с дополнительной информацией
-    trace.update({
-      metadata: {
-        source: "WEB",
-        vacancyId: vacancy?.id,
-        gigId: gig?.id,
-        messageType: contextAnalysis.messageType,
-        isFirstResponse,
-      },
-    });
+    // Метаданные уже установлены в updateActiveTrace выше
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        const generation = trace.generation({
-          name: "interview-response",
-          model: env.AI_MODEL || "default",
-          input: {
-            system: systemPrompt,
-            userMessage: userMessageText,
-            contextAnalysis,
-          },
-        });
-
         // Формируем сообщения для AI
         const formattedMessages = messages.map((m) => {
           let content =
@@ -338,11 +314,12 @@ export async function POST(request: Request) {
             system: systemPrompt,
             messages: formattedMessages,
             tools,
+            stopWhen: stepCountIs(5), // Allow up to 5 steps for tool calls and final response
             experimental_transform: smoothStream({ chunking: "word" }),
-            onFinish: async ({ text }) => {
-              generation.end({ output: text });
-              trace.update({ output: text });
-              await langfuse.flushAsync();
+            experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
+            onFinish: async () => {
+              // End span manually after stream has finished
+              trace.getActiveSpan()?.end();
             },
           });
         } catch (error) {
@@ -354,22 +331,19 @@ export async function POST(request: Request) {
           try {
             const fallbackModel = getFallbackModel();
 
-            // Обновляем generation с информацией о fallback
-            generation.update({
-              model: "fallback-model",
-              metadata: { fallbackUsed: true },
-            });
+            // Добавляем информацию о fallback в метаданные trace
 
             result = streamText({
               model: fallbackModel,
               system: systemPrompt,
               messages: formattedMessages,
               tools,
+              stopWhen: stepCountIs(5), // Allow up to 5 steps for tool calls and final response
               experimental_transform: smoothStream({ chunking: "word" }),
-              onFinish: async ({ text }) => {
-                generation.end({ output: text });
-                trace.update({ output: text });
-                await langfuse.flushAsync();
+              experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
+              onFinish: async () => {
+                // End span manually after stream has finished
+                trace.getActiveSpan()?.end();
               },
             });
 
@@ -381,9 +355,12 @@ export async function POST(request: Request) {
               "[Interview Stream] Fallback модель также недоступна:",
               fallbackError,
             );
-            generation.end({
-              statusMessage: `Основная модель: ${error instanceof Error ? error.message : String(error)}. Fallback: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
+            // End span with error
+            trace.getActiveSpan()?.setStatus({
+              code: 1,
+              message: `Основная модель: ${error instanceof Error ? error.message : String(error)}. Fallback: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
             });
+            trace.getActiveSpan()?.end();
             throw fallbackError;
           }
         }
@@ -396,11 +373,13 @@ export async function POST(request: Request) {
         const assistantMessages = finishedMessages.filter(
           (m) => m.role === "assistant",
         );
+
         for (const msg of assistantMessages) {
           const textParts = msg.parts?.filter(
             (p): p is { type: "text"; text: string } =>
               p.type === "text" && "text" in p,
           );
+
           const content = textParts?.map((p) => p.text).join("\n") || "";
 
           if (content) {
@@ -420,6 +399,8 @@ export async function POST(request: Request) {
       },
     });
 
+    // Traces will be flushed automatically by OpenTelemetry
+
     return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
       headers: {
         "Content-Type": "text/event-stream",
@@ -429,9 +410,21 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("[Interview Stream] Error:", error);
+    // End span with error on exception
+    trace.getActiveSpan()?.setStatus({
+      code: 1,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    trace.getActiveSpan()?.end();
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 },
     );
   }
 }
+
+// Wrap handler with observe() to create a Langfuse trace
+export const POST = observe(handler, {
+  name: "interview-chat-stream",
+  endOnExit: false, // Don't end observation until stream finishes
+});

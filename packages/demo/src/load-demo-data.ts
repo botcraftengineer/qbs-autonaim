@@ -57,7 +57,7 @@ async function loadDemoData() {
             key: `candidates/${photo.candidateId}_photo.jpg`,
             fileName: `${photo.candidateId}_photo.jpg`,
             mimeType: "image/jpeg",
-            size: 150000, // Примерный размер
+            fileSize: "150000", // Примерный размер
             path: `/uploads/candidates/${photo.candidateId}_photo.jpg`,
             metadata: {
               originalUrl: photo.photoUrl,
