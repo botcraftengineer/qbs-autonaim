@@ -1,13 +1,7 @@
 "use client";
 
 import type { RouterOutputs } from "@qbs-autonaim/api";
-import {
-  Badge,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-} from "@qbs-autonaim/ui";
+import { Badge, Button, Card, CardContent, CardHeader } from "@qbs-autonaim/ui";
 import {
   AlertCircle,
   Banknote,
@@ -23,7 +17,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-type ShortlistCandidate = RouterOutputs["gig"]["shortlist"]["candidates"][number];
+type ShortlistCandidate =
+  RouterOutputs["gig"]["shortlist"]["candidates"][number];
 
 interface ShortlistCandidateCardProps {
   candidate: ShortlistCandidate;
@@ -80,21 +75,30 @@ export function ShortlistCandidateCard({
   rank,
   isTopCandidate,
 }: ShortlistCandidateCardProps) {
-  const recommendation = RECOMMENDATION_CONFIG[candidate.recommendation];
+  // Handle cases where recommendation might be null/undefined or unexpected value
+  const recommendationKey = candidate.recommendation || "NEUTRAL";
+  const recommendation =
+    RECOMMENDATION_CONFIG[
+      recommendationKey as keyof typeof RECOMMENDATION_CONFIG
+    ] || RECOMMENDATION_CONFIG.NEUTRAL;
   const RecommendationIcon = recommendation.icon;
 
   return (
-    <Card className={`transition-all duration-200 ${isTopCandidate ? 'ring-2 ring-primary/20 bg-primary/5' : ''}`}>
+    <Card
+      className={`transition-all duration-200 ${isTopCandidate ? "ring-2 ring-primary/20 bg-primary/5" : ""}`}
+    >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             {/* Rank Badge */}
             <div className="flex-shrink-0">
-              <div className={`flex h-10 w-10 items-center justify-center rounded-full font-bold text-lg ${
-                isTopCandidate
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-muted text-muted-foreground'
-              }`}>
+              <div
+                className={`flex h-10 w-10 items-center justify-center rounded-full font-bold text-lg ${
+                  isTopCandidate
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground"
+                }`}
+              >
                 {rank}
               </div>
             </div>
@@ -114,7 +118,9 @@ export function ShortlistCandidateCard({
               {/* Composite Score */}
               <div className="flex items-center gap-2 mt-1">
                 <span className="text-sm font-medium">Общая оценка:</span>
-                <span className={`text-xl font-bold ${getScoreColor(candidate.compositeScore)}`}>
+                <span
+                  className={`text-xl font-bold ${getScoreColor(candidate.compositeScore)}`}
+                >
                   {candidate.compositeScore}
                 </span>
               </div>
@@ -125,7 +131,9 @@ export function ShortlistCandidateCard({
                   {candidate.proposedPrice && (
                     <div className="flex items-center gap-1">
                       <Banknote className="h-4 w-4" />
-                      <span>{candidate.proposedPrice.toLocaleString('ru-RU')} ₽</span>
+                      <span>
+                        {candidate.proposedPrice.toLocaleString("ru-RU")} ₽
+                      </span>
                     </div>
                   )}
                   {candidate.proposedDeliveryDays && (
@@ -159,7 +167,9 @@ export function ShortlistCandidateCard({
           {candidate.priceScore !== undefined && (
             <div className="text-center">
               <div className="text-xs text-muted-foreground mb-1">Цена</div>
-              <div className={`text-lg font-semibold ${getScoreColor(candidate.priceScore)}`}>
+              <div
+                className={`text-lg font-semibold ${getScoreColor(candidate.priceScore)}`}
+              >
                 {candidate.priceScore}
               </div>
             </div>
@@ -167,7 +177,9 @@ export function ShortlistCandidateCard({
           {candidate.deliveryScore !== undefined && (
             <div className="text-center">
               <div className="text-xs text-muted-foreground mb-1">Сроки</div>
-              <div className={`text-lg font-semibold ${getScoreColor(candidate.deliveryScore)}`}>
+              <div
+                className={`text-lg font-semibold ${getScoreColor(candidate.deliveryScore)}`}
+              >
                 {candidate.deliveryScore}
               </div>
             </div>
@@ -175,7 +187,9 @@ export function ShortlistCandidateCard({
           {candidate.skillsMatchScore !== undefined && (
             <div className="text-center">
               <div className="text-xs text-muted-foreground mb-1">Навыки</div>
-              <div className={`text-lg font-semibold ${getScoreColor(candidate.skillsMatchScore)}`}>
+              <div
+                className={`text-lg font-semibold ${getScoreColor(candidate.skillsMatchScore)}`}
+              >
                 {candidate.skillsMatchScore}
               </div>
             </div>
@@ -183,7 +197,9 @@ export function ShortlistCandidateCard({
           {candidate.experienceScore !== undefined && (
             <div className="text-center">
               <div className="text-xs text-muted-foreground mb-1">Опыт</div>
-              <div className={`text-lg font-semibold ${getScoreColor(candidate.experienceScore)}`}>
+              <div
+                className={`text-lg font-semibold ${getScoreColor(candidate.experienceScore)}`}
+              >
                 {candidate.experienceScore}
               </div>
             </div>
@@ -199,7 +215,10 @@ export function ShortlistCandidateCard({
               </div>
               <ul className="space-y-1">
                 {candidate.strengths.slice(0, 3).map((strength) => (
-                  <li key={strength} className="text-xs text-muted-foreground flex items-start gap-1">
+                  <li
+                    key={strength}
+                    className="text-xs text-muted-foreground flex items-start gap-1"
+                  >
                     <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
                     <span className="line-clamp-2">{strength}</span>
                   </li>
@@ -215,7 +234,10 @@ export function ShortlistCandidateCard({
               </div>
               <ul className="space-y-1">
                 {candidate.weaknesses.slice(0, 3).map((weakness) => (
-                  <li key={weakness} className="text-xs text-muted-foreground flex items-start gap-1">
+                  <li
+                    key={weakness}
+                    className="text-xs text-muted-foreground flex items-start gap-1"
+                  >
                     <AlertCircle className="h-3 w-3 text-red-500 mt-0.5 flex-shrink-0" />
                     <span className="line-clamp-2">{weakness}</span>
                   </li>
@@ -230,7 +252,9 @@ export function ShortlistCandidateCard({
           {candidate.contactInfo.email && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <Mail className="h-3 w-3" />
-              <span className="truncate max-w-[150px]">{candidate.contactInfo.email}</span>
+              <span className="truncate max-w-[150px]">
+                {candidate.contactInfo.email}
+              </span>
             </div>
           )}
           {candidate.contactInfo.phone && (
@@ -242,7 +266,9 @@ export function ShortlistCandidateCard({
           {candidate.contactInfo.telegram && (
             <div className="flex items-center gap-1 text-muted-foreground">
               <MessageSquare className="h-3 w-3" />
-              <span className="truncate max-w-[120px]">@{candidate.contactInfo.telegram}</span>
+              <span className="truncate max-w-[120px]">
+                @{candidate.contactInfo.telegram}
+              </span>
             </div>
           )}
         </div>
@@ -260,9 +286,15 @@ export function ShortlistCandidateCard({
                 } catch {
                   // Fallback to numbered label if URL parsing fails
                 }
-                
+
                 return (
-                  <Button key={link} variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
+                  <Button
+                    key={link}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    asChild
+                  >
                     <a href={link} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-3 w-3 mr-1" />
                       {label}
