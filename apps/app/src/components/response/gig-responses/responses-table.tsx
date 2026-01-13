@@ -7,8 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from "@qbs-autonaim/ui";
-import type { Response } from "./use-response-filters";
 import { ResponseRow } from "./response-row";
+import type { Response } from "./use-response-filters";
 
 interface ResponsesTableProps {
   responses: Response[];
@@ -38,6 +38,7 @@ export function ResponsesTable({
           <TableRow>
             <TableHead className="min-w-[200px]">Кандидат</TableHead>
             <TableHead className="min-w-[120px]">Статус</TableHead>
+            <TableHead className="min-w-[100px]">Оценка</TableHead>
             <TableHead className="min-w-[140px]">HR статус</TableHead>
             <TableHead className="min-w-[120px]">Дата</TableHead>
             <TableHead className="w-[180px] text-right">Действия</TableHead>

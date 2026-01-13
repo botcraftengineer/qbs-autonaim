@@ -47,6 +47,16 @@ export function ResponseRow({
         </Badge>
       </TableCell>
       <TableCell>
+        {response.score !== null && response.score !== undefined ? (
+          <div className="flex items-center gap-1">
+            <span className="font-medium">{response.score}</span>
+            <span className="text-muted-foreground text-sm">/5</span>
+          </div>
+        ) : (
+          <span className="text-muted-foreground text-sm">—</span>
+        )}
+      </TableCell>
+      <TableCell>
         {response.hrSelectionStatus ? (
           <Badge variant="outline">
             {getHrStatusLabel(response.hrSelectionStatus)}

@@ -63,6 +63,9 @@ export function ResponsesSkeleton() {
                     <Skeleton className="h-4 w-20" />
                   </TableHead>
                   <TableHead>
+                    <Skeleton className="h-4 w-16" />
+                  </TableHead>
+                  <TableHead>
                     <Skeleton className="h-4 w-32" />
                   </TableHead>
                   <TableHead>
@@ -81,6 +84,9 @@ export function ResponsesSkeleton() {
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-5 w-20" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-12" />
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-4 w-24" />
@@ -147,9 +153,20 @@ export default function GigResponsesPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
+  // Transform responses to include score
+  const responsesWithScore = React.useMemo(() => {
+    return responses?.map((response) => ({
+      ...response,
+      score: response.interviewScoring
+        ? (response.interviewScoring.rating ??
+          Math.round(response.interviewScoring.score / 20))
+        : null,
+    })) || [];
+  }, [responses]);
+
   // Custom hooks
   const { filteredResponses } = useResponseFilters({
-    responses,
+    responses: responsesWithScore,
     searchQuery,
     statusFilter,
     activeTab,

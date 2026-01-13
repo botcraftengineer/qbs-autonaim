@@ -7,6 +7,7 @@ export interface Response {
   status: string;
   hrSelectionStatus?: string | null;
   createdAt: Date | string;
+  score?: number | null;
 }
 
 interface UseResponseFiltersProps {
