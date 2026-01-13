@@ -60,10 +60,12 @@ export function InterviewContextCard({ context }: InterviewContextCardProps) {
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
               {isGig && context.budget && (
                 <div className="flex items-center gap-1.5 text-sm font-medium text-foreground">
-                  <span>
+                  <span className="font-variant-numeric: tabular-nums">
                     {context.budget.min && context.budget.max
-                      ? `${context.budget.min}–${context.budget.max}`
-                      : context.budget.min || context.budget.max}{" "}
+                      ? `${context.budget.min.toLocaleString("ru-RU")}–${context.budget.max.toLocaleString("ru-RU")}`
+                      : (
+                          context.budget.min || context.budget.max
+                        )?.toLocaleString("ru-RU")}{" "}
                     {context.budget.currency}
                   </span>
                 </div>

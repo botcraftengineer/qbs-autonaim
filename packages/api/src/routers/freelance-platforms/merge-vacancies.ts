@@ -83,15 +83,36 @@ export const mergeVacancies = protectedProcedure
           ),
         );
 
-      await tx
-        .update(interviewLink)
-        .set({ entityId: input.targetVacancyId })
-        .where(
-          and(
-            eq(interviewLink.entityType, "vacancy"),
-            eq(interviewLink.entityId, input.sourceVacancyId),
-          ),
-        );
+      // Проверяем, есть ли уже interviewLink у целевой вакансии
+      const existingTargetLink = await tx.query.interviewLink.findFirst({
+        where: and(
+          eq(interviewLink.entityType, "vacancy"),
+          eq(interviewLink.entityId, input.targetVacancyId),
+        ),
+      });
+
+      if (existingTargetLink) {
+        // Если у целевой вакансии уже есть ссылка, удаляем ссылку исходной вакансии
+        await tx
+          .delete(interviewLink)
+          .where(
+            and(
+              eq(interviewLink.entityType, "vacancy"),
+              eq(interviewLink.entityId, input.sourceVacancyId),
+            ),
+          );
+      } else {
+        // Если у целевой вакансии нет ссылки, переносим ссылку исходной вакансии
+        await tx
+          .update(interviewLink)
+          .set({ entityId: input.targetVacancyId })
+          .where(
+            and(
+              eq(interviewLink.entityType, "vacancy"),
+              eq(interviewLink.entityId, input.sourceVacancyId),
+            ),
+          );
+      }
 
       const [updated] = await tx
         .update(vacancy)

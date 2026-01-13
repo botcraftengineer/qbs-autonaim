@@ -8,6 +8,12 @@ import {
   TabsList,
   TabsTrigger,
 } from "@qbs-autonaim/ui";
+import {
+  IconEdit,
+  IconEye,
+  IconMessage,
+  IconSettings,
+} from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -168,7 +174,7 @@ export function VacancyLayoutClient({
                     <TabsTrigger
                       value="detail"
                       asChild
-                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
                     >
                       <Link
                         href={paths.workspace.vacancies(
@@ -177,13 +183,15 @@ export function VacancyLayoutClient({
                           vacancyId,
                         )}
                       >
-                        Обзор
+                        <IconEye className="size-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">Обзор</span>
+                        <span className="sm:hidden">Обзор</span>
                       </Link>
                     </TabsTrigger>
                     <TabsTrigger
                       value="responses"
                       asChild
-                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
                     >
                       <Link
                         href={paths.workspace.vacancies(
@@ -193,6 +201,7 @@ export function VacancyLayoutClient({
                           "responses",
                         )}
                       >
+                        <IconMessage className="size-4" aria-hidden="true" />
                         <span className="hidden sm:inline">
                           Отклики ({responsesCount?.total ?? 0})
                         </span>
@@ -202,7 +211,7 @@ export function VacancyLayoutClient({
                     <TabsTrigger
                       value="edit"
                       asChild
-                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
                     >
                       <Link
                         href={paths.workspace.vacancies(
@@ -212,13 +221,15 @@ export function VacancyLayoutClient({
                           "edit",
                         )}
                       >
-                        Редактировать
+                        <IconEdit className="size-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">Редактировать</span>
+                        <span className="sm:hidden">Редакт.</span>
                       </Link>
                     </TabsTrigger>
                     <TabsTrigger
                       value="settings"
                       asChild
-                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0"
+                      className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
                     >
                       <Link
                         href={paths.workspace.vacancies(
@@ -228,7 +239,9 @@ export function VacancyLayoutClient({
                           "settings",
                         )}
                       >
-                        Настройки
+                        <IconSettings className="size-4" aria-hidden="true" />
+                        <span className="hidden sm:inline">Настройки</span>
+                        <span className="sm:hidden">Настр.</span>
                       </Link>
                     </TabsTrigger>
                   </TabsList>

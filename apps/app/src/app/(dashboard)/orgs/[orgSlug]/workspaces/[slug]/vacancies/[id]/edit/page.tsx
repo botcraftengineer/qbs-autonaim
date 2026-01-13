@@ -59,15 +59,6 @@ export default function VacancyEditPage({ params }: VacancyEditPageProps) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">
-          Редактирование вакансии
-        </h1>
-        <p className="text-muted-foreground mt-1">
-          Измените название и описание вакансии
-        </p>
-      </div>
-
       <VacancyEditForm
         initialData={{
           title: vacancy.title,
