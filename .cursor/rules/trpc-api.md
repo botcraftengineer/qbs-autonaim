@@ -1,6 +1,6 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "packages/api/**/*"
+alwaysApply: true
+globs: "packages/api/**/*"
 ---
 
 # Стандарты и правила для tRPC API

@@ -1,6 +1,6 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "packages/db/**/*"
+alwaysApply: true
+globs: "packages/db/**/*"
 ---
 
 You are an expert in database design, data modeling, and normalization.

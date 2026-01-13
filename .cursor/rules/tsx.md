@@ -1,6 +1,6 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "apps/app/**/*.tsx"
+alwaysApply: true
+globs: "apps/app/**/*.tsx"
 ---
    1. Именование и стиль кода:
            - Имена файлов должны использовать kebab-case (например: my-component.ts, user-profile.tsx)
