@@ -80,7 +80,16 @@ export function GigInvitationTemplate({
   }, [generateLink, gigId, workspace?.id]);
 
   const template = useMemo(() => {
-    const interviewUrl = interviewLink?.url || "[ссылка на интервью]";
+    let interviewUrl = interviewLink?.url || "[ссылка на интервью]";
+
+    // Ensure the URL has https protocol
+    if (interviewUrl && interviewUrl !== "[ссылка на интервью]") {
+      if (interviewUrl.startsWith("http://")) {
+        interviewUrl = interviewUrl.replace("http://", "https://");
+      } else if (!interviewUrl.startsWith("https://")) {
+        interviewUrl = `https://${interviewUrl}`;
+      }
+    }
 
     if (aiTemplate?.text) {
       // Replace the placeholder URL in AI-generated text with actual URL
