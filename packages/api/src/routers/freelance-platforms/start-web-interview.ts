@@ -1,4 +1,4 @@
-﻿import { and, eq } from "@qbs-autonaim/db";
+﻿import { and, desc, eq } from "@qbs-autonaim/db";
 import {
   interviewMessage,
   interviewSession,
@@ -149,24 +149,32 @@ async function handleVacancyInterview(
     freelancerInfo.platformProfileUrl,
   );
 
-  // Проверяем дубликаты
-  const existingResponse = await ctx.db.query.response.findFirst({
-    where: and(
-      eq(responseTable.entityType, "vacancy"),
-      eq(responseTable.entityId, vacancyLink.entityId),
-      eq(responseTable.platformProfileUrl, normalizedProfileUrl),
-    ),
-    with: {
-      interviewSessions: {
-        orderBy: (session, { desc }) => [desc(session.createdAt)],
-        limit: 1,
-      },
-    },
-  });
+  // Проверяем существующий отклик с сессиями
+  const existingResponse = await ctx.db
+    .select()
+    .from(responseTable)
+    .where(
+      and(
+        eq(responseTable.entityType, "vacancy"),
+        eq(responseTable.entityId, vacancyLink.entityId),
+        eq(responseTable.platformProfileUrl, normalizedProfileUrl),
+      ),
+    )
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (existingResponse) {
+    // Ищем последнюю сессию интервью
+    const sessions = await ctx.db
+      .select()
+      .from(interviewSession)
+      .where(eq(interviewSession.responseId, existingResponse.id))
+      .orderBy(desc(interviewSession.createdAt))
+      .limit(1);
+
+    const activeSession = sessions[0];
+
     // Если есть активная сессия - возвращаем её
-    const activeSession = existingResponse.interviewSessions[0];
     if (activeSession && activeSession.status === "active") {
       const welcomeMessage = `Добро пожаловать! У вас уже есть активное интервью по этой вакансии. Продолжим?`;
 
@@ -361,25 +369,32 @@ async function handleGigInterview(
     freelancerInfo.platformProfileUrl,
   );
 
-  // Проверяем дубликаты
-  const existingResponse = await ctx.db.query.response.findFirst({
-    where: (response, { and, eq }) =>
+  // Проверяем существующий отклик с сессиями
+  const existingResponse = await ctx.db
+    .select()
+    .from(responseTable)
+    .where(
       and(
-        eq(response.entityType, "gig"),
-        eq(response.entityId, gigLink.gigId),
-        eq(response.candidateId, normalizedCandidateId),
+        eq(responseTable.entityType, "gig"),
+        eq(responseTable.entityId, gigLink.gigId),
+        eq(responseTable.candidateId, normalizedCandidateId),
       ),
-    with: {
-      interviewSessions: {
-        orderBy: (session, { desc }) => [desc(session.createdAt)],
-        limit: 1,
-      },
-    },
-  });
+    )
+    .limit(1)
+    .then((rows) => rows[0]);
 
   if (existingResponse) {
+    // Ищем последнюю сессию интервью
+    const sessions = await ctx.db
+      .select()
+      .from(interviewSession)
+      .where(eq(interviewSession.responseId, existingResponse.id))
+      .orderBy(desc(interviewSession.createdAt))
+      .limit(1);
+
+    const activeSession = sessions[0];
+
     // Если есть активная сессия - возвращаем её
-    const activeSession = existingResponse.interviewSessions[0];
     if (activeSession && activeSession.status === "active") {
       const welcomeMessage = `Добро пожаловать! У вас уже есть активное интервью по этому заданию. Продолжим?`;
 
