@@ -1,6 +1,11 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  skipToken,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -13,6 +18,7 @@ import {
   ShortlistLoading,
   ShortlistStats,
 } from "~/components/gig";
+import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface ShortlistPageClientProps {
@@ -29,6 +35,7 @@ export function ShortlistPageClient({
   const _router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const { workspace } = useWorkspace();
   const [selectedMinScore, setSelectedMinScore] = useState<string>("70");
   const [includeOnlyHighlyRecommended, setIncludeOnlyHighlyRecommended] =
     useState<boolean>(false);
@@ -41,14 +48,18 @@ export function ShortlistPageClient({
     isLoading,
     error,
   } = useQuery(
-    trpc.gig.shortlist.queryOptions({
-      gigId,
-      workspaceId: workspaceSlug,
-      minScore: Number.parseInt(selectedMinScore, 10),
-      maxCandidates: 20, // Fixed limit for shortlist
-      includeOnlyHighlyRecommended,
-      prioritizeBudgetFit,
-    }),
+    trpc.gig.shortlist.queryOptions(
+      workspace?.id
+        ? {
+            gigId,
+            workspaceId: workspace.id,
+            minScore: Number.parseInt(selectedMinScore, 10),
+            maxCandidates: 20, // Fixed limit for shortlist
+            includeOnlyHighlyRecommended,
+            prioritizeBudgetFit,
+          }
+        : skipToken,
+    ),
   );
 
   // Recalculate shortlist mutation
@@ -59,7 +70,7 @@ export function ShortlistPageClient({
           queryClient.invalidateQueries({
             queryKey: trpc.gig.shortlist.queryKey({
               gigId,
-              workspaceId: workspaceSlug,
+              workspaceId: workspace?.id ?? "",
             }),
           });
           toast.success("Шортлист пересчитан");
@@ -71,9 +82,10 @@ export function ShortlistPageClient({
     );
 
   const handleRecalculate = () => {
+    if (!workspace?.id) return;
     recalculateShortlist({
       gigId,
-      workspaceId: workspaceSlug,
+      workspaceId: workspace.id,
     });
   };
 
