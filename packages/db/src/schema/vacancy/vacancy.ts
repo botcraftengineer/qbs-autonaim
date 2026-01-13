@@ -40,9 +40,7 @@ export interface VacancyRequirements {
 export const vacancy = pgTable(
   "vacancies",
   {
-    id: uuid("id")
-      .primaryKey()
-      .default(sql`uuid_generate_v7()`),
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
 
     // Workspace к которому принадлежит вакансия
     workspaceId: text("workspace_id")
@@ -93,13 +91,13 @@ export const vacancy = pgTable(
     }).onDelete("set null"),
     sourceExternalIdx: index("vacancy_source_external_idx").on(
       table.source,
-      table.externalId
+      table.externalId,
     ),
     requirementsIdx: index("vacancy_requirements_idx").using(
       "gin",
-      table.requirements
+      table.requirements,
     ),
-  })
+  }),
 );
 
 export const CreateVacancySchema = createInsertSchema(vacancy, {

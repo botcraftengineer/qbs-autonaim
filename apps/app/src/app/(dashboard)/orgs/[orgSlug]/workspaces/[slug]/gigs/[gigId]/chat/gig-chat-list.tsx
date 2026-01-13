@@ -113,15 +113,17 @@ export function GigChatList({ gigId }: GigChatListProps) {
       <div className="flex-1 overflow-y-auto">
         {sessionsQuery.isPending ? (
           <div className="space-y-0">
-            {Array.from({ length: 6 }, (_, index) => `s-${index}`).map((key) => (
-              <div key={key} className="px-3 md:px-4 py-3 border-b">
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-20" />
-                  <Skeleton className="h-3 w-full" />
+            {Array.from({ length: 6 }, (_, index) => `s-${index}`).map(
+              (key) => (
+                <div key={key} className="px-3 md:px-4 py-3 border-b">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-20" />
+                    <Skeleton className="h-3 w-full" />
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
         ) : sessionsQuery.data?.sessions?.length ? (
           sessionsQuery.data.sessions.map((session) => {

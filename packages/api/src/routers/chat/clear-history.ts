@@ -16,7 +16,9 @@ export const clearHistory = protectedProcedure
         entityId: z.string().uuid().optional(),
       })
       .refine(
-        (v) => Boolean(v.sessionId) || (Boolean(v.entityType) && Boolean(v.entityId)),
+        (v) =>
+          Boolean(v.sessionId) ||
+          (Boolean(v.entityType) && Boolean(v.entityId)),
         {
           message: "sessionId или (entityType, entityId) обязательны",
         },
@@ -37,8 +39,14 @@ export const clearHistory = protectedProcedure
       : await ctx.db.query.chatSession.findFirst({
           where: (chatSession, { and, eq }) =>
             and(
-              eq(chatSession.entityType, entityType as NonNullable<typeof entityType>),
-              eq(chatSession.entityId, entityId as NonNullable<typeof entityId>),
+              eq(
+                chatSession.entityType,
+                entityType as NonNullable<typeof entityType>,
+              ),
+              eq(
+                chatSession.entityId,
+                entityId as NonNullable<typeof entityId>,
+              ),
               eq(chatSession.userId, userId),
             ),
         });

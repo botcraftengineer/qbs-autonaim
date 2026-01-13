@@ -33,7 +33,7 @@ const InterviewRubricSchema = z.object({
       title: z.string(),
       description: z.string(),
       weight: z.number(),
-    })
+    }),
   ),
 });
 
@@ -87,7 +87,7 @@ export { ConversationMetadataSchema };
  * @throws Error если метаданные не соответствуют схеме
  */
 function safeParseMetadata(
-  metadata: Record<string, unknown>
+  metadata: Record<string, unknown>,
 ): ConversationMetadata {
   try {
     const validated = ConversationMetadataSchema.parse(metadata);
@@ -110,7 +110,7 @@ function safeParseMetadata(
  * @returns Promise с метаданными
  */
 export async function getConversationMetadata(
-  sessionId: string
+  sessionId: string,
 ): Promise<ConversationMetadata> {
   try {
     const session = await db.query.chatSession.findFirst({
@@ -150,7 +150,7 @@ export async function getConversationMetadata(
  */
 export async function updateConversationMetadata(
   sessionId: string,
-  updates: Partial<ConversationMetadata>
+  updates: Partial<ConversationMetadata>,
 ): Promise<boolean> {
   try {
     // Читаем текущие метаданные
@@ -179,7 +179,7 @@ export async function updateConversationMetadata(
         });
         // Прерываем при невалидных данных
         throw new Error(
-          `Cannot update chat session with malformed metadata: ${error}`
+          `Cannot update chat session with malformed metadata: ${error}`,
         );
       }
     }
@@ -230,7 +230,7 @@ export const updateChatSessionMetadata = updateConversationMetadata;
  * @returns Promise с метаданными
  */
 export async function getInterviewSessionMetadata(
-  sessionId: string
+  sessionId: string,
 ): Promise<ConversationMetadata> {
   try {
     const session = await db.query.interviewSession.findFirst({
@@ -269,7 +269,7 @@ export async function getInterviewSessionMetadata(
  */
 export async function updateInterviewSessionMetadata(
   sessionId: string,
-  updates: Partial<ConversationMetadata>
+  updates: Partial<ConversationMetadata>,
 ): Promise<boolean> {
   const MAX_RETRIES = 3;
 
@@ -292,7 +292,7 @@ export async function updateInterviewSessionMetadata(
       if (current.metadata) {
         try {
           currentMetadata = safeParseMetadata(
-            current.metadata as Record<string, unknown>
+            current.metadata as Record<string, unknown>,
           );
         } catch (error) {
           console.error("Failed to parse interview session metadata", {
@@ -301,7 +301,7 @@ export async function updateInterviewSessionMetadata(
             rawMetadata: current.metadata,
           });
           throw new Error(
-            `Cannot update interview session with malformed metadata: ${error}`
+            `Cannot update interview session with malformed metadata: ${error}`,
           );
         }
       }
@@ -340,7 +340,7 @@ export async function updateInterviewSessionMetadata(
  * @returns Promise с количеством вопросов
  */
 export async function getInterviewQuestionCount(
-  sessionId: string
+  sessionId: string,
 ): Promise<number> {
   const metadata = await getInterviewSessionMetadata(sessionId);
   return metadata.questionAnswers?.length || 0;

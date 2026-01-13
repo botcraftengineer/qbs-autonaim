@@ -28,14 +28,14 @@ export const getVacancies = protectedProcedure
       ctx.auditLogger,
       ctx.session.user.id,
       ctx.ipAddress,
-      ctx.userAgent
+      ctx.userAgent,
     );
 
     try {
       // Проверка доступа к workspace
       const access = await ctx.workspaceRepository.checkAccess(
         input.workspaceId,
-        ctx.session.user.id
+        ctx.session.user.id,
       );
 
       if (!access) {
@@ -91,8 +91,8 @@ export const getVacancies = protectedProcedure
           responseTable,
           and(
             eq(vacancy.id, responseTable.entityId),
-            eq(responseTable.entityType, "vacancy")
-          )
+            eq(responseTable.entityType, "vacancy"),
+          ),
         )
         .where(and(...conditions));
 

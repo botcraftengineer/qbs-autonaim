@@ -4,9 +4,7 @@ import { db } from "@qbs-autonaim/db/client";
 import { interviewSession } from "@qbs-autonaim/db/schema";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import { stripHtml } from "string-strip-html";
-import type {
-  InterviewAnalysis,
-} from "../../schemas/interview";
+import type { InterviewAnalysis } from "../../schemas/interview";
 import { createLogger, INTERVIEW } from "../base";
 
 const logger = createLogger("Interview");
