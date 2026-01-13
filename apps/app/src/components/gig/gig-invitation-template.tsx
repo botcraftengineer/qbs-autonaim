@@ -81,7 +81,7 @@ export function GigInvitationTemplate({
             workspaceId: variables.workspaceId,
           }),
         });
-        toast.success("Ссылка на интервью создана");
+        toast.success("Ссылка на чат создана");
       },
       onError: (error) => {
         toast.error(error.message);
@@ -111,7 +111,7 @@ export function GigInvitationTemplate({
       "Для продолжения, пожалуйста, пройдите короткое интервью с нашим AI-ассистентом (5-10 минут):",
       interviewUrl,
       "",
-      "После интервью мы свяжемся с вами для обсуждения деталей.",
+      "После чата мы свяжемся с вами для обсуждения деталей.",
     ];
 
     return lines.join("\n");
@@ -191,7 +191,7 @@ export function GigInvitationTemplate({
           <div>
             <CardTitle>Шаблон приглашения</CardTitle>
             <CardDescription>
-              Скопируйте и отправьте кандидатам для прохождения интервью
+              Скопируйте и отправьте кандидатам для прохождения чата
             </CardDescription>
           </div>
           {interviewLink && (
@@ -218,7 +218,7 @@ export function GigInvitationTemplate({
         {!interviewLink && (
           <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
             <p className="mb-3">
-              Создайте ссылку на интервью, чтобы использовать шаблон приглашения
+              Создайте ссылку на чат, чтобы использовать шаблон приглашения
             </p>
             <Button
               onClick={handleGenerateLink}
@@ -226,7 +226,7 @@ export function GigInvitationTemplate({
               variant="outline"
               size="sm"
               className="min-h-[36px]"
-              aria-label="Создать ссылку на интервью"
+              aria-label="Создать ссылку на чат"
             >
               {isGenerating ? (
                 <>
@@ -239,7 +239,7 @@ export function GigInvitationTemplate({
               ) : (
                 <>
                   <IconLink className="size-4 mr-2" aria-hidden="true" />
-                  Создать ссылку на интервью
+                  Создать ссылку на чат
                 </>
               )}
             </Button>
@@ -279,7 +279,7 @@ export function GigInvitationTemplate({
               onClick={handleCopyLink}
               variant="outline"
               className="flex-1 min-h-[44px]"
-              aria-label="Скопировать ссылку на интервью"
+              aria-label="Скопировать ссылку на чат"
             >
               {linkCopied ? (
                 <>
