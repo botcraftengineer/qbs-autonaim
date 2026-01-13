@@ -3,9 +3,9 @@ import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
 } from "@qbs-autonaim/shared";
-import { createHash } from "crypto";
 import type { LanguageModel } from "ai";
 import { generateText, tool } from "ai";
+import { createHash } from "crypto";
 import { z } from "zod";
 
 type EntityType = "gig" | "vacancy" | "unknown";
@@ -151,7 +151,7 @@ export function createWebInterviewRuntime(params: {
       const metadata = await getInterviewSessionMetadata(sessionId);
 
       const parsed = interviewStateSchema.safeParse(
-        metadata.interviewState ?? {}
+        metadata.interviewState ?? {},
       );
       const state = parsed.success ? parsed.data : {};
 
@@ -190,7 +190,7 @@ export function createWebInterviewRuntime(params: {
 
       const metadata = await getInterviewSessionMetadata(sessionId);
       const parsedPrev = interviewStateSchema.safeParse(
-        metadata.interviewState ?? {}
+        metadata.interviewState ?? {},
       );
       const prev = parsedPrev.success ? parsedPrev.data : {};
 
@@ -391,8 +391,8 @@ technical_raw: ${JSON.stringify(techRaw)}
                   .map((q) => q.trim())
                   .filter(Boolean)
                   .map((q) => q.replace(/^[-*\d.)\s]+/, "").trim())
-                  .filter(Boolean)
-              )
+                  .filter(Boolean),
+              ),
             );
 
           const organizational = normalizeList(parsed.data.organizational);
