@@ -8,6 +8,13 @@
       "when": 1768232690908,
       "tag": "0000_outstanding_cassandra_nova",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1768294725397,
+      "tag": "0001_funny_zarek",
+      "breakpoints": true
     }
   ]
 }
