@@ -1,4 +1,4 @@
-import { and, count, eq } from "@qbs-autonaim/db";
+import { and, count, eq, sql } from "@qbs-autonaim/db";
 import { gig, response } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -8,11 +8,13 @@ import { protectedProcedure } from "../../trpc";
 /**
  * Синхронизирует счетчики откликов для всех gig в workspace
  * Используется для массового исправления рассинхронизации
+ * Более эффективная версия с использованием одного запроса
  */
 export const syncAllResponseCounts = protectedProcedure
   .input(
     z.object({
       workspaceId: workspaceIdSchema,
+      forceSync: z.boolean().default(false), // Принудительная синхронизация всех
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -28,6 +30,30 @@ export const syncAllResponseCounts = protectedProcedure
       });
     }
 
+    // Получаем актуальные счетчики для всех gigs одним запросом
+    const responseCounts = await ctx.db
+      .select({
+        entityId: response.entityId,
+        total: count(),
+        newCount: sql<number>`count(case when ${response.status} = 'NEW' then 1 end)`,
+      })
+      .from(response)
+      .where(
+        and(
+          eq(response.entityType, "gig"),
+          eq(response.entityId, sql`any(select id from gigs where workspace_id = ${input.workspaceId})`),
+        ),
+      )
+      .groupBy(response.entityId);
+
+    // Создаем карту счетчиков для быстрого доступа
+    const countsMap = new Map(
+      responseCounts.map((count) => [
+        count.entityId,
+        { total: count.total, newCount: count.newCount },
+      ]),
+    );
+
     // Получаем все gig в workspace
     const gigs = await ctx.db.query.gig.findMany({
       where: eq(gig.workspaceId, input.workspaceId),
@@ -42,52 +68,28 @@ export const syncAllResponseCounts = protectedProcedure
 
     // Синхронизируем счетчики для каждого gig
     for (const gigItem of gigs) {
-      // Подсчитываем реальное количество откликов
-      const totalResult = await ctx.db
-        .select({ count: count() })
-        .from(response)
-        .where(
-          and(
-            eq(response.entityType, "gig"),
-            eq(response.entityId, gigItem.id),
-          ),
-        );
+      const actualCounts = countsMap.get(gigItem.id) ?? { total: 0, newCount: 0 };
 
-      const total = totalResult[0]?.count ?? 0;
-
-      // Подсчитываем новые отклики (статус NEW)
-      const newResult = await ctx.db
-        .select({ count: count() })
-        .from(response)
-        .where(
-          and(
-            eq(response.entityType, "gig"),
-            eq(response.entityId, gigItem.id),
-            eq(response.status, "NEW"),
-          ),
-        );
-
-      const newCount = newResult[0]?.count ?? 0;
-
-      // Обновляем только если есть расхождение
+      // Обновляем если есть расхождение или принудительная синхронизация
       if (
-        total !== (gigItem.responses ?? 0) ||
-        newCount !== (gigItem.newResponses ?? 0)
+        input.forceSync ||
+        actualCounts.total !== (gigItem.responses ?? 0) ||
+        actualCounts.newCount !== (gigItem.newResponses ?? 0)
       ) {
         await ctx.db
           .update(gig)
           .set({
-            responses: total,
-            newResponses: newCount,
+            responses: actualCounts.total,
+            newResponses: actualCounts.newCount,
           })
           .where(eq(gig.id, gigItem.id));
 
         results.push({
           gigId: gigItem.id,
           previousTotal: gigItem.responses ?? 0,
-          newTotal: total,
+          newTotal: actualCounts.total,
           previousNew: gigItem.newResponses ?? 0,
-          newNew: newCount,
+          newNew: actualCounts.newCount,
           updated: true,
         });
       }
@@ -97,5 +99,6 @@ export const syncAllResponseCounts = protectedProcedure
       totalGigs: gigs.length,
       updatedGigs: results.length,
       results,
+      syncedAt: new Date().toISOString(),
     };
   });

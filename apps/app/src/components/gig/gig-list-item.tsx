@@ -1,4 +1,6 @@
 import { Badge } from "@qbs-autonaim/ui";
+import { MessageSquare } from "lucide-react";
+import Link from "next/link";
 
 interface GigListItemProps {
   gig: {
@@ -7,6 +9,7 @@ interface GigListItemProps {
     type: string;
     isActive: boolean;
     responses?: number | null;
+    views?: number | null;
   };
   orgSlug: string;
   workspaceSlug: string;
@@ -52,7 +55,26 @@ export function GigListItem({
           </h3>
 
           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-            <span>Отклики: {gig.responses || 0}</span>
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
+              className="flex items-center gap-1 hover:text-foreground transition-colors"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className={`font-medium ${
+                (gig.responses || 0) > 0
+                  ? (gig.responses || 0) > 5
+                    ? "text-green-600"
+                    : "text-blue-600"
+                  : "text-muted-foreground"
+              }`}>
+                {gig.responses || 0}
+              </span>
+              {(gig.views || 0) > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  ({Math.round(((gig.responses || 0) / (gig.views || 1)) * 100)}%)
+                </span>
+              )}
+            </Link>
           </div>
         </div>
       </div>

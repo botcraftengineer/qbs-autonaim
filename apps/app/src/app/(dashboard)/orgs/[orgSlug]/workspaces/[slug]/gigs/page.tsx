@@ -21,16 +21,16 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { SiteHeader } from "~/components/layout";
-import { useWorkspace } from "~/hooks/use-workspace";
-import { useWorkspaceParams } from "~/hooks/use-workspace-params";
-import { useTRPC } from "~/trpc/react";
 import {
   DeleteGigDialog,
   EmptyState,
   GigCard,
   GigListItem,
 } from "~/components/gig";
+import { SiteHeader } from "~/components/layout";
+import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceParams } from "~/hooks/use-workspace-params";
+import { useTRPC } from "~/trpc/react";
 
 const gigTypeLabels: Record<string, string> = {
   DEVELOPMENT: "Разработка",

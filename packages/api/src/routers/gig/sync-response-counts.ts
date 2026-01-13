@@ -1,4 +1,4 @@
-﻿import { and, count, eq } from "@qbs-autonaim/db";
+﻿import { and, count, eq, sql } from "@qbs-autonaim/db";
 import { gig, response } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
@@ -14,6 +14,7 @@ export const syncResponseCounts = protectedProcedure
     z.object({
       gigId: z.uuid(),
       workspaceId: workspaceIdSchema,
+      forceSync: z.boolean().default(false), // Принудительная синхронизация
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -44,44 +45,41 @@ export const syncResponseCounts = protectedProcedure
       });
     }
 
-    // Подсчитываем реальное количество откликов
-    const totalResult = await ctx.db
-      .select({ count: count() })
+    // Получаем актуальные счетчики одним запросом
+    const countsResult = await ctx.db
+      .select({
+        total: count(),
+        newCount: sql<number>`count(case when ${response.status} = 'NEW' then 1 end)`,
+      })
       .from(response)
       .where(
         and(eq(response.entityType, "gig"), eq(response.entityId, input.gigId)),
       );
 
-    const total = totalResult[0]?.count ?? 0;
+    const actualCounts = countsResult[0] ?? { total: 0, newCount: 0 };
 
-    // Подсчитываем новые отклики (статус NEW)
-    const newResult = await ctx.db
-      .select({ count: count() })
-      .from(response)
-      .where(
-        and(
-          eq(response.entityType, "gig"),
-          eq(response.entityId, input.gigId),
-          eq(response.status, "NEW"),
-        ),
-      );
+    // Обновляем счетчики если есть расхождение или принудительная синхронизация
+    const needsUpdate =
+      input.forceSync ||
+      actualCounts.total !== (existingGig.responses ?? 0) ||
+      actualCounts.newCount !== (existingGig.newResponses ?? 0);
 
-    const newCount = newResult[0]?.count ?? 0;
-
-    // Обновляем счетчики в таблице gig
-    await ctx.db
-      .update(gig)
-      .set({
-        responses: total,
-        newResponses: newCount,
-      })
-      .where(eq(gig.id, input.gigId));
+    if (needsUpdate) {
+      await ctx.db
+        .update(gig)
+        .set({
+          responses: actualCounts.total,
+          newResponses: actualCounts.newCount,
+        })
+        .where(eq(gig.id, input.gigId));
+    }
 
     return {
-      total,
-      new: newCount,
+      total: actualCounts.total,
+      new: actualCounts.newCount,
       previousTotal: existingGig.responses ?? 0,
       previousNew: existingGig.newResponses ?? 0,
-      updated: true,
+      updated: needsUpdate,
+      syncedAt: new Date().toISOString(),
     };
   });

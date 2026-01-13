@@ -169,7 +169,10 @@ export function GigCard({
               )}
 
               {(gig.newResponses || 0) > 0 && (
-                <Badge variant="default" className="text-xs bg-orange-100 text-orange-800 hover:bg-orange-200">
+                <Badge
+                  variant="default"
+                  className="text-xs bg-orange-100 text-orange-800 hover:bg-orange-200"
+                >
                   +{gig.newResponses} новых
                 </Badge>
               )}
@@ -179,10 +182,16 @@ export function GigCard({
               <div className="mt-2">
                 <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
                   <span>Новые отклики</span>
-                  <span>{gig.newResponses}/{gig.responses || 0}</span>
+                  <span>
+                    {gig.newResponses}/{gig.responses || 0}
+                  </span>
                 </div>
                 <Progress
-                  value={((gig.newResponses || 0) / Math.max(gig.responses || 1, 1)) * 100}
+                  value={
+                    ((gig.newResponses || 0) /
+                      Math.max(gig.responses || 1, 1)) *
+                    100
+                  }
                   className="h-1.5"
                 />
               </div>
@@ -214,7 +223,9 @@ export function GigCard({
               onClick={() => onToggleActive?.(gig.id)}
               title={gig.isActive ? "Деактивировать" : "Активировать"}
             >
-              <Power className={`h-4 w-4 ${gig.isActive ? "text-green-600" : "text-gray-400"}`} />
+              <Power
+                className={`h-4 w-4 ${gig.isActive ? "text-green-600" : "text-gray-400"}`}
+              />
             </Button>
 
             <Button
@@ -230,7 +241,11 @@ export function GigCard({
             {/* Меню дополнительных действий */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                >
                   <MoreHorizontal className="h-4 w-4" />
                   <span className="sr-only">Открыть меню</span>
                 </Button>
@@ -317,28 +332,26 @@ export function GigCard({
           </div>
 
           <div className="flex items-center gap-3 text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Eye className="h-4 w-4" />
-              <span>{gig.views || 0}</span>
-            </div>
-
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
               className="flex items-center gap-1 hover:text-foreground transition-colors"
             >
               <MessageSquare className="h-4 w-4" />
-              <span className={`font-medium ${
-                (gig.responses || 0) > 0
-                  ? (gig.responses || 0) > 5
-                    ? "text-green-600"
-                    : "text-blue-600"
-                  : "text-muted-foreground"
-              }`}>
+              <span
+                className={`font-medium ${
+                  (gig.responses || 0) > 0
+                    ? (gig.responses || 0) > 5
+                      ? "text-green-600"
+                      : "text-blue-600"
+                    : "text-muted-foreground"
+                }`}
+              >
                 {gig.responses || 0}
               </span>
               {(gig.views || 0) > 0 && (
                 <span className="text-xs text-muted-foreground">
-                  ({Math.round(((gig.responses || 0) / (gig.views || 1)) * 100)}%)
+                  ({Math.round(((gig.responses || 0) / (gig.views || 1)) * 100)}
+                  %)
                 </span>
               )}
             </Link>
