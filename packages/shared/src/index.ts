@@ -7,6 +7,14 @@
 
 // Экспорт ranking service
 export * from "./ranking-service";
+// Экспорт gig shortlist generator
+export type {
+  GigContactInfo,
+  GigShortlist,
+  GigShortlistCandidate,
+  GigShortlistOptions,
+} from "./gig-shortlist-generator";
+export { GigShortlistGenerator } from "./gig-shortlist-generator";
 // Экспорт всех типов
 export type {
   BufferedMessage,

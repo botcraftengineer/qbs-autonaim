@@ -90,13 +90,14 @@ export type {
   ShortlistOptions,
 } from "./shortlist-generator";
 export { ShortlistGenerator } from "./shortlist-generator";
+// GigShortlistGenerator перенесен в @qbs-autonaim/shared
 export type {
   GigContactInfo,
   GigShortlist,
   GigShortlistCandidate,
   GigShortlistOptions,
-} from "./gig-shortlist-generator";
-export { GigShortlistGenerator } from "./gig-shortlist-generator";
+} from "@qbs-autonaim/shared";
+export { GigShortlistGenerator } from "@qbs-autonaim/shared";
 export type {
   BehaviorConfig,
   BrandingConfig,
