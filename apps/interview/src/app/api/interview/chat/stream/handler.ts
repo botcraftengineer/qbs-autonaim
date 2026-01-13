@@ -8,7 +8,7 @@
  */
 
 import { observe, updateActiveTrace } from "@langfuse/tracing";
-import { trace } from "@opentelemetry/api";
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { WebInterviewOrchestrator } from "@qbs-autonaim/ai";
 import { db, eq } from "@qbs-autonaim/db";
 import {
@@ -357,7 +357,7 @@ async function handler(request: Request) {
             );
             // End span with error
             trace.getActiveSpan()?.setStatus({
-              code: 1,
+              code: SpanStatusCode.ERROR,
               message: `Основная модель: ${error instanceof Error ? error.message : String(error)}. Fallback: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
             });
             trace.getActiveSpan()?.end();
@@ -412,7 +412,7 @@ async function handler(request: Request) {
     console.error("[Interview Stream] Error:", error);
     // End span with error on exception
     trace.getActiveSpan()?.setStatus({
-      code: 1,
+      code: SpanStatusCode.ERROR,
       message: error instanceof Error ? error.message : String(error),
     });
     trace.getActiveSpan()?.end();
