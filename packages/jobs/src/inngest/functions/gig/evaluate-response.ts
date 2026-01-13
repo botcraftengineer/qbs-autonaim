@@ -119,13 +119,23 @@ export const evaluateGigResponseFunction = inngest.createFunction(
     await step.run("save-interview-scoring", async () => {
       const { interviewScoring } = await import("@qbs-autonaim/db/schema");
 
-      await db.insert(interviewScoring).values({
-        interviewSessionId: chatSessionId,
-        responseId: responseId,
-        score: scoring.detailedScore,
-        rating: scoring.score,
-        analysis: scoring.analysis,
-      });
+      await db
+        .insert(interviewScoring)
+        .values({
+          interviewSessionId: chatSessionId,
+          responseId: responseId,
+          score: scoring.detailedScore,
+          rating: scoring.score,
+          analysis: scoring.analysis,
+        })
+        .onConflictDoUpdate({
+          target: interviewScoring.interviewSessionId,
+          set: {
+            score: scoring.detailedScore,
+            rating: scoring.score,
+            analysis: scoring.analysis,
+          },
+        });
 
       console.log("✅ Результаты интервью сохранены", {
         chatSessionId,
