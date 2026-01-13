@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-globs: ["apps/app/**/*.ts"]
+globs: "apps/app/**/*.ts"
 ---
  1. Именование и стиль кода:
            - Имена файлов должны использовать kebab-case (например: my-component.ts, user-profile.tsx)

@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-globs: ["packages/db/**/*"]
+globs: "packages/db/**/*"
 ---
 
 You are an expert in PostgreSQL database administration and development.

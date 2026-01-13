@@ -1,16 +1,17 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
-  ShortlistList,
-  ShortlistHeader,
-  ShortlistStats,
-  ShortlistFilters,
+  getRecommendationLabel,
   ShortlistError,
+  ShortlistFilters,
+  ShortlistHeader,
+  ShortlistList,
   ShortlistLoading,
-  getRecommendationLabel
+  ShortlistStats,
 } from "~/components/gig";
 import { useTRPC } from "~/trpc/react";
 
@@ -19,7 +20,6 @@ interface ShortlistPageClientProps {
   workspaceSlug: string;
   gigId: string;
 }
-
 
 export function ShortlistPageClient({
   orgSlug,
@@ -32,7 +32,8 @@ export function ShortlistPageClient({
   const [selectedMinScore, setSelectedMinScore] = useState<string>("70");
   const [includeOnlyHighlyRecommended, setIncludeOnlyHighlyRecommended] =
     useState<boolean>(false);
-  const [prioritizeBudgetFit, setPrioritizeBudgetFit] = useState<boolean>(false);
+  const [prioritizeBudgetFit, setPrioritizeBudgetFit] =
+    useState<boolean>(false);
 
   // Fetch shortlist candidates
   const {
@@ -111,7 +112,9 @@ export function ShortlistPageClient({
         candidate.experienceScore ? String(candidate.experienceScore) : "—",
         getRecommendationLabel(candidate.recommendation),
         candidate.proposedPrice ? String(candidate.proposedPrice) : "—",
-        candidate.proposedDeliveryDays ? String(candidate.proposedDeliveryDays) : "—",
+        candidate.proposedDeliveryDays
+          ? String(candidate.proposedDeliveryDays)
+          : "—",
         candidate.contactInfo.email || "—",
         candidate.contactInfo.phone || "—",
         candidate.contactInfo.telegram || "—",
@@ -150,7 +153,6 @@ export function ShortlistPageClient({
     setPrioritizeBudgetFit(false);
   };
 
-
   const candidates = shortlistData?.candidates ?? [];
   const totalCandidates = shortlistData?.totalCandidates ?? 0;
 
@@ -158,12 +160,13 @@ export function ShortlistPageClient({
     (c) => c.recommendation === "HIGHLY_RECOMMENDED",
   ).length;
 
-  const averageScore = candidates.length > 0
-    ? Math.round(
-        candidates.reduce((sum, c) => sum + c.compositeScore, 0) /
-          candidates.length,
-      )
-    : 0;
+  const averageScore =
+    candidates.length > 0
+      ? Math.round(
+          candidates.reduce((sum, c) => sum + c.compositeScore, 0) /
+            candidates.length,
+        )
+      : 0;
 
   return (
     <div className="container mx-auto py-6 space-y-6 max-w-7xl">

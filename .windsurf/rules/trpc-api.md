@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-globs: ["packages/api/**/*"]
+globs: "packages/api/**/*"
 ---
 
 # Стандарты и правила для tRPC API

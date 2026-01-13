@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-globs: ["apps/app/**/*.tsx"]
+globs: "apps/app/**/*.tsx"
 ---
 
 # tRPC + TanStack Query Standards
