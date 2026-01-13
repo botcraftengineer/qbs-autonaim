@@ -156,7 +156,7 @@ export async function saveBasicVacancy(
       });
 
       if (!inserted?.id) {
-        throw new Error("Failed to insert vacancy");
+        throw new Error("Не удалось вставить вакансию");
       }
 
       logger.info(`Базовая информация создана: ${vacancyData.title}`);
@@ -236,7 +236,7 @@ export async function saveVacancyToDb(
         .returning({ id: vacancy.id });
 
       if (!inserted?.id) {
-        throw new Error("Failed to insert vacancy");
+        throw new Error("Не удалось вставить вакансию");
       }
 
       savedVacancyId = inserted.id;
