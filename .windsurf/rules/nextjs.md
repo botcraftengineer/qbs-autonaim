@@ -1,6 +1,6 @@
 ---
 alwaysApply: true
-globs: ["apps/app/**/*.tsx"]
+globs: "apps/app/**/*.tsx"
 ---
 
 You are an expert in Next.js App Router.
