@@ -1,6 +1,6 @@
 import {
-  FileText,
   CheckCircle2,
+  FileText,
   MessageSquare,
   TrendingUp,
   XCircle,
@@ -51,16 +51,15 @@ export const HR_STATUS_CONFIG = {
 
 export const IMPORT_SOURCE_LABELS: Record<string, string> = {
   MANUAL: "Вручную",
-  KWORK: "Kwork",
-  FL_RU: "FL.ru",
-  FREELANCE_RU: "Freelance.ru",
-  HH_API: "HeadHunter",
-  WEB_LINK: "Веб-ссылка",
-  TELEGRAM: "Telegram",
   HH: "HeadHunter",
   AVITO: "Avito",
   SUPERJOB: "SuperJob",
   HABR: "Хабр Карьера",
+  KWORK: "Kwork",
+  FL_RU: "FL.ru",
+  FREELANCE_RU: "Freelance.ru",
+  WEB_LINK: "Веб-ссылка",
+  TELEGRAM: "Telegram",
 };
 
 export function formatDate(date: Date | null) {

@@ -69,7 +69,7 @@ export const getVacancyById = protectedProcedure
 
     // Формируем статистику в удобном формате
     const stats: Record<string, number> = {
-      HH_API: 0,
+      HH: 0,
       MANUAL: 0,
       WEB_LINK: 0,
     };
