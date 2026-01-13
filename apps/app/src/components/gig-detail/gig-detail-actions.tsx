@@ -7,7 +7,7 @@ import {
   CardTitle,
   Separator,
 } from "@qbs-autonaim/ui";
-import { Bot, Edit, MessageSquare, Share2 } from "lucide-react";
+import { Bot, Edit, MessageSquare, Share2, Star } from "lucide-react";
 import Link from "next/link";
 
 interface GigDetailActionsProps {
@@ -81,6 +81,19 @@ export function GigDetailActions({
                     </Badge>
                   )}
               </div>
+            </Link>
+          </Button>
+
+          <Button
+            asChild
+            variant="default"
+            className="w-full min-h-[44px] touch-manipulation bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-md"
+          >
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/shortlist`}
+            >
+              <Star className="h-4 w-4 mr-2" aria-hidden="true" />
+              <span className="flex-1 text-left">Шортлист кандидатов</span>
             </Link>
           </Button>
         </div>

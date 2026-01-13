@@ -11,6 +11,7 @@ import { getInterviewLink } from "./get-interview-link";
 import { list } from "./list";
 import { listActive } from "./list-active";
 import { gigResponsesRouter } from "./responses";
+import { getGigShortlist, recalculateGigShortlist } from "./shortlist";
 import { syncAllResponseCounts } from "./sync-all-response-counts";
 import { syncResponseCounts } from "./sync-response-counts";
 import { update } from "./update";
@@ -28,6 +29,8 @@ export const gigRouter = {
   generateInvitationTemplate,
   syncResponseCounts,
   syncAllResponseCounts,
+  shortlist: getGigShortlist,
+  recalculateShortlist: recalculateGigShortlist,
   responses: gigResponsesRouter,
   aiChat: aiChatRouter,
 } satisfies TRPCRouterRecord;
