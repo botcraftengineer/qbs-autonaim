@@ -11,15 +11,18 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Progress,
 } from "@qbs-autonaim/ui";
 import {
   Calendar,
   Clock,
+  Copy,
   Edit,
   ExternalLink,
   Eye,
   MessageSquare,
   MoreHorizontal,
+  Power,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
@@ -48,6 +51,8 @@ interface GigCardProps {
   workspaceSlug: string;
   onEdit?: (gigId: string) => void;
   onDelete?: (gigId: string) => void;
+  onDuplicate?: (gigId: string) => void;
+  onToggleActive?: (gigId: string) => void;
 }
 
 function formatBudget(min?: number | null, max?: number | null) {
@@ -120,12 +125,28 @@ export function GigCard({
   orgSlug,
   workspaceSlug,
   onDelete,
+  onDuplicate,
+  onToggleActive,
 }: GigCardProps) {
   const budget = formatBudget(gig.budgetMin, gig.budgetMax);
   const isOverdue = gig.deadline && gig.deadline < new Date();
 
+  // Определяем срочность по дедлайну
+  const getUrgencyClass = () => {
+    if (!gig.deadline || !gig.isActive) return "";
+
+    const now = new Date();
+    const deadline = new Date(gig.deadline);
+    const diffInHours = (deadline.getTime() - now.getTime()) / (1000 * 60 * 60);
+
+    if (isOverdue) return "border-red-300 bg-red-50/50";
+    if (diffInHours <= 24) return "border-orange-300 bg-orange-50/50";
+    if (diffInHours <= 72) return "border-yellow-300 bg-yellow-50/50";
+    return "";
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Card className={`hover:shadow-md transition-shadow ${getUrgencyClass()}`}>
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="space-y-2 flex-1 min-w-0">
@@ -134,11 +155,12 @@ export function GigCard({
                 {getGigTypeLabel(gig.type)}
               </Badge>
 
-              {!gig.isActive && (
-                <Badge variant="outline" className="text-xs">
-                  Неактивно
-                </Badge>
-              )}
+              <Badge
+                variant={gig.isActive ? "default" : "outline"}
+                className={`text-xs ${gig.isActive ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}`}
+              >
+                {gig.isActive ? "Активно" : "Неактивно"}
+              </Badge>
 
               {gig.source !== "manual" && (
                 <Badge variant="outline" className="text-xs">
@@ -147,11 +169,24 @@ export function GigCard({
               )}
 
               {(gig.newResponses || 0) > 0 && (
-                <Badge variant="default" className="text-xs">
-                  +{gig.newResponses}
+                <Badge variant="default" className="text-xs bg-orange-100 text-orange-800 hover:bg-orange-200">
+                  +{gig.newResponses} новых
                 </Badge>
               )}
             </div>
+
+            {(gig.newResponses || 0) > 0 && (
+              <div className="mt-2">
+                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                  <span>Новые отклики</span>
+                  <span>{gig.newResponses}/{gig.responses || 0}</span>
+                </div>
+                <Progress
+                  value={((gig.newResponses || 0) / Math.max(gig.responses || 1, 1)) * 100}
+                  className="h-1.5"
+                />
+              </div>
+            )}
 
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
@@ -170,56 +205,80 @@ export function GigCard({
             </CardDescription>
           </div>
 
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Открыть меню</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
-                >
-                  <Eye className="h-4 w-4 mr-2" />
-                  Посмотреть
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/edit`}
-                >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Редактировать
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link
-                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Отклики ({gig.responses || 0})
-                </Link>
-              </DropdownMenuItem>
-              {gig.url && (
+          <div className="flex items-center gap-1">
+            {/* Быстрые действия */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => onToggleActive?.(gig.id)}
+              title={gig.isActive ? "Деактивировать" : "Активировать"}
+            >
+              <Power className={`h-4 w-4 ${gig.isActive ? "text-green-600" : "text-gray-400"}`} />
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 shrink-0"
+              onClick={() => onDuplicate?.(gig.id)}
+              title="Дублировать задание"
+            >
+              <Copy className="h-4 w-4" />
+            </Button>
+
+            {/* Меню дополнительных действий */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Открыть меню</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem asChild>
-                  <a href={gig.url} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Открыть на {gig.source}
-                  </a>
+                  <Link
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Посмотреть
+                  </Link>
                 </DropdownMenuItem>
-              )}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => onDelete?.(gig.id)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Удалить
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/edit`}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Редактировать
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
+                  >
+                    <MessageSquare className="h-4 w-4 mr-2" />
+                    Отклики ({gig.responses || 0})
+                  </Link>
+                </DropdownMenuItem>
+                {gig.url && (
+                  <DropdownMenuItem asChild>
+                    <a href={gig.url} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Открыть на {gig.source}
+                    </a>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-destructive"
+                  onClick={() => onDelete?.(gig.id)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Удалить
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </CardHeader>
 
@@ -268,7 +327,20 @@ export function GigCard({
               className="flex items-center gap-1 hover:text-foreground transition-colors"
             >
               <MessageSquare className="h-4 w-4" />
-              <span>{gig.responses || 0}</span>
+              <span className={`font-medium ${
+                (gig.responses || 0) > 0
+                  ? (gig.responses || 0) > 5
+                    ? "text-green-600"
+                    : "text-blue-600"
+                  : "text-muted-foreground"
+              }`}>
+                {gig.responses || 0}
+              </span>
+              {(gig.views || 0) > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  ({Math.round(((gig.responses || 0) / (gig.views || 1)) * 100)}%)
+                </span>
+              )}
             </Link>
           </div>
         </div>

@@ -11,7 +11,13 @@ import {
   Skeleton,
   toast,
 } from "@qbs-autonaim/ui";
-import { IconFilter, IconSearch, IconSparkles } from "@tabler/icons-react";
+import {
+  IconFilter,
+  IconLayoutGrid,
+  IconLayoutList,
+  IconSearch,
+  IconSparkles,
+} from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
@@ -20,6 +26,7 @@ import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
 import { DeleteGigDialog, EmptyState, GigCard } from "./components";
+import { GigListItem } from "./components/gig-list";
 
 const gigTypeLabels: Record<string, string> = {
   DEVELOPMENT: "Разработка",
@@ -44,6 +51,9 @@ export default function GigsPage() {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [displayMode, setDisplayMode] = useState<"grid" | "list" | "compact">(
+    "grid",
+  );
 
   // Delete dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -94,6 +104,28 @@ export default function GigsPage() {
       });
     }
   }, [gigToDelete, workspace?.id, deleteMutation]);
+
+  const handleDuplicate = useCallback(
+    (gigId: string) => {
+      const gig = gigs?.find((g) => g.id === gigId);
+      if (gig && workspace?.id) {
+        // TODO: Implement duplicate functionality
+        toast.info("Функция дублирования скоро будет доступна");
+      }
+    },
+    [gigs, workspace?.id],
+  );
+
+  const handleToggleActive = useCallback(
+    (gigId: string) => {
+      const gig = gigs?.find((g) => g.id === gigId);
+      if (gig && workspace?.id) {
+        // TODO: Implement toggle active functionality
+        toast.info("Функция переключения активности скоро будет доступна");
+      }
+    },
+    [gigs, workspace?.id],
+  );
 
   const filteredAndSortedGigs = useMemo(() => {
     if (!gigs) return [];
@@ -247,6 +279,26 @@ export default function GigsPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2">
+                    {/* Переключатель режима отображения */}
+                    <div className="flex items-center border rounded-md p-1 bg-muted/50">
+                      <Button
+                        variant={displayMode === "grid" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setDisplayMode("grid")}
+                        className="h-8 px-2"
+                      >
+                        <IconLayoutGrid className="size-4" />
+                      </Button>
+                      <Button
+                        variant={displayMode === "list" ? "default" : "ghost"}
+                        size="sm"
+                        onClick={() => setDisplayMode("list")}
+                        className="h-8 px-2"
+                      >
+                        <IconLayoutList className="size-4" />
+                      </Button>
+                    </div>
+
                     <Select value={typeFilter} onValueChange={setTypeFilter}>
                       <SelectTrigger
                         className="w-full sm:w-[160px]"
@@ -384,19 +436,45 @@ export default function GigsPage() {
                   }
                 />
               ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {filteredAndSortedGigs.map((gig) => (
-                    <GigCard
-                      key={gig.id}
-                      gig={{
-                        ...gig,
-                        isActive: gig.isActive ?? true,
-                      }}
-                      orgSlug={orgSlug || ""}
-                      workspaceSlug={workspaceSlug || ""}
-                      onDelete={handleDeleteClick}
-                    />
-                  ))}
+                <div
+                  className={
+                    displayMode === "grid"
+                      ? "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+                      : displayMode === "list"
+                        ? "space-y-4"
+                        : "space-y-2"
+                  }
+                >
+                  {filteredAndSortedGigs.map((gig) => {
+                    const gigData = {
+                      ...gig,
+                      isActive: gig.isActive ?? true,
+                    };
+
+                    if (displayMode === "list") {
+                      return (
+                        <GigListItem
+                          key={gig.id}
+                          gig={gigData}
+                          orgSlug={orgSlug || ""}
+                          workspaceSlug={workspaceSlug || ""}
+                          onDelete={handleDeleteClick}
+                        />
+                      );
+                    }
+
+                    return (
+                      <GigCard
+                        key={gig.id}
+                        gig={gigData}
+                        orgSlug={orgSlug || ""}
+                        workspaceSlug={workspaceSlug || ""}
+                        onDelete={handleDeleteClick}
+                        onDuplicate={handleDuplicate}
+                        onToggleActive={handleToggleActive}
+                      />
+                    );
+                  })}
                 </div>
               )}
             </div>
