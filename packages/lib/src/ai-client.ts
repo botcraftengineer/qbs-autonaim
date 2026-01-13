@@ -214,10 +214,10 @@ export function getAIModelName(): string {
  */
 export function getFallbackModel(): LanguageModel {
   // Создаём OpenAI провайдер с прокси
-  const proxyBaseUrl = env.AI_PROXY_URL || env.APP_URL || "http://localhost:3000";
+  const proxyBaseUrl = env.AI_PROXY_URL;
   const openaiProvider = createOpenAI({
-    apiKey: env.OPENAI_API_KEY || "dummy-key",
-    baseURL: `${proxyBaseUrl}/api/ai-proxy`,
+    apiKey: env.OPENAI_API_KEY,
+    baseURL: proxyBaseUrl,
   });
 
   const actualProvider = getActualProvider();
