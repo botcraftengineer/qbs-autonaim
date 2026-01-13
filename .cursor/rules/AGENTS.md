@@ -1,6 +1,6 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "apps/app/**/*"
+alwaysApply: true
+globs: "apps/app/**/*"
 ---
 Concise rules for building accessible, fast, delightful UIs Use MUST/SHOULD/NEVER to guide decisions
 

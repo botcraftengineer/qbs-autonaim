@@ -1,6 +1,6 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "apps/playwright/**/*"
+alwaysApply: true
+globs: "apps/playwright/**/*"
 ---
 
 You are an expert in End-to-End (E2E) testing using modern tools like Playwright and Cypress.

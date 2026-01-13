@@ -1,6 +1,6 @@
 ---
-inclusion: fileMatch
-fileMatchPattern: "apps/app/**/*.tsx"
+alwaysApply: true
+globs: "apps/app/**/*.tsx"
 ---
 
 # tRPC + TanStack Query Standards
