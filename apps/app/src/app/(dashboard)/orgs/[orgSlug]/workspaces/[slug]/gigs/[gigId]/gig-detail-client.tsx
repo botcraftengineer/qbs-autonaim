@@ -24,8 +24,6 @@ import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
-import { useWorkspace } from "~/hooks/use-workspace";
-import { useTRPC } from "~/trpc/react";
 import { GigDetailActions } from "~/components/gig-detail/gig-detail-actions";
 import { GigDetailHeader } from "~/components/gig-detail/gig-detail-header";
 import { ProjectDetails } from "~/components/gig-detail/gig-detail-project-details";
@@ -35,7 +33,8 @@ import {
   GigError,
   GigNotFound,
 } from "~/components/gig-detail/gig-detail-skeleton";
-import { GigStats } from "~/components/gig-detail/gig-detail-stats";
+import { useWorkspace } from "~/hooks/use-workspace";
+import { useTRPC } from "~/trpc/react";
 
 interface GigDetailClientProps {
   orgSlug: string;
@@ -74,22 +73,13 @@ export function GigDetailClient({
     enabled: !!workspaceId,
   });
 
-  const {
-    data: responseCounts,
-    isPending: isCountsPending,
-    isError: isCountsError,
-    error: countsError,
-  } = useQuery({
+  const { data: responseCounts } = useQuery({
     ...trpc.gig.responses.count.queryOptions({
       gigId,
       workspaceId: workspaceId ?? "",
     }),
     enabled: !!workspaceId,
   });
-
-  if (isCountsError && countsError) {
-    console.error("Ошибка загрузки счетчиков откликов:", countsError);
-  }
 
   const deleteMutation = useMutation(
     trpc.gig.delete.mutationOptions({
@@ -208,13 +198,6 @@ export function GigDetailClient({
         </div>
 
         <aside className="space-y-6" aria-label="Дополнительная информация">
-          <GigStats
-            views={gig.views || 0}
-            responseCounts={responseCounts}
-            isCountsPending={isCountsPending}
-            isCountsError={isCountsError}
-          />
-
           <ProjectDetails
             budgetMin={gig.budgetMin}
             budgetMax={gig.budgetMax}

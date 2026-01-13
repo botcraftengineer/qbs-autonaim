@@ -354,7 +354,7 @@ export function GigDetailActions({
         </CardTitle>
       </CardHeader>
 
-      <CardContent className="space-y-4 p-6">
+      <CardContent className="space-y-4">
         {/* Основные действия */}
         <div className="space-y-3">
           <Button asChild className="w-full justify-start h-12">
