@@ -386,7 +386,7 @@ export function GigDetailActions({
             >
               <MessageSquare className="h-5 w-5 mr-3" aria-hidden="true" />
               <div className="flex flex-col items-start flex-1 min-w-0">
-                <span className="font-medium">Посмотреть отклики</span>
+                <span className="font-medium">Отклики</span>
                 <span className="text-xs text-muted-foreground">
                   Все отклики кандидатов
                 </span>

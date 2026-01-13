@@ -5,6 +5,7 @@ import { Badge, Button, Card, CardContent, CardHeader } from "@qbs-autonaim/ui";
 import {
   AlertCircle,
   Banknote,
+  Calendar,
   CheckCircle2,
   Clock,
   ExternalLink,
@@ -247,6 +248,74 @@ export function ShortlistCandidateCard({
           )}
         </div>
 
+        {/* Ranking Analysis */}
+        {candidate.rankingAnalysis && (
+          <div className="p-3 rounded-lg border bg-muted/50 mb-4">
+            <div className="text-xs font-medium mb-1 text-muted-foreground">
+              Анализ ранжирования
+            </div>
+            <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+              {candidate.rankingAnalysis}
+            </p>
+          </div>
+        )}
+
+        {/* Cover Letter Preview */}
+        {candidate.coverLetter && (
+          <div className="p-4 rounded-xl border border-border/50 bg-card mb-4">
+            <div className="flex items-start gap-3 mb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                <MessageSquare className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div>
+                <h4 className="font-medium text-sm text-foreground">
+                  Сопроводительное письмо
+                </h4>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed pl-11 line-clamp-3">
+              {candidate.coverLetter}
+            </p>
+          </div>
+        )}
+
+        {/* Skills */}
+        {candidate.skills && candidate.skills.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-medium mb-2 text-muted-foreground">
+              Навыки
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {candidate.skills.slice(0, 8).map((skill) => (
+                <Badge
+                  key={skill}
+                  variant="secondary"
+                  className="text-xs px-2 py-0.5"
+                >
+                  {skill}
+                </Badge>
+              ))}
+              {candidate.skills.length > 8 && (
+                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                  +{candidate.skills.length - 8}
+                </Badge>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Experience */}
+        {candidate.experience && (
+          <div className="mb-4">
+            <div className="text-xs font-medium mb-2 text-muted-foreground">
+              Опыт работы
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
+              {candidate.experience}
+            </p>
+          </div>
+        )}
+
         {/* Contact Info */}
         <div className="flex flex-wrap items-center gap-3 text-xs">
           {candidate.contactInfo.email && (
@@ -273,9 +342,25 @@ export function ShortlistCandidateCard({
           )}
         </div>
 
+        {/* Created At */}
+        <div className="mt-3 pt-3 border-t mb-3">
+          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>
+              Отклик от {new Date(candidate.createdAt).toLocaleDateString("ru-RU", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </span>
+          </div>
+        </div>
+
         {/* Portfolio Links */}
         {candidate.portfolioLinks && candidate.portfolioLinks.length > 0 && (
-          <div className="mt-3 pt-3 border-t">
+          <div className="mb-3">
             <div className="text-xs font-medium mb-2">Портфолио</div>
             <div className="flex flex-wrap gap-2">
               {candidate.portfolioLinks.slice(0, 3).map((link, idx) => {
