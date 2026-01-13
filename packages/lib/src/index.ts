@@ -3,6 +3,7 @@ export * from "./ai-client";
 
 // Image utilities
 export * from "./image";
+
 // Organization permissions utilities
 export * from "./permissions/organization";
 // Pluralization utilities
@@ -21,5 +22,3 @@ export * from "./utils/sanitize";
 export * from "./vacancy-response-history";
 // Pin code validation utilities
 export * from "./validate-pin-code";
-// Langfuse instrumentation utilities
-export * from "./instrumentation";
