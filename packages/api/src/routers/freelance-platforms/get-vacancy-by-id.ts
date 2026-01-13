@@ -17,7 +17,7 @@ export const getVacancyById = protectedProcedure
     // Проверка доступа к workspace
     const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
-      ctx.session.user.id
+      ctx.session.user.id,
     );
 
     if (!access) {
@@ -31,7 +31,7 @@ export const getVacancyById = protectedProcedure
     const vacancyDataRaw = await ctx.db.query.vacancy.findFirst({
       where: and(
         eq(vacancy.id, input.id),
-        eq(vacancy.workspaceId, input.workspaceId)
+        eq(vacancy.workspaceId, input.workspaceId),
       ),
     });
 
@@ -48,7 +48,7 @@ export const getVacancyById = protectedProcedure
       ? await ctx.db.query.vacancy.findFirst({
           where: and(
             eq(vacancy.id, resolvedVacancyId),
-            eq(vacancy.workspaceId, input.workspaceId)
+            eq(vacancy.workspaceId, input.workspaceId),
           ),
         })
       : vacancyDataRaw;
@@ -70,8 +70,8 @@ export const getVacancyById = protectedProcedure
       .where(
         and(
           eq(responseTable.entityId, resolvedVacancyId),
-          eq(responseTable.entityType, "vacancy")
-        )
+          eq(responseTable.entityType, "vacancy"),
+        ),
       )
       .groupBy(responseTable.importSource);
 
@@ -81,7 +81,7 @@ export const getVacancyById = protectedProcedure
         and(
           eq(link.entityId, resolvedVacancyId),
           eq(link.entityType, "vacancy"),
-          eq(link.isActive, true)
+          eq(link.isActive, true),
         ),
     });
 
@@ -106,7 +106,7 @@ export const getVacancyById = protectedProcedure
             url: await getInterviewUrlFromDb(
               ctx.db,
               activeInterviewLink.token,
-              input.workspaceId
+              input.workspaceId,
             ),
             token: activeInterviewLink.token,
             isActive: activeInterviewLink.isActive,

@@ -43,8 +43,8 @@ export default function GigChatPage() {
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2">
           <Button asChild variant="outline">
             <Link href={gigHref}>
-              <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />
-              К заданию
+              <ExternalLink className="h-4 w-4 mr-2" aria-hidden="true" />К
+              заданию
             </Link>
           </Button>
           <Button asChild>

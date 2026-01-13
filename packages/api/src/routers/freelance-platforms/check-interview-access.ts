@@ -2,7 +2,10 @@ import { eq } from "@qbs-autonaim/db";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
-import { hasInterviewAccess, validateInterviewToken } from "../../utils/interview-token-validator";
+import {
+  hasInterviewAccess,
+  validateInterviewToken,
+} from "../../utils/interview-token-validator";
 
 const checkInterviewAccessInputSchema = z.object({
   interviewSessionId: z.uuid(),

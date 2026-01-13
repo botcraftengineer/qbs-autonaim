@@ -3,7 +3,10 @@ import { response as responseTable } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
-import { hasVacancyAccess, validateInterviewToken } from "../../utils/interview-token-validator";
+import {
+  hasVacancyAccess,
+  validateInterviewToken,
+} from "../../utils/interview-token-validator";
 
 const checkDuplicateResponseInputSchema = z.object({
   vacancyId: z.uuid(),
@@ -19,10 +22,7 @@ export const checkDuplicateResponse = publicProcedure
       : null;
 
     // Проверяем авторизацию: либо валидный токен для этой вакансии, либо авторизованный пользователь
-    const hasTokenAccess = hasVacancyAccess(
-      validatedToken,
-      input.vacancyId,
-    );
+    const hasTokenAccess = hasVacancyAccess(validatedToken, input.vacancyId);
     const isAuthenticated = !!ctx.session?.user;
 
     if (!hasTokenAccess && !isAuthenticated) {

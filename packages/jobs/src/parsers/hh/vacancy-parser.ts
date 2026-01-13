@@ -10,7 +10,7 @@ import { humanBrowse, humanDelay, randomDelay } from "./human-behavior";
 
 export async function parseVacancies(
   page: Page,
-  workspaceId: string
+  workspaceId: string,
 ): Promise<VacancyData[]> {
   console.log(`🚀 Начинаем парсинг вакансий`);
 
@@ -84,33 +84,33 @@ async function collectVacancies(page: Page): Promise<VacancyData[]> {
           url: getAttr('[data-qa="vacancies-dashboard-vacancy-name"]', "href"),
           views: cleanNumber(
             getText(
-              '[data-analytics-button-name="employer_vacancies_counter_views"]'
-            )
+              '[data-analytics-button-name="employer_vacancies_counter_views"]',
+            ),
           ),
           responses: getText(
-            '[data-qa="vacancies-dashboard-vacancy-responses-count-total"]'
+            '[data-qa="vacancies-dashboard-vacancy-responses-count-total"]',
           ),
           responsesUrl: getAttr(
             '[data-qa="vacancies-dashboard-vacancy-responses-count-link"]',
-            "href"
+            "href",
           ),
           newResponses: getText(
-            '[data-qa="vacancies-dashboard-vacancy-responses-count-new"]'
+            '[data-qa="vacancies-dashboard-vacancy-responses-count-new"]',
           ),
           resumesInProgress: cleanNumber(
             getText(
-              '[data-qa="vacancies-dashboard-vacancy-resumes-in-progress-count"]'
-            )
+              '[data-qa="vacancies-dashboard-vacancy-resumes-in-progress-count"]',
+            ),
           ),
           suitableResumes: cleanNumber(
-            getText('[data-qa="suitable-resumes-count"]')
+            getText('[data-qa="suitable-resumes-count"]'),
           ),
           region: getText('[data-qa="table-flexible-cell-area"]'),
           description: "",
           source: "hh" as const,
         };
       });
-    }
+    },
   );
 
   // Нормализуем URL вакансий
@@ -133,7 +133,7 @@ async function collectVacancies(page: Page): Promise<VacancyData[]> {
  */
 async function saveBasicVacancies(
   vacancies: VacancyData[],
-  workspaceId: string
+  workspaceId: string,
 ): Promise<Set<string>> {
   let savedCount = 0;
   let errorCount = 0;
@@ -154,14 +154,14 @@ async function saveBasicVacancies(
       errorCount++;
       console.error(
         `❌ Ошибка сохранения вакансии ${vacancy.title}:`,
-        result.error
+        result.error,
       );
       // Продолжаем работу со следующей вакансией
     }
   }
 
   console.log(
-    `✅ Базовая информация: успешно ${savedCount}, ошибок ${errorCount}, новых ${newVacancyIds.size}`
+    `✅ Базовая информация: успешно ${savedCount}, ошибок ${errorCount}, новых ${newVacancyIds.size}`,
   );
 
   return newVacancyIds;
@@ -173,7 +173,7 @@ async function saveBasicVacancies(
 async function parseVacancyDescriptions(
   page: Page,
   vacancies: VacancyData[],
-  newVacancyIds: Set<string>
+  newVacancyIds: Set<string>,
 ): Promise<void> {
   let parsedCount = 0;
   let skippedCount = 0;
@@ -191,7 +191,7 @@ async function parseVacancyDescriptions(
         errorCount++;
         console.error(
           `❌ Ошибка проверки описания ${vacancy.title}:`,
-          hasDescriptionResult.error
+          hasDescriptionResult.error,
         );
         continue;
       }
@@ -199,21 +199,21 @@ async function parseVacancyDescriptions(
       if (hasDescriptionResult.data) {
         skippedCount++;
         console.log(
-          `⏭️ Пропуск ${i + 1}/${vacancies.length}: ${vacancy.title} (описание есть)`
+          `⏭️ Пропуск ${i + 1}/${vacancies.length}: ${vacancy.title} (описание есть)`,
         );
         continue;
       }
 
       const isNewVacancy = newVacancyIds.has(vacancy.id);
       console.log(
-        `\n📊 Парсинг описания ${i + 1}/${vacancies.length}: ${vacancy.title}${isNewVacancy ? " [НОВАЯ]" : ""}`
+        `\n📊 Парсинг описания ${i + 1}/${vacancies.length}: ${vacancy.title}${isNewVacancy ? " [НОВАЯ]" : ""}`,
       );
 
       // Задержка между просмотром вакансий
       if (parsedCount > 0) {
         const delay = randomDelay(2000, 5000);
         console.log(
-          `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`
+          `⏳ Пауза ${Math.round(delay / 1000)}с перед следующей вакансией...`,
         );
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -224,20 +224,20 @@ async function parseVacancyDescriptions(
         const updateResult = await updateVacancyDescription(
           vacancy.id,
           description,
-          isNewVacancy
+          isNewVacancy,
         );
 
         if (updateResult.success) {
           vacancy.description = description;
           parsedCount++;
           console.log(
-            `✅ Описание ${i + 1}/${vacancies.length} обработано успешно${isNewVacancy ? " (запущена генерация требований)" : ""}`
+            `✅ Описание ${i + 1}/${vacancies.length} обработано успешно${isNewVacancy ? " (запущена генерация требований)" : ""}`,
           );
         } else {
           errorCount++;
           console.error(
             `❌ Ошибка обновления описания ${vacancy.title}:`,
-            updateResult.error
+            updateResult.error,
           );
         }
       } else {
@@ -249,7 +249,7 @@ async function parseVacancyDescriptions(
         error instanceof Error ? error.message : String(error);
       console.error(
         `❌ Ошибка парсинга описания ${vacancy.title}:`,
-        errorMessage
+        errorMessage,
       );
 
       // Пауза после ошибки перед следующей попыткой
@@ -259,7 +259,7 @@ async function parseVacancyDescriptions(
   }
 
   console.log(
-    `✅ Итого описания: успешно ${parsedCount}, пропущено ${skippedCount}, ошибок ${errorCount}`
+    `✅ Итого описания: успешно ${parsedCount}, пропущено ${skippedCount}, ошибок ${errorCount}`,
   );
 }
 
@@ -283,7 +283,7 @@ async function parseVacancyDetails(page: Page, url: string): Promise<string> {
 
     const htmlContent = await page.$eval(
       ".vacancy-section",
-      (el) => (el as HTMLElement).innerHTML
+      (el) => (el as HTMLElement).innerHTML,
     );
 
     return htmlContent.trim();

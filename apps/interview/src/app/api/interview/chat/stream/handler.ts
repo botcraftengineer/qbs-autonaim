@@ -74,7 +74,7 @@ async function handler(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request", details: error.issues },
-        { status: 400 }
+        { status: 400 },
       );
     }
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
@@ -90,7 +90,7 @@ async function handler(request: Request) {
       } catch (error) {
         console.error(
           "[Interview Stream] Failed to validate interview token:",
-          error
+          error,
         );
       }
     }
@@ -99,7 +99,7 @@ async function handler(request: Request) {
       sessionId,
       validatedToken,
       null,
-      db
+      db,
     );
 
     if (!accessAllowed) {
@@ -122,14 +122,14 @@ async function handler(request: Request) {
     if (!session) {
       return NextResponse.json(
         { error: "Interview not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     if (session.status !== "active") {
       return NextResponse.json(
         { error: "Interview is not active" },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
@@ -145,7 +145,7 @@ async function handler(request: Request) {
     if (!responseRecord) {
       return NextResponse.json(
         { error: "Response not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -208,7 +208,7 @@ async function handler(request: Request) {
     // Сохраняем текстовое сообщение пользователя в БД
     if (lastUserMessage && userMessageText) {
       const hasVoiceFile = lastUserMessage.parts?.some(
-        (p) => p.type === "file"
+        (p) => p.type === "file",
       );
       if (!hasVoiceFile) {
         await db.insert(interviewMessage).values({
@@ -257,14 +257,14 @@ async function handler(request: Request) {
 
     // Определяем, это первый ответ после приветствия
     const existingUserMessageCount = session.messages.filter(
-      (m) => m.role === "user"
+      (m) => m.role === "user",
     ).length;
     const isFirstResponse = existingUserMessageCount === 0;
 
     // Анализируем контекст сообщения (для эскалации и типа)
     const contextAnalysis = await orchestrator.analyzeContext(
       userMessageText,
-      conversationHistory
+      conversationHistory,
     );
 
     // Если нужна эскалация — возвращаем специальный ответ
@@ -363,7 +363,7 @@ async function handler(request: Request) {
         } catch (error) {
           console.warn(
             "[Interview Stream] Ошибка с основной моделью, пробую fallback:",
-            error
+            error,
           );
 
           try {
@@ -386,12 +386,12 @@ async function handler(request: Request) {
             });
 
             console.log(
-              "[Interview Stream] Успешно переключился на fallback модель"
+              "[Interview Stream] Успешно переключился на fallback модель",
             );
           } catch (fallbackError) {
             console.error(
               "[Interview Stream] Fallback модель также недоступна:",
-              fallbackError
+              fallbackError,
             );
             // End span with error
             trace.getActiveSpan()?.setStatus({
@@ -409,13 +409,13 @@ async function handler(request: Request) {
       generateId: generateUUID,
       onFinish: async ({ messages: finishedMessages }) => {
         const assistantMessages = finishedMessages.filter(
-          (m) => m.role === "assistant"
+          (m) => m.role === "assistant",
         );
 
         for (const msg of assistantMessages) {
           const textParts = msg.parts?.filter(
             (p): p is { type: "text"; text: string } =>
-              p.type === "text" && "text" in p
+              p.type === "text" && "text" in p,
           );
 
           const content = textParts?.map((p) => p.text).join("\n") || "";
@@ -456,7 +456,7 @@ async function handler(request: Request) {
     trace.getActiveSpan()?.end();
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

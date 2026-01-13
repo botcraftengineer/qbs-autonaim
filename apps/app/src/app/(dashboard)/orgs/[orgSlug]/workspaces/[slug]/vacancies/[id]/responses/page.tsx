@@ -24,10 +24,7 @@ export default function VacancyResponsesPage() {
         <div className="mb-6">
           <div className="mb-4 flex items-center gap-3">
             <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
-              <IconMessage
-                className="size-6 text-primary"
-                aria-hidden="true"
-              />
+              <IconMessage className="size-6 text-primary" aria-hidden="true" />
             </div>
             <div>
               <h1 className="text-xl font-semibold text-foreground">

@@ -1,4 +1,11 @@
-import { chatMessage, chatSession, db, eq, gig, vacancy } from "@qbs-autonaim/db";
+import {
+  chatMessage,
+  chatSession,
+  db,
+  eq,
+  gig,
+  vacancy,
+} from "@qbs-autonaim/db";
 import { getAIModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
@@ -57,7 +64,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { message, messages, chatSessionId, conversationId, id } = requestBody;
+    const { message, messages, chatSessionId, conversationId, id } =
+      requestBody;
 
     const resolvedChatSessionId = chatSessionId ?? conversationId ?? id;
     if (!resolvedChatSessionId) {
@@ -142,9 +150,7 @@ export async function POST(request: Request) {
 
       const lastUserMessage = message
         ? message
-        : messages
-            ?.filter((m) => m.role === "user")
-            .at(-1);
+        : messages?.filter((m) => m.role === "user").at(-1);
 
       userMessageText = lastUserMessage
         ? lastUserMessage.parts
@@ -203,8 +209,9 @@ ${historyContext}
           .at(-1);
 
         const assistantText = assistant?.parts
-          ?.filter((p): p is { type: "text"; text: string } =>
-            Boolean(p) && p.type === "text" && "text" in p,
+          ?.filter(
+            (p): p is { type: "text"; text: string } =>
+              Boolean(p) && p.type === "text" && "text" in p,
           )
           .map((p) => p.text)
           .join("\n");

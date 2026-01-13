@@ -126,9 +126,9 @@ export function VacancySettingsForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="mx-auto max-w-4xl">
+        <div className="max-w-4xl">
           <Card className="p-6">
-            <div className="mb-8">
+            <div>
               <div className="mb-4 flex items-center gap-3">
                 <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
                   <Sparkles
