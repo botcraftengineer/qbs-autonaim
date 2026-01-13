@@ -74,4 +74,20 @@ export interface ConversationMetadata {
       weight: number;
     }>;
   };
+
+  interviewState?: {
+    version?: string;
+    stage?: "intro" | "org" | "tech" | "wrapup";
+    askedQuestions?: string[];
+    voiceOptionOffered?: boolean;
+    updatedAt?: string;
+  };
+
+  interviewQuestionBank?: {
+    entityType?: "gig" | "vacancy" | "unknown";
+    signature?: string;
+    organizational?: string[];
+    technical?: string[];
+    updatedAt?: string;
+  };
 }

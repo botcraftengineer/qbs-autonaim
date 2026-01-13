@@ -10,6 +10,7 @@
 import { observe, updateActiveTrace } from "@langfuse/tracing";
 import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { WebInterviewOrchestrator } from "@qbs-autonaim/ai";
+import { hasInterviewAccess, validateInterviewToken } from "@qbs-autonaim/api";
 import { db, eq } from "@qbs-autonaim/db";
 import {
   gig as gigTable,
@@ -52,6 +53,7 @@ const requestSchema = z
     id: z.string().optional(),
     messages: z.array(messageSchema),
     sessionId: z.string().uuid(),
+    interviewToken: z.string().nullable().optional(),
   })
   .passthrough();
 
@@ -72,14 +74,37 @@ async function handler(request: Request) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Invalid request", details: error.issues },
-        { status: 400 },
+        { status: 400 }
       );
     }
     return NextResponse.json({ error: "Bad request" }, { status: 400 });
   }
 
   try {
-    const { messages, sessionId } = requestBody;
+    const { messages, sessionId, interviewToken } = requestBody;
+
+    let validatedToken = null;
+    if (interviewToken) {
+      try {
+        validatedToken = await validateInterviewToken(interviewToken, db);
+      } catch (error) {
+        console.error(
+          "[Interview Stream] Failed to validate interview token:",
+          error
+        );
+      }
+    }
+
+    const accessAllowed = await hasInterviewAccess(
+      sessionId,
+      validatedToken,
+      null,
+      db
+    );
+
+    if (!accessAllowed) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
     // Проверяем что interview session существует и это WEB интервью
     const session = await db.query.interviewSession.findFirst({
@@ -97,14 +122,14 @@ async function handler(request: Request) {
     if (!session) {
       return NextResponse.json(
         { error: "Interview not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
     if (session.status !== "active") {
       return NextResponse.json(
         { error: "Interview is not active" },
-        { status: 403 },
+        { status: 403 }
       );
     }
 
@@ -120,7 +145,7 @@ async function handler(request: Request) {
     if (!responseRecord) {
       return NextResponse.json(
         { error: "Response not found" },
-        { status: 404 },
+        { status: 404 }
       );
     }
 
@@ -183,7 +208,7 @@ async function handler(request: Request) {
     // Сохраняем текстовое сообщение пользователя в БД
     if (lastUserMessage && userMessageText) {
       const hasVoiceFile = lastUserMessage.parts?.some(
-        (p) => p.type === "file",
+        (p) => p.type === "file"
       );
       if (!hasVoiceFile) {
         await db.insert(interviewMessage).values({
@@ -231,13 +256,15 @@ async function handler(request: Request) {
     }
 
     // Определяем, это первый ответ после приветствия
-    const messageCount = messages.filter((m) => m.role === "user").length;
-    const isFirstResponse = messageCount === 1;
+    const existingUserMessageCount = session.messages.filter(
+      (m) => m.role === "user"
+    ).length;
+    const isFirstResponse = existingUserMessageCount === 0;
 
     // Анализируем контекст сообщения (для эскалации и типа)
     const contextAnalysis = await orchestrator.analyzeContext(
       userMessageText,
-      conversationHistory,
+      conversationHistory
     );
 
     // Если нужна эскалация — возвращаем специальный ответ
@@ -287,23 +314,34 @@ async function handler(request: Request) {
 
     const stream = createUIMessageStream({
       execute: async ({ writer }) => {
-        // Формируем сообщения для AI
-        const formattedMessages = messages.map((m) => {
-          let content =
-            m.parts?.map((p) => p.text).join("\n") || m.content || "";
+        const formattedMessages: Array<{
+          role: "user" | "assistant";
+          content: string;
+        }> = session.messages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => {
+            const baseText =
+              m.type === "voice"
+                ? (m.voiceTranscription ?? m.content ?? "")
+                : (m.content ?? "");
 
-          if (m.role === "user") {
-            const hasVoiceFile = m.parts?.some((p) => p.type === "file");
-            if (hasVoiceFile) {
-              content = `[Голосовое сообщение]\n${content}`;
-            }
+            const content =
+              m.type === "voice"
+                ? `[Голосовое сообщение]\n${baseText}`
+                : baseText;
+
+            return {
+              role: m.role as "user" | "assistant",
+              content,
+            };
+          });
+
+        if (userMessageText) {
+          const last = formattedMessages.at(-1);
+          if (last?.role !== "user" || last.content !== userMessageText) {
+            formattedMessages.push({ role: "user", content: userMessageText });
           }
-
-          return {
-            role: m.role as "user" | "assistant" | "system",
-            content,
-          };
-        });
+        }
 
         // biome-ignore lint/suspicious/noExplicitAny: Complex generic types cause compatibility issues
         let result: any;
@@ -325,7 +363,7 @@ async function handler(request: Request) {
         } catch (error) {
           console.warn(
             "[Interview Stream] Ошибка с основной моделью, пробую fallback:",
-            error,
+            error
           );
 
           try {
@@ -348,12 +386,12 @@ async function handler(request: Request) {
             });
 
             console.log(
-              "[Interview Stream] Успешно переключился на fallback модель",
+              "[Interview Stream] Успешно переключился на fallback модель"
             );
           } catch (fallbackError) {
             console.error(
               "[Interview Stream] Fallback модель также недоступна:",
-              fallbackError,
+              fallbackError
             );
             // End span with error
             trace.getActiveSpan()?.setStatus({
@@ -371,13 +409,13 @@ async function handler(request: Request) {
       generateId: generateUUID,
       onFinish: async ({ messages: finishedMessages }) => {
         const assistantMessages = finishedMessages.filter(
-          (m) => m.role === "assistant",
+          (m) => m.role === "assistant"
         );
 
         for (const msg of assistantMessages) {
           const textParts = msg.parts?.filter(
             (p): p is { type: "text"; text: string } =>
-              p.type === "text" && "text" in p,
+              p.type === "text" && "text" in p
           );
 
           const content = textParts?.map((p) => p.text).join("\n") || "";
@@ -418,7 +456,7 @@ async function handler(request: Request) {
     trace.getActiveSpan()?.end();
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }
