@@ -31,6 +31,21 @@ interface GigInvitationTemplateProps {
   gigTitle: string;
 }
 
+function normalizeInterviewUrl(url: string | undefined): string {
+  if (!url) return "[ссылка на интервью]";
+
+  let normalizedUrl = url;
+
+  // Ensure the URL has https protocol
+  if (normalizedUrl.startsWith("http://")) {
+    normalizedUrl = normalizedUrl.replace("http://", "https://");
+  } else if (!normalizedUrl.startsWith("https://")) {
+    normalizedUrl = `https://${normalizedUrl}`;
+  }
+
+  return normalizedUrl;
+}
+
 export function GigInvitationTemplate({
   gigId,
   gigTitle,
@@ -80,16 +95,7 @@ export function GigInvitationTemplate({
   }, [generateLink, gigId, workspace?.id]);
 
   const template = useMemo(() => {
-    let interviewUrl = interviewLink?.url || "[ссылка на интервью]";
-
-    // Ensure the URL has https protocol
-    if (interviewUrl && interviewUrl !== "[ссылка на интервью]") {
-      if (interviewUrl.startsWith("http://")) {
-        interviewUrl = interviewUrl.replace("http://", "https://");
-      } else if (!interviewUrl.startsWith("https://")) {
-        interviewUrl = `https://${interviewUrl}`;
-      }
-    }
+    const interviewUrl = normalizeInterviewUrl(interviewLink?.url);
 
     if (aiTemplate?.text) {
       // Replace the placeholder URL in AI-generated text with actual URL
@@ -126,7 +132,8 @@ export function GigInvitationTemplate({
     if (!interviewLink?.url) return;
 
     try {
-      await navigator.clipboard.writeText(interviewLink.url);
+      const normalizedUrl = normalizeInterviewUrl(interviewLink.url);
+      await navigator.clipboard.writeText(normalizedUrl);
       setLinkCopied(true);
       toast.success("Ссылка скопирована");
       setTimeout(() => setLinkCopied(false), 2000);

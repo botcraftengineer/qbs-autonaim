@@ -1,5 +1,9 @@
 import { and, eq, isNull } from "@qbs-autonaim/db";
-import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
+import {
+  interviewLink,
+  response as responseTable,
+  vacancy,
+} from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -16,7 +20,7 @@ export const mergeVacancies = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
-      ctx.session.user.id
+      ctx.session.user.id,
     );
 
     if (!access) {
@@ -37,14 +41,14 @@ export const mergeVacancies = protectedProcedure
       const source = await tx.query.vacancy.findFirst({
         where: and(
           eq(vacancy.id, input.sourceVacancyId),
-          eq(vacancy.workspaceId, input.workspaceId)
+          eq(vacancy.workspaceId, input.workspaceId),
         ),
       });
 
       const target = await tx.query.vacancy.findFirst({
         where: and(
           eq(vacancy.id, input.targetVacancyId),
-          eq(vacancy.workspaceId, input.workspaceId)
+          eq(vacancy.workspaceId, input.workspaceId),
         ),
       });
 
@@ -75,8 +79,18 @@ export const mergeVacancies = protectedProcedure
         .where(
           and(
             eq(responseTable.entityType, "vacancy"),
-            eq(responseTable.entityId, input.sourceVacancyId)
-          )
+            eq(responseTable.entityId, input.sourceVacancyId),
+          ),
+        );
+
+      await tx
+        .update(interviewLink)
+        .set({ entityId: input.targetVacancyId })
+        .where(
+          and(
+            eq(interviewLink.entityType, "vacancy"),
+            eq(interviewLink.entityId, input.sourceVacancyId),
+          ),
         );
 
       const [updated] = await tx
@@ -86,8 +100,8 @@ export const mergeVacancies = protectedProcedure
           and(
             eq(vacancy.id, input.sourceVacancyId),
             eq(vacancy.workspaceId, input.workspaceId),
-            isNull(vacancy.mergedIntoVacancyId)
-          )
+            isNull(vacancy.mergedIntoVacancyId),
+          ),
         )
         .returning();
 
