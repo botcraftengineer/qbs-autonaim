@@ -47,21 +47,6 @@ export const recalculateRankingFunction = inngest.createFunction(
           candidatesCount: rankingResult.candidates.length,
         });
 
-        // После успешного пересчета рейтинга автоматически пересчитываем шортлист
-        console.log("🎯 Запуск пересчета шортлиста", { gigId, workspaceId });
-
-        await step.run("trigger-shortlist-recalculation", async () => {
-          // Отправляем событие для пересчета шортлиста
-          await inngest.send({
-            name: "gig/shortlist.recalculate",
-            data: {
-              gigId,
-              workspaceId,
-              triggeredBy: triggeredBy || "system",
-            },
-          });
-        });
-
         return {
           success: true,
           gigId,
@@ -77,6 +62,21 @@ export const recalculateRankingFunction = inngest.createFunction(
         });
         throw error;
       }
+    });
+
+    // После успешного пересчета рейтинга автоматически пересчитываем шортлист
+    await step.run("trigger-shortlist-recalculation", async () => {
+      console.log("🎯 Запуск пересчета шортлиста", { gigId, workspaceId });
+
+      // Отправляем событие для пересчета шортлиста
+      await inngest.send({
+        name: "gig/shortlist.recalculate",
+        data: {
+          gigId,
+          workspaceId,
+          triggeredBy: triggeredBy || "system",
+        },
+      });
     });
 
     return result;

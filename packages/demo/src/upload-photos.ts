@@ -2,8 +2,8 @@
 
 import { db } from "@qbs-autonaim/db";
 import { file } from "@qbs-autonaim/db/schema";
-import { readFileSync } from "fs";
-import { join } from "path";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 interface CandidatePhoto {
   candidateId: string;

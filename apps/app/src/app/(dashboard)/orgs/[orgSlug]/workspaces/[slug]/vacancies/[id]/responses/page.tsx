@@ -2,10 +2,6 @@
 
 import {
   Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
   Separator,
 } from "@qbs-autonaim/ui";
 import { IconMessage } from "@tabler/icons-react";

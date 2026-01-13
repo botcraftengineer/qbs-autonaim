@@ -6,6 +6,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./src/index.ts"
+    },
+    "./services": {
+      "types": "./src/services/index.ts",
+      "default": "./src/services/index.ts"
     }
   },
   "license": "MIT",

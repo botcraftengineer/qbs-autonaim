@@ -5,7 +5,7 @@ import {
 } from "@qbs-autonaim/shared";
 import type { LanguageModel } from "ai";
 import { generateText, tool } from "ai";
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import { z } from "zod";
 
 type EntityType = "gig" | "vacancy" | "unknown";

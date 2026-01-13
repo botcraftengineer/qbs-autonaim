@@ -96,7 +96,7 @@ async function loadDemoData() {
 
     // Загружаем задания (gigs)
     console.log("\n💼 Загружаем задания (gigs)...");
-    const processedGigsData = gigsData.map((gigItem: any) => ({
+    const processedGigsData = gigsData.map((gigItem) => ({
       ...gigItem,
       deadline: gigItem.deadline ? new Date(gigItem.deadline) : null,
     }));
@@ -139,18 +139,18 @@ async function loadDemoData() {
     // Создаем маппинг для демо данных заданий
     const gigMapping: Record<string, string> = {};
     if (insertedGigs.length >= 8) {
-      gigMapping["gig_001_landing"] = insertedGigs[0]?.id || "";
-      gigMapping["gig_002_mobile_design"] = insertedGigs[1]?.id || "";
-      gigMapping["gig_003_copywriting"] = insertedGigs[2]?.id || "";
-      gigMapping["gig_004_devops"] = insertedGigs[3]?.id || "";
-      gigMapping["gig_005_data_analysis"] = insertedGigs[4]?.id || "";
-      gigMapping["gig_006_video"] = insertedGigs[5]?.id || "";
-      gigMapping["gig_007_translation"] = insertedGigs[6]?.id || "";
-      gigMapping["gig_008_consulting"] = insertedGigs[7]?.id || "";
+      gigMapping.gig_001_landing = insertedGigs[0]?.id || "";
+      gigMapping.gig_002_mobile_design = insertedGigs[1]?.id || "";
+      gigMapping.gig_003_copywriting = insertedGigs[2]?.id || "";
+      gigMapping.gig_004_devops = insertedGigs[3]?.id || "";
+      gigMapping.gig_005_data_analysis = insertedGigs[4]?.id || "";
+      gigMapping.gig_006_video = insertedGigs[5]?.id || "";
+      gigMapping.gig_007_translation = insertedGigs[6]?.id || "";
+      gigMapping.gig_008_consulting = insertedGigs[7]?.id || "";
     }
 
     // Обновляем entityId и photoFileId в откликах на вакансии
-    const updatedResponsesData = responsesData.map((resp: any) => ({
+    const updatedResponsesData = responsesData.map((resp) => ({
       ...resp,
       entityId: vacancyMapping[resp.entityId] || insertedVacancies[0]?.id || "",
       photoFileId: photoMapping[resp.candidateId] || null,
@@ -160,7 +160,7 @@ async function loadDemoData() {
     }));
 
     // Обновляем entityId и photoFileId в откликах на задания
-    const updatedGigResponsesData = gigResponsesData.map((resp: any) => ({
+    const updatedGigResponsesData = gigResponsesData.map((resp) => ({
       ...resp,
       entityId: gigMapping[resp.entityId] || insertedGigs[0]?.id || "",
       photoFileId: photoMapping[resp.candidateId] || null,
