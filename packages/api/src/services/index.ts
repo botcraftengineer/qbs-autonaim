@@ -91,6 +91,13 @@ export type {
 } from "./shortlist-generator";
 export { ShortlistGenerator } from "./shortlist-generator";
 export type {
+  GigContactInfo,
+  GigShortlist,
+  GigShortlistCandidate,
+  GigShortlistOptions,
+} from "./gig-shortlist-generator";
+export { GigShortlistGenerator } from "./gig-shortlist-generator";
+export type {
   BehaviorConfig,
   BrandingConfig,
   LegalConfig,

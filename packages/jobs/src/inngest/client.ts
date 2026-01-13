@@ -13,6 +13,7 @@ import {
   generateInvitationDataSchema,
   gigRankingRecalculateDataSchema,
   gigResponseEvaluateDataSchema,
+  gigShortlistRecalculateDataSchema,
   interviewAnalysisDataSchema,
   interviewCompleteDataSchema,
   interviewSendQuestionDataSchema,
@@ -76,6 +77,7 @@ export const inngest = new Inngest({
     "web/interview.send-question": interviewSendQuestionDataSchema,
     "web/interview.complete": interviewCompleteDataSchema,
     "gig/ranking.recalculate": gigRankingRecalculateDataSchema,
+    "gig/shortlist.recalculate": gigShortlistRecalculateDataSchema,
     "gig/response.evaluate": gigResponseEvaluateDataSchema,
   }),
 });

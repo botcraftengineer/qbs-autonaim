@@ -7,7 +7,7 @@ import {
 } from "@qbs-autonaim/db";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { auth } from "@/auth/server";
+import { auth } from "~/auth/server";
 
 /**
  * API endpoint для быстрого создания тестовых данных
