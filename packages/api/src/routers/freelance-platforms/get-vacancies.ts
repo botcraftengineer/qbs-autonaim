@@ -1,4 +1,4 @@
-import { and, count, desc, eq, sql } from "@qbs-autonaim/db";
+import { and, count, desc, eq, isNull, sql } from "@qbs-autonaim/db";
 import { response as responseTable, vacancy } from "@qbs-autonaim/db/schema";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { z } from "zod";
@@ -28,14 +28,14 @@ export const getVacancies = protectedProcedure
       ctx.auditLogger,
       ctx.session.user.id,
       ctx.ipAddress,
-      ctx.userAgent,
+      ctx.userAgent
     );
 
     try {
       // Проверка доступа к workspace
       const access = await ctx.workspaceRepository.checkAccess(
         input.workspaceId,
-        ctx.session.user.id,
+        ctx.session.user.id
       );
 
       if (!access) {
@@ -46,7 +46,10 @@ export const getVacancies = protectedProcedure
       }
 
       // Построение условий фильтрации
-      const conditions = [eq(vacancy.workspaceId, input.workspaceId)];
+      const conditions = [
+        eq(vacancy.workspaceId, input.workspaceId),
+        isNull(vacancy.mergedIntoVacancyId),
+      ];
 
       // Фильтрация по источнику, если указан
       if (input.source) {
@@ -88,8 +91,8 @@ export const getVacancies = protectedProcedure
           responseTable,
           and(
             eq(vacancy.id, responseTable.entityId),
-            eq(responseTable.entityType, "vacancy"),
-          ),
+            eq(responseTable.entityType, "vacancy")
+          )
         )
         .where(and(...conditions));
 

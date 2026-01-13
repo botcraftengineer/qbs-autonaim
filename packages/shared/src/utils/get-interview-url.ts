@@ -9,9 +9,8 @@ import type { NodePgDatabase } from "drizzle-orm/node-postgres";
  */
 async function getWorkspaceInterviewDomain(
   db: NodePgDatabase<typeof schema>,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<string | null> {
-
   const ws = await db.query.workspace.findFirst({
     where: eq(workspace.id, workspaceId),
     columns: {
@@ -27,11 +26,15 @@ async function getWorkspaceInterviewDomain(
     },
   });
 
-  if (!ws?.customDomain?.isVerified) {
+  const custom = Array.isArray(ws?.customDomain)
+    ? ws?.customDomain[0]
+    : ws?.customDomain;
+
+  if (!custom?.isVerified) {
     return null;
   }
 
-  return ws.customDomain.domain;
+  return custom.domain;
 }
 
 /**
@@ -39,7 +42,7 @@ async function getWorkspaceInterviewDomain(
  * Использует кастомный домен workspace, если он указан, иначе NEXT_PUBLIC_INTERVIEW_URL
  */
 export function getInterviewBaseUrl(
-  workspaceInterviewDomain?: string | null,
+  workspaceInterviewDomain?: string | null
 ): string {
   if (workspaceInterviewDomain) {
     // Убираем trailing slash если есть
@@ -51,7 +54,7 @@ export function getInterviewBaseUrl(
   if (!interviewUrl || interviewUrl.trim() === "") {
     throw new Error(
       "NEXT_PUBLIC_INTERVIEW_URL environment variable is not set or empty. " +
-        "Please configure it in your .env file.",
+        "Please configure it in your .env file."
     );
   }
 
@@ -63,7 +66,7 @@ export function getInterviewBaseUrl(
  */
 export function getInterviewUrl(
   token: string,
-  workspaceInterviewDomain?: string | null,
+  workspaceInterviewDomain?: string | null
 ): string {
   const baseUrl = getInterviewBaseUrl(workspaceInterviewDomain);
   return `${baseUrl}/${token}`;
@@ -75,7 +78,7 @@ export function getInterviewUrl(
 async function getEntityInterviewDomain(
   db: NodePgDatabase<typeof schema>,
   entityType: "vacancy" | "gig",
-  entityId: string,
+  entityId: string
 ): Promise<string | null> {
   if (entityType === "gig") {
     // Для gig получаем домен из gig.customDomainId с preset fallback
@@ -122,7 +125,7 @@ async function getEntityInterviewDomain(
           eq(domain.workspaceId, gigData.workspaceId),
           eq(domain.type, "interview"),
           eq(domain.isPrimary, true),
-          eq(domain.isVerified, true),
+          eq(domain.isVerified, true)
         ),
       columns: {
         domain: true,
@@ -167,7 +170,7 @@ async function getEntityInterviewDomain(
 export async function getInterviewUrlFromDb(
   db: NodePgDatabase<typeof schema>,
   token: string,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<string> {
   const domain = await getWorkspaceInterviewDomain(db, workspaceId);
   return getInterviewUrl(token, domain);
@@ -180,7 +183,7 @@ export async function getInterviewUrlFromEntity(
   db: NodePgDatabase<typeof schema>,
   token: string,
   entityType: "vacancy" | "gig",
-  entityId: string,
+  entityId: string
 ): Promise<string> {
   const domain = await getEntityInterviewDomain(db, entityType, entityId);
   return getInterviewUrl(token, domain);
