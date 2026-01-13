@@ -20,6 +20,17 @@ export async function seedPresetDomains() {
       workspaceId: null,
       sslStatus: "active" as const,
     },
+    {
+      id: PRESET_DOMAIN_IDS.HH_QBS_RU,
+      domain: "hh.qbs.ru",
+      type: "interview" as const,
+      cnameTarget: "cname.hh.qbs.ru",
+      isVerified: true,
+      isPrimary: false,
+      isPreset: true,
+      workspaceId: null,
+      sslStatus: "active" as const,
+    },
   ];
 
   for (const preset of presetDomains) {

@@ -252,14 +252,24 @@ export function ShortlistCandidateCard({
           <div className="mt-3 pt-3 border-t">
             <div className="text-xs font-medium mb-2">Портфолио</div>
             <div className="flex flex-wrap gap-2">
-              {candidate.portfolioLinks.slice(0, 3).map((link) => (
-                <Button key={link} variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
-                  <a href={link} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-3 w-3 mr-1" />
-                    Ссылка
-                  </a>
-                </Button>
-              ))}
+              {candidate.portfolioLinks.slice(0, 3).map((link, idx) => {
+                let label = `Ссылка ${idx + 1}`;
+                try {
+                  const url = new URL(link);
+                  label = url.hostname;
+                } catch {
+                  // Fallback to numbered label if URL parsing fails
+                }
+                
+                return (
+                  <Button key={link} variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
+                    <a href={link} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      {label}
+                    </a>
+                  </Button>
+                );
+              })}
               {candidate.portfolioLinks.length > 3 && (
                 <span className="text-xs text-muted-foreground">
                   +ещё {candidate.portfolioLinks.length - 3}

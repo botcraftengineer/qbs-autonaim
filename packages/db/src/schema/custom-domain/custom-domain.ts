@@ -32,6 +32,11 @@ export const presetInterviewDomains = [
     domain: "hrbot.pro",
     label: "hrbot.pro",
   },
+  {
+    id: "019bb7aa-c9b9-7e69-807b-83c31f5d866b",
+    domain: "hh.qbs.ru",
+    label: "hh.qbs.ru",
+  },
 ] as const;
 
 export type PresetInterviewDomain = (typeof presetInterviewDomains)[number];
@@ -162,4 +167,5 @@ export function getPresetDomain(idOrDomain: string) {
  */
 export const PRESET_DOMAIN_IDS = {
   HRBOT_PRO: "00000000-0000-0000-0000-000000000001",
+  HH_QBS_RU: "019bb7aa-c9b9-7e69-807b-83c31f5d866b",
 } as const;
