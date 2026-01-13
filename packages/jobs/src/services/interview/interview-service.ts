@@ -439,12 +439,28 @@ export async function createInterviewScoring(
   const factory = new AgentFactory({ model });
   const agent = factory.createInterviewScoring();
 
+  // Проверяем наличие истории диалога
+  if (
+    !context.conversationHistory ||
+    context.conversationHistory.length === 0
+  ) {
+    logger.warn("Interview scoring called without conversation history", {
+      chatSessionId: context.chatSessionId,
+    });
+
+    return {
+      score: INTERVIEW.DEFAULT_FALLBACK_SCORE,
+      detailedScore: INTERVIEW.DEFAULT_FALLBACK_DETAILED_SCORE,
+      analysis: "Невозможно оценить интервью без истории диалога",
+    };
+  }
+
   // Формируем контекст для агента
   const agentContext = {
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
-    conversationHistory: context.conversationHistory || [],
+    conversationHistory: context.conversationHistory,
   };
 
   // Выполняем агента
