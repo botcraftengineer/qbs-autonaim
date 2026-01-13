@@ -455,12 +455,19 @@ export async function createInterviewScoring(
     };
   }
 
-  // Формируем контекст для агента
+  // Формируем контекст для агента (конвертируем роли для совместимости с AI)
   const agentContext = {
     candidateName: candidateName ?? undefined,
     vacancyTitle: vacancyTitle ?? undefined,
     vacancyDescription: vacancyDescription ?? undefined,
-    conversationHistory: context.conversationHistory,
+    conversationHistory: (context.conversationHistory || []).map((msg) => ({
+      sender:
+        msg.sender === "user" ? "CANDIDATE" : ("BOT" as "CANDIDATE" | "BOT"),
+      content: msg.content,
+      contentType: msg.contentType
+        ? ((msg.contentType === "text" ? "TEXT" : "VOICE") as "TEXT" | "VOICE")
+        : undefined,
+    })),
   };
 
   // Выполняем агента
