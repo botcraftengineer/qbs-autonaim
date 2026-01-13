@@ -25,8 +25,12 @@ import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
-import { DeleteGigDialog, EmptyState, GigCard } from "./components";
-import { GigListItem } from "./components/gig-list";
+import {
+  DeleteGigDialog,
+  EmptyState,
+  GigCard,
+  GigListItem,
+} from "~/components/gig";
 
 const gigTypeLabels: Record<string, string> = {
   DEVELOPMENT: "Разработка",

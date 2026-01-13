@@ -1,4 +1,8 @@
 export { CandidateComparison } from "./candidate-comparison";
+export { DeleteGigDialog } from "./delete-gig-dialog";
+export { EmptyState } from "./empty-state";
+export { GigCard } from "./gig-card";
+export { GigListItem } from "./gig-list-item";
 export { RankedCandidateCard } from "./ranked-candidate-card";
 export { RankingList } from "./ranking-list";
 export { ResponseDetailCard } from "./response-detail-card";
