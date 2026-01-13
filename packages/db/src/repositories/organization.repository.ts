@@ -68,7 +68,7 @@ export class OrganizationRepository {
    */
   async update(
     id: string,
-    data: Partial<Omit<Organization, "id" | "createdAt" | "updatedAt">>
+    data: Partial<Omit<Organization, "id" | "createdAt" | "updatedAt">>,
   ): Promise<Organization> {
     const [updated] = await this.db
       .update(organization)
@@ -98,7 +98,7 @@ export class OrganizationRepository {
   async addMember(
     orgId: string,
     userId: string,
-    role: OrganizationRole = "member"
+    role: OrganizationRole = "member",
   ): Promise<OrganizationMember> {
     const [member] = await this.db
       .insert(organizationMember)
@@ -125,7 +125,7 @@ export class OrganizationRepository {
       const owners = await tx.query.organizationMember.findMany({
         where: and(
           eq(organizationMember.organizationId, orgId),
-          eq(organizationMember.role, "owner")
+          eq(organizationMember.role, "owner"),
         ),
       });
 
@@ -138,8 +138,8 @@ export class OrganizationRepository {
         .where(
           and(
             eq(organizationMember.organizationId, orgId),
-            eq(organizationMember.userId, userId)
-          )
+            eq(organizationMember.userId, userId),
+          ),
         );
     });
   }
@@ -150,7 +150,7 @@ export class OrganizationRepository {
   async updateMemberRole(
     orgId: string,
     userId: string,
-    role: OrganizationRole
+    role: OrganizationRole,
   ): Promise<OrganizationMember> {
     return this.db.transaction(async (tx) => {
       // Если понижаем owner, проверяем что это не последний owner
@@ -158,7 +158,7 @@ export class OrganizationRepository {
         const currentMember = await tx.query.organizationMember.findFirst({
           where: and(
             eq(organizationMember.organizationId, orgId),
-            eq(organizationMember.userId, userId)
+            eq(organizationMember.userId, userId),
           ),
         });
 
@@ -166,7 +166,7 @@ export class OrganizationRepository {
           const owners = await tx.query.organizationMember.findMany({
             where: and(
               eq(organizationMember.organizationId, orgId),
-              eq(organizationMember.role, "owner")
+              eq(organizationMember.role, "owner"),
             ),
           });
 
@@ -182,8 +182,8 @@ export class OrganizationRepository {
         .where(
           and(
             eq(organizationMember.organizationId, orgId),
-            eq(organizationMember.userId, userId)
-          )
+            eq(organizationMember.userId, userId),
+          ),
         )
         .returning();
 
@@ -212,12 +212,12 @@ export class OrganizationRepository {
    */
   async checkAccess(
     orgId: string,
-    userId: string
+    userId: string,
   ): Promise<OrganizationMember | null> {
     const member = await this.db.query.organizationMember.findFirst({
       where: and(
         eq(organizationMember.organizationId, orgId),
-        eq(organizationMember.userId, userId)
+        eq(organizationMember.userId, userId),
       ),
     });
 
@@ -254,7 +254,7 @@ export class OrganizationRepository {
    * Создать приглашение в организацию
    */
   async createInvite(
-    data: Omit<NewOrganizationInvite, "token">
+    data: Omit<NewOrganizationInvite, "token">,
   ): Promise<OrganizationInvite> {
     // Генерируем уникальный токен
     const token = nanoid(32);
@@ -265,7 +265,7 @@ export class OrganizationRepository {
         where: and(
           eq(organizationInvite.organizationId, data.organizationId),
           eq(organizationInvite.invitedEmail, data.invitedEmail),
-          gt(organizationInvite.expiresAt, new Date())
+          gt(organizationInvite.expiresAt, new Date()),
         ),
       });
 
@@ -321,7 +321,7 @@ export class OrganizationRepository {
     return this.db.query.organizationInvite.findMany({
       where: and(
         eq(organizationInvite.organizationId, orgId),
-        gt(organizationInvite.expiresAt, new Date())
+        gt(organizationInvite.expiresAt, new Date()),
       ),
       orderBy: (invite, { desc }) => [desc(invite.createdAt)],
     });
@@ -381,13 +381,11 @@ export class OrganizationRepository {
 
     // Фильтруем воркспейсы: оставляем только те, которые принадлежат указанной организации
     const accessibleWorkspaces = userWorkspaceMembers
-      .map((member) =>
-        Array.isArray(member.workspace) ? member.workspace[0] : member.workspace
-      )
-      .filter((ws) => Boolean(ws) && ws.organizationId === orgId)
+      .map((member) => member.workspace)
+      .filter((ws) => ws && ws.organizationId === orgId)
       .sort(
         (a, b) =>
-          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
 
     return accessibleWorkspaces;

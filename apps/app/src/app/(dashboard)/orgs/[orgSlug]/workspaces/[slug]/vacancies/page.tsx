@@ -63,7 +63,7 @@ export default function VacanciesPage() {
         setMergeOpenVacancyId(null);
         setMergeTargetVacancyId("");
         await queryClient.invalidateQueries({
-          queryKey: [["freelancePlatforms", "getVacancies"]],
+          queryKey: api.freelancePlatforms.getVacancies.queryKey(),
         });
       },
       onError: (err) => {
