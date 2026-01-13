@@ -1,6 +1,7 @@
 import { and, eq } from "@qbs-autonaim/db";
 import {
   gig,
+  interviewScoring,
   interviewSession,
   response as responseTable,
 } from "@qbs-autonaim/db/schema";
@@ -36,7 +37,6 @@ export const get = protectedProcedure
       ),
       with: {
         globalCandidate: true,
-        interviewScoring: true,
       },
     });
 
@@ -74,15 +74,22 @@ export const get = protectedProcedure
       },
     });
 
+    // Query interview scoring separately (both from session and direct)
+    const sessionInterviewScoring = sessionData
+      ? await ctx.db.query.interviewScoring.findFirst({
+          where: eq(interviewScoring.interviewSessionId, sessionData.id),
+        })
+      : null;
+
     return {
       ...response,
-      interviewScoring: response.interviewScoring
+      interviewScoring: sessionInterviewScoring
         ? {
             score:
-              response.interviewScoring.rating ??
-              Math.round(response.interviewScoring.score / 20),
-            detailedScore: response.interviewScoring.score,
-            analysis: response.interviewScoring.analysis,
+              sessionInterviewScoring.rating ??
+              Math.round(sessionInterviewScoring.score / 20),
+            detailedScore: sessionInterviewScoring.score,
+            analysis: sessionInterviewScoring.analysis,
           }
         : null,
       interviewSession: sessionData,

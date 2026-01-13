@@ -20,7 +20,6 @@ import {
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import React from "react";
 import { ResponseDetailCard } from "~/components/gig/response-detail-card";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -66,7 +65,6 @@ function ResponseDetailSkeleton() {
 
 export default function GigResponseDetailPage({ params }: PageProps) {
   const { orgSlug, slug: workspaceSlug, gigId, responseId } = React.use(params);
-  const _router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const { workspace } = useWorkspace();

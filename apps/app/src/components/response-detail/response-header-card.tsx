@@ -22,10 +22,10 @@ import {
   XCircle,
 } from "lucide-react";
 import {
-  STATUS_CONFIG,
+  formatDate,
   HR_STATUS_CONFIG,
   IMPORT_SOURCE_LABELS,
-  formatDate,
+  STATUS_CONFIG,
 } from "./constants";
 
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
@@ -85,11 +85,8 @@ export function ResponseHeaderCard({
   // Показываем кнопку оценки только если:
   // 1. Есть диалог с сообщениями ИЛИ есть данные для оценки
   // 2. Нет результатов оценки
-  // 3. Статус не EVALUATED (чтобы избежать повторной оценки)
   const canEvaluate =
-    (hasConversation || hasEvaluationData) &&
-    !response.interviewScoring &&
-    response.status !== "EVALUATED";
+    (hasConversation || hasEvaluationData) && !response.interviewScoring;
 
   return (
     <Card>
