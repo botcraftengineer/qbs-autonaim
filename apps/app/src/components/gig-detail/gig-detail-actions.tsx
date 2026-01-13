@@ -12,11 +12,14 @@ import {
 } from "@qbs-autonaim/ui";
 import { skipToken, useQuery } from "@tanstack/react-query";
 import {
+  AlertCircle,
+  Award,
   Bot,
   Edit,
   MessageSquare,
   Share2,
   Star,
+  Target,
   TrendingUp,
   Users,
   Zap,
@@ -76,9 +79,9 @@ function TopCandidatesPreview({
         {candidates.slice(0, 3).map((candidate, index) => (
           <div
             key={candidate.responseId}
-            className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-sm transition-all duration-200"
+            className="flex items-start gap-3 p-3 rounded-md border bg-card hover:bg-accent/50 transition-colors"
           >
-            <div className="flex-shrink-0">
+            <div className="shrink-0">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary font-bold text-sm">
                 {index + 1}
               </div>
@@ -91,7 +94,7 @@ function TopCandidatesPreview({
                 </h4>
                 <Badge
                   variant="outline"
-                  className={`text-xs px-2 py-0.5 ${getRecommendationColor(candidate.recommendation)}`}
+                  className={`text-xs px-2 py-0.5 ${getRecommendationColor(candidate.recommendation)} border-current`}
                 >
                   {candidate.recommendation === "HIGHLY_RECOMMENDED" &&
                     "Настоятельно"}
@@ -134,7 +137,7 @@ function TopCandidatesPreview({
               variant="ghost"
               size="sm"
               asChild
-              className="flex-shrink-0 h-8 w-8 p-0 hover:bg-primary/10"
+              className="shrink-0 h-8 w-8 p-0 hover:bg-primary/10"
             >
               <Link
                 href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses/${candidate.responseId}`}
@@ -160,6 +163,144 @@ function TopCandidatesPreview({
           Посмотреть полный шортлист ({candidates.length} кандидатов)
         </Link>
       </Button>
+    </div>
+  );
+}
+
+interface CandidateAssessmentSummaryProps {
+  candidates: ShortlistCandidate[];
+  responseCounts?: { total: number; new: number } | null;
+}
+
+function CandidateAssessmentSummary({
+  candidates,
+  responseCounts,
+}: CandidateAssessmentSummaryProps) {
+  const totalResponses = responseCounts?.total ?? 0;
+  const newResponses = responseCounts?.new ?? 0;
+
+  // Вычисляем статистику по кандидатам
+  const highRecommendedCount = candidates.filter(
+    (c) => c.recommendation === "HIGHLY_RECOMMENDED",
+  ).length;
+  const recommendedCount = candidates.filter(
+    (c) => c.recommendation === "RECOMMENDED",
+  ).length;
+  const averageScore =
+    candidates.length > 0
+      ? Math.round(
+          candidates.reduce((sum, c) => sum + c.compositeScore, 0) /
+            candidates.length,
+        )
+      : 0;
+
+  const getOverallAssessment = () => {
+    if (candidates.length === 0) {
+      return {
+        text: "Недостаточно данных для оценки",
+        color: "text-muted-foreground",
+        icon: AlertCircle,
+        bgColor: "bg-muted/50",
+      };
+    }
+
+    if (averageScore >= 80 && highRecommendedCount >= 2) {
+      return {
+        text: "Отличный пул кандидатов",
+        color: "text-green-600 dark:text-green-400",
+        icon: Award,
+        bgColor: "bg-green-50 dark:bg-green-950/30",
+      };
+    }
+
+    if (
+      averageScore >= 60 &&
+      (highRecommendedCount > 0 || recommendedCount > 0)
+    ) {
+      return {
+        text: "Хороший выбор кандидатов",
+        color: "text-blue-600 dark:text-blue-400",
+        icon: Target,
+        bgColor: "bg-blue-50 dark:bg-blue-950/30",
+      };
+    }
+
+    if (averageScore >= 40) {
+      return {
+        text: "Средний уровень кандидатов",
+        color: "text-yellow-600 dark:text-yellow-400",
+        icon: TrendingUp,
+        bgColor: "bg-yellow-50 dark:bg-yellow-950/30",
+      };
+    }
+
+    return {
+      text: "Низкий уровень кандидатов",
+      color: "text-red-600 dark:text-red-400",
+      icon: AlertCircle,
+      bgColor: "bg-red-50 dark:bg-red-950/30",
+    };
+  };
+
+  const assessment = getOverallAssessment();
+  const IconComponent = assessment.icon;
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+        <Target className="h-4 w-4" />
+        Оценка кандидатов
+      </div>
+
+      {/* Общая оценка */}
+      <div className="p-3 rounded-md border bg-card">
+        <div className="flex items-center gap-2">
+          <IconComponent className={`h-4 w-4 ${assessment.color}`} />
+          <span className={`font-medium ${assessment.color}`}>
+            {assessment.text}
+          </span>
+        </div>
+      </div>
+
+      {/* Детальная статистика */}
+      <div className="grid grid-cols-2 gap-3 text-xs">
+        <div className="flex items-center gap-2 p-2 rounded-md border bg-card">
+          <Users className="h-3 w-3 text-muted-foreground" />
+          <div>
+            <div className="font-medium">{totalResponses}</div>
+            <div className="text-muted-foreground">
+              {newResponses > 0 && (
+                <span className="text-orange-600 dark:text-orange-400 font-medium">
+                  +{newResponses} новых
+                </span>
+              )}
+              {newResponses === 0 && "всего откликов"}
+            </div>
+          </div>
+        </div>
+
+        {candidates.length > 0 && (
+          <div className="flex items-center gap-2 p-2 rounded-md border bg-card">
+            <Star className="h-3 w-3 text-muted-foreground" />
+            <div>
+              <div className="font-medium">{averageScore}</div>
+              <div className="text-muted-foreground">средний балл</div>
+            </div>
+          </div>
+        )}
+
+        {highRecommendedCount > 0 && (
+          <div className="flex items-center gap-2 p-2 rounded-md border bg-card col-span-2">
+            <Award className="h-3 w-3 text-muted-foreground" />
+            <div>
+              <div className="font-medium">{highRecommendedCount}</div>
+              <div className="text-muted-foreground">
+                настоятельно рекомендуемых
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -205,11 +346,10 @@ export function GigDetailActions({
   const topCandidates = topCandidatesData?.candidates ?? [];
 
   return (
-    <Card className="overflow-hidden border-0 shadow-xl bg-gradient-to-br from-white via-white to-slate-50/50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800/50">
-      <CardHeader className="relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-purple-500/5 to-blue-500/10 rounded-t-lg" />
-        <CardTitle className="text-xl font-bold relative z-10 flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Zap className="h-5 w-5" />
           Действия с заданием
         </CardTitle>
       </CardHeader>
@@ -217,26 +357,19 @@ export function GigDetailActions({
       <CardContent className="space-y-4 p-6">
         {/* Основные действия */}
         <div className="space-y-3">
-          <Button
-            asChild
-            className="w-full min-h-[48px] touch-manipulation bg-gradient-to-r from-primary via-primary to-purple-600 hover:from-primary/90 hover:via-primary/90 hover:to-purple-600/90 shadow-lg hover:shadow-xl transition-all duration-300 group relative overflow-hidden"
-          >
+          <Button asChild className="w-full justify-start h-12">
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/chat`}
-              className="flex items-center justify-center relative z-10"
+              className="flex items-center"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Bot
-                className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200"
-                aria-hidden="true"
-              />
+              <Bot className="h-5 w-5 mr-3" aria-hidden="true" />
               <div className="flex flex-col items-start flex-1">
-                <span className="font-semibold">AI Помощник</span>
-                <span className="text-xs opacity-80">
+                <span className="font-medium">AI Помощник</span>
+                <span className="text-xs text-muted-foreground">
                   Умный анализ кандидатов
                 </span>
               </div>
-              <Badge className="ml-auto bg-white/20 text-white border-white/30 hover:bg-white/30 animate-pulse">
+              <Badge variant="secondary" className="ml-auto">
                 Новинка
               </Badge>
             </Link>
@@ -244,40 +377,30 @@ export function GigDetailActions({
 
           <Button
             asChild
-            variant="default"
-            className="w-full min-h-[48px] touch-manipulation bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300 group relative overflow-hidden"
+            variant="outline"
+            className="w-full justify-start h-12"
           >
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/responses`}
-              className="flex items-center justify-start relative z-10"
+              className="flex items-center"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <MessageSquare
-                className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200 flex-shrink-0"
-                aria-hidden="true"
-              />
+              <MessageSquare className="h-5 w-5 mr-3" aria-hidden="true" />
               <div className="flex flex-col items-start flex-1 min-w-0">
-                <span className="font-semibold">Посмотреть отклики</span>
-                <span className="text-xs opacity-80">
+                <span className="font-medium">Посмотреть отклики</span>
+                <span className="text-xs text-muted-foreground">
                   Все отклики кандидатов
                 </span>
               </div>
-              <div className="flex items-center gap-2 ml-auto flex-shrink-0">
+              <div className="flex items-center gap-2 ml-auto">
                 {responseCounts?.total !== undefined && (
-                  <Badge
-                    variant="secondary"
-                    className="bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors"
-                  >
+                  <Badge variant="secondary">
                     <Users className="h-3 w-3 mr-1" />
                     {responseCounts.total}
                   </Badge>
                 )}
                 {responseCounts?.new !== undefined &&
                   responseCounts.new > 0 && (
-                    <Badge
-                      variant="destructive"
-                      className="bg-orange-500 hover:bg-orange-600 text-white animate-pulse shadow-sm border-0"
-                    >
+                    <Badge variant="destructive">
                       <TrendingUp className="h-3 w-3 mr-1" />+
                       {responseCounts.new}
                     </Badge>
@@ -288,21 +411,17 @@ export function GigDetailActions({
 
           <Button
             asChild
-            variant="default"
-            className="w-full min-h-[48px] touch-manipulation bg-gradient-to-r from-amber-500 via-orange-500 to-red-500 hover:from-amber-600 hover:via-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transition-all duration-300 group relative overflow-hidden"
+            variant="outline"
+            className="w-full justify-start h-12"
           >
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/shortlist`}
-              className="flex items-center justify-start relative z-10"
+              className="flex items-center"
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <Star
-                className="h-5 w-5 mr-3 group-hover:scale-110 transition-transform duration-200 flex-shrink-0"
-                aria-hidden="true"
-              />
+              <Star className="h-5 w-5 mr-3" aria-hidden="true" />
               <div className="flex flex-col items-start flex-1 min-w-0">
-                <span className="font-semibold">Шортлист кандидатов</span>
-                <span className="text-xs opacity-80">
+                <span className="font-medium">Шортлист кандидатов</span>
+                <span className="text-xs text-muted-foreground">
                   Лучшие кандидаты по AI
                 </span>
               </div>
@@ -310,10 +429,16 @@ export function GigDetailActions({
           </Button>
         </div>
 
+        {/* Краткий вывод оценки кандидатов */}
+        <CandidateAssessmentSummary
+          candidates={topCandidates}
+          responseCounts={responseCounts}
+        />
+
         {/* Топ-кандидаты превью */}
         {topCandidates.length > 0 && (
           <>
-            <Separator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+            <Separator />
             <TopCandidatesPreview
               candidates={topCandidates}
               orgSlug={orgSlug}
@@ -323,42 +448,40 @@ export function GigDetailActions({
           </>
         )}
 
-        <Separator className="bg-gradient-to-r from-transparent via-border to-transparent" />
+        <Separator />
 
         {/* Второстепенные действия */}
         <div className="space-y-3">
           <Button
             variant="outline"
             asChild
-            className="w-full min-h-[44px] touch-manipulation border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 group"
+            className="w-full justify-start h-11"
           >
             <Link
               href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}/edit`}
-              className="flex items-center justify-center"
+              className="flex items-center"
             >
-              <Edit
-                className="h-4 w-4 mr-3 group-hover:scale-110 transition-transform duration-200"
-                aria-hidden="true"
-              />
+              <Edit className="h-4 w-4 mr-3" aria-hidden="true" />
               <div className="flex flex-col items-start flex-1">
                 <span className="font-medium">Редактировать задание</span>
-                <span className="text-xs opacity-70">Изменить условия</span>
+                <span className="text-xs text-muted-foreground">
+                  Изменить условия
+                </span>
               </div>
             </Link>
           </Button>
 
           <Button
             variant="outline"
-            className="w-full min-h-[44px] touch-manipulation border-2 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 group"
+            className="w-full justify-start h-11"
             onClick={onShare}
           >
-            <Share2
-              className="h-4 w-4 mr-3 group-hover:scale-110 transition-transform duration-200"
-              aria-hidden="true"
-            />
+            <Share2 className="h-4 w-4 mr-3" aria-hidden="true" />
             <div className="flex flex-col items-start flex-1">
               <span className="font-medium">Поделиться ссылкой</span>
-              <span className="text-xs opacity-70">Отправить кандидатам</span>
+              <span className="text-xs text-muted-foreground">
+                Отправить кандидатам
+              </span>
             </div>
           </Button>
         </div>
