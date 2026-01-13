@@ -97,7 +97,7 @@ export const getDashboardStats = protectedProcedure
           FROM ${responseTable} 
           WHERE ${responseTable.entityId} = ${vacancy.id} 
           AND ${responseTable.entityType} = 'vacancy'
-          AND ${responseTable.importSource} = 'HH_API'
+          AND ${responseTable.importSource} = 'HH'
         )`,
           freelanceManualCount: sql<number>`(
           SELECT COUNT(*) 

@@ -78,7 +78,7 @@ export const getVacancies = protectedProcedure
           createdAt: vacancy.createdAt,
           updatedAt: vacancy.updatedAt,
           // Статистика по источникам откликов
-          hhApiCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'HH_API' THEN 1 END)`,
+          hhApiCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'HH' THEN 1 END)`,
           freelanceManualCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'MANUAL' THEN 1 END)`,
           freelanceLinkCount: sql<number>`COUNT(CASE WHEN ${responseTable.importSource} = 'WEB_LINK' THEN 1 END)`,
           totalResponsesCount: count(responseTable.id),
