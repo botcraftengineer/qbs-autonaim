@@ -85,8 +85,7 @@ export function ResponseHeaderCard({
   // Показываем кнопку оценки только если:
   // 1. Есть диалог с сообщениями ИЛИ есть данные для оценки
   // 2. Нет результатов оценки
-  const canEvaluate =
-    (hasConversation || hasEvaluationData) && !response.interviewScoring;
+  const canEvaluate = hasConversation || hasEvaluationData;
 
   return (
     <Card>
