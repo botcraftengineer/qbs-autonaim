@@ -17,7 +17,7 @@ export const getVacancyById = protectedProcedure
     // Проверка доступа к workspace
     const access = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
-      ctx.session.user.id,
+      ctx.session.user.id
     );
 
     if (!access) {
@@ -28,17 +28,35 @@ export const getVacancyById = protectedProcedure
     }
 
     // Получаем вакансию
-    const vacancyData = await ctx.db.query.vacancy.findFirst({
+    const vacancyDataRaw = await ctx.db.query.vacancy.findFirst({
       where: and(
         eq(vacancy.id, input.id),
-        eq(vacancy.workspaceId, input.workspaceId),
+        eq(vacancy.workspaceId, input.workspaceId)
       ),
     });
+
+    if (!vacancyDataRaw) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Вакансия не найдена",
+      });
+    }
+
+    const resolvedVacancyId =
+      vacancyDataRaw.mergedIntoVacancyId ?? vacancyDataRaw.id;
+    const vacancyData = vacancyDataRaw.mergedIntoVacancyId
+      ? await ctx.db.query.vacancy.findFirst({
+          where: and(
+            eq(vacancy.id, resolvedVacancyId),
+            eq(vacancy.workspaceId, input.workspaceId)
+          ),
+        })
+      : vacancyDataRaw;
 
     if (!vacancyData) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: "Вакансия не найдена",
+        message: "Основная вакансия не найдена",
       });
     }
 
@@ -51,9 +69,9 @@ export const getVacancyById = protectedProcedure
       .from(responseTable)
       .where(
         and(
-          eq(responseTable.entityId, input.id),
-          eq(responseTable.entityType, "vacancy"),
-        ),
+          eq(responseTable.entityId, resolvedVacancyId),
+          eq(responseTable.entityType, "vacancy")
+        )
       )
       .groupBy(responseTable.importSource);
 
@@ -61,9 +79,9 @@ export const getVacancyById = protectedProcedure
     const activeInterviewLink = await ctx.db.query.interviewLink.findFirst({
       where: (link, { eq, and }) =>
         and(
-          eq(link.entityId, input.id),
+          eq(link.entityId, resolvedVacancyId),
           eq(link.entityType, "vacancy"),
-          eq(link.isActive, true),
+          eq(link.isActive, true)
         ),
     });
 
@@ -88,7 +106,7 @@ export const getVacancyById = protectedProcedure
             url: await getInterviewUrlFromDb(
               ctx.db,
               activeInterviewLink.token,
-              input.workspaceId,
+              input.workspaceId
             ),
             token: activeInterviewLink.token,
             isActive: activeInterviewLink.isActive,

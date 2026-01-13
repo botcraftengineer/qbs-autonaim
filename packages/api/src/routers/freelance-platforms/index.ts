@@ -20,6 +20,7 @@ import { getVacancyByToken } from "./get-vacancy-by-token";
 import { getWebInterviewStatus } from "./get-web-interview-status";
 import { importBulkResponses } from "./import-bulk-responses";
 import { importSingleResponse } from "./import-single-response";
+import { mergeVacancies } from "./merge-vacancies";
 import { previewBulkImport } from "./preview-bulk-import";
 import { retryAnalysis } from "./retry-analysis";
 import { retryBulkImport } from "./retry-bulk-import";
@@ -40,6 +41,7 @@ export const freelancePlatformsRouter = {
   exportAnalytics,
   updateVacancyStatus,
   deleteVacancy,
+  mergeVacancies,
   generateInterviewLink,
   getInterviewByToken,
   getInterviewLink,

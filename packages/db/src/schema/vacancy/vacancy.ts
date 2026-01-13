@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -39,7 +40,9 @@ export interface VacancyRequirements {
 export const vacancy = pgTable(
   "vacancies",
   {
-    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`uuid_generate_v7()`),
 
     // Workspace к которому принадлежит вакансия
     workspaceId: text("workspace_id")
@@ -60,6 +63,8 @@ export const vacancy = pgTable(
     source: platformSourceEnum("source").notNull().default("HH"),
     // ID вакансии на внешней платформе
     externalId: varchar("external_id", { length: 100 }),
+
+    mergedIntoVacancyId: uuid("merged_into_vacancy_id"),
 
     // Кастомные настройки для бота
     customBotInstructions: text("custom_bot_instructions"),
@@ -82,15 +87,19 @@ export const vacancy = pgTable(
     activeVacanciesIdx: index("vacancy_active_idx")
       .on(table.workspaceId, table.isActive)
       .where(sql`${table.isActive} = true`),
+    mergedIntoVacancyFk: foreignKey({
+      columns: [table.mergedIntoVacancyId],
+      foreignColumns: [table.id],
+    }).onDelete("set null"),
     sourceExternalIdx: index("vacancy_source_external_idx").on(
       table.source,
-      table.externalId,
+      table.externalId
     ),
     requirementsIdx: index("vacancy_requirements_idx").using(
       "gin",
-      table.requirements,
+      table.requirements
     ),
-  }),
+  })
 );
 
 export const CreateVacancySchema = createInsertSchema(vacancy, {

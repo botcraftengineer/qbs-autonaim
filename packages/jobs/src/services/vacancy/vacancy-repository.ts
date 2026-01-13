@@ -12,7 +12,6 @@ const logger = createLogger("VacancyRepository");
  * Данные вакансии для сохранения в БД
  */
 interface VacancyDbData {
-  id: string;
   workspaceId: string;
   title: string;
   url?: string;
@@ -28,21 +27,42 @@ interface VacancyDbData {
   isActive: boolean;
 }
 
+function mapVacancySource(source: VacancyData["source"]): PlatformSource {
+  switch (source) {
+    case "hh":
+      return "HH";
+    case "avito":
+      return "AVITO";
+    case "superjob":
+      return "SUPERJOB";
+    case "kwork":
+      return "KWORK";
+    case "fl":
+      return "FL_RU";
+    case "freelance":
+      return "FREELANCE_RU";
+    default:
+      return "HH";
+  }
+}
+
 /**
  * Преобразует данные вакансии из парсера в формат БД
  */
 function mapVacancyData(
   vacancyData: VacancyData,
   workspaceId: string,
-  description?: string,
+  description?: string
 ): VacancyDbData {
+  const source = mapVacancySource(vacancyData.source);
+  const externalId = vacancyData.externalId ?? vacancyData.id;
+
   return {
-    id: vacancyData.id,
     workspaceId,
     title: vacancyData.title,
     url: vacancyData.url || undefined,
-    source: vacancyData.source as PlatformSource,
-    externalId: vacancyData.externalId,
+    source,
+    externalId,
     views: Number.parseInt(vacancyData.views, 10) || 0,
     responses: Number.parseInt(vacancyData.responses, 10) || 0,
     newResponses: Number.parseInt(vacancyData.newResponses, 10) || 0,
@@ -58,7 +78,7 @@ function mapVacancyData(
  * Проверяет существование вакансии в БД
  */
 export async function checkVacancyExists(
-  vacancyId: string,
+  vacancyId: string
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
     const existingVacancy = await db.query.vacancy.findFirst({
@@ -72,7 +92,7 @@ export async function checkVacancyExists(
  * Проверяет наличие описания у вакансии
  */
 export async function hasVacancyDescription(
-  vacancyId: string,
+  vacancyId: string
 ): Promise<Result<boolean>> {
   return tryCatch(async () => {
     const existingVacancy = await db.query.vacancy.findFirst({
@@ -113,27 +133,43 @@ export async function getVacanciesWithoutDescription() {
  */
 export async function saveBasicVacancy(
   vacancyData: VacancyData,
-  workspaceId: string,
-): Promise<Result<boolean>> {
+  workspaceId: string
+): Promise<Result<{ vacancyId: string; isNew: boolean }>> {
   return tryCatch(async () => {
-    // Проверяем существование вакансии
+    const dataToSave = mapVacancyData(vacancyData, workspaceId, "");
+
     const existingVacancy = await db.query.vacancy.findFirst({
-      where: eq(vacancy.id, vacancyData.id),
+      where: (table, { and, eq }) =>
+        and(
+          eq(table.workspaceId, workspaceId),
+          eq(table.source, dataToSave.source),
+          eq(table.externalId, dataToSave.externalId ?? ""),
+          isNull(table.mergedIntoVacancyId)
+        ),
     });
 
     const isNew = !existingVacancy;
-    const dataToSave = mapVacancyData(vacancyData, workspaceId, "");
 
-    await db.insert(vacancy).values(dataToSave).onConflictDoUpdate({
-      target: vacancy.id,
-      set: dataToSave,
-    });
+    if (!existingVacancy) {
+      const [inserted] = await db.insert(vacancy).values(dataToSave).returning({
+        id: vacancy.id,
+      });
 
-    logger.info(
-      `Базовая информация ${isNew ? "создана" : "обновлена"}: ${vacancyData.title}`,
-    );
+      if (!inserted?.id) {
+        throw new Error("Failed to insert vacancy");
+      }
 
-    return isNew;
+      logger.info(`Базовая информация создана: ${vacancyData.title}`);
+      return { vacancyId: inserted.id, isNew: true };
+    }
+
+    await db
+      .update(vacancy)
+      .set(dataToSave)
+      .where(eq(vacancy.id, existingVacancy.id));
+
+    logger.info(`Базовая информация обновлена: ${vacancyData.title}`);
+    return { vacancyId: existingVacancy.id, isNew };
   }, `Ошибка сохранения базовой информации вакансии ${vacancyData.title}`);
 }
 
@@ -143,7 +179,7 @@ export async function saveBasicVacancy(
 export async function updateVacancyDescription(
   vacancyId: string,
   description: string,
-  isNewVacancy = false,
+  isNewVacancy = false
 ): Promise<Result<void>> {
   return tryCatch(async () => {
     await db
@@ -152,20 +188,20 @@ export async function updateVacancyDescription(
       .where(eq(vacancy.id, vacancyId));
 
     logger.info(
-      `Описание ${isNewVacancy ? "добавлено для новой вакансии" : "обновлено"}: ${vacancyId}`,
+      `Описание ${isNewVacancy ? "добавлено для новой вакансии" : "обновлено"}: ${vacancyId}`
     );
 
     // Запускаем извлечение требований если описание не пустое
     if (description?.trim()) {
       logger.info(
-        `Запуск извлечения требований для ${isNewVacancy ? "новой" : "существующей"} вакансии: ${vacancyId}`,
+        `Запуск извлечения требований для ${isNewVacancy ? "новой" : "существующей"} вакансии: ${vacancyId}`
       );
       await triggerVacancyRequirementsExtraction(
         {
           vacancyId,
           description,
         },
-        { swallow: true },
+        { swallow: true }
       );
     }
   }, `Ошибка обновления описания вакансии ${vacancyId}`);
@@ -176,27 +212,48 @@ export async function updateVacancyDescription(
  */
 export async function saveVacancyToDb(
   vacancyData: VacancyData,
-  workspaceId: string,
+  workspaceId: string
 ): Promise<Result<void>> {
   return tryCatch(async () => {
     const dataToSave = mapVacancyData(vacancyData, workspaceId);
 
-    await db.insert(vacancy).values(dataToSave).onConflictDoUpdate({
-      target: vacancy.id,
-      set: dataToSave,
+    const existingVacancy = await db.query.vacancy.findFirst({
+      where: (table, { and, eq }) =>
+        and(
+          eq(table.workspaceId, workspaceId),
+          eq(table.source, dataToSave.source),
+          eq(table.externalId, dataToSave.externalId ?? ""),
+          isNull(table.mergedIntoVacancyId)
+        ),
     });
+
+    let savedVacancyId: string | undefined;
+
+    if (!existingVacancy) {
+      const [inserted] = await db
+        .insert(vacancy)
+        .values(dataToSave)
+        .returning({ id: vacancy.id });
+      savedVacancyId = inserted?.id;
+    } else {
+      await db
+        .update(vacancy)
+        .set(dataToSave)
+        .where(eq(vacancy.id, existingVacancy.id));
+      savedVacancyId = existingVacancy.id;
+    }
 
     logger.info(`Вакансия сохранена/обновлена: ${vacancyData.title}`);
 
     // Запускаем извлечение требований если описание не пустое
-    if (vacancyData.description?.trim()) {
-      logger.info(`Запуск извлечения требований: ${vacancyData.id}`);
+    if (vacancyData.description?.trim() && savedVacancyId) {
+      logger.info(`Запуск извлечения требований: ${savedVacancyId}`);
       await triggerVacancyRequirementsExtraction(
         {
-          vacancyId: vacancyData.id,
+          vacancyId: savedVacancyId,
           description: vacancyData.description,
         },
-        { swallow: true },
+        { swallow: true }
       );
     }
   }, `Ошибка сохранения вакансии ${vacancyData.id}`);

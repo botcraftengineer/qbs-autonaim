@@ -42,7 +42,7 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
       page,
       credentials.email,
       credentials.password,
-      workspaceId,
+      workspaceId
     );
 
     const vacancies = await parseVacancies(page, workspaceId);
@@ -53,11 +53,11 @@ export async function runHHParser(options: RunHHParserOptions): Promise<void> {
       for (const vacancy of vacancies) {
         if (vacancy.responsesUrl) {
           try {
-            await parseResponses(page, vacancy.responsesUrl, workspaceId);
+            await parseResponses(page, vacancy.responsesUrl, vacancy.id);
           } catch (error) {
             console.error(
               `❌ Ошибка парсинга откликов для ${vacancy.title}:`,
-              error,
+              error
             );
           }
         }

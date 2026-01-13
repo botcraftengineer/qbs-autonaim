@@ -28,7 +28,7 @@ import {
   IconSearch,
   IconSparkles,
 } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -43,6 +43,7 @@ export default function VacanciesPage() {
   const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const api = useTRPC();
   const { workspace } = useWorkspace();
+  const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState<string>("all");
@@ -50,6 +51,26 @@ export default function VacanciesPage() {
   const [sortBy, setSortBy] = useState<string>("createdAt");
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
+  const [mergeOpenVacancyId, setMergeOpenVacancyId] = useState<string | null>(
+    null,
+  );
+  const [mergeTargetVacancyId, setMergeTargetVacancyId] = useState<string>("");
+
+  const mergeVacanciesMutation = useMutation(
+    api.freelancePlatforms.mergeVacancies.mutationOptions({
+      onSuccess: async () => {
+        toast.success("Вакансии сдружены");
+        setMergeOpenVacancyId(null);
+        setMergeTargetVacancyId("");
+        await queryClient.invalidateQueries({
+          queryKey: [["freelancePlatforms", "getVacancies"]],
+        });
+      },
+      onError: (err) => {
+        toast.error(err.message || "Не удалось сдружить вакансии");
+      },
+    }),
+  );
 
   const { data: vacancies, isLoading } = useQuery({
     ...api.freelancePlatforms.getVacancies.queryOptions({
@@ -405,6 +426,7 @@ export default function VacanciesPage() {
                         В работе
                       </TableHead>
                       <TableHead>Статус</TableHead>
+                      <TableHead className="text-right">Действия</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -435,11 +457,14 @@ export default function VacanciesPage() {
                           <TableCell>
                             <Skeleton className="h-6 w-[80px]" />
                           </TableCell>
+                          <TableCell className="text-right">
+                            <Skeleton className="h-9 w-[110px] ml-auto" />
+                          </TableCell>
                         </TableRow>
                       ))
                     ) : filteredAndSortedVacancies.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={8} className="h-[400px]">
+                        <TableCell colSpan={9} className="h-[400px]">
                           <div className="flex items-center justify-center">
                             <div className="text-center">
                               <h2 className="text-2xl font-semibold mb-2">
@@ -541,6 +566,85 @@ export default function VacanciesPage() {
                             ) : (
                               <Badge variant="secondary">Неактивна</Badge>
                             )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Popover
+                              open={mergeOpenVacancyId === vacancy.id}
+                              onOpenChange={(open) => {
+                                if (open) {
+                                  setMergeOpenVacancyId(vacancy.id);
+                                  setMergeTargetVacancyId("");
+                                } else {
+                                  setMergeOpenVacancyId(null);
+                                  setMergeTargetVacancyId("");
+                                }
+                              }}
+                            >
+                              <PopoverTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  disabled={!workspace?.id}
+                                >
+                                  Сдружить
+                                </Button>
+                              </PopoverTrigger>
+                              <PopoverContent align="end" className="w-[320px]">
+                                <div className="space-y-3">
+                                  <div className="text-sm font-medium">
+                                    Основная вакансия
+                                  </div>
+                                  <Select
+                                    value={mergeTargetVacancyId}
+                                    onValueChange={setMergeTargetVacancyId}
+                                  >
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Выберите вакансию" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {(vacancies ?? [])
+                                        .filter((v) => v.id !== vacancy.id)
+                                        .map((v) => (
+                                          <SelectItem key={v.id} value={v.id}>
+                                            {v.title}
+                                          </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <div className="flex justify-end gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => {
+                                        setMergeOpenVacancyId(null);
+                                        setMergeTargetVacancyId("");
+                                      }}
+                                    >
+                                      Отмена
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      disabled={
+                                        !workspace?.id ||
+                                        !mergeTargetVacancyId ||
+                                        mergeVacanciesMutation.isPending
+                                      }
+                                      onClick={() => {
+                                        if (!workspace?.id) return;
+                                        if (!mergeTargetVacancyId) return;
+                                        mergeVacanciesMutation.mutate({
+                                          workspaceId: workspace.id,
+                                          sourceVacancyId: vacancy.id,
+                                          targetVacancyId: mergeTargetVacancyId,
+                                        });
+                                      }}
+                                    >
+                                      Подтвердить
+                                    </Button>
+                                  </div>
+                                </div>
+                              </PopoverContent>
+                            </Popover>
                           </TableCell>
                         </TableRow>
                       ))

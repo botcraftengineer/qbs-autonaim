@@ -1,0 +1,2 @@
+ALTER TABLE "vacancies" ADD COLUMN "merged_into_vacancy_id" uuid;--> statement-breakpoint
+ALTER TABLE "vacancies" ADD CONSTRAINT "vacancies_merged_into_vacancy_id_vacancies_id_fk" FOREIGN KEY ("merged_into_vacancy_id") REFERENCES "public"."vacancies"("id") ON DELETE set null ON UPDATE no action;
