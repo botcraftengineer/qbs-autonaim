@@ -61,19 +61,9 @@ export const hrSelectionStatusValues = [
 export type HrSelectionStatus = (typeof hrSelectionStatusValues)[number];
 
 /**
- * Статусы HR отбора для gig response'ов (ограниченный набор)
+ * Допустимые значения hrSelectionStatus для gig response'ов
+ * (ограниченный набор по сравнению с общим enum'ом)
  */
-export const gigHrSelectionStatusEnum = pgEnum("hr_selection_status", [
-  "INVITE",
-  "RECOMMENDED",
-  "NOT_RECOMMENDED",
-  "REJECTED",
-  "SELECTED",
-  "CONTRACT_SENT",
-  "IN_PROGRESS",
-  "DONE",
-]);
-
 export const gigHrSelectionStatusValues = [
   "INVITE",
   "RECOMMENDED",
