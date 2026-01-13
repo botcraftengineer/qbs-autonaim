@@ -1,7 +1,7 @@
-﻿import { and, eq, sql } from "@qbs-autonaim/db";
+import { and, eq, sql } from "@qbs-autonaim/db";
 import {
   gig,
-  hrSelectionStatusValues,
+  gigHrSelectionStatusValues,
   response as responseTable,
   responseStatusValues,
 } from "@qbs-autonaim/db/schema";
@@ -16,7 +16,7 @@ export const updateStatus = protectedProcedure
       responseId: z.string(),
       workspaceId: workspaceIdSchema,
       status: z.enum(responseStatusValues).optional(),
-      hrSelectionStatus: z.enum(hrSelectionStatusValues).optional(),
+      hrSelectionStatus: z.enum(gigHrSelectionStatusValues).optional(),
     }),
   )
   .mutation(async ({ ctx, input }) => {
@@ -62,7 +62,7 @@ export const updateStatus = protectedProcedure
 
     const patch: {
       status?: (typeof responseStatusValues)[number];
-      hrSelectionStatus?: (typeof hrSelectionStatusValues)[number];
+      hrSelectionStatus?: (typeof gigHrSelectionStatusValues)[number];
       updatedAt: Date;
     } = {
       updatedAt: new Date(),

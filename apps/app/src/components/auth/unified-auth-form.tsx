@@ -29,6 +29,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { authClient } from "~/auth/client";
+import { translateAuthError } from "~/lib/auth-error-messages";
 
 const emailPasswordSchema = z.object({
   email: z.string().email("Неверный email адрес"),
@@ -72,15 +73,7 @@ export function UnifiedAuthForm({
           name: data.email.split("@")[0] ?? "User",
         });
         if (error) {
-          if (error.code === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
-            toast.error(
-              "Пользователь уже существует. Используйте другой email.",
-            );
-          } else {
-            toast.error(
-              error.message || "Не удалось создать аккаунт. Попробуйте снова.",
-            );
-          }
+          toast.error(translateAuthError(error.message));
           return;
         }
 
@@ -95,7 +88,7 @@ export function UnifiedAuthForm({
           password: data.password,
         });
         if (error) {
-          toast.error(error.message || "Неверный email или пароль.");
+          toast.error(translateAuthError(error.message));
           return;
         }
         toast.success("Вход выполнен успешно!");
@@ -128,9 +121,7 @@ export function UnifiedAuthForm({
         type: "sign-in",
       });
       if (error) {
-        toast.error(
-          error.message || "Не удалось отправить код. Попробуйте снова.",
-        );
+        toast.error(translateAuthError(error.message));
         return;
       }
       localStorage.setItem("otp_email", data.email);

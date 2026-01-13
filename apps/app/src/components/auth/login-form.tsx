@@ -23,6 +23,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { authClient } from "~/auth/client";
+import { translateAuthError } from "~/lib/auth-error-messages";
 import { isValidInternalPath } from "~/lib/auth-utils";
 
 export function LoginForm({
@@ -50,9 +51,7 @@ export function LoginForm({
       });
 
       if (error) {
-        toast.error(
-          error.message ?? "Не удалось отправить код. Попробуйте снова.",
-        );
+        toast.error(translateAuthError(error.message));
         return;
       }
 

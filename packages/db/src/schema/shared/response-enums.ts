@@ -61,6 +61,33 @@ export const hrSelectionStatusValues = [
 export type HrSelectionStatus = (typeof hrSelectionStatusValues)[number];
 
 /**
+ * Статусы HR отбора для gig response'ов (ограниченный набор)
+ */
+export const gigHrSelectionStatusEnum = pgEnum("hr_selection_status", [
+  "INVITE",
+  "RECOMMENDED",
+  "NOT_RECOMMENDED",
+  "REJECTED",
+  "SELECTED",
+  "CONTRACT_SENT",
+  "IN_PROGRESS",
+  "DONE",
+]);
+
+export const gigHrSelectionStatusValues = [
+  "INVITE",
+  "RECOMMENDED",
+  "NOT_RECOMMENDED",
+  "REJECTED",
+  "SELECTED",
+  "CONTRACT_SENT",
+  "IN_PROGRESS",
+  "DONE",
+] as const;
+
+export type GigHrSelectionStatus = (typeof gigHrSelectionStatusValues)[number];
+
+/**
  * Источник платформы (откуда пришла вакансия или отклик)
  */
 export const platformSourceValues = [
