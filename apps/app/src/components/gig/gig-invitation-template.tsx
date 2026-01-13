@@ -32,7 +32,7 @@ interface GigInvitationTemplateProps {
 }
 
 function normalizeInterviewUrl(url: string | undefined): string {
-  if (!url) return "[ссылка на интервью]";
+  if (!url) return "[ссылка на чат]";
 
   let normalizedUrl = url;
 
@@ -99,7 +99,7 @@ export function GigInvitationTemplate({
 
     if (aiTemplate?.text) {
       // Replace the placeholder URL in AI-generated text with actual URL
-      return aiTemplate.text.replace(/\[ссылка на интервью\]/g, interviewUrl);
+      return aiTemplate.text.replace(/\[ссылка на чат\]/g, interviewUrl);
     }
 
     // Fallback template if AI generation is not available
