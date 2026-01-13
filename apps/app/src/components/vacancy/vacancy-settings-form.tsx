@@ -18,7 +18,14 @@ import {
   type UpdateVacancySettingsInput,
   updateVacancySettingsSchema,
 } from "@qbs-autonaim/validators";
-import { Loader2, Save, Sparkles, Wand2 } from "lucide-react";
+import {
+  Loader2,
+  MessageSquare,
+  Save,
+  Settings,
+  Sparkles,
+  Wand2,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -152,7 +159,7 @@ export function VacancySettingsForm({
               {/* Основные инструкции для бота */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                  <Settings className="size-4 text-muted-foreground" />
                   <h3 className="text-base font-medium text-foreground">
                     Общие настройки
                   </h3>
@@ -288,7 +295,7 @@ export function VacancySettingsForm({
               {/* Вопросы для интервью */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                  <MessageSquare className="size-4 text-muted-foreground" />
                   <h3 className="text-base font-medium text-foreground">
                     Вопросы для интервью
                   </h3>
