@@ -12,7 +12,7 @@ const getInterviewContextInputSchema = z.object({
 
 export const getInterviewContext = withInterviewAccess
   .input(getInterviewContextInputSchema)
-  .query(async ({ input, ctx }) => {
+  .query(async ({ ctx }) => {
     // Доступ уже проверен в middleware
 
     const session = await ctx.db.query.interviewSession.findFirst({

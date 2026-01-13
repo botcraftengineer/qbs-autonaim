@@ -6,7 +6,8 @@
  */
 
 import { db } from "@qbs-autonaim/db/client";
-import { eq, and, gte, desc, sql } from "@qbs-autonaim/db";
+import { response } from "@qbs-autonaim/db/schema";
+import { eq, and, gte, isNotNull } from "@qbs-autonaim/db";
 
 /**
  * Контактная информация кандидата
@@ -89,10 +90,10 @@ export class GigShortlistGenerator {
     // Получаем все ранжированные отклики для gig
     const responses = await db.query.response.findMany({
       where: and(
-        eq(sql`entity_type`, "gig"),
-        eq(sql`entity_id`, gigId),
-        gte(sql`composite_score`, minScore),
-        sql`${sql`composite_score`} IS NOT NULL`,
+        eq(response.entityType, "gig"),
+        eq(response.entityId, gigId),
+        gte(response.compositeScore, minScore),
+        isNotNull(response.compositeScore),
       ),
       columns: {
         id: true,
@@ -149,7 +150,7 @@ export class GigShortlistGenerator {
       },
       proposedPrice: response.proposedPrice ?? undefined,
       proposedDeliveryDays: response.proposedDeliveryDays ?? undefined,
-      compositeScore: response.compositeScore!,
+      compositeScore: response.compositeScore ?? 0,
       priceScore: response.priceScore ?? undefined,
       deliveryScore: response.deliveryScore ?? undefined,
       skillsMatchScore: response.skillsMatchScore ?? undefined,

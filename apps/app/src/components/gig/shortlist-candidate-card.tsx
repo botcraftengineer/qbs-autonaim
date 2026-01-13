@@ -7,10 +7,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-  Progress,
 } from "@qbs-autonaim/ui";
 import {
   AlertCircle,
@@ -202,8 +198,8 @@ export function ShortlistCandidateCard({
                 Преимущества
               </div>
               <ul className="space-y-1">
-                {candidate.strengths.slice(0, 3).map((strength, index) => (
-                  <li key={index} className="text-xs text-muted-foreground flex items-start gap-1">
+                {candidate.strengths.slice(0, 3).map((strength) => (
+                  <li key={strength} className="text-xs text-muted-foreground flex items-start gap-1">
                     <CheckCircle2 className="h-3 w-3 text-green-500 mt-0.5 flex-shrink-0" />
                     <span className="line-clamp-2">{strength}</span>
                   </li>
@@ -218,8 +214,8 @@ export function ShortlistCandidateCard({
                 Недостатки
               </div>
               <ul className="space-y-1">
-                {candidate.weaknesses.slice(0, 3).map((weakness, index) => (
-                  <li key={index} className="text-xs text-muted-foreground flex items-start gap-1">
+                {candidate.weaknesses.slice(0, 3).map((weakness) => (
+                  <li key={weakness} className="text-xs text-muted-foreground flex items-start gap-1">
                     <AlertCircle className="h-3 w-3 text-red-500 mt-0.5 flex-shrink-0" />
                     <span className="line-clamp-2">{weakness}</span>
                   </li>
@@ -256,11 +252,11 @@ export function ShortlistCandidateCard({
           <div className="mt-3 pt-3 border-t">
             <div className="text-xs font-medium mb-2">Портфолио</div>
             <div className="flex flex-wrap gap-2">
-              {candidate.portfolioLinks.slice(0, 3).map((link, index) => (
-                <Button key={index} variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
+              {candidate.portfolioLinks.slice(0, 3).map((link) => (
+                <Button key={link} variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
                   <a href={link} target="_blank" rel="noopener noreferrer">
                     <ExternalLink className="h-3 w-3 mr-1" />
-                    Ссылка {index + 1}
+                    Ссылка
                   </a>
                 </Button>
               ))}

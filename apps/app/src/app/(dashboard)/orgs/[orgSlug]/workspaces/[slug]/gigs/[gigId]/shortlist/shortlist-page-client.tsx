@@ -1,6 +1,5 @@
 "use client";
 
-import type { RouterOutputs } from "@qbs-autonaim/api";
 import {
   Alert,
   AlertDescription,
@@ -28,7 +27,6 @@ import {
   Filter,
   RefreshCw,
   Star,
-  Users,
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -55,7 +53,7 @@ export function ShortlistPageClient({
   workspaceSlug,
   gigId,
 }: ShortlistPageClientProps) {
-  const router = useRouter();
+  const _router = useRouter();
   const trpc = useTRPC();
   const queryClient = useQueryClient();
   const [selectedMinScore, setSelectedMinScore] = useState<string>("70");
@@ -330,9 +328,9 @@ export function ShortlistPageClient({
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-medium">
+              <div className="text-sm font-medium">
                 Только настоятельно рекомендованные
-              </label>
+              </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="highly-recommended-filter"
@@ -349,9 +347,9 @@ export function ShortlistPageClient({
             </div>
 
             <div className="space-y-3">
-              <label className="text-sm font-medium">
+              <div className="text-sm font-medium">
                 Приоритет соответствию бюджету
-              </label>
+              </div>
               <div className="flex items-center space-x-2">
                 <Switch
                   id="budget-fit-filter"

@@ -81,7 +81,7 @@ export const getGigShortlist = protectedProcedure
 
       return shortlist;
     } catch (error) {
-      if (error instanceof Error && error.message.includes("TRPC")) {
+      if (error instanceof TRPCError) {
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {
@@ -156,7 +156,7 @@ export const recalculateGigShortlist = protectedProcedure
         message: "Пересчет шортлиста запущен",
       };
     } catch (error) {
-      if (error instanceof Error && error.message.includes("TRPC")) {
+      if (error instanceof TRPCError) {
         throw error;
       }
       throw await errorHandler.handleDatabaseError(error as Error, {

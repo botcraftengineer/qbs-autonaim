@@ -5,7 +5,7 @@ import { cn } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import type { UIMessage } from "ai";
 import { DefaultChatTransport } from "ai";
-import { AlertCircle, ArrowDown, Loader2, Sparkles } from "lucide-react";
+import { AlertCircle, ArrowDown, Sparkles } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import Markdown from "react-markdown";
 import { toast } from "sonner";
