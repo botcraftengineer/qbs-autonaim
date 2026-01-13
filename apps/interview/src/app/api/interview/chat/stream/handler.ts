@@ -16,7 +16,7 @@ import {
   response as responseTable,
   vacancy as vacancyTable,
 } from "@qbs-autonaim/db/schema";
-import { getAIModel } from "@qbs-autonaim/lib/ai";
+import { getAIModel, getFallbackModel } from "@qbs-autonaim/lib/ai";
 import {
   createUIMessageStream,
   JsonToSseTransformStream,
@@ -329,18 +329,64 @@ export async function POST(request: Request) {
           };
         });
 
-        const result = streamText({
-          model,
-          system: systemPrompt,
-          messages: formattedMessages,
-          tools,
-          experimental_transform: smoothStream({ chunking: "word" }),
-          onFinish: async ({ text }) => {
-            generation.end({ output: text });
-            trace.update({ output: text });
-            await langfuse.flushAsync();
-          },
-        });
+        // biome-ignore lint/suspicious/noExplicitAny: Complex generic types cause compatibility issues
+        let result: any;
+
+        try {
+          result = streamText({
+            model,
+            system: systemPrompt,
+            messages: formattedMessages,
+            tools,
+            experimental_transform: smoothStream({ chunking: "word" }),
+            onFinish: async ({ text }) => {
+              generation.end({ output: text });
+              trace.update({ output: text });
+              await langfuse.flushAsync();
+            },
+          });
+        } catch (error) {
+          console.warn(
+            "[Interview Stream] Ошибка с основной моделью, пробую fallback:",
+            error,
+          );
+
+          try {
+            const fallbackModel = getFallbackModel();
+
+            // Обновляем generation с информацией о fallback
+            generation.update({
+              model: "fallback-model",
+              metadata: { fallbackUsed: true },
+            });
+
+            result = streamText({
+              model: fallbackModel,
+              system: systemPrompt,
+              messages: formattedMessages,
+              tools,
+              experimental_transform: smoothStream({ chunking: "word" }),
+              onFinish: async ({ text }) => {
+                generation.end({ output: text });
+                trace.update({ output: text });
+                await langfuse.flushAsync();
+              },
+            });
+
+            console.log(
+              "[Interview Stream] Успешно переключился на fallback модель",
+            );
+          } catch (fallbackError) {
+            console.error(
+              "[Interview Stream] Fallback модель также недоступна:",
+              fallbackError,
+            );
+            generation.end({
+              statusMessage: `Основная модель: ${error instanceof Error ? error.message : String(error)}. Fallback: ${fallbackError instanceof Error ? fallbackError.message : String(fallbackError)}`,
+            });
+            throw fallbackError;
+          }
+        }
 
         result.consumeStream();
         writer.merge(result.toUIMessageStream());

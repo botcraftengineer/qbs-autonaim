@@ -1,0 +1,17 @@
+{
+  "name": "@qbs-autonaim/demo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Demo data package with sample vacancies and responses",
+  "main": "index.js",
+  "scripts": {
+    "load": "bun run src/load-demo-data.ts",
+    "upload-photos": "bun run src/upload-photos.ts"
+  },
+  "dependencies": {
+    "@qbs-autonaim/db": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

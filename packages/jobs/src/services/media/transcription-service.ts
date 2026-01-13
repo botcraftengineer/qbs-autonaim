@@ -22,7 +22,7 @@ export async function transcribeAudio(
       env.AI_PROXY_URL || env.APP_URL || "http://localhost:3000";
     const openaiProvider = createOpenAI({
       apiKey: env.OPENAI_API_KEY,
-      baseURL: `${proxyBaseUrl}/api/ai-proxy`,
+      baseURL: `${proxyBaseUrl}`,
     });
     const result = await transcribe({
       model: openaiProvider.transcription("whisper-1"),

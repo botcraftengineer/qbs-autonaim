@@ -1,0 +1,432 @@
+[
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Создание лендинга для стартапа",
+    "description": "Нужно создать современный лендинг для IT стартапа. Дизайн уже готов в Figma, нужна только верстка и интеграция с формой обратной связи.",
+    "type": "DEVELOPMENT",
+    "budgetMin": 25000,
+    "budgetMax": 40000,
+    "deadline": "2024-02-15T00:00:00Z",
+    "estimatedDuration": "1-2 недели",
+    "requirements": {
+      "title": "Frontend разработчик для лендинга",
+      "summary": "Верстка лендинга по готовому дизайну с интеграцией формы",
+      "deliverables": [
+        "Адаптивная верстка по макету Figma",
+        "Интеграция с формой обратной связи",
+        "Оптимизация скорости загрузки",
+        "Кроссбраузерная совместимость"
+      ],
+      "required_skills": [
+        "HTML/CSS",
+        "JavaScript",
+        "Адаптивная верстка",
+        "Figma"
+      ],
+      "nice_to_have_skills": ["React", "Next.js", "SCSS", "Webpack"],
+      "tech_stack": ["HTML", "CSS", "JavaScript", "Figma"],
+      "experience_level": "Middle",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        }
+      ],
+      "keywords_for_matching": [
+        "frontend",
+        "html",
+        "css",
+        "javascript",
+        "landing",
+        "figma"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 89,
+    "responses": 12,
+    "newResponses": 4,
+    "customBotInstructions": "Обрати внимание на опыт работы с Figma и качество портфолио кандидата.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Дизайн мобильного приложения для доставки",
+    "description": "Требуется создать UI/UX дизайн мобильного приложения для сервиса доставки еды. Нужны wireframes, пользовательские сценарии и финальный дизайн.",
+    "type": "DESIGN",
+    "budgetMin": 50000,
+    "budgetMax": 80000,
+    "deadline": "2024-03-01T00:00:00Z",
+    "estimatedDuration": "3-4 недели",
+    "requirements": {
+      "title": "UI/UX дизайнер мобильного приложения",
+      "summary": "Создание полного дизайна мобильного приложения для доставки",
+      "deliverables": [
+        "User Research и анализ конкурентов",
+        "Wireframes и пользовательские сценарии",
+        "UI дизайн для iOS и Android",
+        "Интерактивный прототип",
+        "Дизайн-система и гайдлайны"
+      ],
+      "required_skills": [
+        "UI/UX Design",
+        "Figma",
+        "Prototyping",
+        "User Research"
+      ],
+      "nice_to_have_skills": [
+        "Sketch",
+        "Adobe XD",
+        "Principle",
+        "After Effects"
+      ],
+      "tech_stack": ["Figma", "Sketch", "Principle"],
+      "experience_level": "Senior",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B1"
+        }
+      ],
+      "keywords_for_matching": ["ui", "ux", "mobile", "design", "figma", "app"]
+    },
+    "source": "MANUAL",
+    "views": 156,
+    "responses": 18,
+    "newResponses": 6,
+    "customBotInstructions": "Важно оценить портфолио мобильных приложений и опыт UX исследований.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Написание технических статей для блога",
+    "description": "Нужен копирайтер для написания серии технических статей о веб-разработке для корпоративного блога. 10 статей по 2000-3000 слов каждая.",
+    "type": "COPYWRITING",
+    "budgetMin": 30000,
+    "budgetMax": 50000,
+    "deadline": "2024-02-28T00:00:00Z",
+    "estimatedDuration": "1 месяц",
+    "requirements": {
+      "title": "Технический копирайтер",
+      "summary": "Написание технических статей о веб-разработке",
+      "deliverables": [
+        "10 статей по 2000-3000 слов",
+        "SEO-оптимизация текстов",
+        "Исследование ключевых слов",
+        "Редактура и корректура"
+      ],
+      "required_skills": [
+        "Копирайтинг",
+        "Техническое письмо",
+        "SEO",
+        "Веб-разработка"
+      ],
+      "nice_to_have_skills": [
+        "JavaScript",
+        "React",
+        "Node.js",
+        "Content Marketing"
+      ],
+      "tech_stack": ["Google Docs", "SEO Tools"],
+      "experience_level": "Middle",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2"
+        }
+      ],
+      "keywords_for_matching": [
+        "copywriting",
+        "technical writing",
+        "seo",
+        "content",
+        "blog"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 67,
+    "responses": 8,
+    "newResponses": 3,
+    "customBotInstructions": "Обрати внимание на примеры технических текстов в портфолио.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Настройка CI/CD для микросервисов",
+    "description": "Требуется настроить CI/CD пайплайн для проекта с микросервисной архитектурой. Docker, Kubernetes, GitLab CI. Нужна автоматизация деплоя в staging и production.",
+    "type": "DEVELOPMENT",
+    "budgetMin": 60000,
+    "budgetMax": 100000,
+    "deadline": "2024-02-20T00:00:00Z",
+    "estimatedDuration": "2-3 недели",
+    "requirements": {
+      "title": "DevOps инженер для настройки CI/CD",
+      "summary": "Настройка автоматизации деплоя микросервисов",
+      "deliverables": [
+        "Настройка GitLab CI пайплайнов",
+        "Конфигурация Kubernetes манифестов",
+        "Автоматизация деплоя в staging/production",
+        "Мониторинг и алертинг",
+        "Документация процессов"
+      ],
+      "required_skills": ["Docker", "Kubernetes", "GitLab CI", "DevOps"],
+      "nice_to_have_skills": [
+        "Helm",
+        "Terraform",
+        "Prometheus",
+        "Grafana",
+        "AWS"
+      ],
+      "tech_stack": ["Docker", "Kubernetes", "GitLab CI", "Helm"],
+      "experience_level": "Senior",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2"
+        }
+      ],
+      "keywords_for_matching": [
+        "devops",
+        "ci/cd",
+        "docker",
+        "kubernetes",
+        "gitlab",
+        "microservices"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 134,
+    "responses": 15,
+    "newResponses": 5,
+    "customBotInstructions": "Важен опыт работы с Kubernetes в production и знание best practices.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Анализ данных продаж и создание дашборда",
+    "description": "Нужно проанализировать данные продаж за последний год, выявить тренды и создать интерактивный дашборд для руководства.",
+    "type": "DATA_ENTRY",
+    "budgetMin": 40000,
+    "budgetMax": 70000,
+    "deadline": "2024-03-10T00:00:00Z",
+    "estimatedDuration": "2-3 недели",
+    "requirements": {
+      "title": "Аналитик данных",
+      "summary": "Анализ продаж и создание дашборда",
+      "deliverables": [
+        "Анализ данных продаж",
+        "Выявление трендов и инсайтов",
+        "Интерактивный дашборд",
+        "Отчет с рекомендациями"
+      ],
+      "required_skills": ["Python", "pandas", "SQL", "Data Analysis"],
+      "nice_to_have_skills": ["Tableau", "Power BI", "Plotly", "Jupyter"],
+      "tech_stack": ["Python", "pandas", "SQL", "Tableau"],
+      "experience_level": "Middle",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        }
+      ],
+      "keywords_for_matching": [
+        "data analysis",
+        "python",
+        "pandas",
+        "sql",
+        "dashboard",
+        "tableau"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 98,
+    "responses": 11,
+    "newResponses": 4,
+    "customBotInstructions": "Обрати внимание на опыт создания дашбордов и работы с бизнес-данными.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Создание промо-видео для продукта",
+    "description": "Требуется создать промо-видео длительностью 60-90 секунд для SaaS продукта. Нужен сценарий, съемка, монтаж и пост-продакшн.",
+    "type": "VIDEO",
+    "budgetMin": 80000,
+    "budgetMax": 120000,
+    "deadline": "2024-03-15T00:00:00Z",
+    "estimatedDuration": "3-4 недели",
+    "requirements": {
+      "title": "Видеопродюсер",
+      "summary": "Создание промо-видео для SaaS продукта",
+      "deliverables": [
+        "Сценарий и раскадровка",
+        "Съемка видео",
+        "Монтаж и пост-продакшн",
+        "Цветокоррекция и звук",
+        "Финальное видео в разных форматах"
+      ],
+      "required_skills": [
+        "Видеопродакшн",
+        "Монтаж",
+        "Сценарное мастерство",
+        "Adobe Premiere"
+      ],
+      "nice_to_have_skills": [
+        "After Effects",
+        "DaVinci Resolve",
+        "Motion Graphics",
+        "Sound Design"
+      ],
+      "tech_stack": ["Adobe Premiere", "After Effects", "DaVinci Resolve"],
+      "experience_level": "Senior",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        }
+      ],
+      "keywords_for_matching": [
+        "video",
+        "production",
+        "editing",
+        "premiere",
+        "promo",
+        "saas"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 76,
+    "responses": 9,
+    "newResponses": 3,
+    "customBotInstructions": "Важно посмотреть портфолио промо-видео и опыт работы с SaaS продуктами.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Перевод технической документации",
+    "description": "Нужно перевести техническую документацию API с английского на русский язык. Около 50 страниц, требуется знание IT терминологии.",
+    "type": "TRANSLATION",
+    "budgetMin": 15000,
+    "budgetMax": 25000,
+    "deadline": "2024-02-25T00:00:00Z",
+    "estimatedDuration": "1-2 недели",
+    "requirements": {
+      "title": "Технический переводчик",
+      "summary": "Перевод API документации с английского на русский",
+      "deliverables": [
+        "Перевод 50 страниц документации",
+        "Глоссарий терминов",
+        "Редактура и корректура",
+        "Форматирование в исходном стиле"
+      ],
+      "required_skills": [
+        "Технический перевод",
+        "IT терминология",
+        "Английский язык",
+        "Русский язык"
+      ],
+      "nice_to_have_skills": [
+        "API документация",
+        "Markdown",
+        "Git",
+        "Программирование"
+      ],
+      "tech_stack": ["CAT Tools", "Markdown", "Git"],
+      "experience_level": "Middle",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "C1"
+        }
+      ],
+      "keywords_for_matching": [
+        "translation",
+        "technical",
+        "api",
+        "documentation",
+        "english",
+        "russian"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 45,
+    "responses": 6,
+    "newResponses": 2,
+    "customBotInstructions": "Обрати внимание на опыт перевода технических текстов и знание IT терминологии.",
+    "isActive": true
+  },
+  {
+    "workspaceId": "ws_demo_001",
+    "title": "Консультация по архитектуре микросервисов",
+    "description": "Требуется консультант для ревью архитектуры микросервисов и рекомендаций по оптимизации. Проект на Node.js с PostgreSQL и Redis.",
+    "type": "CONSULTING",
+    "budgetMin": 50000,
+    "budgetMax": 80000,
+    "deadline": "2024-02-10T00:00:00Z",
+    "estimatedDuration": "1 неделя",
+    "requirements": {
+      "title": "Архитектор микросервисов",
+      "summary": "Консультация по архитектуре и оптимизации микросервисов",
+      "deliverables": [
+        "Аудит текущей архитектуры",
+        "Рекомендации по оптимизации",
+        "План рефакторинга",
+        "Документация best practices",
+        "Презентация для команды"
+      ],
+      "required_skills": [
+        "Микросервисы",
+        "Node.js",
+        "PostgreSQL",
+        "Архитектура ПО"
+      ],
+      "nice_to_have_skills": [
+        "Redis",
+        "Docker",
+        "Kubernetes",
+        "Event Sourcing",
+        "CQRS"
+      ],
+      "tech_stack": ["Node.js", "PostgreSQL", "Redis", "Docker"],
+      "experience_level": "Senior",
+      "languages": [
+        {
+          "language": "Русский",
+          "level": "Родной"
+        },
+        {
+          "language": "Английский",
+          "level": "B2"
+        }
+      ],
+      "keywords_for_matching": [
+        "microservices",
+        "architecture",
+        "nodejs",
+        "postgresql",
+        "consulting",
+        "optimization"
+      ]
+    },
+    "source": "MANUAL",
+    "views": 112,
+    "responses": 13,
+    "newResponses": 5,
+    "customBotInstructions": "Важен опыт архитектуры крупных систем и консультирования команд.",
+    "isActive": true
+  }
+]
