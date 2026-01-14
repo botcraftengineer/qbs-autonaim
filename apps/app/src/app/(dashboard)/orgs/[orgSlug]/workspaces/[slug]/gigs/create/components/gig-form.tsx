@@ -24,33 +24,51 @@ import { gigTypeOptions } from "./types";
 
 // Локальная функция парсинга ссылок (без зависимостей от DB)
 const parsePlatformUrl = (url: string) => {
-  if (!url || typeof url !== 'string') return null;
+  if (!url || typeof url !== "string") return null;
 
   const normalizedUrl = url.trim();
 
   // Проверяем HeadHunter (HH.ru)
-  if (/^https?:\/\/(?:www\.)?(?:hh\.ru|headhunter\.ru)\/vacancy\/\d+(?:.*)?$/.test(normalizedUrl)) {
-    return 'HH';
+  if (
+    /^https?:\/\/(?:www\.)?(?:hh\.ru|headhunter\.ru)\/vacancy\/\d+(?:.*)?$/.test(
+      normalizedUrl,
+    )
+  ) {
+    return "HH";
   }
 
-  // Проверяем Avito
-  if (/^https?:\/\/(?:www\.)?avito\.ru\/[^\/]+\/[^\/]+\/\d+(?:.*)?$/.test(normalizedUrl)) {
-    return 'AVITO';
+  // Проверяем Avito (только вакансии)
+  if (
+    /^https?:\/\/(?:www\.)?avito\.ru\/[^/]+\/(?:rabota|vakansii)\/[^/]+\/\d+(?:.*)?$/.test(
+      normalizedUrl,
+    )
+  ) {
+    return "AVITO";
   }
 
   // Проверяем KWork
-  if (/^https?:\/\/(?:www\.)?kwork\.ru\/projects\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
-    return 'KWORK';
+  if (
+    /^https?:\/\/(?:www\.)?kwork\.ru\/projects\/\d+(?:\/.*)?$/.test(
+      normalizedUrl,
+    )
+  ) {
+    return "KWORK";
   }
 
   // Проверяем FL.ru
-  if (/^https?:\/\/(?:www\.)?fl\.ru\/projects\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
-    return 'FL_RU';
+  if (
+    /^https?:\/\/(?:www\.)?fl\.ru\/projects\/\d+(?:\/.*)?$/.test(normalizedUrl)
+  ) {
+    return "FL_RU";
   }
 
   // Проверяем Freelance.ru
-  if (/^https?:\/\/(?:www\.)?freelance\.ru\/project\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
-    return 'FREELANCE_RU';
+  if (
+    /^https?:\/\/(?:www\.)?freelance\.ru\/project\/\d+(?:\/.*)?$/.test(
+      normalizedUrl,
+    )
+  ) {
+    return "FREELANCE_RU";
   }
 
   return null;

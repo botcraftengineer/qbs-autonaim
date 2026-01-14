@@ -1,4 +1,4 @@
-import { PlatformSource } from "@qbs-autonaim/db/schema";
+import type { PlatformSource } from "@qbs-autonaim/db/schema";
 
 export interface ParsedPlatformLink {
   source: PlatformSource;
@@ -16,7 +16,7 @@ export class FreelancePlatformParser {
       pattern: /^https?:\/\/(?:www\.)?kwork\.ru\/projects\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
         const match = url.match(
-          /^https?:\/\/(?:www\.)?kwork\.ru\/projects\/(\d+)(?:\/.*)?$/
+          /^https?:\/\/(?:www\.)?kwork\.ru\/projects\/(\d+)(?:\/.*)?$/,
         );
         return match ? (match[1] ?? null) : null;
       },
@@ -25,7 +25,7 @@ export class FreelancePlatformParser {
       pattern: /^https?:\/\/(?:www\.)?fl\.ru\/projects\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
         const match = url.match(
-          /^https?:\/\/(?:www\.)?fl\.ru\/projects\/(\d+)(?:\/.*)?$/
+          /^https?:\/\/(?:www\.)?fl\.ru\/projects\/(\d+)(?:\/.*)?$/,
         );
         return match ? (match[1] ?? null) : null;
       },
@@ -34,7 +34,7 @@ export class FreelancePlatformParser {
       pattern: /^https?:\/\/(?:www\.)?freelance\.ru\/project\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
         const match = url.match(
-          /^https?:\/\/(?:www\.)?freelance\.ru\/project\/(\d+)(?:\/.*)?$/
+          /^https?:\/\/(?:www\.)?freelance\.ru\/project\/(\d+)(?:\/.*)?$/,
         );
         return match ? (match[1] ?? null) : null;
       },
@@ -44,7 +44,7 @@ export class FreelancePlatformParser {
         /^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
         const match = url.match(
-          /^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/
+          /^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/,
         );
         return match ? (match[1] ?? null) : null;
       },
@@ -65,7 +65,9 @@ export class FreelancePlatformParser {
     const normalizedUrl = url.trim();
 
     // Проверяем каждый паттерн платформы
-    for (const [platform, config] of Object.entries(this.PLATFORM_PATTERNS)) {
+    for (const [platform, config] of Object.entries(
+      FreelancePlatformParser.PLATFORM_PATTERNS,
+    )) {
       if (config.pattern.test(normalizedUrl)) {
         const externalId = config.extractId(normalizedUrl);
         if (externalId) {
@@ -92,31 +94,11 @@ export class FreelancePlatformParser {
   }
 
   /**
-   * Получает название платформы для отображения
-   */
-  static getPlatformDisplayName(source: PlatformSource): string {
-    const names: Record<PlatformSource, string> = {
-      MANUAL: "Ручной ввод",
-      HH: "HeadHunter",
-      KWORK: "KWork",
-      FL_RU: "FL.ru",
-      FREELANCE_RU: "Freelance.ru",
-      HABR: "Habr Freelance",
-      AVITO: "Avito",
-      SUPERJOB: "SuperJob",
-      WEB_LINK: "Другая платформа",
-      TELEGRAM: "Telegram",
-    };
-
-    return names[source] || source;
-  }
-
-  /**
    * Получает URL для просмотра задания на платформе
    */
   static getPlatformTaskUrl(
     source: PlatformSource,
-    externalId: string | null
+    externalId: string | null,
   ): string | null {
     if (!externalId) return null;
 
