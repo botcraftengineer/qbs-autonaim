@@ -7,8 +7,15 @@ export interface Gig {
   isActive: boolean | null;
   responses?: number | null;
   newResponses?: number | null;
-  deadline?: string | null;
-  createdAt: string;
+  deadline?: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  source: string;
+  description?: string | null;
+  budgetMin?: number | null;
+  budgetMax?: number | null;
+  currency?: string | null;
+  externalId?: string | null;
 }
 
 export interface GigsFilters {
@@ -60,9 +67,7 @@ export function useGigsFilters(gigs: Gig[] | undefined, filters: GigsFilters) {
           if (!a.deadline && !b.deadline) return 0;
           if (!a.deadline) return 1;
           if (!b.deadline) return -1;
-          return (
-            new Date(a.deadline).getTime() - new Date(b.deadline).getTime()
-          );
+          return a.deadline.getTime() - b.deadline.getTime();
         default:
           return (
             new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
