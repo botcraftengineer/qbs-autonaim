@@ -38,7 +38,7 @@ import {
   parseFreelanceProfileFunction,
   sendFreelanceNotificationFunction,
 } from "./freelance";
-import { evaluateGigResponseFunction } from "./gig";
+import { evaluateGigResponseFunction, syncGigResponses } from "./gig";
 import { verifyHHCredentialsFunction } from "./integration";
 import {
   bufferDebounceFunction,
@@ -107,6 +107,7 @@ export const inngestFunctions: InngestFunction.Any[] = [
   sendFreelanceNotificationFunction,
   // Gig
   evaluateGigResponseFunction,
+  syncGigResponses,
   // Integration
   verifyHHCredentialsFunction,
   // Interview

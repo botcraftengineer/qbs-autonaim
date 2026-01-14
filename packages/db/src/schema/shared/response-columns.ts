@@ -82,6 +82,7 @@ export const rankingScoreColumns = {
 export const rankingAnalysisColumns = {
   rankingPosition: integer("ranking_position"),
   rankingAnalysis: text("ranking_analysis"),
+  candidateSummary: text("candidate_summary"), // Краткое резюме для шортлиста
   strengths: jsonb("strengths").$type<string[]>(),
   weaknesses: jsonb("weaknesses").$type<string[]>(),
   recommendation: recommendationEnum("recommendation"),

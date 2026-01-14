@@ -89,6 +89,20 @@ export default function GigsPage() {
     }),
   );
 
+  const syncResponsesMutation = useMutation(
+    api.freelancePlatforms.syncGigResponses.mutationOptions({
+      onSuccess: () => {
+        toast.success("Синхронизация откликов запущена");
+        queryClient.invalidateQueries({
+          queryKey: api.gig.list.queryKey(),
+        });
+      },
+      onError: (error) => {
+        toast.error(error.message || "Ошибка синхронизации");
+      },
+    }),
+  );
+
   const handleDeleteClick = useCallback(
     (gigId: string) => {
       const gig = gigs?.find((g) => g.id === gigId);
@@ -129,6 +143,18 @@ export default function GigsPage() {
       }
     },
     [gigs, workspace?.id],
+  );
+
+  const handleSyncResponses = useCallback(
+    (gigId: string) => {
+      if (workspace?.id) {
+        syncResponsesMutation.mutate({
+          workspaceId: workspace.id,
+          gigId,
+        });
+      }
+    },
+    [workspace?.id, syncResponsesMutation],
   );
 
   const filteredAndSortedGigs = useMemo(() => {
@@ -476,6 +502,7 @@ export default function GigsPage() {
                         onDelete={handleDeleteClick}
                         onDuplicate={handleDuplicate}
                         onToggleActive={handleToggleActive}
+                        onSyncResponses={handleSyncResponses}
                       />
                     );
                   })}
