@@ -15,7 +15,7 @@ export const syncGigResponses = protectedProcedure
     // Проверяем доступ к workspace
     const hasAccess = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
-      ctx.session.user.id,
+      ctx.session.user.id
     );
 
     if (!hasAccess) {
@@ -26,12 +26,9 @@ export const syncGigResponses = protectedProcedure
     }
 
     // Получаем gig
-    const gigRecord = await ctx.db.query.gigs.findFirst({
-      where: (gigs, { eq, and }) =>
-        and(
-          eq(gigs.id, input.gigId),
-          eq(gigs.workspaceId, input.workspaceId)
-        ),
+    const gigRecord = await ctx.db.query.gig.findFirst({
+      where: (gig, { eq, and }) =>
+        and(eq(gig.id, input.gigId), eq(gig.workspaceId, input.workspaceId)),
     });
 
     if (!gigRecord) {

@@ -15,31 +15,40 @@ export class FreelancePlatformParser {
     KWORK: {
       pattern: /^https?:\/\/(?:www\.)?kwork\.ru\/projects\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
-        const match = url.match(/^https?:\/\/(?:www\.)?kwork\.ru\/projects\/(\d+)(?:\/.*)?$/);
-        return match ? match[1] : null;
-      }
+        const match = url.match(
+          /^https?:\/\/(?:www\.)?kwork\.ru\/projects\/(\d+)(?:\/.*)?$/
+        );
+        return match ? (match[1] ?? null) : null;
+      },
     },
     FL_RU: {
       pattern: /^https?:\/\/(?:www\.)?fl\.ru\/projects\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
-        const match = url.match(/^https?:\/\/(?:www\.)?fl\.ru\/projects\/(\d+)(?:\/.*)?$/);
-        return match ? match[1] : null;
-      }
+        const match = url.match(
+          /^https?:\/\/(?:www\.)?fl\.ru\/projects\/(\d+)(?:\/.*)?$/
+        );
+        return match ? (match[1] ?? null) : null;
+      },
     },
     FREELANCE_RU: {
       pattern: /^https?:\/\/(?:www\.)?freelance\.ru\/project\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
-        const match = url.match(/^https?:\/\/(?:www\.)?freelance\.ru\/project\/(\d+)(?:\/.*)?$/);
-        return match ? match[1] : null;
-      }
+        const match = url.match(
+          /^https?:\/\/(?:www\.)?freelance\.ru\/project\/(\d+)(?:\/.*)?$/
+        );
+        return match ? (match[1] ?? null) : null;
+      },
     },
     HABR: {
-      pattern: /^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/,
+      pattern:
+        /^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/,
       extractId: (url: string): string | null => {
-        const match = url.match(/^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/);
-        return match ? match[1] : null;
-      }
-    }
+        const match = url.match(
+          /^https?:\/\/(?:www\.)?freelance\.habr\.com\/tasks\/(\d+)(?:\/.*)?$/
+        );
+        return match ? (match[1] ?? null) : null;
+      },
+    },
   };
 
   /**
@@ -48,7 +57,7 @@ export class FreelancePlatformParser {
    * @returns объект с распаршенными данными или null если не удалось распарсить
    */
   static parseLink(url: string): ParsedPlatformLink | null {
-    if (!url || typeof url !== 'string') {
+    if (!url || typeof url !== "string") {
       return null;
     }
 
@@ -63,7 +72,7 @@ export class FreelancePlatformParser {
           return {
             source: platform as PlatformSource,
             externalId,
-            url: normalizedUrl
+            url: normalizedUrl,
           };
         }
       }
@@ -73,9 +82,9 @@ export class FreelancePlatformParser {
     try {
       new URL(normalizedUrl);
       return {
-        source: 'WEB_LINK',
+        source: "WEB_LINK",
         externalId: null,
-        url: normalizedUrl
+        url: normalizedUrl,
       };
     } catch {
       return null;
@@ -87,15 +96,16 @@ export class FreelancePlatformParser {
    */
   static getPlatformDisplayName(source: PlatformSource): string {
     const names: Record<PlatformSource, string> = {
-      MANUAL: 'Ручной ввод',
-      KWORK: 'KWork',
-      FL_RU: 'FL.ru',
-      FREELANCE_RU: 'Freelance.ru',
-      HABR: 'Habr Freelance',
-      AVITO: 'Avito',
-      SUPERJOB: 'SuperJob',
-      WEB_LINK: 'Другая платформа',
-      TELEGRAM: 'Telegram'
+      MANUAL: "Ручной ввод",
+      HH: "HeadHunter",
+      KWORK: "KWork",
+      FL_RU: "FL.ru",
+      FREELANCE_RU: "Freelance.ru",
+      HABR: "Habr Freelance",
+      AVITO: "Avito",
+      SUPERJOB: "SuperJob",
+      WEB_LINK: "Другая платформа",
+      TELEGRAM: "Telegram",
     };
 
     return names[source] || source;
@@ -104,14 +114,18 @@ export class FreelancePlatformParser {
   /**
    * Получает URL для просмотра задания на платформе
    */
-  static getPlatformTaskUrl(source: PlatformSource, externalId: string | null): string | null {
+  static getPlatformTaskUrl(
+    source: PlatformSource,
+    externalId: string | null
+  ): string | null {
     if (!externalId) return null;
 
     const urlTemplates: Partial<Record<PlatformSource, string>> = {
       KWORK: `https://kwork.ru/projects/${externalId}`,
       FL_RU: `https://fl.ru/projects/${externalId}`,
       FREELANCE_RU: `https://freelance.ru/project/${externalId}`,
-      HABR: `https://freelance.habr.com/tasks/${externalId}`
+      HABR: `https://freelance.habr.com/tasks/${externalId}`,
+      HH: `https://hh.ru/vacancy/${externalId}`,
     };
 
     return urlTemplates[source] || null;
