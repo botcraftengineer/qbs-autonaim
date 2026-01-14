@@ -23,9 +23,25 @@ import {
   MessageSquare,
   MoreHorizontal,
   Power,
+  RefreshCw,
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+// Импортируем только функцию, без зависимостей от DB
+const getPlatformDisplayName = (source: string) => {
+  const names: Record<string, string> = {
+    MANUAL: 'Ручной ввод',
+    KWORK: 'KWork',
+    FL_RU: 'FL.ru',
+    FREELANCE_RU: 'Freelance.ru',
+    HABR: 'Habr Freelance',
+    AVITO: 'Avito',
+    SUPERJOB: 'SuperJob',
+    WEB_LINK: 'Другая платформа',
+    TELEGRAM: 'Telegram'
+  };
+  return names[source as keyof typeof names] || source;
+};
 
 interface GigCardProps {
   gig: {
@@ -46,6 +62,7 @@ interface GigCardProps {
     updatedAt: Date;
     url?: string | null;
     source: string;
+    externalId?: string | null;
   };
   orgSlug: string;
   workspaceSlug: string;
@@ -53,6 +70,7 @@ interface GigCardProps {
   onDelete?: (gigId: string) => void;
   onDuplicate?: (gigId: string) => void;
   onToggleActive?: (gigId: string) => void;
+  onSyncResponses?: (gigId: string) => void;
 }
 
 function formatBudget(min?: number | null, max?: number | null) {
@@ -162,9 +180,9 @@ export function GigCard({
                 {gig.isActive ? "Активно" : "Неактивно"}
               </Badge>
 
-              {gig.source !== "manual" && (
+              {gig.source !== "MANUAL" && gig.source !== "WEB_LINK" && (
                 <Badge variant="outline" className="text-xs">
-                  {gig.source}
+                  {getPlatformDisplayName(gig.source)}
                 </Badge>
               )}
 
@@ -228,6 +246,18 @@ export function GigCard({
               />
             </Button>
 
+            {gig.url && gig.externalId && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 shrink-0"
+                onClick={() => onSyncResponses?.(gig.id)}
+                title="Синхронизировать отклики"
+              >
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+            )}
+
             <Button
               variant="ghost"
               size="icon"
@@ -279,7 +309,7 @@ export function GigCard({
                   <DropdownMenuItem asChild>
                     <a href={gig.url} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
-                      Открыть на {gig.source}
+                      Открыть на {getPlatformDisplayName(gig.source)}
                     </a>
                   </DropdownMenuItem>
                 )}

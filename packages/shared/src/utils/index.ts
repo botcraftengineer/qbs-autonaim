@@ -22,3 +22,6 @@ export {
   getInterviewUrlFromDb,
   getInterviewUrlFromEntity,
 } from "./get-interview-url";
+
+// Утилиты для работы с фриланс-платформами
+export { FreelancePlatformParser } from "./freelance-platform-parser";

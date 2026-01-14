@@ -1,4 +1,6 @@
 import { gig, gigTypeValues } from "@qbs-autonaim/db/schema";
+import { platformSourceValues } from "@qbs-autonaim/db/schema";
+import { FreelancePlatformParser } from "@qbs-autonaim/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -15,6 +17,10 @@ const createGigSchema = z.object({
   estimatedDuration: z.string().max(100).optional(),
   deliverables: z.string().optional(),
   requiredSkills: z.string().optional(),
+
+  // Ссылка на фриланс-платформу
+  platformSource: z.enum(platformSourceValues).optional(),
+  platformUrl: z.string().url().optional(),
 });
 
 export const create = protectedProcedure
@@ -44,6 +50,20 @@ export const create = protectedProcedure
       .join("")
       .trimStart();
 
+    // Парсим ссылку на фриланс-платформу
+    let platformSource = input.platformSource || "MANUAL";
+    let platformUrl = input.platformUrl || null;
+    let externalId = null;
+
+    if (input.platformUrl) {
+      const parsed = FreelancePlatformParser.parseLink(input.platformUrl);
+      if (parsed) {
+        platformSource = parsed.source;
+        platformUrl = parsed.url;
+        externalId = parsed.externalId;
+      }
+    }
+
     const [newGig] = await ctx.db
       .insert(gig)
       .values({
@@ -56,7 +76,9 @@ export const create = protectedProcedure
 
         deadline: input.deadline ? new Date(input.deadline) : null,
         estimatedDuration: input.estimatedDuration,
-        source: "MANUAL",
+        source: platformSource,
+        externalId,
+        url: platformUrl,
         isActive: true,
       })
       .returning();

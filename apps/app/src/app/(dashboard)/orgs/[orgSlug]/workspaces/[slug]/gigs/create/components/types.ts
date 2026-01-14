@@ -60,6 +60,10 @@ export const formSchema = z.object({
   estimatedDuration: z.string().max(100),
   deliverables: z.string(),
   requiredSkills: z.string(),
+
+  // Ссылка на фриланс-платформу
+  platformSource: z.enum(["MANUAL", "KWORK", "FL_RU", "FREELANCE_RU", "WEB_LINK"]).optional(),
+  platformUrl: z.string().url().optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

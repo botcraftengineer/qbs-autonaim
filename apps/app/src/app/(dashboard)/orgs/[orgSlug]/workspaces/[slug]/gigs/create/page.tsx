@@ -132,6 +132,9 @@ export default function CreateGigPage({ params }: PageProps) {
       estimatedDuration: "",
       deliverables: "",
       requiredSkills: "",
+
+      platformSource: undefined,
+      platformUrl: "",
     },
   });
 
@@ -483,6 +486,9 @@ export default function CreateGigPage({ params }: PageProps) {
       estimatedDuration: v.estimatedDuration || undefined,
       deliverables: v.deliverables || undefined,
       requiredSkills: v.requiredSkills || undefined,
+
+      platformSource: v.platformSource,
+      platformUrl: v.platformUrl || undefined,
     });
   };
 
@@ -495,6 +501,7 @@ export default function CreateGigPage({ params }: PageProps) {
     form.setValue("budgetMin", draft.budgetMin);
     form.setValue("budgetMax", draft.budgetMax);
     form.setValue("estimatedDuration", draft.estimatedDuration);
+    // TODO: добавить синхронизацию platformSource и platformUrl из draft если нужно
     setShowForm((prev) => !prev);
   };
 

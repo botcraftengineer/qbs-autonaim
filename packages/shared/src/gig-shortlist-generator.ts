@@ -48,6 +48,7 @@ export interface GigShortlistCandidate {
   // Рекомендации
   recommendation: "HIGHLY_RECOMMENDED" | "RECOMMENDED" | "NEUTRAL" | "NOT_RECOMMENDED";
   rankingAnalysis?: string;
+  candidateSummary?: string; // Краткое резюме для шортлиста
   strengths: string[];
   weaknesses: string[];
   // Дополнительная информация
@@ -115,6 +116,7 @@ export class GigShortlistGenerator {
         // Анализ
         recommendation: true,
         rankingAnalysis: true,
+        candidateSummary: true,
         strengths: true,
         weaknesses: true,
         // Дополнительная информация
@@ -157,6 +159,7 @@ export class GigShortlistGenerator {
       experienceScore: response.experienceScore ?? undefined,
       recommendation: response.recommendation as GigShortlistCandidate["recommendation"],
       rankingAnalysis: response.rankingAnalysis ?? undefined,
+      candidateSummary: response.candidateSummary ?? undefined,
       strengths: response.strengths ?? [],
       weaknesses: response.weaknesses ?? [],
       coverLetter: response.coverLetter ?? undefined,

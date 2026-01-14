@@ -17,9 +17,34 @@ import {
   Textarea,
 } from "@qbs-autonaim/ui";
 import { Check, Loader2 } from "lucide-react";
+import { useEffect } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import type { FormValues } from "./types";
 import { gigTypeOptions } from "./types";
+
+// Локальная функция парсинга ссылок (без зависимостей от DB)
+const parsePlatformUrl = (url: string) => {
+  if (!url || typeof url !== 'string') return null;
+
+  const normalizedUrl = url.trim();
+
+  // Проверяем KWork
+  if (/^https?:\/\/(?:www\.)?kwork\.ru\/projects\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
+    return 'KWORK';
+  }
+
+  // Проверяем FL.ru
+  if (/^https?:\/\/(?:www\.)?fl\.ru\/projects\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
+    return 'FL_RU';
+  }
+
+  // Проверяем Freelance.ru
+  if (/^https?:\/\/(?:www\.)?freelance\.ru\/project\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
+    return 'FREELANCE_RU';
+  }
+
+  return null;
+};
 
 interface GigFormProps {
   form: UseFormReturn<FormValues>;
@@ -34,6 +59,20 @@ export function GigForm({
   onCancel,
   isCreating,
 }: GigFormProps) {
+  // Автоопределение платформы при вводе URL
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === "platformUrl" && value.platformUrl) {
+        const platform = parsePlatformUrl(value.platformUrl);
+        if (platform) {
+          form.setValue("platformSource", platform);
+        }
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [form]);
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -181,6 +220,47 @@ export function GigForm({
               <FormLabel>Сроки</FormLabel>
               <FormControl>
                 <Input placeholder="2 недели…" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="platformSource"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Фриланс-платформа</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Выберите платформу" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="KWORK">KWork</SelectItem>
+                  <SelectItem value="FL_RU">FL.ru</SelectItem>
+                  <SelectItem value="FREELANCE_RU">Freelance.ru</SelectItem>
+                  <SelectItem value="WEB_LINK">Другая платформа</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="platformUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Ссылка на задание</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://kwork.ru/projects/3069013"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

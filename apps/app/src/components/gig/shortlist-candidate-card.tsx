@@ -126,6 +126,15 @@ export function ShortlistCandidateCard({
                 </span>
               </div>
 
+              {/* Candidate Summary */}
+              {candidate.candidateSummary && (
+                <div className="mt-2">
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {candidate.candidateSummary}
+                  </p>
+                </div>
+              )}
+
               {/* Budget Info */}
               {(candidate.proposedPrice || candidate.proposedDeliveryDays) && (
                 <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
