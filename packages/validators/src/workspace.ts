@@ -65,7 +65,16 @@ export const updateUserRoleSchema = z.object({
   role: z.enum(["owner", "admin", "member"]),
 });
 
+export const updateBotSettingsSchema = z.object({
+  companyName: z.string().min(1, "Название компании обязательно").max(100),
+  companyDescription: z.string().max(1000).optional(),
+  companyWebsite: z.string().url("Некорректный URL").optional().or(z.literal("")),
+  botName: z.string().min(1, "Имя бота обязательно").max(50),
+  botRole: z.string().min(1, "Роль бота обязательна").max(100),
+});
+
 export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
 export type UpdateWorkspaceInput = z.infer<typeof updateWorkspaceSchema>;
+export type UpdateBotSettingsInput = z.infer<typeof updateBotSettingsSchema>;
 export type AddUserToWorkspaceInput = z.infer<typeof addUserToWorkspaceSchema>;
 export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;

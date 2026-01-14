@@ -1,12 +1,22 @@
 ﻿import type { BotSettings } from "@qbs-autonaim/db/schema";
+import { botSettings as botSettingsTable } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
 // Схема для валидации ответа от AI
-const aiResponseSchema = z.object({
+const companySetupSchema = z.object({
+  companyName: z.string(),
+  companyDescription: z.string().optional(),
+  companyWebsite: z.string().optional(),
+  botName: z.string(),
+  botRole: z.string(),
+});
+
+const vacancySchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   requirements: z.string().optional(),
@@ -17,6 +27,8 @@ const aiResponseSchema = z.object({
   customInterviewQuestions: z.string().optional(),
   customOrganizationalQuestions: z.string().optional(),
 });
+
+const aiResponseSchema = z.union([companySetupSchema, vacancySchema]);
 
 /**
  * Безопасно извлекает первый валидный JSON объект из текста
@@ -105,6 +117,7 @@ function buildVacancyGenerationPrompt(
   },
   conversationHistory?: Array<{ role: "user" | "assistant"; content: string }>,
   botSettings?: BotSettings | null,
+  isCompanySetup?: boolean,
 ): string {
   const historySection = conversationHistory?.length
     ? `
@@ -145,8 +158,12 @@ ${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
 `
     : "";
 
-  const botPersonality =
-    botSettings?.botName && botSettings?.botRole
+  // Определяем режим работы: настройка компании или создание вакансии
+  const isSettingUpCompany = isCompanySetup || !botSettings?.companyName;
+
+  const botPersonality = isSettingUpCompany
+    ? "Ты — эксперт по настройке систем подбора персонала."
+    : botSettings?.botName && botSettings?.botRole
       ? `Ты — ${botSettings.botName}, ${botSettings.botRole} компании "${botSettings.companyName}".`
       : botSettings?.companyName
         ? `Ты — эксперт по подбору персонала для компании "${botSettings.companyName}".`
@@ -156,9 +173,35 @@ ${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
     ? `\n\nКОНТЕКСТ КОМПАНИИ: ${botSettings.companyDescription}\nУчитывай специфику и потребности этой компании при создании вакансий.`
     : "";
 
+  const taskDescription = isSettingUpCompany
+    ? `ЗАДАЧА: На основе сообщения пользователя настрой компанию и бота-рекрутера.
+
+ИНСТРУКЦИИ ПО НАСТРОЙКЕ КОМПАНИИ:
+1. **Извлеки ключевую информацию** из сообщения пользователя:
+   - Название компании (companyName) - обязательно
+   - Описание деятельности (companyDescription) - что делает компания
+   - Сайт (companyWebsite) - если указан
+   - Имя бота (botName) - как зовут виртуального рекрутера
+   - Роль бота (botRole) - его должность/функция
+
+2. **Если пользователь выбрал шаблон** - используй предоставленную информацию как есть
+
+3. **Если пользователь описал свободно** - проанализируй текст и выдели:
+   - Название из явных упоминаний или создай подходящее
+   - Описание на основе описания деятельности
+   - Для имени бота выбери профессиональное русское имя
+   - Для роли бота выбери подходящую должность (HR-менеджер, Рекрутер, Специалист по подбору и т.д.)
+
+4. **Правила именования:**
+   - botName: Популярные русские имена (Анна, Дмитрий, Мария, Сергей, Алексей, Ольга, Иван)
+   - botRole: Профессиональные роли в HR (Рекрутер, HR-менеджер, Специалист по подбору персонала, Корпоративный рекрутер)
+
+5. **Если информации недостаточно** - используй разумные значения по умолчанию, но старайся извлечь максимум из текста`
+    : `ЗАДАЧА: На основе сообщения пользователя обнови документ вакансии.${companyContext}`;
+
   return `${botPersonality}
 
-ЗАДАЧА: На основе сообщения пользователя обнови документ вакансии.${companyContext}
+${taskDescription}
 ${companySection}${historySection}
 НОВОЕ СООБЩЕНИЕ ПОЛЬЗОВАТЕЛЯ:
 ${message}
@@ -188,7 +231,16 @@ ${documentSection}
 - customOrganizationalQuestions: Вопросы об организационных моментах (график, удалёнка, релокация)
 
 ФОРМАТ ОТВЕТА (JSON):
-{
+${
+  isSettingUpCompany
+    ? `{
+  "companyName": "Название компании",
+  "companyDescription": "Описание компании и её деятельности",
+  "companyWebsite": "https://site.com",
+  "botName": "Имя бота-рекрутера",
+  "botRole": "роль бота (например: HR-менеджер, рекрутер, специалист по подбору персонала)"
+}`
+    : `{
   "title": "Название должности",
   "description": "Описание компании и проекта",
   "requirements": "Требования к кандидату (список)",
@@ -198,6 +250,7 @@ ${documentSection}
   "customScreeningPrompt": "Промпт для скрининга (если запрошено)",
   "customInterviewQuestions": "Вопросы для интервью (если запрошено)",
   "customOrganizationalQuestions": "Организационные вопросы (если запрошено)"
+}`
 }
 
 ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных пояснений.`;
@@ -226,11 +279,15 @@ export const chatGenerate = protectedProcedure
       where: (botSettings, { eq }) => eq(botSettings.workspaceId, workspaceId),
     });
 
+    // Определяем режим: настройка компании или создание вакансии
+    const isCompanySetup = !botSettings?.companyName;
+
     const prompt = buildVacancyGenerationPrompt(
       message,
       currentDocument,
       conversationHistory,
       botSettings,
+      isCompanySetup,
     );
 
     try {
@@ -290,36 +347,77 @@ export const chatGenerate = protectedProcedure
 
       const validated = validationResult.data;
 
-      return {
-        document: {
-          title: validated.title ?? currentDocument?.title ?? "",
-          description:
-            validated.description ?? currentDocument?.description ?? "",
-          requirements:
-            validated.requirements ?? currentDocument?.requirements ?? "",
-          responsibilities:
-            validated.responsibilities ??
-            currentDocument?.responsibilities ??
-            "",
-          conditions: validated.conditions ?? currentDocument?.conditions ?? "",
-          customBotInstructions:
-            validated.customBotInstructions ??
-            currentDocument?.customBotInstructions ??
-            "",
-          customScreeningPrompt:
-            validated.customScreeningPrompt ??
-            currentDocument?.customScreeningPrompt ??
-            "",
-          customInterviewQuestions:
-            validated.customInterviewQuestions ??
-            currentDocument?.customInterviewQuestions ??
-            "",
-          customOrganizationalQuestions:
-            validated.customOrganizationalQuestions ??
-            currentDocument?.customOrganizationalQuestions ??
-            "",
-        },
-      };
+      // Если настраиваем компанию, сохраняем настройки
+      if (isCompanySetup && "companyName" in validated) {
+        // Сохраняем настройки компании
+        const companyData = {
+          companyName: validated.companyName,
+          companyDescription: validated.companyDescription || null,
+          companyWebsite: validated.companyWebsite || null,
+          botName: validated.botName,
+          botRole: validated.botRole,
+        };
+
+        if (botSettings) {
+          // Обновляем существующие настройки
+          await ctx.db
+            .update(botSettingsTable)
+            .set({ ...companyData, updatedAt: new Date() })
+            .where(eq(botSettingsTable.workspaceId, workspaceId));
+        } else {
+          // Создаем новые настройки
+          await ctx.db
+            .insert(botSettingsTable)
+            .values({ workspaceId, ...companyData });
+        }
+
+        return {
+          document: {},
+          companySetup: true,
+          companySettings: companyData,
+        };
+      }
+
+      // Проверяем тип validated перед доступом к полям вакансии
+      if (!("companyName" in validated)) {
+        return {
+          document: {
+            title: validated.title ?? currentDocument?.title ?? "",
+            description:
+              validated.description ?? currentDocument?.description ?? "",
+            requirements:
+              validated.requirements ?? currentDocument?.requirements ?? "",
+            responsibilities:
+              validated.responsibilities ??
+              currentDocument?.responsibilities ??
+              "",
+            conditions:
+              validated.conditions ?? currentDocument?.conditions ?? "",
+            customBotInstructions:
+              validated.customBotInstructions ??
+              currentDocument?.customBotInstructions ??
+              "",
+            customScreeningPrompt:
+              validated.customScreeningPrompt ??
+              currentDocument?.customScreeningPrompt ??
+              "",
+            customInterviewQuestions:
+              validated.customInterviewQuestions ??
+              currentDocument?.customInterviewQuestions ??
+              "",
+            customOrganizationalQuestions:
+              validated.customOrganizationalQuestions ??
+              currentDocument?.customOrganizationalQuestions ??
+              "",
+          },
+        };
+      }
+
+      // Если дошли сюда, значит что-то пошло не так
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Неожиданный формат данных от AI",
+      });
     } catch (error) {
       if (error instanceof TRPCError) throw error;
       console.error("Error generating vacancy:", error);

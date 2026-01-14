@@ -50,7 +50,7 @@ export const HR_STATUS_CONFIG = {
 } as const;
 
 export const IMPORT_SOURCE_LABELS: Record<string, string> = {
-  MANUAL: "Вручную",
+  MANUAL: "Ручной ввод",
   HH: "HeadHunter",
   AVITO: "Avito",
   SUPERJOB: "SuperJob",
@@ -58,7 +58,7 @@ export const IMPORT_SOURCE_LABELS: Record<string, string> = {
   KWORK: "KWork",
   FL_RU: "FL.ru",
   FREELANCE_RU: "Freelance.ru",
-  WEB_LINK: "Веб-ссылка",
+  WEB_LINK: "Другая платформа",
   TELEGRAM: "Telegram",
 };
 
