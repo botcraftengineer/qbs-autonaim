@@ -74,7 +74,7 @@ export const update = protectedProcedure
         input.settings.customOrganizationalQuestions;
     }
     if (input.settings.source !== undefined) {
-      patch.source = input.settings.source;
+      patch.source = input.settings.source ?? undefined;
     }
     if (input.settings.externalId !== undefined) {
       patch.externalId = input.settings.externalId;
