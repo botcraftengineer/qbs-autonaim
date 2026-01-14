@@ -1,5 +1,8 @@
 import { createHash } from "node:crypto";
 import { BASE_RULES, extractJsonObject } from "@qbs-autonaim/ai";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import * as schema from "@qbs-autonaim/db/schema";
+import { eq } from "@qbs-autonaim/db";
 import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
@@ -63,13 +66,21 @@ function parseQuestions(raw: string | null | undefined): string[] {
 export function createWebInterviewRuntime(params: {
   model: LanguageModel;
   sessionId: string;
+  db: NodePgDatabase<typeof schema>;
   gig: GigLike | null;
   vacancy: VacancyLike | null;
   interviewContext: InterviewContextLite;
   isFirstResponse: boolean;
 }) {
-  const { model, sessionId, gig, vacancy, interviewContext, isFirstResponse } =
-    params;
+  const {
+    model,
+    sessionId,
+    db,
+    gig,
+    vacancy,
+    interviewContext,
+    isFirstResponse,
+  } = params;
 
   const entityType: EntityType = gig ? "gig" : vacancy ? "vacancy" : "unknown";
 
@@ -570,6 +581,81 @@ technical_raw: ${JSON.stringify(techRaw)}
     },
   });
 
+  const getInterviewProfile = tool({
+    description:
+      "Возвращает данные профиля кандидата с фриланс-платформы (навыки, опыт, рейтинг и т.д.) для анализа соответствия заданию.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      try {
+        // Получаем responseId из сессии
+        const session = await db.query.interviewSession.findFirst({
+          where: (fields, { eq }) => eq(fields.id, sessionId),
+          columns: {
+            responseId: true,
+          },
+        });
+
+        if (!session) {
+          return {
+            available: false,
+            reason: "Session not found",
+          };
+        }
+
+        // Получаем данные профиля из response
+        const responseData = await db.query.response.findFirst({
+          where: (fields, { eq }) => eq(fields.id, session.responseId),
+          columns: {
+            profileData: true,
+            platformProfileUrl: true,
+          },
+        });
+
+        if (!responseData) {
+          return {
+            available: false,
+            reason: "Response not found",
+          };
+        }
+
+        if (!responseData.profileData) {
+          return {
+            available: false,
+            reason: "Profile data not available (parsing may be in progress)",
+            platformProfileUrl: responseData.platformProfileUrl,
+          };
+        }
+
+        if (responseData.profileData.error) {
+          return {
+            available: false,
+            reason: "Profile parsing failed",
+            error: responseData.profileData.error,
+            platformProfileUrl: responseData.platformProfileUrl,
+          };
+        }
+
+        return {
+          available: true,
+          platform: responseData.profileData.platform,
+          username: responseData.profileData.username,
+          profileUrl: responseData.profileData.profileUrl,
+          aboutMe: responseData.profileData.aboutMe,
+          skills: responseData.profileData.skills,
+          statistics: responseData.profileData.statistics,
+          parsedAt: responseData.profileData.parsedAt,
+          platformProfileUrl: responseData.platformProfileUrl,
+        };
+      } catch (error) {
+        console.error("Error getting interview profile:", error);
+        return {
+          available: false,
+          reason: "Error retrieving profile data",
+        };
+      }
+    },
+  });
+
   const saveQuestionAnswer = tool({
     description:
       "Сохраняет пару вопрос-ответ в метаданные interview session. Если question не указан, используется lastQuestionAsked.",
@@ -615,6 +701,7 @@ technical_raw: ${JSON.stringify(techRaw)}
     updateInterviewState,
     getInterviewQuestionBank,
     getScoringRubric,
+    getInterviewProfile,
     saveInterviewNote,
     saveQuestionAnswer,
   };
@@ -629,6 +716,7 @@ technical_raw: ${JSON.stringify(techRaw)}
 - getInterviewState: получить текущее состояние интервью
 - updateInterviewState: обновить состояние интервью
 - getInterviewQuestionBank: получить банк вопросов массивами
+- getInterviewProfile: получить данные профиля кандидата с платформы (только для gig интервью)
 - getScoringRubric: получить рубрику оценки (и сохранить снапшот в метаданные)
 - saveInterviewNote: сохранить внутреннюю заметку/сигнал (не показывать кандидату)
 - saveQuestionAnswer: сохранить пару вопрос-ответ в метаданные
@@ -648,6 +736,7 @@ technical_raw: ${JSON.stringify(techRaw)}
 - wrapup: завершить разговор, предложить уточнить детали по заданию.
 
 ПЕРЕХОДЫ:
+- ЕСЛИ ЭТО GIG ИНТЕРВЬЮ: В начале разговора обязательно вызови getInterviewProfile для анализа профиля кандидата
 - Если stage=intro и ты задал стартовые вопросы -> updateInterviewState(stage="org").
 - Если ты прошел все организационные вопросы -> updateInterviewState(stage="tech").
 - Если ты задал 2-3 технических вопроса или кандидат дал достаточно информации -> updateInterviewState(stage="wrapup").
@@ -692,12 +781,20 @@ ${
 Это НЕ собеседование для трудоустройства. Это этап оценки кандидата для потенциального разового задания (gig).
 Основная цель - выявить сильные и слабые стороны кандидата для принятия решения о сотрудничестве.
 
+АНАЛИЗ ПРОФИЛЯ КАНДИДАТА:
+- ОБЯЗАТЕЛЬНО используй getInterviewProfile в начале разговора для получения данных профиля
+- Проанализируй соответствие профиля требованиям задания
+- Если профиль показывает несоответствие (отсутствие нужных навыков, низкий рейтинг, мало опыта) - задай дополнительные уточняющие вопросы
+- Если профиль выглядит подходящим - можешь задать меньше технических вопросов
+- Сохраняй заметки о несоответствиях профиля через saveInterviewNote
+
 НА ЧТО ОБРАТИТЬ ВНИМАНИЕ:
 - Профессиональные навыки и экспертиза в предметной области
 - Опыт работы с аналогичными задачами
 - Подход к решению проблем и творческое мышление
 - Качество коммуникации и способность объяснять мысли
 - Реалистичность оценки сроков и планирования
+- Сравнение заявленных навыков в профиле с реальными возможностями
 
 ЗАПРЕЩЕННЫЕ ТЕМЫ:
 - Предложение работы или контракта
@@ -712,6 +809,7 @@ ${
 - Подход к решению проблем
 - Оценка сложности и сроков задачи
 - Ожидания по оплате за конкретное задание
+- Уточнение информации из профиля (если есть противоречия или пробелы)
 
 СТИЛЬ ОБЩЕНИЯ:
 - Дружелюбный и профессиональный
@@ -721,14 +819,17 @@ ${
 - Если кандидат спрашивает о тебе или системе - вежливо верни к теме проекта
 
 СТРАТЕГИЯ ВОПРОСОВ:
-- ОРГАНИЗАЦИОННЫЕ: Задай ВСЕ вопросы из настроек (сроки, оплата, доступность, формат) - они критичны для сотрудничества
+- ОРГАНИЗАЦИОННЫЕ: Задай ВСЕ вопросы из настроек (сроки, оплата, доступность, формат) - они критичны для условий сотрудничества
 - ТЕХНИЧЕСКИЕ: Задай максимум 2-3 самых важных вопроса - достаточно для оценки экспертизы
+- ПРОФИЛЬНЫЕ: Если профиль показывает несоответствие - добавь 1-2 вопроса для уточнения (например, "В профиле указано X, но для этого задания нужен Y. Расскажите об опыте работы с Y?")
 - ПОДХОД К ВЫБОРУ ТЕХНИЧЕСКИХ ВОПРОСОВ: Выбирай вопросы, которые лучше всего покажут экспертизу для конкретного задания
 
 ЧТО ЗАМЕЧАТЬ В РАЗГОВОРЕ:
 - Ищи сильные стороны: экспертиза, успешные кейсы, эффективные подходы
 - Обрати внимание на пробелы в знаниях, подходы к работе, ожидания по срокам
+- Сравнивай информацию кандидата с данными из профиля
 - Сохраняй заметки о плюсах и минусах для внутренней оценки
+- Если кандидат противоречит своему профилю - отметь это в заметках
 
 ЗАВЕРШЕНИЕ РАЗГОВОРА:
 - После всех организационных вопросов и 2-3 технических - заверши

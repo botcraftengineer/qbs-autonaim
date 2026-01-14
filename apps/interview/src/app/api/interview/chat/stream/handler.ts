@@ -304,6 +304,7 @@ async function handler(request: Request) {
     const { tools, systemPrompt } = createWebInterviewRuntime({
       model,
       sessionId,
+      db,
       gig: gig ?? null,
       vacancy: vacancy ?? null,
       interviewContext,
@@ -343,7 +344,7 @@ async function handler(request: Request) {
           }
         }
 
-        // biome-ignore lint/suspicious/noExplicitAny: Complex generic types cause compatibility issues
+        // biome-ignore lint/suspicious/noExplicitAny: Complex generic types cause compatibility issues with tool inference
         let result: any;
 
         try {
