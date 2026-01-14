@@ -356,14 +356,14 @@ export function VacancySettingsForm({
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">
-                          External ID
+                          Внешний ID
                         </FormLabel>
                         <FormControl>
                           <Input
                             {...field}
                             value={field.value ?? ""}
                             placeholder="Например: 12345678"
-                            aria-label="External ID вакансии"
+                            aria-label="Внешний ID вакансии"
                           />
                         </FormControl>
                         <FormDescription className="text-xs">
