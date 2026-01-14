@@ -139,80 +139,297 @@ export function ChatMessage({
             />
           ) : (
             <div className="space-y-3 pt-2">
-              {message.quickReplies.map((reply) => (
-                <div key={reply.id} className="space-y-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      reply.freeform
-                        ? handleFreeformToggle(reply.id)
-                        : onQuickReplySelect(reply.value)
+              {/* Группируем replies по groupId */}
+              {(() => {
+                const groupedReplies = message.quickReplies.reduce(
+                  (groups, reply) => {
+                    const groupId = reply.groupId || `solo-${reply.id}`;
+                    if (!groups[groupId]) {
+                      groups[groupId] = [];
                     }
-                    disabled={disabled}
-                    className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    {reply.freeform ? (
-                      <>
-                        {reply.label}
-                        <span className="ml-1 text-muted-foreground">
-                          {activeFreeform === reply.id ? "✏️" : "💬"}
-                        </span>
-                      </>
-                    ) : (
-                      reply.label
-                    )}
-                  </Button>
+                    groups[groupId].push(reply);
+                    return groups;
+                  },
+                  {} as Record<string, QuickReply[]>,
+                );
 
-                  {/* Freeform input field */}
-                  {reply.freeform && activeFreeform === reply.id && (
-                    <div className="flex gap-2 ml-4">
-                      <textarea
-                        value={freeformInputs[reply.id] || ""}
-                        onChange={(e) =>
-                          handleFreeformInputChange(reply.id, e.target.value)
-                        }
-                        placeholder={
-                          reply.placeholder || "Опишите своими словами..."
-                        }
-                        maxLength={reply.maxLength || 1000}
-                        className="min-h-[60px] resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                        disabled={disabled}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" && !e.shiftKey) {
-                            e.preventDefault();
-                            handleFreeformSubmit(reply.id, reply);
-                          }
-                          if (e.key === "Escape") {
-                            setActiveFreeform(null);
-                          }
-                        }}
-                      />
-                      <div className="flex flex-col gap-1">
-                        <Button
-                          size="sm"
-                          onClick={() => handleFreeformSubmit(reply.id, reply)}
-                          disabled={
-                            !freeformInputs[reply.id]?.trim() || disabled
-                          }
-                          className="px-2 py-1 h-6 text-xs"
-                        >
-                          ✓
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setActiveFreeform(null)}
-                          className="px-2 py-1 h-6 text-xs"
-                        >
-                          ✕
-                        </Button>
+                return Object.entries(groupedReplies).map(
+                  ([groupId, groupReplies]) => {
+                    // Если в группе только один reply или нет groupId - показываем как обычно
+                    if (
+                      groupReplies.length === 1 ||
+                      !groupReplies[0]?.groupId
+                    ) {
+                      const reply = groupReplies[0];
+                      if (!reply) return null;
+
+                      return (
+                        <div key={reply.id} className="space-y-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              reply.freeform
+                                ? handleFreeformToggle(reply.id)
+                                : onQuickReplySelect(reply.value)
+                            }
+                            disabled={disabled}
+                            className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                            style={{ touchAction: "manipulation" }}
+                          >
+                            {reply.freeform ? (
+                              <>
+                                {reply.label}
+                                <span className="ml-1 text-muted-foreground">
+                                  {activeFreeform === reply.id ? "✏️" : "💬"}
+                                </span>
+                              </>
+                            ) : (
+                              reply.label
+                            )}
+                          </Button>
+
+                          {/* Freeform input field */}
+                          {reply.freeform && activeFreeform === reply.id && (
+                            <div className="flex gap-2 ml-4">
+                              <textarea
+                                value={freeformInputs[reply.id] || ""}
+                                onChange={(e) =>
+                                  handleFreeformInputChange(
+                                    reply.id,
+                                    e.target.value,
+                                  )
+                                }
+                                placeholder={
+                                  reply.placeholder ||
+                                  "Опишите своими словами..."
+                                }
+                                maxLength={reply.maxLength || 1000}
+                                className="min-h-[60px] resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                disabled={disabled}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter" && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleFreeformSubmit(reply.id, reply);
+                                  }
+                                  if (e.key === "Escape") {
+                                    setActiveFreeform(null);
+                                  }
+                                }}
+                              />
+                              <div className="flex flex-col gap-1">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleFreeformSubmit(reply.id, reply)
+                                  }
+                                  disabled={
+                                    !freeformInputs[reply.id]?.trim() ||
+                                    disabled
+                                  }
+                                  className="px-2 py-1 h-6 text-xs"
+                                >
+                                  ✓
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => setActiveFreeform(null)}
+                                  className="px-2 py-1 h-6 text-xs"
+                                >
+                                  ✕
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Если в группе несколько replies - показываем основной и вариант "свой вариант"
+                    const mainReply = groupReplies.find((r) => !r.freeform);
+                    const customReply = groupReplies.find((r) => r.freeform);
+
+                    if (!mainReply || !customReply) {
+                      // Fallback - показываем все replies группы по отдельности
+                      return groupReplies.map((reply) => {
+                        if (!reply) return null;
+
+                        return (
+                          <div key={reply.id} className="space-y-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                reply.freeform
+                                  ? handleFreeformToggle(reply.id)
+                                  : onQuickReplySelect(reply.value)
+                              }
+                              disabled={disabled}
+                              className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                              style={{ touchAction: "manipulation" }}
+                            >
+                              {reply.freeform ? (
+                                <>
+                                  {reply.label}
+                                  <span className="ml-1 text-muted-foreground">
+                                    {activeFreeform === reply.id ? "✏️" : "💬"}
+                                  </span>
+                                </>
+                              ) : (
+                                reply.label
+                              )}
+                            </Button>
+
+                            {/* Freeform input field */}
+                            {reply.freeform && activeFreeform === reply.id && (
+                              <div className="flex gap-2 ml-4">
+                                <textarea
+                                  value={freeformInputs[reply.id] || ""}
+                                  onChange={(e) =>
+                                    handleFreeformInputChange(
+                                      reply.id,
+                                      e.target.value,
+                                    )
+                                  }
+                                  placeholder={
+                                    reply.placeholder ||
+                                    "Опишите своими словами..."
+                                  }
+                                  maxLength={reply.maxLength || 1000}
+                                  className="min-h-[60px] resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  disabled={disabled}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                      e.preventDefault();
+                                      handleFreeformSubmit(reply.id, reply);
+                                    }
+                                    if (e.key === "Escape") {
+                                      setActiveFreeform(null);
+                                    }
+                                  }}
+                                />
+                                <div className="flex flex-col gap-1">
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleFreeformSubmit(reply.id, reply)
+                                    }
+                                    disabled={
+                                      !freeformInputs[reply.id]?.trim() ||
+                                      disabled
+                                    }
+                                    className="px-2 py-1 h-6 text-xs"
+                                  >
+                                    ✓
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => setActiveFreeform(null)}
+                                    className="px-2 py-1 h-6 text-xs"
+                                  >
+                                    ✕
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      });
+                    }
+
+                    // Показываем группу: основной reply и вариант "свой вариант" рядом
+                    return (
+                      <div key={groupId} className="space-y-2">
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => onQuickReplySelect(mainReply.value)}
+                            disabled={disabled}
+                            className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98] flex-1"
+                            style={{ touchAction: "manipulation" }}
+                          >
+                            {mainReply.label}
+                          </Button>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleFreeformToggle(customReply.id)}
+                            disabled={disabled}
+                            className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98] flex-1"
+                            style={{ touchAction: "manipulation" }}
+                          >
+                            <span className="text-muted-foreground">
+                              {activeFreeform === customReply.id ? "✏️" : "💬"}
+                            </span>
+                            <span className="ml-1">Свой вариант</span>
+                          </Button>
+                        </div>
+
+                        {/* Freeform input field для custom reply */}
+                        {activeFreeform === customReply.id && (
+                          <div className="flex gap-2 ml-4">
+                            <textarea
+                              value={freeformInputs[customReply.id] || ""}
+                              onChange={(e) =>
+                                handleFreeformInputChange(
+                                  customReply.id,
+                                  e.target.value,
+                                )
+                              }
+                              placeholder={customReply.placeholder}
+                              maxLength={customReply.maxLength || 1000}
+                              className="min-h-[60px] resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                              disabled={disabled}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleFreeformSubmit(
+                                    customReply.id,
+                                    customReply,
+                                  );
+                                }
+                                if (e.key === "Escape") {
+                                  setActiveFreeform(null);
+                                }
+                              }}
+                            />
+                            <div className="flex flex-col gap-1">
+                              <Button
+                                size="sm"
+                                onClick={() =>
+                                  handleFreeformSubmit(
+                                    customReply.id,
+                                    customReply,
+                                  )
+                                }
+                                disabled={
+                                  !freeformInputs[customReply.id]?.trim() ||
+                                  disabled
+                                }
+                                className="px-2 py-1 h-6 text-xs"
+                              >
+                                ✓
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setActiveFreeform(null)}
+                                className="px-2 py-1 h-6 text-xs"
+                              >
+                                ✕
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                    );
+                  },
+                );
+              })()}
             </div>
           ))}
       </div>
