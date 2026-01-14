@@ -27,16 +27,6 @@ export interface QuickReply {
   placeholder?: string;
   /** Максимальная длина для поля свободного ввода */
   maxLength?: number;
-  /** Группа, к которой относится reply (для группировки с "свой вариант") */
-  groupId?: string;
-}
-
-export interface QuickReplyGroup {
-  id: string;
-  /** Основной reply в группе */
-  mainReply: QuickReply;
-  /** Reply для свободного ввода в этой группе */
-  customReply: QuickReply;
 }
 
 export interface ConversationMessage {
