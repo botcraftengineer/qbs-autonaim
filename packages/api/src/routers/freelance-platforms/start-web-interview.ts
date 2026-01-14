@@ -1,9 +1,10 @@
-﻿import { and, desc, eq } from "@qbs-autonaim/db";
+import { and, desc, eq } from "@qbs-autonaim/db";
 import {
   interviewMessage,
   interviewSession,
   response as responseTable,
 } from "@qbs-autonaim/db/schema";
+import { inngest } from "@qbs-autonaim/jobs/client";
 import { z } from "zod";
 import { publicProcedure } from "../../trpc";
 import { createErrorHandler } from "../../utils/error-handler";
@@ -262,6 +263,19 @@ async function handleVacancyInterview(
     );
   }
 
+  // Запускаем парсинг профиля в фоне
+  try {
+    await inngest.send({
+      name: "freelance/profile.parse",
+      data: {
+        responseId: response.id,
+      },
+    });
+  } catch (error) {
+    console.warn("⚠️ Не удалось запустить парсинг профиля:", error);
+    // Не прерываем основной поток, парсинг можно будет запустить позже
+  }
+
   // Создаём interviewSession
   const [session] = await ctx.db
     .insert(interviewSession)
@@ -484,6 +498,19 @@ async function handleGigInterview(
         freelancerName: freelancerInfo.name,
       },
     );
+  }
+
+  // Запускаем парсинг профиля в фоне
+  try {
+    await inngest.send({
+      name: "freelance/profile.parse",
+      data: {
+        responseId: response.id,
+      },
+    });
+  } catch (error) {
+    console.warn("⚠️ Не удалось запустить парсинг профиля:", error);
+    // Не прерываем основной поток, парсинг можно будет запустить позже
   }
 
   // Создаём interviewSession для гига

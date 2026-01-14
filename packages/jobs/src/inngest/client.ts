@@ -18,6 +18,7 @@ import {
   interviewCompleteDataSchema,
   interviewSendQuestionDataSchema,
   messageBufferedDataSchema,
+  parseFreelanceProfileDataSchema,
   parseMissingContactsDataSchema,
   parseNewResumesDataSchema,
   refreshSingleResumeDataSchema,
@@ -61,6 +62,7 @@ export const inngest = new Inngest({
     "freelance/response.analyze": analyzeFreelanceResponseDataSchema,
     "freelance/invitation.generate": generateInvitationDataSchema,
     "freelance/notification.send": sendFreelanceNotificationDataSchema,
+    "freelance/profile.parse": parseFreelanceProfileDataSchema,
     "telegram/message.received": conversationMessageReceivedDataSchema,
     "telegram/message.send": conversationMessageSendDataSchema,
     "telegram/message.send.by-username":

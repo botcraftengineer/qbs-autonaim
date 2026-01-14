@@ -34,6 +34,10 @@ export const sendFreelanceNotificationDataSchema = z.object({
   error: z.string().optional(),
 });
 
+export const parseFreelanceProfileDataSchema = z.object({
+  responseId: z.string().min(1, "Response ID is required"),
+});
+
 /**
  * Type inference
  */
@@ -51,4 +55,8 @@ export type NotificationType = z.infer<typeof notificationTypeEnum>;
 
 export type SendFreelanceNotificationPayload = z.infer<
   typeof sendFreelanceNotificationDataSchema
+>;
+
+export type ParseFreelanceProfilePayload = z.infer<
+  typeof parseFreelanceProfileDataSchema
 >;
