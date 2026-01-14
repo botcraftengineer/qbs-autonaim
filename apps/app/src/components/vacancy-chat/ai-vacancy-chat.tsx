@@ -127,6 +127,7 @@ export function AIVacancyChat({
       requirements: document.requirements ?? "",
       responsibilities: document.responsibilities ?? "",
       conditions: document.conditions ?? "",
+      bonuses: document.bonuses ?? "",
       customBotInstructions: document.customBotInstructions ?? "",
       customScreeningPrompt: document.customScreeningPrompt ?? "",
       customInterviewQuestions: document.customInterviewQuestions ?? "",
@@ -484,7 +485,8 @@ function DocumentPreview({
     !document.description &&
     !document.requirements &&
     !document.responsibilities &&
-    !document.conditions;
+    !document.conditions &&
+    !document.bonuses;
 
   if (isEmpty) {
     return (
@@ -515,43 +517,75 @@ function DocumentPreview({
             </header>
           )}
 
-          {document.description && (
-            <DocumentSection
-              title="О компании"
-              content={document.description}
-            />
-          )}
+          {/* Структурированный документ вакансии */}
+          <div className="space-y-6">
+            {document.description && (
+              <>
+                <DocumentSection
+                  title="Описание вакансии"
+                  content={document.description}
+                />
+                <div className="text-center text-muted-foreground text-lg font-light">—</div>
+              </>
+            )}
 
-          {document.requirements && (
-            <DocumentSection
-              title="Требования"
-              content={document.requirements}
-            />
-          )}
+            {document.requirements && (
+              <>
+                <DocumentSection
+                  title="Требования"
+                  content={document.requirements}
+                />
+                <div className="text-center text-muted-foreground text-lg font-light">—</div>
+              </>
+            )}
 
-          {document.responsibilities && (
-            <DocumentSection
-              title="Обязанности"
-              content={document.responsibilities}
-            />
-          )}
+            {document.responsibilities && (
+              <>
+                <DocumentSection
+                  title="Обязанности"
+                  content={document.responsibilities}
+                />
+                <div className="text-center text-muted-foreground text-lg font-light">—</div>
+              </>
+            )}
 
-          {document.conditions && (
-            <DocumentSection title="Условия" content={document.conditions} />
-          )}
+            {(document.conditions || document.bonuses) && (
+              <>
+                {document.conditions && (
+                  <>
+                    <DocumentSection title="Условия" content={document.conditions} />
+                    <div className="text-center text-muted-foreground text-lg font-light">—</div>
+                  </>
+                )}
+                <DocumentSection
+                  title="Премии и другие мотивационные выплаты"
+                  content={document.bonuses || (document.conditions ? "Информация о премиях и мотивационных выплатах будет указана в условиях работы выше." : "Премии и мотивационные выплаты не указаны.")}
+                />
+              </>
+            )}
+          </div>
 
-          {document.customBotInstructions && (
-            <DocumentSection
-              title="Инструкции для бота"
-              content={document.customBotInstructions}
-            />
-          )}
+          {/* Дополнительные секции для внутренних нужд */}
+          {(document.customBotInstructions || document.customInterviewQuestions) && (
+            <div className="mt-8 pt-6 border-t border-muted">
+              <h3 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wide">
+                Дополнительные настройки
+              </h3>
 
-          {document.customInterviewQuestions && (
-            <DocumentSection
-              title="Вопросы для интервью"
-              content={document.customInterviewQuestions}
-            />
+              {document.customBotInstructions && (
+                <DocumentSection
+                  title="Инструкции для бота"
+                  content={document.customBotInstructions}
+                />
+              )}
+
+              {document.customInterviewQuestions && (
+                <DocumentSection
+                  title="Вопросы для интервью"
+                  content={document.customInterviewQuestions}
+                />
+              )}
+            </div>
           )}
         </article>
       </ScrollArea>
