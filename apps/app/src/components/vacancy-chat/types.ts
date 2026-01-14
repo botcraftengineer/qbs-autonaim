@@ -8,6 +8,7 @@ export interface VacancyDocument {
   requirements?: string;
   responsibilities?: string;
   conditions?: string;
+  bonuses?: string;
   customBotInstructions?: string;
   customScreeningPrompt?: string;
   customInterviewQuestions?: string;

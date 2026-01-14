@@ -23,7 +23,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "sync-gig-counts": "bun run src/scripts/sync-gig-response-counts.ts"
+    "sync-gig-counts": "bun run --env-file ../../.env src/scripts/sync-gig-response-counts.ts"
   },
   "dependencies": {
     "@qbs-autonaim/ai": "workspace:*",

@@ -11,6 +11,7 @@ const createVacancyFromChatSchema = z.object({
   requirements: z.string().optional(),
   responsibilities: z.string().optional(),
   conditions: z.string().optional(),
+  bonuses: z.string().optional(),
   customBotInstructions: z.string().max(5000).optional(),
   customScreeningPrompt: z.string().max(5000).optional(),
   customInterviewQuestions: z.string().max(5000).optional(),
@@ -33,18 +34,34 @@ export const createFromChat = protectedProcedure
       });
     }
 
-    // Формируем description из всех полей
-    const fullDescription = [
-      input.description,
-      input.requirements ? `\n\nТребования:\n${input.requirements}` : "",
-      input.responsibilities
-        ? `\n\nОбязанности:\n${input.responsibilities}`
-        : "",
-      input.conditions ? `\n\nУсловия:\n${input.conditions}` : "",
-    ]
-      .filter(Boolean)
-      .join("")
-      .trimStart();
+    // Формируем description из всех полей в структурированном формате
+    const descriptionParts: string[] = [];
+
+    if (input.description) {
+      descriptionParts.push(`Описание вакансии\n—\n${input.description}`);
+    }
+
+    if (input.requirements) {
+      if (descriptionParts.length > 0) descriptionParts.push("");
+      descriptionParts.push(`Требования\n—\n${input.requirements}`);
+    }
+
+    if (input.responsibilities) {
+      if (descriptionParts.length > 0) descriptionParts.push("");
+      descriptionParts.push(`Обязанности\n—\n${input.responsibilities}`);
+    }
+
+    if (input.conditions) {
+      if (descriptionParts.length > 0) descriptionParts.push("");
+      descriptionParts.push(`Условия\n—\n${input.conditions}`);
+    }
+
+    if (input.bonuses) {
+      if (descriptionParts.length > 0) descriptionParts.push("");
+      descriptionParts.push(`Премии и другие мотивационные выплаты\n—\n${input.bonuses}`);
+    }
+
+    const fullDescription = descriptionParts.join("\n") || null;
 
     // Создание вакансии (Requirement 6.2)
     const [newVacancy] = await ctx.db

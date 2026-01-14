@@ -23,6 +23,7 @@ interface VacancyDocument {
   requirements?: string;
   responsibilities?: string;
   conditions?: string;
+  bonuses?: string;
   customBotInstructions?: string;
   customScreeningPrompt?: string;
   customInterviewQuestions?: string;
@@ -98,6 +99,7 @@ function extractPartialResponse(
     "requirements",
     "responsibilities",
     "conditions",
+    "bonuses",
   ] as const;
 
   // Ищем вложенный document объект
@@ -256,6 +258,7 @@ function validateAndNormalizeResponse(
       fallbackDocument?.responsibilities || "",
     ),
     conditions: getString("conditions", fallbackDocument?.conditions || ""),
+    bonuses: getString("bonuses", fallbackDocument?.bonuses || ""),
     customBotInstructions: fallbackDocument?.customBotInstructions || "",
     customScreeningPrompt: fallbackDocument?.customScreeningPrompt || "",
     customInterviewQuestions: fallbackDocument?.customInterviewQuestions || "",
@@ -280,6 +283,7 @@ const vacancyChatRequestSchema = z.object({
       requirements: z.string().optional(),
       responsibilities: z.string().optional(),
       conditions: z.string().optional(),
+      bonuses: z.string().optional(),
       customBotInstructions: z.string().optional(),
       customScreeningPrompt: z.string().optional(),
       customInterviewQuestions: z.string().optional(),
@@ -325,7 +329,7 @@ ${conversationHistory
     ? `
 ТЕКУЩИЙ ДОКУМЕНТ ВАКАНСИИ:
 ${currentDocument.title ? `Название: ${currentDocument.title}` : "(не заполнено)"}
-${currentDocument.description ? `Описание: ${currentDocument.description}` : "(не заполнено)"}
+${currentDocument.description ? `Описание вакансии:\n${currentDocument.description}` : "(не заполнено)"}
 ${currentDocument.requirements ? `Требования:\n${currentDocument.requirements}` : "(не заполнено)"}
 ${currentDocument.responsibilities ? `Обязанности:\n${currentDocument.responsibilities}` : "(не заполнено)"}
 ${currentDocument.conditions ? `Условия:\n${currentDocument.conditions}` : "(не заполнено)"}
@@ -370,8 +374,15 @@ ${documentSection}
 - Сначала узнай должность (title) — предложи популярные варианты (одиночный выбор)
 - Затем требования (requirements) — предложи навыки и технологии (МУЛЬТИВЫБОР)
 - Потом обязанности (responsibilities) — предложи типичные задачи (МУЛЬТИВЫБОР)
-- Далее условия (conditions) — формат работы, бенефиты (МУЛЬТИВЫБОР для бенефитов)
-- В конце описание компании (description) — если нужно
+- Далее условия (conditions) — формат работы, зарплата, бенефиты (МУЛЬТИВЫБОР для бенефитов)
+- Потом премии и мотивационные выплаты (bonuses) — бонусы, премии, дополнительные мотивации (МУЛЬТИВЫБОР)
+- В конце описание вакансии (description) — привлекательное описание для кандидатов
+
+ФОРМАТ ЗАПОЛНЕНИЯ ПОЛЕЙ:
+- description: Привлекательное описание вакансии для кандидатов (1-2 абзаца)
+- requirements: Список требований с маркерами (каждый пункт на новой строке с "- " или "• ")
+- responsibilities: Список обязанностей с маркерами
+- conditions: Включает зарплату, формат работы, бенефиты, премии и мотивационные выплаты
 
 ФОРМАТ ОТВЕТА (строго JSON):
 {
@@ -383,10 +394,11 @@ ${documentSection}
   ],
   "document": {
     "title": "Название должности или null если не определено",
-    "description": "Описание или null",
-    "requirements": "Требования или null",
-    "responsibilities": "Обязанности или null",
-    "conditions": "Условия или null"
+    "description": "Привлекательное описание вакансии для кандидатов или null",
+    "requirements": "Требования к кандидату (с маркерами) или null",
+    "responsibilities": "Обязанности кандидата (с маркерами) или null",
+    "conditions": "Условия работы (зарплата, формат, бенефиты) или null",
+    "bonuses": "Премии и мотивационные выплаты (бонусы, премии) или null"
   }
 }
 
@@ -394,8 +406,14 @@ ${documentSection}
 - Для выбора должности (isMultiSelect: false): [{"id":"1","label":"Frontend","value":"Frontend-разработчик"},{"id":"2","label":"Backend","value":"Backend-разработчик"}]
 - Для уровня (isMultiSelect: false): [{"id":"1","label":"Junior","value":"Уровень Junior, 1-2 года опыта"},{"id":"2","label":"Middle","value":"Уровень Middle, 2-4 года опыта"}]
 - Для навыков (isMultiSelect: true): [{"id":"1","label":"React","value":"React"},{"id":"2","label":"TypeScript","value":"TypeScript"},{"id":"3","label":"Node.js","value":"Node.js"}]
-- Для бенефитов (isMultiSelect: true): [{"id":"1","label":"🏠 Удалёнка","value":"Удалённая работа"},{"id":"2","label":"💰 ДМС","value":"ДМС"},{"id":"3","label":"📚 Обучение","value":"Оплата обучения"}]
+- Для бенефитов (isMultiSelect: true): [{"id":"1","label":"🏠 Удалёнка","value":"Удалённая работа"},{"id":"2","label":"💰 ДМС","value":"ДМС"},{"id":"3","label":"📚 Обучение","value":"Оплата обучения"},{"id":"4","label":"🎁 Премии","value":"Квартальные премии по результатам работы"}]
+- Для зарплаты: [{"id":"1","label":"100-150k","value":"Зарплата 100-150 тысяч рублей"},{"id":"2","label":"150-200k","value":"Зарплата 150-200 тысяч рублей"}]
 - Для завершения (isMultiSelect: false): [{"id":"1","label":"✅ Всё верно","value":"Вакансия готова, сохраняем"},{"id":"2","label":"✏️ Изменить","value":"Хочу что-то изменить"}]
+
+ФОРМАТИРОВАНИЕ ТЕКСТА:
+- Для requirements и responsibilities используй маркеры: каждый пункт на новой строке, начинай с "- " или "• "
+- Для conditions включи зарплату, формат работы, бенефиты и премии
+- Description должно быть привлекательным текстом для кандидатов
 
 ВАЖНО: 
 - Верни ТОЛЬКО валидный JSON
