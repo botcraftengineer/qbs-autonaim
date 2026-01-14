@@ -96,7 +96,7 @@ export default function VacancySettingsPage({
           customScreeningPrompt: vacancy.customScreeningPrompt,
           customInterviewQuestions: vacancy.customInterviewQuestions,
           customOrganizationalQuestions: vacancy.customOrganizationalQuestions,
-          source: vacancy.source,
+          source: vacancy.source === "MANUAL" || vacancy.source === "TELEGRAM" ? null : vacancy.source,
           externalId: vacancy.externalId,
           url: vacancy.url,
         }}

@@ -25,7 +25,7 @@ import {
   updateVacancySettingsSchema,
 } from "@qbs-autonaim/validators";
 import {
-  IconExternalLink,
+  ExternalLink,
   Loader2,
   MessageSquare,
   Save,
@@ -45,13 +45,17 @@ interface VacancySettingsFormProps {
     customScreeningPrompt?: string | null;
     customInterviewQuestions?: string | null;
     customOrganizationalQuestions?: string | null;
-    source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK";
+    source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK" | null;
     externalId?: string | null;
     url?: string | null;
   };
   onSave: (data: UpdateVacancySettingsInput) => Promise<void>;
   onImprove: (
-    fieldType: keyof UpdateVacancySettingsInput,
+    fieldType:
+      | "customBotInstructions"
+      | "customScreeningPrompt"
+      | "customInterviewQuestions"
+      | "customOrganizationalQuestions",
     currentValue: string,
     context?: { vacancyTitle?: string; vacancyDescription?: string },
   ) => Promise<string>;
@@ -76,7 +80,7 @@ export function VacancySettingsForm({
       customInterviewQuestions: initialData?.customInterviewQuestions ?? "",
       customOrganizationalQuestions:
         initialData?.customOrganizationalQuestions ?? "",
-      source: initialData?.source ?? undefined,
+      source: initialData?.source ?? null,
       externalId: initialData?.externalId ?? "",
       url: initialData?.url ?? "",
     },
@@ -117,6 +121,16 @@ export function VacancySettingsForm({
   };
 
   const handleImprove = async (fieldName: keyof UpdateVacancySettingsInput) => {
+    // Только текстовые поля можно улучшать
+    if (
+      fieldName !== "customBotInstructions" &&
+      fieldName !== "customScreeningPrompt" &&
+      fieldName !== "customInterviewQuestions" &&
+      fieldName !== "customOrganizationalQuestions"
+    ) {
+      return;
+    }
+
     const currentValue = form.getValues(fieldName);
 
     if (!currentValue?.trim()) {
@@ -308,7 +322,7 @@ export function VacancySettingsForm({
               {/* Привязка к внешней платформе */}
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <IconExternalLink className="size-4 text-muted-foreground" />
+                  <ExternalLink className="size-4 text-muted-foreground" />
                   <h3 className="text-base font-medium text-foreground">
                     Привязка к внешней платформе
                   </h3>
@@ -324,7 +338,7 @@ export function VacancySettingsForm({
                         </FormLabel>
                         <Select
                           onValueChange={field.onChange}
-                          value={field.value}
+                          value={field.value ?? undefined}
                         >
                           <FormControl>
                             <SelectTrigger aria-label="Выберите платформу">
