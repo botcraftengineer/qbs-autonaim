@@ -2,7 +2,6 @@
 
 import {
   Button,
-  Card,
   cn,
   Dialog,
   DialogContent,
@@ -10,14 +9,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   Input,
   Label,
   ScrollArea,
   Textarea,
   toast,
 } from "@qbs-autonaim/ui";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
   Bot,
@@ -52,11 +50,14 @@ export function AIVacancyChat({
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   // Получаем настройки компании
-  const { data: botSettings } = trpc.workspace.getBotSettings.useQuery({
-    workspaceId,
-  });
+  const { data: botSettings } = useQuery(
+    trpc.workspace.getBotSettings.queryOptions({
+      workspaceId,
+    }),
+  );
 
   const {
     document,
@@ -103,6 +104,10 @@ export function AIVacancyChat({
       onSuccess: () => {
         toast.success("Настройки обновлены");
         setShowSettingsEdit(false);
+        // Инвалидируем кэш для обновления настроек
+        queryClient.invalidateQueries({
+          queryKey: trpc.workspace.getBotSettings.queryKey({ workspaceId }),
+        });
         // Перезагружаем чат с новыми настройками
         clearChat();
       },
@@ -373,8 +378,10 @@ export function AIVacancyChat({
                 const formData = new FormData(e.target as HTMLFormElement);
                 const data = {
                   companyName: formData.get("companyName") as string,
-                  companyDescription: (formData.get("companyDescription") as string) || undefined,
-                  companyWebsite: (formData.get("companyWebsite") as string) || undefined,
+                  companyDescription:
+                    (formData.get("companyDescription") as string) || undefined,
+                  companyWebsite:
+                    (formData.get("companyWebsite") as string) || undefined,
                   botName: formData.get("botName") as string,
                   botRole: formData.get("botRole") as string,
                 };
@@ -454,7 +461,9 @@ export function AIVacancyChat({
                   type="submit"
                   disabled={updateSettingsMutation.isPending}
                 >
-                  {updateSettingsMutation.isPending ? "Сохранение..." : "Сохранить"}
+                  {updateSettingsMutation.isPending
+                    ? "Сохранение..."
+                    : "Сохранить"}
                 </Button>
               </DialogFooter>
             </form>
@@ -484,7 +493,9 @@ function ChatMessage({
   const isMultiSelect = message.isMultiSelect && showQuickReplies;
 
   // Состояние для freeform полей
-  const [freeformInputs, setFreeformInputs] = useState<Record<string, string>>({});
+  const [freeformInputs, setFreeformInputs] = useState<Record<string, string>>(
+    {},
+  );
   const [activeFreeform, setActiveFreeform] = useState<string | null>(null);
 
   const handleFreeformToggle = (replyId: string) => {
@@ -496,12 +507,12 @@ function ChatMessage({
     if (customValue) {
       onQuickReplySelect(`${reply.value}: ${customValue}`);
       setActiveFreeform(null);
-      setFreeformInputs(prev => ({ ...prev, [replyId]: '' }));
+      setFreeformInputs((prev) => ({ ...prev, [replyId]: "" }));
     }
   };
 
   const handleFreeformInputChange = (replyId: string, value: string) => {
-    setFreeformInputs(prev => ({ ...prev, [replyId]: value }));
+    setFreeformInputs((prev) => ({ ...prev, [replyId]: value }));
   };
 
   return (
@@ -558,7 +569,11 @@ function ChatMessage({
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => reply.freeform ? handleFreeformToggle(reply.id) : onQuickReplySelect(reply.value)}
+                    onClick={() =>
+                      reply.freeform
+                        ? handleFreeformToggle(reply.id)
+                        : onQuickReplySelect(reply.value)
+                    }
                     disabled={disabled}
                     className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
                     style={{ touchAction: "manipulation" }}
@@ -567,7 +582,7 @@ function ChatMessage({
                       <>
                         {reply.label}
                         <span className="ml-1 text-muted-foreground">
-                          {activeFreeform === reply.id ? '✏️' : '💬'}
+                          {activeFreeform === reply.id ? "✏️" : "💬"}
                         </span>
                       </>
                     ) : (
@@ -579,18 +594,22 @@ function ChatMessage({
                   {reply.freeform && activeFreeform === reply.id && (
                     <div className="flex gap-2 ml-4">
                       <Textarea
-                        value={freeformInputs[reply.id] || ''}
-                        onChange={(e) => handleFreeformInputChange(reply.id, e.target.value)}
-                        placeholder={reply.placeholder || "Опишите своими словами..."}
+                        value={freeformInputs[reply.id] || ""}
+                        onChange={(e) =>
+                          handleFreeformInputChange(reply.id, e.target.value)
+                        }
+                        placeholder={
+                          reply.placeholder || "Опишите своими словами..."
+                        }
                         maxLength={reply.maxLength || 1000}
                         className="min-h-[60px] text-xs resize-none"
                         disabled={disabled}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter' && !e.shiftKey) {
+                          if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleFreeformSubmit(reply.id, reply);
                           }
-                          if (e.key === 'Escape') {
+                          if (e.key === "Escape") {
                             setActiveFreeform(null);
                           }
                         }}
@@ -599,7 +618,9 @@ function ChatMessage({
                         <Button
                           size="sm"
                           onClick={() => handleFreeformSubmit(reply.id, reply)}
-                          disabled={!freeformInputs[reply.id]?.trim() || disabled}
+                          disabled={
+                            !freeformInputs[reply.id]?.trim() || disabled
+                          }
                           className="px-2 py-1 h-6 text-xs"
                         >
                           ✓
@@ -777,7 +798,9 @@ function DocumentPreview({
                   title="Описание вакансии"
                   content={document.description}
                 />
-                <div className="text-center text-muted-foreground text-lg font-light">—</div>
+                <div className="text-center text-muted-foreground text-lg font-light">
+                  —
+                </div>
               </>
             )}
 
@@ -787,7 +810,9 @@ function DocumentPreview({
                   title="Требования"
                   content={document.requirements}
                 />
-                <div className="text-center text-muted-foreground text-lg font-light">—</div>
+                <div className="text-center text-muted-foreground text-lg font-light">
+                  —
+                </div>
               </>
             )}
 
@@ -797,7 +822,9 @@ function DocumentPreview({
                   title="Обязанности"
                   content={document.responsibilities}
                 />
-                <div className="text-center text-muted-foreground text-lg font-light">—</div>
+                <div className="text-center text-muted-foreground text-lg font-light">
+                  —
+                </div>
               </>
             )}
 
@@ -805,20 +832,31 @@ function DocumentPreview({
               <>
                 {document.conditions && (
                   <>
-                    <DocumentSection title="Условия" content={document.conditions} />
-                    <div className="text-center text-muted-foreground text-lg font-light">—</div>
+                    <DocumentSection
+                      title="Условия"
+                      content={document.conditions}
+                    />
+                    <div className="text-center text-muted-foreground text-lg font-light">
+                      —
+                    </div>
                   </>
                 )}
                 <DocumentSection
                   title="Премии и другие мотивационные выплаты"
-                  content={document.bonuses || (document.conditions ? "Информация о премиях и мотивационных выплатах будет указана в условиях работы выше." : "Премии и мотивационные выплаты не указаны.")}
+                  content={
+                    document.bonuses ||
+                    (document.conditions
+                      ? "Информация о премиях и мотивационных выплатах будет указана в условиях работы выше."
+                      : "Премии и мотивационные выплаты не указаны.")
+                  }
                 />
               </>
             )}
           </div>
 
           {/* Дополнительные секции для внутренних нужд */}
-          {(document.customBotInstructions || document.customInterviewQuestions) && (
+          {(document.customBotInstructions ||
+            document.customInterviewQuestions) && (
             <div className="mt-8 pt-6 border-t border-muted">
               <h3 className="text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wide">
                 Дополнительные настройки

@@ -21,3 +21,7 @@ export const gigResponseEvaluateDataSchema = z.object({
   workspaceId: z.string().min(1, "ID рабочей области обязателен"),
   chatSessionId: z.string().min(1, "ID сессии чата обязателен"),
 });
+
+export const gigSyncResponsesDataSchema = z.object({
+  gigId: z.string().uuid("ID гига должен быть валидным UUID"),
+});
