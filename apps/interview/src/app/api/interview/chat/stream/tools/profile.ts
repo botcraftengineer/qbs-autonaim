@@ -25,7 +25,7 @@ export function createGetInterviewProfileTool(
         if (!session) {
           return {
             available: false,
-            reason: "Session not found",
+            reason: "Сессия не найдена",
           };
         }
 
@@ -41,14 +41,14 @@ export function createGetInterviewProfileTool(
         if (!responseData) {
           return {
             available: false,
-            reason: "Response not found",
+            reason: "Ответ не найден",
           };
         }
 
         if (!responseData.profileData) {
           return {
             available: false,
-            reason: "Profile data not available (parsing may be in progress)",
+            reason: "Данные профиля недоступны (возможно, идет разбор)",
             platformProfileUrl: responseData.platformProfileUrl,
           };
         }
@@ -56,7 +56,7 @@ export function createGetInterviewProfileTool(
         if (responseData.profileData.error) {
           return {
             available: false,
-            reason: "Profile parsing failed",
+            reason: "Разбор профиля не удался",
             error: responseData.profileData.error,
             platformProfileUrl: responseData.platformProfileUrl,
           };
@@ -74,10 +74,10 @@ export function createGetInterviewProfileTool(
           platformProfileUrl: responseData.platformProfileUrl,
         };
       } catch (error) {
-        console.error("Error getting interview profile:", error);
+        console.error("Ошибка получения профиля интервью:", error);
         return {
           available: false,
-          reason: "Error retrieving profile data",
+          reason: "Ошибка получения данных профиля",
         };
       }
     },
