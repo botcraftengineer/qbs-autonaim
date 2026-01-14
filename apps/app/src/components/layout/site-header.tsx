@@ -1,9 +1,9 @@
 "use client";
 
-import { Button, Separator, SidebarTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@qbs-autonaim/ui";
-import { IconHelpCircle } from "@tabler/icons-react";
+import { Button, Separator, SidebarTrigger } from "@qbs-autonaim/ui";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
+import { InfoTooltip } from "../ui/info-tooltip";
 
 interface SiteHeaderProps {
   children?: React.ReactNode;
@@ -117,67 +117,18 @@ export function SiteHeader({ children }: SiteHeaderProps) {
         />
         <div className="lg:flex-1">
           <div className="hidden lg:flex items-center gap-2">
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-base font-medium text-foreground">
               {currentSection.title}
             </span>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-6 text-muted-foreground hover:text-foreground"
-                    aria-label={`Справка по разделу ${currentSection.title}`}
-                  >
-                    <IconHelpCircle className="size-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <div className="space-y-2">
-                    <p className="text-sm">{currentSection.description}</p>
-                    <a
-                      href={currentSection.docsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-400 hover:text-blue-300 hover:underline pointer-events-auto"
-                    >
-                      Подробнее в документации →
-                    </a>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <InfoTooltip
+              content={`${currentSection.description} [Подробнее в документации](${currentSection.docsUrl})`}
+            />
           </div>
           {/* Мобильная версия - только иконка помощи */}
           <div className="flex lg:hidden">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-9 text-muted-foreground hover:text-foreground"
-                    aria-label={`Справка по разделу ${currentSection.title}`}
-                  >
-                    <IconHelpCircle className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="max-w-xs">
-                  <div className="space-y-2">
-                    <p className="font-medium text-sm">{currentSection.title}</p>
-                    <p className="text-sm">{currentSection.description}</p>
-                    <a
-                      href={currentSection.docsUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-400 hover:text-blue-300 hover:underline pointer-events-auto"
-                    >
-                      Подробнее в документации →
-                    </a>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <InfoTooltip
+              content={`**${currentSection.title}**\n\n${currentSection.description} [Подробнее в документации](${currentSection.docsUrl})`}
+            />
           </div>
         </div>
         {children && (
