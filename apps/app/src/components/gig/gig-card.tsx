@@ -131,7 +131,7 @@ export function GigCard({
   orgSlug,
   workspaceSlug,
   onDelete,
-  onDuplicate,
+  onDuplicate: _onDuplicate,
   onToggleActive,
 }: GigCardProps) {
   const budget = formatBudget(gig.budgetMin, gig.budgetMax);

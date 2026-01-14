@@ -1,0 +1,286 @@
+﻿[
+  {
+    "sessionId": "session_001",
+    "role": "system",
+    "type": "event",
+    "channel": "telegram",
+    "content": "Добро пожаловать! Я AI-ассистент компании. Проведу с вами короткое интервью по вакансии Senior Frontend Developer. Готовы начать?",
+    "createdAt": "2024-01-22T14:10:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Да, готов!",
+    "externalId": "tg_msg_001",
+    "createdAt": "2024-01-22T14:11:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Отлично! Расскажите о вашем опыте работы с React и TypeScript",
+    "metadata": {
+      "questionNumber": 1,
+      "tokensUsed": 45,
+      "latencyMs": 850
+    },
+    "createdAt": "2024-01-22T14:12:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Работаю с React уже 4 года, последние 2 года активно использую TypeScript. Создавал SPA приложения с высокой нагрузкой, использовал Redux для управления состоянием.",
+    "externalId": "tg_msg_002",
+    "createdAt": "2024-01-22T14:15:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Отличный опыт! Опишите самый сложный проект, над которым вы работали",
+    "metadata": {
+      "questionNumber": 2,
+      "tokensUsed": 52,
+      "latencyMs": 920
+    },
+    "createdAt": "2024-01-22T14:16:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Разрабатывал платформу для онлайн-обучения с видеостримингом. Основные челленджи: оптимизация производительности при большом количестве одновременных пользователей, реализация real-time обновлений через WebSocket.",
+    "externalId": "tg_msg_003",
+    "createdAt": "2024-01-22T14:20:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Впечатляет! Какие инструменты тестирования вы используете?",
+    "metadata": {
+      "questionNumber": 3,
+      "tokensUsed": 38,
+      "latencyMs": 780
+    },
+    "createdAt": "2024-01-22T14:21:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Использую Jest для unit-тестов, React Testing Library для компонентов. Также имею опыт с E2E тестированием через Cypress.",
+    "externalId": "tg_msg_004",
+    "createdAt": "2024-01-22T14:25:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Как вы подходите к оптимизации производительности React приложений?",
+    "metadata": {
+      "questionNumber": 4,
+      "tokensUsed": 42,
+      "latencyMs": 810
+    },
+    "createdAt": "2024-01-22T14:26:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Использую React.memo, useMemo, useCallback для предотвращения лишних рендеров. Применяю code splitting и lazy loading. Мониторю производительность через React DevTools Profiler.",
+    "externalId": "tg_msg_005",
+    "createdAt": "2024-01-22T14:30:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Почему вы заинтересованы в этой позиции?",
+    "metadata": {
+      "questionNumber": 5,
+      "tokensUsed": 35,
+      "latencyMs": 750
+    },
+    "createdAt": "2024-01-22T14:31:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Меня привлекает возможность работать с современным стеком технологий и решать интересные технические задачи. Хочу развиваться в команде опытных разработчиков.",
+    "externalId": "tg_msg_006",
+    "createdAt": "2024-01-22T15:00:00Z"
+  },
+  {
+    "sessionId": "session_001",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Спасибо за ответы! Интервью завершено. Мы свяжемся с вами в ближайшее время.",
+    "metadata": {
+      "tokensUsed": 40,
+      "latencyMs": 800
+    },
+    "createdAt": "2024-01-22T15:30:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "system",
+    "type": "event",
+    "channel": "web",
+    "content": "Здравствуйте! Начинаем интервью по вакансии Senior Frontend Developer",
+    "createdAt": "2024-01-23T10:10:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "assistant",
+    "type": "text",
+    "channel": "web",
+    "content": "Расскажите о вашем опыте лидерства команды",
+    "metadata": {
+      "questionNumber": 1,
+      "tokensUsed": 42,
+      "latencyMs": 820
+    },
+    "createdAt": "2024-01-23T10:12:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "user",
+    "type": "text",
+    "channel": "web",
+    "content": "Последний год работала техлидом команды из 4 разработчиков. Проводила code review, менторила junior разработчиков, участвовала в архитектурных решениях.",
+    "createdAt": "2024-01-23T10:15:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "assistant",
+    "type": "text",
+    "channel": "web",
+    "content": "Как вы организуете работу с состоянием в крупных приложениях?",
+    "metadata": {
+      "questionNumber": 2,
+      "tokensUsed": 48,
+      "latencyMs": 890
+    },
+    "createdAt": "2024-01-23T10:20:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "user",
+    "type": "text",
+    "channel": "web",
+    "content": "Использую Redux Toolkit с разделением на слайсы по доменам. Применяю RTK Query для работы с API. Для локального состояния компонентов использую Context API или Zustand.",
+    "createdAt": "2024-01-23T10:25:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "assistant",
+    "type": "text",
+    "channel": "web",
+    "content": "Опишите ваш опыт с GraphQL",
+    "metadata": {
+      "questionNumber": 3,
+      "tokensUsed": 38,
+      "latencyMs": 770
+    },
+    "createdAt": "2024-01-23T10:30:00Z"
+  },
+  {
+    "sessionId": "session_002",
+    "role": "user",
+    "type": "text",
+    "channel": "web",
+    "content": "Работала с Apollo Client на нескольких проектах. Настраивала кеширование, оптимизировала запросы, использовала subscriptions для real-time обновлений.",
+    "createdAt": "2024-01-23T10:35:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "system",
+    "type": "event",
+    "channel": "telegram",
+    "content": "Добро пожаловать! Начинаем интервью по вакансии Python Backend Developer",
+    "createdAt": "2024-01-24T15:20:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Расскажите о вашем опыте с Django",
+    "metadata": {
+      "questionNumber": 1,
+      "tokensUsed": 40,
+      "latencyMs": 800
+    },
+    "createdAt": "2024-01-24T15:25:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Работаю с Django 3 года. Создавал REST API, настраивал ORM, работал с миграциями. Использовал Django REST Framework для построения API.",
+    "externalId": "tg_msg_101",
+    "createdAt": "2024-01-24T15:30:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Как вы оптимизируете производительность Django приложений?",
+    "metadata": {
+      "questionNumber": 2,
+      "tokensUsed": 45,
+      "latencyMs": 850
+    },
+    "createdAt": "2024-01-24T15:35:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Использую select_related и prefetch_related для оптимизации запросов. Настраиваю индексы в БД. Применяю кеширование через Redis. Использую Celery для фоновых задач.",
+    "externalId": "tg_msg_102",
+    "createdAt": "2024-01-24T15:45:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "assistant",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Опишите ваш опыт работы с микросервисами",
+    "metadata": {
+      "questionNumber": 3,
+      "tokensUsed": 42,
+      "latencyMs": 820
+    },
+    "createdAt": "2024-01-24T15:50:00Z"
+  },
+  {
+    "sessionId": "session_003",
+    "role": "user",
+    "type": "text",
+    "channel": "telegram",
+    "content": "Участвовал в разработке микросервисной архитектуры. Сервисы общались через REST API и RabbitMQ. Использовали Docker для контейнеризации.",
+    "externalId": "tg_msg_103",
+    "createdAt": "2024-01-24T16:00:00Z"
+  }
+]

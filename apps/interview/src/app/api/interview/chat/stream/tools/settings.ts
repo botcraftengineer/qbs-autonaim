@@ -6,7 +6,7 @@ export function createGetInterviewSettingsTool(
   gig: GigLike | null,
   vacancy: VacancyLike | null,
   interviewContext: InterviewContextLite,
-  entityType: EntityType,
+  _entityType: EntityType,
 ) {
   return tool({
     description:

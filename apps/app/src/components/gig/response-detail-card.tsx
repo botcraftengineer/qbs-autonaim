@@ -16,7 +16,6 @@ import {
   DialogTab,
   ExperienceTab,
   InterviewScoringCard,
-  MetadataCard,
   ParsedProfileCard,
   PortfolioTab,
   ProposalTab,

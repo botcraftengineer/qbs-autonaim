@@ -1,8 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { eq } from "@qbs-autonaim/db";
 import type { NodePgDatabase } from "drizzle-orm/node-postgres";
-import * as schema from "@qbs-autonaim/db/schema";
+import type * as schema from "@qbs-autonaim/db/schema";
 
 export function createGetInterviewProfileTool(
   sessionId: string,

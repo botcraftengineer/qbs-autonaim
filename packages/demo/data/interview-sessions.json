@@ -1,0 +1,56 @@
+﻿[
+  {
+    "responseId": "response_001",
+    "status": "completed",
+    "lastChannel": "telegram",
+    "questionNumber": 5,
+    "totalQuestions": 5,
+    "messageCount": 12,
+    "lastMessageAt": "2024-01-22T15:30:00Z",
+    "metadata": {
+      "telegramUsername": "@alex_petrov_dev",
+      "telegramChatId": "123456789"
+    },
+    "startedAt": "2024-01-22T14:10:00Z",
+    "completedAt": "2024-01-22T15:30:00Z"
+  },
+  {
+    "responseId": "response_002",
+    "status": "completed",
+    "lastChannel": "web",
+    "questionNumber": 6,
+    "totalQuestions": 6,
+    "messageCount": 15,
+    "lastMessageAt": "2024-01-23T11:45:00Z",
+    "metadata": {},
+    "startedAt": "2024-01-23T10:10:00Z",
+    "completedAt": "2024-01-23T11:45:00Z"
+  },
+  {
+    "responseId": "response_003",
+    "status": "active",
+    "lastChannel": "telegram",
+    "questionNumber": 3,
+    "totalQuestions": 5,
+    "messageCount": 8,
+    "lastMessageAt": "2024-01-24T16:20:00Z",
+    "metadata": {
+      "telegramUsername": "@dmitry_python",
+      "telegramChatId": "987654321"
+    },
+    "startedAt": "2024-01-24T15:20:00Z",
+    "completedAt": null
+  },
+  {
+    "responseId": "response_004",
+    "status": "completed",
+    "lastChannel": "web",
+    "questionNumber": 5,
+    "totalQuestions": 5,
+    "messageCount": 13,
+    "lastMessageAt": "2024-01-25T14:30:00Z",
+    "metadata": {},
+    "startedAt": "2024-01-25T13:10:00Z",
+    "completedAt": "2024-01-25T14:30:00Z"
+  }
+]

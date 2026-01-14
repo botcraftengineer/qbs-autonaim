@@ -219,5 +219,189 @@ async function loadDemoData() {
   }
 }
 
+/**
+ * Скрипт для загрузки демо данных интервью и чатов
+ */
+async function loadInterviewAndChatData() {
+  console.log("\n💬 Загрузка данных интервью и чатов...");
+
+  try {
+    const { interviewSession, interviewMessage, chatSession, chatMessage } =
+      await import("@qbs-autonaim/db/schema");
+
+    // Загружаем данные из JSON файлов
+    const interviewSessionsPath = join(
+      __dirname,
+      "../data/interview-sessions.json",
+    );
+    const interviewMessagesPath = join(
+      __dirname,
+      "../data/interview-messages.json",
+    );
+    const chatSessionsPath = join(__dirname, "../data/chat-sessions.json");
+    const chatMessagesPath = join(__dirname, "../data/chat-messages.json");
+
+    const interviewSessionsData = JSON.parse(
+      readFileSync(interviewSessionsPath, "utf-8"),
+    );
+    const interviewMessagesData = JSON.parse(
+      readFileSync(interviewMessagesPath, "utf-8"),
+    );
+    const chatSessionsData = JSON.parse(
+      readFileSync(chatSessionsPath, "utf-8"),
+    );
+    const chatMessagesData = JSON.parse(
+      readFileSync(chatMessagesPath, "utf-8"),
+    );
+
+    console.log(`🎤 Найдено ${interviewSessionsData.length} интервью-сессий`);
+    console.log(
+      `💬 Найдено ${interviewMessagesData.length} сообщений интервью`,
+    );
+    console.log(`👥 Найдено ${chatSessionsData.length} чат-сессий`);
+    console.log(`📝 Найдено ${chatMessagesData.length} сообщений чатов`);
+
+    // Получаем маппинг откликов для связи с интервью
+    const responses = await db.query.response.findMany({
+      columns: { id: true, candidateId: true },
+    });
+
+    const responseMapping: Record<string, string> = {};
+    for (const resp of responses) {
+      responseMapping[resp.candidateId] = resp.id;
+    }
+
+    // Загружаем интервью-сессии
+    console.log("\n🎤 Загружаем интервью-сессии...");
+    const updatedInterviewSessions = interviewSessionsData.map((session) => ({
+      ...session,
+      responseId: responseMapping[session.responseId] || responses[0]?.id,
+      startedAt: session.startedAt ? new Date(session.startedAt) : null,
+      completedAt: session.completedAt ? new Date(session.completedAt) : null,
+      lastMessageAt: session.lastMessageAt
+        ? new Date(session.lastMessageAt)
+        : null,
+      createdAt: session.createdAt ? new Date(session.createdAt) : new Date(),
+      updatedAt: session.updatedAt ? new Date(session.updatedAt) : new Date(),
+    }));
+
+    const insertedInterviewSessions = await db
+      .insert(interviewSession)
+      .values(updatedInterviewSessions)
+      .returning({ id: interviewSession.id, status: interviewSession.status });
+
+    console.log("✅ Интервью-сессии загружены:");
+    for (const session of insertedInterviewSessions) {
+      console.log(`  - Сессия ${session.id} (${session.status})`);
+    }
+
+    // Создаем маппинг для сообщений интервью
+    const sessionMapping: Record<string, string> = {};
+    if (insertedInterviewSessions.length > 0) {
+      sessionMapping.session_001 = insertedInterviewSessions[0]?.id || "";
+      sessionMapping.session_002 = insertedInterviewSessions[1]?.id || "";
+      sessionMapping.session_003 = insertedInterviewSessions[2]?.id || "";
+    }
+
+    // Загружаем сообщения интервью
+    console.log("\n💬 Загружаем сообщения интервью...");
+    const updatedInterviewMessages = interviewMessagesData.map((message) => ({
+      ...message,
+      sessionId:
+        sessionMapping[message.sessionId] || insertedInterviewSessions[0]?.id,
+      createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+      updatedAt: message.updatedAt ? new Date(message.updatedAt) : new Date(),
+    }));
+
+    const insertedInterviewMessages = await db
+      .insert(interviewMessage)
+      .values(updatedInterviewMessages)
+      .returning({ id: interviewMessage.id, role: interviewMessage.role });
+
+    console.log("✅ Сообщения интервью загружены:");
+    console.log(`  - Загружено ${insertedInterviewMessages.length} сообщений`);
+
+    // Получаем маппинг вакансий и гигов для чатов
+    const vacancies = await db.query.vacancy.findMany({
+      columns: { id: true },
+      limit: 5,
+    });
+    const gigs = await db.query.gig.findMany({
+      columns: { id: true },
+      limit: 5,
+    });
+
+    // Загружаем чат-сессии
+    console.log("\n👥 Загружаем чат-сессии...");
+    const updatedChatSessions = chatSessionsData.map((session, index) => ({
+      ...session,
+      entityId:
+        session.entityType === "vacancy"
+          ? vacancies[index % vacancies.length]?.id || vacancies[0]?.id
+          : gigs[index % gigs.length]?.id || gigs[0]?.id,
+      lastMessageAt: session.lastMessageAt
+        ? new Date(session.lastMessageAt)
+        : null,
+      createdAt: session.createdAt ? new Date(session.createdAt) : new Date(),
+      updatedAt: session.updatedAt ? new Date(session.updatedAt) : new Date(),
+    }));
+
+    const insertedChatSessions = await db
+      .insert(chatSession)
+      .values(updatedChatSessions)
+      .returning({ id: chatSession.id, title: chatSession.title });
+
+    console.log("✅ Чат-сессии загружены:");
+    for (const session of insertedChatSessions) {
+      console.log(`  - ${session.title || "Чат"} (ID: ${session.id})`);
+    }
+
+    // Создаем маппинг для сообщений чатов
+    const chatSessionMapping: Record<string, string> = {};
+    if (insertedChatSessions.length > 0) {
+      chatSessionMapping.chat_session_001 = insertedChatSessions[0]?.id || "";
+      chatSessionMapping.chat_session_002 = insertedChatSessions[1]?.id || "";
+      chatSessionMapping.chat_session_003 = insertedChatSessions[2]?.id || "";
+    }
+
+    // Загружаем сообщения чатов
+    console.log("\n📝 Загружаем сообщения чатов...");
+    const updatedChatMessages = chatMessagesData.map((message) => ({
+      ...message,
+      sessionId:
+        chatSessionMapping[message.sessionId] || insertedChatSessions[0]?.id,
+      createdAt: message.createdAt ? new Date(message.createdAt) : new Date(),
+    }));
+
+    const insertedChatMessages = await db
+      .insert(chatMessage)
+      .values(updatedChatMessages)
+      .returning({ id: chatMessage.id, role: chatMessage.role });
+
+    console.log("✅ Сообщения чатов загружены:");
+    console.log(`  - Загружено ${insertedChatMessages.length} сообщений`);
+
+    console.log("\n🎉 Данные интервью и чатов успешно загружены!");
+    console.log(
+      `📊 Итого: ${insertedInterviewSessions.length} интервью-сессий, ${insertedInterviewMessages.length} сообщений интервью, ${insertedChatSessions.length} чат-сессий, ${insertedChatMessages.length} сообщений чатов`,
+    );
+  } catch (error) {
+    console.error("❌ Ошибка при загрузке данных интервью и чатов:", error);
+    throw error;
+  }
+}
+
+// Обновляем основную функцию
+async function loadAllDemoData() {
+  try {
+    await loadDemoData();
+    await loadInterviewAndChatData();
+    console.log("\n✨ Все демо данные успешно загружены!");
+  } catch (error) {
+    console.error("❌ Ошибка при загрузке демо данных:", error);
+    process.exit(1);
+  }
+}
+
 // Запускаем скрипт
-loadDemoData();
+loadAllDemoData();

@@ -1,6 +1,6 @@
 import { gig, gigTypeValues } from "@qbs-autonaim/db/schema";
 import { platformSourceValues } from "@qbs-autonaim/db/schema";
-import { FreelancePlatformParser } from "@qbs-autonaim/shared/utils";
+import { parsePlatformLink } from "@qbs-autonaim/shared/utils";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
@@ -56,7 +56,7 @@ export const create = protectedProcedure
     let externalId = null;
 
     if (input.platformUrl) {
-      const parsed = FreelancePlatformParser.parseLink(input.platformUrl);
+      const parsed = parsePlatformLink(input.platformUrl);
       if (parsed) {
         platformSource = parsed.source;
         platformUrl = parsed.url;

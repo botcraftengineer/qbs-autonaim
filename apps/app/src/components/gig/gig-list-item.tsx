@@ -31,7 +31,7 @@ export function GigListItem({
   gig,
   orgSlug,
   workspaceSlug,
-  onDelete,
+  onDelete: _onDelete,
 }: GigListItemProps) {
   return (
     <div className="border rounded-lg p-3 hover:shadow-sm transition-shadow">

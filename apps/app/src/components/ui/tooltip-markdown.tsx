@@ -18,7 +18,6 @@ export const TooltipMarkdown = ({
               {...props}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
               className="font-semibold underline  text-blue-400"
             />
           ),

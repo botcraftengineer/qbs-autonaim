@@ -18,7 +18,6 @@ export const TooltipMarkdown = ({
               {...props}
               target="_blank"
               rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
             />
           ),
           code: ({ node, ...props }) => (

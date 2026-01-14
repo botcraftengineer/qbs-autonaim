@@ -1,0 +1,42 @@
+﻿[
+  {
+    "entityType": "vacancy",
+    "entityId": "vacancy_001",
+    "userId": "user_recruiter_001",
+    "title": "Обсуждение кандидатов на позицию Frontend Developer",
+    "status": "active",
+    "messageCount": 8,
+    "lastMessageAt": "2024-01-23T16:30:00Z",
+    "metadata": {
+      "participants": ["user_recruiter_001", "user_manager_001"],
+      "relatedCandidates": ["response_001", "response_002"]
+    },
+    "createdAt": "2024-01-22T10:00:00Z"
+  },
+  {
+    "entityType": "gig",
+    "entityId": "gig_001",
+    "userId": "user_client_001",
+    "title": "Обсуждение лендинга",
+    "status": "active",
+    "messageCount": 12,
+    "lastMessageAt": "2024-01-24T14:20:00Z",
+    "metadata": {
+      "participants": ["user_client_001", "user_freelancer_001"]
+    },
+    "createdAt": "2024-01-20T12:00:00Z"
+  },
+  {
+    "entityType": "vacancy",
+    "entityId": "vacancy_002",
+    "userId": "user_recruiter_002",
+    "title": "AI-ассистент по вакансии DevOps Engineer",
+    "status": "active",
+    "messageCount": 5,
+    "lastMessageAt": "2024-01-25T11:15:00Z",
+    "metadata": {
+      "isAIChat": true
+    },
+    "createdAt": "2024-01-25T09:00:00Z"
+  }
+]

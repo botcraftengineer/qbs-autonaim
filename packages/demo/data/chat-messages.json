@@ -1,0 +1,92 @@
+﻿[
+  {
+    "sessionId": "chat_session_001",
+    "userId": "user_recruiter_001",
+    "role": "user",
+    "type": "text",
+    "content": "Посмотрел резюме Алексея Петрова. Хороший кандидат, но нужно уточнить опыт с GraphQL",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-22T15:45:00Z"
+  },
+  {
+    "sessionId": "chat_session_001",
+    "userId": "user_manager_001",
+    "role": "user",
+    "type": "text",
+    "content": "Согласен. Мария Сидорова выглядит сильнее - есть опыт лидерства и знание GraphQL. Предлагаю пригласить обоих на техническое интервью",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-22T16:10:00Z"
+  },
+  {
+    "sessionId": "chat_session_001",
+    "userId": "user_recruiter_001",
+    "role": "user",
+    "type": "text",
+    "content": "Отлично, отправлю приглашения сегодня",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-22T16:15:00Z"
+  },
+  {
+    "sessionId": "chat_session_002",
+    "userId": "user_client_001",
+    "role": "user",
+    "type": "text",
+    "content": "Здравствуйте! Посмотрел ваше портфолио, очень понравилось. Когда можете приступить к работе над лендингом?",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-20T14:30:00Z"
+  },
+  {
+    "sessionId": "chat_session_002",
+    "userId": "user_freelancer_001",
+    "role": "user",
+    "type": "text",
+    "content": "Добрый день! Спасибо за отклик. Могу начать со следующей недели. Уточните, пожалуйста, есть ли готовый дизайн в Figma?",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-20T15:00:00Z"
+  },
+  {
+    "sessionId": "chat_session_002",
+    "userId": "user_client_001",
+    "role": "user",
+    "type": "text",
+    "content": "Да, дизайн готов. Отправлю ссылку на Figma в личку. Также нужна интеграция с формой обратной связи",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-20T15:15:00Z"
+  },
+  {
+    "sessionId": "chat_session_003",
+    "userId": "user_recruiter_002",
+    "role": "user",
+    "type": "text",
+    "content": "Покажи топ-3 кандидата на позицию DevOps Engineer",
+    "metadata": {
+      "isRead": true
+    },
+    "createdAt": "2024-01-25T09:30:00Z"
+  },
+  {
+    "sessionId": "chat_session_003",
+    "userId": "ai_assistant",
+    "role": "assistant",
+    "type": "text",
+    "content": "Вот топ-3 кандидата на позицию DevOps Engineer:\n\n1. Сергей Волков - 92 балла\n   - 4 года опыта с Kubernetes\n   - Сертификации AWS и CKA\n   - Опыт настройки CI/CD\n\n2. Иван Смирнов - 88 баллов\n   - 3 года DevOps опыта\n   - Знание Terraform и Ansible\n   - Опыт с GCP\n\n3. Петр Иванов - 85 баллов\n   - 5 лет системного администрирования\n   - Переход в DevOps\n   - Знание Docker и Jenkins",
+    "quickReplies": ["Показать детали по Сергею", "Сравнить кандидатов", "Пригласить на интервью"],
+    "metadata": {
+      "tokensUsed": 180,
+      "latencyMs": 1200
+    },
+    "createdAt": "2024-01-25T09:31:00Z"
+  }
+]

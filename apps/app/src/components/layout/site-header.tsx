@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Separator, SidebarTrigger } from "@qbs-autonaim/ui";
+import { Separator, SidebarTrigger } from "@qbs-autonaim/ui";
 import { usePathname } from "next/navigation";
 import { useMemo } from "react";
 import { InfoTooltip } from "../ui/info-tooltip";
