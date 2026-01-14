@@ -1,5 +1,4 @@
 import { inngest } from "../../client";
-import { FreelancePlatformParser } from "@qbs-autonaim/shared/utils";
 import { db } from "@qbs-autonaim/db/client";
 
 /**

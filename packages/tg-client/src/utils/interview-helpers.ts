@@ -5,7 +5,7 @@
  * и получения контекстной информации.
  */
 
-import { getQuestionCount } from "@qbs-autonaim/shared";
+import { getQuestionCount } from "@qbs-autonaim/server-utils";
 
 /**
  * Получить текущий шаг интервью (номер вопроса)

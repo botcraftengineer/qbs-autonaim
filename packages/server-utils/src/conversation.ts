@@ -6,7 +6,7 @@ import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { chatSession, interviewSession } from "@qbs-autonaim/db/schema";
 import { z } from "zod";
-import type { ConversationMetadata } from "../types/conversation";
+import type { ConversationMetadata } from "@qbs-autonaim/shared/types";
 
 /**
  * Zod схема для валидации ConversationMetadata

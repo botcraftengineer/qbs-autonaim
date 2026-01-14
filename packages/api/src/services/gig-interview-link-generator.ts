@@ -8,7 +8,7 @@
 import { and, eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
 import { customDomain, gig, interviewLink } from "@qbs-autonaim/db/schema";
-import { getInterviewBaseUrl } from "@qbs-autonaim/shared";
+import { getInterviewBaseUrl } from "@qbs-autonaim/server-utils";
 import { generateSlug } from "../utils/slug-generator";
 
 /**

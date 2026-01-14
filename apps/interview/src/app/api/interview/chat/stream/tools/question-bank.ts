@@ -5,7 +5,7 @@ import { z } from "zod";
 import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
-} from "@qbs-autonaim/shared";
+} from "@qbs-autonaim/server-utils";
 import type { LanguageModel, GigLike, VacancyLike, EntityType } from "../types";
 
 function parseQuestions(raw: string | null | undefined): string[] {

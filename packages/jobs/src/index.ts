@@ -8,12 +8,17 @@ export type {
   QuestionAnswer,
 } from "@qbs-autonaim/shared";
 
-// Re-export from shared package
+// Re-export from server-utils package
 export {
+  getChatSessionMetadata,
   getConversationMetadata,
+  getInterviewQuestionCount,
+  getInterviewSessionMetadata,
   getQuestionCount,
+  updateChatSessionMetadata,
   updateConversationMetadata,
-} from "@qbs-autonaim/shared";
+  updateInterviewSessionMetadata,
+} from "@qbs-autonaim/server-utils";
 export {
   extractVacancyRequirementsFunction,
   inngest,

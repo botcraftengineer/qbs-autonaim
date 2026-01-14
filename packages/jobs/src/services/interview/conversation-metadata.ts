@@ -7,7 +7,7 @@ import {
   getConversationMetadata,
   getQuestionCount,
   updateConversationMetadata,
-} from "@qbs-autonaim/shared";
+} from "@qbs-autonaim/server-utils";
 import { createLogger } from "../base";
 
 const logger = createLogger("ConversationMetadata");

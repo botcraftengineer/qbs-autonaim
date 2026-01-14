@@ -7,7 +7,7 @@
 
 import { env } from "@qbs-autonaim/config";
 import type { MessageBufferService } from "@qbs-autonaim/shared";
-import { getConversationMetadata } from "@qbs-autonaim/shared";
+import { getConversationMetadata } from "@qbs-autonaim/server-utils";
 import type { MessageData } from "../schemas/message-data.schema";
 import { getCurrentInterviewStep } from "../utils/interview-helpers";
 
