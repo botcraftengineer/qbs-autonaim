@@ -28,6 +28,16 @@ const parsePlatformUrl = (url: string) => {
 
   const normalizedUrl = url.trim();
 
+  // Проверяем HeadHunter (HH.ru)
+  if (/^https?:\/\/(?:www\.)?(?:hh\.ru|headhunter\.ru)\/vacancy\/\d+(?:.*)?$/.test(normalizedUrl)) {
+    return 'HH';
+  }
+
+  // Проверяем Avito
+  if (/^https?:\/\/(?:www\.)?avito\.ru\/[^\/]+\/[^\/]+\/\d+(?:.*)?$/.test(normalizedUrl)) {
+    return 'AVITO';
+  }
+
   // Проверяем KWork
   if (/^https?:\/\/(?:www\.)?kwork\.ru\/projects\/\d+(?:\/.*)?$/.test(normalizedUrl)) {
     return 'KWORK';
@@ -239,6 +249,8 @@ export function GigForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
+                  <SelectItem value="HH">HeadHunter</SelectItem>
+                  <SelectItem value="AVITO">Avito</SelectItem>
                   <SelectItem value="KWORK">KWork</SelectItem>
                   <SelectItem value="FL_RU">FL.ru</SelectItem>
                   <SelectItem value="FREELANCE_RU">Freelance.ru</SelectItem>
@@ -258,7 +270,7 @@ export function GigForm({
               <FormLabel>Ссылка на задание</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="https://kwork.ru/projects/3069013"
+                  placeholder="https://hh.ru/vacancy/12345678 или https://avito.ru/rossiya/rabota/vakansiya-1234567890"
                   {...field}
                 />
               </FormControl>

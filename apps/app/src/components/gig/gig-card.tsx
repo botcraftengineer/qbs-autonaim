@@ -27,20 +27,11 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
+import { IMPORT_SOURCE_LABELS } from "~/lib/shared/response-configs";
+
 // Импортируем только функцию, без зависимостей от DB
 const getPlatformDisplayName = (source: string) => {
-  const names: Record<string, string> = {
-    MANUAL: 'Ручной ввод',
-    KWORK: 'KWork',
-    FL_RU: 'FL.ru',
-    FREELANCE_RU: 'Freelance.ru',
-    HABR: 'Habr Freelance',
-    AVITO: 'Avito',
-    SUPERJOB: 'SuperJob',
-    WEB_LINK: 'Другая платформа',
-    TELEGRAM: 'Telegram'
-  };
-  return names[source as keyof typeof names] || source;
+  return IMPORT_SOURCE_LABELS[source] || source;
 };
 
 interface GigCardProps {

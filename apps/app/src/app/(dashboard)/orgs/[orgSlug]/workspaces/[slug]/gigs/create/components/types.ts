@@ -62,7 +62,7 @@ export const formSchema = z.object({
   requiredSkills: z.string(),
 
   // Ссылка на фриланс-платформу
-  platformSource: z.enum(["MANUAL", "KWORK", "FL_RU", "FREELANCE_RU", "WEB_LINK"]).optional(),
+  platformSource: z.enum(["MANUAL", "HH", "AVITO", "KWORK", "FL_RU", "FREELANCE_RU", "WEB_LINK"]).optional(),
   platformUrl: z.string().url().optional(),
 });
 
