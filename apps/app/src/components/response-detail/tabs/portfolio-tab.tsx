@@ -38,12 +38,14 @@ export function PortfolioTab({ response }: PortfolioTabProps) {
     isPending: isPortfolioLoading,
     error: portfolioError,
   } = useQuery(
-    workspace?.id && response.portfolioFileId
-      ? trpc.files.getFileUrl.queryOptions({
-          workspaceId: workspace.id,
-          fileId: response.portfolioFileId,
-        })
-      : skipToken,
+    trpc.files.getFileUrl.queryOptions(
+      workspace?.id && response.portfolioFileId
+        ? {
+            workspaceId: workspace.id,
+            fileId: response.portfolioFileId,
+          }
+        : skipToken
+    ),
   );
 
   const handleViewPhoto = () => {

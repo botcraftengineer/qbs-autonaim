@@ -10,9 +10,9 @@ export function useUserRole() {
   const { data: session, isPending } = authClient.useSession();
 
   return {
-    role: session?.role ?? "user",
-    isAdmin: session?.role === "admin",
-    isUser: session?.role === "user",
+    role: (session as any)?.role ?? "user",
+    isAdmin: (session as any)?.role === "admin",
+    isUser: (session as any)?.role === "user",
     isPending,
   };
 }

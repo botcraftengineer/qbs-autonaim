@@ -133,6 +133,7 @@ export function GigCard({
   onDelete,
   onDuplicate: _onDuplicate,
   onToggleActive,
+  onSyncResponses,
 }: GigCardProps) {
   const budget = formatBudget(gig.budgetMin, gig.budgetMax);
   const isOverdue = gig.deadline && gig.deadline < new Date();

@@ -161,6 +161,7 @@ export default function EditGigPage({ params }: PageProps) {
       gigId: gigId,
       workspaceId: workspace.id,
       settings: {
+        customDomainId: null,
         customBotInstructions: values.customBotInstructions || null,
         customScreeningPrompt: values.customScreeningPrompt || null,
         customInterviewQuestions: values.customInterviewQuestions || null,

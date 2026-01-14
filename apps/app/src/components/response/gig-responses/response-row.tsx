@@ -66,7 +66,7 @@ export function ResponseRow({
         )}
       </TableCell>
       <TableCell className="text-muted-foreground">
-        {formatDate(response.createdAt)}
+        {formatDate(new Date(response.createdAt))}
       </TableCell>
       <TableCell>
         <div className="flex items-center justify-end gap-1">

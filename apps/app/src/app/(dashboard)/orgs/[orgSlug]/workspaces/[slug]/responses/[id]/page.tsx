@@ -35,6 +35,12 @@ export default function ResponseDetailPage({
     enabled: Boolean(workspaceId),
   });
 
+  // Type assertion to include globalCandidate
+  const responseWithGlobalCandidate = response ? {
+    ...response,
+    globalCandidate: null, // TODO: load actual candidate if needed
+  } as any : null;
+
   if (!workspaceId) {
     return (
       <>
@@ -105,16 +111,16 @@ export default function ResponseDetailPage({
               </div>
 
               <div className="space-y-6 md:space-y-8">
-                <ResponseHeaderCard response={response} />
-                {response.screening && (
-                  <ScreeningResultsCard screening={response.screening} />
+                <ResponseHeaderCard response={responseWithGlobalCandidate!} />
+                {responseWithGlobalCandidate!.screening && (
+                  <ScreeningResultsCard screening={responseWithGlobalCandidate!.screening} />
                 )}
-                {response.interviewScoring && (
+                {responseWithGlobalCandidate!.interviewScoring && (
                   <InterviewScoringCard
-                    interviewScoring={response.interviewScoring}
+                    interviewScoring={responseWithGlobalCandidate!.interviewScoring}
                   />
                 )}
-                {response.experience && <ExperienceTab response={response} />}
+                {responseWithGlobalCandidate!.experience && <ExperienceTab response={responseWithGlobalCandidate!} />}
               </div>
             </div>
           </div>

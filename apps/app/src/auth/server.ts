@@ -8,7 +8,6 @@ import {
   WelcomeEmail,
 } from "@qbs-autonaim/emails";
 import { sendEmail } from "@qbs-autonaim/emails/send";
-import { nextCookies } from "better-auth/next-js";
 import { headers } from "next/headers";
 import { cache } from "react";
 
@@ -20,7 +19,6 @@ export const auth = initAuth({
   secret: env.AUTH_SECRET,
   googleClientId: env.AUTH_GOOGLE_ID,
   googleClientSecret: env.AUTH_GOOGLE_SECRET,
-  extraPlugins: [nextCookies()],
   // sendEmail используется внутренним плагином emailOTP и для сброса пароля
   sendEmail: async ({
     email,

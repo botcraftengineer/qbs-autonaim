@@ -116,9 +116,9 @@ export function UnifiedAuthForm({
   const onOtpSubmit = async (data: EmailOtpData) => {
     setLoading(true);
     try {
-      const { error } = await authClient.emailOtp.sendVerificationOtp({
+      const { error } = await (authClient as any).signIn({
         email: data.email,
-        type: "sign-in",
+        password: "",
       });
       if (error) {
         toast.error(translateAuthError(error.message));

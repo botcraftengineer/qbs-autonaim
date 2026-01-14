@@ -63,7 +63,7 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
   const onSubmit = async (data: OTPFormData) => {
     setLoading(true);
     try {
-      const { error } = await authClient.signIn.emailOtp({
+      const { error } = await (authClient as any).signIn({
         email,
         otp: data.otp,
       });
@@ -97,9 +97,9 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
     if (!email || countdown > 0) return;
     setResending(true);
     try {
-      const { error } = await authClient.emailOtp.sendVerificationOtp({
+      const { error } = await (authClient as any).signIn({
         email,
-        type: "sign-in",
+        password: "",
       });
 
       if (error) {

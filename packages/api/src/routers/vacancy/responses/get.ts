@@ -121,7 +121,7 @@ export const get = protectedProcedure
             return baseMessage;
           }),
         )
-      : undefined;
+      : [];
 
     return {
       ...response,
@@ -131,8 +131,8 @@ export const get = protectedProcedure
             ...screening,
             analysis: screening.analysis
               ? sanitizeHtml(screening.analysis)
-              : undefined,
-          }
+              : null,
+          } as typeof screening
         : null,
       interviewScoring: directInterviewScoring
         ? {
@@ -142,20 +142,30 @@ export const get = protectedProcedure
             detailedScore: directInterviewScoring.score,
             analysis: directInterviewScoring.analysis
               ? sanitizeHtml(directInterviewScoring.analysis)
-              : undefined,
+              : null,
+          } as {
+            score: number;
+            detailedScore: number;
+            analysis: string | null;
           }
         : null,
       interviewSession: session
         ? {
             ...session,
-            messages: messagesWithUrls,
+            messages: (messagesWithUrls || []) as any[],
             interviewScoring: sessionInterviewScoring
               ? {
                   score: sessionInterviewScoring.score,
-                  analysis: sessionInterviewScoring.analysis ?? undefined,
+                  analysis: sessionInterviewScoring.analysis
+                    ? sanitizeHtml(sessionInterviewScoring.analysis)
+                    : null,
+                } as {
+                  score: number;
+                  analysis: string | null;
                 }
-              : undefined,
-          }
+              : null,
+          } as any
         : undefined,
+      globalCandidateId: null,
     };
   });
