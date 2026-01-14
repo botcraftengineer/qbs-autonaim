@@ -52,6 +52,9 @@ export const update = protectedProcedure
       customScreeningPrompt?: string | null;
       customInterviewQuestions?: string | null;
       customOrganizationalQuestions?: string | null;
+      source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK";
+      externalId?: string | null;
+      url?: string | null;
       updatedAt: Date;
     } = {
       updatedAt: new Date(),
@@ -69,6 +72,15 @@ export const update = protectedProcedure
     if (input.settings.customOrganizationalQuestions !== undefined) {
       patch.customOrganizationalQuestions =
         input.settings.customOrganizationalQuestions;
+    }
+    if (input.settings.source !== undefined) {
+      patch.source = input.settings.source;
+    }
+    if (input.settings.externalId !== undefined) {
+      patch.externalId = input.settings.externalId;
+    }
+    if (input.settings.url !== undefined) {
+      patch.url = input.settings.url;
     }
 
     const result = await ctx.db
