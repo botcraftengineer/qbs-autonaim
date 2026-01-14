@@ -1,7 +1,9 @@
 ﻿import type { BotSettings } from "@qbs-autonaim/db/schema";
+import { botSettings as botSettingsTable } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -161,11 +163,11 @@ ${botSettings.botRole ? `Роль бота: ${botSettings.botRole}` : ""}
 
   const botPersonality = isSettingUpCompany
     ? "Ты — эксперт по настройке систем подбора персонала."
-    : (botSettings?.botName && botSettings?.botRole
+    : botSettings?.botName && botSettings?.botRole
       ? `Ты — ${botSettings.botName}, ${botSettings.botRole} компании "${botSettings.companyName}".`
       : botSettings?.companyName
         ? `Ты — эксперт по подбору персонала для компании "${botSettings.companyName}".`
-        : "Ты — эксперт по подбору персонала и созданию вакансий.");
+        : "Ты — эксперт по подбору персонала и созданию вакансий.";
 
   const companyContext = botSettings?.companyDescription
     ? `\n\nКОНТЕКСТ КОМПАНИИ: ${botSettings.companyDescription}\nУчитывай специфику и потребности этой компании при создании вакансий.`
@@ -346,7 +348,7 @@ export const chatGenerate = protectedProcedure
       const validated = validationResult.data;
 
       // Если настраиваем компанию, сохраняем настройки
-      if (isCompanySetup && 'companyName' in validated) {
+      if (isCompanySetup && "companyName" in validated) {
         // Сохраняем настройки компании
         const companyData = {
           companyName: validated.companyName,
@@ -359,13 +361,13 @@ export const chatGenerate = protectedProcedure
         if (botSettings) {
           // Обновляем существующие настройки
           await ctx.db
-            .update(ctx.db.botSettings)
+            .update(botSettingsTable)
             .set({ ...companyData, updatedAt: new Date() })
-            .where(eq(ctx.db.botSettings.workspaceId, workspaceId));
+            .where(eq(botSettingsTable.workspaceId, workspaceId));
         } else {
           // Создаем новые настройки
           await ctx.db
-            .insert(ctx.db.botSettings)
+            .insert(botSettingsTable)
             .values({ workspaceId, ...companyData });
         }
 
@@ -376,36 +378,46 @@ export const chatGenerate = protectedProcedure
         };
       }
 
-      return {
-        document: {
-          title: validated.title ?? currentDocument?.title ?? "",
-          description:
-            validated.description ?? currentDocument?.description ?? "",
-          requirements:
-            validated.requirements ?? currentDocument?.requirements ?? "",
-          responsibilities:
-            validated.responsibilities ??
-            currentDocument?.responsibilities ??
-            "",
-          conditions: validated.conditions ?? currentDocument?.conditions ?? "",
-          customBotInstructions:
-            validated.customBotInstructions ??
-            currentDocument?.customBotInstructions ??
-            "",
-          customScreeningPrompt:
-            validated.customScreeningPrompt ??
-            currentDocument?.customScreeningPrompt ??
-            "",
-          customInterviewQuestions:
-            validated.customInterviewQuestions ??
-            currentDocument?.customInterviewQuestions ??
-            "",
-          customOrganizationalQuestions:
-            validated.customOrganizationalQuestions ??
-            currentDocument?.customOrganizationalQuestions ??
-            "",
-        },
-      };
+      // Проверяем тип validated перед доступом к полям вакансии
+      if (!("companyName" in validated)) {
+        return {
+          document: {
+            title: validated.title ?? currentDocument?.title ?? "",
+            description:
+              validated.description ?? currentDocument?.description ?? "",
+            requirements:
+              validated.requirements ?? currentDocument?.requirements ?? "",
+            responsibilities:
+              validated.responsibilities ??
+              currentDocument?.responsibilities ??
+              "",
+            conditions:
+              validated.conditions ?? currentDocument?.conditions ?? "",
+            customBotInstructions:
+              validated.customBotInstructions ??
+              currentDocument?.customBotInstructions ??
+              "",
+            customScreeningPrompt:
+              validated.customScreeningPrompt ??
+              currentDocument?.customScreeningPrompt ??
+              "",
+            customInterviewQuestions:
+              validated.customInterviewQuestions ??
+              currentDocument?.customInterviewQuestions ??
+              "",
+            customOrganizationalQuestions:
+              validated.customOrganizationalQuestions ??
+              currentDocument?.customOrganizationalQuestions ??
+              "",
+          },
+        };
+      }
+
+      // Если дошли сюда, значит что-то пошло не так
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Неожиданный формат данных от AI",
+      });
     } catch (error) {
       if (error instanceof TRPCError) throw error;
       console.error("Error generating vacancy:", error);
