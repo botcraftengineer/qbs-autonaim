@@ -125,6 +125,7 @@ export class FreelancePlatformParser {
       FL_RU: `https://fl.ru/projects/${externalId}`,
       FREELANCE_RU: `https://freelance.ru/project/${externalId}`,
       HABR: `https://freelance.habr.com/tasks/${externalId}`,
+      HH: `https://hh.ru/vacancy/${externalId}`,
     };
 
     return urlTemplates[source] || null;
