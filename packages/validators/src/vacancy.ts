@@ -32,6 +32,18 @@ export const updateVacancySettingsSchema = z.object({
     .string()
     .max(5000, { message: "Вопросы не должны превышать 5000 символов" })
     .nullish(),
+  // Привязка к внешней платформе
+  source: z.enum(["HH", "KWORK", "FL_RU", "FREELANCE_RU", "AVITO", "SUPERJOB", "HABR", "WEB_LINK"])
+    .nullish(),
+  externalId: z
+    .string()
+    .max(100, { message: "External ID не должен превышать 100 символов" })
+    .nullish(),
+  url: z
+    .string()
+    .url({ message: "Введите корректный URL" })
+    .nullish()
+    .or(z.literal("")),
 });
 
 export type UpdateVacancySettingsInput = z.infer<

@@ -11,6 +11,12 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Separator,
   Textarea,
 } from "@qbs-autonaim/ui";
@@ -19,6 +25,7 @@ import {
   updateVacancySettingsSchema,
 } from "@qbs-autonaim/validators";
 import {
+  IconExternalLink,
   Loader2,
   MessageSquare,
   Save,
@@ -38,6 +45,9 @@ interface VacancySettingsFormProps {
     customScreeningPrompt?: string | null;
     customInterviewQuestions?: string | null;
     customOrganizationalQuestions?: string | null;
+    source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK";
+    externalId?: string | null;
+    url?: string | null;
   };
   onSave: (data: UpdateVacancySettingsInput) => Promise<void>;
   onImprove: (
@@ -66,6 +76,9 @@ export function VacancySettingsForm({
       customInterviewQuestions: initialData?.customInterviewQuestions ?? "",
       customOrganizationalQuestions:
         initialData?.customOrganizationalQuestions ?? "",
+      source: initialData?.source ?? undefined,
+      externalId: initialData?.externalId ?? "",
+      url: initialData?.url ?? "",
     },
   });
 
@@ -288,6 +301,112 @@ export function VacancySettingsForm({
                     </FormItem>
                   )}
                 />
+              </div>
+
+              <Separator className="my-8" />
+
+              {/* Привязка к внешней платформе */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <IconExternalLink className="size-4 text-muted-foreground" />
+                  <h3 className="text-base font-medium text-foreground">
+                    Привязка к внешней платформе
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="source"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          Платформа
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger aria-label="Выберите платформу">
+                              <SelectValue placeholder="Выберите платформу" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="HH">HeadHunter</SelectItem>
+                            <SelectItem value="KWORK">Kwork</SelectItem>
+                            <SelectItem value="FL_RU">FL.ru</SelectItem>
+                            <SelectItem value="FREELANCE_RU">Freelance.ru</SelectItem>
+                            <SelectItem value="AVITO">Avito</SelectItem>
+                            <SelectItem value="SUPERJOB">SuperJob</SelectItem>
+                            <SelectItem value="HABR">Хабр Карьера</SelectItem>
+                            <SelectItem value="WEB_LINK">Веб-ссылка</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription className="text-xs">
+                          Платформа, на которой размещена вакансия
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="externalId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          External ID
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            value={field.value ?? ""}
+                            placeholder="Например: 12345678"
+                            aria-label="External ID вакансии"
+                          />
+                        </FormControl>
+                        <FormDescription className="text-xs">
+                          ID вакансии на внешней платформе (опционально)
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <FormField
+                  control={form.control}
+                  name="url"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm font-medium">
+                        URL вакансии на платформе
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          value={field.value ?? ""}
+                          type="url"
+                          placeholder="https://hh.ru/vacancy/12345678"
+                          aria-label="URL вакансии на платформе"
+                        />
+                      </FormControl>
+                      <FormDescription className="text-xs">
+                        Ссылка на вакансию на фриланс-платформе (опционально)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Индикатор статуса привязки */}
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
+                  <div className={`w-2 h-2 rounded-full ${form.watch("url")?.trim() ? "bg-green-500" : "bg-gray-400"}`}></div>
+                  <span className="text-sm text-muted-foreground">
+                    {form.watch("url")?.trim() ? "Привязана к внешней платформе" : "Не привязана к внешней платформе"}
+                  </span>
+                </div>
               </div>
 
               <Separator className="my-8" />

@@ -96,6 +96,9 @@ export default function VacancySettingsPage({
           customScreeningPrompt: vacancy.customScreeningPrompt,
           customInterviewQuestions: vacancy.customInterviewQuestions,
           customOrganizationalQuestions: vacancy.customOrganizationalQuestions,
+          source: vacancy.source,
+          externalId: vacancy.externalId,
+          url: vacancy.url,
         }}
         onSave={handleSave}
         onImprove={handleImprove}
