@@ -54,8 +54,8 @@ function InterviewLandingClient({ token }: { token: string }) {
 
   const subtitle =
     data.type === "vacancy"
-      ? "Пройдите короткое AI-интервью за 10–15\u00A0минут"
-      : "Пройдите короткое AI-интервью на задание за 10–15\u00A0минут";
+      ? "Ответьте на несколько вопросов о себе"
+      : "Опишите ваше решение задания";
 
   const handleSubmit = async (formData: {
     name: string;
