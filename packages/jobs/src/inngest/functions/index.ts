@@ -35,6 +35,7 @@ import {
 import {
   analyzeFreelanceResponseFunction,
   generateFreelanceInvitationFunction,
+  parseFreelanceProfileFunction,
   sendFreelanceNotificationFunction,
 } from "./freelance";
 import { evaluateGigResponseFunction } from "./gig";
@@ -102,6 +103,7 @@ export const inngestFunctions: InngestFunction.Any[] = [
   // Freelance
   analyzeFreelanceResponseFunction,
   generateFreelanceInvitationFunction,
+  parseFreelanceProfileFunction,
   sendFreelanceNotificationFunction,
   // Gig
   evaluateGigResponseFunction,
