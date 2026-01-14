@@ -1,5 +1,7 @@
-import { inngest } from "../../client";
+import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
+import { gig } from "@qbs-autonaim/db/schema";
+import { inngest } from "../../client";
 
 /**
  * Синхронизация откликов для gig с фриланс-платформ
@@ -9,16 +11,14 @@ export const syncGigResponses = inngest.createFunction(
     id: "sync-gig-responses",
     name: "Sync Gig Responses from Freelance Platforms",
   },
-  {
-    event: "gig/sync-responses",
-  },
+  { event: "gig/sync-responses" },
   async ({ event, step }) => {
     const { gigId } = event.data;
 
     // Получаем gig
     const gigRecord = await step.run("get-gig", async () => {
-      return await db.query.gigs.findFirst({
-        where: (gigs, { eq }) => eq(gigs.id, gigId),
+      return await db.query.gig.findFirst({
+        where: eq(gig.id, gigId),
       });
     });
 
@@ -37,6 +37,15 @@ export const syncGigResponses = inngest.createFunction(
 
     // Синхронизируем в зависимости от платформы
     const syncResult = await step.run("sync-platform-responses", async () => {
+      // Проверяем наличие externalId
+      if (!gigRecord.externalId) {
+        return {
+          success: false,
+          message: "Gig has no external ID",
+          syncedCount: 0,
+        };
+      }
+
       switch (gigRecord.source) {
         case "KWORK":
           return await syncKworkResponses(gigRecord.externalId);
@@ -69,7 +78,9 @@ export const syncGigResponses = inngest.createFunction(
 async function syncKworkResponses(externalId: string) {
   // TODO: Реализовать API интеграцию с KWork
   // Пока возвращаем заглушку
-  console.log(`[sync-gig-responses] Syncing KWork responses for project ${externalId}`);
+  console.log(
+    `[sync-gig-responses] Syncing KWork responses for project ${externalId}`,
+  );
 
   return {
     success: true,
@@ -83,7 +94,9 @@ async function syncKworkResponses(externalId: string) {
  */
 async function syncFlRuResponses(externalId: string) {
   // TODO: Реализовать API интеграцию с FL.ru
-  console.log(`[sync-gig-responses] Syncing FL.ru responses for project ${externalId}`);
+  console.log(
+    `[sync-gig-responses] Syncing FL.ru responses for project ${externalId}`,
+  );
 
   return {
     success: true,
@@ -97,7 +110,9 @@ async function syncFlRuResponses(externalId: string) {
  */
 async function syncFreelanceRuResponses(externalId: string) {
   // TODO: Реализовать API интеграцию с Freelance.ru
-  console.log(`[sync-gig-responses] Syncing Freelance.ru responses for project ${externalId}`);
+  console.log(
+    `[sync-gig-responses] Syncing Freelance.ru responses for project ${externalId}`,
+  );
 
   return {
     success: true,

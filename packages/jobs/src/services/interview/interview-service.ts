@@ -396,7 +396,7 @@ export async function saveQuestionAnswer(
   answer: string,
 ) {
   const { updateInterviewSessionMetadata, getInterviewSessionMetadata } =
-    await import("@qbs-autonaim/shared");
+    await import("@qbs-autonaim/server-utils");
 
   // Получаем текущие метаданные
   const metadata = await getInterviewSessionMetadata(interviewSessionId);

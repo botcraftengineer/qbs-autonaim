@@ -132,7 +132,7 @@ export const transcribeVoiceFunction = inngest.createFunction(
             "@qbs-autonaim/tg-client"
           );
           const { getInterviewSessionMetadata } = await import(
-            "@qbs-autonaim/shared"
+            "@qbs-autonaim/server-utils"
           );
 
           const bufferEnabled = env.INTERVIEW_BUFFER_ENABLED ?? false;
