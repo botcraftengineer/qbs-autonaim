@@ -55,7 +55,7 @@ export const IMPORT_SOURCE_LABELS: Record<string, string> = {
   AVITO: "Avito",
   SUPERJOB: "SuperJob",
   HABR: "Хабр Карьера",
-  KWORK: "Kwork",
+  KWORK: "KWork",
   FL_RU: "FL.ru",
   FREELANCE_RU: "Freelance.ru",
   WEB_LINK: "Веб-ссылка",
