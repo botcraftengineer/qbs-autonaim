@@ -193,9 +193,6 @@ export function ResponseDetailCard({
           </CardContent>
         </Tabs>
       </Card>
-
-      {/* Metadata Card */}
-      <MetadataCard response={response} />
     </div>
   );
 }
