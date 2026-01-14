@@ -2,6 +2,7 @@
   "name": "@qbs-autonaim/tg-client",
   "version": "0.1.2",
   "private": true,
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/index.d.mts",
@@ -33,6 +34,7 @@
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/ai": "workspace:*",
     "@qbs-autonaim/shared": "workspace:*",
+    "@qbs-autonaim/server-utils": "workspace:*",
     "file-type": "21.3.0",
     "hono": "4.11.3",
     "mime-types": "3.0.2",
