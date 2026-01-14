@@ -34,49 +34,52 @@ export function GigListItem({
   onDelete,
 }: GigListItemProps) {
   return (
-    <div className="border rounded-lg p-4 hover:shadow-md transition-shadow">
-      <div className="flex items-start justify-between gap-4">
+    <div className="border rounded-lg p-3 hover:shadow-sm transition-shadow">
+      <div className="flex items-center justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap mb-2">
-            <Badge variant="secondary" className="text-xs">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
               {getGigTypeLabel(gig.type)}
             </Badge>
 
             <Badge
               variant={gig.isActive ? "default" : "outline"}
-              className={`text-xs ${gig.isActive ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}`}
+              className={`text-xs px-1.5 py-0.5 ${gig.isActive ? "bg-green-100 text-green-800 hover:bg-green-200" : ""}`}
             >
-              {gig.isActive ? "Активно" : "Неактивно"}
+              {gig.isActive ? "●" : "○"}
             </Badge>
           </div>
 
-          <h3 className="font-semibold line-clamp-1">
-            {gig.title}
-          </h3>
-
-          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-2">
-            <Link
-              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
-              className="flex items-center gap-1 hover:text-foreground transition-colors"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className={`font-medium ${
-                (gig.responses || 0) > 0
-                  ? (gig.responses || 0) > 5
-                    ? "text-green-600"
-                    : "text-blue-600"
-                  : "text-muted-foreground"
-              }`}>
-                {gig.responses || 0}
-              </span>
-              {(gig.views || 0) > 0 && (
-                <span className="text-xs text-muted-foreground">
-                  ({Math.round(((gig.responses || 0) / (gig.views || 1)) * 100)}%)
-                </span>
-              )}
-            </Link>
-          </div>
+          <Link
+            href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}`}
+            className="block hover:text-primary transition-colors"
+          >
+            <h3 className="font-medium text-sm line-clamp-2 leading-tight">
+              {gig.title}
+            </h3>
+          </Link>
         </div>
+
+        <Link
+          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gig.id}/responses`}
+          className="flex items-center gap-1 hover:text-foreground transition-colors text-xs shrink-0"
+        >
+          <MessageSquare className="h-3.5 w-3.5" />
+          <span className={`font-medium ${
+            (gig.responses || 0) > 0
+              ? (gig.responses || 0) > 5
+                ? "text-green-600"
+                : "text-blue-600"
+              : "text-muted-foreground"
+          }`}>
+            {gig.responses || 0}
+          </span>
+          {(gig.views || 0) > 0 && (
+            <span className="text-muted-foreground">
+              ({Math.round(((gig.responses || 0) / (gig.views || 1)) * 100)}%)
+            </span>
+          )}
+        </Link>
       </div>
     </div>
   );
