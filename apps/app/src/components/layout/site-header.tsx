@@ -1,19 +1,111 @@
 "use client";
 
-import { Button, Input, Separator, SidebarTrigger } from "@qbs-autonaim/ui";
-import { Command, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Button, Separator, SidebarTrigger, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@qbs-autonaim/ui";
+import { IconHelpCircle } from "@tabler/icons-react";
+import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 
 interface SiteHeaderProps {
   children?: React.ReactNode;
 }
 
-export function SiteHeader({ children }: SiteHeaderProps) {
-  const [isMac, setIsMac] = useState(false);
+// Тип для конфигурации раздела
+type SectionConfig = {
+  title: string;
+  description: string;
+  docsUrl: string;
+};
 
-  useEffect(() => {
-    setIsMac(navigator.platform.toUpperCase().includes("MAC"));
-  }, []);
+// Конфигурация разделов с названиями, описаниями и ссылками на документацию
+const sectionConfig = {
+  // Обзор
+  "/": { title: "Панель управления", description: "Обзор вашего рабочего пространства", docsUrl: "https://docs.hh.qbs.ru/dashboard" },
+
+  // Рекрутинг
+  "/vacancies": { title: "Вакансии", description: "Управление вакансиями и их настройками", docsUrl: "https://docs.hh.qbs.ru/vacancies" },
+  "/gigs": { title: "Разовые задания", description: "Создание и управление разовыми задачами", docsUrl: "https://docs.hh.qbs.ru/gigs" },
+  "/responses": { title: "Отклики", description: "Просмотр и обработка откликов кандидатов", docsUrl: "https://docs.hh.qbs.ru/responses" },
+  "/candidates": { title: "Кандидаты", description: "База данных кандидатов и их профили", docsUrl: "https://docs.hh.qbs.ru/candidates" },
+
+  // Коммуникации
+  "/chat": { title: "Чаты", description: "Общение с кандидатами и заказчиками", docsUrl: "https://docs.hh.qbs.ru/chat" },
+  "/funnel": { title: "Воронка найма", description: "Аналитика процесса подбора персонала", docsUrl: "https://docs.hh.qbs.ru/funnel" },
+
+  // Настройки
+  "/settings": { title: "Настройки", description: "Настройки аккаунта и рабочего пространства", docsUrl: "https://docs.hh.qbs.ru/settings" },
+
+  // Создание/Редактирование
+  "create": { title: "Создание", description: "Создание новой вакансии или задания", docsUrl: "https://docs.hh.qbs.ru/creating" },
+  "edit": { title: "Редактирование", description: "Редактирование существующего контента", docsUrl: "https://docs.hh.qbs.ru/editing" },
+  "generate": { title: "Генерация", description: "Автоматическая генерация контента с помощью AI", docsUrl: "https://docs.hh.qbs.ru/generation" },
+} as const;
+
+// Функция для определения текущего раздела на основе пути
+function getCurrentSection(pathname: string): SectionConfig {
+  // Проверяем точные совпадения сначала
+  if (pathname in sectionConfig) {
+    return sectionConfig[pathname as keyof typeof sectionConfig];
+  }
+
+  // Проверяем частичные совпадения (содержит ключевые слова)
+  for (const [key, config] of Object.entries(sectionConfig)) {
+    if (key !== "/" && pathname.includes(key)) {
+      return config;
+    }
+  }
+
+  // Разбираем путь по сегментам для более точного определения
+  const segments = pathname.split("/").filter(Boolean);
+
+  // Для вложенных маршрутов типа /orgs/.../workspaces/.../vacancies
+  if (segments.includes("vacancies")) {
+    if (segments.includes("create")) {
+      return sectionConfig.create;
+    }
+    if (segments.includes("generate")) {
+      return sectionConfig.generate;
+    }
+    return sectionConfig["/vacancies"];
+  }
+
+  if (segments.includes("gigs")) {
+    if (segments.includes("create")) {
+      return sectionConfig.create;
+    }
+    if (segments.includes("edit")) {
+      return sectionConfig.edit;
+    }
+    return sectionConfig["/gigs"];
+  }
+
+  if (segments.includes("responses")) {
+    return sectionConfig["/responses"];
+  }
+
+  if (segments.includes("candidates")) {
+    return sectionConfig["/candidates"];
+  }
+
+  if (segments.includes("chat")) {
+    return sectionConfig["/chat"];
+  }
+
+  if (segments.includes("funnel")) {
+    return sectionConfig["/funnel"];
+  }
+
+  if (segments.includes("settings")) {
+    return sectionConfig["/settings"];
+  }
+
+  // По умолчанию возвращаем панель управления
+  return sectionConfig["/"];
+}
+
+export function SiteHeader({ children }: SiteHeaderProps) {
+  const pathname = usePathname();
+
+  const currentSection = useMemo(() => getCurrentSection(pathname), [pathname]);
 
   return (
     <header className="bg-background/40 sticky top-0 z-50 flex h-(--header-height) shrink-0 items-center gap-2 border-b backdrop-blur-md transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) md:rounded-tl-xl md:rounded-tr-xl">
@@ -24,39 +116,68 @@ export function SiteHeader({ children }: SiteHeaderProps) {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <div className="lg:flex-1">
-          <div className="relative hidden max-w-sm flex-1 lg:block">
-            <Search
-              className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
-              aria-hidden="true"
-            />
-            <Input
-              type="search"
-              placeholder="Поиск (скоро)…"
-              disabled
-              aria-label="Поиск (функция в разработке)"
-              className="h-9 w-full cursor-not-allowed rounded-md border pr-4 pl-10 text-sm shadow-xs"
-            />
-            <div className="absolute top-1/2 right-2 hidden -translate-y-1/2 items-center gap-0.5 rounded-sm bg-zinc-200 p-1 font-mono text-xs font-medium opacity-50 sm:flex dark:bg-neutral-700">
-              {isMac ? (
-                <>
-                  <Command className="size-3" aria-hidden="true" />
-                  <span>K</span>
-                </>
-              ) : (
-                <span>Ctrl+K</span>
-              )}
-            </div>
+          <div className="hidden lg:flex items-center gap-2">
+            <span className="text-sm font-medium text-foreground">
+              {currentSection.title}
+            </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-6 text-muted-foreground hover:text-foreground"
+                    aria-label={`Справка по разделу ${currentSection.title}`}
+                  >
+                    <IconHelpCircle className="size-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <div className="space-y-2">
+                    <p className="text-sm">{currentSection.description}</p>
+                    <a
+                      href={currentSection.docsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300 hover:underline pointer-events-auto"
+                    >
+                      Подробнее в документации →
+                    </a>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          <div className="block lg:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="size-9"
-              disabled
-              aria-label="Поиск (функция в разработке)"
-            >
-              <Search className="h-4 w-4" aria-hidden="true" />
-            </Button>
+          {/* Мобильная версия - только иконка помощи */}
+          <div className="flex lg:hidden">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-9 text-muted-foreground hover:text-foreground"
+                    aria-label={`Справка по разделу ${currentSection.title}`}
+                  >
+                    <IconHelpCircle className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <div className="space-y-2">
+                    <p className="font-medium text-sm">{currentSection.title}</p>
+                    <p className="text-sm">{currentSection.description}</p>
+                    <a
+                      href={currentSection.docsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-400 hover:text-blue-300 hover:underline pointer-events-auto"
+                    >
+                      Подробнее в документации →
+                    </a>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
         {children && (
