@@ -1,6 +1,6 @@
 import { and, eq } from "@qbs-autonaim/db";
 import { gig, interviewLink } from "@qbs-autonaim/db/schema";
-import { getInterviewUrlFromEntity } from "@qbs-autonaim/shared";
+import { getInterviewUrlFromEntity } from "@qbs-autonaim/server-utils";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

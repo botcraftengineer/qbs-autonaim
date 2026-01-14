@@ -45,6 +45,7 @@
     "@qbs-autonaim/emails": "workspace:*",
     "@qbs-autonaim/lib": "workspace:*",
     "@qbs-autonaim/ai": "workspace:*",
+    "@qbs-autonaim/server-utils": "workspace:*",
     "@qbs-autonaim/shared": "workspace:*",
     "@qbs-autonaim/tg-client": "workspace:*",
     "@t3-oss/env-core": "0.13.10",

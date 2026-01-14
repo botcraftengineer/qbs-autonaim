@@ -3,7 +3,7 @@ import { z } from "zod";
 import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
-} from "@qbs-autonaim/shared";
+} from "@qbs-autonaim/server-utils";
 import type { InterviewStage } from "../types";
 
 const interviewStateSchema = z.object({

@@ -7,7 +7,7 @@ import {
   vacancy,
 } from "@qbs-autonaim/db/schema";
 import { generateText } from "@qbs-autonaim/lib/ai";
-import { getInterviewUrl } from "@qbs-autonaim/shared";
+import { getInterviewUrl } from "@qbs-autonaim/server-utils";
 import { createLogger, err, ok, type Result, tryCatch } from "../base";
 
 const logger = createLogger("InvitationGenerator");

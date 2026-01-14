@@ -1,0 +1,3 @@
+{
+  "extends": "@qbs-autonaim/tsconfig/base.json"
+}

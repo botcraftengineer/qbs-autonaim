@@ -24,18 +24,6 @@ export type {
   QuestionAnswer,
 } from "./types";
 
-// Экспорт всех утилит
-export {
-  getChatSessionMetadata,
-  getConversationMetadata,
-  getInterviewBaseUrl,
-  getInterviewQuestionCount,
-  getInterviewSessionMetadata,
-  getInterviewUrl,
-  getInterviewUrlFromDb,
-  getInterviewUrlFromEntity,
-  getQuestionCount,
-  updateChatSessionMetadata,
-  updateConversationMetadata,
-  updateInterviewSessionMetadata,
-} from "./utils";
+// Серверные утилиты теперь экспортируются из @qbs-autonaim/server-utils
+// Экспорт клиентских утилит
+export { FreelancePlatformParser } from "./utils";

@@ -1,27 +1,7 @@
 /**
  * Экспорты утилит из пакета @qbs-autonaim/shared
+ * Этот пакет содержит только чистые утилиты, которые могут работать в браузере
  */
-
-// Утилиты для работы с conversation
-export {
-  ConversationMetadataSchema,
-  getChatSessionMetadata,
-  getConversationMetadata,
-  getInterviewQuestionCount,
-  getInterviewSessionMetadata,
-  getQuestionCount,
-  updateChatSessionMetadata,
-  updateConversationMetadata,
-  updateInterviewSessionMetadata,
-} from "./conversation";
-
-// Утилиты для работы с interview URL
-export {
-  getInterviewBaseUrl,
-  getInterviewUrl,
-  getInterviewUrlFromDb,
-  getInterviewUrlFromEntity,
-} from "./get-interview-url";
 
 // Утилиты для работы с фриланс-платформами
 export { FreelancePlatformParser } from "./freelance-platform-parser";

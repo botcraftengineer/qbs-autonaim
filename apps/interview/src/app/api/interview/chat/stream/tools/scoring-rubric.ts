@@ -1,6 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
-import { getInterviewSessionMetadata, updateInterviewSessionMetadata } from "@qbs-autonaim/shared";
+import { getInterviewSessionMetadata, updateInterviewSessionMetadata } from "@qbs-autonaim/server-utils";
 import type { EntityType } from "../types";
 
 export function createGetScoringRubricTool(sessionId: string, entityType: EntityType) {
