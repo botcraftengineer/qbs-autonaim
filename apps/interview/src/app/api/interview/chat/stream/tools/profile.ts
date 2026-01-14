@@ -1,0 +1,85 @@
+import { tool } from "ai";
+import { z } from "zod";
+import { eq } from "@qbs-autonaim/db";
+import type { NodePgDatabase } from "drizzle-orm/node-postgres";
+import * as schema from "@qbs-autonaim/db/schema";
+
+export function createGetInterviewProfileTool(
+  sessionId: string,
+  db: NodePgDatabase<typeof schema>,
+) {
+  return tool({
+    description:
+      "Возвращает данные профиля кандидата с фриланс-платформы (навыки, опыт, рейтинг и т.д.) для анализа соответствия заданию.",
+    inputSchema: z.object({}),
+    execute: async () => {
+      try {
+        // Получаем responseId из сессии
+        const session = await db.query.interviewSession.findFirst({
+          where: (fields, { eq }) => eq(fields.id, sessionId),
+          columns: {
+            responseId: true,
+          },
+        });
+
+        if (!session) {
+          return {
+            available: false,
+            reason: "Session not found",
+          };
+        }
+
+        // Получаем данные профиля из response
+        const responseData = await db.query.response.findFirst({
+          where: (fields, { eq }) => eq(fields.id, session.responseId),
+          columns: {
+            profileData: true,
+            platformProfileUrl: true,
+          },
+        });
+
+        if (!responseData) {
+          return {
+            available: false,
+            reason: "Response not found",
+          };
+        }
+
+        if (!responseData.profileData) {
+          return {
+            available: false,
+            reason: "Profile data not available (parsing may be in progress)",
+            platformProfileUrl: responseData.platformProfileUrl,
+          };
+        }
+
+        if (responseData.profileData.error) {
+          return {
+            available: false,
+            reason: "Profile parsing failed",
+            error: responseData.profileData.error,
+            platformProfileUrl: responseData.platformProfileUrl,
+          };
+        }
+
+        return {
+          available: true,
+          platform: responseData.profileData.platform,
+          username: responseData.profileData.username,
+          profileUrl: responseData.profileData.profileUrl,
+          aboutMe: responseData.profileData.aboutMe,
+          skills: responseData.profileData.skills,
+          statistics: responseData.profileData.statistics,
+          parsedAt: responseData.profileData.parsedAt,
+          platformProfileUrl: responseData.platformProfileUrl,
+        };
+      } catch (error) {
+        console.error("Error getting interview profile:", error);
+        return {
+          available: false,
+          reason: "Error retrieving profile data",
+        };
+      }
+    },
+  });
+}

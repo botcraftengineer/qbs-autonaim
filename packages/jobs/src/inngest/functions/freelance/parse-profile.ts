@@ -36,15 +36,6 @@ export const parseFreelanceProfileFunction = inngest.createFunction(
         attempt,
       });
 
-      // Экспоненциальная задержка перед повтором
-      if (attempt > 0) {
-        const delayMs = 2 ** attempt * 1000; // 2s, 4s, 8s
-        console.log(
-          `⏳ Задержка перед повтором: ${delayMs}ms (попытка ${attempt + 1}/3)`,
-        );
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
-      }
-
       // Получаем response с profile URL
       const responseData = await db.query.response.findFirst({
         where: eq(response.id, responseId),
@@ -118,7 +109,9 @@ export const parseFreelanceProfileFunction = inngest.createFunction(
           profileUrl: responseData.platformProfileUrl,
           parsedAt: new Date(),
           error:
-            error instanceof Error ? error.message : "Неизвестная ошибка парсинга",
+            error instanceof Error
+              ? error.message
+              : "Неизвестная ошибка парсинга",
         });
 
         await db
