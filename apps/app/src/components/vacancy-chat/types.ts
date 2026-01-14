@@ -21,6 +21,12 @@ export interface QuickReply {
   value: string;
   /** Если true, можно выбрать несколько вариантов */
   multiSelect?: boolean;
+  /** Если true, при клике открывается поле свободного ввода */
+  freeform?: boolean;
+  /** Placeholder для поля свободного ввода */
+  placeholder?: string;
+  /** Максимальная длина для поля свободного ввода */
+  maxLength?: number;
 }
 
 export interface ConversationMessage {

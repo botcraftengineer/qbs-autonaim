@@ -483,6 +483,27 @@ function ChatMessage({
     isLatest && !isUser && message.quickReplies && !disabled;
   const isMultiSelect = message.isMultiSelect && showQuickReplies;
 
+  // Состояние для freeform полей
+  const [freeformInputs, setFreeformInputs] = useState<Record<string, string>>({});
+  const [activeFreeform, setActiveFreeform] = useState<string | null>(null);
+
+  const handleFreeformToggle = (replyId: string) => {
+    setActiveFreeform(activeFreeform === replyId ? null : replyId);
+  };
+
+  const handleFreeformSubmit = (replyId: string, reply: QuickReply) => {
+    const customValue = freeformInputs[replyId]?.trim();
+    if (customValue) {
+      onQuickReplySelect(`${reply.value}: ${customValue}`);
+      setActiveFreeform(null);
+      setFreeformInputs(prev => ({ ...prev, [replyId]: '' }));
+    }
+  };
+
+  const handleFreeformInputChange = (replyId: string, value: string) => {
+    setFreeformInputs(prev => ({ ...prev, [replyId]: value }));
+  };
+
   return (
     <article
       className={cn(
@@ -531,19 +552,70 @@ function ChatMessage({
               disabled={disabled}
             />
           ) : (
-            <div className="flex flex-wrap gap-2 pt-2">
+            <div className="space-y-3 pt-2">
               {message.quickReplies.map((reply) => (
-                <Button
-                  key={reply.id}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onQuickReplySelect(reply.value)}
-                  disabled={disabled}
-                  className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
-                  style={{ touchAction: "manipulation" }}
-                >
-                  {reply.label}
-                </Button>
+                <div key={reply.id} className="space-y-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => reply.freeform ? handleFreeformToggle(reply.id) : onQuickReplySelect(reply.value)}
+                    disabled={disabled}
+                    className="h-auto px-3 py-1.5 text-xs transition-all hover:scale-[1.02] active:scale-[0.98]"
+                    style={{ touchAction: "manipulation" }}
+                  >
+                    {reply.freeform ? (
+                      <>
+                        {reply.label}
+                        <span className="ml-1 text-muted-foreground">
+                          {activeFreeform === reply.id ? '✏️' : '💬'}
+                        </span>
+                      </>
+                    ) : (
+                      reply.label
+                    )}
+                  </Button>
+
+                  {/* Freeform input field */}
+                  {reply.freeform && activeFreeform === reply.id && (
+                    <div className="flex gap-2 ml-4">
+                      <Textarea
+                        value={freeformInputs[reply.id] || ''}
+                        onChange={(e) => handleFreeformInputChange(reply.id, e.target.value)}
+                        placeholder={reply.placeholder || "Опишите своими словами..."}
+                        maxLength={reply.maxLength || 1000}
+                        className="min-h-[60px] text-xs resize-none"
+                        disabled={disabled}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleFreeformSubmit(reply.id, reply);
+                          }
+                          if (e.key === 'Escape') {
+                            setActiveFreeform(null);
+                          }
+                        }}
+                      />
+                      <div className="flex flex-col gap-1">
+                        <Button
+                          size="sm"
+                          onClick={() => handleFreeformSubmit(reply.id, reply)}
+                          disabled={!freeformInputs[reply.id]?.trim() || disabled}
+                          className="px-2 py-1 h-6 text-xs"
+                        >
+                          ✓
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setActiveFreeform(null)}
+                          className="px-2 py-1 h-6 text-xs"
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           ))}
