@@ -30,7 +30,7 @@ export default function DocsIntroductionPage() {
           </h1>
           <p className="text-xl text-muted-foreground">
             Современная AI-платформа для автоматизации рекрутинга. Интеграция с
-            HH.ru и SuperJob, Telegram-боты, экономия до 80% времени на подборе
+            HH.ru, Telegram-боты, экономия до 80% времени на подборе
             персонала.
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function DocsIntroductionPage() {
           />
           <DocsCard
             title="Интеграции"
-            description="HH.ru, SuperJob, Telegram, Kwork, FL.ru — все популярные платформы"
+            description="HH.ru, Telegram, Kwork, FL.ru — все популярные платформы"
             href="/integrations"
             icon={<Plug className="h-5 w-5" />}
           />

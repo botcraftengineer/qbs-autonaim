@@ -87,7 +87,7 @@ export default function GigPage() {
   deadline: "2024-02-15",
   platforms: ["kwork", "fl.ru", "habr"],
   requirements: {
-    skills: ["Node.js", "Telegram Bot API"],
+    skills: ["Node.js", "Telegram боты"],
     experience: "1+ год",
     portfolio: true
   }

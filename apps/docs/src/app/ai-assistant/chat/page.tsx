@@ -49,7 +49,7 @@ export default function ChatPage() {
 
         <DocsCallout type="info" title="Поддержка голоса">
           Кандидаты могут отвечать текстом или голосовыми сообщениями. Голос
-          автоматически транскрибируется через Whisper API.
+          автоматически транскрибируется с помощью AI.
         </DocsCallout>
 
         <h2 id="channels" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Каналы коммуникации</h2>
@@ -71,7 +71,7 @@ export default function ChatPage() {
             },
             {
               name: "WhatsApp",
-              description: "Популярный мессенджер через WhatsApp Business API",
+              description: "Популярный мессенджер для бизнеса",
             },
             {
               name: "SMS",
