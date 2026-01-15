@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { generatePageSEO } from "@/lib/seo";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
@@ -6,7 +7,6 @@ import { DocsFeedback } from "@/components/docs/docs-feedback";
 import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
 import { DocsToc } from "@/components/docs/docs-toc";
 import { BookOpen, Search, Tag, Calendar } from "lucide-react";
-import Link from "next/link";
 
 export const metadata: Metadata = generatePageSEO("knowledge-base", {
   title: "База знаний QBS Автонайм — статьи и гайды по рекрутингу",
@@ -37,24 +37,24 @@ export default function KnowledgeBasePage() {
       description: "Практическое руководство по автоматизации первичного скрининга кандидатов",
       category: "Автоматизация",
       readTime: "8 мин",
-      publishDate: "2025-01-15",
-      href: "/blog/ai-recruitment-automation",
+      publishDate: "2026-01-10",
+      href: "/help/knowledge-base/articles/ai-recruitment-automation",
     },
     {
       title: "Топ-10 ошибок в описании вакансий",
       description: "Почему хорошие кандидаты проходят мимо и как писать привлекательные вакансии",
       category: "Вакансии",
       readTime: "12 мин",
-      publishDate: "2025-01-10",
-      href: "/blog/job-description-mistakes",
+      publishDate: "2026-01-05",
+      href: "/help/knowledge-base/articles/job-description-mistakes",
     },
     {
-      title: "Метрики найма: что отслеживать в 2025 году",
+      title: "Метрики найма: что отслеживать в 2026 году",
       description: "KPI для оценки эффективности рекрутинга и ROI инвестиций в найм",
       category: "Аналитика",
       readTime: "15 мин",
-      publishDate: "2025-01-05",
-      href: "/blog/recruitment-metrics-2025",
+      publishDate: "2025-12-28",
+      href: "/help/knowledge-base/articles/recruitment-metrics-2025",
     },
   ];
 
@@ -192,18 +192,16 @@ export default function KnowledgeBasePage() {
 
         <div className="grid gap-4 my-6 md:grid-cols-1">
           {featuredArticles.map((article, index) => (
-            <div
+            <Link
               key={index}
+              href={article.href}
               className="p-6 border border-border rounded-lg hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <Link
-                    href={article.href}
-                    className="text-xl font-semibold hover:text-primary transition-colors"
-                  >
+                  <h3 className="text-xl font-semibold text-foreground">
                     {article.title}
-                  </Link>
+                  </h3>
                   <p className="text-muted-foreground mt-2">
                     {article.description}
                   </p>
@@ -224,7 +222,7 @@ export default function KnowledgeBasePage() {
                   {article.publishDate}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

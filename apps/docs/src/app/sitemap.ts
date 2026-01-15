@@ -85,7 +85,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/help/faq",
     "/help/videos",
     "/help/knowledge-base",
-    "/help/status",
   ].map((path) => ({
     url: `${baseUrl}${path}`,
     lastModified: new Date(),

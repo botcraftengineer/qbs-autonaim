@@ -66,7 +66,6 @@ export const docsConfig: DocsConfig = {
         { title: "Часто задаваемые вопросы", href: "/help/faq" },
         { title: "Видео-инструкции", href: "/help/videos" },
         { title: "База знаний", href: "/help/knowledge-base" },
-        { title: "Статус системы", href: "/help/status" },
       ],
     },
   ],
