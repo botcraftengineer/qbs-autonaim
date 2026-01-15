@@ -111,10 +111,10 @@ function NavCollapsibleItem({
         <SidebarMenuBadge
           className={
             item.badgeVariant === "destructive"
-              ? "bg-destructive text-destructive-foreground"
+              ? "bg-destructive text-destructive-foreground peer-data-[active=true]/menu-button:text-destructive-foreground peer-hover/menu-button:text-destructive-foreground"
               : item.badgeVariant === "success"
-                ? "bg-green-500 text-white"
-                : "bg-primary text-primary-foreground"
+                ? "bg-green-500 text-white peer-data-[active=true]/menu-button:text-white peer-hover/menu-button:text-white"
+                : "bg-primary text-primary-foreground peer-data-[active=true]/menu-button:text-primary-foreground peer-hover/menu-button:text-primary-foreground"
           }
         >
           {item.badge > 99 ? "99+" : item.badge}
