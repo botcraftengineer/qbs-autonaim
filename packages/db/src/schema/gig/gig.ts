@@ -141,6 +141,9 @@ export const gig = pgTable(
     customInterviewQuestions: text("custom_interview_questions"),
     customOrganizationalQuestions: text("custom_organizational_questions"),
 
+    // Шаблон приглашения (генерируется один раз)
+    invitationTemplate: text("invitation_template"),
+
     // Кастомный домен для интервью
     customDomainId: uuid("custom_domain_id").references(() => customDomain.id, {
       onDelete: "set null",

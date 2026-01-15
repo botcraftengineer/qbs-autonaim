@@ -1,7 +1,9 @@
 ﻿import type { BotSettings } from "@qbs-autonaim/db/schema";
+import { gig as gigTable } from "@qbs-autonaim/db/schema";
 import { streamText } from "@qbs-autonaim/lib/ai";
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { protectedProcedure } from "../../trpc";
 
@@ -151,6 +153,17 @@ export const generateInvitationTemplate = protectedProcedure
       });
     }
 
+    // Если шаблон уже существует, возвращаем его
+    if (gig.invitationTemplate) {
+      console.log(
+        "[generate-invitation-template] Using cached template for gig:",
+        gigId,
+      );
+      return {
+        text: gig.invitationTemplate,
+      };
+    }
+
     // Загружаем настройки компании для персонализации
     const botSettings = await ctx.db.query.botSettings.findFirst({
       where: (botSettings, { eq }) => eq(botSettings.workspaceId, workspaceId),
@@ -233,6 +246,17 @@ export const generateInvitationTemplate = protectedProcedure
       console.log(
         "[generate-invitation-template] Generated template length:",
         validated.text.length,
+      );
+
+      // Сохраняем шаблон в базу данных
+      await ctx.db
+        .update(gigTable)
+        .set({ invitationTemplate: validated.text })
+        .where(eq(gigTable.id, gigId));
+
+      console.log(
+        "[generate-invitation-template] Template saved to database for gig:",
+        gigId,
       );
 
       return {

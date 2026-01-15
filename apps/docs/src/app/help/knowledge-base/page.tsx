@@ -164,7 +164,7 @@ export default function KnowledgeBasePage() {
           title: "Мотивационные письма: читать или нет?",
           description: "Когда сопроводительное письмо важно",
           readTime: "5 мин",
-          href: "#",
+          href: "/help/knowledge-base/articles/cover-letters-guide",
         },
       ],
     },
