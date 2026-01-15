@@ -1,9 +1,9 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCard } from "@/components/docs/docs-card"
-import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsCallout } from "@/components/docs/docs-callout"
-import { Briefcase, MessageCircle, Code2 } from "lucide-react"
-import Link from "next/link"
+import { Briefcase, Code2, MessageCircle } from "lucide-react";
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsCard } from "@/components/docs/docs-card";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function IntegrationsPage() {
   const tocItems = [
@@ -12,7 +12,7 @@ export default function IntegrationsPage() {
     { id: "messengers", title: "Мессенджеры", level: 3 },
     { id: "developers", title: "Разработчикам", level: 3 },
     { id: "setup", title: "Настройка интеграций", level: 2 },
-  ]
+  ];
 
   return (
     <div className="flex gap-12">
@@ -26,27 +26,27 @@ export default function IntegrationsPage() {
         <h1>Интеграции</h1>
 
         <p className="text-lg">
-          QBS Автонайм интегрируется с популярными job-сайтами, мессенджерами и HR-системами для автоматизации потока
-          кандидатов.
+          QBS Автонайм интегрируется с популярными job-сайтами, мессенджерами и
+          HR-системами для автоматизации потока кандидатов.
         </p>
 
         <h2 id="available-integrations">Доступные интеграции</h2>
 
         <h3 id="job-sites" className="flex items-center gap-2">
           <Briefcase className="h-5 w-5 text-primary" />
-          Job-сайты
+          Job-сайты и фриланс-платформы
         </h3>
 
         <div className="grid gap-4 sm:grid-cols-2 my-4">
           <DocsCard
             title="hh.ru"
-            description="Автоматический импорт откликов и публикация вакансий на крупнейшем job-сайте России."
+            description="Автоматический парсинг вакансий и откликов с крупнейшего job-сайта России."
             href="/integrations/hh"
           />
           <DocsCard
-            title="SuperJob"
-            description="Синхронизация вакансий и кандидатов с SuperJob."
-            href="/integrations/superjob"
+            title="Фриланс-платформы"
+            description="Импорт откликов с Upwork, Kwork, FL.ru, Freelance.ru, Habr Freelance."
+            href="/integrations/freelance"
           />
         </div>
 
@@ -58,13 +58,8 @@ export default function IntegrationsPage() {
         <div className="grid gap-4 sm:grid-cols-2 my-4">
           <DocsCard
             title="Telegram"
-            description="Общение с кандидатами через Telegram-бота, уведомления для рекрутеров."
+            description="AI-интервью через Telegram-бота, автоматические диалоги с кандидатами."
             href="/integrations/telegram"
-          />
-          <DocsCard
-            title="WhatsApp"
-            description="Коммуникация через WhatsApp Business API."
-            href="/integrations/whatsapp"
           />
         </div>
 
@@ -75,11 +70,10 @@ export default function IntegrationsPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 my-4">
           <DocsCard
-            title="Webhooks"
-            description="Получайте уведомления о событиях в реальном времени."
-            href="/integrations/webhooks"
+            title="tRPC API"
+            description="Типобезопасный доступ к данным через tRPC."
+            href="/api"
           />
-          <DocsCard title="REST API" description="Полный доступ к данным через API." href="/api" />
         </div>
 
         <h2 id="setup">Настройка интеграций</h2>
@@ -94,8 +88,8 @@ export default function IntegrationsPage() {
         </ol>
 
         <DocsCallout type="info" title="Безопасность">
-          Все интеграции используют OAuth 2.0 или API-ключи. Ваши учётные данные от внешних сервисов никогда не хранятся
-          в QBS Автонайм.
+          Все интеграции используют OAuth 2.0 или API-ключи. Ваши учётные данные
+          от внешних сервисов никогда не хранятся в QBS Автонайм.
         </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
@@ -103,7 +97,9 @@ export default function IntegrationsPage() {
             href="/analytics/metrics"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
             Метрики найма
           </Link>
           <Link
@@ -111,12 +107,14 @@ export default function IntegrationsPage() {
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             hh.ru
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

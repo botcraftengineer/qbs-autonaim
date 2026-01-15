@@ -1,9 +1,9 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCallout } from "@/components/docs/docs-callout"
-import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsApiEndpoint } from "@/components/docs/docs-api-endpoint"
-import { DocsFeedback } from "@/components/docs/docs-feedback"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsApiEndpoint } from "@/components/docs/docs-api-endpoint";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsFeedback } from "@/components/docs/docs-feedback";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function APIAnalyticsPage() {
   const tocItems = [
@@ -11,12 +11,14 @@ export default function APIAnalyticsPage() {
     { id: "vacancy-analytics", title: "Аналитика по вакансиям", level: 2 },
     { id: "export-data", title: "Экспорт данных", level: 2 },
     { id: "track-event", title: "Отслеживание событий", level: 2 },
-  ]
+  ];
 
   return (
     <div className="flex gap-12">
       <article className="docs-content flex-1 max-w-3xl">
-        <DocsBreadcrumb items={[{ title: "API", href: "/api" }, { title: "Аналитика" }]} />
+        <DocsBreadcrumb
+          items={[{ title: "API", href: "/api" }, { title: "Аналитика" }]}
+        />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">API</span>
@@ -25,7 +27,8 @@ export default function APIAnalyticsPage() {
         <h1>API: Аналитика</h1>
 
         <p className="text-lg">
-          Эндпоинты tRPC для получения аналитических данных: дашборды, статистика по вакансиям, экспорт и отслеживание событий.
+          Эндпоинты tRPC для получения аналитических данных: дашборды,
+          статистика по вакансиям, экспорт и отслеживание событий.
         </p>
 
         <h2 id="dashboard">Получение дашборда</h2>
@@ -71,8 +74,9 @@ export default function APIAnalyticsPage() {
   },
   "topSources": [
     {"source": "hh.ru", "count": 234},
-    {"source": "superjob", "count": 89},
-    {"source": "direct", "count": 67}
+    {"source": "upwork", "count": 89},
+    {"source": "kwork", "count": 67},
+    {"source": "telegram", "count": 45}
   ]
 }`}
         />
@@ -156,7 +160,8 @@ export default function APIAnalyticsPage() {
               name: "type",
               type: "string",
               required: true,
-              description: "Тип данных: candidates, vacancies, responses, analytics",
+              description:
+                "Тип данных: candidates, vacancies, responses, analytics",
             },
             {
               name: "format",
@@ -178,7 +183,8 @@ export default function APIAnalyticsPage() {
         />
 
         <DocsCallout type="tip" title="Совет">
-          Ссылка для скачивания действительна 24 часа. Используйте параметр filters для экспорта конкретных периодов или вакансий.
+          Ссылка для скачивания действительна 24 часа. Используйте параметр
+          filters для экспорта конкретных периодов или вакансий.
         </DocsCallout>
 
         <h2 id="track-event">Отслеживание событий</h2>
@@ -225,11 +231,21 @@ export default function APIAnalyticsPage() {
 
         <DocsCallout type="info" title="Примеры событий">
           <ul className="list-disc list-inside space-y-1 text-sm">
-            <li><code>candidate_viewed</code> — просмотр кандидата</li>
-            <li><code>vacancy_published</code> — публикация вакансии</li>
-            <li><code>interview_scheduled</code> — назначение собеседования</li>
-            <li><code>offer_sent</code> — отправка оффера</li>
-            <li><code>candidate_hired</code> — найм кандидата</li>
+            <li>
+              <code>candidate_viewed</code> — просмотр кандидата
+            </li>
+            <li>
+              <code>vacancy_published</code> — публикация вакансии
+            </li>
+            <li>
+              <code>interview_scheduled</code> — назначение собеседования
+            </li>
+            <li>
+              <code>offer_sent</code> — отправка оффера
+            </li>
+            <li>
+              <code>candidate_hired</code> — найм кандидата
+            </li>
           </ul>
         </DocsCallout>
 
@@ -242,7 +258,9 @@ export default function APIAnalyticsPage() {
             href="/api/chat"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
             Чат
           </Link>
           <Link
@@ -250,12 +268,14 @@ export default function APIAnalyticsPage() {
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Вернуться к началу
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

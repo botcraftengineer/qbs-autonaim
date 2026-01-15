@@ -1,11 +1,11 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCallout } from "@/components/docs/docs-callout"
-import { DocsSteps } from "@/components/docs/docs-steps"
-import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsFeedback } from "@/components/docs/docs-feedback"
-import { DocsMobileToc } from "@/components/docs/docs-mobile-toc"
-import { DocsEditLink } from "@/components/docs/docs-edit-link"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsEditLink } from "@/components/docs/docs-edit-link";
+import { DocsFeedback } from "@/components/docs/docs-feedback";
+import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
+import { DocsSteps } from "@/components/docs/docs-steps";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function ScreeningPage() {
   const tocItems = [
@@ -14,15 +14,15 @@ export default function ScreeningPage() {
     { id: "results", title: "Результаты скрининга", level: 2 },
     { id: "bulk-processing", title: "Массовая обработка", level: 2 },
     { id: "best-practices", title: "Лучшие практики", level: 2 },
-  ]
+  ];
 
   const setupSteps = [
     {
       title: "Откройте настройки вакансии",
       content: (
         <p>
-          Перейдите в раздел «Вакансии» и выберите нужную вакансию. Нажмите на вкладку «Критерии скрининга» в карточке
-          вакансии.
+          Перейдите в раздел «Вакансии» и выберите нужную вакансию. Нажмите на
+          вкладку «Критерии скрининга» в карточке вакансии.
         </p>
       ),
     },
@@ -30,8 +30,8 @@ export default function ScreeningPage() {
       title: "Добавьте обязательные требования",
       content: (
         <p>
-          Укажите навыки, опыт и квалификации, без которых кандидат не может быть рассмотрен. Например: «Опыт работы от
-          3 лет», «Знание Python».
+          Укажите навыки, опыт и квалификации, без которых кандидат не может
+          быть рассмотрен. Например: «Опыт работы от 3 лет», «Знание Python».
         </p>
       ),
     },
@@ -39,8 +39,8 @@ export default function ScreeningPage() {
       title: "Настройте желательные критерии",
       content: (
         <p>
-          Добавьте критерии, которые повысят рейтинг кандидата, но не являются обязательными. Например: «Опыт работы в
-          стартапе», «Сертификат AWS».
+          Добавьте критерии, которые повысят рейтинг кандидата, но не являются
+          обязательными. Например: «Опыт работы в стартапе», «Сертификат AWS».
         </p>
       ),
     },
@@ -48,29 +48,35 @@ export default function ScreeningPage() {
       title: "Установите веса критериев",
       content: (
         <p>
-          Определите важность каждого критерия от 1 до 10. Критерии с большим весом сильнее влияют на итоговый балл
-          кандидата.
+          Определите важность каждого критерия от 1 до 10. Критерии с большим
+          весом сильнее влияют на итоговый балл кандидата.
         </p>
       ),
     },
-  ]
+  ];
 
   return (
     <div className="flex gap-12">
       <article className="docs-content flex-1 max-w-3xl">
         <DocsBreadcrumb
-          items={[{ title: "Работа с кандидатами", href: "/candidates" }, { title: "AI-скрининг" }]}
+          items={[
+            { title: "Работа с кандидатами", href: "/candidates" },
+            { title: "AI-скрининг" },
+          ]}
         />
 
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-primary">Работа с кандидатами</span>
+          <span className="text-sm font-medium text-primary">
+            Работа с кандидатами
+          </span>
         </div>
 
         <h1>AI-скрининг резюме</h1>
 
         <p className="text-lg">
-          AI-скрининг автоматически анализирует отклики кандидатов и определяет их соответствие требованиям вакансии. Это
-          позволяет сэкономить до 80% времени на первичном отборе.
+          AI-скрининг автоматически анализирует отклики кандидатов и определяет
+          их соответствие требованиям вакансии. Это позволяет сэкономить до 80%
+          времени на первичном отборе.
         </p>
 
         <DocsMobileToc items={tocItems} />
@@ -78,35 +84,39 @@ export default function ScreeningPage() {
         <h2 id="how-it-works">Как это работает</h2>
 
         <p>
-          Когда новый отклик поступает в систему (из интеграций или загруженный вручную), AI выполняет следующие шаги:
+          Когда новый отклик поступает в систему (из интеграций или загруженный
+          вручную), AI выполняет следующие шаги:
         </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
           <li>
-            <strong>Парсинг отклика</strong> — извлечение структурированных данных: контакты, опыт работы, навыки,
-            образование из резюме
+            <strong>Парсинг резюме</strong> — извлечение структурированных
+            данных: контакты, опыт работы, навыки, образование
           </li>
           <li>
-            <strong>Анализ опыта</strong> — определение релевантного опыта, расчёт общего стажа в нужной области
+            <strong>Анализ опыта</strong> — определение релевантного опыта,
+            расчёт общего стажа
           </li>
           <li>
-            <strong>Сопоставление навыков</strong> — сравнение навыков кандидата с требованиями вакансии
+            <strong>Сопоставление с требованиями</strong> — сравнение навыков и
+            опыта кандидата с вакансией
           </li>
           <li>
-            <strong>Оценка соответствия</strong> — расчёт итогового балла и категоризация кандидата
+            <strong>Оценка соответствия</strong> — расчёт итогового балла от 1
+            до 5 звезд
           </li>
         </ol>
 
         <DocsCallout type="info" title="Скорость обработки">
-          AI обрабатывает один отклик за 2-5 секунд. При массовом импорте (например, 100+ откликов) обработка происходит
-          параллельно.
+          AI обрабатывает один отклик за 2-5 секунд. При массовом импорте с
+          HH.ru обработка происходит параллельно через фоновые задачи (Inngest).
         </DocsCallout>
 
         <h2 id="criteria-setup">Настройка критериев скрининга</h2>
 
         <p>
-          Точность AI-скрининга напрямую зависит от качества настроенных критериев. Следуйте этим шагам для оптимальной
-          настройки:
+          Точность AI-скрининга напрямую зависит от качества настроенных
+          критериев. Следуйте этим шагам для оптимальной настройки:
         </p>
 
         <DocsSteps steps={setupSteps} />
@@ -117,42 +127,49 @@ export default function ScreeningPage() {
 
         <ul>
           <li>
-            <strong>Балл соответствия</strong> — число от 0 до 100, показывающее общее соответствие требованиям
+            <strong>Балл соответствия</strong> — число от 0 до 100, показывающее
+            общее соответствие требованиям
           </li>
           <li>
-            <strong>Этап воронки</strong> — автоматический переход на этап SCREENING_DONE при успешном скрининге
+            <strong>Этап воронки</strong> — автоматический переход на этап
+            SCREENING_DONE при успешном скрининге
           </li>
           <li>
-            <strong>Детальный отчёт</strong> — разбивка по каждому критерию с пояснениями AI
+            <strong>Детальный отчёт</strong> — разбивка по каждому критерию с
+            пояснениями AI
           </li>
           <li>
-            <strong>Выявленные риски</strong> — потенциальные проблемы (частая смена работы, пробелы в опыте)
+            <strong>Выявленные риски</strong> — потенциальные проблемы (частая
+            смена работы, пробелы в опыте)
           </li>
         </ul>
 
         <DocsCallout type="tip" title="Совет">
-          Регулярно проверяйте точность скрининга, сравнивая решения AI с вашими оценками. Это поможет улучшить критерии
-          и повысить качество отбора.
+          Регулярно проверяйте точность скрининга, сравнивая решения AI с вашими
+          оценками. Это поможет улучшить критерии и повысить качество отбора.
         </DocsCallout>
 
         <h2 id="bulk-processing">Массовая обработка</h2>
 
         <p>
-          QBS Автонайм поддерживает массовый импорт откликов из различных источников. После импорта все отклики
-          автоматически проходят скрининг.
+          QBS Автонайм поддерживает массовый импорт откликов из различных
+          источников. После импорта все отклики автоматически проходят скрининг.
         </p>
 
         <p>Способы массового импорта:</p>
 
         <ul>
           <li>
-            <strong>Интеграция с hh.ru</strong> — автоматический импорт откликов на ваши вакансии
+            <strong>Интеграция с hh.ru</strong> — автоматический импорт откликов
+            на ваши вакансии
           </li>
           <li>
-            <strong>Загрузка файлов</strong> — поддержка PDF, DOC, DOCX (до 100 файлов за раз)
+            <strong>Загрузка файлов</strong> — поддержка PDF, DOC, DOCX (до 100
+            файлов за раз)
           </li>
           <li>
-            <strong>tRPC API</strong> — программный импорт через candidates.create
+            <strong>tRPC API</strong> — программный импорт через
+            candidates.create
           </li>
         </ul>
 
@@ -160,17 +177,20 @@ export default function ScreeningPage() {
 
         <ul>
           <li>
-            <strong>Начните с малого</strong> — добавьте 5-7 ключевых критериев, затем расширяйте по мере необходимости
+            <strong>Начните с малого</strong> — добавьте 5-7 ключевых критериев,
+            затем расширяйте по мере необходимости
           </li>
           <li>
-            <strong>Используйте конкретные формулировки</strong> — вместо «хорошие навыки коммуникации» укажите «опыт
-            проведения презентаций»
+            <strong>Используйте конкретные формулировки</strong> — вместо
+            «хорошие навыки коммуникации» укажите «опыт проведения презентаций»
           </li>
           <li>
-            <strong>Регулярно обновляйте критерии</strong> — рынок меняется, и требования к кандидатам тоже
+            <strong>Регулярно обновляйте критерии</strong> — рынок меняется, и
+            требования к кандидатам тоже
           </li>
           <li>
-            <strong>Анализируйте результаты</strong> — если много «ложных срабатываний», пересмотрите критерии
+            <strong>Анализируйте результаты</strong> — если много «ложных
+            срабатываний», пересмотрите критерии
           </li>
         </ul>
 
@@ -184,7 +204,9 @@ export default function ScreeningPage() {
             href="/candidates"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
             Обзор
           </Link>
           <Link
@@ -192,12 +214,14 @@ export default function ScreeningPage() {
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Скоринг кандидатов
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

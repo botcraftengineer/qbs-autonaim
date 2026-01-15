@@ -1,9 +1,9 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCallout } from "@/components/docs/docs-callout"
-import { DocsSteps } from "@/components/docs/docs-steps"
-import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsCode } from "@/components/docs/docs-code"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsCode } from "@/components/docs/docs-code";
+import { DocsSteps } from "@/components/docs/docs-steps";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function TelegramIntegrationPage() {
   const tocItems = [
@@ -11,35 +11,54 @@ export default function TelegramIntegrationPage() {
     { id: "bot-setup", title: "Настройка бота", level: 2 },
     { id: "notifications", title: "Уведомления", level: 2 },
     { id: "candidate-chat", title: "Чат с кандидатами", level: 2 },
-  ]
+  ];
 
   const botSetupSteps = [
     {
       title: "Создайте бота в Telegram",
       content: (
         <p>
-          Напишите @BotFather в Telegram, выполните команду /newbot и следуйте инструкциям. Сохраните полученный токен.
+          Напишите @BotFather в Telegram, выполните команду /newbot и следуйте
+          инструкциям. Сохраните полученный токен.
         </p>
       ),
     },
     {
       title: "Добавьте токен в QBS Автонайм",
-      content: <p>{"Перейдите в «Настройки» → «Интеграции» → «Telegram» и вставьте токен бота."}</p>,
+      content: (
+        <p>
+          {
+            "Перейдите в «Настройки» → «Интеграции» → «Telegram» и вставьте токен бота."
+          }
+        </p>
+      ),
     },
     {
       title: "Настройте команды бота",
-      content: <p>Определите список команд, которые будет поддерживать ваш бот для кандидатов.</p>,
+      content: (
+        <p>
+          Определите список команд, которые будет поддерживать ваш бот для
+          кандидатов.
+        </p>
+      ),
     },
     {
       title: "Опубликуйте ссылку на бота",
-      content: <p>Добавьте ссылку на бота в описание вакансий и на карьерный сайт.</p>,
+      content: (
+        <p>Добавьте ссылку на бота в описание вакансий и на карьерный сайт.</p>
+      ),
     },
-  ]
+  ];
 
   return (
     <div className="flex gap-12">
       <article className="docs-content flex-1 max-w-3xl">
-        <DocsBreadcrumb items={[{ title: "Интеграции", href: "/integrations" }, { title: "Telegram" }]} />
+        <DocsBreadcrumb
+          items={[
+            { title: "Интеграции", href: "/integrations" },
+            { title: "Telegram" },
+          ]}
+        />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">Интеграции</span>
@@ -48,8 +67,8 @@ export default function TelegramIntegrationPage() {
         <h1>Интеграция с Telegram</h1>
 
         <p className="text-lg">
-          Telegram-интеграция позволяет общаться с кандидатами через мессенджер и получать мгновенные уведомления о
-          событиях в системе.
+          Telegram-интеграция позволяет общаться с кандидатами через мессенджер
+          и получать мгновенные уведомления о событиях в системе.
         </p>
 
         <h2 id="use-cases">Сценарии использования</h2>
@@ -83,7 +102,8 @@ export default function TelegramIntegrationPage() {
 
         <ul>
           <li>
-            <strong>Личные уведомления</strong> — каждый рекрутер получает уведомления по своим вакансиям
+            <strong>Личные уведомления</strong> — каждый рекрутер получает
+            уведомления по своим вакансиям
           </li>
           <li>
             <strong>Групповой чат</strong> — все уведомления в общий чат команды
@@ -108,7 +128,10 @@ export default function TelegramIntegrationPage() {
 
         <h2 id="candidate-chat">Чат с кандидатами</h2>
 
-        <p>Кандидаты могут общаться с AI-ассистентом через Telegram-бота. Бот поддерживает следующие функции:</p>
+        <p>
+          Кандидаты могут общаться с AI-ассистентом через Telegram-бота. Бот
+          поддерживает следующие функции:
+        </p>
 
         <ul>
           <li>Просмотр списка вакансий</li>
@@ -119,29 +142,33 @@ export default function TelegramIntegrationPage() {
         </ul>
 
         <DocsCallout type="tip" title="Совет">
-          Добавьте username бота в текст вакансии на job-сайтах — это увеличит конверсию откликов, так как кандидатам
-          удобнее писать в мессенджер.
+          Добавьте username бота в текст вакансии на job-сайтах — это увеличит
+          конверсию откликов, так как кандидатам удобнее писать в мессенджер.
         </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <Link
-            href="/integrations/superjob"
+            href="/integrations/hh"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-            SuperJob
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
+            HeadHunter
           </Link>
           <Link
-            href="/integrations/webhooks"
+            href="/integrations/freelance"
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Webhooks
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            Фриланс-платформы
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

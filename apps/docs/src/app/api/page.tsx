@@ -1,10 +1,8 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCard } from "@/components/docs/docs-card"
-import { DocsCallout } from "@/components/docs/docs-callout"
-import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsCode } from "@/components/docs/docs-code"
-import { Key, Users, Briefcase, MessageSquare, BarChart3 } from "lucide-react"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsCode } from "@/components/docs/docs-code";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function APIPage() {
   const tocItems = [
@@ -12,7 +10,7 @@ export default function APIPage() {
     { id: "base-url", title: "Базовый URL", level: 2 },
     { id: "authentication", title: "Аутентификация", level: 2 },
     { id: "endpoints", title: "Эндпоинты", level: 2 },
-  ]
+  ];
 
   return (
     <div className="flex gap-12">
@@ -23,11 +21,12 @@ export default function APIPage() {
           <span className="text-sm font-medium text-primary">API</span>
         </div>
 
-        <h1>API Reference</h1>
+        <h1>tRPC API</h1>
 
         <p className="text-lg">
-          tRPC API QBS Автонайм позволяет программно управлять кандидатами, вакансиями и другими ресурсами. Используйте
-          API для интеграции с вашими внутренними системами.
+          QBS Автонайм использует tRPC для типобезопасного взаимодействия между
+          клиентом и сервером. Все API методы автоматически типизированы и
+          доступны через tRPC клиент.
         </p>
 
         <h2 id="overview">Обзор</h2>
@@ -40,89 +39,144 @@ export default function APIPage() {
             <strong>Формат данных</strong> — JSON
           </li>
           <li>
-            <strong>Аутентификация</strong> — Сессии пользователя
+            <strong>Аутентификация</strong> — Сессии через NextAuth
           </li>
           <li>
-            <strong>Типизация</strong> — Автоматическая TypeScript типизация
+            <strong>Типизация</strong> — Полная TypeScript типизация из коробки
+          </li>
+          <li>
+            <strong>Валидация</strong> — Zod v4 схемы для всех входных данных
           </li>
         </ul>
 
         <h2 id="base-url">Базовый URL</h2>
 
-        <DocsCode code="http://localhost:3000/api/trpc" language="text" title="tRPC Endpoint" />
+        <DocsCode
+          code="http://localhost:3000/api/trpc"
+          language="text"
+          title="tRPC Endpoint"
+        />
 
         <p className="text-sm text-muted-foreground mt-2">
-          Для production используйте ваш домен: <code>https://your-domain.com/api/trpc</code>
+          Для production используйте ваш домен:{" "}
+          <code>https://your-domain.com/api/trpc</code>
         </p>
 
         <h2 id="authentication">Аутентификация</h2>
 
-        <p>tRPC API использует сессионную аутентификацию. Для доступа необходимо:</p>
+        <p>
+          tRPC API использует сессионную аутентификацию через NextAuth. Для
+          доступа необходимо:
+        </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
           <li>Войти в систему через веб-интерфейс</li>
-          <li>Использовать tRPC клиент с cookies сессии</li>
-          <li>Указывать workspaceId в каждом запросе</li>
+          <li>Использовать tRPC клиент с автоматической передачей cookies</li>
+          <li>
+            Указывать workspaceId в запросах, требующих контекста workspace
+          </li>
         </ol>
 
-        <DocsCallout type="info" title="Рекомендация">
-          Используйте официальный tRPC клиент для автоматической обработки сессий и полной типизации.
+        <DocsCallout type="info" title="Типобезопасность">
+          tRPC клиент автоматически предоставляет полную типизацию всех методов,
+          параметров и возвращаемых значений. Ошибки типов обнаруживаются на
+          этапе компиляции.
         </DocsCallout>
 
-        <h2 id="endpoints">Основные эндпоинты</h2>
+        <h2 id="endpoints">Доступные роутеры</h2>
 
-        <div className="grid gap-4 sm:grid-cols-1 my-6">
-          <DocsCard
-            title="Аутентификация"
-            description="Настройка сессий и управление доступом к workspace."
-            href="/api/authentication"
-            icon={<Key className="h-5 w-5" />}
-          />
-          <DocsCard
-            title="Кандидаты"
-            description="Управление кандидатами, этапами воронки, сообщениями."
-            href="/api/candidates"
-            icon={<Users className="h-5 w-5" />}
-          />
-          <DocsCard
-            title="Вакансии"
-            description="Создание вакансий, аналитика, управление откликами."
-            href="/api/vacancies"
-            icon={<Briefcase className="h-5 w-5" />}
-          />
-          <DocsCard
-            title="Чат"
-            description="AI-ассистент, сессии чата, общение с кандидатами."
-            href="/api/chat"
-            icon={<MessageSquare className="h-5 w-5" />}
-          />
-          <DocsCard
-            title="Аналитика"
-            description="Дашборды, статистика, экспорт данных, события."
-            href="/api/analytics"
-            icon={<BarChart3 className="h-5 w-5" />}
-          />
+        <p>API организован в 20 доменных роутеров:</p>
+
+        <div className="my-6 grid gap-3">
+          {[
+            {
+              name: "analytics",
+              description: "Дашборды, статистика, экспорт данных",
+            },
+            {
+              name: "candidates",
+              description: "Управление кандидатами, этапы, комментарии",
+            },
+            {
+              name: "chat",
+              description: "AI-ассистент, сообщения, сессии чата",
+            },
+            { name: "company", description: "Информация о компании" },
+            {
+              name: "custom-domain",
+              description: "Настройка кастомных доменов",
+            },
+            { name: "files", description: "Загрузка и управление файлами" },
+            {
+              name: "freelance-platforms",
+              description: "Интеграция с фриланс-платформами",
+            },
+            { name: "funnel", description: "Управление воронкой найма" },
+            { name: "gig", description: "Gig-задания и отклики" },
+            {
+              name: "integration",
+              description: "Настройка интеграций (HH.ru и др.)",
+            },
+            { name: "organization", description: "Управление организацией" },
+            {
+              name: "prequalification",
+              description: "Преквалификация кандидатов",
+            },
+            { name: "recruiter-agent", description: "AI-агент рекрутера" },
+            { name: "telegram", description: "Telegram-бот и интервью" },
+            { name: "test", description: "Тестовые методы (только dev)" },
+            { name: "user", description: "Профиль пользователя" },
+            { name: "utils", description: "Вспомогательные методы" },
+            { name: "vacancy", description: "Управление вакансиями" },
+            { name: "widget-config", description: "Настройка виджетов" },
+            {
+              name: "workspace",
+              description: "Управление workspace и участниками",
+            },
+          ].map((router) => (
+            <div
+              key={router.name}
+              className="rounded-lg border border-border p-3"
+            >
+              <code className="text-sm font-medium text-primary">
+                {router.name}
+              </code>
+              <p className="text-sm text-muted-foreground mt-1">
+                {router.description}
+              </p>
+            </div>
+          ))}
         </div>
+
+        <DocsCallout type="tip" title="Структура API">
+          Каждый роутер содержит набор процедур (query для чтения, mutation для
+          изменения данных). Все процедуры валидируются через Zod схемы и
+          автоматически типизированы.
+        </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <Link
-            href="/integrations/webhooks"
+            href="/analytics"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
-            Webhooks
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
+            Аналитика
           </Link>
           <Link
-            href="/api/authentication"
+            href="/integrations"
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Аутентификация
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            Интеграции
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

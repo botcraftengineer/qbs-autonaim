@@ -1,6 +1,6 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsToc } from "@/components/docs/docs-toc"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 const glossaryTerms = [
   {
@@ -34,15 +34,16 @@ const glossaryTerms = [
     related: "/ai-assistant/auto-replies",
   },
   {
-    term: "Webhook",
+    term: "tRPC",
     definition:
-      "Механизм уведомлений, который позволяет получать данные о событиях в системе (новый кандидат, смена статуса) в режиме реального времени.",
-    related: "/integrations/webhooks",
+      "Типобезопасный протокол для взаимодействия между клиентом и сервером. Используется в QBS Автонайм для всех API запросов.",
+    related: "/api",
   },
   {
     term: "API-ключ",
-    definition: "Секретный ключ для аутентификации при работе с REST API QBS Автонайм.",
-    related: "/api/authentication",
+    definition:
+      "Секретный ключ для аутентификации при работе с tRPC API QBS Автонайм.",
+    related: "/api",
   },
   {
     term: "Метрики найма",
@@ -58,32 +59,40 @@ const glossaryTerms = [
   },
   {
     term: "Пайплайн",
-    definition: "Последовательность этапов, через которые проходит кандидат в процессе найма. Синоним воронки найма.",
+    definition:
+      "Последовательность этапов, через которые проходит кандидат в процессе найма. Синоним воронки найма.",
     related: "/candidates/pipeline",
   },
-]
+];
 
 export default function GlossaryPage() {
   const tocItems = glossaryTerms.map((item) => ({
     id: item.term.toLowerCase().replace(/\s+/g, "-"),
     title: item.term,
     level: 2,
-  }))
+  }));
 
   return (
     <div className="flex gap-12">
       <article className="docs-content flex-1 max-w-3xl">
-        <DocsBreadcrumb items={[{ title: "Начало работы", href: "/docs" }, { title: "Глоссарий" }]} />
+        <DocsBreadcrumb
+          items={[
+            { title: "Начало работы", href: "/docs" },
+            { title: "Глоссарий" },
+          ]}
+        />
 
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-primary">Начало работы</span>
+          <span className="text-sm font-medium text-primary">
+            Начало работы
+          </span>
         </div>
 
         <h1>Глоссарий</h1>
 
         <p className="text-lg">
-          Справочник основных терминов и понятий, используемых в QBS Автонайм. Если вы встретили незнакомое слово в
-          документации — найдите его здесь.
+          Справочник основных терминов и понятий, используемых в QBS Автонайм.
+          Если вы встретили незнакомое слово в документации — найдите его здесь.
         </p>
 
         <div className="mt-8 flex flex-col gap-6">
@@ -93,10 +102,15 @@ export default function GlossaryPage() {
               id={item.term.toLowerCase().replace(/\s+/g, "-")}
               className="scroll-mt-20 rounded-lg border border-border p-5"
             >
-              <h3 className="text-lg font-semibold text-foreground mb-2">{item.term}</h3>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {item.term}
+              </h3>
               <p className="text-muted-foreground mb-3">{item.definition}</p>
               {item.related && (
-                <Link href={item.related} className="text-sm text-primary hover:underline">
+                <Link
+                  href={item.related}
+                  className="text-sm text-primary hover:underline"
+                >
                   Подробнее →
                 </Link>
               )}
@@ -109,7 +123,9 @@ export default function GlossaryPage() {
             href="/quickstart"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
             Быстрый старт
           </Link>
           <Link
@@ -117,12 +133,14 @@ export default function GlossaryPage() {
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Работа с кандидатами
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCallout } from "@/components/docs/docs-callout"
-import { DocsToc } from "@/components/docs/docs-toc"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function ChatPage() {
   const tocItems = [
@@ -9,69 +9,95 @@ export default function ChatPage() {
     { id: "channels", title: "Каналы коммуникации", level: 2 },
     { id: "ai-mode", title: "Режим AI", level: 2 },
     { id: "manual-mode", title: "Ручной режим", level: 2 },
-  ]
+  ];
 
   return (
     <div className="flex gap-12">
       <article className="docs-content flex-1 max-w-3xl">
         <DocsBreadcrumb
-          items={[{ title: "AI-ассистент", href: "/ai-assistant" }, { title: "Чат с кандидатами" }]}
+          items={[
+            { title: "AI-ассистент", href: "/ai-assistant" },
+            { title: "Чат с кандидатами" },
+          ]}
         />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">AI-ассистент</span>
         </div>
 
-        <h1>Чат с кандидатами</h1>
+        <h1>AI-интервью с кандидатами</h1>
 
         <p className="text-lg">
-          Единый интерфейс для общения с кандидатами через все подключённые каналы. Вся история переписки сохраняется в
-          карточке кандидата.
+          Автоматическое проведение интервью через Telegram и веб-интерфейс. AI
+          задает вопросы, анализирует ответы и формирует оценку кандидата.
         </p>
 
-        <h2 id="chat-interface">Интерфейс чата</h2>
+        <h2 id="chat-interface">Как это работает</h2>
 
-        <p>Интерфейс чата включает:</p>
+        <p>QBS Автонайм проводит интервью двумя способами:</p>
 
         <ul>
           <li>
-            <strong>Список диалогов</strong> — все активные переписки с сортировкой по дате последнего сообщения
+            <strong>Веб-интервью</strong> — кандидат получает уникальную ссылку
+            и проходит интервью в браузере
           </li>
           <li>
-            <strong>Окно чата</strong> — история сообщений с конкретным кандидатом
-          </li>
-          <li>
-            <strong>Карточка кандидата</strong> — краткая информация о кандидате справа от чата
-          </li>
-          <li>
-            <strong>Панель действий</strong> — быстрые действия (назначить собеседование, отправить шаблон)
+            <strong>Telegram-интервью</strong> — бот проводит интервью прямо в
+            мессенджере
           </li>
         </ul>
 
-        <DocsCallout type="tip" title="Горячие клавиши">
-          Используйте Ctrl+Enter для отправки сообщения, Ctrl+K для быстрого поиска кандидата, Ctrl+T для вставки
-          шаблона.
+        <DocsCallout type="info" title="Поддержка голоса">
+          Кандидаты могут отвечать текстом или голосовыми сообщениями. Голос
+          автоматически транскрибируется через Whisper API.
         </DocsCallout>
 
         <h2 id="channels">Каналы коммуникации</h2>
 
-        <p>QBS Автонайм поддерживает следующие каналы для общения с кандидатами:</p>
+        <p>
+          QBS Автонайм поддерживает следующие каналы для общения с кандидатами:
+        </p>
 
         <div className="my-6 grid gap-3">
           {[
-            { name: "Email", description: "Классическая email-переписка с отслеживанием открытий" },
-            { name: "Telegram", description: "Быстрый мессенджер для оперативной коммуникации" },
-            { name: "WhatsApp", description: "Популярный мессенджер через WhatsApp Business API" },
-            { name: "SMS", description: "SMS-уведомления для срочных сообщений" },
-            { name: "Веб-чат", description: "Виджет чата на вашем карьерном сайте" },
+            {
+              name: "Email",
+              description:
+                "Классическая email-переписка с отслеживанием открытий",
+            },
+            {
+              name: "Telegram",
+              description: "Быстрый мессенджер для оперативной коммуникации",
+            },
+            {
+              name: "WhatsApp",
+              description: "Популярный мессенджер через WhatsApp Business API",
+            },
+            {
+              name: "SMS",
+              description: "SMS-уведомления для срочных сообщений",
+            },
+            {
+              name: "Веб-чат",
+              description: "Виджет чата на вашем карьерном сайте",
+            },
           ].map((channel) => (
-            <div key={channel.name} className="flex items-center gap-3 rounded-lg border border-border p-4">
+            <div
+              key={channel.name}
+              className="flex items-center gap-3 rounded-lg border border-border p-4"
+            >
               <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                <span className="text-sm font-semibold text-primary">{channel.name[0]}</span>
+                <span className="text-sm font-semibold text-primary">
+                  {channel.name[0]}
+                </span>
               </div>
               <div>
-                <span className="font-medium text-foreground">{channel.name}</span>
-                <p className="text-sm text-muted-foreground">{channel.description}</p>
+                <span className="font-medium text-foreground">
+                  {channel.name}
+                </span>
+                <p className="text-sm text-muted-foreground">
+                  {channel.description}
+                </p>
               </div>
             </div>
           ))}
@@ -79,29 +105,41 @@ export default function ChatPage() {
 
         <h2 id="ai-mode">Режим AI</h2>
 
-        <p>По умолчанию AI-ассистент автоматически отвечает на сообщения кандидатов. В этом режиме:</p>
+        <p>
+          По умолчанию AI-ассистент автоматически отвечает на сообщения
+          кандидатов. В этом режиме:
+        </p>
 
         <ul>
           <li>AI анализирует входящее сообщение и определяет намерение</li>
-          <li>Генерирует персонализированный ответ на основе шаблонов и контекста</li>
-          <li>Может назначать собеседования, если кандидат выразил готовность</li>
+          <li>
+            Генерирует персонализированный ответ на основе шаблонов и контекста
+          </li>
+          <li>
+            Может назначать собеседования, если кандидат выразил готовность
+          </li>
           <li>Передаёт диалог рекрутеру при сложных вопросах</li>
         </ul>
 
         <DocsCallout type="info">
-          AI помечает сообщения, на которые не смог ответить уверенно. Такие диалоги отображаются в разделе «Требует
-          внимания».
+          AI помечает сообщения, на которые не смог ответить уверенно. Такие
+          диалоги отображаются в разделе «Требует внимания».
         </DocsCallout>
 
         <h2 id="manual-mode">Ручной режим</h2>
 
-        <p>Вы можете отключить AI для конкретного кандидата и вести переписку самостоятельно:</p>
+        <p>
+          Вы можете отключить AI для конкретного кандидата и вести переписку
+          самостоятельно:
+        </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
           <li>Откройте диалог с кандидатом</li>
           <li>{"Нажмите переключатель «AI» в верхней части чата"}</li>
           <li>AI приостановит автоответы для этого кандидата</li>
-          <li>Для возврата в автоматический режим нажмите переключатель снова</li>
+          <li>
+            Для возврата в автоматический режим нажмите переключатель снова
+          </li>
         </ol>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
@@ -109,7 +147,9 @@ export default function ChatPage() {
             href="/ai-assistant"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
             Обзор
           </Link>
           <Link
@@ -117,12 +157,14 @@ export default function ChatPage() {
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Автоответы
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }

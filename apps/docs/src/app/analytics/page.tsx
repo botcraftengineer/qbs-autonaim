@@ -1,15 +1,14 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCard } from "@/components/docs/docs-card" 
-import { DocsToc } from "@/components/docs/docs-toc"
-import { FileBarChart, Target } from "lucide-react"
-import Link from "next/link"
+import Link from "next/link";
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function AnalyticsPage() {
   const tocItems = [
-    { id: "overview", title: "Обзор", level: 2 },
+    { id: "overview", title: "Доступные данные", level: 2 },
     { id: "dashboard", title: "Дашборд", level: 2 },
-    { id: "sections", title: "Разделы", level: 2 },
-  ]
+    { id: "sections", title: "Доступ к данным", level: 2 },
+  ];
 
   return (
     <div className="flex gap-12">
@@ -20,75 +19,115 @@ export default function AnalyticsPage() {
           <span className="text-sm font-medium text-primary">Аналитика</span>
         </div>
 
-        <h1>Аналитика найма</h1>
+        <h1>Аналитика</h1>
 
         <p className="text-lg">
-          Аналитика QBS Автонайм помогает отслеживать эффективность процесса найма, выявлять узкие места и принимать
-          решения на основе данных.
+          Базовая аналитика для отслеживания ключевых показателей процесса
+          найма. Просматривайте статистику по кандидатам, вакансиям и
+          источникам.
         </p>
 
-        <h2 id="overview">Обзор возможностей</h2>
+        <h2 id="overview">Доступные данные</h2>
 
         <ul>
           <li>
-            <strong>Реальное время</strong> — данные обновляются автоматически без перезагрузки
+            <strong>Статистика по вакансиям</strong> — количество откликов,
+            средняя оценка кандидатов
           </li>
           <li>
-            <strong>Визуализация</strong> — графики, диаграммы и таблицы для удобного анализа
+            <strong>Источники кандидатов</strong> — HeadHunter,
+            фриланс-платформы, Gig-задания
           </li>
           <li>
-            <strong>Фильтрация</strong> — анализ по вакансиям, периодам, источникам, рекрутерам
+            <strong>Распределение по оценкам</strong> — сколько кандидатов
+            получили 1-5 звезд
           </li>
           <li>
-            <strong>Экспорт</strong> — выгрузка данных в Excel, PDF, Google Sheets
-          </li>
-          <li>
-            <strong>Автоматические отчёты</strong> — регулярная отправка отчётов на email
+            <strong>Активность по дням</strong> — динамика поступления откликов
           </li>
         </ul>
 
-        <h2 id="dashboard">Главный дашборд</h2>
+        <h2 id="dashboard">Дашборд</h2>
 
-        <p>На главном дашборде отображаются ключевые показатели:</p>
+        <p>На главной странице отображаются основные метрики:</p>
 
         <div className="my-6 grid gap-4 sm:grid-cols-2">
           {[
-            { label: "Активные вакансии", value: "12", change: "+2 за неделю" },
-            { label: "Новые кандидаты", value: "847", change: "+23% к прошлому месяцу" },
-            { label: "Среднее время закрытия", value: "18 дней", change: "-3 дня к прошлому кварталу" },
-            { label: "Конверсия воронки", value: "4.2%", change: "+0.5% к прошлому месяцу" },
+            {
+              label: "Активные вакансии",
+              value: "12",
+              change: "Всего в системе",
+            },
+            {
+              label: "Новые кандидаты",
+              value: "847",
+              change: "За последний месяц",
+            },
+            {
+              label: "Средняя оценка",
+              value: "3.2★",
+              change: "По всем кандидатам",
+            },
+            { label: "Обработано", value: "156", change: "Прошли скрининг" },
           ].map((stat) => (
-            <div key={stat.label} className="rounded-lg border border-border p-4">
+            <div
+              key={stat.label}
+              className="rounded-lg border border-border p-4"
+            >
               <p className="text-sm text-muted-foreground">{stat.label}</p>
-              <p className="text-2xl font-bold text-foreground mt-1">{stat.value}</p>
-              <p className="text-xs text-primary mt-1">{stat.change}</p>
+              <p className="text-2xl font-bold text-foreground mt-1">
+                {stat.value}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stat.change}
+              </p>
             </div>
           ))}
         </div>
 
-        <h2 id="sections">Разделы аналитики</h2>
+        <DocsCallout type="info" title="Экспорт данных">
+          Вы можете выгрузить данные через tRPC API для построения собственных
+          отчётов и дашбордов.
+        </DocsCallout>
 
-        <div className="grid gap-4 sm:grid-cols-1 my-6">
-          <DocsCard
-            title="Отчёты"
-            description="Готовые и настраиваемые отчёты по всем аспектам найма. Экспорт и автоматическая отправка."
-            href="/analytics/reports"
-            icon={<FileBarChart className="h-5 w-5" />}
-          />
-          <DocsCard
-            title="Метрики найма"
-            description="Ключевые показатели эффективности: время закрытия, стоимость найма, качество источников."
-            href="/analytics/metrics"
-            icon={<Target className="h-5 w-5" />}
-          />
-        </div>
+        <h2 id="sections">Доступ к данным</h2>
+
+        <p>
+          Для получения аналитических данных используйте tRPC API. Доступны
+          следующие методы:
+        </p>
+
+        <ul>
+          <li>
+            <code>analytics.getDashboard</code> — общая статистика по workspace
+          </li>
+          <li>
+            <code>analytics.getVacancyAnalytics</code> — детальная аналитика по
+            вакансии
+          </li>
+          <li>
+            <code>analytics.exportData</code> — экспорт данных в различных
+            форматах
+          </li>
+          <li>
+            <code>analytics.trackEvent</code> — отслеживание пользовательских
+            событий
+          </li>
+        </ul>
+
+        <DocsCallout type="tip" title="API документация">
+          Подробное описание методов аналитики доступно в разделе{" "}
+          <Link href="/api">API Reference</Link>.
+        </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <Link
             href="/ai-assistant/templates"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
-            <span className="group-hover:-translate-x-0.5 transition-transform">←</span>
+            <span className="group-hover:-translate-x-0.5 transition-transform">
+              ←
+            </span>
             Шаблоны сообщений
           </Link>
           <Link
@@ -96,12 +135,14 @@ export default function AnalyticsPage() {
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Отчёты
-            <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+            <span className="group-hover:translate-x-0.5 transition-transform">
+              →
+            </span>
           </Link>
         </div>
       </article>
 
       <DocsToc items={tocItems} />
     </div>
-  )
+  );
 }
