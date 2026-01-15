@@ -1,0 +1,48 @@
+"use client";
+
+import { Skeleton } from "@qbs-autonaim/ui";
+import { useQuery } from "@tanstack/react-query";
+import { BotSettingsForm } from "~/components/settings/bot-settings-form";
+import { useWorkspace } from "~/hooks/use-workspace";
+import { useTRPC } from "~/trpc/react";
+
+export default function SettingsBotPage() {
+  const trpc = useTRPC();
+  const { workspace, isLoading: workspaceLoading } = useWorkspace();
+
+  const workspaceId = workspace?.id;
+  const userRole = workspace?.role;
+
+  const { data: botSettings, isLoading } = useQuery({
+    ...trpc.workspace.getBotSettings.queryOptions({
+      workspaceId: workspaceId || "",
+    }),
+    enabled: !!workspaceId,
+  });
+
+  if (isLoading || workspaceLoading || !workspaceId) {
+    return (
+      <div className="rounded-lg border p-6 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-lg border p-6">
+      <BotSettingsForm
+        workspaceId={workspaceId}
+        initialData={{
+          companyName: botSettings?.companyName || "",
+          companyWebsite: botSettings?.companyWebsite || "",
+          companyDescription: botSettings?.companyDescription || "",
+          botName: botSettings?.botName || "",
+          botRole: botSettings?.botRole || "",
+        }}
+        userRole={userRole}
+      />
+    </div>
+  );
+}

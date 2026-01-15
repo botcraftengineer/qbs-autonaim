@@ -38,8 +38,6 @@ export const update = protectedProcedure
           companyName: input.data.name,
           companyWebsite: input.data.website || null,
           companyDescription: input.data.description || null,
-          botName: input.data.botName,
-          botRole: input.data.botRole,
           updatedAt: new Date(),
         })
         .where(eq(botSettings.id, existing.id))
@@ -48,7 +46,7 @@ export const update = protectedProcedure
       return updated;
     }
 
-    // Создаем новые
+    // Создаем новые (с дефолтными значениями для бота)
     const [created] = await ctx.db
       .insert(botSettings)
       .values({
@@ -56,8 +54,8 @@ export const update = protectedProcedure
         companyName: input.data.name,
         companyWebsite: input.data.website || null,
         companyDescription: input.data.description || null,
-        botName: input.data.botName,
-        botRole: input.data.botRole,
+        botName: "Ассистент",
+        botRole: "HR-менеджер",
       })
       .returning();
 

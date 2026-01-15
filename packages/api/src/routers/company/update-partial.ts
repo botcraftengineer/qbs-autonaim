@@ -40,15 +40,11 @@ export const updatePartial = protectedProcedure
 
     const updateData: Record<string, unknown> = { updatedAt: new Date() };
 
-    if (input.data.name !== undefined) updateData.name = input.data.name;
+    if (input.data.name !== undefined) updateData.companyName = input.data.name;
     if (input.data.website !== undefined)
-      updateData.website = input.data.website || null;
+      updateData.companyWebsite = input.data.website || null;
     if (input.data.description !== undefined)
-      updateData.description = input.data.description || null;
-    if (input.data.botName !== undefined)
-      updateData.botName = input.data.botName;
-    if (input.data.botRole !== undefined)
-      updateData.botRole = input.data.botRole;
+      updateData.companyDescription = input.data.description || null;
 
     const [updated] = await ctx.db
       .update(botSettings)

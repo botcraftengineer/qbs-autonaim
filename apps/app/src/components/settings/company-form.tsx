@@ -81,8 +81,6 @@ export function CompanyForm({
       name: "",
       website: "",
       description: "",
-      botName: "Дмитрий",
-      botRole: "рекрутер",
     },
   });
 
@@ -177,52 +175,6 @@ export function CompanyForm({
             </FormItem>
           )}
         />
-
-        <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-foreground">
-              Настройки бота
-            </h3>
-            <p className="text-xs text-muted-foreground">
-              Настройте, как бот будет представляться кандидатам
-            </p>
-          </div>
-
-          <FormField
-            control={form.control}
-            name="botName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Имя бота
-                </FormLabel>
-                <Input placeholder="Дмитрий" {...field} />
-                <p className="text-xs text-muted-foreground">
-                  Бот будет представляться этим именем и говорить от первого
-                  лица
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="botRole"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Роль бота
-                </FormLabel>
-                <Input placeholder="рекрутер" {...field} />
-                <p className="text-xs text-muted-foreground">
-                  Как бот будет описывать свою роль при вопросе
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
 
         {updateCompany.isPending && (
           <p className="text-xs text-muted-foreground">Сохранение...</p>

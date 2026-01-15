@@ -70,7 +70,7 @@ export const updateBotSettingsSchema = z.object({
   companyDescription: z.string().max(1000).optional(),
   companyWebsite: z
     .string()
-    .url("Некорректный URL")
+    .url({ message: "Некорректный URL" })
     .optional()
     .or(z.literal("")),
   botName: z.string().min(1, "Имя бота обязательно").max(50),

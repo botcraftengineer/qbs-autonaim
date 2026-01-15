@@ -101,9 +101,9 @@ export default function EditGigPage({ params }: PageProps) {
     enabled: !!workspace?.id,
   });
 
-  // Загружаем настройки компании для отображения
-  const { data: companySettings } = useQuery({
-    ...trpc.company.get.queryOptions({
+  // Загружаем настройки бота для отображения
+  const { data: botSettings } = useQuery({
+    ...trpc.workspace.getBotSettings.queryOptions({
       workspaceId: workspace?.id ?? "",
     }),
     enabled: !!workspace?.id,
@@ -281,22 +281,19 @@ export default function EditGigPage({ params }: PageProps) {
               <CardTitle>Настройки ИИ</CardTitle>
               <CardDescription>
                 Кастомные инструкции для автоматизации
-                {companySettings && (
+                {botSettings && (
                   <div className="mt-2 p-3 bg-muted rounded-md text-sm">
-                    <div className="font-medium mb-1">Настройки компании:</div>
+                    <div className="font-medium mb-1">Настройки бота:</div>
                     <div className="space-y-1 text-muted-foreground">
-                      {(companySettings.botName || companySettings.botRole) && (
+                      {(botSettings.botName || botSettings.botRole) && (
                         <div>
-                          Бот: {companySettings.botName || "Не указано"}
-                          {companySettings.botRole &&
-                            ` (${companySettings.botRole})`}
+                          Бот: {botSettings.botName || "Не указано"}
+                          {botSettings.botRole && ` (${botSettings.botRole})`}
                         </div>
                       )}
-                      <div>Компания: {companySettings.companyName}</div>
-                      {companySettings.companyDescription && (
-                        <div>
-                          Описание: {companySettings.companyDescription}
-                        </div>
+                      <div>Компания: {botSettings.companyName}</div>
+                      {botSettings.companyDescription && (
+                        <div>Описание: {botSettings.companyDescription}</div>
                       )}
                     </div>
                   </div>
@@ -320,15 +317,13 @@ export default function EditGigPage({ params }: PageProps) {
                     <FormDescription>
                       Эти инструкции будут использоваться ботом при обработке
                       откликов.
-                      {companySettings &&
-                        (companySettings.botName ||
-                          companySettings.botRole) && (
+                      {botSettings &&
+                        (botSettings.botName || botSettings.botRole) && (
                           <span className="block mt-1 text-xs">
                             Бот будет представляться как{" "}
-                            {companySettings.botName || "бот"}
-                            {companySettings.botRole &&
-                              ` - ${companySettings.botRole}`}{" "}
-                            компании "{companySettings.companyName}".
+                            {botSettings.botName || "бот"}
+                            {botSettings.botRole && ` - ${botSettings.botRole}`}{" "}
+                            компании "{botSettings.companyName}".
                           </span>
                         )}
                     </FormDescription>

@@ -3,12 +3,13 @@
 import { paths } from "@qbs-autonaim/config";
 import { cn } from "@qbs-autonaim/ui";
 import {
+  Bot,
   Building2,
   Globe,
   Globe2,
+  MessageSquare,
   Settings,
   Users,
-  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -29,6 +30,11 @@ const sidebarNavItems = [
     title: "Компания",
     href: "/settings/company",
     icon: Building2,
+  },
+  {
+    title: "AI-бот",
+    href: "/settings/bot",
+    icon: Bot,
   },
   {
     title: "Домены",
