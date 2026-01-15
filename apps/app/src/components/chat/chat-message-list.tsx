@@ -61,7 +61,7 @@ export function ChatMessageList({ messages, isLoading }: ChatMessageListProps) {
     );
   }
 
-  if (messages.length === 0) {
+  if (!isLoading && messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center p-4">
         <div className="text-center">

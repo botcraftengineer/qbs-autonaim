@@ -53,7 +53,7 @@ export function ChatMessageList({
     );
   }
 
-  if (messages.length === 0) {
+  if (!isLoading && messages.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center">
         <p className="text-gray-500">Нет сообщений</p>

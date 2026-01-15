@@ -92,7 +92,7 @@ export function ChatList() {
     );
   }
 
-  if (conversations.length === 0) {
+  if (!isPending && conversations.length === 0) {
     return (
       <div className="flex min-h-[400px] items-center justify-center rounded-lg border border-dashed mx-3 md:mx-4 my-4">
         <div className="text-center px-4">

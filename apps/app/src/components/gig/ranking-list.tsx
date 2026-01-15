@@ -47,7 +47,7 @@ export function RankingList({
     );
   }
 
-  if (candidates.length === 0) {
+  if (!isLoading && candidates.length === 0) {
     return (
       <Alert>
         <Award className="h-4 w-4" />

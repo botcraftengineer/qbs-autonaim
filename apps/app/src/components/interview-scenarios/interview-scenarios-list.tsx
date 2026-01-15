@@ -1,15 +1,15 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@qbs-autonaim/ui";
-import { IconEdit, IconTrash, IconLoader2 } from "@tabler/icons-react";
-import { Button } from "@qbs-autonaim/ui";
+import { IconEdit, IconLoader2, IconTrash } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -55,7 +55,7 @@ export function InterviewScenariosList({
     );
   }
 
-  if (!data?.scenarios || data.scenarios.length === 0) {
+  if (!isLoading && (!data?.scenarios || data.scenarios.length === 0)) {
     return (
       <Card>
         <CardContent className="py-8">

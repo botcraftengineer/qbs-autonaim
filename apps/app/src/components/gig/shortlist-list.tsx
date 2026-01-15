@@ -13,6 +13,7 @@ interface ShortlistListProps {
   orgSlug: string;
   workspaceSlug: string;
   gigId: string;
+  isLoading?: boolean;
 }
 
 export function ShortlistList({
@@ -20,8 +21,22 @@ export function ShortlistList({
   orgSlug,
   workspaceSlug,
   gigId,
+  isLoading = false,
 }: ShortlistListProps) {
-  if (candidates.length === 0) {
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="h-48 rounded-lg border bg-muted/50 animate-pulse"
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (!isLoading && candidates.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-muted/50 mb-6">

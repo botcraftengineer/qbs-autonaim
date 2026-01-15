@@ -34,7 +34,8 @@ export function GigsList({
   onToggleActive,
   onSyncResponses,
 }: GigsListProps) {
-  if (isLoading && !gigs) {
+  // Показываем скелетоны только при первой загрузке (когда данных еще нет)
+  if (isLoading && gigs === undefined) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_) => (
@@ -61,7 +62,8 @@ export function GigsList({
     );
   }
 
-  if (filteredGigs.length === 0) {
+  // Показываем EmptyState только когда данные загружены и список действительно пуст
+  if (!isLoading && gigs !== undefined && filteredGigs.length === 0) {
     return (
       <EmptyState
         orgSlug={orgSlug}
