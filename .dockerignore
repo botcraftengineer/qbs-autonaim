@@ -1,1 +1,67 @@
+# Dependencies
 node_modules
+**/node_modules
+**/.next
+**/.turbo
+.turbo
+
+# Build outputs
+**/dist
+**/build
+**/.cache
+
+# Logs
+**/*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Testing
+**/coverage
+**/.nyc_output
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+!README.md
+docs
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+*.tsbuildinfo
+.eslintcache
+
+# Large directories that shouldn't be in context
+qdrant_storage
+**/tmp
+**/temp
+**/.temp

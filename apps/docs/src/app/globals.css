@@ -125,47 +125,6 @@
   }
 }
 
-/* Documentation specific styles */
-.docs-content h1 {
-  @apply text-3xl font-bold tracking-tight text-foreground mb-4;
-}
-
-.docs-content h2 {
-  @apply text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20;
-}
-
-.docs-content h3 {
-  @apply text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20;
-}
-
-.docs-content p {
-  @apply leading-relaxed text-foreground/80 mb-4;
-}
-
-.docs-content ul {
-  @apply my-4 ml-6 list-disc space-y-2;
-}
-
-.docs-content li {
-  @apply text-foreground/80;
-}
-
-.docs-content a {
-  @apply text-primary font-medium underline decoration-1 underline-offset-4 hover:text-primary/80 hover:decoration-[1.5px] transition-all;
-}
-
-.docs-content strong {
-  @apply font-semibold text-foreground;
-}
-
-/* Добавлены стили для плавных переходов и улучшений */
-.docs-content ol {
-  @apply my-4 ml-6 list-decimal space-y-2;
-}
-
-.docs-content ol li {
-  @apply text-foreground/80 pl-1;
-}
 
 /* Smooth scroll behavior */
 html {

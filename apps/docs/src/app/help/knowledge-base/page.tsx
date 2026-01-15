@@ -155,7 +155,7 @@ export default function KnowledgeBasePage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Помощь и поддержка", href: "/help" },
@@ -169,7 +169,7 @@ export default function KnowledgeBasePage() {
           </span>
         </div>
 
-        <h1>База знаний</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">База знаний</h1>
 
         <p className="text-lg">
           Статьи, гайды и кейсы по современному рекрутингу. Лучшие практики,
@@ -188,7 +188,7 @@ export default function KnowledgeBasePage() {
           />
         </div>
 
-        <h2 id="featured">Рекомендуемые статьи</h2>
+        <h2 id="featured" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Рекомендуемые статьи</h2>
 
         <div className="grid gap-4 my-6 md:grid-cols-1">
           {featuredArticles.map((article, index) => (
@@ -243,7 +243,7 @@ export default function KnowledgeBasePage() {
                   className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 >
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-1">{article.title}</h3>
+                    <h3 className="font-semibold mb-1" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{article.title}</h3>
                     <p className="text-sm text-muted-foreground">
                       {article.description}
                     </p>

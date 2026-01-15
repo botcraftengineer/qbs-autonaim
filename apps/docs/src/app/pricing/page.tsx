@@ -156,7 +156,7 @@ export default function PricingPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Цены и тарифы" },
@@ -169,7 +169,7 @@ export default function PricingPage() {
           </span>
         </div>
 
-        <h1>Цены и тарифы</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Цены и тарифы</h1>
 
         <p className="text-lg">
           Гибкие тарифы для компаний любого размера. Начните с бесплатного плана
@@ -182,7 +182,7 @@ export default function PricingPage() {
           Все платные тарифы включают 14-дневный бесплатный период тестирования со всеми функциями.
         </DocsCallout>
 
-        <h2 id="plans">Тарифные планы</h2>
+        <h2 id="plans" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Тарифные планы</h2>
 
         <div className="grid gap-6 my-8 md:grid-cols-2">
           {plans.map((plan) => (
@@ -203,7 +203,7 @@ export default function PricingPage() {
               )}
 
               <div className="text-center mb-4">
-                <h3 className="text-xl font-semibold">{plan.name}</h3>
+                <h3 className="text-xl font-semibold" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{plan.name}</h3>
                 <div className="mt-2">
                   <span className="text-3xl font-bold">{plan.price}</span>
                   <span className="text-muted-foreground">/{plan.period}</span>
@@ -245,7 +245,7 @@ export default function PricingPage() {
           Экономьте до 20% при оплате за год вперёд. Для корпоративных клиентов предусмотрены индивидуальные условия.
         </DocsCallout>
 
-        <h2 id="features">Сравнение функций</h2>
+        <h2 id="features" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Сравнение функций</h2>
 
         <div className="overflow-x-auto my-6">
           <table className="w-full border-collapse border border-border">
@@ -318,29 +318,29 @@ export default function PricingPage() {
           </table>
         </div>
 
-        <h2 id="billing">Оплата и биллинг</h2>
+        <h2 id="billing" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Оплата и биллинг</h2>
 
         <div className="space-y-4 my-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2">Способы оплаты</h3>
+            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Способы оплаты</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>Банковские карты (МИР, Visa, Mastercard)</li>
-              <li>Банковский перевод для юридических лиц</li>
-              <li>Электронные кошельки (по запросу)</li>
+              <li className="text-foreground/80">Банковские карты (МИР, Visa, Mastercard)</li>
+              <li className="text-foreground/80">Банковский перевод для юридических лиц</li>
+              <li className="text-foreground/80">Электронные кошельки (по запросу)</li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">Период оплаты</h3>
+            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Период оплаты</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li>Ежемесячная оплата</li>
-              <li>Поквартальная оплата (скидка 5%)</li>
-              <li>Годовая оплата (скидка 20%)</li>
+              <li className="text-foreground/80">Ежемесячная оплата</li>
+              <li className="text-foreground/80">Поквартальная оплата (скидка 5%)</li>
+              <li className="text-foreground/80">Годовая оплата (скидка 20%)</li>
             </ul>
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2">Документы</h3>
+            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Документы</h3>
             <p className="text-muted-foreground">
               Для юридических лиц предоставляем полный пакет документов:
               договор, счёт, акт выполненных работ, счёт-фактуру.
@@ -348,7 +348,7 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <h2 id="faq">Часто задаваемые вопросы</h2>
+        <h2 id="faq" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Часто задаваемые вопросы</h2>
 
         <div className="space-y-6 my-6">
           <div>

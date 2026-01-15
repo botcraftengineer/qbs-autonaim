@@ -167,7 +167,7 @@ export default function FAQPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Помощь и поддержка", href: "/help" },
@@ -181,7 +181,7 @@ export default function FAQPage() {
           </span>
         </div>
 
-        <h1>Часто задаваемые вопросы</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Часто задаваемые вопросы</h1>
 
         <p className="text-lg">
           Ответы на самые популярные вопросы о работе с QBS Автонайм.
@@ -203,11 +203,11 @@ export default function FAQPage() {
 
         {faqData.map((section) => (
           <div key={section.id}>
-            <h2 id={section.id}>{section.title}</h2>
+            <h2 id={section.id} className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">{section.title}</h2>
             <div className="space-y-6">
               {section.questions.map((item, index) => (
                 <div key={index} className="border-b border-border pb-6 last:border-b-0">
-                  <h3 className="text-lg font-semibold mb-2">{item.q}</h3>
+                  <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{item.q}</h3>
                   <p className="text-muted-foreground leading-relaxed">{item.a}</p>
                 </div>
               ))}

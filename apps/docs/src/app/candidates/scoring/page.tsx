@@ -15,7 +15,7 @@ export default function ScoringPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Работа с кандидатами", href: "/candidates" },
@@ -29,7 +29,7 @@ export default function ScoringPage() {
           </span>
         </div>
 
-        <h1>AI-скоринг кандидатов</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">AI-скоринг кандидатов</h1>
 
         <p className="text-lg">
           AI-скоринг автоматически оценивает кандидатов по шкале от 1 до 5 звезд
@@ -37,7 +37,7 @@ export default function ScoringPage() {
           выявить наиболее подходящих кандидатов.
         </p>
 
-        <h2 id="scoring-system">Как работает AI-скоринг</h2>
+        <h2 id="scoring-system" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Как работает AI-скоринг</h2>
 
         <p>
           Система использует GPT-4 для анализа резюме кандидата и сравнения его
@@ -46,19 +46,19 @@ export default function ScoringPage() {
 
         <ul>
           <li>
-            <strong>Навыки и технологии</strong> — соответствие требуемому стеку
+            <strong className="font-semibold text-foreground">Навыки и технологии</strong> — соответствие требуемому стеку
           </li>
           <li>
-            <strong>Опыт работы</strong> — релевантность и продолжительность
+            <strong className="font-semibold text-foreground">Опыт работы</strong> — релевантность и продолжительность
           </li>
           <li>
-            <strong>Образование</strong> — профиль и уровень подготовки
+            <strong className="font-semibold text-foreground">Образование</strong> — профиль и уровень подготовки
           </li>
           <li>
-            <strong>Проекты и достижения</strong> — практический опыт
+            <strong className="font-semibold text-foreground">Проекты и достижения</strong> — практический опыт
           </li>
           <li>
-            <strong>Языки и сертификаты</strong> — дополнительные компетенции
+            <strong className="font-semibold text-foreground">Языки и сертификаты</strong> — дополнительные компетенции
           </li>
         </ul>
 
@@ -68,9 +68,9 @@ export default function ScoringPage() {
           через Inngest.
         </DocsCallout>
 
-        <h2 id="score-calculation">Шкала оценок</h2>
+        <h2 id="score-calculation" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Шкала оценок</h2>
 
-        <p>AI присваивает каждому кандидату оценку от 1 до 5 звезд:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">AI присваивает каждому кандидату оценку от 1 до 5 звезд:</p>
 
         <div className="my-6 flex flex-col gap-3">
           <div className="flex items-center gap-3 rounded-lg border border-green-500/30 bg-green-500/5 p-4">
@@ -157,7 +157,7 @@ export default function ScoringPage() {
           </div>
         </div>
 
-        <h2 id="weight-configuration">Обоснование оценки</h2>
+        <h2 id="weight-configuration" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Обоснование оценки</h2>
 
         <p>
           Вместе с оценкой AI предоставляет текстовое обоснование, объясняющее
@@ -172,17 +172,17 @@ export default function ScoringPage() {
           Science является преимуществом.»
         </DocsCallout>
 
-        <h2 id="score-interpretation">Ручная корректировка</h2>
+        <h2 id="score-interpretation" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Ручная корректировка</h2>
 
         <p>
           Вы можете изменить оценку AI вручную, если считаете её некорректной:
         </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>Откройте карточку кандидата</li>
-          <li>Нажмите на текущую оценку (звезды)</li>
-          <li>Выберите новую оценку</li>
-          <li>Опционально добавьте комментарий с обоснованием</li>
+          <li className="text-foreground/80">Откройте карточку кандидата</li>
+          <li className="text-foreground/80">Нажмите на текущую оценку (звезды)</li>
+          <li className="text-foreground/80">Выберите новую оценку</li>
+          <li className="text-foreground/80">Опционально добавьте комментарий с обоснованием</li>
         </ol>
 
         <DocsCallout type="warning" title="Обратная связь">
@@ -190,7 +190,7 @@ export default function ScoringPage() {
           ваши правки для будущих оценок.
         </DocsCallout>
 
-        <h2 id="custom-criteria">Фильтрация по оценкам</h2>
+        <h2 id="custom-criteria" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Фильтрация по оценкам</h2>
 
         <p>
           Используйте фильтры для работы с кандидатами определённого уровня:
@@ -198,16 +198,16 @@ export default function ScoringPage() {
 
         <ul>
           <li>
-            <strong>5 звезд</strong> — приоритетная обработка
+            <strong className="font-semibold text-foreground">5 звезд</strong> — приоритетная обработка
           </li>
           <li>
-            <strong>4-5 звезд</strong> — отправка на интервью
+            <strong className="font-semibold text-foreground">4-5 звезд</strong> — отправка на интервью
           </li>
           <li>
-            <strong>3 звезды</strong> — ручная проверка
+            <strong className="font-semibold text-foreground">3 звезды</strong> — ручная проверка
           </li>
           <li>
-            <strong>1-2 звезды</strong> — автоматический отказ
+            <strong className="font-semibold text-foreground">1-2 звезды</strong> — автоматический отказ
           </li>
         </ul>
 

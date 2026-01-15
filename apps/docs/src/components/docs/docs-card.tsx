@@ -28,7 +28,7 @@ export function DocsCard({
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noopener noreferrer" : undefined}
       className={cn(
-        "group flex flex-col gap-2 rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-md hover:shadow-primary/5 !no-underline !decoration-none",
+        "group flex flex-col gap-2 rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-md hover:shadow-primary/5 no-underline! decoration-none!",
         className,
       )}
     >

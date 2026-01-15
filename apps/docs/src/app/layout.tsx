@@ -1,21 +1,22 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
-import { ThemeProvider } from "@/components/theme-provider"
-import { DocsSidebar } from "@/components/docs/docs-sidebar"
-import { DocsHeader } from "@/components/docs/docs-header"
-import "./globals.css"
+import { Analytics } from "@vercel/analytics/next";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import type React from "react";
+import { DocsHeader } from "@/components/docs/docs-header";
+import { DocsSidebar } from "@/components/docs/docs-sidebar";
+import { ThemeProvider } from "@/components/theme-provider";
+import "./globals.css";
 
-const _geist = Geist({ subsets: ["latin", "cyrillic"] })
-const _geistMono = Geist_Mono({ subsets: ["latin"] })
+const _geist = Geist({ subsets: ["latin", "cyrillic"] });
+const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: {
     default: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
     template: "%s | Документация QBS Автонайм",
   },
-  description: "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram. AI-скрининг резюме, автоматические интервью, аналитика найма.",
+  description:
+    "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram. AI-скрининг резюме, автоматические интервью, аналитика найма.",
   keywords: [
     "рекрутинг",
     "HR",
@@ -29,7 +30,7 @@ export const metadata: Metadata = {
     "HR аналитика",
     "подбор персонала",
     "документация API",
-    "tRPC"
+    "tRPC",
   ],
   authors: [{ name: "QBS Автонайм" }],
   creator: "QBS Автонайм",
@@ -48,7 +49,8 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     url: "https://docs.qbs-autonaim.ru",
     title: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
-    description: "Полная документация AI-платформы для автоматизации найма персонала в России. Интеграция с HH.ru, SuperJob, Telegram. Экономьте до 80% времени на подборе кандидатов.",
+    description:
+      "Полная документация AI-платформы для автоматизации найма персонала в России. Интеграция с HH.ru, SuperJob, Telegram. Экономьте до 80% времени на подборе кандидатов.",
     siteName: "QBS Автонайм",
     images: [
       {
@@ -62,7 +64,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
-    description: "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram.",
+    description:
+      "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram.",
     images: ["/og-image.png"],
     creator: "@qbs_autonaim",
   },
@@ -101,12 +104,12 @@ export const metadata: Metadata = {
     ],
     apple: "/apple-icon.png",
   },
-}
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   const structuredData = {
     "@context": "https://schema.org",
@@ -122,7 +125,8 @@ export default function RootLayout({
           width: 512,
           height: 512,
         },
-        description: "AI-платформа для автоматизации рекрутинга и подбора персонала в России",
+        description:
+          "AI-платформа для автоматизации рекрутинга и подбора персонала в России",
         foundingDate: "2024",
         contactPoint: {
           "@type": "ContactPoint",
@@ -146,7 +150,8 @@ export default function RootLayout({
           priceCurrency: "RUB",
           description: "Тарифы от 990₽ в месяц",
         },
-        description: "AI-платформа для автоматизации найма персонала с интеграцией HH.ru, SuperJob и Telegram",
+        description:
+          "AI-платформа для автоматизации найма персонала с интеграцией HH.ru, SuperJob и Telegram",
         featureList: [
           "AI-скрининг резюме",
           "Автоматические интервью через Telegram",
@@ -164,14 +169,15 @@ export default function RootLayout({
         "@id": "https://docs.qbs-autonaim.ru/#website",
         url: "https://docs.qbs-autonaim.ru",
         name: "Документация QBS Автонайм",
-        description: "Полная документация AI-платформы для автоматизации рекрутинга",
+        description:
+          "Полная документация AI-платформы для автоматизации рекрутинга",
         inLanguage: "ru-RU",
         publisher: {
           "@id": "https://qbs-autonaim.ru/#organization",
         },
       },
     ],
-  }
+  };
 
   return (
     <html lang="ru" suppressHydrationWarning>
@@ -184,13 +190,18 @@ export default function RootLayout({
         />
       </head>
       <body className="font-sans antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
           <div className="min-h-screen bg-background">
             <span
               className="fixed inset-0 pointer-events-none"
               style={{
                 backgroundImage:
-                  'linear-gradient(to bottom, rgba(59, 130, 246, 0.03), rgba(96, 165, 250, 0.08)), url("https://mintlify.s3.us-west-1.amazonaws.com/dub/images/background.png")',
+                  'linear-gradient(to bottom, rgba(59, 130, 246, 0.03), rgba(96, 165, 250, 0.08)), url("./background.png")',
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "right top",
                 backgroundAttachment: "fixed",
@@ -199,12 +210,14 @@ export default function RootLayout({
             <DocsHeader />
             <div className="mx-auto flex max-w-7xl">
               <DocsSidebar />
-              <main className="flex-1 px-4 py-8 md:px-8 lg:px-12">{children}</main>
+              <main className="flex-1 px-4 py-8 md:px-8 lg:px-12">
+                {children}
+              </main>
             </div>
           </div>
         </ThemeProvider>
         <Analytics />
       </body>
     </html>
-  )
+  );
 }

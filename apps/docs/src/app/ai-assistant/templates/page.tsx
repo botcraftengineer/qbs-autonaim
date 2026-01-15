@@ -14,7 +14,7 @@ export default function TemplatesPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[{ title: "AI-ассистент", href: "/ai-assistant" }, { title: "Шаблоны сообщений" }]}
         />
@@ -23,44 +23,44 @@ export default function TemplatesPage() {
           <span className="text-sm font-medium text-primary">AI-ассистент</span>
         </div>
 
-        <h1>Шаблоны сообщений</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Шаблоны сообщений</h1>
 
         <p className="text-lg">
           Шаблоны сообщений позволяют стандартизировать коммуникацию с кандидатами и экономить время на написании
           типовых писем.
         </p>
 
-        <h2 id="template-types">Типы шаблонов</h2>
+        <h2 id="template-types" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Типы шаблонов</h2>
 
         <ul>
           <li>
-            <strong>Приветственные</strong> — первое сообщение кандидату после отклика
+            <strong className="font-semibold text-foreground">Приветственные</strong> — первое сообщение кандидату после отклика
           </li>
           <li>
-            <strong>Приглашения</strong> — приглашение на собеседование или следующий этап
+            <strong className="font-semibold text-foreground">Приглашения</strong> — приглашение на собеседование или следующий этап
           </li>
           <li>
-            <strong>Напоминания</strong> — напоминание о предстоящем собеседовании
+            <strong className="font-semibold text-foreground">Напоминания</strong> — напоминание о предстоящем собеседовании
           </li>
           <li>
-            <strong>Отказы</strong> — вежливый отказ с обратной связью
+            <strong className="font-semibold text-foreground">Отказы</strong> — вежливый отказ с обратной связью
           </li>
           <li>
-            <strong>Офферы</strong> — предложение о работе
+            <strong className="font-semibold text-foreground">Офферы</strong> — предложение о работе
           </li>
           <li>
-            <strong>Follow-up</strong> — повторное обращение к кандидату
+            <strong className="font-semibold text-foreground">Follow-up</strong> — повторное обращение к кандидату
           </li>
         </ul>
 
-        <h2 id="creating-templates">Создание шаблонов</h2>
+        <h2 id="creating-templates" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Создание шаблонов</h2>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>{"Перейдите в раздел «AI-ассистент» → «Шаблоны»"}</li>
-          <li>{"Нажмите «Создать шаблон»"}</li>
-          <li>Выберите тип шаблона и канал (email, Telegram, SMS)</li>
-          <li>Напишите текст сообщения с использованием переменных</li>
-          <li>Сохраните шаблон</li>
+          <li className="text-foreground/80">{"Перейдите в раздел «AI-ассистент» → «Шаблоны»"}</li>
+          <li className="text-foreground/80">{"Нажмите «Создать шаблон»"}</li>
+          <li className="text-foreground/80">Выберите тип шаблона и канал (email, Telegram, SMS)</li>
+          <li className="text-foreground/80">Напишите текст сообщения с использованием переменных</li>
+          <li className="text-foreground/80">Сохраните шаблон</li>
         </ol>
 
         <DocsCallout type="tip" title="Совет">
@@ -68,9 +68,9 @@ export default function TemplatesPage() {
           для стартапов.
         </DocsCallout>
 
-        <h2 id="examples">Примеры шаблонов</h2>
+        <h2 id="examples" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Примеры шаблонов</h2>
 
-        <h3>Приглашение на собеседование</h3>
+        <h3 className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Приглашение на собеседование</h3>
 
         <DocsCode
           title="invite_interview.txt"
@@ -91,7 +91,7 @@ export default function TemplatesPage() {
 {{company.name}}`}
         />
 
-        <h3>Отказ с обратной связью</h3>
+        <h3 className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Отказ с обратной связью</h3>
 
         <DocsCode
           title="rejection.txt"
@@ -113,23 +113,23 @@ export default function TemplatesPage() {
 {{recruiter.name}}`}
         />
 
-        <h2 id="best-practices">Лучшие практики</h2>
+        <h2 id="best-practices" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Лучшие практики</h2>
 
         <ul>
           <li>
-            <strong>Персонализируйте</strong> — всегда используйте имя кандидата и название вакансии
+            <strong className="font-semibold text-foreground">Персонализируйте</strong> — всегда используйте имя кандидата и название вакансии
           </li>
           <li>
-            <strong>Будьте конкретны</strong> — указывайте точные даты, время, адрес
+            <strong className="font-semibold text-foreground">Будьте конкретны</strong> — указывайте точные даты, время, адрес
           </li>
           <li>
-            <strong>Добавляйте CTA</strong> — чётко объясняйте, что должен сделать кандидат
+            <strong className="font-semibold text-foreground">Добавляйте CTA</strong> — чётко объясняйте, что должен сделать кандидат
           </li>
           <li>
-            <strong>Проверяйте тон</strong> — убедитесь, что тон соответствует культуре компании
+            <strong className="font-semibold text-foreground">Проверяйте тон</strong> — убедитесь, что тон соответствует культуре компании
           </li>
           <li>
-            <strong>Тестируйте</strong> — отправляйте тестовые сообщения себе перед использованием
+            <strong className="font-semibold text-foreground">Тестируйте</strong> — отправляйте тестовые сообщения себе перед использованием
           </li>
         </ul>
 

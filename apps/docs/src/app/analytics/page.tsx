@@ -12,14 +12,14 @@ export default function AnalyticsPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb items={[{ title: "Аналитика" }, { title: "Обзор" }]} />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">Аналитика</span>
         </div>
 
-        <h1>Аналитика</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Аналитика</h1>
 
         <p className="text-lg">
           Базовая аналитика для отслеживания ключевых показателей процесса
@@ -27,29 +27,29 @@ export default function AnalyticsPage() {
           источникам.
         </p>
 
-        <h2 id="overview">Доступные данные</h2>
+        <h2 id="overview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Доступные данные</h2>
 
         <ul>
           <li>
-            <strong>Статистика по вакансиям</strong> — количество откликов,
+            <strong className="font-semibold text-foreground">Статистика по вакансиям</strong> — количество откликов,
             средняя оценка кандидатов
           </li>
           <li>
-            <strong>Источники кандидатов</strong> — HeadHunter,
+            <strong className="font-semibold text-foreground">Источники кандидатов</strong> — HeadHunter,
             фриланс-платформы, Gig-задания
           </li>
           <li>
-            <strong>Распределение по оценкам</strong> — сколько кандидатов
+            <strong className="font-semibold text-foreground">Распределение по оценкам</strong> — сколько кандидатов
             получили 1-5 звезд
           </li>
           <li>
-            <strong>Активность по дням</strong> — динамика поступления откликов
+            <strong className="font-semibold text-foreground">Активность по дням</strong> — динамика поступления откликов
           </li>
         </ul>
 
-        <h2 id="dashboard">Дашборд</h2>
+        <h2 id="dashboard" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Дашборд</h2>
 
-        <p>На главной странице отображаются основные метрики:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">На главной странице отображаются основные метрики:</p>
 
         <div className="my-6 grid gap-4 sm:grid-cols-2">
           {[
@@ -90,7 +90,7 @@ export default function AnalyticsPage() {
           отчётов и дашбордов.
         </DocsCallout>
 
-        <h2 id="sections">Доступ к данным</h2>
+        <h2 id="sections" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Доступ к данным</h2>
 
         <p>
           Для получения аналитических данных используйте tRPC API. Доступны

@@ -68,7 +68,7 @@ export default function GlossaryPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Начало работы", href: "/docs" },
@@ -82,7 +82,7 @@ export default function GlossaryPage() {
           </span>
         </div>
 
-        <h1>Глоссарий</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Глоссарий</h1>
 
         <p className="text-lg">
           Справочник основных терминов и понятий, используемых в QBS Автонайм.

@@ -31,8 +31,8 @@ export default function QuickstartPage() {
             занимает 1 минуту — подтвердите email и телефон.
           </p>
           <p>
-            Выберите тариф: <strong>Бесплатный</strong> (до 50 кандидатов/месяц) или{" "}
-            <strong>Профессиональный</strong> от 2,990₽/месяц.
+            Выберите тариф: <strong className="font-semibold text-foreground">Бесплатный</strong> (до 50 кандидатов/месяц) или{" "}
+            <strong className="font-semibold text-foreground">Профессиональный</strong> от 2,990₽/месяц.
           </p>
         </div>
       ),
@@ -76,7 +76,7 @@ export default function QuickstartPage() {
             Кандидаты сортируются по релевантности — лучшие сверху.
           </p>
           <p>
-            <strong>Результат:</strong> Вместо просмотра 100 резюме вручную,
+            <strong className="font-semibold text-foreground">Результат:</strong> Вместо просмотра 100 резюме вручную,
             вы сразу видите топ-10 кандидатов с обоснованием оценки.
           </p>
         </div>
@@ -86,7 +86,7 @@ export default function QuickstartPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Начало работы", href: "/docs" },
@@ -100,7 +100,7 @@ export default function QuickstartPage() {
           </span>
         </div>
 
-        <h1>Быстрый старт</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Быстрый старт</h1>
 
         <p className="text-lg">
           Начните работу с российской AI-платформой для рекрутинга за 10 минут.
@@ -115,18 +115,18 @@ export default function QuickstartPage() {
           полным доступом ко всем функциям платформы.
         </DocsCallout>
 
-        <h2 id="create-account">Создание аккаунта</h2>
+        <h2 id="create-account" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Создание аккаунта</h2>
 
         <p>
           Для начала работы вам потребуется создать аккаунт в QBS Автонайм.
           Процесс регистрации занимает менее минуты.
         </p>
 
-        <h2 id="steps">Пошаговая настройка</h2>
+        <h2 id="steps" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Пошаговая настройка</h2>
 
         <DocsSteps steps={steps} />
 
-        <h2 id="next-steps">Следующие шаги</h2>
+        <h2 id="next-steps" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Следующие шаги</h2>
 
         <p>
           После завершения базовой настройки рекомендуем изучить следующие
@@ -152,47 +152,47 @@ export default function QuickstartPage() {
           </li>
         </ul>
 
-        <h2 id="case-studies">Примеры использования</h2>
+        <h2 id="case-studies" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Примеры использования</h2>
 
-        <p>Посмотрите, как другие компании используют QBS Автонайм:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Посмотрите, как другие компании используют QBS Автонайм:</p>
 
         <div className="grid gap-6 my-6">
           <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2">Кейс: IT-компания "ТехноСервис"</h3>
+            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Кейс: IT-компания "ТехноСервис"</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              <strong>Задача:</strong> Найм 15 Python-разработчиков за месяц
+              <strong className="font-semibold text-foreground">Задача:</strong> Найм 15 Python-разработчиков за месяц
             </p>
             <p className="text-sm mb-3">
-              <strong>Результат:</strong> Экономия 40 часов работы HR, повышение качества кандидатов на 35%
+              <strong className="font-semibold text-foreground">Результат:</strong> Экономия 40 часов работы HR, повышение качества кандидатов на 35%
             </p>
             <div className="text-sm">
-              <strong>Как использовали:</strong> AI-скрининг по техническим навыкам, автоматические интервью через Telegram, интеграция с HH.ru
+              <strong className="font-semibold text-foreground">Как использовали:</strong> AI-скрининг по техническим навыкам, автоматические интервью через Telegram, интеграция с HH.ru
             </div>
           </div>
 
           <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2">Кейс: Ритейл сеть "Магнит"</h3>
+            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Кейс: Ритейл сеть "Магнит"</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              <strong>Задача:</strong> Подбор 200 продавцов-кассиров ежемесячно
+              <strong className="font-semibold text-foreground">Задача:</strong> Подбор 200 продавцов-кассиров ежемесячно
             </p>
             <p className="text-sm mb-3">
-              <strong>Результат:</strong> Сокращение времени найма с 2 недель до 3 дней, снижение текучки на 25%
+              <strong className="font-semibold text-foreground">Результат:</strong> Сокращение времени найма с 2 недель до 3 дней, снижение текучки на 25%
             </p>
             <div className="text-sm">
-              <strong>Как использовали:</strong> Массовый скрининг резюме, автоматические отказы неподходящим кандидатам
+              <strong className="font-semibold text-foreground">Как использовали:</strong> Массовый скрининг резюме, автоматические отказы неподходящим кандидатам
             </div>
           </div>
 
           <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2">Кейс: Стартап "Фудтех"</h3>
+            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Кейс: Стартап "Фудтех"</h3>
             <p className="text-sm text-muted-foreground mb-3">
-              <strong>Задача:</strong> Найм первых 10 сотрудников без HR-отдела
+              <strong className="font-semibold text-foreground">Задача:</strong> Найм первых 10 сотрудников без HR-отдела
             </p>
             <p className="text-sm mb-3">
-              <strong>Результат:</strong> Автоматизация всего процесса найма, фокус на развитие продукта
+              <strong className="font-semibold text-foreground">Результат:</strong> Автоматизация всего процесса найма, фокус на развитие продукта
             </p>
             <div className="text-sm">
-              <strong>Как использовали:</strong> Полная автоматизация от отклика до оффера, интеграция с фриланс-платформами
+              <strong className="font-semibold text-foreground">Как использовали:</strong> Полная автоматизация от отклика до оффера, интеграция с фриланс-платформами
             </div>
           </div>
         </div>

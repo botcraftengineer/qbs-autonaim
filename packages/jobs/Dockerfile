@@ -1,16 +1,16 @@
 FROM oven/bun:1.3.6-alpine AS base
 
-# The web Dockerfile is copy-pasted into our main docs at /docs/handbook/deploying-with-docker.
-# Make sure you update this Dockerfile, the Dockerfile in the web workspace and copy that over to Dockerfile in the docs.
-
 FROM base AS builder
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
-RUN apk update
-RUN apk add --no-cache libc6-compat
-# Set working directory
+RUN apk update && apk add --no-cache libc6-compat
 WORKDIR /app
 RUN bun add -g turbo
-COPY . .
+
+# Copy only necessary files for pruning
+COPY package.json bun.lock turbo.json ./
+COPY packages/jobs/package.json ./packages/jobs/
+COPY packages/*/package.json ./packages/
+COPY apps/*/package.json ./apps/
+
 RUN turbo prune @qbs-autonaim/jobs --docker
 
 # Add lockfile and package.json's of isolated subworkspace

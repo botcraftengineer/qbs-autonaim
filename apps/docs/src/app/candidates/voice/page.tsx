@@ -14,7 +14,7 @@ export default function VoicePage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Работа с кандидатами", href: "/candidates" },
@@ -28,7 +28,7 @@ export default function VoicePage() {
           </span>
         </div>
 
-        <h1>Голосовые сообщения</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Голосовые сообщения</h1>
 
         <p className="text-lg">
           Кандидаты могут отвечать на вопросы AI-интервью голосовыми
@@ -36,7 +36,7 @@ export default function VoicePage() {
           анализирует ответы.
         </p>
 
-        <h2 id="overview">Голосовые сообщения</h2>
+        <h2 id="overview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Голосовые сообщения</h2>
 
         <p>
           Поддержка голосовых сообщений делает интервью более удобным для
@@ -45,17 +45,17 @@ export default function VoicePage() {
 
         <ul>
           <li>
-            <strong>Естественное общение</strong> — кандидат может говорить
+            <strong className="font-semibold text-foreground">Естественное общение</strong> — кандидат может говорить
             вместо набора текста
           </li>
           <li>
-            <strong>Экономия времени</strong> — голосом отвечать быстрее
+            <strong className="font-semibold text-foreground">Экономия времени</strong> — голосом отвечать быстрее
           </li>
           <li>
-            <strong>Оценка коммуникации</strong> — AI анализирует манеру речи
+            <strong className="font-semibold text-foreground">Оценка коммуникации</strong> — AI анализирует манеру речи
           </li>
           <li>
-            <strong>Доступность</strong> — удобно для мобильных устройств
+            <strong className="font-semibold text-foreground">Доступность</strong> — удобно для мобильных устройств
           </li>
         </ul>
 
@@ -64,7 +64,7 @@ export default function VoicePage() {
           Максимальная длительность — 5 минут.
         </DocsCallout>
 
-        <h2 id="transcription">Транскрибация</h2>
+        <h2 id="transcription" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Транскрибация</h2>
 
         <p>
           Для преобразования голоса в текст используется OpenAI Whisper — одна
@@ -73,17 +73,17 @@ export default function VoicePage() {
 
         <ul>
           <li>
-            <strong>Высокая точность</strong> — распознает речь с акцентом и
+            <strong className="font-semibold text-foreground">Высокая точность</strong> — распознает речь с акцентом и
             шумом
           </li>
           <li>
-            <strong>Многоязычность</strong> — поддержка русского и английского
+            <strong className="font-semibold text-foreground">Многоязычность</strong> — поддержка русского и английского
           </li>
           <li>
-            <strong>Автоматическая пунктуация</strong> — текст готов к анализу
+            <strong className="font-semibold text-foreground">Автоматическая пунктуация</strong> — текст готов к анализу
           </li>
           <li>
-            <strong>Быстрая обработка</strong> — транскрибация за несколько
+            <strong className="font-semibold text-foreground">Быстрая обработка</strong> — транскрибация за несколько
             секунд
           </li>
         </ul>
@@ -108,18 +108,18 @@ const transcription = await openai.audio.transcriptions.create({
 const analysis = await analyzeResponse(transcription.text);`}
         />
 
-        <h2 id="telegram">Telegram-интервью</h2>
+        <h2 id="telegram" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Telegram-интервью</h2>
 
         <p>
           В Telegram-боте кандидаты могут отвечать как текстом, так и голосом:
         </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>AI задает вопрос в текстовом виде</li>
-          <li>Кандидат может ответить текстом или голосовым сообщением</li>
-          <li>Если отправлен голос — система транскрибирует его</li>
-          <li>AI анализирует ответ и задает следующий вопрос</li>
-          <li>В конце интервью формируется полный отчет</li>
+          <li className="text-foreground/80">AI задает вопрос в текстовом виде</li>
+          <li className="text-foreground/80">Кандидат может ответить текстом или голосовым сообщением</li>
+          <li className="text-foreground/80">Если отправлен голос — система транскрибирует его</li>
+          <li className="text-foreground/80">AI анализирует ответ и задает следующий вопрос</li>
+          <li className="text-foreground/80">В конце интервью формируется полный отчет</li>
         </ol>
 
         <DocsCallout type="tip" title="Смешанный формат">
@@ -127,7 +127,7 @@ const analysis = await analyzeResponse(transcription.text);`}
           интервью. Система обрабатывает оба формата одинаково.
         </DocsCallout>
 
-        <h2 id="analysis">Анализ ответов</h2>
+        <h2 id="analysis" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Анализ ответов</h2>
 
         <p>
           AI анализирует транскрибированные голосовые ответы так же, как
@@ -136,16 +136,16 @@ const analysis = await analyzeResponse(transcription.text);`}
 
         <ul>
           <li>
-            <strong>Релевантность</strong> — соответствие ответа вопросу
+            <strong className="font-semibold text-foreground">Релевантность</strong> — соответствие ответа вопросу
           </li>
           <li>
-            <strong>Полнота</strong> — насколько детально кандидат ответил
+            <strong className="font-semibold text-foreground">Полнота</strong> — насколько детально кандидат ответил
           </li>
           <li>
-            <strong>Компетентность</strong> — демонстрация знаний и опыта
+            <strong className="font-semibold text-foreground">Компетентность</strong> — демонстрация знаний и опыта
           </li>
           <li>
-            <strong>Коммуникация</strong> — ясность и структурированность речи
+            <strong className="font-semibold text-foreground">Коммуникация</strong> — ясность и структурированность речи
           </li>
         </ul>
 

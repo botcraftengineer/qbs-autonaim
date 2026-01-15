@@ -15,7 +15,7 @@ export default function GigPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Работа с кандидатами", href: "/candidates" },
@@ -29,7 +29,7 @@ export default function GigPage() {
           </span>
         </div>
 
-        <h1>Gig-задания</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Gig-задания</h1>
 
         <p className="text-lg">
           Gig-задания позволяют публиковать краткосрочные проекты на
@@ -37,7 +37,7 @@ export default function GigPage() {
           Идеально для быстрого поиска исполнителей на разовые задачи.
         </p>
 
-        <h2 id="overview">Что такое Gig-задания</h2>
+        <h2 id="overview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Что такое Gig-задания</h2>
 
         <p>
           Gig-задания — это краткосрочные проекты, которые публикуются на
@@ -46,16 +46,16 @@ export default function GigPage() {
 
         <ul>
           <li>
-            <strong>Kwork</strong> — российская платформа микрозаданий
+            <strong className="font-semibold text-foreground">Kwork</strong> — российская платформа микрозаданий
           </li>
           <li>
-            <strong>FL.ru</strong> — крупнейшая российская биржа фриланса
+            <strong className="font-semibold text-foreground">FL.ru</strong> — крупнейшая российская биржа фриланса
           </li>
           <li>
-            <strong>Freelance.ru</strong> — платформа для профессионалов
+            <strong className="font-semibold text-foreground">Freelance.ru</strong> — платформа для профессионалов
           </li>
           <li>
-            <strong>Habr Freelance</strong> — биржа для IT-специалистов
+            <strong className="font-semibold text-foreground">Habr Freelance</strong> — биржа для IT-специалистов
           </li>
         </ul>
 
@@ -65,16 +65,16 @@ export default function GigPage() {
           исполнителей.
         </DocsCallout>
 
-        <h2 id="creation">Создание задания</h2>
+        <h2 id="creation" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Создание задания</h2>
 
-        <p>Чтобы создать новое Gig-задание:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Чтобы создать новое Gig-задание:</p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>Перейдите в раздел «Gig-задания»</li>
-          <li>Нажмите «Создать задание»</li>
-          <li>Заполните описание проекта, бюджет и сроки</li>
-          <li>Выберите платформы для публикации</li>
-          <li>Настройте критерии отбора для AI</li>
+          <li className="text-foreground/80">Перейдите в раздел «Gig-задания»</li>
+          <li className="text-foreground/80">Нажмите «Создать задание»</li>
+          <li className="text-foreground/80">Заполните описание проекта, бюджет и сроки</li>
+          <li className="text-foreground/80">Выберите платформы для публикации</li>
+          <li className="text-foreground/80">Настройте критерии отбора для AI</li>
         </ol>
 
         <DocsCode
@@ -94,28 +94,28 @@ export default function GigPage() {
 }`}
         />
 
-        <h2 id="responses">Управление откликами</h2>
+        <h2 id="responses" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Управление откликами</h2>
 
-        <p>После публикации задания система автоматически:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">После публикации задания система автоматически:</p>
 
         <ul>
           <li>
-            <strong>Импортирует отклики</strong> — собирает заявки с выбранных
+            <strong className="font-semibold text-foreground">Импортирует отклики</strong> — собирает заявки с выбранных
             платформ
           </li>
           <li>
-            <strong>Оценивает кандидатов</strong> — AI анализирует портфолио и
+            <strong className="font-semibold text-foreground">Оценивает кандидатов</strong> — AI анализирует портфолио и
             опыт
           </li>
           <li>
-            <strong>Присваивает рейтинг</strong> — от 1 до 5 звезд
+            <strong className="font-semibold text-foreground">Присваивает рейтинг</strong> — от 1 до 5 звезд
           </li>
           <li>
-            <strong>Фильтрует спам</strong> — отсеивает нерелевантные отклики
+            <strong className="font-semibold text-foreground">Фильтрует спам</strong> — отсеивает нерелевантные отклики
           </li>
         </ul>
 
-        <p>Вы можете просматривать все отклики в едином интерфейсе:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Вы можете просматривать все отклики в едином интерфейсе:</p>
 
         <div className="my-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -170,7 +170,7 @@ export default function GigPage() {
           </table>
         </div>
 
-        <h2 id="shortlist">Шорт-лист кандидатов</h2>
+        <h2 id="shortlist" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Шорт-лист кандидатов</h2>
 
         <p>
           AI автоматически формирует шорт-лист лучших кандидатов на основе
@@ -178,10 +178,10 @@ export default function GigPage() {
         </p>
 
         <ul>
-          <li>Просмотреть топ-10 кандидатов с наивысшими оценками</li>
-          <li>Сравнить их предложения по цене и срокам</li>
-          <li>Изучить портфолио и отзывы</li>
-          <li>Пригласить на интервью одним кликом</li>
+          <li className="text-foreground/80">Просмотреть топ-10 кандидатов с наивысшими оценками</li>
+          <li className="text-foreground/80">Сравнить их предложения по цене и срокам</li>
+          <li className="text-foreground/80">Изучить портфолио и отзывы</li>
+          <li className="text-foreground/80">Пригласить на интервью одним кликом</li>
         </ul>
 
         <DocsCallout type="tip" title="Пересчет шорт-листа">
@@ -189,7 +189,7 @@ export default function GigPage() {
           API метод <code>gig.recalculateShortlist</code>.
         </DocsCallout>
 
-        <h2 id="interview">AI-интервью</h2>
+        <h2 id="interview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">AI-интервью</h2>
 
         <p>
           Для отобранных кандидатов можно сгенерировать уникальные ссылки на
@@ -197,11 +197,11 @@ export default function GigPage() {
         </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>Выберите кандидата из шорт-листа</li>
-          <li>Нажмите «Пригласить на интервью»</li>
-          <li>Система сгенерирует уникальную ссылку</li>
-          <li>Отправьте ссылку кандидату через платформу</li>
-          <li>AI проведет интервью и предоставит отчет</li>
+          <li className="text-foreground/80">Выберите кандидата из шорт-листа</li>
+          <li className="text-foreground/80">Нажмите «Пригласить на интервью»</li>
+          <li className="text-foreground/80">Система сгенерирует уникальную ссылку</li>
+          <li className="text-foreground/80">Отправьте ссылку кандидату через платформу</li>
+          <li className="text-foreground/80">AI проведет интервью и предоставит отчет</li>
         </ol>
 
         <DocsCallout type="info" title="Шаблоны приглашений">

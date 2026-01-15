@@ -13,21 +13,21 @@ export default function ReportsPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb items={[{ title: "Аналитика", href: "/analytics" }, { title: "Отчёты" }]} />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">Аналитика</span>
         </div>
 
-        <h1>Отчёты</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Отчёты</h1>
 
         <p className="text-lg">
           Система отчётов QBS Автонайм предоставляет детальную информацию о процессе найма в удобном для анализа
           формате.
         </p>
 
-        <h2 id="report-types">Готовые отчёты</h2>
+        <h2 id="report-types" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Готовые отчёты</h2>
 
         <div className="my-6 flex flex-col gap-3">
           {[
@@ -59,40 +59,40 @@ export default function ReportsPage() {
           ))}
         </div>
 
-        <h2 id="custom-reports">Пользовательские отчёты</h2>
+        <h2 id="custom-reports" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Пользовательские отчёты</h2>
 
-        <p>Создавайте собственные отчёты с нужными вам метриками и фильтрами:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Создавайте собственные отчёты с нужными вам метриками и фильтрами:</p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>{"Перейдите в раздел «Аналитика» → «Отчёты» → «Создать отчёт»"}</li>
-          <li>Выберите метрики, которые хотите отслеживать</li>
-          <li>Настройте фильтры (период, вакансии, источники)</li>
-          <li>Выберите тип визуализации (таблица, график, диаграмма)</li>
-          <li>Сохраните отчёт для быстрого доступа</li>
+          <li className="text-foreground/80">{"Перейдите в раздел «Аналитика» → «Отчёты» → «Создать отчёт»"}</li>
+          <li className="text-foreground/80">Выберите метрики, которые хотите отслеживать</li>
+          <li className="text-foreground/80">Настройте фильтры (период, вакансии, источники)</li>
+          <li className="text-foreground/80">Выберите тип визуализации (таблица, график, диаграмма)</li>
+          <li className="text-foreground/80">Сохраните отчёт для быстрого доступа</li>
         </ol>
 
-        <h2 id="export">Экспорт данных</h2>
+        <h2 id="export" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Экспорт данных</h2>
 
-        <p>Данные можно экспортировать в следующих форматах:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Данные можно экспортировать в следующих форматах:</p>
 
         <ul>
           <li>
-            <strong>Excel (.xlsx)</strong> — полные данные с возможностью дальнейшего анализа
+            <strong className="font-semibold text-foreground">Excel (.xlsx)</strong> — полные данные с возможностью дальнейшего анализа
           </li>
           <li>
-            <strong>CSV</strong> — универсальный формат для импорта в другие системы
+            <strong className="font-semibold text-foreground">CSV</strong> — универсальный формат для импорта в другие системы
           </li>
           <li>
-            <strong>PDF</strong> — готовый отчёт для презентации руководству
+            <strong className="font-semibold text-foreground">PDF</strong> — готовый отчёт для презентации руководству
           </li>
           <li>
-            <strong>Google Sheets</strong> — прямая выгрузка в Google-таблицу
+            <strong className="font-semibold text-foreground">Google Sheets</strong> — прямая выгрузка в Google-таблицу
           </li>
         </ul>
 
-        <h2 id="scheduled-reports">Автоматические отчёты</h2>
+        <h2 id="scheduled-reports" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Автоматические отчёты</h2>
 
-        <p>Настройте автоматическую отправку отчётов на email:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Настройте автоматическую отправку отчётов на email:</p>
 
         <DocsCallout type="tip">
           Рекомендуем настроить еженедельную отправку отчёта по воронке найма руководителю — это помогает держать
@@ -101,13 +101,13 @@ export default function ReportsPage() {
 
         <ul>
           <li>
-            <strong>Расписание</strong> — ежедневно, еженедельно, ежемесячно или в определённые дни
+            <strong className="font-semibold text-foreground">Расписание</strong> — ежедневно, еженедельно, ежемесячно или в определённые дни
           </li>
           <li>
-            <strong>Получатели</strong> — укажите email-адреса для отправки
+            <strong className="font-semibold text-foreground">Получатели</strong> — укажите email-адреса для отправки
           </li>
           <li>
-            <strong>Формат</strong> — выберите формат вложения (Excel, PDF)
+            <strong className="font-semibold text-foreground">Формат</strong> — выберите формат вложения (Excel, PDF)
           </li>
         </ul>
 

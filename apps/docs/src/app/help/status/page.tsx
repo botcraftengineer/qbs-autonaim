@@ -140,7 +140,7 @@ export default function StatusPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Помощь и поддержка", href: "/help" },
@@ -154,7 +154,7 @@ export default function StatusPage() {
           </span>
         </div>
 
-        <h1>Статус системы</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Статус системы</h1>
 
         <p className="text-lg">
           Мониторинг доступности сервисов QBS Автонайм в реальном времени.
@@ -177,7 +177,7 @@ export default function StatusPage() {
           </div>
         </div>
 
-        <h2 id="services">Статус сервисов</h2>
+        <h2 id="services" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Статус сервисов</h2>
 
         <div className="space-y-4 my-6">
           {services.map((service) => (
@@ -188,7 +188,7 @@ export default function StatusPage() {
               <div className="flex items-center gap-3">
                 {getStatusIcon(service.status)}
                 <div>
-                  <h3 className="font-semibold">{service.name}</h3>
+                  <h3 className="font-semibold" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{service.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {service.description}
                   </p>
@@ -206,7 +206,7 @@ export default function StatusPage() {
           ))}
         </div>
 
-        <h2 id="uptime">Статистика доступности</h2>
+        <h2 id="uptime" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Статистика доступности</h2>
 
         <div className="grid gap-4 my-6 md:grid-cols-3">
           <div className="text-center p-4 border border-border rounded-lg">
@@ -223,7 +223,7 @@ export default function StatusPage() {
           </div>
         </div>
 
-        <h2 id="incidents">История инцидентов</h2>
+        <h2 id="incidents" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">История инцидентов</h2>
 
         <div className="space-y-4 my-6">
           {incidents.map((incident, index) => (
@@ -233,7 +233,7 @@ export default function StatusPage() {
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="font-semibold">{incident.service}</h3>
+                  <h3 className="font-semibold" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{incident.service}</h3>
                   <p className="text-sm text-muted-foreground">
                     {incident.date} • {incident.time}
                   </p>
@@ -248,13 +248,13 @@ export default function StatusPage() {
               </div>
               <p className="text-sm mb-2">{incident.description}</p>
               <p className="text-sm text-muted-foreground">
-                <strong>Влияние:</strong> {incident.impact}
+                <strong className="font-semibold text-foreground">Влияние:</strong> {incident.impact}
               </p>
             </div>
           ))}
         </div>
 
-        <h2 id="maintenance">Плановое обслуживание</h2>
+        <h2 id="maintenance" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Плановое обслуживание</h2>
 
         <div className="space-y-4 my-6">
           {maintenance.map((item, index) => (
@@ -277,7 +277,7 @@ export default function StatusPage() {
               </div>
               <p className="text-sm mb-2">{item.description}</p>
               <p className="text-sm text-muted-foreground">
-                <strong>Ожидаемое влияние:</strong> {item.impact}
+                <strong className="font-semibold text-foreground">Ожидаемое влияние:</strong> {item.impact}
               </p>
             </div>
           ))}

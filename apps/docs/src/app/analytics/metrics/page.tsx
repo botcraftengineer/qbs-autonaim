@@ -13,21 +13,21 @@ export default function MetricsPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb items={[{ title: "Аналитика", href: "/analytics" }, { title: "Метрики найма" }]} />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">Аналитика</span>
         </div>
 
-        <h1>Метрики найма</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Метрики найма</h1>
 
         <p className="text-lg">
           Ключевые показатели эффективности (KPI) найма помогают оценить результативность процесса и выявить области для
           улучшения.
         </p>
 
-        <h2 id="key-metrics">Ключевые метрики</h2>
+        <h2 id="key-metrics" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Ключевые метрики</h2>
 
         <div className="my-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -63,37 +63,37 @@ export default function MetricsPage() {
           </table>
         </div>
 
-        <h2 id="efficiency-metrics">Метрики эффективности</h2>
+        <h2 id="efficiency-metrics" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Метрики эффективности</h2>
 
         <ul>
           <li>
-            <strong>Конверсия воронки</strong> — процент кандидатов, прошедших от отклика до найма
+            <strong className="font-semibold text-foreground">Конверсия воронки</strong> — процент кандидатов, прошедших от отклика до найма
           </li>
           <li>
-            <strong>Источники кандидатов</strong> — количество и качество кандидатов из каждого источника
+            <strong className="font-semibold text-foreground">Источники кандидатов</strong> — количество и качество кандидатов из каждого источника
           </li>
           <li>
-            <strong>Активность рекрутеров</strong> — количество обработанных кандидатов на рекрутера
+            <strong className="font-semibold text-foreground">Активность рекрутеров</strong> — количество обработанных кандидатов на рекрутера
           </li>
           <li>
-            <strong>Скорость ответа</strong> — среднее время первого ответа кандидату
+            <strong className="font-semibold text-foreground">Скорость ответа</strong> — среднее время первого ответа кандидату
           </li>
         </ul>
 
-        <h2 id="quality-metrics">Метрики качества</h2>
+        <h2 id="quality-metrics" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Метрики качества</h2>
 
         <ul>
           <li>
-            <strong>Quality of Hire</strong> — оценка качества нанятых сотрудников через 3-6 месяцев
+            <strong className="font-semibold text-foreground">Quality of Hire</strong> — оценка качества нанятых сотрудников через 3-6 месяцев
           </li>
           <li>
-            <strong>Retention Rate</strong> — процент сотрудников, оставшихся после испытательного срока
+            <strong className="font-semibold text-foreground">Retention Rate</strong> — процент сотрудников, оставшихся после испытательного срока
           </li>
           <li>
-            <strong>Hiring Manager Satisfaction</strong> — удовлетворённость нанимающих менеджеров
+            <strong className="font-semibold text-foreground">Hiring Manager Satisfaction</strong> — удовлетворённость нанимающих менеджеров
           </li>
           <li>
-            <strong>Candidate Experience</strong> — оценка процесса найма кандидатами
+            <strong className="font-semibold text-foreground">Candidate Experience</strong> — оценка процесса найма кандидатами
           </li>
         </ul>
 
@@ -102,9 +102,9 @@ export default function MetricsPage() {
           просто используйте систему, и аналитика будет доступна.
         </DocsCallout>
 
-        <h2 id="benchmarks">Бенчмарки по отраслям</h2>
+        <h2 id="benchmarks" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Бенчмарки по отраслям</h2>
 
-        <p>Сравнивайте свои показатели со средними по рынку:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Сравнивайте свои показатели со средними по рынку:</p>
 
         <div className="my-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">

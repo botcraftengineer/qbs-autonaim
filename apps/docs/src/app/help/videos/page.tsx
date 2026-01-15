@@ -190,7 +190,7 @@ export default function VideosPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Помощь и поддержка", href: "/help" },
@@ -204,7 +204,7 @@ export default function VideosPage() {
           </span>
         </div>
 
-        <h1>Видео-инструкции</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Видео-инструкции</h1>
 
         <p className="text-lg">
           Видео-уроки по работе с QBS Автонайм. От основ для новичков до
@@ -219,7 +219,7 @@ export default function VideosPage() {
 
         {videoCategories.map((category) => (
           <div key={category.id}>
-            <h2 id={category.id}>{category.title}</h2>
+            <h2 id={category.id} className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">{category.title}</h2>
             <p className="text-muted-foreground mb-6">{category.description}</p>
 
             <div className="grid gap-6 mb-8">
@@ -269,9 +269,9 @@ export default function VideosPage() {
 
         <DocsCallout type="tip" title="Плейлисты для быстрого старта">
           <div className="space-y-2">
-            <p><strong>🎯 Для новичков:</strong> Смотрите видео по порядку: регистрация → вакансии → HH.ru → AI-скрининг</p>
-            <p><strong>⚡ Для опытных:</strong> Начните с разделов "AI-функции" и "Интеграции"</p>
-            <p><strong>🎓 Для команд:</strong> Используйте видео для обучения новых сотрудников</p>
+            <p className="leading-relaxed text-foreground/80 mb-4"><strong className="font-semibold text-foreground">🎯 Для новичков:</strong> Смотрите видео по порядку: регистрация → вакансии → HH.ru → AI-скрининг</p>
+            <p className="leading-relaxed text-foreground/80 mb-4"><strong className="font-semibold text-foreground">⚡ Для опытных:</strong> Начните с разделов "AI-функции" и "Интеграции"</p>
+            <p className="leading-relaxed text-foreground/80 mb-4"><strong className="font-semibold text-foreground">🎓 Для команд:</strong> Используйте видео для обучения новых сотрудников</p>
           </div>
         </DocsCallout>
 

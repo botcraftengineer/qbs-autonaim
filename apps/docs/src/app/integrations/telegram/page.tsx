@@ -45,14 +45,14 @@ export default function TelegramIntegrationPage() {
     {
       title: "Опубликуйте ссылку на бота",
       content: (
-        <p>Добавьте ссылку на бота в описание вакансий и на карьерный сайт.</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Добавьте ссылку на бота в описание вакансий и на карьерный сайт.</p>
       ),
     },
   ];
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "Интеграции", href: "/integrations" },
@@ -64,52 +64,52 @@ export default function TelegramIntegrationPage() {
           <span className="text-sm font-medium text-primary">Интеграции</span>
         </div>
 
-        <h1>Интеграция с Telegram</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Интеграция с Telegram</h1>
 
         <p className="text-lg">
           Telegram-интеграция позволяет общаться с кандидатами через мессенджер
           и получать мгновенные уведомления о событиях в системе.
         </p>
 
-        <h2 id="use-cases">Сценарии использования</h2>
+        <h2 id="use-cases" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Сценарии использования</h2>
 
         <div className="my-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-border p-4">
             <h4 className="font-medium text-foreground">Для рекрутеров</h4>
             <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-              <li>Уведомления о новых откликах</li>
-              <li>Напоминания о собеседованиях</li>
-              <li>Быстрые действия с кандидатами</li>
+              <li className="text-foreground/80">Уведомления о новых откликах</li>
+              <li className="text-foreground/80">Напоминания о собеседованиях</li>
+              <li className="text-foreground/80">Быстрые действия с кандидатами</li>
             </ul>
           </div>
           <div className="rounded-lg border border-border p-4">
             <h4 className="font-medium text-foreground">Для кандидатов</h4>
             <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-              <li>Отклик на вакансии через бота</li>
-              <li>Отслеживание статуса заявки</li>
-              <li>Общение с AI-ассистентом</li>
+              <li className="text-foreground/80">Отклик на вакансии через бота</li>
+              <li className="text-foreground/80">Отслеживание статуса заявки</li>
+              <li className="text-foreground/80">Общение с AI-ассистентом</li>
             </ul>
           </div>
         </div>
 
-        <h2 id="bot-setup">Настройка Telegram-бота</h2>
+        <h2 id="bot-setup" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Настройка Telegram-бота</h2>
 
         <DocsSteps steps={botSetupSteps} />
 
-        <h2 id="notifications">Уведомления для команды</h2>
+        <h2 id="notifications" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Уведомления для команды</h2>
 
-        <p>Настройте уведомления для вашей команды рекрутеров:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Настройте уведомления для вашей команды рекрутеров:</p>
 
         <ul>
           <li>
-            <strong>Личные уведомления</strong> — каждый рекрутер получает
+            <strong className="font-semibold text-foreground">Личные уведомления</strong> — каждый рекрутер получает
             уведомления по своим вакансиям
           </li>
           <li>
-            <strong>Групповой чат</strong> — все уведомления в общий чат команды
+            <strong className="font-semibold text-foreground">Групповой чат</strong> — все уведомления в общий чат команды
           </li>
           <li>
-            <strong>Канал</strong> — публикация важных событий в Telegram-канал
+            <strong className="font-semibold text-foreground">Канал</strong> — публикация важных событий в Telegram-канал
           </li>
         </ul>
 
@@ -126,7 +126,7 @@ export default function TelegramIntegrationPage() {
 [Посмотреть профиль] [Одобрить] [Отклонить]`}
         />
 
-        <h2 id="candidate-chat">Чат с кандидатами</h2>
+        <h2 id="candidate-chat" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Чат с кандидатами</h2>
 
         <p>
           Кандидаты могут общаться с AI-ассистентом через Telegram-бота. Бот
@@ -134,11 +134,11 @@ export default function TelegramIntegrationPage() {
         </p>
 
         <ul>
-          <li>Просмотр списка вакансий</li>
-          <li>Отклик на вакансию с прикреплением резюме</li>
-          <li>Проверка статуса заявки</li>
-          <li>Ответы на вопросы о вакансии и компании</li>
-          <li>Назначение и подтверждение собеседований</li>
+          <li className="text-foreground/80">Просмотр списка вакансий</li>
+          <li className="text-foreground/80">Отклик на вакансию с прикреплением резюме</li>
+          <li className="text-foreground/80">Проверка статуса заявки</li>
+          <li className="text-foreground/80">Ответы на вопросы о вакансии и компании</li>
+          <li className="text-foreground/80">Назначение и подтверждение собеседований</li>
         </ul>
 
         <DocsCallout type="tip" title="Совет">

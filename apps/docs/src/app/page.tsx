@@ -19,7 +19,7 @@ export default function DocsIntroductionPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         {/* Hero-раздел */}
         <div className="mb-8">
           <div className="inline-flex items-center rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary mb-4">
@@ -47,10 +47,10 @@ export default function DocsIntroductionPage() {
           </span>
         </div>
 
-        <h1>Введение</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Введение</h1>
 
         <p className="text-lg">
-          <strong>QBS Автонайм</strong> — это первая российская AI-платформа для
+          <strong className="font-semibold text-foreground">QBS Автонайм</strong> — это первая российская AI-платформа для
           автоматизации рекрутинга, которая помогает{" "}
           <Link href="/candidates/screening">
             автоматически оценивать кандидатов по 100+ критериям
@@ -62,44 +62,44 @@ export default function DocsIntroductionPage() {
           . Работает с крупнейшими работодателями России.
         </p>
 
-        <p>Вы экономите до 80% времени на рекрутинге, если вы:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Вы экономите до 80% времени на рекрутинге, если вы:</p>
 
-        <ul>
+        <ul className="my-4 ml-6 list-disc space-y-2">
           <li>
-            <strong>HR в IT-компании</strong> — закрываете 50+ вакансий в месяц,
+            <strong className="font-semibold text-foreground">HR в IT-компании</strong> — закрываете 50+ вакансий в месяц,
             тратите 4 часа на просмотр 100 резюме
           </li>
           <li>
-            <strong>Рекрутер в ритейле</strong> — нанимаете продавцов и
+            <strong className="font-semibold text-foreground">Рекрутер в ритейле</strong> — нанимаете продавцов и
             кассиров, получаете 200+ откликов на вакансию
           </li>
           <li>
-            <strong>Фрилансер на Kwork</strong> — ищете исполнителей на разовые
+            <strong className="font-semibold text-foreground">Фрилансер на Kwork</strong> — ищете исполнителей на разовые
             задачи, проверяете портфолио вручную
           </li>
           <li>
-            <strong>Руководитель отдела</strong> — хотите, чтобы первичное
+            <strong className="font-semibold text-foreground">Руководитель отдела</strong> — хотите, чтобы первичное
             интервью проводил AI, а не стажёр
           </li>
         </ul>
 
-        <p>
-          <strong>Результат:</strong> Время на одну вакансию сокращается с 2
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          <strong className="font-semibold text-foreground" className="font-semibold text-foreground">Результат:</strong> Время на одну вакансию сокращается с 2
           недель до 3 дней. Качество кандидатов растёт на 40% благодаря
           объективной AI-оценке.
         </p>
 
-        <h2 id="key-features">Ключевые возможности</h2>
+        <h2 id="key-features" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Ключевые возможности</h2>
 
-        <p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
           QBS Автонайм — это не просто база данных кандидатов. Мы предлагаем
           полный набор инструментов для автоматизации и оптимизации процесса
           найма.
         </p>
 
-        <p>Ключевые возможности российской AI-платформы:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">Ключевые возможности российской AI-платформы:</p>
 
-        <ul>
+        <ul className="my-4 ml-6 list-disc space-y-2">
           <li>
             <Link href="/candidates/screening">AI-скрининг резюме</Link> —
             оценивает кандидатов по 100+ критериям, находит лучших за минуты
@@ -134,7 +134,7 @@ export default function DocsIntroductionPage() {
           </li>
         </ul>
 
-        <h2 id="getting-started">С чего начать</h2>
+        <h2 id="getting-started" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">С чего начать</h2>
 
         <p>
           Выберите подходящий для вас путь, чтобы начать работу с QBS Автонайм:
@@ -167,7 +167,7 @@ export default function DocsIntroductionPage() {
           />
         </div>
 
-        <h2 id="stay-updated">Будьте в курсе</h2>
+        <h2 id="stay-updated" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Будьте в курсе</h2>
 
         <div className="grid gap-4 sm:grid-cols-2 my-6">
           <DocsCard

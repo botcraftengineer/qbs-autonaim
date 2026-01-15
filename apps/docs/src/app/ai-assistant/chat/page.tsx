@@ -13,7 +13,7 @@ export default function ChatPage() {
 
   return (
     <div className="flex gap-12">
-      <article className="docs-content flex-1 max-w-3xl">
+      <article className="flex-1 max-w-3xl">
         <DocsBreadcrumb
           items={[
             { title: "AI-ассистент", href: "/ai-assistant" },
@@ -25,24 +25,24 @@ export default function ChatPage() {
           <span className="text-sm font-medium text-primary">AI-ассистент</span>
         </div>
 
-        <h1>AI-интервью с кандидатами</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">AI-интервью с кандидатами</h1>
 
         <p className="text-lg">
           Автоматическое проведение интервью через Telegram и веб-интерфейс. AI
           задает вопросы, анализирует ответы и формирует оценку кандидата.
         </p>
 
-        <h2 id="chat-interface">Как это работает</h2>
+        <h2 id="chat-interface" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Как это работает</h2>
 
-        <p>QBS Автонайм проводит интервью двумя способами:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">QBS Автонайм проводит интервью двумя способами:</p>
 
         <ul>
           <li>
-            <strong>Веб-интервью</strong> — кандидат получает уникальную ссылку
+            <strong className="font-semibold text-foreground">Веб-интервью</strong> — кандидат получает уникальную ссылку
             и проходит интервью в браузере
           </li>
           <li>
-            <strong>Telegram-интервью</strong> — бот проводит интервью прямо в
+            <strong className="font-semibold text-foreground">Telegram-интервью</strong> — бот проводит интервью прямо в
             мессенджере
           </li>
         </ul>
@@ -52,7 +52,7 @@ export default function ChatPage() {
           автоматически транскрибируется через Whisper API.
         </DocsCallout>
 
-        <h2 id="channels">Каналы коммуникации</h2>
+        <h2 id="channels" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Каналы коммуникации</h2>
 
         <p>
           QBS Автонайм поддерживает следующие каналы для общения с кандидатами:
@@ -103,7 +103,7 @@ export default function ChatPage() {
           ))}
         </div>
 
-        <h2 id="ai-mode">Режим AI</h2>
+        <h2 id="ai-mode" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Режим AI</h2>
 
         <p>
           По умолчанию AI-ассистент автоматически отвечает на сообщения
@@ -111,14 +111,14 @@ export default function ChatPage() {
         </p>
 
         <ul>
-          <li>AI анализирует входящее сообщение и определяет намерение</li>
+          <li className="text-foreground/80">AI анализирует входящее сообщение и определяет намерение</li>
           <li>
             Генерирует персонализированный ответ на основе шаблонов и контекста
           </li>
           <li>
             Может назначать собеседования, если кандидат выразил готовность
           </li>
-          <li>Передаёт диалог рекрутеру при сложных вопросах</li>
+          <li className="text-foreground/80">Передаёт диалог рекрутеру при сложных вопросах</li>
         </ul>
 
         <DocsCallout type="info">
@@ -126,7 +126,7 @@ export default function ChatPage() {
           диалоги отображаются в разделе «Требует внимания».
         </DocsCallout>
 
-        <h2 id="manual-mode">Ручной режим</h2>
+        <h2 id="manual-mode" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Ручной режим</h2>
 
         <p>
           Вы можете отключить AI для конкретного кандидата и вести переписку
@@ -134,9 +134,9 @@ export default function ChatPage() {
         </p>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>Откройте диалог с кандидатом</li>
-          <li>{"Нажмите переключатель «AI» в верхней части чата"}</li>
-          <li>AI приостановит автоответы для этого кандидата</li>
+          <li className="text-foreground/80">Откройте диалог с кандидатом</li>
+          <li className="text-foreground/80">{"Нажмите переключатель «AI» в верхней части чата"}</li>
+          <li className="text-foreground/80">AI приостановит автоответы для этого кандидата</li>
           <li>
             Для возврата в автоматический режим нажмите переключатель снова
           </li>
