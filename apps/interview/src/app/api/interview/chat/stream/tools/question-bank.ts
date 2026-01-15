@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
 import { extractJsonObject } from "@qbs-autonaim/ai";
-import { generateText, tool } from "ai";
-import { z } from "zod";
 import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
 } from "@qbs-autonaim/server-utils";
-import type { LanguageModel, GigLike, VacancyLike, EntityType } from "../types";
+import { generateText, tool } from "ai";
+import { z } from "zod";
+import type { EntityType, GigLike, LanguageModel, VacancyLike } from "../types";
 
 function parseQuestions(raw: string | null | undefined): string[] {
   if (!raw) return [];

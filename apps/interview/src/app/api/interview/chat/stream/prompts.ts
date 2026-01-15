@@ -209,7 +209,8 @@ export function createSystemPrompt(
   entityType: EntityType,
   isFirstResponse: boolean,
 ): string {
-  const entityPrompt = entityType === "gig" ? GIG_INTERVIEW_PROMPT : VACANCY_INTERVIEW_PROMPT;
+  const entityPrompt =
+    entityType === "gig" ? GIG_INTERVIEW_PROMPT : VACANCY_INTERVIEW_PROMPT;
 
   return `${BASE_INTERVIEW_PROMPT}${entityPrompt}${INTERVIEW_CONCLUSION_PROMPT(isFirstResponse)}`;
 }

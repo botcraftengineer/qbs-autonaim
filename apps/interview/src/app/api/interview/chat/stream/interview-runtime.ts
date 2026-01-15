@@ -1,11 +1,11 @@
 export { createWebInterviewRuntime } from "./index";
 
 export type {
-  EntityType,
-  InterviewStage,
   BotSettings,
-  InterviewContextLite,
+  EntityType,
   GigLike,
-  VacancyLike,
+  InterviewContextLite,
   InterviewRuntimeParams,
+  InterviewStage,
+  VacancyLike,
 } from "./types";

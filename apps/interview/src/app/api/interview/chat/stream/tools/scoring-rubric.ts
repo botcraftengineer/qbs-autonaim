@@ -1,9 +1,15 @@
+import {
+  getInterviewSessionMetadata,
+  updateInterviewSessionMetadata,
+} from "@qbs-autonaim/server-utils";
 import { tool } from "ai";
 import { z } from "zod";
-import { getInterviewSessionMetadata, updateInterviewSessionMetadata } from "@qbs-autonaim/server-utils";
 import type { EntityType } from "../types";
 
-export function createGetScoringRubricTool(sessionId: string, entityType: EntityType) {
+export function createGetScoringRubricTool(
+  sessionId: string,
+  entityType: EntityType,
+) {
   return tool({
     description:
       "Возвращает рубрику для внутренней оценки интервью. Можно использовать при итоговой оценке и для фиксации критериев в метаданных.",
