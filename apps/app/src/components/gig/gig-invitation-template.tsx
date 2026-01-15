@@ -64,12 +64,14 @@ export function GigInvitationTemplate({
     enabled: !!workspace?.id,
   });
 
+  // Загружаем AI-шаблон только если есть ссылка
   const { data: aiTemplate, isLoading: isLoadingTemplate } = useQuery({
     ...trpc.gig.generateInvitationTemplate.queryOptions({
       gigId,
       workspaceId: workspace?.id ?? "",
     }),
-    enabled: !!workspace?.id,
+    enabled: !!workspace?.id && !!interviewLink,
+    staleTime: 5 * 60 * 1000, // Кэшируем на 5 минут
   });
 
   const { mutate: generateLink, isPending: isGenerating } = useMutation(
@@ -169,7 +171,8 @@ export function GigInvitationTemplate({
     workspace?.id,
   ]);
 
-  if (isLoadingLink || isLoadingTemplate) {
+  // Показываем скелетон только при первой загрузке ссылки
+  if (isLoadingLink) {
     return (
       <Card>
         <CardHeader>
@@ -246,13 +249,23 @@ export function GigInvitationTemplate({
           </div>
         )}
 
-        <Textarea
-          value={template}
-          readOnly
-          rows={10}
-          className="resize-none font-mono text-sm"
-          aria-label="Текст шаблона приглашения"
-        />
+        <div className="relative">
+          <Textarea
+            value={template}
+            readOnly
+            rows={10}
+            className="resize-none font-mono text-sm"
+            aria-label="Текст шаблона приглашения"
+          />
+          {isLoadingTemplate && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-md">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <IconLoader2 className="size-4 animate-spin" aria-hidden="true" />
+                <span>Генерация шаблона…</span>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="flex gap-2">
           <Button
