@@ -44,6 +44,5 @@
     "apps/*",
     "packages/*",
     "tooling/*"
-  ],
-  "dependencies": {}
+  ]
 }
