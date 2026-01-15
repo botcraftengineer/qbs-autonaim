@@ -1,0 +1,120 @@
+---
+title: 'Кандидаты'
+description: 'API для работы с кандидатами'
+---
+
+## Получить список кандидатов
+
+```http
+GET /v1/candidates
+```
+
+### Параметры запроса
+
+| Параметр | Тип | Описание |
+|----------|-----|----------|
+| `vacancy_id` | string | Фильтр по вакансии |
+| `stage` | string | Фильтр по этапу воронки |
+| `min_score` | integer | Минимальная оценка AI |
+| `limit` | integer | Количество (макс. 100) |
+| `offset` | integer | Смещение для пагинации |
+
+### Пример запроса
+
+```bash
+curl -X GET "https://api.qbs-autonaim.ru/v1/candidates?vacancy_id=vac_123&min_score=70&limit=20" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+### Пример ответа
+
+```json
+{
+  "data": [
+    {
+      "id": "cand_abc123",
+      "name": "Иван Петров",
+      "email": "ivan@mail.ru",
+      "phone": "+7 999 123-45-67",
+      "score": 85,
+      "stage": "interview",
+      "vacancy_id": "vac_123",
+      "source": "hh.ru",
+      "created_at": "2025-01-10T10:00:00Z",
+      "updated_at": "2025-01-14T09:30:00Z"
+    }
+  ],
+  "meta": {
+    "total": 150,
+    "limit": 20,
+    "offset": 0
+  }
+}
+```
+
+## Получить кандидата
+
+```http
+GET /v1/candidates/{candidate_id}
+```
+
+### Пример ответа
+
+```json
+{
+  "data": {
+    "id": "cand_abc123",
+    "name": "Иван Петров",
+    "email": "ivan@mail.ru",
+    "phone": "+7 999 123-45-67",
+    "score": 85,
+    "stage": "interview",
+    "vacancy_id": "vac_123",
+    "source": "hh.ru",
+    "resume": {
+      "experience": [
+        {
+          "company": "ООО Рога и Копыта",
+          "position": "Менеджер по продажам",
+          "start_date": "2020-03",
+          "end_date": "2024-12",
+          "description": "..."
+        }
+      ],
+      "skills": ["CRM", "B2B продажи", "Переговоры"],
+      "education": [...]
+    },
+    "ai_analysis": {
+      "score": 85,
+      "strengths": ["5 лет опыта в продажах", "Знание CRM"],
+      "weaknesses": ["Нет опыта в IT-сфере"],
+      "recommendation": "Рекомендуется пригласить на интервью"
+    },
+    "created_at": "2025-01-10T10:00:00Z",
+    "updated_at": "2025-01-14T09:30:00Z"
+  }
+}
+```
+
+## Изменить этап кандидата
+
+```http
+PATCH /v1/candidates/{candidate_id}
+```
+
+### Тело запроса
+
+```json
+{
+  "stage": "offer"
+}
+```
+
+### Пример
+
+```bash
+curl -X PATCH "https://api.qbs-autonaim.ru/v1/candidates/cand_abc123" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"stage": "offer"}'
+```

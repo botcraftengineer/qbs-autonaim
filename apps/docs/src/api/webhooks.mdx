@@ -1,0 +1,57 @@
+---
+title: 'Webhooks API'
+description: 'API для управления webhooks'
+---
+
+## Получить список webhooks
+
+```http
+GET /v1/webhooks
+```
+
+### Пример ответа
+
+```json
+{
+  "data": [
+    {
+      "id": "wh_123",
+      "url": "https://your-server.com/webhook",
+      "events": ["candidate.created", "candidate.stage_changed"],
+      "status": "active",
+      "created_at": "2025-01-01T10:00:00Z"
+    }
+  ]
+}
+```
+
+## Создать webhook
+
+```http
+POST /v1/webhooks
+```
+
+### Тело запроса
+
+```json
+{
+  "url": "https://your-server.com/webhook",
+  "events": ["candidate.created", "candidate.stage_changed"],
+  "secret": "your_secret_key"
+}
+```
+
+## Удалить webhook
+
+```http
+DELETE /v1/webhooks/{webhook_id}
+```
+
+## Тестировать webhook
+
+```http
+POST /v1/webhooks/{webhook_id}/test
+```
+
+Отправляет тестовое событие на указанный URL для проверки интеграции.
+```
