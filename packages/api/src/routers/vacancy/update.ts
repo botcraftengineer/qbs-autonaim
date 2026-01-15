@@ -1,7 +1,6 @@
 ﻿import { and, eq } from "@qbs-autonaim/db";
 import { vacancy } from "@qbs-autonaim/db/schema";
 import {
-  type UpdateVacancySettingsInput,
   updateVacancySettingsSchema,
   workspaceIdSchema,
 } from "@qbs-autonaim/validators";
@@ -48,8 +47,7 @@ export const update = protectedProcedure
 
     // Обновляем настройки
     // Строим патч только с определенными полями (не undefined)
-    const settings = input.settings as UpdateVacancySettingsInput;
-
+    const settings = input.settings;
     const patch: Partial<typeof vacancy.$inferInsert> & { updatedAt: Date } = {
       updatedAt: new Date(),
     };
@@ -75,6 +73,7 @@ export const update = protectedProcedure
         settings.externalId === null ? null : settings.externalId;
     }
     if (settings.url !== undefined) {
+      // Преобразуем пустую строку в null
       patch.url =
         settings.url === null || settings.url === "" ? null : settings.url;
     }
