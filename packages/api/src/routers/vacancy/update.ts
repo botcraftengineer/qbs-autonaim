@@ -47,40 +47,35 @@ export const update = protectedProcedure
 
     // Обновляем настройки
     // Строим патч только с определенными полями (не undefined)
-    const patch: {
-      customBotInstructions?: string | null;
-      customScreeningPrompt?: string | null;
-      customInterviewQuestions?: string | null;
-      customOrganizationalQuestions?: string | null;
-      source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK";
-      externalId?: string | null;
-      url?: string | null;
-      updatedAt: Date;
-    } = {
+    const settings = input.settings;
+    const patch: Partial<typeof vacancy.$inferInsert> & { updatedAt: Date } = {
       updatedAt: new Date(),
     };
 
-    if (input.settings.customBotInstructions !== undefined) {
-      patch.customBotInstructions = input.settings.customBotInstructions;
+    if (settings.customBotInstructions !== undefined) {
+      patch.customBotInstructions = settings.customBotInstructions;
     }
-    if (input.settings.customScreeningPrompt !== undefined) {
-      patch.customScreeningPrompt = input.settings.customScreeningPrompt;
+    if (settings.customScreeningPrompt !== undefined) {
+      patch.customScreeningPrompt = settings.customScreeningPrompt;
     }
-    if (input.settings.customInterviewQuestions !== undefined) {
-      patch.customInterviewQuestions = input.settings.customInterviewQuestions;
+    if (settings.customInterviewQuestions !== undefined) {
+      patch.customInterviewQuestions = settings.customInterviewQuestions;
     }
-    if (input.settings.customOrganizationalQuestions !== undefined) {
+    if (settings.customOrganizationalQuestions !== undefined) {
       patch.customOrganizationalQuestions =
-        input.settings.customOrganizationalQuestions;
+        settings.customOrganizationalQuestions;
     }
-    if (input.settings.source !== undefined) {
-      patch.source = input.settings.source ?? undefined;
+    if (settings.source !== undefined) {
+      patch.source = settings.source === null ? null : settings.source;
     }
-    if (input.settings.externalId !== undefined) {
-      patch.externalId = input.settings.externalId;
+    if (settings.externalId !== undefined) {
+      patch.externalId =
+        settings.externalId === null ? null : settings.externalId;
     }
-    if (input.settings.url !== undefined) {
-      patch.url = input.settings.url;
+    if (settings.url !== undefined) {
+      // Преобразуем пустую строку в null
+      patch.url =
+        settings.url === null || settings.url === "" ? null : settings.url;
     }
 
     const result = await ctx.db

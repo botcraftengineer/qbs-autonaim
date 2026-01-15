@@ -15,6 +15,7 @@ export type UpdateVacancyDetailsInput = z.infer<
   typeof updateVacancyDetailsSchema
 >;
 
+// Плоская схема со всеми полями (без .extend() для корректного вывода типов в Zod v4)
 export const updateVacancySettingsSchema = z.object({
   customBotInstructions: z
     .string()
@@ -32,8 +33,17 @@ export const updateVacancySettingsSchema = z.object({
     .string()
     .max(5000, { message: "Вопросы не должны превышать 5000 символов" })
     .nullish(),
-  // Привязка к внешней платформе
-  source: z.enum(["HH", "KWORK", "FL_RU", "FREELANCE_RU", "AVITO", "SUPERJOB", "HABR", "WEB_LINK"])
+  source: z
+    .enum([
+      "HH",
+      "KWORK",
+      "FL_RU",
+      "FREELANCE_RU",
+      "AVITO",
+      "SUPERJOB",
+      "HABR",
+      "WEB_LINK",
+    ])
     .nullish(),
   externalId: z
     .string()
@@ -42,8 +52,8 @@ export const updateVacancySettingsSchema = z.object({
   url: z
     .string()
     .url({ message: "Введите корректный URL" })
-    .nullish()
-    .or(z.literal("")),
+    .or(z.literal(""))
+    .nullish(),
 });
 
 export type UpdateVacancySettingsInput = z.infer<

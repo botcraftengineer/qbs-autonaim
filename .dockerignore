@@ -4,6 +4,7 @@ node_modules
 **/.next
 **/.turbo
 .turbo
+bun.lock
 
 # Build outputs
 **/dist

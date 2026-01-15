@@ -8,6 +8,7 @@ import { freelancePlatformsRouter } from "./routers/freelance-platforms";
 import { funnelRouter } from "./routers/funnel";
 import { gigRouter } from "./routers/gig";
 import { integrationRouter } from "./routers/integration";
+import { interviewScenariosRouter } from "./routers/interview-scenarios";
 import { organizationRouter } from "./routers/organization";
 import { prequalificationRouter } from "./routers/prequalification";
 import { recruiterAgentRouter } from "./routers/recruiter-agent";
@@ -28,6 +29,7 @@ export const appRouter = createTRPCRouter({
   vacancy: vacancyRouter,
   gig: gigRouter,
   integration: integrationRouter,
+  interviewScenarios: interviewScenariosRouter,
   company: companyRouter,
   telegram: telegramRouter,
   workspace: workspaceRouter,
