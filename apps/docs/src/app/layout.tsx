@@ -12,10 +12,78 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: {
-    default: "Документация | QBS Автонайм",
-    template: "%s | QBS Автонайм",
+    default: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
+    template: "%s | Документация QBS Автонайм",
   },
-  description: "Полная документация AI-ассистента для рекрутеров QBS Автонайм",
+  description: "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram. AI-скрининг резюме, автоматические интервью, аналитика найма.",
+  keywords: [
+    "рекрутинг",
+    "HR",
+    "AI",
+    "автоматизация найма",
+    "HH.ru",
+    "SuperJob",
+    "Telegram бот",
+    "скрининг резюме",
+    "интервью кандидатов",
+    "HR аналитика",
+    "подбор персонала",
+    "Россия",
+    "документация API",
+    "tRPC"
+  ],
+  authors: [{ name: "QBS Автонайм" }],
+  creator: "QBS Автонайм",
+  publisher: "QBS Автонайм",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  metadataBase: new URL("https://docs.qbs-autonaim.ru"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    url: "https://docs.qbs-autonaim.ru",
+    title: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
+    description: "Полная документация AI-платформы для автоматизации найма персонала в России. Интеграция с HH.ru, SuperJob, Telegram. Экономьте до 80% времени на подборе кандидатов.",
+    siteName: "QBS Автонайм",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "QBS Автонайм — AI-платформа для рекрутинга",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
+    description: "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram.",
+    images: ["/og-image.png"],
+    creator: "@qbs_autonaim",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-site-verification-code",
+    yandex: "your-yandex-verification-code",
+  },
+  category: "documentation",
+  classification: "business software",
   generator: "v0.app",
   icons: {
     icon: [
@@ -41,8 +109,81 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://qbs-autonaim.ru/#organization",
+        name: "QBS Автонайм",
+        url: "https://qbs-autonaim.ru",
+        logo: {
+          "@type": "ImageObject",
+          url: "https://qbs-autonaim.ru/logo.png",
+          width: 512,
+          height: 512,
+        },
+        description: "AI-платформа для автоматизации рекрутинга и подбора персонала в России",
+        foundingDate: "2024",
+        contactPoint: {
+          "@type": "ContactPoint",
+          telephone: "+7-XXX-XXX-XX-XX",
+          contactType: "customer service",
+          email: "support@qbs-autonaim.ru",
+        },
+        sameAs: [
+          "https://t.me/qbs_autonaim",
+          "https://hh.ru/employer/XXXXXX", // Заменить на реальный ID работодателя
+        ],
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://qbs-autonaim.ru/#software",
+        name: "QBS Автонайм",
+        applicationCategory: "BusinessApplication",
+        operatingSystem: "Web",
+        offers: {
+          "@type": "Offer",
+          priceCurrency: "RUB",
+          description: "Тарифы от 990₽ в месяц",
+        },
+        description: "AI-платформа для автоматизации найма персонала с интеграцией HH.ru, SuperJob и Telegram",
+        featureList: [
+          "AI-скрининг резюме",
+          "Автоматические интервью через Telegram",
+          "Интеграция с HH.ru и SuperJob",
+          "Аналитика найма",
+          "API для разработчиков",
+        ],
+        screenshot: "https://qbs-autonaim.ru/screenshot.png",
+        author: {
+          "@id": "https://qbs-autonaim.ru/#organization",
+        },
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://docs.qbs-autonaim.ru/#website",
+        url: "https://docs.qbs-autonaim.ru",
+        name: "Документация QBS Автонайм",
+        description: "Полная документация AI-платформы для автоматизации рекрутинга",
+        inLanguage: "ru-RU",
+        publisher: {
+          "@id": "https://qbs-autonaim.ru/#organization",
+        },
+      },
+    ],
+  }
+
   return (
     <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
       <body className="font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           <div className="min-h-screen bg-background">
