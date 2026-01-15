@@ -36,6 +36,13 @@
       "when": 1768491138718,
       "tag": "0004_brave_miss_america",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1768505993505,
+      "tag": "0005_square_shocker",
+      "breakpoints": true
     }
   ]
 }

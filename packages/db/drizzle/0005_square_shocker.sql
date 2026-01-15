@@ -1,0 +1,1 @@
+ALTER TABLE "gigs" ADD COLUMN "invitation_template" text;
