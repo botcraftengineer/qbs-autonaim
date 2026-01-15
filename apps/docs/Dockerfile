@@ -12,8 +12,8 @@ RUN npm install -g turbo@2.7.4
 COPY . .
 
 # Generate a partial monorepo with a pruned lockfile for a target workspace.
-# Using @qbs-autonaim/app as the target workspace
-RUN turbo prune @qbs-autonaim/app --docker
+# Using @qbs-autonaim/docs as the target workspace
+RUN turbo prune @qbs-autonaim/docs --docker
 
 # Add lockfile and package.json's of isolated subworkspace
 FROM base AS installer
@@ -30,16 +30,8 @@ RUN bun install
 
 # Build the project
 COPY --from=builder /app/out/full/ .
-ARG POSTGRES_URL
-ARG NEXT_PUBLIC_APP_URL
-ARG NEXT_PUBLIC_APP_NAME
-ARG NEXT_PUBLIC_INTERVIEW_URL
-ENV POSTGRES_URL=$POSTGRES_URL
-ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
-ENV NEXT_PUBLIC_APP_NAME=$NEXT_PUBLIC_APP_NAME
-ENV NEXT_PUBLIC_INTERVIEW_URL=$NEXT_PUBLIC_INTERVIEW_URL
 ENV CI=true
-RUN bun turbo run build --filter=@qbs-autonaim/app
+RUN bun turbo run build --filter=@qbs-autonaim/docs
 
 FROM base AS runner
 WORKDIR /app
@@ -51,12 +43,12 @@ USER nextjs
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=installer --chown=nextjs:nodejs /app/apps/app/.next/standalone ./
-COPY --from=installer --chown=nextjs:nodejs /app/apps/app/.next/static ./apps/app/.next/static
-COPY --from=installer --chown=nextjs:nodejs /app/apps/app/public ./apps/app/public
+COPY --from=installer --chown=nextjs:nodejs /app/apps/docs/.next/standalone ./
+COPY --from=installer --chown=nextjs:nodejs /app/apps/docs/.next/static ./apps/docs/.next/static
+COPY --from=installer --chown=nextjs:nodejs /app/apps/docs/public ./apps/docs/public
 
 # Expose port
 EXPOSE 3000
 
 # Use node to run the server
-CMD ["node", "apps/app/server.js"]
+CMD ["node", "apps/docs/server.js"]
