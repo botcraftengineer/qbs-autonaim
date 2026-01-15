@@ -35,6 +35,7 @@ export const updateVacancySettingsSchema = z.object({
     .nullish(),
   source: z
     .enum([
+      "MANUAL",
       "HH",
       "KWORK",
       "FL_RU",
@@ -43,6 +44,7 @@ export const updateVacancySettingsSchema = z.object({
       "SUPERJOB",
       "HABR",
       "WEB_LINK",
+      "TELEGRAM",
     ])
     .nullish(),
   externalId: z

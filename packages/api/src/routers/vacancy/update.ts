@@ -66,7 +66,7 @@ export const update = protectedProcedure
         settings.customOrganizationalQuestions;
     }
     if (settings.source !== undefined) {
-      patch.source = settings.source === null ? null : settings.source;
+      patch.source = settings.source === null ? undefined : settings.source;
     }
     if (settings.externalId !== undefined) {
       patch.externalId =
