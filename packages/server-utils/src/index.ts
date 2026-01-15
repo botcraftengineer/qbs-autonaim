@@ -3,9 +3,6 @@
  * Этот пакет содержит функции, которые работают только на сервере и используют БД
  */
 
-// Маркер server-only для предотвращения попадания в браузер
-import "server-only";
-
 // Экспорты conversation утилит
 export {
   ConversationMetadataSchema,
