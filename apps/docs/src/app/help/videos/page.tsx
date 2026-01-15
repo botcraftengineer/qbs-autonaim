@@ -102,7 +102,7 @@ export default function VideosPage() {
         {
           title: "Интеграция с внешними системами",
           duration: "15:30",
-          description: "Настройка webhooks, экспорт данных и интеграция с корпоративными системами",
+          description: "Экспорт данных и интеграция с корпоративными системами",
           level: "Продвинутый",
           thumbnail: "/videos/integrations-advanced.jpg",
         },

@@ -76,7 +76,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/integrations/telegram",
     "/integrations/freelance",
     "/integrations/email",
-    "/integrations/webhooks",
     "/integrations/1c",
   ].map((path) => ({
     url: `${baseUrl}${path}`,

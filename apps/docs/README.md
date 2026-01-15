@@ -20,7 +20,6 @@
 │   ├── docs/                    # Все страницы документации
 │   │   ├── ai-assistant/        # AI-ассистент
 │   │   ├── analytics/           # Аналитика
-│   │   ├── api/                 # API Reference
 │   │   ├── candidates/          # Работа с кандидатами
 │   │   ├── integrations/        # Интеграции
 │   │   ├── layout.tsx           # Layout документации
@@ -81,11 +80,6 @@
 - WhatsApp
 - Webhooks
 
-### 🔧 API Reference
-- Введение в API
-- Аутентификация
-- Эндпоинты: Кандидаты
-- Эндпоинты: Вакансии
 
 ## 🛠 Технологии
 

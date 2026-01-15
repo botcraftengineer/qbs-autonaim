@@ -85,33 +85,22 @@ export default function AnalyticsPage() {
           ))}
         </div>
 
-        <DocsCallout type="info" title="Экспорт данных">
-          Вы можете выгрузить данные через tRPC API для построения собственных
-          отчётов и дашбордов.
-        </DocsCallout>
 
-        <h2 id="sections" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Доступ к данным</h2>
+        <h2 id="sections" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Экспорт данных</h2>
 
-        <p>
-          Для получения аналитических данных используйте tRPC API. Доступны
-          следующие методы:
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Все метрики и отчёты можно экспортировать для дальнейшего анализа.
         </p>
 
         <ul>
           <li>
-            <code>analytics.getDashboard</code> — общая статистика по workspace
+            <strong className="font-semibold text-foreground">CSV формат</strong> — для импорта в Excel или Google Sheets
           </li>
           <li>
-            <code>analytics.getVacancyAnalytics</code> — детальная аналитика по
-            вакансии
+            <strong className="font-semibold text-foreground">PDF отчёты</strong> — готовые презентационные материалы
           </li>
           <li>
-            <code>analytics.exportData</code> — экспорт данных в различных
-            форматах
-          </li>
-          <li>
-            <code>analytics.trackEvent</code> — отслеживание пользовательских
-            событий
+            <strong className="font-semibold text-foreground">Графики и диаграммы</strong> — визуализация данных
           </li>
         </ul>
 

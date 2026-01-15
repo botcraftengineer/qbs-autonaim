@@ -61,7 +61,6 @@ export default function PricingPage() {
         "Все функции AI-скрининга",
         "Telegram-боты для интервью",
         "Расширенная аналитика",
-        "API доступ",
         "Приоритетная поддержка",
         "До 5 пользователей",
       ],
@@ -81,7 +80,6 @@ export default function PricingPage() {
         "Голосовые резюме",
         "Расширенные отчёты",
         "White-label решение",
-        "API с повышенными лимитами",
         "До 20 пользователей",
         "Персональный менеджер",
       ],
@@ -129,7 +127,6 @@ export default function PricingPage() {
         { name: "HH.ru", free: true, startup: true, pro: true, enterprise: true },
         { name: "SuperJob", free: false, startup: true, pro: true, enterprise: true },
         { name: "Telegram", free: false, startup: true, pro: true, enterprise: true },
-        { name: "API для разработчиков", free: false, startup: true, pro: true, enterprise: true },
         { name: "1C / ERP системы", free: false, startup: false, pro: false, enterprise: true },
       ],
     },
@@ -203,7 +200,7 @@ export default function PricingPage() {
               )}
 
               <div className="text-center mb-4">
-                <h3 className="text-xl font-semibold" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{plan.name}</h3>
+                <h3 className="text-xl font-semibold">{plan.name}</h3>
                 <div className="mt-2">
                   <span className="text-3xl font-bold">{plan.price}</span>
                   <span className="text-muted-foreground">/{plan.period}</span>
@@ -322,7 +319,7 @@ export default function PricingPage() {
 
         <div className="space-y-4 my-6">
           <div>
-            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Способы оплаты</h3>
+            <h3 className="text-lg font-semibold mb-2">Способы оплаты</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
               <li className="text-foreground/80">Банковские карты (МИР, Visa, Mastercard)</li>
               <li className="text-foreground/80">Банковский перевод для юридических лиц</li>
@@ -331,7 +328,7 @@ export default function PricingPage() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Период оплаты</h3>
+            <h3 className="text-lg font-semibold mb-2">Период оплаты</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
               <li className="text-foreground/80">Ежемесячная оплата</li>
               <li className="text-foreground/80">Поквартальная оплата (скидка 5%)</li>
@@ -340,7 +337,7 @@ export default function PricingPage() {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Документы</h3>
+            <h3 className="text-lg font-semibold mb-2">Документы</h3>
             <p className="text-muted-foreground">
               Для юридических лиц предоставляем полный пакет документов:
               договор, счёт, акт выполненных работ, счёт-фактуру.

@@ -51,26 +51,26 @@ export default function AutoRepliesPage() {
 
         <div className="my-6 flex flex-col gap-4">
           <div className="rounded-lg border border-border p-5">
-            <h3 className="font-semibold text-foreground mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Ответы на вопросы</h3>
+            <h3 className="font-semibold text-foreground mb-2">Ответы на вопросы</h3>
             <p className="text-sm text-muted-foreground">
               AI распознаёт типичные вопросы кандидатов (о зарплате, графике, требованиях) и отвечает на них
               автоматически.
             </p>
           </div>
           <div className="rounded-lg border border-border p-5">
-            <h3 className="font-semibold text-foreground mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Подтверждение получения</h3>
+            <h3 className="font-semibold text-foreground mb-2">Подтверждение получения</h3>
             <p className="text-sm text-muted-foreground">
               Автоматическое подтверждение получения отклика или резюме с информацией о следующих шагах.
             </p>
           </div>
           <div className="rounded-lg border border-border p-5">
-            <h3 className="font-semibold text-foreground mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Напоминания</h3>
+            <h3 className="font-semibold text-foreground mb-2">Напоминания</h3>
             <p className="text-sm text-muted-foreground">
               Автоматические напоминания о назначенных собеседованиях за сутки и за час до встречи.
             </p>
           </div>
           <div className="rounded-lg border border-border p-5">
-            <h3 className="font-semibold text-foreground mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Статусные уведомления</h3>
+            <h3 className="font-semibold text-foreground mb-2">Статусные уведомления</h3>
             <p className="text-sm text-muted-foreground">
               Уведомления кандидатов при переходе на новый этап воронки или изменении статуса заявки.
             </p>

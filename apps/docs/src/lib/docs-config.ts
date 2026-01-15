@@ -61,7 +61,6 @@ export const docsConfig: DocsConfig = {
         { title: "Telegram-боты", href: "/integrations/telegram" },
         { title: "Фриланс-платформы", href: "/integrations/freelance" },
         { title: "Email-рассылки", href: "/integrations/email" },
-        { title: "Webhooks и API", href: "/integrations/webhooks" },
         { title: "1C и ERP-системы", href: "/integrations/1c" },
       ],
     },

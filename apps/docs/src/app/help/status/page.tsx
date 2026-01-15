@@ -8,7 +8,7 @@ import { CheckCircle, AlertTriangle, XCircle, Clock } from "lucide-react";
 
 export const metadata: Metadata = generatePageSEO("status", {
   title: "Статус системы QBS Автонайм — доступность сервисов",
-  description: "Текущее состояние системы QBS Автонайм. Проверка доступности AI-скрининга, интеграций, API. История инцидентов и плановое обслуживание.",
+  description: "Текущее состояние системы QBS Автонайм. Проверка доступности AI-скрининга и интеграций. История инцидентов и плановое обслуживание.",
   url: "/help/status",
   keywords: [
     "статус QBS Автонайм",
@@ -43,12 +43,6 @@ export default function StatusPage() {
       uptime: "99.8%",
     },
     {
-      name: "API",
-      status: "operational",
-      description: "tRPC API для интеграций",
-      uptime: "99.9%",
-    },
-    {
       name: "Интеграция HH.ru",
       status: "operational",
       description: "Синхронизация с HeadHunter",
@@ -74,7 +68,7 @@ export default function StatusPage() {
       time: "14:30 - 15:45",
       service: "Интеграция HH.ru",
       status: "resolved",
-      description: "Временные проблемы с синхронизацией новых откликов из-за изменений в API HH.ru",
+      description: "Временные проблемы с синхронизацией новых откликов из HeadHunter",
       impact: "Задержка импорта новых кандидатов на 15-30 минут",
     },
     {
@@ -106,8 +100,8 @@ export default function StatusPage() {
     {
       date: "2025-02-01",
       time: "01:00 - 05:00",
-      services: ["AI-скрининг", "API"],
-      description: "Обновление AI-моделей и API до новой версии",
+      services: ["AI-скрининг"],
+      description: "Обновление AI-моделей и системы до новой версии",
       impact: "Временное недоступны AI-функций на 4 часа",
     },
   ];
@@ -188,7 +182,7 @@ export default function StatusPage() {
               <div className="flex items-center gap-3">
                 {getStatusIcon(service.status)}
                 <div>
-                  <h3 className="font-semibold" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{service.name}</h3>
+                  <h3 className="font-semibold">{service.name}</h3>
                   <p className="text-sm text-muted-foreground">
                     {service.description}
                   </p>
@@ -233,7 +227,7 @@ export default function StatusPage() {
             >
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="font-semibold" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{incident.service}</h3>
+                  <h3 className="font-semibold">{incident.service}</h3>
                   <p className="text-sm text-muted-foreground">
                     {incident.date} • {incident.time}
                   </p>

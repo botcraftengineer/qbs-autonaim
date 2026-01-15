@@ -167,10 +167,6 @@ export default function ScreeningPage() {
             <strong className="font-semibold text-foreground">Загрузка файлов</strong> — поддержка PDF, DOC, DOCX (до 100
             файлов за раз)
           </li>
-          <li>
-            <strong className="font-semibold text-foreground">tRPC API</strong> — программный импорт через
-            candidates.create
-          </li>
         </ul>
 
         <h2 id="best-practices" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Лучшие практики</h2>

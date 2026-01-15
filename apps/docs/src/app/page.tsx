@@ -47,11 +47,16 @@ export default function DocsIntroductionPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Введение</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Введение
+        </h1>
 
         <p className="text-lg">
-          <strong className="font-semibold text-foreground">QBS Автонайм</strong> — это первая российская AI-платформа для
-          автоматизации рекрутинга, которая помогает{" "}
+          <strong className="font-semibold text-foreground">
+            QBS Автонайм
+          </strong>{" "}
+          — это первая российская AI-платформа для автоматизации рекрутинга,
+          которая помогает{" "}
           <Link href="/candidates/screening">
             автоматически оценивать кандидатов по 100+ критериям
           </Link>
@@ -62,34 +67,51 @@ export default function DocsIntroductionPage() {
           . Работает с крупнейшими работодателями России.
         </p>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Вы экономите до 80% времени на рекрутинге, если вы:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Вы экономите до 80% времени на рекрутинге, если вы:
+        </p>
 
         <ul className="my-4 ml-6 list-disc space-y-2">
           <li>
-            <strong className="font-semibold text-foreground">HR в IT-компании</strong> — закрываете 50+ вакансий в месяц,
-            тратите 4 часа на просмотр 100 резюме
+            <strong className="font-semibold text-foreground">
+              HR в IT-компании
+            </strong>{" "}
+            — закрываете 50+ вакансий в месяц, тратите 4 часа на просмотр 100
+            резюме
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Рекрутер в ритейле</strong> — нанимаете продавцов и
-            кассиров, получаете 200+ откликов на вакансию
+            <strong className="font-semibold text-foreground">
+              Рекрутер в ритейле
+            </strong>{" "}
+            — нанимаете продавцов и кассиров, получаете 200+ откликов на
+            вакансию
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Фрилансер на Kwork</strong> — ищете исполнителей на разовые
-            задачи, проверяете портфолио вручную
+            <strong className="font-semibold text-foreground">
+              Фрилансер на Kwork
+            </strong>{" "}
+            — ищете исполнителей на разовые задачи, проверяете портфолио вручную
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Руководитель отдела</strong> — хотите, чтобы первичное
-            интервью проводил AI, а не стажёр
+            <strong className="font-semibold text-foreground">
+              Руководитель отдела
+            </strong>{" "}
+            — хотите, чтобы первичное интервью проводил AI, а не стажёр
           </li>
         </ul>
 
         <p className="leading-relaxed text-foreground/80 mb-4">
-          <strong className="font-semibold text-foreground" className="font-semibold text-foreground">Результат:</strong> Время на одну вакансию сокращается с 2
-          недель до 3 дней. Качество кандидатов растёт на 40% благодаря
-          объективной AI-оценке.
+          <strong className="font-semibold text-foreground">Результат:</strong>{" "}
+          Время на одну вакансию сокращается с 2 недель до 3 дней. Качество
+          кандидатов растёт на 40% благодаря объективной AI-оценке.
         </p>
 
-        <h2 id="key-features" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Ключевые возможности</h2>
+        <h2
+          id="key-features"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Ключевые возможности
+        </h2>
 
         <p className="leading-relaxed text-foreground/80 mb-4">
           QBS Автонайм — это не просто база данных кандидатов. Мы предлагаем
@@ -97,7 +119,9 @@ export default function DocsIntroductionPage() {
           найма.
         </p>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Ключевые возможности российской AI-платформы:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Ключевые возможности российской AI-платформы:
+        </p>
 
         <ul className="my-4 ml-6 list-disc space-y-2">
           <li>
@@ -134,7 +158,12 @@ export default function DocsIntroductionPage() {
           </li>
         </ul>
 
-        <h2 id="getting-started" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">С чего начать</h2>
+        <h2
+          id="getting-started"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          С чего начать
+        </h2>
 
         <p>
           Выберите подходящий для вас путь, чтобы начать работу с QBS Автонайм:
@@ -167,7 +196,12 @@ export default function DocsIntroductionPage() {
           />
         </div>
 
-        <h2 id="stay-updated" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Будьте в курсе</h2>
+        <h2
+          id="stay-updated"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Будьте в курсе
+        </h2>
 
         <div className="grid gap-4 sm:grid-cols-2 my-6">
           <DocsCard

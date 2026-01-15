@@ -184,10 +184,6 @@ export default function GigPage() {
           <li className="text-foreground/80">Пригласить на интервью одним кликом</li>
         </ul>
 
-        <DocsCallout type="tip" title="Пересчет шорт-листа">
-          Если вы изменили критерии отбора, можно пересчитать шорт-лист через
-          API метод <code>gig.recalculateShortlist</code>.
-        </DocsCallout>
 
         <h2 id="interview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">AI-интервью</h2>
 

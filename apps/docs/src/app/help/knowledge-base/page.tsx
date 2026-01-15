@@ -243,7 +243,7 @@ export default function KnowledgeBasePage() {
                   className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 >
                   <div className="flex-1">
-                    <h3 className="font-semibold mb-1" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{article.title}</h3>
+                    <h3 className="font-semibold mb-1">{article.title}</h3>
                     <p className="text-sm text-muted-foreground">
                       {article.description}
                     </p>

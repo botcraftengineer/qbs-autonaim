@@ -115,7 +115,7 @@ export default function FAQPage() {
         },
         {
           q: "Можно ли интегрировать с 1С или Bitrix24?",
-          a: "Да, через наш API можно интегрироваться с любой HR-системой. Предоставляем готовые SDK для популярных платформ и подробную документацию для разработчиков.",
+          a: "Да, мы поддерживаем интеграцию с 1С и Bitrix24. Свяжитесь с нашей командой для настройки подключения к вашей HR-системе.",
         },
       ],
     },
@@ -207,7 +207,7 @@ export default function FAQPage() {
             <div className="space-y-6">
               {section.questions.map((item, index) => (
                 <div key={index} className="border-b border-border pb-6 last:border-b-0">
-                  <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">{item.q}</h3>
+                  <h3 className="text-lg font-semibold mb-2">{item.q}</h3>
                   <p className="text-muted-foreground leading-relaxed">{item.a}</p>
                 </div>
               ))}

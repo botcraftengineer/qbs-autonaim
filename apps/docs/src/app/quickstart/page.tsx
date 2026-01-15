@@ -158,7 +158,7 @@ export default function QuickstartPage() {
 
         <div className="grid gap-6 my-6">
           <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Кейс: IT-компания "ТехноСервис"</h3>
+            <h3 className="text-lg font-semibold mb-2">Кейс: IT-компания "ТехноСервис"</h3>
             <p className="text-sm text-muted-foreground mb-3">
               <strong className="font-semibold text-foreground">Задача:</strong> Найм 15 Python-разработчиков за месяц
             </p>
@@ -171,7 +171,7 @@ export default function QuickstartPage() {
           </div>
 
           <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Кейс: Ритейл сеть "Магнит"</h3>
+            <h3 className="text-lg font-semibold mb-2">Кейс: Ритейл сеть "Магнит"</h3>
             <p className="text-sm text-muted-foreground mb-3">
               <strong className="font-semibold text-foreground">Задача:</strong> Подбор 200 продавцов-кассиров ежемесячно
             </p>
@@ -184,7 +184,7 @@ export default function QuickstartPage() {
           </div>
 
           <div className="border border-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold mb-2" className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Кейс: Стартап "Фудтех"</h3>
+            <h3 className="text-lg font-semibold mb-2">Кейс: Стартап "Фудтех"</h3>
             <p className="text-sm text-muted-foreground mb-3">
               <strong className="font-semibold text-foreground">Задача:</strong> Найм первых 10 сотрудников без HR-отдела
             </p>
