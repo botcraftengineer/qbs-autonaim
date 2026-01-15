@@ -6,7 +6,7 @@ interface DocsEditLinkProps {
 }
 
 export function DocsEditLink({ path }: DocsEditLinkProps) {
-  const githubUrl = `https://github.com/qbs-autonaim/docs/edit/main/${path}`
+  const githubUrl = `https://github.com/qbs-autonaim/edit/main/${path}`
 
   return (
     <Link

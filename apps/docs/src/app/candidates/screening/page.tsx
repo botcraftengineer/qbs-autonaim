@@ -1,10 +1,10 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsCallout } from "@/components/docs-callout"
-import { DocsSteps } from "@/components/docs-steps"
-import { DocsToc } from "@/components/docs-toc"
-import { DocsFeedback } from "@/components/docs-feedback"
-import { DocsMobileToc } from "@/components/docs-mobile-toc"
-import { DocsEditLink } from "@/components/docs-edit-link"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsCallout } from "@/components/docs/docs-callout"
+import { DocsSteps } from "@/components/docs/docs-steps"
+import { DocsToc } from "@/components/docs/docs-toc"
+import { DocsFeedback } from "@/components/docs/docs-feedback"
+import { DocsMobileToc } from "@/components/docs/docs-mobile-toc"
+import { DocsEditLink } from "@/components/docs/docs-edit-link"
 import Link from "next/link"
 
 export default function ScreeningPage() {

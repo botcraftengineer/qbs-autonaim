@@ -1,7 +1,7 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsCard } from "@/components/docs-card"
-import { DocsToc } from "@/components/docs-toc"
-import { DocsCallout } from "@/components/docs-callout"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsCard } from "@/components/docs/docs-card"
+import { DocsToc } from "@/components/docs/docs-toc"
+import { DocsCallout } from "@/components/docs/docs-callout"
 import { MessageSquare, Reply, FileText } from "lucide-react"
 import Link from "next/link"
 

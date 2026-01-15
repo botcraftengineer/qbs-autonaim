@@ -1,6 +1,6 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsCard } from "@/components/docs-card"
-import { DocsToc } from "@/components/docs-toc"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsCard } from "@/components/docs/docs-card" 
+import { DocsToc } from "@/components/docs/docs-toc"
 import { FileBarChart, Target } from "lucide-react"
 import Link from "next/link"
 

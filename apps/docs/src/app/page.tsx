@@ -1,8 +1,8 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsCard } from "@/components/docs-card"
-import { DocsToc } from "@/components/docs-toc"
-import { DocsFeedback } from "@/components/docs-feedback"
-import { DocsMobileToc } from "@/components/docs-mobile-toc"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsCard } from "@/components/docs/docs-card"
+import { DocsToc } from "@/components/docs/docs-toc"
+import { DocsFeedback } from "@/components/docs/docs-feedback"
+import { DocsMobileToc } from "@/components/docs/docs-mobile-toc"
 import { Users, Bot, Plug, Zap, FileText } from "lucide-react"
 import Link from "next/link"
 

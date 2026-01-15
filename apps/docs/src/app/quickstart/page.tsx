@@ -1,9 +1,9 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsSteps } from "@/components/docs-steps"
-import { DocsCallout } from "@/components/docs-callout"
-import { DocsToc } from "@/components/docs-toc"
-import { DocsFeedback } from "@/components/docs-feedback"
-import { DocsMobileToc } from "@/components/docs-mobile-toc"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsSteps } from "@/components/docs/docs-steps"
+import { DocsCallout } from "@/components/docs/docs-callout"
+import { DocsToc } from "@/components/docs/docs-toc"
+import { DocsFeedback } from "@/components/docs/docs-feedback"
+import { DocsMobileToc } from "@/components/docs/docs-mobile-toc"
 import Link from "next/link"
 
 export default function QuickstartPage() {

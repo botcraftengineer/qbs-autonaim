@@ -1,7 +1,7 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsCallout } from "@/components/docs-callout"
-import { DocsToc } from "@/components/docs-toc"
-import { DocsCode } from "@/components/docs-code"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsCallout } from "@/components/docs/docs-callout"
+import { DocsToc } from "@/components/docs/docs-toc"
+import { DocsCode } from "@/components/docs/docs-code"
 import Link from "next/link"
 
 export default function APIVacanciesPage() {

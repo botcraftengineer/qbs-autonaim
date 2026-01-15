@@ -1,5 +1,5 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsToc } from "@/components/docs-toc"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsToc } from "@/components/docs/docs-toc"
 import Link from "next/link"
 
 const glossaryTerms = [

@@ -1,8 +1,8 @@
-import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
-import { DocsCard } from "@/components/docs-card"
-import { DocsCallout } from "@/components/docs-callout"
-import { DocsToc } from "@/components/docs-toc"
-import { DocsCode } from "@/components/docs-code"
+import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
+import { DocsCard } from "@/components/docs/docs-card"
+import { DocsCallout } from "@/components/docs/docs-callout"
+import { DocsToc } from "@/components/docs/docs-toc"
+import { DocsCode } from "@/components/docs/docs-code"
 import { Key, Users, Briefcase } from "lucide-react"
 import Link from "next/link"
 
