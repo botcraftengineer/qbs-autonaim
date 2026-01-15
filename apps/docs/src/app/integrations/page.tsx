@@ -45,7 +45,7 @@ export default function IntegrationsPage() {
           />
           <DocsCard
             title="Фриланс-платформы"
-            description="Импорт откликов с Upwork, Kwork, FL.ru, Freelance.ru, Habr Freelance."
+            description="Импорт откликов с Kwork, FL.ru, Freelance.ru, Habr Freelance."
             href="/integrations/freelance"
           />
         </div>

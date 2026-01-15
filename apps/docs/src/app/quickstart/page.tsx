@@ -127,7 +127,7 @@ export default function QuickstartPage() {
           </li>
           <li>
             <Link href="/integrations/freelance">Фриланс-платформы</Link> —
-            импорт откликов с Upwork, Kwork и др.
+            импорт откликов с Kwork и др.
           </li>
           <li>
             <Link href="/integrations/telegram">Telegram-бот</Link> — проведение

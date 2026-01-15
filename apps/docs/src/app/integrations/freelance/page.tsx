@@ -26,8 +26,8 @@ export default function FreelancePlatformsPage() {
       title: "Опубликуйте на платформе",
       content: (
         <p>
-          Опубликуйте задание на выбранной фриланс-платформе (Upwork, Kwork и
-          др.). Скопируйте ссылку на задание.
+          Опубликуйте задание на выбранной фриланс-платформе (Kwork и др.).
+          Скопируйте ссылку на задание.
         </p>
       ),
     },
@@ -76,10 +76,6 @@ export default function FreelancePlatformsPage() {
 
         <div className="my-6 grid gap-3">
           {[
-            {
-              name: "Upwork",
-              description: "Крупнейшая международная платформа фриланса",
-            },
             { name: "Kwork", description: "Популярная российская биржа услуг" },
             {
               name: "FL.ru",

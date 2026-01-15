@@ -1,19 +1,26 @@
-import type React from "react"
-import Link from "next/link"
-import { cn } from "@/lib/utils"
-import { ArrowRight, ExternalLink } from "lucide-react"
+import { ArrowRight, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import type React from "react";
+import { cn } from "@/lib/utils";
 
 interface DocsCardProps {
-  title: string
-  description: string
-  href: string
-  icon?: React.ReactNode
-  className?: string
-  external?: boolean
+  title: string;
+  description: string;
+  href: string;
+  icon?: React.ReactNode;
+  className?: string;
+  external?: boolean;
 }
 
-export function DocsCard({ title, description, href, icon, className, external }: DocsCardProps) {
-  const isExternal = external || href.startsWith("http")
+export function DocsCard({
+  title,
+  description,
+  href,
+  icon,
+  className,
+  external,
+}: DocsCardProps) {
+  const isExternal = external || href.startsWith("http");
 
   return (
     <Link
@@ -21,7 +28,7 @@ export function DocsCard({ title, description, href, icon, className, external }
       target={isExternal ? "_blank" : undefined}
       rel={isExternal ? "noopener noreferrer" : undefined}
       className={cn(
-        "group flex flex-col gap-2 rounded-lg border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-md hover:shadow-primary/5",
+        "group flex flex-col gap-2 rounded-lg border border-border bg-card p-5 no-underline transition-all hover:border-primary/50 hover:shadow-md hover:shadow-primary/5",
         className,
       )}
     >
@@ -38,7 +45,9 @@ export function DocsCard({ title, description, href, icon, className, external }
           <ArrowRight className="h-4 w-4 text-muted-foreground opacity-0 transition-all group-hover:opacity-100 group-hover:translate-x-0.5" />
         )}
       </div>
-      <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
+      <p className="text-sm text-muted-foreground leading-relaxed">
+        {description}
+      </p>
     </Link>
-  )
+  );
 }

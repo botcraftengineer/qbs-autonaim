@@ -144,7 +144,7 @@ export default function PipelinePage() {
             <strong>По оценке</strong> — показать только 4-5 звезд
           </li>
           <li>
-            <strong>По источнику</strong> — HeadHunter, Upwork, Kwork и др.
+            <strong>По источнику</strong> — HeadHunter, Kwork и др.
           </li>
           <li>
             <strong>По дате</strong> — новые за последнюю неделю

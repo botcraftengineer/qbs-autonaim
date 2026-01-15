@@ -204,7 +204,6 @@ export default function APIVacanciesPage() {
   "avgTimeToHire": 18,
   "sources": {
     "hh.ru": 78,
-    "upwork": 25,
     "kwork": 17,
     "telegram": 12
   }
