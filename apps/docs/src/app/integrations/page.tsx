@@ -42,11 +42,13 @@ export default function IntegrationsPage() {
             title="hh.ru"
             description="Автоматический парсинг вакансий и откликов с крупнейшего job-сайта России."
             href="/integrations/hh"
+            icon={<Briefcase className="h-5 w-5" />}
           />
           <DocsCard
             title="Фриланс-платформы"
             description="Импорт откликов с Kwork, FL.ru, Freelance.ru, Habr Freelance."
             href="/integrations/freelance"
+            icon={<Users className="h-5 w-5" />}
           />
         </div>
 
@@ -60,6 +62,7 @@ export default function IntegrationsPage() {
             title="Telegram"
             description="AI-интервью через Telegram-бота, автоматические диалоги с кандидатами."
             href="/integrations/telegram"
+            icon={<MessageCircle className="h-5 w-5" />}
           />
         </div>
 
@@ -70,9 +73,10 @@ export default function IntegrationsPage() {
 
         <div className="grid gap-4 sm:grid-cols-2 my-4">
           <DocsCard
-            title="tRPC API"
-            description="Типобезопасный доступ к данным через tRPC."
-            href="/api"
+            title="Webhooks"
+            description="Автоматические уведомления о событиях в вашей системе."
+            href="/integrations/webhooks"
+            icon={<Code2 className="h-5 w-5" />}
           />
         </div>
 

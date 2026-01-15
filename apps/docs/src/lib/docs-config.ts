@@ -13,7 +13,7 @@ export interface DocsConfig {
 export const docsConfig: DocsConfig = {
   sidebarNav: [
     {
-      title: "🚀 Начало работы",
+      title: "Начало работы",
       items: [
         { title: "Введение в QBS Автонайм", href: "/" },
         { title: "Быстрый старт за 10 минут", href: "/quickstart" },
@@ -22,7 +22,7 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
-      title: "👥 Работа с кандидатами",
+      title: "Работа с кандидатами",
       items: [
         { title: "Обзор раздела Кандидаты", href: "/candidates" },
         { title: "AI-скрининг резюме", href: "/candidates/screening" },
@@ -33,7 +33,7 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
-      title: "🤖 AI-ассистент",
+      title: "AI-ассистент",
       items: [
         { title: "Обзор возможностей AI", href: "/ai-assistant" },
         { title: "Чат с кандидатами", href: "/ai-assistant/chat" },
@@ -43,7 +43,7 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
-      title: "📊 Аналитика и отчёты",
+      title: "Аналитика и отчёты",
       items: [
         { title: "Обзор аналитики", href: "/analytics" },
         { title: "Отчёты по найму", href: "/analytics/reports" },
@@ -53,7 +53,7 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
-      title: "🔗 Интеграции для РФ",
+      title: "Интеграции",
       items: [
         { title: "Обзор интеграций", href: "/integrations" },
         { title: "HeadHunter (HH.ru)", href: "/integrations/hh" },
@@ -66,19 +66,7 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
-      title: "⚙️ API и разработка",
-      items: [
-        { title: "Введение в API", href: "/api" },
-        { title: "Аутентификация", href: "/api/authentication" },
-        { title: "API кандидатов", href: "/api/candidates" },
-        { title: "API вакансий", href: "/api/vacancies" },
-        { title: "API чата", href: "/api/chat" },
-        { title: "Webhooks", href: "/api/webhooks" },
-        { title: "SDK и примеры кода", href: "/api/sdk" },
-      ],
-    },
-    {
-      title: "🛠️ Настройки и безопасность",
+      title: "Настройки и безопасность",
       items: [
         { title: "Настройки аккаунта", href: "/settings/account" },
         { title: "Управление командой", href: "/settings/team" },
@@ -88,7 +76,7 @@ export const docsConfig: DocsConfig = {
       ],
     },
     {
-      title: "❓ Помощь и поддержка",
+      title: "Помощь и поддержка",
       items: [
         { title: "Часто задаваемые вопросы", href: "/help/faq" },
         { title: "Видео-инструкции", href: "/help/videos" },

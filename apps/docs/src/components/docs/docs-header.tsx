@@ -36,25 +36,13 @@ export function DocsHeader() {
               href="/"
               className={cn(
                 "relative px-3 py-2 text-sm font-medium transition-colors",
-                pathname === "/" || (pathname.startsWith("/") && !pathname.startsWith("/api"))
+                pathname === "/"
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
               Документация
-              {pathname === "/" || (pathname.startsWith("/") && !pathname.startsWith("/api")) && (
-                <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary" />
-              )}
-            </Link>
-            <Link
-              href="/api"
-              className={cn(
-                "relative px-3 py-2 text-sm font-medium transition-colors",
-                pathname.startsWith("/api") ? "text-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              API
-              {pathname.startsWith("/api") && (
+              {pathname === "/" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary" />
               )}
             </Link>

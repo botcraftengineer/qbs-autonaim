@@ -34,16 +34,10 @@ const glossaryTerms = [
     related: "/ai-assistant/auto-replies",
   },
   {
-    term: "tRPC",
+    term: "Интеграция",
     definition:
-      "Типобезопасный протокол для взаимодействия между клиентом и сервером. Используется в QBS Автонайм для всех API запросов.",
-    related: "/api",
-  },
-  {
-    term: "API-ключ",
-    definition:
-      "Секретный ключ для аутентификации при работе с tRPC API QBS Автонайм.",
-    related: "/api",
+      "Подключение внешних систем к QBS Автонайм. Поддерживаются HH.ru, SuperJob, Telegram, 1C и другие платформы.",
+    related: "/integrations",
   },
   {
     term: "Метрики найма",

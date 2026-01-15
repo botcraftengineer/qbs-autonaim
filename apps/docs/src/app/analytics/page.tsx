@@ -115,9 +115,9 @@ export default function AnalyticsPage() {
           </li>
         </ul>
 
-        <DocsCallout type="tip" title="API документация">
-          Подробное описание методов аналитики доступно в разделе{" "}
-          <Link href="/api">API Reference</Link>.
+        <DocsCallout type="tip" title="Экспорт данных">
+          Вы можете экспортировать все метрики и отчёты в CSV, Excel или JSON форматах
+          для дальнейшего анализа в BI-системах или корпоративных дашбордах.
         </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">

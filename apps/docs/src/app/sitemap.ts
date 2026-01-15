@@ -85,22 +85,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // API section
-  const apiPages = [
-    "/api",
-    "/api/authentication",
-    "/api/candidates",
-    "/api/vacancies",
-    "/api/chat",
-    "/api/webhooks",
-    "/api/sdk",
-  ].map((path) => ({
-    url: `${baseUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.6,
-  }));
-
   // Settings section
   const settingsPages = [
     "/settings/account",
@@ -143,7 +127,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...aiPages,
     ...analyticsPages,
     ...integrationsPages,
-    ...apiPages,
     ...settingsPages,
     ...helpPages,
     pricingPage,

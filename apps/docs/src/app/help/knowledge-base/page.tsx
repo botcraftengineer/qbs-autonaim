@@ -94,7 +94,7 @@ export default function KnowledgeBasePage() {
           readTime: "14 мин",
         },
         {
-          title: "Кейс Сбера: автоматизация найма на 500 вакансий",
+          title: "Кейс крупной компании: автоматизация найма на 500 вакансий",
           description: "От ручного подбора к AI-платформе",
           readTime: "18 мин",
         },

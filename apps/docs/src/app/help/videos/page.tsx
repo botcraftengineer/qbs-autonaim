@@ -100,11 +100,11 @@ export default function VideosPage() {
           thumbnail: "/videos/superjob-integration.jpg",
         },
         {
-          title: "API для разработчиков",
+          title: "Интеграция с внешними системами",
           duration: "15:30",
-          description: "Основы работы с tRPC API, аутентификация и примеры кода",
+          description: "Настройка webhooks, экспорт данных и интеграция с корпоративными системами",
           level: "Продвинутый",
-          thumbnail: "/videos/api-basics.jpg",
+          thumbnail: "/videos/integrations-advanced.jpg",
         },
         {
           title: "Интеграция с 1C и ERP",
