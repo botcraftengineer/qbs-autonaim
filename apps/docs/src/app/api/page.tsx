@@ -3,7 +3,7 @@ import { DocsCard } from "@/components/docs/docs-card"
 import { DocsCallout } from "@/components/docs/docs-callout"
 import { DocsToc } from "@/components/docs/docs-toc"
 import { DocsCode } from "@/components/docs/docs-code"
-import { Key, Users, Briefcase } from "lucide-react"
+import { Key, Users, Briefcase, MessageSquare, BarChart3 } from "lucide-react"
 import Link from "next/link"
 
 export default function APIPage() {
@@ -26,7 +26,7 @@ export default function APIPage() {
         <h1>API Reference</h1>
 
         <p className="text-lg">
-          REST API QBS Автонайм позволяет программно управлять кандидатами, вакансиями и другими ресурсами. Используйте
+          tRPC API QBS Автонайм позволяет программно управлять кандидатами, вакансиями и другими ресурсами. Используйте
           API для интеграции с вашими внутренними системами.
         </p>
 
@@ -34,38 +34,39 @@ export default function APIPage() {
 
         <ul>
           <li>
-            <strong>Протокол</strong> — HTTPS (HTTP не поддерживается)
+            <strong>Протокол</strong> — tRPC через HTTPS
           </li>
           <li>
             <strong>Формат данных</strong> — JSON
           </li>
           <li>
-            <strong>Аутентификация</strong> — Bearer Token
+            <strong>Аутентификация</strong> — Сессии пользователя
           </li>
           <li>
-            <strong>Лимиты</strong> — 1000 запросов в минуту
+            <strong>Типизация</strong> — Автоматическая TypeScript типизация
           </li>
         </ul>
 
         <h2 id="base-url">Базовый URL</h2>
 
-        <DocsCode code="https://api.qbs-autonaim.ru/v1" language="text" title="Base URL" />
+        <DocsCode code="http://localhost:3000/api/trpc" language="text" title="tRPC Endpoint" />
+
+        <p className="text-sm text-muted-foreground mt-2">
+          Для production используйте ваш домен: <code>https://your-domain.com/api/trpc</code>
+        </p>
 
         <h2 id="authentication">Аутентификация</h2>
 
-        <p>Все запросы к API должны содержать заголовок Authorization с вашим API-ключом:</p>
+        <p>tRPC API использует сессионную аутентификацию. Для доступа необходимо:</p>
 
-        <DocsCode
-          code={`curl -X GET "https://api.qbs-autonaim.ru/v1/candidates" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json"`}
-          language="bash"
-          title="Пример запроса"
-        />
+        <ol className="my-4 ml-6 list-decimal space-y-2">
+          <li>Войти в систему через веб-интерфейс</li>
+          <li>Использовать tRPC клиент с cookies сессии</li>
+          <li>Указывать workspaceId в каждом запросе</li>
+        </ol>
 
-        <DocsCallout type="warning" title="Безопасность">
-          Никогда не публикуйте API-ключ в клиентском коде или публичных репозиториях. Храните его в переменных
-          окружения на сервере.
+        <DocsCallout type="info" title="Рекомендация">
+          Используйте официальный tRPC клиент для автоматической обработки сессий и полной типизации.
         </DocsCallout>
 
         <h2 id="endpoints">Основные эндпоинты</h2>
@@ -73,21 +74,33 @@ export default function APIPage() {
         <div className="grid gap-4 sm:grid-cols-1 my-6">
           <DocsCard
             title="Аутентификация"
-            description="Получение и управление API-ключами, проверка токенов."
+            description="Настройка сессий и управление доступом к workspace."
             href="/api/authentication"
             icon={<Key className="h-5 w-5" />}
           />
           <DocsCard
             title="Кандидаты"
-            description="CRUD-операции с кандидатами, поиск, фильтрация, массовые действия."
+            description="Управление кандидатами, этапами воронки, сообщениями."
             href="/api/candidates"
             icon={<Users className="h-5 w-5" />}
           />
           <DocsCard
             title="Вакансии"
-            description="Управление вакансиями, публикация, архивирование."
+            description="Создание вакансий, аналитика, управление откликами."
             href="/api/vacancies"
             icon={<Briefcase className="h-5 w-5" />}
+          />
+          <DocsCard
+            title="Чат"
+            description="AI-ассистент, сессии чата, общение с кандидатами."
+            href="/api/chat"
+            icon={<MessageSquare className="h-5 w-5" />}
+          />
+          <DocsCard
+            title="Аналитика"
+            description="Дашборды, статистика, экспорт данных, события."
+            href="/api/analytics"
+            icon={<BarChart3 className="h-5 w-5" />}
           />
         </div>
 

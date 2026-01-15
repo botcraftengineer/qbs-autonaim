@@ -7,39 +7,65 @@ import Link from "next/link"
 
 export default function APIAuthenticationPage() {
   const tocItems = [
-    { id: "api-keys", title: "API-ключи", level: 2 },
-    { id: "creating-key", title: "Создание ключа", level: 2 },
-    { id: "using-key", title: "Использование", level: 2 },
-    { id: "scopes", title: "Области доступа", level: 2 },
+    { id: "authentication", title: "Аутентификация", level: 2 },
+    { id: "using-session", title: "Использование сессии", level: 2 },
+    { id: "workspace-access", title: "Доступ к workspace", level: 2 },
   ]
 
   const codeExamples = [
-    {
-      label: "cURL",
-      value: "curl",
-      content: (
-        <DocsCode
-          code={`curl -X GET "https://api.qbs-autonaim.ru/v1/candidates" \\
-  -H "Authorization: Bearer qbs_live_abc123xyz789..." \\
-  -H "Content-Type: application/json"`}
-          language="bash"
-        />
-      ),
-    },
     {
       label: "JavaScript",
       value: "javascript",
       content: (
         <DocsCode
-          code={`const response = await fetch('https://api.qbs-autonaim.ru/v1/candidates', {
-  headers: {
-    'Authorization': 'Bearer ' + process.env.QBS_API_KEY,
-    'Content-Type': 'application/json'
-  }
+          code={`import { createTRPCProxyClient, httpBatchLink } from '@trpc/client';
+import type { AppRouter } from '@qbs-autonaim/api';
+
+const trpc = createTRPCProxyClient<AppRouter>({
+  links: [
+    httpBatchLink({
+      url: 'http://localhost:3000/api/trpc',
+      headers: () => ({
+        // Сессия передается автоматически через cookies
+        'Content-Type': 'application/json',
+      }),
+    }),
+  ],
 });
 
-const candidates = await response.json();`}
+// Получение списка кандидатов
+const candidates = await trpc.candidates.list({
+  workspaceId: 'ws_123',
+  limit: 20,
+});`}
           language="javascript"
+        />
+      ),
+    },
+    {
+      label: "React",
+      value: "react",
+      content: (
+        <DocsCode
+          code={`import { trpc } from '@/utils/trpc';
+
+function CandidatesList() {
+  const { data, isLoading } = trpc.candidates.list.useQuery({
+    workspaceId: 'ws_123',
+    limit: 20,
+  });
+
+  if (isLoading) return <div>Загрузка...</div>;
+
+  return (
+    <div>
+      {data?.items.map(candidate => (
+        <div key={candidate.id}>{candidate.name}</div>
+      ))}
+    </div>
+  );
+}`}
+          language="tsx"
         />
       ),
     },
@@ -48,14 +74,19 @@ const candidates = await response.json();`}
       value: "python",
       content: (
         <DocsCode
-          code={`import requests
-import os
+          code={`# Для Python используйте tRPC-совместимый клиент
+# или делайте HTTP запросы к tRPC эндпоинтам
 
-response = requests.get(
-    'https://api.qbs-autonaim.ru/v1/candidates',
-    headers={
-        'Authorization': f'Bearer {os.environ["QBS_API_KEY"]}',
-        'Content-Type': 'application/json'
+import requests
+
+session = requests.Session()
+# Сессия будет передаваться через cookies
+
+response = session.post(
+    'http://localhost:3000/api/trpc/candidates.list',
+    json={
+        "workspaceId": "ws_123",
+        "limit": 20
     }
 )
 
@@ -78,80 +109,63 @@ candidates = response.json()`}
         <h1>Аутентификация API</h1>
 
         <p className="text-lg">
-          Для доступа к API QBS Автонайм необходимо использовать API-ключ. В этом разделе описано, как создать ключ и
-          использовать его для аутентификации запросов.
+          Для доступа к tRPC API QBS Автонайм необходимо использовать сессию пользователя. В этом разделе описано, как настроить аутентификацию запросов.
         </p>
 
-        <h2 id="api-keys">API-ключи</h2>
+        <h2 id="authentication">Аутентификация</h2>
 
         <p>
-          API-ключ — это секретный токен, который идентифицирует ваше приложение при обращении к API. Каждый ключ имеет
-          определённые права доступа и может быть отозван в любой момент.
+          QBS Автонайм использует tRPC с сессионной аутентификацией. Для доступа к API необходимо:
         </p>
 
-        <DocsCallout type="warning" title="Важно">
-          API-ключ предоставляет полный доступ к данным вашего аккаунта. Обращайтесь с ним как с паролем — не
-          передавайте третьим лицам и не публикуйте в открытом доступе.
-        </DocsCallout>
-
-        <h2 id="creating-key">Создание API-ключа</h2>
-
         <ol className="my-4 ml-6 list-decimal space-y-2">
-          <li>{"Войдите в личный кабинет QBS Автонайм"}</li>
-          <li>{"Перейдите в «Настройки» → «API»"}</li>
-          <li>{"Нажмите «Создать API-ключ»"}</li>
-          <li>Введите название ключа (например, «Интеграция с CRM»)</li>
-          <li>Выберите области доступа (scopes)</li>
-          <li>{"Нажмите «Создать»"}</li>
-          <li>Скопируйте ключ — он будет показан только один раз</li>
+          <li><strong>Войти в систему</strong> — через email/пароль или OAuth</li>
+          <li><strong>Получить сессию</strong> — сессия создается автоматически при входе</li>
+          <li><strong>Использовать сессию</strong> — передавать в каждом tRPC запросе</li>
         </ol>
 
-        <h2 id="using-key">Использование API-ключа</h2>
+        <DocsCallout type="warning" title="Важно">
+          Сессия пользователя предоставляет доступ ко всем workspace, где пользователь имеет права. Убедитесь, что вы проверяете права доступа для каждого запроса.
+        </DocsCallout>
 
-        <p>Добавляйте API-ключ в заголовок Authorization каждого запроса:</p>
+        <h2 id="using-session">Использование сессии</h2>
 
-        <DocsCode
-          code={`Authorization: Bearer qbs_live_abc123xyz789...`}
-          language="text"
-          title="Заголовок авторизации"
-        />
+        <p>При работе с tRPC сессия передается автоматически через контекст:</p>
 
-        <p>Примеры запросов на разных языках:</p>
+        <DocsTabs tabs={codeExamples} defaultValue="javascript" />
 
-        <DocsTabs tabs={codeExamples} defaultValue="curl" />
+        <DocsCallout type="info" title="tRPC Client">
+          Рекомендуется использовать официальный tRPC клиент для автоматической обработки сессий и типизации.
+        </DocsCallout>
 
-        <h2 id="scopes">Области доступа (Scopes)</h2>
+        <h2 id="workspace-access">Доступ к workspace</h2>
 
-        <p>При создании API-ключа вы можете ограничить его права:</p>
+        <p>Каждый tRPC запрос требует указания workspaceId и проверяет права доступа:</p>
 
         <div className="my-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-foreground">Scope</th>
-                <th className="px-4 py-3 text-left font-medium text-foreground">Описание</th>
+                <th className="px-4 py-3 text-left font-medium text-foreground">Роль</th>
+                <th className="px-4 py-3 text-left font-medium text-foreground">Права доступа</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               <tr className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-mono text-sm text-foreground">candidates:read</td>
-                <td className="px-4 py-3 text-muted-foreground">Чтение данных кандидатов</td>
+                <td className="px-4 py-3 font-mono text-sm text-foreground">Owner</td>
+                <td className="px-4 py-3 text-muted-foreground">Полный доступ ко всем функциям</td>
               </tr>
               <tr className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-mono text-sm text-foreground">candidates:write</td>
-                <td className="px-4 py-3 text-muted-foreground">Создание и изменение кандидатов</td>
+                <td className="px-4 py-3 font-mono text-sm text-foreground">Admin</td>
+                <td className="px-4 py-3 text-muted-foreground">Управление вакансиями, кандидатами, настройками</td>
               </tr>
               <tr className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-mono text-sm text-foreground">vacancies:read</td>
-                <td className="px-4 py-3 text-muted-foreground">Чтение данных вакансий</td>
+                <td className="px-4 py-3 font-mono text-sm text-foreground">Recruiter</td>
+                <td className="px-4 py-3 text-muted-foreground">Работа с кандидатами и вакансиями</td>
               </tr>
               <tr className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-mono text-sm text-foreground">vacancies:write</td>
-                <td className="px-4 py-3 text-muted-foreground">Создание и изменение вакансий</td>
-              </tr>
-              <tr className="hover:bg-muted/30 transition-colors">
-                <td className="px-4 py-3 font-mono text-sm text-foreground">analytics:read</td>
-                <td className="px-4 py-3 text-muted-foreground">Доступ к аналитике</td>
+                <td className="px-4 py-3 font-mono text-sm text-foreground">Viewer</td>
+                <td className="px-4 py-3 text-muted-foreground">Только чтение данных</td>
               </tr>
             </tbody>
           </table>

@@ -10,8 +10,8 @@ export default function APICandidatesPage() {
   const tocItems = [
     { id: "list-candidates", title: "Список кандидатов", level: 2 },
     { id: "get-candidate", title: "Получение кандидата", level: 2 },
-    { id: "create-candidate", title: "Создание кандидата", level: 2 },
     { id: "update-candidate", title: "Обновление кандидата", level: 2 },
+    { id: "additional-operations", title: "Дополнительные операции", level: 2 },
   ]
 
   return (
@@ -26,7 +26,7 @@ export default function APICandidatesPage() {
         <h1>API: Кандидаты</h1>
 
         <p className="text-lg">
-          Эндпоинты для работы с кандидатами: получение списка, создание, обновление и удаление.
+          Эндпоинты tRPC для работы с кандидатами: получение списка, создание, обновление и управление этапами.
         </p>
 
         <DocsMobileToc items={tocItems} />
@@ -34,178 +34,291 @@ export default function APICandidatesPage() {
         <h2 id="list-candidates">Список кандидатов</h2>
 
         <DocsApiEndpoint
-          method="GET"
-          path="/v1/candidates"
-          description="Возвращает список кандидатов с пагинацией и фильтрацией."
+          method="tRPC Query"
+          path="candidates.list"
+          description="Возвращает список кандидатов с пагинацией и фильтрацией по workspace."
           params={[
             {
-              name: "vacancy_id",
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "vacancyId",
               type: "string",
               description: "Фильтр по вакансии",
             },
             {
-              name: "stage",
-              type: "string",
-              description: "Фильтр по этапу воронки",
-            },
-            {
               name: "limit",
               type: "number",
-              description: "Количество записей (макс. 100)",
+              description: "Количество записей (макс. 200, по умолчанию 100)",
             },
             {
-              name: "offset",
-              type: "number",
-              description: "Смещение для пагинации",
+              name: "cursor",
+              type: "string",
+              description: "Курсор для пагинации",
+            },
+            {
+              name: "search",
+              type: "string",
+              description: "Поиск по имени кандидата или названию вакансии",
+            },
+            {
+              name: "stages",
+              type: "string[]",
+              description: "Фильтр по этапам: SCREENING_DONE, INTERVIEW, OFFER_SENT, SECURITY_PASSED, CONTRACT_SENT, ONBOARDING, REJECTED",
             },
           ]}
           response={`{
-  "data": [
+  "items": [
     {
-      "id": "cand_abc123",
+      "id": "0190abcd123456789",
       "name": "Иван Петров",
+      "position": "Frontend-разработчик",
+      "avatarFileId": "file_xyz789",
+      "initials": "ИП",
+      "experience": "5 лет",
+      "location": "Не указано",
+      "matchScore": 85,
+      "stage": "INTERVIEW",
+      "status": "INTERVIEW",
+      "hrSelectionStatus": null,
+      "vacancyId": "vac_123",
+      "vacancyName": "Frontend-разработчик",
+      "salaryExpectation": "Не указано",
       "email": "ivan@example.com",
       "phone": "+7 999 123-45-67",
-      "vacancy_id": "vac_123",
-      "stage": "hr_interview",
-      "score": 85,
-      "created_at": "2025-01-10T10:00:00Z"
+      "telegram": "@ivan_petrov",
+      "messageCount": 5,
+      "createdAt": "2025-01-10T10:00:00.000Z",
+      "updatedAt": "2025-01-14T15:30:00.000Z"
     }
   ],
-  "total": 47,
-  "limit": 20,
-  "offset": 0
+  "nextCursor": "0190abcd123456790",
+  "total": 47
 }`}
         />
 
         <h2 id="get-candidate">Получение кандидата</h2>
 
         <DocsApiEndpoint
-          method="GET"
-          path="/v1/candidates/{id}"
-          description="Возвращает полные данные одного кандидата, включая историю взаимодействий и результаты AI-скрининга."
+          method="tRPC Query"
+          path="candidates.getById"
+          description="Возвращает полные данные одного кандидата по ID."
           params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
             {
               name: "id",
               type: "string",
               required: true,
-              description: "Уникальный идентификатор кандидата",
+              description: "Уникальный идентификатор кандидата (response ID)",
             },
           ]}
-          response={`{
-  "id": "cand_abc123",
-  "name": "Иван Петров",
+          response={`// Возвращает полную информацию о кандидате включая:
+// - Данные резюме и контакты
+// - Результаты скрининга
+// - Историю сообщений
+// - Активности
+// - Комментарии
+{
+  "id": "0190abcd123456789",
+  "candidateName": "Иван Петров",
   "email": "ivan@example.com",
   "phone": "+7 999 123-45-67",
-  "vacancy_id": "vac_123",
-  "stage": "hr_interview",
-  "score": 85,
-  "skills": ["Python", "Django", "PostgreSQL"],
-  "experience_years": 5,
-  "education": "Высшее техническое",
-  "screening_results": {
-    "passed": true,
-    "score": 85,
-    "criteria_match": {
+  "experience": "5 лет frontend-разработки",
+  "skills": ["React", "TypeScript", "Node.js"],
+  "vacancyId": "vac_123",
+  "stage": "INTERVIEW",
+  "screening": {
+    "detailedScore": 85,
+    "criteriaMatch": {
       "technical_skills": 90,
       "experience": 80,
       "education": 85
     }
   },
-  "created_at": "2025-01-10T10:00:00Z",
-  "updated_at": "2025-01-14T15:30:00Z"
+  "createdAt": "2025-01-10T10:00:00.000Z",
+  "updatedAt": "2025-01-14T15:30:00.000Z"
 }`}
         />
-
-        <h2 id="create-candidate">Создание кандидата</h2>
-
-        <DocsApiEndpoint
-          method="POST"
-          path="/v1/candidates"
-          description="Создаёт нового кандидата и автоматически запускает AI-скрининг по критериям указанной вакансии."
-          params={[
-            {
-              name: "name",
-              type: "string",
-              required: true,
-              description: "Полное имя кандидата",
-            },
-            {
-              name: "email",
-              type: "string",
-              required: true,
-              description: "Email для связи",
-            },
-            {
-              name: "phone",
-              type: "string",
-              description: "Номер телефона",
-            },
-            {
-              name: "vacancy_id",
-              type: "string",
-              required: true,
-              description: "ID вакансии для скрининга",
-            },
-            {
-              name: "resume_url",
-              type: "string",
-              description: "Ссылка на резюме (PDF, DOC, DOCX)",
-            },
-          ]}
-          response={`{
-  "id": "cand_xyz789",
-  "name": "Мария Сидорова",
-  "email": "maria@example.com",
-  "phone": "+7 999 987-65-43",
-  "vacancy_id": "vac_123",
-  "stage": "new",
-  "score": null,
-  "screening_status": "processing",
-  "created_at": "2025-01-14T16:00:00Z"
-}`}
-        />
-
-        <DocsCallout type="info" title="Асинхронная обработка">
-          AI-скрининг выполняется асинхронно. Результаты появятся через 2-5 секунд. Используйте webhook
-          candidate.screening_completed для получения уведомления.
-        </DocsCallout>
 
         <h2 id="update-candidate">Обновление кандидата</h2>
 
         <DocsApiEndpoint
-          method="PATCH"
-          path="/v1/candidates/{id}"
-          description="Обновляет данные кандидата. Можно передавать только изменяемые поля."
+          method="tRPC Mutation"
+          path="candidates.updateStage"
+          description="Обновляет этап кандидата в воронке найма."
           params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
             {
               name: "id",
               type: "string",
               required: true,
-              description: "Уникальный идентификатор кандидата",
+              description: "ID кандидата",
             },
             {
               name: "stage",
               type: "string",
-              description: "Новый этап воронки найма",
-            },
-            {
-              name: "notes",
-              type: "string",
-              description: "Заметки рекрутера",
+              required: true,
+              description: "Новый этап: SCREENING_DONE, INTERVIEW, OFFER_SENT, SECURITY_PASSED, CONTRACT_SENT, ONBOARDING, REJECTED",
             },
           ]}
           response={`{
-  "id": "cand_abc123",
-  "name": "Иван Петров",
-  "stage": "technical_interview",
-  "updated_at": "2025-01-14T16:30:00Z"
+  "success": true,
+  "candidate": {
+    "id": "0190abcd123456789",
+    "stage": "TECHNICAL_INTERVIEW",
+    "updatedAt": "2025-01-14T16:30:00.000Z"
+  }
 }`}
         />
 
-        <DocsCallout type="info" title="Webhook">
-          При изменении этапа кандидата автоматически отправляется webhook candidate.stage_changed на настроенный URL.
-        </DocsCallout>
+        <DocsApiEndpoint
+          method="tRPC Mutation"
+          path="candidates.updateSalaryExpectations"
+          description="Обновляет зарплатные ожидания кандидата."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID кандидата",
+            },
+            {
+              name: "salaryExpectation",
+              type: "string",
+              required: true,
+              description: "Зарплатные ожидания",
+            },
+          ]}
+          response={`{
+  "success": true,
+  "candidate": {
+    "id": "0190abcd123456789",
+    "salaryExpectation": "150 000 - 200 000 ₽",
+    "updatedAt": "2025-01-14T16:30:00.000Z"
+  }
+}`}
+        />
+
+        <h2 id="additional-operations">Дополнительные операции</h2>
+
+        <DocsApiEndpoint
+          method="tRPC Mutation"
+          path="candidates.sendGreeting"
+          description="Отправляет приветственное сообщение кандидату."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID кандидата",
+            },
+          ]}
+        />
+
+        <DocsApiEndpoint
+          method="tRPC Mutation"
+          path="candidates.sendOffer"
+          description="Отправляет оффер кандидату."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID кандидата",
+            },
+          ]}
+        />
+
+        <DocsApiEndpoint
+          method="tRPC Mutation"
+          path="candidates.rejectCandidate"
+          description="Отклоняет кандидата."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID кандидата",
+            },
+          ]}
+        />
+
+        <DocsApiEndpoint
+          method="tRPC Query"
+          path="candidates.listActivities"
+          description="Возвращает историю активностей кандидата."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID кандидата",
+            },
+          ]}
+        />
+
+        <DocsApiEndpoint
+          method="tRPC Query"
+          path="candidates.listMessages"
+          description="Возвращает сообщения чата с кандидатом."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID кандидата",
+            },
+          ]}
+        />
 
         <div className="my-8">
           <DocsFeedback />

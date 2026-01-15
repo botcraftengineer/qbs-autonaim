@@ -2,6 +2,7 @@ import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
 import { DocsCallout } from "@/components/docs/docs-callout"
 import { DocsToc } from "@/components/docs/docs-toc"
 import { DocsCode } from "@/components/docs/docs-code"
+import { DocsApiEndpoint } from "@/components/docs/docs-api-endpoint"
 import Link from "next/link"
 
 export default function APIVacanciesPage() {
@@ -24,111 +25,180 @@ export default function APIVacanciesPage() {
         <h1>API: Вакансии</h1>
 
         <p className="text-lg">
-          Эндпоинты для управления вакансиями: создание, обновление, публикация и получение статистики.
+          Эндпоинты tRPC для управления вакансиями: создание, обновление, получение статистики и управление откликами.
         </p>
 
         <h2 id="list-vacancies">Список вакансий</h2>
 
-        <div className="my-4 flex items-center gap-2">
-          <span className="rounded bg-green-500/10 px-2 py-1 text-xs font-semibold text-green-600">GET</span>
-          <code className="text-sm">/v1/vacancies</code>
-        </div>
-
-        <p>Возвращает список вакансий с пагинацией.</p>
-
-        <DocsCode
-          title="Пример запроса"
-          language="bash"
-          code={`curl -X GET "https://api.qbs-autonaim.ru/v1/vacancies?status=active" \\
-  -H "Authorization: Bearer YOUR_API_KEY"`}
-        />
-
-        <DocsCode
-          title="Пример ответа"
-          language="json"
-          code={`{
-  "data": [
-    {
-      "id": "vac_xyz789",
-      "title": "Frontend-разработчик",
-      "department": "Разработка",
-      "location": "Москва",
-      "status": "active",
-      "candidates_count": 47,
-      "created_at": "2025-01-05T09:00:00Z"
-    }
-  ],
-  "total": 12,
-  "limit": 20,
-  "offset": 0
+        <DocsApiEndpoint
+          method="tRPC Query"
+          path="vacancy.list"
+          description="Возвращает список вакансий с количеством реальных откликов."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+          ]}
+          response={`{
+  "id": "0190abcd123456789",
+  "workspaceId": "ws_123",
+  "title": "Frontend-разработчик",
+  "url": "https://hh.ru/vacancy/123456",
+  "views": 1250,
+  "responses": 89,
+  "newResponses": 12,
+  "resumesInProgress": 5,
+  "suitableResumes": 23,
+  "region": "Москва",
+  "description": "Ищем опытного Frontend-разработчика...",
+  "requirements": ["React от 3 лет", "TypeScript", "English B2+"],
+  "source": "hh.ru",
+  "externalId": "123456",
+  "customBotInstructions": "Обращайся к кандидатам по имени",
+  "customScreeningPrompt": "Обрати внимание на опыт с React",
+  "customInterviewQuestions": ["Расскажи о сложном проекте"],
+  "customOrganizationalQuestions": ["Почему выбрал нашу компанию?"],
+  "isActive": true,
+  "realResponsesCount": 89,
+  "createdAt": "2025-01-05T09:00:00.000Z",
+  "updatedAt": "2025-01-14T15:30:00.000Z"
 }`}
         />
 
         <h2 id="get-vacancy">Получение вакансии</h2>
 
-        <div className="my-4 flex items-center gap-2">
-          <span className="rounded bg-green-500/10 px-2 py-1 text-xs font-semibold text-green-600">GET</span>
-          <code className="text-sm">{"/v1/vacancies/{id}"}</code>
-        </div>
-
-        <p>Возвращает полные данные вакансии, включая описание и критерии скрининга.</p>
+        <DocsApiEndpoint
+          method="tRPC Query"
+          path="vacancy.get"
+          description="Возвращает полные данные вакансии по ID."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description: "ID вакансии",
+            },
+          ]}
+          response={`{
+  "id": "0190abcd123456789",
+  "title": "Frontend-разработчик",
+  "description": "Полное описание вакансии...",
+  "requirements": ["React от 3 лет", "TypeScript", "English B2+"],
+  "region": "Москва",
+  "salary": {
+    "from": 150000,
+    "to": 250000,
+    "currency": "RUB"
+  },
+  "customBotInstructions": "Обращайся к кандидатам по имени",
+  "customScreeningPrompt": "Обрати внимание на опыт с React",
+  "isActive": true,
+  "createdAt": "2025-01-05T09:00:00.000Z",
+  "updatedAt": "2025-01-14T15:30:00.000Z"
+}`}
+        />
 
         <h2 id="create-vacancy">Создание вакансии</h2>
 
-        <div className="my-4 flex items-center gap-2">
-          <span className="rounded bg-blue-500/10 px-2 py-1 text-xs font-semibold text-blue-600">POST</span>
-          <code className="text-sm">/v1/vacancies</code>
-        </div>
-
-        <DocsCode
-          title="Пример запроса"
-          language="bash"
-          code={`curl -X POST "https://api.qbs-autonaim.ru/v1/vacancies" \\
-  -H "Authorization: Bearer YOUR_API_KEY" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "title": "Backend-разработчик",
-    "department": "Разработка",
-    "location": "Москва",
-    "description": "Ищем опытного backend-разработчика...",
-    "requirements": [
-      "Python от 3 лет",
-      "Опыт с PostgreSQL",
-      "Знание Docker"
-    ],
-    "salary_from": 200000,
-    "salary_to": 350000
-  }'`}
+        <DocsApiEndpoint
+          method="tRPC Mutation"
+          path="vacancy.create"
+          description="Создает новую вакансию в workspace."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "title",
+              type: "string",
+              required: true,
+              description: "Название вакансии",
+            },
+            {
+              name: "description",
+              type: "string",
+              required: true,
+              description: "Описание вакансии",
+            },
+            {
+              name: "requirements",
+              type: "string[]",
+              description: "Требования к кандидату",
+            },
+            {
+              name: "region",
+              type: "string",
+              description: "Регион или город",
+            },
+            {
+              name: "customBotInstructions",
+              type: "string",
+              description: "Инструкции для AI-ассистента",
+            },
+          ]}
+          response={`{
+  "id": "0190abcd123456790",
+  "title": "Backend-разработчик",
+  "workspaceId": "ws_123",
+  "isActive": true,
+  "createdAt": "2025-01-14T16:00:00.000Z",
+  "updatedAt": "2025-01-14T16:00:00.000Z"
+}`}
         />
 
         <h2 id="vacancy-statistics">Статистика вакансии</h2>
 
-        <div className="my-4 flex items-center gap-2">
-          <span className="rounded bg-green-500/10 px-2 py-1 text-xs font-semibold text-green-600">GET</span>
-          <code className="text-sm">{"/v1/vacancies/{id}/statistics"}</code>
-        </div>
-
-        <p>Возвращает статистику по вакансии: воронку, конверсию, источники кандидатов.</p>
-
-        <DocsCode
-          title="Пример ответа"
-          language="json"
-          code={`{
-  "vacancy_id": "vac_xyz789",
+        <DocsApiEndpoint
+          method="tRPC Query"
+          path="vacancy.analytics"
+          description="Возвращает аналитику по вакансии: воронку, конверсию, источники."
+          params={[
+            {
+              name: "workspaceId",
+              type: "string",
+              required: true,
+              description: "ID workspace",
+            },
+            {
+              name: "vacancyId",
+              type: "string",
+              required: true,
+              description: "ID вакансии",
+            },
+            {
+              name: "period",
+              type: "object",
+              description: "Период для анализа {from, to}",
+            },
+          ]}
+          response={`{
+  "vacancyId": "0190abcd123456789",
   "period": {
     "from": "2025-01-01",
     "to": "2025-01-14"
   },
   "funnel": {
     "new": 120,
-    "screening": 95,
-    "hr_interview": 32,
+    "screening_done": 95,
+    "interview": 32,
     "technical_interview": 15,
-    "offer": 3,
-    "hired": 1
+    "offer_sent": 3,
+    "onboarding": 1
   },
-  "conversion_rate": 0.83,
-  "avg_time_to_hire": 18,
+  "conversionRate": 0.83,
+  "avgTimeToHire": 18,
   "sources": {
     "hh.ru": 78,
     "superjob": 25,

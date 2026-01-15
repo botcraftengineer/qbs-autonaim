@@ -3,7 +3,7 @@ import { DocsCode } from "./docs-code"
 import { cn } from "@/lib/utils"
 
 interface ApiEndpointProps {
-  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
+  method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "tRPC Query" | "tRPC Mutation"
   path: string
   description?: string
   params?: Array<{
@@ -22,6 +22,8 @@ const methodColors = {
   PUT: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   DELETE: "bg-red-500/10 text-red-500 border-red-500/20",
   PATCH: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  "tRPC Query": "bg-cyan-500/10 text-cyan-500 border-cyan-500/20",
+  "tRPC Mutation": "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
 }
 
 export function DocsApiEndpoint({
