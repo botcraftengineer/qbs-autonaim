@@ -151,7 +151,7 @@
 }
 
 .docs-content a {
-  @apply text-primary font-medium underline underline-offset-4 hover:text-primary/80 transition-colors;
+  @apply text-primary font-medium underline decoration-1 underline-offset-4 hover:text-primary/80 hover:decoration-[1.5px] transition-all;
 }
 
 .docs-content strong {
