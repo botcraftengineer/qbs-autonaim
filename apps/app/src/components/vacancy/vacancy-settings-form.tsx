@@ -20,10 +20,7 @@ import {
   Separator,
   Textarea,
 } from "@qbs-autonaim/ui";
-import {
-  type UpdateVacancySettingsInput,
-  updateVacancySettingsSchema,
-} from "@qbs-autonaim/validators";
+import { updateVacancySettingsSchema } from "@qbs-autonaim/validators";
 import {
   ExternalLink,
   Loader2,
@@ -36,6 +33,9 @@ import {
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import type { z } from "zod";
+
+type UpdateVacancySettingsInput = z.infer<typeof updateVacancySettingsSchema>;
 
 interface VacancySettingsFormProps {
   vacancyTitle?: string;

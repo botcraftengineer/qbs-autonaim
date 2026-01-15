@@ -1,5 +1,3 @@
-"use client";
-
 import { InterviewScenariosManagement } from "~/components/interview-scenarios/interview-scenarios-management";
 
 interface PageProps {
