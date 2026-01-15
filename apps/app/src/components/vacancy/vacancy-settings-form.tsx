@@ -45,7 +45,16 @@ interface VacancySettingsFormProps {
     customScreeningPrompt?: string | null;
     customInterviewQuestions?: string | null;
     customOrganizationalQuestions?: string | null;
-    source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK" | null;
+    source?:
+      | "HH"
+      | "KWORK"
+      | "FL_RU"
+      | "FREELANCE_RU"
+      | "AVITO"
+      | "SUPERJOB"
+      | "HABR"
+      | "WEB_LINK"
+      | null;
     externalId?: string | null;
     url?: string | null;
   };
@@ -349,7 +358,9 @@ export function VacancySettingsForm({
                             <SelectItem value="HH">HeadHunter</SelectItem>
                             <SelectItem value="KWORK">Kwork</SelectItem>
                             <SelectItem value="FL_RU">FL.ru</SelectItem>
-                            <SelectItem value="FREELANCE_RU">Freelance.ru</SelectItem>
+                            <SelectItem value="FREELANCE_RU">
+                              Freelance.ru
+                            </SelectItem>
                             <SelectItem value="AVITO">Avito</SelectItem>
                             <SelectItem value="SUPERJOB">SuperJob</SelectItem>
                             <SelectItem value="HABR">Хабр Карьера</SelectItem>
@@ -416,9 +427,13 @@ export function VacancySettingsForm({
 
                 {/* Индикатор статуса привязки */}
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-muted/50">
-                  <div className={`w-2 h-2 rounded-full ${form.watch("url")?.trim() ? "bg-green-500" : "bg-gray-400"}`}></div>
+                  <div
+                    className={`w-2 h-2 rounded-full ${(form.watch("url") as string | null | undefined)?.trim() ? "bg-green-500" : "bg-gray-400"}`}
+                  ></div>
                   <span className="text-sm text-muted-foreground">
-                    {form.watch("url")?.trim() ? "Привязана к внешней платформе" : "Не привязана к внешней платформе"}
+                    {(form.watch("url") as string | null | undefined)?.trim()
+                      ? "Привязана к внешней платформе"
+                      : "Не привязана к внешней платформе"}
                   </span>
                 </div>
               </div>

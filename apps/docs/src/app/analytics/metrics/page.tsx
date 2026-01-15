@@ -149,10 +149,10 @@ export default function MetricsPage() {
             Отчёты
           </Link>
           <Link
-            href="/integrations"
+            href="/analytics/roi"
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
-            Интеграции
+            ROI найма
             <span className="group-hover:translate-x-0.5 transition-transform">→</span>
           </Link>
         </div>

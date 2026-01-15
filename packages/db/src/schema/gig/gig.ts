@@ -21,6 +21,46 @@ import {
 import { workspace } from "../workspace/workspace";
 
 /**
+ * Таблица сценариев интервью
+ */
+export const interviewScenario = pgTable(
+  "interview_scenarios",
+  {
+    id: uuid("id").primaryKey().default(sql`uuid_generate_v7()`),
+
+    // Workspace к которому принадлежит сценарий
+    workspaceId: text("workspace_id")
+      .notNull()
+      .references(() => workspace.id, { onDelete: "cascade" }),
+
+    name: varchar("name", { length: 200 }).notNull(),
+    description: text("description"),
+
+    // Настройки сценария
+    customBotInstructions: text("custom_bot_instructions"),
+    customScreeningPrompt: text("custom_screening_prompt"),
+    customInterviewQuestions: text("custom_interview_questions"),
+    customOrganizationalQuestions: text("custom_organizational_questions"),
+
+    // Метаданные
+    isActive: boolean("is_active").default(true),
+    createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true, mode: "date" })
+      .defaultNow()
+      .$onUpdate(() => new Date())
+      .notNull(),
+  },
+  (table) => ({
+    workspaceIdx: index("interview_scenario_workspace_idx").on(table.workspaceId),
+    activeIdx: index("interview_scenario_active_idx")
+      .on(table.workspaceId, table.isActive)
+      .where(sql`${table.isActive} = true`),
+  }),
+);
+
+/**
  * Тип разового задания
  */
 export const gigTypeEnum = pgEnum("gig_type", [
@@ -104,6 +144,11 @@ export const gig = pgTable(
       onDelete: "set null",
     }),
 
+    // Ссылка на сценарий интервью
+    interviewScenarioId: uuid("interview_scenario_id").references(() => interviewScenario.id, {
+      onDelete: "set null",
+    }),
+
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
       .defaultNow()
@@ -179,7 +224,39 @@ export const UpdateGigSettingsSchema = z.object({
     .union([z.uuid(), z.literal(""), z.null(), z.undefined()])
     .transform((val) => (val === "" || val === undefined ? null : val))
     .nullable(),
+  interviewScenarioId: z
+    .union([z.uuid(), z.literal(""), z.null(), z.undefined()])
+    .transform((val) => (val === "" || val === undefined ? null : val))
+    .nullable(),
 });
+
+export const CreateInterviewScenarioSchema = createInsertSchema(interviewScenario, {
+  name: z.string().min(1).max(200),
+  description: z.string().optional(),
+  customBotInstructions: z.string().max(5000).optional(),
+  customScreeningPrompt: z.string().max(5000).optional(),
+  customInterviewQuestions: z.string().max(5000).optional(),
+  customOrganizationalQuestions: z.string().max(5000).optional(),
+}).omit({
+  id: true,
+  workspaceId: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const UpdateInterviewScenarioSchema = z.object({
+  name: z.string().min(1).max(200).optional(),
+  description: z.string().optional(),
+  customBotInstructions: z.string().max(5000).nullish(),
+  customScreeningPrompt: z.string().max(5000).nullish(),
+  customInterviewQuestions: z.string().max(5000).nullish(),
+  customOrganizationalQuestions: z.string().max(5000).nullish(),
+  isActive: z.boolean().optional(),
+});
+
+export type InterviewScenario = typeof interviewScenario.$inferSelect;
+export type NewInterviewScenario = typeof interviewScenario.$inferInsert;
 
 export type Gig = typeof gig.$inferSelect;
 export type NewGig = typeof gig.$inferInsert;

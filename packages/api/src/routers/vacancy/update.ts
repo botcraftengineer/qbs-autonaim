@@ -47,16 +47,7 @@ export const update = protectedProcedure
 
     // Обновляем настройки
     // Строим патч только с определенными полями (не undefined)
-    const patch: {
-      customBotInstructions?: string | null;
-      customScreeningPrompt?: string | null;
-      customInterviewQuestions?: string | null;
-      customOrganizationalQuestions?: string | null;
-      source?: "HH" | "KWORK" | "FL_RU" | "FREELANCE_RU" | "AVITO" | "SUPERJOB" | "HABR" | "WEB_LINK";
-      externalId?: string | null;
-      url?: string | null;
-      updatedAt: Date;
-    } = {
+    const patch: Partial<typeof vacancy.$inferInsert> & { updatedAt: Date } = {
       updatedAt: new Date(),
     };
 
@@ -77,10 +68,10 @@ export const update = protectedProcedure
       patch.source = input.settings.source ?? undefined;
     }
     if (input.settings.externalId !== undefined) {
-      patch.externalId = input.settings.externalId;
+      patch.externalId = input.settings.externalId ?? undefined;
     }
     if (input.settings.url !== undefined) {
-      patch.url = input.settings.url;
+      patch.url = input.settings.url ?? undefined;
     }
 
     const result = await ctx.db

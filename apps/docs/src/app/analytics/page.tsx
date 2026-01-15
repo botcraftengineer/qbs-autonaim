@@ -45,6 +45,9 @@ export default function AnalyticsPage() {
           <li>
             <strong className="font-semibold text-foreground">Активность по дням</strong> — динамика поступления откликов
           </li>
+          <li>
+            <strong className="font-semibold text-foreground">ROI найма</strong> — окупаемость инвестиций в процесс подбора
+          </li>
         </ul>
 
         <h2 id="dashboard" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Дашборд</h2>
