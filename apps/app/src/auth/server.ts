@@ -1,5 +1,3 @@
-import "server-only";
-
 import { initAuth } from "@qbs-autonaim/auth";
 import { env } from "@qbs-autonaim/config";
 import {
