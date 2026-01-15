@@ -59,7 +59,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/analytics",
     "/analytics/reports",
     "/analytics/metrics",
-    "/analytics/dashboard",
     "/analytics/roi",
   ].map((path) => ({
     url: `${baseUrl}${path}`,
@@ -72,11 +71,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const integrationsPages = [
     "/integrations",
     "/integrations/hh",
-    "/integrations/superjob",
     "/integrations/telegram",
     "/integrations/freelance",
-    "/integrations/email",
-    "/integrations/1c",
   ].map((path) => ({
     url: `${baseUrl}${path}`,
     lastModified: new Date(),
@@ -84,26 +80,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.7,
   }));
 
-  // Settings section
-  const settingsPages = [
-    "/settings/account",
-    "/settings/team",
-    "/settings/notifications",
-    "/settings/security",
-    "/settings/privacy",
-  ].map((path) => ({
-    url: `${baseUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }));
-
   // Help section
   const helpPages = [
     "/help/faq",
     "/help/videos",
     "/help/knowledge-base",
-    "/help/support",
     "/help/status",
   ].map((path) => ({
     url: `${baseUrl}${path}`,
@@ -126,7 +107,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...aiPages,
     ...analyticsPages,
     ...integrationsPages,
-    ...settingsPages,
     ...helpPages,
     pricingPage,
   ];

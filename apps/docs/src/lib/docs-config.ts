@@ -48,7 +48,6 @@ export const docsConfig: DocsConfig = {
         { title: "Обзор аналитики", href: "/analytics" },
         { title: "Отчёты по найму", href: "/analytics/reports" },
         { title: "Метрики эффективности", href: "/analytics/metrics" },
-        { title: "Dashboard руководителя", href: "/analytics/dashboard" },
         { title: "ROI рекрутинга", href: "/analytics/roi" },
       ],
     },
@@ -57,21 +56,8 @@ export const docsConfig: DocsConfig = {
       items: [
         { title: "Обзор интеграций", href: "/integrations" },
         { title: "HeadHunter (HH.ru)", href: "/integrations/hh" },
-        { title: "SuperJob", href: "/integrations/superjob" },
         { title: "Telegram-боты", href: "/integrations/telegram" },
         { title: "Фриланс-платформы", href: "/integrations/freelance" },
-        { title: "Email-рассылки", href: "/integrations/email" },
-        { title: "1C и ERP-системы", href: "/integrations/1c" },
-      ],
-    },
-    {
-      title: "Настройки и безопасность",
-      items: [
-        { title: "Настройки аккаунта", href: "/settings/account" },
-        { title: "Управление командой", href: "/settings/team" },
-        { title: "Уведомления", href: "/settings/notifications" },
-        { title: "Безопасность данных", href: "/settings/security" },
-        { title: "GDPR и 152-ФЗ", href: "/settings/privacy" },
       ],
     },
     {
@@ -80,7 +66,6 @@ export const docsConfig: DocsConfig = {
         { title: "Часто задаваемые вопросы", href: "/help/faq" },
         { title: "Видео-инструкции", href: "/help/videos" },
         { title: "База знаний", href: "/help/knowledge-base" },
-        { title: "Связаться с поддержкой", href: "/help/support" },
         { title: "Статус системы", href: "/help/status" },
       ],
     },
