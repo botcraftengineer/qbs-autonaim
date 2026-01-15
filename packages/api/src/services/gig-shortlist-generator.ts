@@ -46,7 +46,11 @@ export interface GigShortlistCandidate {
   skillsMatchScore?: number;
   experienceScore?: number;
   // Рекомендации
-  recommendation: "HIGHLY_RECOMMENDED" | "RECOMMENDED" | "NEUTRAL" | "NOT_RECOMMENDED";
+  recommendation:
+    | "HIGHLY_RECOMMENDED"
+    | "RECOMMENDED"
+    | "NEUTRAL"
+    | "NOT_RECOMMENDED";
   rankingAnalysis?: string;
   strengths: string[];
   weaknesses: string[];
@@ -129,42 +133,45 @@ export class GigShortlistGenerator {
     let filteredResponses = responses;
     if (includeOnlyHighlyRecommended) {
       filteredResponses = responses.filter(
-        (r) => r.recommendation === "HIGHLY_RECOMMENDED"
+        (r) => r.recommendation === "HIGHLY_RECOMMENDED",
       );
     } else {
       // Исключаем NOT_RECOMMENDED
       filteredResponses = responses.filter(
-        (r) => r.recommendation !== "NOT_RECOMMENDED"
+        (r) => r.recommendation !== "NOT_RECOMMENDED",
       );
     }
 
     // Преобразуем в промежуточный формат для сортировки
-    const candidatesForSorting: GigShortlistCandidate[] = filteredResponses.map((response) => ({
-      responseId: response.id,
-      name: response.candidateName ?? "Имя не указано",
-      contactInfo: {
-        email: response.email ?? undefined,
-        phone: response.phone ?? undefined,
-        telegram: response.telegramUsername ?? undefined,
-        platformProfile: response.profileUrl ?? undefined,
-      },
-      proposedPrice: response.proposedPrice ?? undefined,
-      proposedDeliveryDays: response.proposedDeliveryDays ?? undefined,
-      compositeScore: response.compositeScore ?? 0,
-      priceScore: response.priceScore ?? undefined,
-      deliveryScore: response.deliveryScore ?? undefined,
-      skillsMatchScore: response.skillsMatchScore ?? undefined,
-      experienceScore: response.experienceScore ?? undefined,
-      recommendation: response.recommendation as GigShortlistCandidate["recommendation"],
-      rankingAnalysis: response.rankingAnalysis ?? undefined,
-      strengths: response.strengths ?? [],
-      weaknesses: response.weaknesses ?? [],
-      coverLetter: response.coverLetter ?? undefined,
-      portfolioLinks: response.portfolioLinks as string[] ?? undefined,
-      skills: response.skills as string[] ?? undefined,
-      experience: response.experience ?? undefined,
-      createdAt: response.createdAt,
-    }));
+    const candidatesForSorting: GigShortlistCandidate[] = filteredResponses.map(
+      (response) => ({
+        responseId: response.id,
+        name: response.candidateName ?? "Имя не указано",
+        contactInfo: {
+          email: response.email ?? undefined,
+          phone: response.phone ?? undefined,
+          telegram: response.telegramUsername ?? undefined,
+          platformProfile: response.profileUrl ?? undefined,
+        },
+        proposedPrice: response.proposedPrice ?? undefined,
+        proposedDeliveryDays: response.proposedDeliveryDays ?? undefined,
+        compositeScore: response.compositeScore ?? 0,
+        priceScore: response.priceScore ?? undefined,
+        deliveryScore: response.deliveryScore ?? undefined,
+        skillsMatchScore: response.skillsMatchScore ?? undefined,
+        experienceScore: response.experienceScore ?? undefined,
+        recommendation:
+          response.recommendation as GigShortlistCandidate["recommendation"],
+        rankingAnalysis: response.rankingAnalysis ?? undefined,
+        strengths: response.strengths ?? [],
+        weaknesses: response.weaknesses ?? [],
+        coverLetter: response.coverLetter ?? undefined,
+        portfolioLinks: (response.portfolioLinks as string[]) ?? undefined,
+        skills: (response.skills as string[]) ?? undefined,
+        experience: response.experience ?? undefined,
+        createdAt: response.createdAt,
+      }),
+    );
 
     // Сортируем кандидатов
     const sortedCandidates = this.sortCandidates(
@@ -228,8 +235,14 @@ export class GigShortlistGenerator {
         if (scoreDiff !== 0) return scoreDiff;
 
         // Затем по recommendation priority (убывание)
-        const recA = recommendationPriority[a.recommendation as keyof typeof recommendationPriority] ?? 0;
-        const recB = recommendationPriority[b.recommendation as keyof typeof recommendationPriority] ?? 0;
+        const recA =
+          recommendationPriority[
+            a.recommendation as keyof typeof recommendationPriority
+          ] ?? 0;
+        const recB =
+          recommendationPriority[
+            b.recommendation as keyof typeof recommendationPriority
+          ] ?? 0;
         const recDiff = recB - recA;
         if (recDiff !== 0) return recDiff;
 

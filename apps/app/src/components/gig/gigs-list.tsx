@@ -39,10 +39,7 @@ export function GigsList({
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_) => (
-          <div
-            key={crypto.randomUUID()}
-            className="rounded-lg border p-6"
-          >
+          <div key={crypto.randomUUID()} className="rounded-lg border p-6">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-5 w-20" />
@@ -92,7 +89,9 @@ export function GigsList({
       {!isLoading && filteredGigs.length > 0 && (
         <div className="mb-3 text-sm text-muted-foreground">
           Найдено заданий:{" "}
-          <span className="font-medium tabular-nums">{filteredGigs.length}</span>
+          <span className="font-medium tabular-nums">
+            {filteredGigs.length}
+          </span>
           {(searchQuery || typeFilter !== "all" || statusFilter !== "all") &&
             gigs &&
             filteredGigs.length !== gigs.length && (

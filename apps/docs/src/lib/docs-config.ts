@@ -1,13 +1,13 @@
 export interface NavItem {
-  title: string
-  href?: string
-  items?: NavItem[]
-  label?: string
-  external?: boolean
+  title: string;
+  href?: string;
+  items?: NavItem[];
+  label?: string;
+  external?: boolean;
 }
 
 export interface DocsConfig {
-  sidebarNav: NavItem[]
+  sidebarNav: NavItem[];
 }
 
 export const docsConfig: DocsConfig = {
@@ -39,7 +39,10 @@ export const docsConfig: DocsConfig = {
         { title: "Чат с кандидатами", href: "/ai-assistant/chat" },
         { title: "Автоматические ответы", href: "/ai-assistant/auto-replies" },
         { title: "Шаблоны сообщений", href: "/ai-assistant/templates" },
-        { title: "Настройка сценариев интервью", href: "/ai-assistant/scenarios" },
+        {
+          title: "Настройка сценариев интервью",
+          href: "/ai-assistant/scenarios",
+        },
       ],
     },
     {
@@ -69,4 +72,4 @@ export const docsConfig: DocsConfig = {
       ],
     },
   ],
-}
+};

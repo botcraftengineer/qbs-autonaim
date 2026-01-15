@@ -9,7 +9,8 @@ import { Play, Clock, User } from "lucide-react";
 
 export const metadata: Metadata = generatePageSEO("videos", {
   title: "Видео-инструкции QBS Автонайм — обучение работе с платформой",
-  description: "Видео-уроки по работе с QBS Автонайм. Пошаговые инструкции по настройке AI-скрининга, интеграциям, аналитике. Обучение для HR и рекрутеров.",
+  description:
+    "Видео-уроки по работе с QBS Автонайм. Пошаговые инструкции по настройке AI-скрининга, интеграциям, аналитике. Обучение для HR и рекрутеров.",
   url: "/help/videos",
   keywords: [
     "видео инструкции QBS",
@@ -39,14 +40,16 @@ export default function VideosPage() {
         {
           title: "Регистрация и настройка аккаунта",
           duration: "5:32",
-          description: "Как создать аккаунт, настроить организацию и добавить первых пользователей",
+          description:
+            "Как создать аккаунт, настроить организацию и добавить первых пользователей",
           level: "Начальный",
           thumbnail: "/videos/account-setup.jpg",
         },
         {
           title: "Создание первой вакансии",
           duration: "7:15",
-          description: "Пошаговое создание вакансии с правильным описанием для AI",
+          description:
+            "Пошаговое создание вакансии с правильным описанием для AI",
           level: "Начальный",
           thumbnail: "/videos/first-vacancy.jpg",
         },
@@ -95,7 +98,8 @@ export default function VideosPage() {
         {
           title: "Интеграция с SuperJob",
           duration: "5:40",
-          description: "Настройка синхронизации с SuperJob для мультиканального найма",
+          description:
+            "Настройка синхронизации с SuperJob для мультиканального найма",
           level: "Средний",
           thumbnail: "/videos/superjob-integration.jpg",
         },
@@ -109,7 +113,8 @@ export default function VideosPage() {
         {
           title: "Интеграция с 1C и ERP",
           duration: "18:45",
-          description: "Подключение к корпоративным системам для автоматизации HR-процессов",
+          description:
+            "Подключение к корпоративным системам для автоматизации HR-процессов",
           level: "Продвинутый",
           thumbnail: "/videos/1c-integration.jpg",
         },
@@ -151,21 +156,24 @@ export default function VideosPage() {
         {
           title: "Кастомизация AI-моделей",
           duration: "20:30",
-          description: "Обучение AI на специфических требованиях вашей компании",
+          description:
+            "Обучение AI на специфических требованиях вашей компании",
           level: "Эксперт",
           thumbnail: "/videos/ai-customization.jpg",
         },
         {
           title: "Массовый импорт кандидатов",
           duration: "7:50",
-          description: "Импорт больших баз резюме и автоматизированная обработка",
+          description:
+            "Импорт больших баз резюме и автоматизированная обработка",
           level: "Продвинутый",
           thumbnail: "/videos/bulk-import.jpg",
         },
         {
           title: "Безопасность и GDPR",
           duration: "10:40",
-          description: "Настройка приватности данных и соблюдение законодательства",
+          description:
+            "Настройка приватности данных и соблюдение законодательства",
           level: "Продвинутый",
           thumbnail: "/videos/security-gdpr.jpg",
         },
@@ -204,22 +212,31 @@ export default function VideosPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Видео-инструкции</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Видео-инструкции
+        </h1>
 
         <p className="text-lg">
           Видео-уроки по работе с QBS Автонайм. От основ для новичков до
-          продвинутых техник для опытных HR-специалистов. Все видео на русском языке.
+          продвинутых техник для опытных HR-специалистов. Все видео на русском
+          языке.
         </p>
 
         <DocsMobileToc items={tocItems} />
 
         <DocsCallout type="info" title="Обновления">
-          Видеотека регулярно пополняется новыми уроками. Последнее обновление: {new Date().toLocaleDateString('ru-RU')}.
+          Видеотека регулярно пополняется новыми уроками. Последнее обновление:{" "}
+          {new Date().toLocaleDateString("ru-RU")}.
         </DocsCallout>
 
         {videoCategories.map((category) => (
           <div key={category.id}>
-            <h2 id={category.id} className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">{category.title}</h2>
+            <h2
+              id={category.id}
+              className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+            >
+              {category.title}
+            </h2>
             <p className="text-muted-foreground mb-6">{category.description}</p>
 
             <div className="grid gap-6 mb-8">
@@ -241,7 +258,9 @@ export default function VideosPage() {
                       <h3 className="font-semibold text-lg leading-tight">
                         {video.title}
                       </h3>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ml-4 ${getLevelColor(video.level)}`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ml-4 ${getLevelColor(video.level)}`}
+                      >
                         {video.level}
                       </span>
                     </div>
@@ -269,9 +288,25 @@ export default function VideosPage() {
 
         <DocsCallout type="tip" title="Плейлисты для быстрого старта">
           <div className="space-y-2">
-            <p className="leading-relaxed text-foreground/80 mb-4"><strong className="font-semibold text-foreground">🎯 Для новичков:</strong> Смотрите видео по порядку: регистрация → вакансии → HH.ru → AI-скрининг</p>
-            <p className="leading-relaxed text-foreground/80 mb-4"><strong className="font-semibold text-foreground">⚡ Для опытных:</strong> Начните с разделов "AI-функции" и "Интеграции"</p>
-            <p className="leading-relaxed text-foreground/80 mb-4"><strong className="font-semibold text-foreground">🎓 Для команд:</strong> Используйте видео для обучения новых сотрудников</p>
+            <p className="leading-relaxed text-foreground/80 mb-4">
+              <strong className="font-semibold text-foreground">
+                🎯 Для новичков:
+              </strong>{" "}
+              Смотрите видео по порядку: регистрация → вакансии → HH.ru →
+              AI-скрининг
+            </p>
+            <p className="leading-relaxed text-foreground/80 mb-4">
+              <strong className="font-semibold text-foreground">
+                ⚡ Для опытных:
+              </strong>{" "}
+              Начните с разделов "AI-функции" и "Интеграции"
+            </p>
+            <p className="leading-relaxed text-foreground/80 mb-4">
+              <strong className="font-semibold text-foreground">
+                🎓 Для команд:
+              </strong>{" "}
+              Используйте видео для обучения новых сотрудников
+            </p>
           </div>
         </DocsCallout>
 

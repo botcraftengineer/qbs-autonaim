@@ -25,25 +25,38 @@ export default function ChatPage() {
           <span className="text-sm font-medium text-primary">AI-ассистент</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">AI-интервью с кандидатами</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          AI-интервью с кандидатами
+        </h1>
 
         <p className="text-lg">
           Автоматическое проведение интервью через Telegram и веб-интерфейс. AI
           задает вопросы, анализирует ответы и формирует оценку кандидата.
         </p>
 
-        <h2 id="chat-interface" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Как это работает</h2>
+        <h2
+          id="chat-interface"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Как это работает
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">QBS Автонайм проводит интервью двумя способами:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          QBS Автонайм проводит интервью двумя способами:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Веб-интервью</strong> — кандидат получает уникальную ссылку
-            и проходит интервью в браузере
+            <strong className="font-semibold text-foreground">
+              Веб-интервью
+            </strong>{" "}
+            — кандидат получает уникальную ссылку и проходит интервью в браузере
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Telegram-интервью</strong> — бот проводит интервью прямо в
-            мессенджере
+            <strong className="font-semibold text-foreground">
+              Telegram-интервью
+            </strong>{" "}
+            — бот проводит интервью прямо в мессенджере
           </li>
         </ul>
 
@@ -54,16 +67,24 @@ export default function ChatPage() {
 
         {/* PLACEHOLDER: Скриншот веб-интервью */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Интерфейс веб-интервью</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Интерфейс веб-интервью
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать страницу интервью с: Вопрос от AI, Поле для ответа, Прогресс (вопрос 3 из 10), Кнопка "Отправить"
+            Показать страницу интервью с: Вопрос от AI, Поле для ответа,
+            Прогресс (вопрос 3 из 10), Кнопка "Отправить"
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /interview/[token] (публичная страница)
           </p>
         </div>
 
-        <h2 id="channels" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Каналы коммуникации</h2>
+        <h2
+          id="channels"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Каналы коммуникации
+        </h2>
 
         <p>
           QBS Автонайм поддерживает следующие каналы для общения с кандидатами:
@@ -114,7 +135,12 @@ export default function ChatPage() {
           ))}
         </div>
 
-        <h2 id="ai-mode" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Режим AI</h2>
+        <h2
+          id="ai-mode"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Режим AI
+        </h2>
 
         <p>
           По умолчанию AI-ассистент автоматически отвечает на сообщения
@@ -122,14 +148,18 @@ export default function ChatPage() {
         </p>
 
         <ul>
-          <li className="text-foreground/80">AI анализирует входящее сообщение и определяет намерение</li>
+          <li className="text-foreground/80">
+            AI анализирует входящее сообщение и определяет намерение
+          </li>
           <li>
             Генерирует персонализированный ответ на основе шаблонов и контекста
           </li>
           <li>
             Может назначать собеседования, если кандидат выразил готовность
           </li>
-          <li className="text-foreground/80">Передаёт диалог рекрутеру при сложных вопросах</li>
+          <li className="text-foreground/80">
+            Передаёт диалог рекрутеру при сложных вопросах
+          </li>
         </ul>
 
         <DocsCallout type="info">
@@ -137,7 +167,12 @@ export default function ChatPage() {
           диалоги отображаются в разделе «Требует внимания».
         </DocsCallout>
 
-        <h2 id="manual-mode" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Ручной режим</h2>
+        <h2
+          id="manual-mode"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Ручной режим
+        </h2>
 
         <p>
           Вы можете отключить AI для конкретного кандидата и вести переписку
@@ -146,8 +181,12 @@ export default function ChatPage() {
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
           <li className="text-foreground/80">Откройте диалог с кандидатом</li>
-          <li className="text-foreground/80">{"Нажмите переключатель «AI» в верхней части чата"}</li>
-          <li className="text-foreground/80">AI приостановит автоответы для этого кандидата</li>
+          <li className="text-foreground/80">
+            {"Нажмите переключатель «AI» в верхней части чата"}
+          </li>
+          <li className="text-foreground/80">
+            AI приостановит автоответы для этого кандидата
+          </li>
           <li>
             Для возврата в автоматический режим нажмите переключатель снова
           </li>

@@ -58,7 +58,9 @@ export const createFromChat = protectedProcedure
 
     if (input.bonuses) {
       if (descriptionParts.length > 0) descriptionParts.push("");
-      descriptionParts.push(`Премии и другие мотивационные выплаты\n—\n${input.bonuses}`);
+      descriptionParts.push(
+        `Премии и другие мотивационные выплаты\n—\n${input.bonuses}`,
+      );
     }
 
     const fullDescription = descriptionParts.join("\n") || null;

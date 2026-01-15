@@ -127,15 +127,15 @@ export const get = protectedProcedure
       ...response,
       resumePdfUrl,
       screening: screening
-        ? {
+        ? ({
             ...screening,
             analysis: screening.analysis
               ? sanitizeHtml(screening.analysis)
               : null,
-          } as typeof screening
+          } as typeof screening)
         : null,
       interviewScoring: directInterviewScoring
-        ? {
+        ? ({
             score:
               directInterviewScoring.rating ??
               Math.round(directInterviewScoring.score / 20),
@@ -147,14 +147,14 @@ export const get = protectedProcedure
             score: number;
             detailedScore: number;
             analysis: string | null;
-          }
+          })
         : null,
       interviewSession: session
-        ? {
+        ? ({
             ...session,
             messages: (messagesWithUrls || []) as any[],
             interviewScoring: sessionInterviewScoring
-              ? {
+              ? ({
                   score: sessionInterviewScoring.score,
                   analysis: sessionInterviewScoring.analysis
                     ? sanitizeHtml(sessionInterviewScoring.analysis)
@@ -162,9 +162,9 @@ export const get = protectedProcedure
                 } as {
                   score: number;
                   analysis: string | null;
-                }
+                })
               : null,
-          } as any
+          } as any)
         : undefined,
       globalCandidateId: null,
     };

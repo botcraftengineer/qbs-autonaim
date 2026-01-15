@@ -47,10 +47,7 @@ export const getGigShortlist = protectedProcedure
       // Проверяем существование gig и принадлежность к workspace
       const gig = await ctx.db.query.gig.findFirst({
         where: (gig, { eq, and }) =>
-          and(
-            eq(gig.id, input.gigId),
-            eq(gig.workspaceId, input.workspaceId),
-          ),
+          and(eq(gig.id, input.gigId), eq(gig.workspaceId, input.workspaceId)),
       });
 
       if (!gig) {
@@ -128,10 +125,7 @@ export const recalculateGigShortlist = protectedProcedure
       // Проверяем существование gig
       const gig = await ctx.db.query.gig.findFirst({
         where: (gig, { eq, and }) =>
-          and(
-            eq(gig.id, input.gigId),
-            eq(gig.workspaceId, input.workspaceId),
-          ),
+          and(eq(gig.id, input.gigId), eq(gig.workspaceId, input.workspaceId)),
       });
 
       if (!gig) {

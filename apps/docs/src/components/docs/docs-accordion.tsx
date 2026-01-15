@@ -1,25 +1,27 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import type React from "react";
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface AccordionItem {
-  title: string
-  content: React.ReactNode
+  title: string;
+  content: React.ReactNode;
 }
 
 interface DocsAccordionProps {
-  items: AccordionItem[]
+  items: AccordionItem[];
 }
 
 export function DocsAccordion({ items }: DocsAccordionProps) {
-  const [openItems, setOpenItems] = useState<number[]>([])
+  const [openItems, setOpenItems] = useState<number[]>([]);
 
   const toggleItem = (index: number) => {
-    setOpenItems((prev) => (prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]))
-  }
+    setOpenItems((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index],
+    );
+  };
 
   return (
     <div className="my-6 divide-y divide-border rounded-lg border border-border">
@@ -43,10 +45,12 @@ export function DocsAccordion({ items }: DocsAccordionProps) {
               openItems.includes(index) ? "max-h-96" : "max-h-0",
             )}
           >
-            <div className="px-4 pb-4 text-sm text-muted-foreground">{item.content}</div>
+            <div className="px-4 pb-4 text-sm text-muted-foreground">
+              {item.content}
+            </div>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

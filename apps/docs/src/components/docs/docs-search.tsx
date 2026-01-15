@@ -1,22 +1,22 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Search, FileText, ArrowRight } from "lucide-react"
-import { docsConfig } from "@/lib/docs-config"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Search, FileText, ArrowRight } from "lucide-react";
+import { docsConfig } from "@/lib/docs-config";
 
 interface SearchResult {
-  title: string
-  href: string
-  section: string
+  title: string;
+  href: string;
+  section: string;
 }
 
 export function DocsSearch() {
-  const [open, setOpen] = useState(false)
-  const [query, setQuery] = useState("")
-  const router = useRouter()
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const router = useRouter();
 
   // Собираем все страницы для поиска
   const allPages: SearchResult[] = docsConfig.sidebarNav.flatMap((section) =>
@@ -25,7 +25,7 @@ export function DocsSearch() {
       href: item.href || "#",
       section: section.title,
     })),
-  )
+  );
 
   const filteredResults = query
     ? allPages.filter(
@@ -33,26 +33,26 @@ export function DocsSearch() {
           page.title.toLowerCase().includes(query.toLowerCase()) ||
           page.section.toLowerCase().includes(query.toLowerCase()),
       )
-    : allPages.slice(0, 6)
+    : allPages.slice(0, 6);
 
   const handleSelect = (href: string) => {
-    router.push(href)
-    setOpen(false)
-    setQuery("")
-  }
+    router.push(href);
+    setOpen(false);
+    setQuery("");
+  };
 
   // Горячая клавиша ⌘K / Ctrl+K
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setOpen((open) => !open)
+        e.preventDefault();
+        setOpen((open) => !open);
       }
-    }
+    };
 
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
-  }, [])
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   return (
     <>
@@ -80,7 +80,9 @@ export function DocsSearch() {
           </div>
           <div className="max-h-[300px] overflow-y-auto p-2">
             {filteredResults.length === 0 ? (
-              <p className="p-4 text-center text-sm text-muted-foreground">Ничего не найдено по запросу "{query}"</p>
+              <p className="p-4 text-center text-sm text-muted-foreground">
+                Ничего не найдено по запросу "{query}"
+              </p>
             ) : (
               <div className="flex flex-col gap-1">
                 {filteredResults.map((result, index) => (
@@ -91,8 +93,12 @@ export function DocsSearch() {
                   >
                     <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <div className="flex-1 overflow-hidden">
-                      <p className="truncate font-medium text-foreground">{result.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">{result.section}</p>
+                      <p className="truncate font-medium text-foreground">
+                        {result.title}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {result.section}
+                      </p>
                     </div>
                     <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                   </button>
@@ -103,5 +109,5 @@ export function DocsSearch() {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

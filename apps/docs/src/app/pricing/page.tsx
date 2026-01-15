@@ -9,7 +9,8 @@ import { Check, X } from "lucide-react";
 
 export const metadata: Metadata = generatePageSEO("pricing", {
   title: "Цены и тарифы QBS Автонайм — AI для рекрутинга",
-  description: "Тарифы QBS Автонайм: от бесплатного плана до корпоративных решений. Сравнение функций, цены в рублях, скидки при годовой оплате.",
+  description:
+    "Тарифы QBS Автонайм: от бесплатного плана до корпоративных решений. Сравнение функций, цены в рублях, скидки при годовой оплате.",
   url: "/pricing",
   keywords: [
     "цены QBS Автонайм",
@@ -115,38 +116,140 @@ export default function PricingPage() {
     {
       category: "AI-функции",
       items: [
-        { name: "AI-скрининг резюме", free: true, startup: true, pro: true, enterprise: true },
-        { name: "Автоматические интервью", free: false, startup: true, pro: true, enterprise: true },
-        { name: "Голосовые резюме", free: false, startup: false, pro: true, enterprise: true },
-        { name: "Кастомные AI-модели", free: false, startup: false, pro: false, enterprise: true },
+        {
+          name: "AI-скрининг резюме",
+          free: true,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Автоматические интервью",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Голосовые резюме",
+          free: false,
+          startup: false,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Кастомные AI-модели",
+          free: false,
+          startup: false,
+          pro: false,
+          enterprise: true,
+        },
       ],
     },
     {
       category: "Интеграции",
       items: [
-        { name: "HH.ru", free: true, startup: true, pro: true, enterprise: true },
-        { name: "SuperJob", free: false, startup: true, pro: true, enterprise: true },
-        { name: "Telegram", free: false, startup: true, pro: true, enterprise: true },
-        { name: "1C / ERP системы", free: false, startup: false, pro: false, enterprise: true },
+        {
+          name: "HH.ru",
+          free: true,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "SuperJob",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Telegram",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "1C / ERP системы",
+          free: false,
+          startup: false,
+          pro: false,
+          enterprise: true,
+        },
       ],
     },
     {
       category: "Аналитика",
       items: [
-        { name: "Базовые отчёты", free: true, startup: true, pro: true, enterprise: true },
-        { name: "Расширенная аналитика", free: false, startup: true, pro: true, enterprise: true },
-        { name: "Кастомные дашборды", free: false, startup: false, pro: true, enterprise: true },
-        { name: "Экспорт данных", free: false, startup: true, pro: true, enterprise: true },
+        {
+          name: "Базовые отчёты",
+          free: true,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Расширенная аналитика",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Кастомные дашборды",
+          free: false,
+          startup: false,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Экспорт данных",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
       ],
     },
     {
       category: "Поддержка",
       items: [
-        { name: "Email поддержка", free: true, startup: true, pro: true, enterprise: true },
-        { name: "Чат поддержка", free: false, startup: true, pro: true, enterprise: true },
-        { name: "Приоритетная поддержка", free: false, startup: true, pro: true, enterprise: true },
-        { name: "Персональный менеджер", free: false, startup: false, pro: true, enterprise: true },
-        { name: "Круглосуточная поддержка", free: false, startup: false, pro: false, enterprise: true },
+        {
+          name: "Email поддержка",
+          free: true,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Чат поддержка",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Приоритетная поддержка",
+          free: false,
+          startup: true,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Персональный менеджер",
+          free: false,
+          startup: false,
+          pro: true,
+          enterprise: true,
+        },
+        {
+          name: "Круглосуточная поддержка",
+          free: false,
+          startup: false,
+          pro: false,
+          enterprise: true,
+        },
       ],
     },
   ];
@@ -154,11 +257,7 @@ export default function PricingPage() {
   return (
     <div className="flex gap-12">
       <article className="flex-1 max-w-3xl">
-        <DocsBreadcrumb
-          items={[
-            { title: "Цены и тарифы" },
-          ]}
-        />
+        <DocsBreadcrumb items={[{ title: "Цены и тарифы" }]} />
 
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">
@@ -166,29 +265,36 @@ export default function PricingPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Цены и тарифы</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Цены и тарифы
+        </h1>
 
         <p className="text-lg">
           Гибкие тарифы для компаний любого размера. Начните с бесплатного плана
-          и масштабируйтесь по мере роста. Все цены указаны в рублях с учётом НДС.
+          и масштабируйтесь по мере роста. Все цены указаны в рублях с учётом
+          НДС.
         </p>
 
         <DocsMobileToc items={tocItems} />
 
         <DocsCallout type="info" title="Бесплатный период">
-          Все платные тарифы включают 14-дневный бесплатный период тестирования со всеми функциями.
+          Все платные тарифы включают 14-дневный бесплатный период тестирования
+          со всеми функциями.
         </DocsCallout>
 
-        <h2 id="plans" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Тарифные планы</h2>
+        <h2
+          id="plans"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Тарифные планы
+        </h2>
 
         <div className="grid gap-6 my-8 md:grid-cols-2">
           {plans.map((plan) => (
             <div
               key={plan.name}
               className={`relative rounded-lg border p-6 ${
-                plan.popular
-                  ? "border-primary bg-primary/5"
-                  : "border-border"
+                plan.popular ? "border-primary bg-primary/5" : "border-border"
               }`}
             >
               {plan.popular && (
@@ -218,7 +324,10 @@ export default function PricingPage() {
                   </li>
                 ))}
                 {plan.limitations.map((limitation, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <li
+                    key={index}
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                  >
                     <X className="h-4 w-4 flex-shrink-0" />
                     {limitation}
                   </li>
@@ -239,10 +348,16 @@ export default function PricingPage() {
         </div>
 
         <DocsCallout type="tip" title="Скидки при годовой оплате">
-          Экономьте до 20% при оплате за год вперёд. Для корпоративных клиентов предусмотрены индивидуальные условия.
+          Экономьте до 20% при оплате за год вперёд. Для корпоративных клиентов
+          предусмотрены индивидуальные условия.
         </DocsCallout>
 
-        <h2 id="features" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Сравнение функций</h2>
+        <h2
+          id="features"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Сравнение функций
+        </h2>
 
         <div className="overflow-x-auto my-6">
           <table className="w-full border-collapse border border-border">
@@ -315,15 +430,26 @@ export default function PricingPage() {
           </table>
         </div>
 
-        <h2 id="billing" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Оплата и биллинг</h2>
+        <h2
+          id="billing"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Оплата и биллинг
+        </h2>
 
         <div className="space-y-4 my-6">
           <div>
             <h3 className="text-lg font-semibold mb-2">Способы оплаты</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-              <li className="text-foreground/80">Банковские карты (МИР, Visa, Mastercard)</li>
-              <li className="text-foreground/80">Банковский перевод для юридических лиц</li>
-              <li className="text-foreground/80">Электронные кошельки (по запросу)</li>
+              <li className="text-foreground/80">
+                Банковские карты (МИР, Visa, Mastercard)
+              </li>
+              <li className="text-foreground/80">
+                Банковский перевод для юридических лиц
+              </li>
+              <li className="text-foreground/80">
+                Электронные кошельки (по запросу)
+              </li>
             </ul>
           </div>
 
@@ -331,8 +457,12 @@ export default function PricingPage() {
             <h3 className="text-lg font-semibold mb-2">Период оплаты</h3>
             <ul className="list-disc list-inside space-y-1 text-muted-foreground">
               <li className="text-foreground/80">Ежемесячная оплата</li>
-              <li className="text-foreground/80">Поквартальная оплата (скидка 5%)</li>
-              <li className="text-foreground/80">Годовая оплата (скидка 20%)</li>
+              <li className="text-foreground/80">
+                Поквартальная оплата (скидка 5%)
+              </li>
+              <li className="text-foreground/80">
+                Годовая оплата (скидка 20%)
+              </li>
             </ul>
           </div>
 
@@ -345,7 +475,12 @@ export default function PricingPage() {
           </div>
         </div>
 
-        <h2 id="faq" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Часто задаваемые вопросы</h2>
+        <h2
+          id="faq"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Часто задаваемые вопросы
+        </h2>
 
         <div className="space-y-6 my-6">
           <div>
@@ -353,9 +488,9 @@ export default function PricingPage() {
               Можно ли изменить тариф в процессе использования?
             </h3>
             <p className="text-muted-foreground">
-              Да, тариф можно изменить в любой момент в личном кабинете.
-              При повышении тарифа доплата рассчитывается пропорционально.
-              При понижении изменения вступают в силу со следующего месяца.
+              Да, тариф можно изменить в любой момент в личном кабинете. При
+              повышении тарифа доплата рассчитывается пропорционально. При
+              понижении изменения вступают в силу со следующего месяца.
             </p>
           </div>
 
@@ -365,7 +500,8 @@ export default function PricingPage() {
             </h3>
             <p className="text-muted-foreground">
               Все данные сохраняются. При понижении тарифа могут применяться
-              ограничения по количеству кандидатов или функциям, но данные остаются доступными.
+              ограничения по количеству кандидатов или функциям, но данные
+              остаются доступными.
             </p>
           </div>
 
@@ -374,9 +510,9 @@ export default function PricingPage() {
               Есть ли ограничения на количество вакансий?
             </h3>
             <p className="text-muted-foreground">
-              Ограничения по количеству кандидатов, а не вакансий.
-              В бесплатном тарифе — до 50 кандидатов в месяц,
-              в Стартап — до 500, в Профессиональном — до 2000.
+              Ограничения по количеству кандидатов, а не вакансий. В бесплатном
+              тарифе — до 50 кандидатов в месяц, в Стартап — до 500, в
+              Профессиональном — до 2000.
             </p>
           </div>
 
@@ -386,15 +522,17 @@ export default function PricingPage() {
             </h3>
             <p className="text-muted-foreground">
               Считаются уникальные кандидаты, по которым проводился AI-скрининг
-              или автоматическое интервью. Повторные взаимодействия с одним кандидатом не учитываются.
+              или автоматическое интервью. Повторные взаимодействия с одним
+              кандидатом не учитываются.
             </p>
           </div>
         </div>
 
         <DocsCallout type="info" title="Нужна консультация?">
           <p>
-            Не уверены какой тариф выбрать? Свяжитесь с нами для персональной консультации.
-            Мы подберём оптимальное решение под ваши задачи и бюджет.
+            Не уверены какой тариф выбрать? Свяжитесь с нами для персональной
+            консультации. Мы подберём оптимальное решение под ваши задачи и
+            бюджет.
           </p>
           <div className="flex gap-4 mt-4">
             <a

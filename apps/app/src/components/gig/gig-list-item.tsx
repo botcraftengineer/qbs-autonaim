@@ -65,13 +65,15 @@ export function GigListItem({
           className="flex items-center gap-1 hover:text-foreground transition-colors text-xs shrink-0"
         >
           <MessageSquare className="h-3.5 w-3.5" />
-          <span className={`font-medium ${
-            (gig.responses || 0) > 0
-              ? (gig.responses || 0) > 5
-                ? "text-green-600"
-                : "text-blue-600"
-              : "text-muted-foreground"
-          }`}>
+          <span
+            className={`font-medium ${
+              (gig.responses || 0) > 0
+                ? (gig.responses || 0) > 5
+                  ? "text-green-600"
+                  : "text-blue-600"
+                : "text-muted-foreground"
+            }`}
+          >
             {gig.responses || 0}
           </span>
           {(gig.views || 0) > 0 && (

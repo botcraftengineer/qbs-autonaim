@@ -82,7 +82,9 @@ export default function GlossaryPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Глоссарий</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Глоссарий
+        </h1>
 
         <p className="text-lg">
           Справочник основных терминов и понятий, используемых в QBS Автонайм.

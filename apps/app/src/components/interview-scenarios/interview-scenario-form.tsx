@@ -2,7 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@qbs-autonaim/ui";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qbs-autonaim/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@qbs-autonaim/ui";
 import { Input } from "@qbs-autonaim/ui";
 import { Label } from "@qbs-autonaim/ui";
 import { Textarea } from "@qbs-autonaim/ui";
@@ -59,7 +65,8 @@ export function InterviewScenarioForm({
         customBotInstructions: scenario.customBotInstructions ?? "",
         customScreeningPrompt: scenario.customScreeningPrompt ?? "",
         customInterviewQuestions: scenario.customInterviewQuestions ?? "",
-        customOrganizationalQuestions: scenario.customOrganizationalQuestions ?? "",
+        customOrganizationalQuestions:
+          scenario.customOrganizationalQuestions ?? "",
       });
     }
   }, [scenario]);
@@ -112,8 +119,10 @@ export function InterviewScenarioForm({
       description: formData.description.trim() || null,
       customBotInstructions: formData.customBotInstructions.trim() || null,
       customScreeningPrompt: formData.customScreeningPrompt.trim() || null,
-      customInterviewQuestions: formData.customInterviewQuestions.trim() || null,
-      customOrganizationalQuestions: formData.customOrganizationalQuestions.trim() || null,
+      customInterviewQuestions:
+        formData.customInterviewQuestions.trim() || null,
+      customOrganizationalQuestions:
+        formData.customOrganizationalQuestions.trim() || null,
     };
 
     if (isEditing && scenarioId) {
@@ -131,7 +140,7 @@ export function InterviewScenarioForm({
   };
 
   const handleChange = (field: keyof typeof formData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   if (isLoadingScenario) {
@@ -158,8 +167,7 @@ export function InterviewScenarioForm({
             <CardDescription>
               {isEditing
                 ? "Измените настройки сценария интервью"
-                : "Создайте новый сценарий для проведения интервью"
-              }
+                : "Создайте новый сценарий для проведения интервью"}
             </CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={onCancel}>
@@ -192,11 +200,15 @@ export function InterviewScenarioForm({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="customBotInstructions">Общие инструкции для бота</Label>
+            <Label htmlFor="customBotInstructions">
+              Общие инструкции для бота
+            </Label>
             <Textarea
               id="customBotInstructions"
               value={formData.customBotInstructions}
-              onChange={(e) => handleChange("customBotInstructions", e.target.value)}
+              onChange={(e) =>
+                handleChange("customBotInstructions", e.target.value)
+              }
               placeholder="Опишите общий стиль общения, тон, особые требования к поведению бота"
               rows={3}
             />
@@ -207,29 +219,39 @@ export function InterviewScenarioForm({
             <Textarea
               id="customScreeningPrompt"
               value={formData.customScreeningPrompt}
-              onChange={(e) => handleChange("customScreeningPrompt", e.target.value)}
+              onChange={(e) =>
+                handleChange("customScreeningPrompt", e.target.value)
+              }
               placeholder="Критерии оценки кандидата, на что обращать внимание при скрининге"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="customOrganizationalQuestions">Организационные вопросы</Label>
+            <Label htmlFor="customOrganizationalQuestions">
+              Организационные вопросы
+            </Label>
             <Textarea
               id="customOrganizationalQuestions"
               value={formData.customOrganizationalQuestions}
-              onChange={(e) => handleChange("customOrganizationalQuestions", e.target.value)}
+              onChange={(e) =>
+                handleChange("customOrganizationalQuestions", e.target.value)
+              }
               placeholder="Вопросы о доступности, сроках, условиях работы"
               rows={3}
             />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="customInterviewQuestions">Вопросы для интервью</Label>
+            <Label htmlFor="customInterviewQuestions">
+              Вопросы для интервью
+            </Label>
             <Textarea
               id="customInterviewQuestions"
               value={formData.customInterviewQuestions}
-              onChange={(e) => handleChange("customInterviewQuestions", e.target.value)}
+              onChange={(e) =>
+                handleChange("customInterviewQuestions", e.target.value)
+              }
               placeholder="Список вопросов, которые бот должен задать кандидату"
               rows={5}
             />

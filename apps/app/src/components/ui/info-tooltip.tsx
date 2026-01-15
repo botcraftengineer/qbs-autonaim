@@ -21,9 +21,7 @@ export function InfoTooltip({ content, ...props }: InfoTooltipProps) {
           collisionPadding={0}
           {...props}
         >
-          <TooltipMarkdown className="p-0">
-            {content}
-          </TooltipMarkdown>
+          <TooltipMarkdown className="p-0">{content}</TooltipMarkdown>
         </TooltipPrimitive.Content>
       </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>

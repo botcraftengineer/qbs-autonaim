@@ -15,7 +15,11 @@ export default function HHIntegrationPage() {
   const setupSteps = [
     {
       title: "Откройте настройки интеграций",
-      content: <p className="leading-relaxed text-foreground/80 mb-4">{"Перейдите в «Настройки» → «Интеграции» → «hh.ru»."}</p>,
+      content: (
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          {"Перейдите в «Настройки» → «Интеграции» → «hh.ru»."}
+        </p>
+      ),
     },
     {
       title: "Авторизуйтесь в hh.ru",
@@ -60,7 +64,9 @@ export default function HHIntegrationPage() {
           <span className="text-sm font-medium text-primary">Интеграции</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Интеграция с hh.ru</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Интеграция с hh.ru
+        </h1>
 
         <p className="text-lg">
           Подключите hh.ru для автоматического импорта откликов и публикации
@@ -72,28 +78,43 @@ export default function HHIntegrationPage() {
           вакансиями или балансом для публикации новых.
         </DocsCallout>
 
-        <h2 id="features" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Возможности интеграции</h2>
+        <h2
+          id="features"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Возможности интеграции
+        </h2>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Парсинг вакансий</strong> — автоматическое получение ваших
-            вакансий с HH.ru
+            <strong className="font-semibold text-foreground">
+              Парсинг вакансий
+            </strong>{" "}
+            — автоматическое получение ваших вакансий с HH.ru
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Импорт откликов</strong> — загрузка всех откликов на
-            вакансии
+            <strong className="font-semibold text-foreground">
+              Импорт откликов
+            </strong>{" "}
+            — загрузка всех откликов на вакансии
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Извлечение данных</strong> — парсинг резюме, контактов,
-            опыта работы
+            <strong className="font-semibold text-foreground">
+              Извлечение данных
+            </strong>{" "}
+            — парсинг резюме, контактов, опыта работы
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Автоматический скрининг</strong> — AI оценивает каждый
-            отклик от 1 до 5 звезд
+            <strong className="font-semibold text-foreground">
+              Автоматический скрининг
+            </strong>{" "}
+            — AI оценивает каждый отклик от 1 до 5 звезд
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Сохранение сессий</strong> — не нужно авторизовываться
-            каждый раз
+            <strong className="font-semibold text-foreground">
+              Сохранение сессий
+            </strong>{" "}
+            — не нужно авторизовываться каждый раз
           </li>
         </ul>
 
@@ -102,22 +123,35 @@ export default function HHIntegrationPage() {
           вакансий и отправка сообщений кандидатам пока не поддерживаются.
         </DocsCallout>
 
-        <h2 id="setup" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Настройка интеграции</h2>
+        <h2
+          id="setup"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Настройка интеграции
+        </h2>
 
         <DocsSteps steps={setupSteps} />
 
         {/* PLACEHOLDER: Скриншот настройки интеграции HH.ru */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Подключение HH.ru</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Подключение HH.ru
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать страницу интеграций с кнопкой "Подключить HH.ru" и формой авторизации
+            Показать страницу интеграций с кнопкой "Подключить HH.ru" и формой
+            авторизации
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
           </p>
         </div>
 
-        <h2 id="sync-settings" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Параметры синхронизации</h2>
+        <h2
+          id="sync-settings"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Параметры синхронизации
+        </h2>
 
         <div className="my-6 overflow-hidden rounded-lg border border-border">
           <table className="w-full text-sm">
@@ -173,7 +207,12 @@ export default function HHIntegrationPage() {
           </table>
         </div>
 
-        <h2 id="troubleshooting" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Решение проблем</h2>
+        <h2
+          id="troubleshooting"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Решение проблем
+        </h2>
 
         <div className="my-6 flex flex-col gap-4">
           <div className="rounded-lg border border-border p-4">

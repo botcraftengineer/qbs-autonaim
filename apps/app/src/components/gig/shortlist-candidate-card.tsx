@@ -356,7 +356,8 @@ export function ShortlistCandidateCard({
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <Calendar className="h-3 w-3" />
             <span>
-              Отклик от {new Date(candidate.createdAt).toLocaleDateString("ru-RU", {
+              Отклик от{" "}
+              {new Date(candidate.createdAt).toLocaleDateString("ru-RU", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

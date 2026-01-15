@@ -30,8 +30,7 @@ export default function DocsIntroductionPage() {
           </h1>
           <p className="text-xl text-muted-foreground">
             Современная AI-платформа для автоматизации рекрутинга. Интеграция с
-            HH.ru, Telegram-боты, экономия до 80% времени на подборе
-            персонала.
+            HH.ru, Telegram-боты, экономия до 80% времени на подборе персонала.
           </p>
         </div>
 
@@ -39,9 +38,12 @@ export default function DocsIntroductionPage() {
 
         {/* PLACEHOLDER: Скриншот главной страницы */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Главная страница платформы</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Главная страница платформы
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать дашборд с: Статистика (активные вакансии, новые отклики), Последние кандидаты, Быстрые действия
+            Показать дашборд с: Статистика (активные вакансии, новые отклики),
+            Последние кандидаты, Быстрые действия
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]

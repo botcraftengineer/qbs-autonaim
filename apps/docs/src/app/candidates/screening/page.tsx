@@ -71,7 +71,9 @@ export default function ScreeningPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">AI-скрининг резюме</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          AI-скрининг резюме
+        </h1>
 
         <p className="text-lg">
           AI-скрининг автоматически анализирует отклики кандидатов и определяет
@@ -81,7 +83,12 @@ export default function ScreeningPage() {
 
         <DocsMobileToc items={tocItems} />
 
-        <h2 id="how-it-works" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Как это работает</h2>
+        <h2
+          id="how-it-works"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Как это работает
+        </h2>
 
         <p>
           Когда новый отклик поступает в систему (из интеграций или загруженный
@@ -90,20 +97,29 @@ export default function ScreeningPage() {
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
           <li>
-            <strong className="font-semibold text-foreground">Парсинг резюме</strong> — извлечение структурированных
-            данных: контакты, опыт работы, навыки, образование
+            <strong className="font-semibold text-foreground">
+              Парсинг резюме
+            </strong>{" "}
+            — извлечение структурированных данных: контакты, опыт работы,
+            навыки, образование
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Анализ опыта</strong> — определение релевантного опыта,
-            расчёт общего стажа
+            <strong className="font-semibold text-foreground">
+              Анализ опыта
+            </strong>{" "}
+            — определение релевантного опыта, расчёт общего стажа
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Сопоставление с требованиями</strong> — сравнение навыков и
-            опыта кандидата с вакансией
+            <strong className="font-semibold text-foreground">
+              Сопоставление с требованиями
+            </strong>{" "}
+            — сравнение навыков и опыта кандидата с вакансией
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Оценка соответствия</strong> — расчёт итогового балла от 1
-            до 5 звезд
+            <strong className="font-semibold text-foreground">
+              Оценка соответствия
+            </strong>{" "}
+            — расчёт итогового балла от 1 до 5 звезд
           </li>
         </ol>
 
@@ -114,16 +130,24 @@ export default function ScreeningPage() {
 
         {/* PLACEHOLDER: Скриншот процесса AI-скрининга */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Процесс AI-скрининга</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Процесс AI-скрининга
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать карточку отклика с процессом анализа: парсинг → анализ → оценка → результат
+            Показать карточку отклика с процессом анализа: парсинг → анализ →
+            оценка → результат
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id]
           </p>
         </div>
 
-        <h2 id="criteria-setup" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Настройка критериев скрининга</h2>
+        <h2
+          id="criteria-setup"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Настройка критериев скрининга
+        </h2>
 
         <p>
           Точность AI-скрининга напрямую зависит от качества настроенных
@@ -134,35 +158,54 @@ export default function ScreeningPage() {
 
         {/* PLACEHOLDER: Скриншот настройки критериев */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Настройка критериев скрининга</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Настройка критериев скрининга
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать форму с полями: Обязательные навыки, Желательные навыки, Опыт работы, Веса критериев (слайдеры 1-10)
+            Показать форму с полями: Обязательные навыки, Желательные навыки,
+            Опыт работы, Веса критериев (слайдеры 1-10)
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/settings
           </p>
         </div>
 
-        <h2 id="results" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Результаты скрининга</h2>
+        <h2
+          id="results"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Результаты скрининга
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">После скрининга каждый отклик получает:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          После скрининга каждый отклик получает:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Балл соответствия</strong> — число от 0 до 100, показывающее
-            общее соответствие требованиям
+            <strong className="font-semibold text-foreground">
+              Балл соответствия
+            </strong>{" "}
+            — число от 0 до 100, показывающее общее соответствие требованиям
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Этап воронки</strong> — автоматический переход на этап
-            SCREENING_DONE при успешном скрининге
+            <strong className="font-semibold text-foreground">
+              Этап воронки
+            </strong>{" "}
+            — автоматический переход на этап SCREENING_DONE при успешном
+            скрининге
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Детальный отчёт</strong> — разбивка по каждому критерию с
-            пояснениями AI
+            <strong className="font-semibold text-foreground">
+              Детальный отчёт
+            </strong>{" "}
+            — разбивка по каждому критерию с пояснениями AI
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Выявленные риски</strong> — потенциальные проблемы (частая
-            смена работы, пробелы в опыте)
+            <strong className="font-semibold text-foreground">
+              Выявленные риски
+            </strong>{" "}
+            — потенциальные проблемы (частая смена работы, пробелы в опыте)
           </li>
         </ul>
 
@@ -173,53 +216,83 @@ export default function ScreeningPage() {
 
         {/* PLACEHOLDER: Скриншот результатов скрининга */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Детальный отчёт скрининга</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Детальный отчёт скрининга
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать карточку кандидата с: Общий балл (0-100), Разбивка по критериям, Выявленные риски, Рекомендации AI
+            Показать карточку кандидата с: Общий балл (0-100), Разбивка по
+            критериям, Выявленные риски, Рекомендации AI
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id] (вкладка "AI-анализ")
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id] (вкладка
+            "AI-анализ")
           </p>
         </div>
 
-        <h2 id="bulk-processing" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Массовая обработка</h2>
+        <h2
+          id="bulk-processing"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Массовая обработка
+        </h2>
 
         <p>
           QBS Автонайм поддерживает массовый импорт откликов из различных
           источников. После импорта все отклики автоматически проходят скрининг.
         </p>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Способы массового импорта:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Способы массового импорта:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Интеграция с hh.ru</strong> — автоматический импорт откликов
-            на ваши вакансии
+            <strong className="font-semibold text-foreground">
+              Интеграция с hh.ru
+            </strong>{" "}
+            — автоматический импорт откликов на ваши вакансии
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Загрузка файлов</strong> — поддержка PDF, DOC, DOCX (до 100
-            файлов за раз)
+            <strong className="font-semibold text-foreground">
+              Загрузка файлов
+            </strong>{" "}
+            — поддержка PDF, DOC, DOCX (до 100 файлов за раз)
           </li>
         </ul>
 
-        <h2 id="best-practices" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Лучшие практики</h2>
+        <h2
+          id="best-practices"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Лучшие практики
+        </h2>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Начните с малого</strong> — добавьте 5-7 ключевых критериев,
-            затем расширяйте по мере необходимости
+            <strong className="font-semibold text-foreground">
+              Начните с малого
+            </strong>{" "}
+            — добавьте 5-7 ключевых критериев, затем расширяйте по мере
+            необходимости
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Используйте конкретные формулировки</strong> — вместо
-            «хорошие навыки коммуникации» укажите «опыт проведения презентаций»
+            <strong className="font-semibold text-foreground">
+              Используйте конкретные формулировки
+            </strong>{" "}
+            — вместо «хорошие навыки коммуникации» укажите «опыт проведения
+            презентаций»
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Регулярно обновляйте критерии</strong> — рынок меняется, и
-            требования к кандидатам тоже
+            <strong className="font-semibold text-foreground">
+              Регулярно обновляйте критерии
+            </strong>{" "}
+            — рынок меняется, и требования к кандидатам тоже
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Анализируйте результаты</strong> — если много «ложных
-            срабатываний», пересмотрите критерии
+            <strong className="font-semibold text-foreground">
+              Анализируйте результаты
+            </strong>{" "}
+            — если много «ложных срабатываний», пересмотрите критерии
           </li>
         </ul>
 

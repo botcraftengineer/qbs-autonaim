@@ -1,54 +1,56 @@
-"use client"
+"use client";
 
-import { cn } from "@/lib/utils"
-import { useEffect, useState } from "react"
+import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 interface TocItem {
-  id: string
-  title: string
-  level: number
+  id: string;
+  title: string;
+  level: number;
 }
 
 interface DocsTocProps {
-  items: TocItem[]
+  items: TocItem[];
 }
 
 export function DocsToc({ items }: DocsTocProps) {
-  const [activeId, setActiveId] = useState<string>("")
+  const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
-    if (items.length === 0) return
+    if (items.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setActiveId(entry.target.id)
+            setActiveId(entry.target.id);
           }
-        })
+        });
       },
       {
         rootMargin: "-80px 0px -80% 0px",
         threshold: 0,
       },
-    )
+    );
 
     items.forEach((item) => {
-      const element = document.getElementById(item.id)
+      const element = document.getElementById(item.id);
       if (element) {
-        observer.observe(element)
+        observer.observe(element);
       }
-    })
+    });
 
-    return () => observer.disconnect()
-  }, [items])
+    return () => observer.disconnect();
+  }, [items]);
 
-  if (items.length === 0) return null
+  if (items.length === 0) return null;
 
   return (
     <aside className="hidden xl:block">
       <div className="sticky top-20 w-56">
-        <h4 className="mb-3 text-sm font-semibold text-foreground">На этой странице</h4>
+        <h4 className="mb-3 text-sm font-semibold text-foreground">
+          На этой странице
+        </h4>
         <nav className="flex flex-col gap-2 border-l border-border">
           {items.map((item) => (
             <a
@@ -68,5 +70,5 @@ export function DocsToc({ items }: DocsTocProps) {
         </nav>
       </div>
     </aside>
-  )
+  );
 }

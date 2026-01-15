@@ -2,7 +2,14 @@
 
 import { paths } from "@qbs-autonaim/config";
 import { cn } from "@qbs-autonaim/ui";
-import { Building2, Globe, Globe2, Settings, Users, MessageSquare } from "lucide-react";
+import {
+  Building2,
+  Globe,
+  Globe2,
+  Settings,
+  Users,
+  MessageSquare,
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";

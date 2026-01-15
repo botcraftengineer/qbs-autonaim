@@ -23,7 +23,9 @@ export default function AIAssistantPage() {
           <span className="text-sm font-medium text-primary">AI-ассистент</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">AI-ассистент</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          AI-ассистент
+        </h1>
 
         <p className="text-lg">
           AI-ассистент QBS Автонайм — это интеллектуальный помощник, который
@@ -37,60 +39,93 @@ export default function AIAssistantPage() {
           лояльность.
         </DocsCallout>
 
-        <h2 id="capabilities" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Возможности AI-ассистента</h2>
+        <h2
+          id="capabilities"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Возможности AI-ассистента
+        </h2>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Автоматические ответы</strong> — мгновенные ответы на
-            типичные вопросы кандидатов
+            <strong className="font-semibold text-foreground">
+              Автоматические ответы
+            </strong>{" "}
+            — мгновенные ответы на типичные вопросы кандидатов
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Назначение собеседований</strong> — интеграция с календарём
-            для автоматического бронирования
+            <strong className="font-semibold text-foreground">
+              Назначение собеседований
+            </strong>{" "}
+            — интеграция с календарём для автоматического бронирования
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Сбор информации</strong> — уточнение деталей у кандидатов по
-            заданному сценарию
+            <strong className="font-semibold text-foreground">
+              Сбор информации
+            </strong>{" "}
+            — уточнение деталей у кандидатов по заданному сценарию
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Напоминания</strong> — автоматические напоминания о
-            собеседованиях
+            <strong className="font-semibold text-foreground">
+              Напоминания
+            </strong>{" "}
+            — автоматические напоминания о собеседованиях
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Мультиканальность</strong> — работа через Telegram и
-            веб-интервью
+            <strong className="font-semibold text-foreground">
+              Мультиканальность
+            </strong>{" "}
+            — работа через Telegram и веб-интервью
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Персонализация</strong> — использование данных кандидата для
-            персонализированных сообщений
+            <strong className="font-semibold text-foreground">
+              Персонализация
+            </strong>{" "}
+            — использование данных кандидата для персонализированных сообщений
           </li>
         </ul>
 
-        <h2 id="how-it-works" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Как это работает</h2>
+        <h2
+          id="how-it-works"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Как это работает
+        </h2>
 
         <ol className="my-4 ml-6 list-decimal space-y-2">
           <li>
-            <strong className="font-semibold text-foreground">Входящее сообщение</strong> — кандидат пишет в чат или
-            отвечает на email
+            <strong className="font-semibold text-foreground">
+              Входящее сообщение
+            </strong>{" "}
+            — кандидат пишет в чат или отвечает на email
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Анализ намерения</strong> — AI определяет, что хочет узнать
-            кандидат
+            <strong className="font-semibold text-foreground">
+              Анализ намерения
+            </strong>{" "}
+            — AI определяет, что хочет узнать кандидат
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Поиск ответа</strong> — система ищет подходящий ответ в базе
-            знаний и шаблонах
+            <strong className="font-semibold text-foreground">
+              Поиск ответа
+            </strong>{" "}
+            — система ищет подходящий ответ в базе знаний и шаблонах
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Генерация ответа</strong> — AI формирует персонализированный
-            ответ
+            <strong className="font-semibold text-foreground">
+              Генерация ответа
+            </strong>{" "}
+            — AI формирует персонализированный ответ
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Отправка</strong> — сообщение отправляется кандидату
+            <strong className="font-semibold text-foreground">Отправка</strong>{" "}
+            — сообщение отправляется кандидату
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Логирование</strong> — вся переписка сохраняется в карточке
-            кандидата
+            <strong className="font-semibold text-foreground">
+              Логирование
+            </strong>{" "}
+            — вся переписка сохраняется в карточке кандидата
           </li>
         </ol>
 
@@ -100,7 +135,12 @@ export default function AIAssistantPage() {
           вернёте автоматический режим.
         </DocsCallout>
 
-        <h2 id="sections" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Разделы</h2>
+        <h2
+          id="sections"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Разделы
+        </h2>
 
         <div className="grid gap-4 sm:grid-cols-1 my-6">
           <DocsCard

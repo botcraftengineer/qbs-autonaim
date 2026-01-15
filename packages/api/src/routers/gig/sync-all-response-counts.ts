@@ -41,7 +41,10 @@ export const syncAllResponseCounts = protectedProcedure
       .where(
         and(
           eq(response.entityType, "gig"),
-          eq(response.entityId, sql`any(select id from gigs where workspace_id = ${input.workspaceId})`),
+          eq(
+            response.entityId,
+            sql`any(select id from gigs where workspace_id = ${input.workspaceId})`,
+          ),
         ),
       )
       .groupBy(response.entityId);
@@ -68,7 +71,10 @@ export const syncAllResponseCounts = protectedProcedure
 
     // Синхронизируем счетчики для каждого gig
     for (const gigItem of gigs) {
-      const actualCounts = countsMap.get(gigItem.id) ?? { total: 0, newCount: 0 };
+      const actualCounts = countsMap.get(gigItem.id) ?? {
+        total: 0,
+        newCount: 0,
+      };
 
       // Обновляем если есть расхождение или принудительная синхронизация
       if (

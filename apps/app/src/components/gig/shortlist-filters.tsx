@@ -1,4 +1,17 @@
-import { Badge, Button, Card, CardContent, CardHeader, CardTitle, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Switch } from "@qbs-autonaim/ui";
+import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  Switch,
+} from "@qbs-autonaim/ui";
 import { CheckCircle2, Filter } from "lucide-react";
 import { MIN_SCORE_OPTIONS } from "./shortlist-constants";
 
@@ -37,16 +50,10 @@ export function ShortlistFilters({
       <CardContent>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="space-y-2">
-            <label
-              htmlFor="min-score-filter"
-              className="text-sm font-medium"
-            >
+            <label htmlFor="min-score-filter" className="text-sm font-medium">
               Минимальная оценка
             </label>
-            <Select
-              value={selectedMinScore}
-              onValueChange={onMinScoreChange}
-            >
+            <Select value={selectedMinScore} onValueChange={onMinScoreChange}>
               <SelectTrigger
                 id="min-score-filter"
                 className="min-h-[44px] sm:min-h-[36px]"
@@ -108,11 +115,7 @@ export function ShortlistFilters({
               <CheckCircle2 className="h-3 w-3" />
               Применены фильтры
             </Badge>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onReset}
-            >
+            <Button variant="ghost" size="sm" onClick={onReset}>
               Сбросить
             </Button>
           </div>

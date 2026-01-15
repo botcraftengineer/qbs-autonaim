@@ -260,7 +260,10 @@ export function GigInvitationTemplate({
           {isLoadingTemplate && (
             <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm rounded-md">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <IconLoader2 className="size-4 animate-spin" aria-hidden="true" />
+                <IconLoader2
+                  className="size-4 animate-spin"
+                  aria-hidden="true"
+                />
                 <span>Генерация шаблона…</span>
               </div>
             </div>

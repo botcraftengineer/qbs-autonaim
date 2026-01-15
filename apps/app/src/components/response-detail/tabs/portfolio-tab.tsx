@@ -44,7 +44,7 @@ export function PortfolioTab({ response }: PortfolioTabProps) {
             workspaceId: workspace.id,
             fileId: response.portfolioFileId,
           }
-        : skipToken
+        : skipToken,
     ),
   );
 

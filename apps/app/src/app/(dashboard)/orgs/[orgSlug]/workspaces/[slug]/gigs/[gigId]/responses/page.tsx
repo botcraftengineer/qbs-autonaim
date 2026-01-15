@@ -155,13 +155,15 @@ export default function GigResponsesPage({ params }: PageProps) {
 
   // Transform responses to include score
   const responsesWithScore = React.useMemo(() => {
-    return responses?.map((response) => ({
-      ...response,
-      score: response.interviewScoring
-        ? (response.interviewScoring.rating ??
-          Math.round(response.interviewScoring.score / 20))
-        : null,
-    })) || [];
+    return (
+      responses?.map((response) => ({
+        ...response,
+        score: response.interviewScoring
+          ? (response.interviewScoring.rating ??
+            Math.round(response.interviewScoring.score / 20))
+          : null,
+      })) || []
+    );
   }, [responses]);
 
   // Custom hooks

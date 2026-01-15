@@ -52,7 +52,9 @@ export function useGigsFilters(gigs: Gig[] | undefined, filters: GigsFilters) {
     if (statusFilter === "active") {
       filtered = filtered.filter((g) => g.isActive === true);
     } else if (statusFilter === "inactive") {
-      filtered = filtered.filter((g) => g.isActive === false || g.isActive === null);
+      filtered = filtered.filter(
+        (g) => g.isActive === false || g.isActive === null,
+      );
     }
 
     filtered.sort((a, b) => {

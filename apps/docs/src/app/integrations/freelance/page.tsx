@@ -65,14 +65,21 @@ export default function FreelancePlatformsPage() {
           <span className="text-sm font-medium text-primary">Интеграции</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Фриланс-платформы</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Фриланс-платформы
+        </h1>
 
         <p className="text-lg">
           Импортируйте отклики фрилансеров с популярных платформ и автоматически
           оценивайте их с помощью AI.
         </p>
 
-        <h2 id="platforms" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Поддерживаемые платформы</h2>
+        <h2
+          id="platforms"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Поддерживаемые платформы
+        </h2>
 
         <div className="my-6 grid gap-3">
           {[
@@ -111,29 +118,47 @@ export default function FreelancePlatformsPage() {
           ))}
         </div>
 
-        <h2 id="how-it-works" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Как это работает</h2>
+        <h2
+          id="how-it-works"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Как это работает
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Система автоматически:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Система автоматически:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Парсит ссылку</strong> — определяет платформу и ID задания
+            <strong className="font-semibold text-foreground">
+              Парсит ссылку
+            </strong>{" "}
+            — определяет платформу и ID задания
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Извлекает данные</strong> — загружает информацию о всех
-            откликах
+            <strong className="font-semibold text-foreground">
+              Извлекает данные
+            </strong>{" "}
+            — загружает информацию о всех откликах
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Анализирует профили</strong> — оценивает опыт, портфолио,
-            рейтинг фрилансера
+            <strong className="font-semibold text-foreground">
+              Анализирует профили
+            </strong>{" "}
+            — оценивает опыт, портфолио, рейтинг фрилансера
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Формирует оценку</strong> — AI выставляет балл от 1 до 5
-            звезд
+            <strong className="font-semibold text-foreground">
+              Формирует оценку
+            </strong>{" "}
+            — AI выставляет балл от 1 до 5 звезд
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Сохраняет в системе</strong> — все данные доступны в
-            карточке задания
+            <strong className="font-semibold text-foreground">
+              Сохраняет в системе
+            </strong>{" "}
+            — все данные доступны в карточке задания
           </li>
         </ul>
 
@@ -142,31 +167,56 @@ export default function FreelancePlatformsPage() {
           отклики (настраивается в параметрах задания).
         </DocsCallout>
 
-        <h2 id="import-process" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Процесс импорта</h2>
+        <h2
+          id="import-process"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Процесс импорта
+        </h2>
 
         <DocsSteps steps={importSteps} />
 
-        <h2 id="gig-management" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Управление Gig-заданиями</h2>
+        <h2
+          id="gig-management"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Управление Gig-заданиями
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">В разделе «Задания» вы можете:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          В разделе «Задания» вы можете:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Просматривать отклики</strong> — список всех фрилансеров с
-            оценками
+            <strong className="font-semibold text-foreground">
+              Просматривать отклики
+            </strong>{" "}
+            — список всех фрилансеров с оценками
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Фильтровать по оценке</strong> — показать только 4-5 звезд
+            <strong className="font-semibold text-foreground">
+              Фильтровать по оценке
+            </strong>{" "}
+            — показать только 4-5 звезд
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Сравнивать предложения</strong> — цена, сроки, опыт
+            <strong className="font-semibold text-foreground">
+              Сравнивать предложения
+            </strong>{" "}
+            — цена, сроки, опыт
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Проводить интервью</strong> — отправить ссылку на
-            веб-интервью
+            <strong className="font-semibold text-foreground">
+              Проводить интервью
+            </strong>{" "}
+            — отправить ссылку на веб-интервью
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Принимать/отклонять</strong> — управлять статусами откликов
+            <strong className="font-semibold text-foreground">
+              Принимать/отклонять
+            </strong>{" "}
+            — управлять статусами откликов
           </li>
         </ul>
 

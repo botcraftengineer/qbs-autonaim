@@ -30,10 +30,7 @@ export function InterviewScenariosManagement({
           </p>
         </div>
 
-        <Button
-          onClick={() => setShowCreateForm(true)}
-          className="shrink-0"
-        >
+        <Button onClick={() => setShowCreateForm(true)} className="shrink-0">
           <IconPlus className="h-4 w-4 mr-2" />
           Создать сценарий
         </Button>

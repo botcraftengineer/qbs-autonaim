@@ -81,16 +81,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Help section
-  const helpPages = [
-    "/help/faq",
-    "/help/videos",
-    "/help/knowledge-base",
-  ].map((path) => ({
-    url: `${baseUrl}${path}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.7,
-  }));
+  const helpPages = ["/help/faq", "/help/videos", "/help/knowledge-base"].map(
+    (path) => ({
+      url: `${baseUrl}${path}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    }),
+  );
 
   // Pricing page (when implemented)
   const pricingPage = {

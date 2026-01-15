@@ -1,17 +1,19 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { ThumbsUp, ThumbsDown, Check } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ThumbsUp, ThumbsDown, Check } from "lucide-react";
 
 export function DocsFeedback() {
-  const [feedback, setFeedback] = useState<"positive" | "negative" | null>(null)
+  const [feedback, setFeedback] = useState<"positive" | "negative" | null>(
+    null,
+  );
 
   const handleFeedback = (type: "positive" | "negative") => {
-    setFeedback(type)
+    setFeedback(type);
     // Здесь можно отправить аналитику
-    console.log(`[v0] User feedback: ${type}`)
-  }
+    console.log(`[v0] User feedback: ${type}`);
+  };
 
   if (feedback) {
     return (
@@ -19,12 +21,14 @@ export function DocsFeedback() {
         <Check className="h-4 w-4 text-primary" />
         <p className="text-sm text-muted-foreground">Спасибо за отзыв!</p>
       </div>
-    )
+    );
   }
 
   return (
     <div className="flex items-center gap-4 rounded-lg border border-border bg-muted/50 px-4 py-3">
-      <p className="text-sm text-muted-foreground">Была ли эта страница полезной?</p>
+      <p className="text-sm text-muted-foreground">
+        Была ли эта страница полезной?
+      </p>
       <div className="flex gap-2">
         <Button
           variant="ghost"
@@ -46,5 +50,5 @@ export function DocsFeedback() {
         </Button>
       </div>
     </div>
-  )
+  );
 }

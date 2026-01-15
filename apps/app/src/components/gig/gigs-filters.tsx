@@ -1,5 +1,19 @@
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@qbs-autonaim/ui";
-import { IconFilter, IconLayoutGrid, IconLayoutList, IconSearch, IconSparkles } from "@tabler/icons-react";
+import {
+  Button,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@qbs-autonaim/ui";
+import {
+  IconFilter,
+  IconLayoutGrid,
+  IconLayoutList,
+  IconSearch,
+  IconSparkles,
+} from "@tabler/icons-react";
 import Link from "next/link";
 
 export type DisplayMode = "grid" | "list" | "compact";
@@ -137,11 +151,7 @@ export function GigsFilters({
       </div>
 
       <div className="flex w-full gap-2 md:w-auto">
-        <Button
-          asChild
-          variant="default"
-          className="flex-1 md:flex-initial"
-        >
+        <Button asChild variant="default" className="flex-1 md:flex-initial">
           <Link
             href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/create`}
             aria-label="Создать разовое задание"

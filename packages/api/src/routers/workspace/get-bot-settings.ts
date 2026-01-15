@@ -19,7 +19,8 @@ export const getBotSettings = protectedProcedure
     }
 
     const botSettings = await ctx.db.query.botSettings.findFirst({
-      where: (botSettings, { eq }) => eq(botSettings.workspaceId, input.workspaceId),
+      where: (botSettings, { eq }) =>
+        eq(botSettings.workspaceId, input.workspaceId),
     });
 
     return botSettings;

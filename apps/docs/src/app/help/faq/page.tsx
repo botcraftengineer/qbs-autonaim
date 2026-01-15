@@ -8,7 +8,8 @@ import { DocsToc } from "@/components/docs/docs-toc";
 
 export const metadata: Metadata = generatePageSEO("faq", {
   title: "Часто задаваемые вопросы — QBS Автонайм",
-  description: "Ответы на популярные вопросы о AI-платформе для рекрутинга. Цены, интеграции, возможности, поддержка клиентов из России.",
+  description:
+    "Ответы на популярные вопросы о AI-платформе для рекрутинга. Цены, интеграции, возможности, поддержка клиентов из России.",
   url: "/help/faq",
   keywords: [
     "FAQ QBS Автонайм",
@@ -181,34 +182,54 @@ export default function FAQPage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Часто задаваемые вопросы</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Часто задаваемые вопросы
+        </h1>
 
         <p className="text-lg">
-          Ответы на самые популярные вопросы о работе с QBS Автонайм.
-          Не нашли ответ? Напишите нам в{" "}
-          <a href="https://t.me/qbs_support" className="text-primary hover:underline">
+          Ответы на самые популярные вопросы о работе с QBS Автонайм. Не нашли
+          ответ? Напишите нам в{" "}
+          <a
+            href="https://t.me/qbs_support"
+            className="text-primary hover:underline"
+          >
             Telegram
           </a>{" "}
           или{" "}
-          <a href="mailto:support@qbs-autonaim.ru" className="text-primary hover:underline">
+          <a
+            href="mailto:support@qbs-autonaim.ru"
+            className="text-primary hover:underline"
+          >
             email
-          </a>.
+          </a>
+          .
         </p>
 
         <DocsMobileToc items={tocItems} />
 
         <DocsCallout type="info" title="Обновления">
-          FAQ обновляется регулярно. Последнее обновление: {new Date().toLocaleDateString('ru-RU')}.
+          FAQ обновляется регулярно. Последнее обновление:{" "}
+          {new Date().toLocaleDateString("ru-RU")}.
         </DocsCallout>
 
         {faqData.map((section) => (
           <div key={section.id}>
-            <h2 id={section.id} className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">{section.title}</h2>
+            <h2
+              id={section.id}
+              className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+            >
+              {section.title}
+            </h2>
             <div className="space-y-6">
               {section.questions.map((item, index) => (
-                <div key={index} className="border-b border-border pb-6 last:border-b-0">
+                <div
+                  key={index}
+                  className="border-b border-border pb-6 last:border-b-0"
+                >
                   <h3 className="text-lg font-semibold mb-2">{item.q}</h3>
-                  <p className="text-muted-foreground leading-relaxed">{item.a}</p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {item.a}
+                  </p>
                 </div>
               ))}
             </div>
@@ -217,8 +238,9 @@ export default function FAQPage() {
 
         <DocsCallout type="tip" title="Не нашли ответ?">
           <p>
-            Если ваш вопрос не освещён в FAQ, обратитесь в нашу службу поддержки.
-            Мы отвечаем в течение 2 часов в рабочее время и 4 часов в выходные.
+            Если ваш вопрос не освещён в FAQ, обратитесь в нашу службу
+            поддержки. Мы отвечаем в течение 2 часов в рабочее время и 4 часов в
+            выходные.
           </p>
           <div className="flex gap-4 mt-4">
             <a

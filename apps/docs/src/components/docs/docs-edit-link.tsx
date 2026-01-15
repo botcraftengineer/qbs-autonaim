@@ -1,12 +1,12 @@
-import { ExternalLink } from "lucide-react"
-import Link from "next/link"
+import { ExternalLink } from "lucide-react";
+import Link from "next/link";
 
 interface DocsEditLinkProps {
-  path: string
+  path: string;
 }
 
 export function DocsEditLink({ path }: DocsEditLinkProps) {
-  const githubUrl = `https://github.com/qbs-autonaim/edit/main/${path}`
+  const githubUrl = `https://github.com/qbs-autonaim/edit/main/${path}`;
 
   return (
     <Link
@@ -18,5 +18,5 @@ export function DocsEditLink({ path }: DocsEditLinkProps) {
       Редактировать страницу
       <ExternalLink className="h-3 w-3" />
     </Link>
-  )
+  );
 }

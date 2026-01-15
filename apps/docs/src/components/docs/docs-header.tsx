@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Menu, X, Moon, Sun } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { useState, useEffect } from "react"
-import { docsConfig } from "@/lib/docs-config"
-import { DocsSearch } from "./docs-search"
-import { useTheme } from "next-themes"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Menu, X, Moon, Sun } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { docsConfig } from "@/lib/docs-config";
+import { DocsSearch } from "./docs-search";
+import { useTheme } from "next-themes";
 
 export function DocsHeader() {
-  const pathname = usePathname()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { theme, setTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
+  const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -26,9 +26,13 @@ export function DocsHeader() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-sm font-bold text-primary-foreground">Q</span>
+              <span className="text-sm font-bold text-primary-foreground">
+                Q
+              </span>
             </div>
-            <span className="hidden font-semibold sm:inline-block">QBS Автонайм</span>
+            <span className="hidden font-semibold sm:inline-block">
+              QBS Автонайм
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
@@ -61,19 +65,37 @@ export function DocsHeader() {
               onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
               className="h-9 w-9"
             >
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              {theme === "dark" ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
               <span className="sr-only">Переключить тему</span>
             </Button>
           )}
 
-          <Button variant="ghost" size="sm" className="hidden md:inline-flex" asChild>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hidden md:inline-flex"
+            asChild
+          >
             <Link href="https://app.qbs-autonaim.ru" target="_blank">
               Войти
             </Link>
           </Button>
 
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
@@ -87,7 +109,9 @@ export function DocsHeader() {
           <nav className="flex flex-col p-4 max-h-[60vh] overflow-y-auto">
             {docsConfig.sidebarNav.map((section, index) => (
               <div key={index} className="py-2">
-                <h4 className="mb-1 text-sm font-semibold text-foreground">{section.title}</h4>
+                <h4 className="mb-1 text-sm font-semibold text-foreground">
+                  {section.title}
+                </h4>
                 <div className="flex flex-col gap-1">
                   {section.items?.map((item, itemIndex) => (
                     <Link
@@ -95,7 +119,9 @@ export function DocsHeader() {
                       href={item.href || "#"}
                       className={cn(
                         "py-1.5 text-sm",
-                        pathname === item.href ? "text-primary font-medium" : "text-muted-foreground",
+                        pathname === item.href
+                          ? "text-primary font-medium"
+                          : "text-muted-foreground",
                       )}
                       onClick={() => setMobileMenuOpen(false)}
                     >
@@ -109,5 +135,5 @@ export function DocsHeader() {
         </div>
       )}
     </header>
-  )
+  );
 }

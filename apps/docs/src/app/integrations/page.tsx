@@ -110,8 +110,8 @@ export default function IntegrationsPage() {
         </ol>
 
         <DocsCallout type="info" title="Безопасность">
-          Все интеграции используют безопасные протоколы авторизации. Ваши учётные данные
-          от внешних сервисов надёжно защищены.
+          Все интеграции используют безопасные протоколы авторизации. Ваши
+          учётные данные от внешних сервисов надёжно защищены.
         </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">

@@ -28,7 +28,9 @@ export default function PipelinePage() {
           </span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Воронка найма</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Воронка найма
+        </h1>
 
         <p className="text-lg">
           Воронка найма позволяет отслеживать статус кандидатов и управлять их
@@ -36,7 +38,12 @@ export default function PipelinePage() {
           организации процесса найма.
         </p>
 
-        <h2 id="pipeline-overview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Обзор воронки</h2>
+        <h2
+          id="pipeline-overview"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Обзор воронки
+        </h2>
 
         <p>
           Каждый кандидат находится на определённом этапе воронки. Вы можете
@@ -44,30 +51,47 @@ export default function PipelinePage() {
           отбора.
         </p>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Основные возможности:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Основные возможности:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Управление этапами</strong> — перемещайте кандидатов между
-            статусами
+            <strong className="font-semibold text-foreground">
+              Управление этапами
+            </strong>{" "}
+            — перемещайте кандидатов между статусами
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Фильтрация</strong> — отображайте кандидатов по оценке,
-            дате, источнику
+            <strong className="font-semibold text-foreground">
+              Фильтрация
+            </strong>{" "}
+            — отображайте кандидатов по оценке, дате, источнику
           </li>
           <li>
-            <strong className="font-semibold text-foreground">История изменений</strong> — отслеживайте все перемещения
-            кандидата
+            <strong className="font-semibold text-foreground">
+              История изменений
+            </strong>{" "}
+            — отслеживайте все перемещения кандидата
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Статистика</strong> — видите количество кандидатов на каждом
-            этапе
+            <strong className="font-semibold text-foreground">
+              Статистика
+            </strong>{" "}
+            — видите количество кандидатов на каждом этапе
           </li>
         </ul>
 
-        <h2 id="default-stages" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Основные этапы</h2>
+        <h2
+          id="default-stages"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Основные этапы
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Воронка включает базовые этапы для управления кандидатами:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Воронка включает базовые этапы для управления кандидатами:
+        </p>
 
         <div className="my-6 flex flex-col gap-2">
           {[
@@ -112,54 +136,93 @@ export default function PipelinePage() {
           все изменения статуса кандидата.
         </DocsCallout>
 
-        <h2 id="customization" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Управление кандидатами</h2>
+        <h2
+          id="customization"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Управление кандидатами
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Основные действия с кандидатами в воронке:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Основные действия с кандидатами в воронке:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Изменение этапа</strong> — перемещайте кандидата между
-            статусами
+            <strong className="font-semibold text-foreground">
+              Изменение этапа
+            </strong>{" "}
+            — перемещайте кандидата между статусами
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Добавление комментариев</strong> — оставляйте заметки о
-            кандидате
+            <strong className="font-semibold text-foreground">
+              Добавление комментариев
+            </strong>{" "}
+            — оставляйте заметки о кандидате
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Просмотр истории</strong> — отслеживайте все действия с
-            кандидатом
+            <strong className="font-semibold text-foreground">
+              Просмотр истории
+            </strong>{" "}
+            — отслеживайте все действия с кандидатом
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Отправка сообщений</strong> — общайтесь через Telegram или
-            веб-интервью
+            <strong className="font-semibold text-foreground">
+              Отправка сообщений
+            </strong>{" "}
+            — общайтесь через Telegram или веб-интервью
           </li>
         </ul>
 
-        <h2 id="automation" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Фильтрация и поиск</h2>
+        <h2
+          id="automation"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Фильтрация и поиск
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Используйте фильтры для быстрого поиска нужных кандидатов:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Используйте фильтры для быстрого поиска нужных кандидатов:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">По оценке</strong> — показать только 4-5 звезд
+            <strong className="font-semibold text-foreground">По оценке</strong>{" "}
+            — показать только 4-5 звезд
           </li>
           <li>
-            <strong className="font-semibold text-foreground">По источнику</strong> — HeadHunter, Kwork и др.
+            <strong className="font-semibold text-foreground">
+              По источнику
+            </strong>{" "}
+            — HeadHunter, Kwork и др.
           </li>
           <li>
-            <strong className="font-semibold text-foreground">По дате</strong> — новые за последнюю неделю
+            <strong className="font-semibold text-foreground">По дате</strong> —
+            новые за последнюю неделю
           </li>
           <li>
-            <strong className="font-semibold text-foreground">По вакансии</strong> — кандидаты конкретной позиции
+            <strong className="font-semibold text-foreground">
+              По вакансии
+            </strong>{" "}
+            — кандидаты конкретной позиции
           </li>
         </ul>
 
-        <h2 id="bulk-actions" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Экспорт данных</h2>
+        <h2
+          id="bulk-actions"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Экспорт данных
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Выгружайте данные о кандидатах для анализа:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Выгружайте данные о кандидатах для анализа:
+        </p>
 
         <ul>
-          <li className="text-foreground/80">Экспорт списка кандидатов в Excel</li>
+          <li className="text-foreground/80">
+            Экспорт списка кандидатов в Excel
+          </li>
           <li className="text-foreground/80">Выгрузка резюме в PDF</li>
           <li className="text-foreground/80">Статистика по этапам воронки</li>
         </ul>

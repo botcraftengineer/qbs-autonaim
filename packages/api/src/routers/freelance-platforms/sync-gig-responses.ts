@@ -1,4 +1,3 @@
-
 import { workspaceIdSchema } from "@qbs-autonaim/validators";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -15,7 +14,7 @@ export const syncGigResponses = protectedProcedure
     // Проверяем доступ к workspace
     const hasAccess = await ctx.workspaceRepository.checkAccess(
       input.workspaceId,
-      ctx.session.user.id
+      ctx.session.user.id,
     );
 
     if (!hasAccess) {

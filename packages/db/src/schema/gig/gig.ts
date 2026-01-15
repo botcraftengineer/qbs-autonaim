@@ -53,7 +53,9 @@ export const interviewScenario = pgTable(
       .notNull(),
   },
   (table) => ({
-    workspaceIdx: index("interview_scenario_workspace_idx").on(table.workspaceId),
+    workspaceIdx: index("interview_scenario_workspace_idx").on(
+      table.workspaceId,
+    ),
     activeIdx: index("interview_scenario_active_idx")
       .on(table.workspaceId, table.isActive)
       .where(sql`${table.isActive} = true`),
@@ -145,9 +147,12 @@ export const gig = pgTable(
     }),
 
     // Ссылка на сценарий интервью
-    interviewScenarioId: uuid("interview_scenario_id").references(() => interviewScenario.id, {
-      onDelete: "set null",
-    }),
+    interviewScenarioId: uuid("interview_scenario_id").references(
+      () => interviewScenario.id,
+      {
+        onDelete: "set null",
+      },
+    ),
 
     isActive: boolean("is_active").default(true),
     createdAt: timestamp("created_at", { withTimezone: true, mode: "date" })
@@ -230,14 +235,17 @@ export const UpdateGigSettingsSchema = z.object({
     .nullable(),
 });
 
-export const CreateInterviewScenarioSchema = createInsertSchema(interviewScenario, {
-  name: z.string().min(1).max(200),
-  description: z.string().optional(),
-  customBotInstructions: z.string().max(5000).optional(),
-  customScreeningPrompt: z.string().max(5000).optional(),
-  customInterviewQuestions: z.string().max(5000).optional(),
-  customOrganizationalQuestions: z.string().max(5000).optional(),
-}).omit({
+export const CreateInterviewScenarioSchema = createInsertSchema(
+  interviewScenario,
+  {
+    name: z.string().min(1).max(200),
+    description: z.string().optional(),
+    customBotInstructions: z.string().max(5000).optional(),
+    customScreeningPrompt: z.string().max(5000).optional(),
+    customInterviewQuestions: z.string().max(5000).optional(),
+    customOrganizationalQuestions: z.string().max(5000).optional(),
+  },
+).omit({
   id: true,
   workspaceId: true,
   isActive: true,

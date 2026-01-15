@@ -14,7 +14,8 @@ export default async function InterviewScenariosPage({ params }: PageProps) {
           Сценарии интервью
         </h1>
         <p className="text-muted-foreground mt-1">
-          Создавайте и управляйте сценариями проведения интервью для ваших заданий
+          Создавайте и управляйте сценариями проведения интервью для ваших
+          заданий
         </p>
       </div>
 

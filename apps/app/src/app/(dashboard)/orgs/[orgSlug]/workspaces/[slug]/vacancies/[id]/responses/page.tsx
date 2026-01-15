@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  Card,
-  Separator,
-} from "@qbs-autonaim/ui";
+import { Card, Separator } from "@qbs-autonaim/ui";
 import { IconMessage } from "@tabler/icons-react";
 import { useParams } from "next/navigation";
 import { ResponseTable } from "~/components/vacancy";

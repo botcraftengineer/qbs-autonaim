@@ -44,7 +44,9 @@ export default function TelegramIntegrationPage() {
     {
       title: "Опубликуйте ссылку на бота",
       content: (
-        <p className="leading-relaxed text-foreground/80 mb-4">Добавьте ссылку на бота в описание вакансий и на карьерный сайт.</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Добавьте ссылку на бота в описание вакансий и на карьерный сайт.
+        </p>
       ),
     },
   ];
@@ -63,84 +65,128 @@ export default function TelegramIntegrationPage() {
           <span className="text-sm font-medium text-primary">Интеграции</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Интеграция с Telegram</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Интеграция с Telegram
+        </h1>
 
         <p className="text-lg">
           Telegram-интеграция позволяет общаться с кандидатами через мессенджер
           и получать мгновенные уведомления о событиях в системе.
         </p>
 
-        <h2 id="use-cases" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Сценарии использования</h2>
+        <h2
+          id="use-cases"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Сценарии использования
+        </h2>
 
         <div className="my-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-lg border border-border p-4">
             <h4 className="font-medium text-foreground">Для рекрутеров</h4>
             <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-              <li className="text-foreground/80">Уведомления о новых откликах</li>
-              <li className="text-foreground/80">Напоминания о собеседованиях</li>
-              <li className="text-foreground/80">Быстрые действия с кандидатами</li>
+              <li className="text-foreground/80">
+                Уведомления о новых откликах
+              </li>
+              <li className="text-foreground/80">
+                Напоминания о собеседованиях
+              </li>
+              <li className="text-foreground/80">
+                Быстрые действия с кандидатами
+              </li>
             </ul>
           </div>
           <div className="rounded-lg border border-border p-4">
             <h4 className="font-medium text-foreground">Для кандидатов</h4>
             <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-              <li className="text-foreground/80">Отклик на вакансии через бота</li>
-              <li className="text-foreground/80">Отслеживание статуса заявки</li>
+              <li className="text-foreground/80">
+                Отклик на вакансии через бота
+              </li>
+              <li className="text-foreground/80">
+                Отслеживание статуса заявки
+              </li>
               <li className="text-foreground/80">Общение с AI-ассистентом</li>
             </ul>
           </div>
         </div>
 
-        <h2 id="bot-setup" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Настройка Telegram-бота</h2>
+        <h2
+          id="bot-setup"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Настройка Telegram-бота
+        </h2>
 
         <DocsSteps steps={botSetupSteps} />
 
         {/* PLACEHOLDER: Скриншот настройки Telegram бота */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Настройка Telegram бота</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Настройка Telegram бота
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать страницу интеграций с полем для ввода токена бота и списком доступных команд
+            Показать страницу интеграций с полем для ввода токена бота и списком
+            доступных команд
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations (вкладка Telegram)
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
+            (вкладка Telegram)
           </p>
         </div>
 
-        <h2 id="notifications" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Уведомления для команды</h2>
+        <h2
+          id="notifications"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Уведомления для команды
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">Настройте уведомления для вашей команды рекрутеров:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          Настройте уведомления для вашей команды рекрутеров:
+        </p>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Личные уведомления</strong> — каждый рекрутер получает
-            уведомления по своим вакансиям
+            <strong className="font-semibold text-foreground">
+              Личные уведомления
+            </strong>{" "}
+            — каждый рекрутер получает уведомления по своим вакансиям
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Групповой чат</strong> — все уведомления в общий чат команды
+            <strong className="font-semibold text-foreground">
+              Групповой чат
+            </strong>{" "}
+            — все уведомления в общий чат команды
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Канал</strong> — публикация важных событий в Telegram-канал
+            <strong className="font-semibold text-foreground">Канал</strong> —
+            публикация важных событий в Telegram-канал
           </li>
         </ul>
 
         <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
-          <p className="font-semibold text-foreground mb-3">Пример уведомления:</p>
+          <p className="font-semibold text-foreground mb-3">
+            Пример уведомления:
+          </p>
           <p className="text-sm whitespace-pre-line">
             🆕 Новый отклик на вакансию "Frontend-разработчик"
-            <br /><br />
-            👤 Иван Петров
             <br />
-            📍 Москва
+            <br />👤 Иван Петров
+            <br />📍 Москва
+            <br />💼 5 лет опыта
+            <br />⭐ Балл: 87/100
             <br />
-            💼 5 лет опыта
             <br />
-            ⭐ Балл: 87/100
-            <br /><br />
             [Посмотреть профиль] [Одобрить] [Отклонить]
           </p>
         </div>
 
-        <h2 id="candidate-chat" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Чат с кандидатами</h2>
+        <h2
+          id="candidate-chat"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Чат с кандидатами
+        </h2>
 
         <p>
           Кандидаты могут общаться с AI-ассистентом через Telegram-бота. Бот
@@ -149,10 +195,16 @@ export default function TelegramIntegrationPage() {
 
         <ul>
           <li className="text-foreground/80">Просмотр списка вакансий</li>
-          <li className="text-foreground/80">Отклик на вакансию с прикреплением резюме</li>
+          <li className="text-foreground/80">
+            Отклик на вакансию с прикреплением резюме
+          </li>
           <li className="text-foreground/80">Проверка статуса заявки</li>
-          <li className="text-foreground/80">Ответы на вопросы о вакансии и компании</li>
-          <li className="text-foreground/80">Назначение и подтверждение собеседований</li>
+          <li className="text-foreground/80">
+            Ответы на вопросы о вакансии и компании
+          </li>
+          <li className="text-foreground/80">
+            Назначение и подтверждение собеседований
+          </li>
         </ul>
 
         <DocsCallout type="tip" title="Совет">

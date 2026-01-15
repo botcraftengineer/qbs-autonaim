@@ -1,13 +1,13 @@
-import type React from "react"
-import { cn } from "@/lib/utils"
-import { AlertCircle, Info, Lightbulb, AlertTriangle } from "lucide-react"
+import type React from "react";
+import { cn } from "@/lib/utils";
+import { AlertCircle, Info, Lightbulb, AlertTriangle } from "lucide-react";
 
-type CalloutType = "info" | "warning" | "tip" | "note"
+type CalloutType = "info" | "warning" | "tip" | "note";
 
 interface DocsCalloutProps {
-  type?: CalloutType
-  title?: string
-  children: React.ReactNode
+  type?: CalloutType;
+  title?: string;
+  children: React.ReactNode;
 }
 
 const calloutConfig = {
@@ -31,19 +31,27 @@ const calloutConfig = {
     className: "border-border bg-muted/50",
     iconClassName: "text-muted-foreground",
   },
-}
+};
 
-export function DocsCallout({ type = "note", title, children }: DocsCalloutProps) {
-  const config = calloutConfig[type]
-  const Icon = config.icon
+export function DocsCallout({
+  type = "note",
+  title,
+  children,
+}: DocsCalloutProps) {
+  const config = calloutConfig[type];
+  const Icon = config.icon;
 
   return (
-    <div className={cn("my-6 flex gap-3 rounded-lg border p-4", config.className)}>
+    <div
+      className={cn("my-6 flex gap-3 rounded-lg border p-4", config.className)}
+    >
       <Icon className={cn("h-5 w-5 shrink-0 mt-0.5", config.iconClassName)} />
       <div className="flex-1">
         {title && <p className="font-semibold text-foreground mb-1">{title}</p>}
-        <div className="text-sm text-foreground/80 leading-relaxed">{children}</div>
+        <div className="text-sm text-foreground/80 leading-relaxed">
+          {children}
+        </div>
       </div>
     </div>
-  )
+  );
 }

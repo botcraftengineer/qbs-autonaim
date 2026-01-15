@@ -1,7 +1,13 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@qbs-autonaim/ui";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@qbs-autonaim/ui";
 import { IconEdit, IconTrash, IconLoader2 } from "@tabler/icons-react";
 import { Button } from "@qbs-autonaim/ui";
 import { useWorkspace } from "~/hooks/use-workspace";
@@ -58,7 +64,8 @@ export function InterviewScenariosList({
               У вас пока нет созданных сценариев интервью
             </p>
             <p className="text-sm text-muted-foreground">
-              Создайте свой первый сценарий, чтобы начать использовать готовые шаблоны вопросов
+              Создайте свой первый сценарий, чтобы начать использовать готовые
+              шаблоны вопросов
             </p>
           </div>
         </CardContent>

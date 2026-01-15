@@ -19,25 +19,69 @@ type SectionConfig = {
 // Конфигурация разделов с названиями, описаниями и ссылками на документацию
 const sectionConfig = {
   // Обзор
-  "/": { title: "Панель управления", description: "Обзор вашего рабочего пространства", docsUrl: "https://docs.hh.qbs.ru/dashboard" },
+  "/": {
+    title: "Панель управления",
+    description: "Обзор вашего рабочего пространства",
+    docsUrl: "https://docs.hh.qbs.ru/dashboard",
+  },
 
   // Рекрутинг
-  "/vacancies": { title: "Вакансии", description: "Управление вакансиями и их настройками", docsUrl: "https://docs.hh.qbs.ru/vacancies" },
-  "/gigs": { title: "Разовые задания", description: "Создание и управление разовыми задачами", docsUrl: "https://docs.hh.qbs.ru/gigs" },
-  "/responses": { title: "Отклики", description: "Просмотр и обработка откликов кандидатов", docsUrl: "https://docs.hh.qbs.ru/responses" },
-  "/candidates": { title: "Кандидаты", description: "База данных кандидатов и их профили", docsUrl: "https://docs.hh.qbs.ru/candidates" },
+  "/vacancies": {
+    title: "Вакансии",
+    description: "Управление вакансиями и их настройками",
+    docsUrl: "https://docs.hh.qbs.ru/vacancies",
+  },
+  "/gigs": {
+    title: "Разовые задания",
+    description: "Создание и управление разовыми задачами",
+    docsUrl: "https://docs.hh.qbs.ru/gigs",
+  },
+  "/responses": {
+    title: "Отклики",
+    description: "Просмотр и обработка откликов кандидатов",
+    docsUrl: "https://docs.hh.qbs.ru/responses",
+  },
+  "/candidates": {
+    title: "Кандидаты",
+    description: "База данных кандидатов и их профили",
+    docsUrl: "https://docs.hh.qbs.ru/candidates",
+  },
 
   // Коммуникации
-  "/chat": { title: "Чаты", description: "Общение с кандидатами и заказчиками", docsUrl: "https://docs.hh.qbs.ru/chat" },
-  "/funnel": { title: "Воронка найма", description: "Аналитика процесса подбора персонала", docsUrl: "https://docs.hh.qbs.ru/funnel" },
+  "/chat": {
+    title: "Чаты",
+    description: "Общение с кандидатами и заказчиками",
+    docsUrl: "https://docs.hh.qbs.ru/chat",
+  },
+  "/funnel": {
+    title: "Воронка найма",
+    description: "Аналитика процесса подбора персонала",
+    docsUrl: "https://docs.hh.qbs.ru/funnel",
+  },
 
   // Настройки
-  "/settings": { title: "Настройки", description: "Настройки аккаунта и рабочего пространства", docsUrl: "https://docs.hh.qbs.ru/settings" },
+  "/settings": {
+    title: "Настройки",
+    description: "Настройки аккаунта и рабочего пространства",
+    docsUrl: "https://docs.hh.qbs.ru/settings",
+  },
 
   // Создание/Редактирование
-  "create": { title: "Создание", description: "Создание новой вакансии или задания", docsUrl: "https://docs.hh.qbs.ru/creating" },
-  "edit": { title: "Редактирование", description: "Редактирование существующего контента", docsUrl: "https://docs.hh.qbs.ru/editing" },
-  "generate": { title: "Генерация", description: "Автоматическая генерация контента с помощью AI", docsUrl: "https://docs.hh.qbs.ru/generation" },
+  create: {
+    title: "Создание",
+    description: "Создание новой вакансии или задания",
+    docsUrl: "https://docs.hh.qbs.ru/creating",
+  },
+  edit: {
+    title: "Редактирование",
+    description: "Редактирование существующего контента",
+    docsUrl: "https://docs.hh.qbs.ru/editing",
+  },
+  generate: {
+    title: "Генерация",
+    description: "Автоматическая генерация контента с помощью AI",
+    docsUrl: "https://docs.hh.qbs.ru/generation",
+  },
 } as const;
 
 // Функция для определения текущего раздела на основе пути

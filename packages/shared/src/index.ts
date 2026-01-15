@@ -26,4 +26,8 @@ export type {
 
 // Серверные утилиты теперь экспортируются из @qbs-autonaim/server-utils
 // Экспорт клиентских утилит
-export { parsePlatformLink, getPlatformTaskUrl, type ParsedPlatformLink } from "./utils";
+export {
+  parsePlatformLink,
+  getPlatformTaskUrl,
+  type ParsedPlatformLink,
+} from "./utils";

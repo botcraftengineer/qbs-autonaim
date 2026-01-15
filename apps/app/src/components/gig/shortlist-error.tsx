@@ -7,8 +7,7 @@ export function ShortlistError() {
       <AlertCircle className="h-4 w-4" />
       <AlertTitle>Ошибка загрузки</AlertTitle>
       <AlertDescription>
-        Не удалось загрузить шортлист кандидатов. Попробуйте обновить
-        страницу.
+        Не удалось загрузить шортлист кандидатов. Попробуйте обновить страницу.
       </AlertDescription>
     </Alert>
   );

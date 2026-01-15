@@ -252,46 +252,58 @@ export class RankingService {
 
     // Определяем основные сильные стороны
     const strengths: string[] = [];
-    if (analysis.includes('опыт') || analysis.includes('experience')) {
-      strengths.push('Опытный специалист');
+    if (analysis.includes("опыт") || analysis.includes("experience")) {
+      strengths.push("Опытный специалист");
     }
-    if (analysis.includes('навык') || analysis.includes('skill')) {
-      strengths.push('Хорошие навыки');
+    if (analysis.includes("навык") || analysis.includes("skill")) {
+      strengths.push("Хорошие навыки");
     }
-    if (analysis.includes('цена') || analysis.includes('бюджет') || analysis.includes('price')) {
-      strengths.push('Адекватная цена');
+    if (
+      analysis.includes("цена") ||
+      analysis.includes("бюджет") ||
+      analysis.includes("price")
+    ) {
+      strengths.push("Адекватная цена");
     }
-    if (analysis.includes('срок') || analysis.includes('время') || analysis.includes('timeline')) {
-      strengths.push('Реалистичные сроки');
+    if (
+      analysis.includes("срок") ||
+      analysis.includes("время") ||
+      analysis.includes("timeline")
+    ) {
+      strengths.push("Реалистичные сроки");
     }
-    if (analysis.includes('портфолио') || analysis.includes('portfolio')) {
-      strengths.push('Есть портфолио');
+    if (analysis.includes("портфолио") || analysis.includes("portfolio")) {
+      strengths.push("Есть портфолио");
     }
 
     // Определяем уровень рекомендаций
-    let recommendationText = '';
+    let recommendationText = "";
     switch (recommendation) {
-      case 'HIGHLY_RECOMMENDED':
-        recommendationText = 'Настоятельно рекомендуем';
+      case "HIGHLY_RECOMMENDED":
+        recommendationText = "Настоятельно рекомендуем";
         break;
-      case 'RECOMMENDED':
-        recommendationText = 'Рекомендуем';
+      case "RECOMMENDED":
+        recommendationText = "Рекомендуем";
         break;
-      case 'NEUTRAL':
-        recommendationText = 'Возможный кандидат';
+      case "NEUTRAL":
+        recommendationText = "Возможный кандидат";
         break;
-      case 'NOT_RECOMMENDED':
-        recommendationText = 'Не рекомендуем';
+      case "NOT_RECOMMENDED":
+        recommendationText = "Не рекомендуем";
         break;
       default:
-        recommendationText = 'Требует оценки';
+        recommendationText = "Требует оценки";
     }
 
     // Формируем краткое резюме
     const scoreText = `${compositeScore}/100 баллов`;
-    const strengthsText = strengths.length > 0 ? ` • ${strengths.slice(0, 2).join(', ')}` : '';
+    const strengthsText =
+      strengths.length > 0 ? ` • ${strengths.slice(0, 2).join(", ")}` : "";
 
-    return `${recommendationText} (${scoreText})${strengthsText}`.substring(0, 500);
+    return `${recommendationText} (${scoreText})${strengthsText}`.substring(
+      0,
+      500,
+    );
   }
 
   /**

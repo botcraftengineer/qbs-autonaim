@@ -19,7 +19,9 @@ export default function AnalyticsPage() {
           <span className="text-sm font-medium text-primary">Аналитика</span>
         </div>
 
-        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">Аналитика</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-4">
+          Аналитика
+        </h1>
 
         <p className="text-lg">
           Базовая аналитика для отслеживания ключевых показателей процесса
@@ -27,32 +29,54 @@ export default function AnalyticsPage() {
           источникам.
         </p>
 
-        <h2 id="overview" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Доступные данные</h2>
+        <h2
+          id="overview"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Доступные данные
+        </h2>
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">Статистика по вакансиям</strong> — количество откликов,
-            средняя оценка кандидатов
+            <strong className="font-semibold text-foreground">
+              Статистика по вакансиям
+            </strong>{" "}
+            — количество откликов, средняя оценка кандидатов
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Источники кандидатов</strong> — HeadHunter,
-            фриланс-платформы, Gig-задания
+            <strong className="font-semibold text-foreground">
+              Источники кандидатов
+            </strong>{" "}
+            — HeadHunter, фриланс-платформы, Gig-задания
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Распределение по оценкам</strong> — сколько кандидатов
-            получили 1-5 звезд
+            <strong className="font-semibold text-foreground">
+              Распределение по оценкам
+            </strong>{" "}
+            — сколько кандидатов получили 1-5 звезд
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Активность по дням</strong> — динамика поступления откликов
+            <strong className="font-semibold text-foreground">
+              Активность по дням
+            </strong>{" "}
+            — динамика поступления откликов
           </li>
           <li>
-            <strong className="font-semibold text-foreground">ROI найма</strong> — окупаемость инвестиций в процесс подбора
+            <strong className="font-semibold text-foreground">ROI найма</strong>{" "}
+            — окупаемость инвестиций в процесс подбора
           </li>
         </ul>
 
-        <h2 id="dashboard" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Дашборд</h2>
+        <h2
+          id="dashboard"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Дашборд
+        </h2>
 
-        <p className="leading-relaxed text-foreground/80 mb-4">На главной странице отображаются основные метрики:</p>
+        <p className="leading-relaxed text-foreground/80 mb-4">
+          На главной странице отображаются основные метрики:
+        </p>
 
         <div className="my-6 grid gap-4 sm:grid-cols-2">
           {[
@@ -90,17 +114,24 @@ export default function AnalyticsPage() {
 
         {/* PLACEHOLDER: Скриншот дашборда с аналитикой */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Дашборд с метриками</p>
+          <p className="text-sm font-medium text-muted-foreground mb-2">
+            📸 Скриншот: Дашборд с метриками
+          </p>
           <p className="text-xs text-muted-foreground">
-            Показать карточки с метриками: Активные вакансии, Новые кандидаты, Средняя оценка, Обработано
+            Показать карточки с метриками: Активные вакансии, Новые кандидаты,
+            Средняя оценка, Обработано
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug] (главная страница workspace)
           </p>
         </div>
 
-
-        <h2 id="sections" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Экспорт данных</h2>
+        <h2
+          id="sections"
+          className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20"
+        >
+          Экспорт данных
+        </h2>
 
         <p className="leading-relaxed text-foreground/80 mb-4">
           Все метрики и отчёты можно экспортировать для дальнейшего анализа.
@@ -108,19 +139,29 @@ export default function AnalyticsPage() {
 
         <ul>
           <li>
-            <strong className="font-semibold text-foreground">CSV формат</strong> — для импорта в Excel или Google Sheets
+            <strong className="font-semibold text-foreground">
+              CSV формат
+            </strong>{" "}
+            — для импорта в Excel или Google Sheets
           </li>
           <li>
-            <strong className="font-semibold text-foreground">PDF отчёты</strong> — готовые презентационные материалы
+            <strong className="font-semibold text-foreground">
+              PDF отчёты
+            </strong>{" "}
+            — готовые презентационные материалы
           </li>
           <li>
-            <strong className="font-semibold text-foreground">Графики и диаграммы</strong> — визуализация данных
+            <strong className="font-semibold text-foreground">
+              Графики и диаграммы
+            </strong>{" "}
+            — визуализация данных
           </li>
         </ul>
 
         <DocsCallout type="tip" title="Экспорт данных">
-          Вы можете экспортировать все метрики и отчёты в CSV, Excel или JSON форматах
-          для дальнейшего анализа в BI-системах или корпоративных дашбордах.
+          Вы можете экспортировать все метрики и отчёты в CSV, Excel или JSON
+          форматах для дальнейшего анализа в BI-системах или корпоративных
+          дашбордах.
         </DocsCallout>
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">

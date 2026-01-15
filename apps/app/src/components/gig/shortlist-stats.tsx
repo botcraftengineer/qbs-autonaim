@@ -27,9 +27,7 @@ export function ShortlistStats({
             <p className="text-2xl font-bold">{candidatesCount}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-xs text-muted-foreground">
-              Всего ранжированных
-            </p>
+            <p className="text-xs text-muted-foreground">Всего ранжированных</p>
             <p className="text-2xl font-bold text-muted-foreground">
               {totalCandidates}
             </p>

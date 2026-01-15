@@ -153,7 +153,9 @@ export function GigCard({
   };
 
   return (
-    <Card className={`hover:shadow-sm transition-shadow h-full ${getUrgencyClass()}`}>
+    <Card
+      className={`hover:shadow-sm transition-shadow h-full ${getUrgencyClass()}`}
+    >
       <CardHeader className="pb-2">
         <div className="flex items-start justify-between gap-2">
           <div className="space-y-1.5 flex-1 min-w-0">
@@ -268,7 +270,12 @@ export function GigCard({
                 </DropdownMenuItem>
                 {gig.url && (
                   <DropdownMenuItem asChild>
-                    <a href={gig.url} target="_blank" rel="noopener noreferrer" className="flex items-center">
+                    <a
+                      href={gig.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center"
+                    >
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Открыть на {getPlatformDisplayName(gig.source)}
                     </a>

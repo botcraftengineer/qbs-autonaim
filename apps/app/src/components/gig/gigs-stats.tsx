@@ -13,41 +13,25 @@ export function GigsStats({ stats, isLoading }: GigsStatsProps) {
       <div className="rounded-lg border bg-card p-4">
         <p className="text-sm text-muted-foreground">Всего заданий</p>
         <p className="text-2xl font-bold tabular-nums">
-          {isLoading ? (
-            <Skeleton className="h-8 w-16" />
-          ) : (
-            stats.totalGigs
-          )}
+          {isLoading ? <Skeleton className="h-8 w-16" /> : stats.totalGigs}
         </p>
       </div>
       <div className="rounded-lg border bg-card p-4">
         <p className="text-sm text-muted-foreground">Активных</p>
         <p className="text-2xl font-bold tabular-nums">
-          {isLoading ? (
-            <Skeleton className="h-8 w-16" />
-          ) : (
-            stats.activeGigs
-          )}
+          {isLoading ? <Skeleton className="h-8 w-16" /> : stats.activeGigs}
         </p>
       </div>
       <div className="rounded-lg border bg-card p-4">
         <p className="text-sm text-muted-foreground">Всего откликов</p>
         <p className="text-2xl font-bold tabular-nums">
-          {isLoading ? (
-            <Skeleton className="h-8 w-16" />
-          ) : (
-            stats.totalResponses
-          )}
+          {isLoading ? <Skeleton className="h-8 w-16" /> : stats.totalResponses}
         </p>
       </div>
       <div className="rounded-lg border bg-card p-4">
         <p className="text-sm text-muted-foreground">Новых откликов</p>
         <p className="text-2xl font-bold tabular-nums text-green-600">
-          {isLoading ? (
-            <Skeleton className="h-8 w-16" />
-          ) : (
-            stats.newResponses
-          )}
+          {isLoading ? <Skeleton className="h-8 w-16" /> : stats.newResponses}
         </p>
       </div>
     </div>
