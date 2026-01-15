@@ -45,7 +45,7 @@ export abstract class BaseAgent<TInput, TOutput> {
       output: Output.object({
         schema: outputSchema,
       }),
-      stopWhen: stepCountIs(config.maxSteps || 10),
+      stopWhen: stepCountIs(config.maxSteps || 25),
     });
   }
 

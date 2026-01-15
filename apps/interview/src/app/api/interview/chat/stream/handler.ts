@@ -353,7 +353,7 @@ async function handler(request: Request) {
             system: systemPrompt,
             messages: formattedMessages,
             tools,
-            stopWhen: stepCountIs(5), // Allow up to 5 steps for tool calls and final response
+            stopWhen: stepCountIs(25), // Allow up to 25 steps for complex tool chains
             experimental_transform: smoothStream({ chunking: "word" }),
             experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
             onFinish: async () => {
@@ -377,7 +377,7 @@ async function handler(request: Request) {
               system: systemPrompt,
               messages: formattedMessages,
               tools,
-              stopWhen: stepCountIs(5), // Allow up to 5 steps for tool calls and final response
+              stopWhen: stepCountIs(25), // Allow up to 25 steps for complex tool chains
               experimental_transform: smoothStream({ chunking: "word" }),
               experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
               onFinish: async () => {
