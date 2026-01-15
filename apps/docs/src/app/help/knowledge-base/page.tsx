@@ -308,7 +308,9 @@ export default function KnowledgeBasePage() {
             Видео-инструкции
           </a>
           <a
-            href="/help/support"
+            href="https://t.me/qbs_autonaim"
+            target="_blank"
+            rel="noopener noreferrer"
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Поддержка

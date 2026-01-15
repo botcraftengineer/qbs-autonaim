@@ -305,7 +305,7 @@ export default function VideosPage() {
 
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <a
-            href="/help"
+            href="/help/knowledge-base"
             className="group flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
           >
             <span className="group-hover:-translate-x-0.5 transition-transform">

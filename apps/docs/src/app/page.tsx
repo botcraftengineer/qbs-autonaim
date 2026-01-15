@@ -149,8 +149,7 @@ export default function DocsIntroductionPage() {
             транскрибация аудио
           </li>
           <li>
-            <Link href="/settings">Безопасность и настройки</Link> — управление
-            доступом, приватность данных
+            Безопасность и настройки — управление доступом, приватность данных
           </li>
           <li>
             <Link href="/analytics">Аналитика найма</Link> — метрики

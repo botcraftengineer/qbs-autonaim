@@ -200,8 +200,7 @@ export default function RootLayout({
             <span
               className="fixed inset-0 pointer-events-none"
               style={{
-                backgroundImage:
-                  'linear-gradient(to bottom, rgba(59, 130, 246, 0.03), rgba(96, 165, 250, 0.08)), url("./background.png")',
+                backgroundImage: 'url("/background.png")',
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "right top",
                 backgroundAttachment: "fixed",
