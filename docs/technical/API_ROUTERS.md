@@ -202,11 +202,6 @@ const funnel = await trpc.funnel.analytics.query({
 - `update` - обновление gig
 - `delete` - удаление gig
 - `shortlist` - избранные кандидаты
-- `generateInterviewLink` - генерация ссылки на интервью
-- `getInterviewLink` - получение ссылки
-- `generateInvitationTemplate` - генерация шаблона приглашения
-- `syncResponseCounts` - синхронизация счетчиков откликов
-- `syncAllResponseCounts` - синхронизация всех счетчиков
 - `aiChat` - AI чат для gig
 - `chatGenerate` - генерация текста через AI
 
