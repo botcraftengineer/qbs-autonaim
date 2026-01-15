@@ -1,7 +1,6 @@
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
 import { DocsCallout } from "@/components/docs/docs-callout"
 import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsCode } from "@/components/docs/docs-code"
 import Link from "next/link"
 
 export default function TemplatesPage() {
@@ -72,46 +71,47 @@ export default function TemplatesPage() {
 
         <h3 className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Приглашение на собеседование</h3>
 
-        <DocsCode
-          title="invite_interview.txt"
-          language="text"
-          code={`Здравствуйте, {{candidate.name}}!
-
-Благодарим за интерес к позиции {{vacancy.title}} в {{company.name}}.
-
-Мы изучили ваше резюме и хотели бы пригласить вас на собеседование.
-
-Предлагаем встретиться {{interview.date}} в {{interview.time}}.
-Формат: {{interview.format}}
-
-Пожалуйста, подтвердите своё участие или предложите альтернативное время.
-
-С уважением,
-{{recruiter.name}}
-{{company.name}}`}
-        />
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <p className="text-sm whitespace-pre-line">
+            Здравствуйте, [Имя кандидата]!
+            <br /><br />
+            Благодарим за интерес к позиции [Название вакансии] в [Название компании].
+            <br /><br />
+            Мы изучили ваше резюме и хотели бы пригласить вас на собеседование.
+            <br /><br />
+            Предлагаем встретиться [Дата] в [Время].
+            <br />
+            Формат: [Формат интервью]
+            <br /><br />
+            Пожалуйста, подтвердите своё участие или предложите альтернативное время.
+            <br /><br />
+            С уважением,
+            <br />
+            [Имя рекрутера]
+            <br />
+            [Название компании]
+          </p>
+        </div>
 
         <h3 className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Отказ с обратной связью</h3>
 
-        <DocsCode
-          title="rejection.txt"
-          language="text"
-          code={`Здравствуйте, {{candidate.name}}!
-
-Благодарим вас за интерес к позиции {{vacancy.title}} и время, 
-уделённое нашему процессу отбора.
-
-К сожалению, мы приняли решение продолжить с другими кандидатами, 
-чей опыт более точно соответствует текущим требованиям.
-
-Мы сохраним ваше резюме в нашей базе и свяжемся с вами, 
-если появятся подходящие возможности.
-
-Желаем успехов в поиске работы!
-
-С уважением,
-{{recruiter.name}}`}
-        />
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <p className="text-sm whitespace-pre-line">
+            Здравствуйте, [Имя кандидата]!
+            <br /><br />
+            Благодарим вас за интерес к позиции [Название вакансии] и время, уделённое нашему процессу отбора.
+            <br /><br />
+            К сожалению, мы приняли решение продолжить с другими кандидатами, чей опыт более точно соответствует текущим требованиям.
+            <br /><br />
+            Мы сохраним ваше резюме в нашей базе и свяжемся с вами, если появятся подходящие возможности.
+            <br /><br />
+            Желаем успехов в поиске работы!
+            <br /><br />
+            С уважением,
+            <br />
+            [Имя рекрутера]
+          </p>
+        </div>
 
         <h2 id="best-practices" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Лучшие практики</h2>
 

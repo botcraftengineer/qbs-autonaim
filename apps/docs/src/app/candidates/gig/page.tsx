@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
-import { DocsCode } from "@/components/docs/docs-code";
 import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function GigPage() {
@@ -77,22 +76,17 @@ export default function GigPage() {
           <li className="text-foreground/80">Настройте критерии отбора для AI</li>
         </ol>
 
-        <DocsCode
-          title="Пример структуры задания"
-          language="typescript"
-          code={`{
-  title: "Разработка Telegram-бота",
-  description: "Нужен бот для автоматизации рассылок",
-  budget: { min: 30000, max: 50000, currency: "RUB" },
-  deadline: "2024-02-15",
-  platforms: ["kwork", "fl.ru", "habr"],
-  requirements: {
-    skills: ["Node.js", "Telegram боты"],
-    experience: "1+ год",
-    portfolio: true
-  }
-}`}
-        />
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <h4 className="font-semibold text-foreground mb-3">Пример задания</h4>
+          <div className="space-y-2 text-sm">
+            <p><strong className="font-semibold text-foreground">Название:</strong> Разработка Telegram-бота</p>
+            <p><strong className="font-semibold text-foreground">Описание:</strong> Нужен бот для автоматизации рассылок</p>
+            <p><strong className="font-semibold text-foreground">Бюджет:</strong> 30,000 - 50,000 ₽</p>
+            <p><strong className="font-semibold text-foreground">Срок:</strong> 15 февраля 2024</p>
+            <p><strong className="font-semibold text-foreground">Платформы:</strong> Kwork, FL.ru, Habr</p>
+            <p><strong className="font-semibold text-foreground">Требования:</strong> Node.js, Telegram боты, опыт 1+ год, наличие портфолио</p>
+          </div>
+        </div>
 
         {/* PLACEHOLDER: Скриншот создания Gig-задания */}
         <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
-import { DocsCode } from "@/components/docs/docs-code";
 import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function ScoringPage() {

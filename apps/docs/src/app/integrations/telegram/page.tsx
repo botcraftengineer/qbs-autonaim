@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
-import { DocsCode } from "@/components/docs/docs-code";
 import { DocsSteps } from "@/components/docs/docs-steps";
 import { DocsToc } from "@/components/docs/docs-toc";
 
@@ -124,18 +123,22 @@ export default function TelegramIntegrationPage() {
           </li>
         </ul>
 
-        <DocsCode
-          title="Пример уведомления"
-          language="text"
-          code={`🆕 Новый отклик на вакансию "Frontend-разработчик"
-
-👤 Иван Петров
-📍 Москва
-💼 5 лет опыта
-⭐ Балл: 87/100
-
-[Посмотреть профиль] [Одобрить] [Отклонить]`}
-        />
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <p className="font-semibold text-foreground mb-3">Пример уведомления:</p>
+          <p className="text-sm whitespace-pre-line">
+            🆕 Новый отклик на вакансию "Frontend-разработчик"
+            <br /><br />
+            👤 Иван Петров
+            <br />
+            📍 Москва
+            <br />
+            💼 5 лет опыта
+            <br />
+            ⭐ Балл: 87/100
+            <br /><br />
+            [Посмотреть профиль] [Одобрить] [Отклонить]
+          </p>
+        </div>
 
         <h2 id="candidate-chat" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Чат с кандидатами</h2>
 

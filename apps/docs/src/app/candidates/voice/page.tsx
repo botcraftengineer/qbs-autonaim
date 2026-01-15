@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
-import { DocsCode } from "@/components/docs/docs-code";
 import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function VoicePage() {
@@ -88,26 +87,16 @@ export default function VoicePage() {
           </li>
         </ul>
 
-        <DocsCode
-          title="Процесс обработки голосового сообщения"
-          language="typescript"
-          code={`// 1. Кандидат отправляет голосовое сообщение
-const voiceMessage = await telegram.getFile(message.voice.file_id);
-
-// 2. Система скачивает аудио
-const audioBuffer = await downloadFile(voiceMessage.file_path);
-
-// 3. Whisper транскрибирует в текст
-const transcription = await openai.audio.transcriptions.create({
-  file: audioBuffer,
-  model: "whisper-1",
-  language: "ru"
-});
-
-// 4. AI анализирует текст ответа
-const analysis = await analyzeResponse(transcription.text);`}
-        />
-
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <p className="font-semibold text-foreground mb-3">Процесс обработки голосового сообщения:</p>
+          <ol className="ml-6 list-decimal space-y-2 text-sm">
+            <li>Кандидат отправляет голосовое сообщение через Telegram или веб-интерфейс</li>
+            <li>Система автоматически скачивает аудиофайл</li>
+            <li>AI транскрибирует голос в текст на русском языке</li>
+            <li>Текст анализируется и оценивается по критериям вакансии</li>
+            <li>Результат сохраняется в профиле кандидата</li>
+          </ol>
+        </div>
         <h2 id="telegram" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Telegram-интервью</h2>
 
         <p>

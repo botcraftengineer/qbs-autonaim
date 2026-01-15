@@ -1,7 +1,6 @@
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
 import { DocsCallout } from "@/components/docs/docs-callout"
 import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsCode } from "@/components/docs/docs-code"
 import Link from "next/link"
 
 export default function ScenariosPage() {
@@ -73,51 +72,45 @@ export default function ScenariosPage() {
 
         <h3 className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Frontend разработчик (Middle)</h3>
 
-        <DocsCode
-          title="frontend-middle.json"
-          language="json"
-          code={`{
-  "name": "Frontend Developer (Middle)",
-  "duration": 30,
-  "questions": [
-    "Расскажите о вашем опыте работы с React",
-    "Как вы организуете state management в крупных приложениях?",
-    "Опишите процесс оптимизации производительности React-приложения",
-    "Какие подходы к тестированию вы используете?",
-    "Расскажите о сложной технической задаче, которую вы решили"
-  ],
-  "criteria": [
-    "Глубина знаний React",
-    "Понимание архитектуры",
-    "Опыт оптимизации",
-    "Навыки тестирования"
-  ]
-}`}
-        />
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <p className="font-semibold text-foreground mb-2">Длительность: 30 минут</p>
+          <p className="font-semibold text-foreground mb-3">Вопросы:</p>
+          <ol className="ml-6 list-decimal space-y-2 text-sm">
+            <li>Расскажите о вашем опыте работы с React</li>
+            <li>Как вы организуете state management в крупных приложениях?</li>
+            <li>Опишите процесс оптимизации производительности React-приложения</li>
+            <li>Какие подходы к тестированию вы используете?</li>
+            <li>Расскажите о сложной технической задаче, которую вы решили</li>
+          </ol>
+          <p className="font-semibold text-foreground mt-4 mb-2">Критерии оценки:</p>
+          <ul className="ml-6 list-disc space-y-1 text-sm">
+            <li>Глубина знаний React</li>
+            <li>Понимание архитектуры</li>
+            <li>Опыт оптимизации</li>
+            <li>Навыки тестирования</li>
+          </ul>
+        </div>
 
         <h3 className="text-lg font-semibold text-foreground mt-8 mb-3 scroll-mt-20">Product Manager</h3>
 
-        <DocsCode
-          title="product-manager.json"
-          language="json"
-          code={`{
-  "name": "Product Manager",
-  "duration": 40,
-  "questions": [
-    "Опишите процесс запуска нового продукта",
-    "Как вы приоритизируете фичи в бэклоге?",
-    "Расскажите о работе с метриками продукта",
-    "Как вы взаимодействуете с командой разработки?",
-    "Приведите пример успешного продуктового решения"
-  ],
-  "criteria": [
-    "Продуктовое мышление",
-    "Аналитические навыки",
-    "Коммуникация",
-    "Опыт запуска продуктов"
-  ]
-}`}
-        />
+        <div className="my-6 rounded-lg border border-border p-6 bg-muted/30">
+          <p className="font-semibold text-foreground mb-2">Длительность: 40 минут</p>
+          <p className="font-semibold text-foreground mb-3">Вопросы:</p>
+          <ol className="ml-6 list-decimal space-y-2 text-sm">
+            <li>Опишите процесс запуска нового продукта</li>
+            <li>Как вы приоритизируете фичи в бэклоге?</li>
+            <li>Расскажите о работе с метриками продукта</li>
+            <li>Как вы взаимодействуете с командой разработки?</li>
+            <li>Приведите пример успешного продуктового решения</li>
+          </ol>
+          <p className="font-semibold text-foreground mt-4 mb-2">Критерии оценки:</p>
+          <ul className="ml-6 list-disc space-y-1 text-sm">
+            <li>Продуктовое мышление</li>
+            <li>Аналитические навыки</li>
+            <li>Коммуникация</li>
+            <li>Опыт запуска продуктов</li>
+          </ul>
+        </div>
 
         <h2 id="best-practices" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Лучшие практики</h2>
 
