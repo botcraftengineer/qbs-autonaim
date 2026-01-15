@@ -1,27 +1,27 @@
-import type { Metadata } from "next"
+import type { Metadata } from "next";
 
 export interface PageSEO {
-  title: string
-  description: string
-  keywords?: string[]
-  image?: string
-  url?: string
-  type?: "website" | "article"
-  publishedTime?: string
-  modifiedTime?: string
-  authors?: string[]
-  section?: string
+  title: string;
+  description: string;
+  keywords?: string[];
+  image?: string;
+  url?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  authors?: string[];
+  section?: string;
 }
 
 export function generateSEO(page: PageSEO): Metadata {
-  const baseUrl = "https://docs.qbs-autonaim.ru"
-  const url = page.url ? `${baseUrl}${page.url}` : baseUrl
+  const baseUrl = "https://docs.qbs-autonaim.ru";
+  const url = page.url ? `${baseUrl}${page.url}` : baseUrl;
 
   return {
     title: page.title,
     description: page.description,
     keywords: page.keywords,
-    authors: page.authors?.map(name => ({ name })),
+    authors: page.authors?.map((name) => ({ name })),
     alternates: {
       canonical: url,
     },
@@ -61,14 +61,15 @@ export function generateSEO(page: PageSEO): Metadata {
         "max-snippet": -1,
       },
     },
-  }
+  };
 }
 
 // Предустановленные SEO конфигурации для разных типов страниц
 export const seoConfigs = {
   home: {
     title: "Документация QBS Автонайм — AI для автоматизации рекрутинга",
-    description: "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram. AI-скрининг резюме, автоматические интервью, аналитика найма.",
+    description:
+      "Полная документация AI-платформы для автоматизации найма персонала. Интеграция с HH.ru, SuperJob, Telegram. AI-скрининг резюме, автоматические интервью, аналитика найма.",
     keywords: [
       "рекрутинг",
       "HR AI",
@@ -87,7 +88,8 @@ export const seoConfigs = {
 
   quickstart: {
     title: "Быстрый старт QBS Автонайм — настройка за 5 минут",
-    description: "Пошаговое руководство по быстрой настройке AI-платформы для рекрутинга. Подключение HH.ru, создание вакансий, запуск AI-скрининга кандидатов.",
+    description:
+      "Пошаговое руководство по быстрой настройке AI-платформы для рекрутинга. Подключение HH.ru, создание вакансий, запуск AI-скрининга кандидатов.",
     keywords: [
       "настройка QBS Автонайм",
       "быстрый старт рекрутинг",
@@ -100,7 +102,8 @@ export const seoConfigs = {
 
   screening: {
     title: "AI-скрининг резюме — автоматический отбор кандидатов",
-    description: "Как работает AI-скрининг резюме в QBS Автонайм. Автоматическая оценка кандидатов, настройка критериев, повышение эффективности найма до 80%.",
+    description:
+      "Как работает AI-скрининг резюме в QBS Автонайм. Автоматическая оценка кандидатов, настройка критериев, повышение эффективности найма до 80%.",
     keywords: [
       "AI скрининг резюме",
       "автоматический отбор кандидатов",
@@ -113,7 +116,8 @@ export const seoConfigs = {
 
   hhIntegration: {
     title: "Интеграция с HH.ru — синхронизация вакансий и откликов",
-    description: "Подключение интеграции с HeadHunter. Автоматический импорт вакансий и кандидатов, синхронизация статусов, управление откликами из QBS Автонайм.",
+    description:
+      "Подключение интеграции с HeadHunter. Автоматический импорт вакансий и кандидатов, синхронизация статусов, управление откликами из QBS Автонайм.",
     keywords: [
       "интеграция HH.ru",
       "HeadHunter API",
@@ -124,10 +128,10 @@ export const seoConfigs = {
     ],
   },
 
-
   aiAssistant: {
     title: "AI-ассистент рекрутера — чат и автоответы кандидатам",
-    description: "AI-ассистент для проведения интервью через Telegram и веб-интерфейс. Автоматические ответы, чат с кандидатами, шаблоны сообщений, повышение качества найма.",
+    description:
+      "AI-ассистент для проведения интервью через Telegram и веб-интерфейс. Автоматические ответы, чат с кандидатами, шаблоны сообщений, повышение качества найма.",
     keywords: [
       "AI ассистент рекрутер",
       "чат с кандидатами",
@@ -140,7 +144,8 @@ export const seoConfigs = {
 
   analytics: {
     title: "Аналитика найма — метрики и отчёты по эффективности рекрутинга",
-    description: "Аналитика HR-процессов в QBS Автонайм. Метрики найма, конверсия воронки, время закрытия вакансий, ROI рекрутинга, отчёты для руководства.",
+    description:
+      "Аналитика HR-процессов в QBS Автонайм. Метрики найма, конверсия воронки, время закрытия вакансий, ROI рекрутинга, отчёты для руководства.",
     keywords: [
       "аналитика рекрутинга",
       "метрики найма",
@@ -150,10 +155,27 @@ export const seoConfigs = {
       "эффективность подбора",
     ],
   },
-}
+
+  "knowledge-base": {
+    title: "База знаний QBS Автонайм — статьи и гайды по рекрутингу",
+    description:
+      "База знаний по AI-рекрутингу. Статьи о лучших практиках найма, кейсы компаний, советы по работе с кандидатами. Полезные материалы для HR.",
+    keywords: [
+      "база знаний HR",
+      "статьи о рекрутинге",
+      "лучшие практики найма",
+      "кейсы компаний",
+      "гайды по AI HR",
+      "советы рекрутерам",
+    ],
+  },
+};
 
 // Функция для генерации SEO с предустановками
-export function generatePageSEO(pageKey: keyof typeof seoConfigs, overrides?: Partial<PageSEO>): Metadata {
-  const baseConfig = seoConfigs[pageKey]
-  return generateSEO({ ...baseConfig, ...overrides })
+export function generatePageSEO(
+  pageKey: keyof typeof seoConfigs,
+  overrides?: Partial<PageSEO>,
+): Metadata {
+  const baseConfig = seoConfigs[pageKey];
+  return generateSEO({ ...baseConfig, ...overrides });
 }
