@@ -37,10 +37,6 @@ export default function DocsIntroductionPage() {
 
         <DocsMobileToc items={tocItems} />
 
-        <DocsBreadcrumb
-          items={[{ title: "Начало работы" }, { title: "Введение" }]}
-        />
-
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">
             Начало работы
