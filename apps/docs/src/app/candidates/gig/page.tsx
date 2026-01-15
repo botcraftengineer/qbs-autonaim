@@ -46,9 +46,6 @@ export default function GigPage() {
 
         <ul>
           <li>
-            <strong>Upwork</strong> — международная платформа для фрилансеров
-          </li>
-          <li>
             <strong>Kwork</strong> — российская платформа микрозаданий
           </li>
           <li>

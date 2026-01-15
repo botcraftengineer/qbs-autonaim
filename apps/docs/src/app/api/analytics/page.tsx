@@ -74,9 +74,9 @@ export default function APIAnalyticsPage() {
   },
   "topSources": [
     {"source": "hh.ru", "count": 234},
-    {"source": "upwork", "count": 89},
-    {"source": "kwork", "count": 67},
-    {"source": "telegram", "count": 45}
+    {"source": "kwork", "count": 89},
+    {"source": "telegram", "count": 67},
+    {"source": "fl.ru", "count": 45}
   ]
 }`}
         />

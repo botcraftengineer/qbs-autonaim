@@ -167,7 +167,7 @@ const url = await trpc.files.getFileUrl.query({
 ```typescript
 const vacancies = await trpc.freelancePlatforms.getVacancies.query({
   workspaceId: "workspace-id",
-  platform: "UPWORK"
+  platform: "KWORK"
 });
 ```
 
