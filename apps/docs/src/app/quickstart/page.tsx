@@ -45,10 +45,20 @@ export default function QuickstartPage() {
             В разделе «Интеграции» войдите в аккаунт работодателя на HH.ru.
             Данные хранятся в зашифрованном виде по стандартам ФЗ-152.
           </p>
-          <p>
+          <p className="mb-4">
             Система импортирует все активные вакансии и начнёт собирать новые отклики
             автоматически.
           </p>
+          {/* PLACEHOLDER: Скриншот страницы интеграций */}
+          <div className="my-4 rounded-lg border-2 border-dashed border-border bg-muted/30 p-6 text-center">
+            <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Страница интеграций с HH.ru</p>
+            <p className="text-xs text-muted-foreground">
+              Показать раздел Настройки → Интеграции с кнопкой "Подключить HH.ru"
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
+            </p>
+          </div>
         </div>
       ),
     },
@@ -60,10 +70,20 @@ export default function QuickstartPage() {
             Откройте вакансию и настройте критерии оценки: опыт работы, навыки,
             образование. AI обучен на большом объеме данных и понимает специфику рынка.
           </p>
-          <p>
+          <p className="mb-4">
             Пример: Для вакансии "Python-разработчик" AI проверит знание Django,
             опыт с PostgreSQL, наличие высшего образования.
           </p>
+          {/* PLACEHOLDER: Скриншот настройки критериев вакансии */}
+          <div className="my-4 rounded-lg border-2 border-dashed border-border bg-muted/30 p-6 text-center">
+            <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Настройка критериев вакансии</p>
+            <p className="text-xs text-muted-foreground">
+              Показать форму редактирования вакансии с полями: требуемые навыки, опыт, образование
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/edit
+            </p>
+          </div>
         </div>
       ),
     },
@@ -75,10 +95,20 @@ export default function QuickstartPage() {
             Новые отклики автоматически оцениваются по шкале 0-100 баллов.
             Кандидаты сортируются по релевантности — лучшие сверху.
           </p>
-          <p>
+          <p className="mb-4">
             <strong className="font-semibold text-foreground">Результат:</strong> Вместо просмотра 100 резюме вручную,
             вы сразу видите топ-10 кандидатов с обоснованием оценки.
           </p>
+          {/* PLACEHOLDER: Скриншот списка откликов с оценками */}
+          <div className="my-4 rounded-lg border-2 border-dashed border-border bg-muted/30 p-6 text-center">
+            <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Список откликов с AI-оценками</p>
+            <p className="text-xs text-muted-foreground">
+              Показать таблицу откликов с колонками: Кандидат, Оценка (0-100), Навыки, Статус
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/responses
+            </p>
+          </div>
         </div>
       ),
     },
@@ -121,6 +151,17 @@ export default function QuickstartPage() {
           Для начала работы вам потребуется создать аккаунт в QBS Автонайм.
           Процесс регистрации занимает менее минуты.
         </p>
+
+        {/* PLACEHOLDER: Скриншот страницы регистрации */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Страница регистрации</p>
+          <p className="text-xs text-muted-foreground">
+            Показать форму регистрации с полями: Email, Пароль, Название компании, Телефон
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /auth/signup
+          </p>
+        </div>
 
         <h2 id="steps" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Пошаговая настройка</h2>
 

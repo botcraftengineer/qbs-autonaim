@@ -112,6 +112,17 @@ export default function ScreeningPage() {
           HH.ru обработка происходит параллельно через фоновые задачи (Inngest).
         </DocsCallout>
 
+        {/* PLACEHOLDER: Скриншот процесса AI-скрининга */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Процесс AI-скрининга</p>
+          <p className="text-xs text-muted-foreground">
+            Показать карточку отклика с процессом анализа: парсинг → анализ → оценка → результат
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id]
+          </p>
+        </div>
+
         <h2 id="criteria-setup" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Настройка критериев скрининга</h2>
 
         <p>
@@ -120,6 +131,17 @@ export default function ScreeningPage() {
         </p>
 
         <DocsSteps steps={setupSteps} />
+
+        {/* PLACEHOLDER: Скриншот настройки критериев */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Настройка критериев скрининга</p>
+          <p className="text-xs text-muted-foreground">
+            Показать форму с полями: Обязательные навыки, Желательные навыки, Опыт работы, Веса критериев (слайдеры 1-10)
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/settings
+          </p>
+        </div>
 
         <h2 id="results" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Результаты скрининга</h2>
 
@@ -148,6 +170,17 @@ export default function ScreeningPage() {
           Регулярно проверяйте точность скрининга, сравнивая решения AI с вашими
           оценками. Это поможет улучшить критерии и повысить качество отбора.
         </DocsCallout>
+
+        {/* PLACEHOLDER: Скриншот результатов скрининга */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Детальный отчёт скрининга</p>
+          <p className="text-xs text-muted-foreground">
+            Показать карточку кандидата с: Общий балл (0-100), Разбивка по критериям, Выявленные риски, Рекомендации AI
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id] (вкладка "AI-анализ")
+          </p>
+        </div>
 
         <h2 id="bulk-processing" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Массовая обработка</h2>
 

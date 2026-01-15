@@ -106,6 +106,17 @@ export default function HHIntegrationPage() {
 
         <DocsSteps steps={setupSteps} />
 
+        {/* PLACEHOLDER: Скриншот настройки интеграции HH.ru */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Подключение HH.ru</p>
+          <p className="text-xs text-muted-foreground">
+            Показать страницу интеграций с кнопкой "Подключить HH.ru" и формой авторизации
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
+          </p>
+        </div>
+
         <h2 id="sync-settings" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Параметры синхронизации</h2>
 
         <div className="my-6 overflow-hidden rounded-lg border border-border">

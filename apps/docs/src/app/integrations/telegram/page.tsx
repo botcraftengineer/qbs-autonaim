@@ -96,6 +96,17 @@ export default function TelegramIntegrationPage() {
 
         <DocsSteps steps={botSetupSteps} />
 
+        {/* PLACEHOLDER: Скриншот настройки Telegram бота */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Настройка Telegram бота</p>
+          <p className="text-xs text-muted-foreground">
+            Показать страницу интеграций с полем для ввода токена бота и списком доступных команд
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations (вкладка Telegram)
+          </p>
+        </div>
+
         <h2 id="notifications" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Уведомления для команды</h2>
 
         <p className="leading-relaxed text-foreground/80 mb-4">Настройте уведомления для вашей команды рекрутеров:</p>

@@ -88,6 +88,17 @@ export default function AnalyticsPage() {
           ))}
         </div>
 
+        {/* PLACEHOLDER: Скриншот дашборда с аналитикой */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Дашборд с метриками</p>
+          <p className="text-xs text-muted-foreground">
+            Показать карточки с метриками: Активные вакансии, Новые кандидаты, Средняя оценка, Обработано
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug] (главная страница workspace)
+          </p>
+        </div>
+
 
         <h2 id="sections" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Экспорт данных</h2>
 

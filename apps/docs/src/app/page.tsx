@@ -37,6 +37,17 @@ export default function DocsIntroductionPage() {
 
         <DocsMobileToc items={tocItems} />
 
+        {/* PLACEHOLDER: Скриншот главной страницы */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Главная страница платформы</p>
+          <p className="text-xs text-muted-foreground">
+            Показать дашборд с: Статистика (активные вакансии, новые отклики), Последние кандидаты, Быстрые действия
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]
+          </p>
+        </div>
+
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium text-primary">
             Начало работы

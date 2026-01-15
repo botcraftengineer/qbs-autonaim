@@ -94,6 +94,17 @@ export default function GigPage() {
 }`}
         />
 
+        {/* PLACEHOLDER: Скриншот создания Gig-задания */}
+        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
+          <p className="text-sm font-medium text-muted-foreground mb-2">📸 Скриншот: Форма создания Gig-задания</p>
+          <p className="text-xs text-muted-foreground">
+            Показать форму с полями: Название, Описание, Бюджет, Срок, Платформы (чекбоксы), Требования
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Путь: /orgs/[orgSlug]/workspaces/[slug]/gigs/create
+          </p>
+        </div>
+
         <h2 id="responses" className="text-xl font-semibold tracking-tight text-foreground mt-10 mb-4 scroll-mt-20">Управление откликами</h2>
 
         <p className="leading-relaxed text-foreground/80 mb-4">После публикации задания система автоматически:</p>
