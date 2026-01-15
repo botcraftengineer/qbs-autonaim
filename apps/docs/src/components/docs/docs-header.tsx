@@ -33,28 +33,28 @@ export function DocsHeader() {
 
           <nav className="hidden items-center gap-1 md:flex">
             <Link
-              href="/docs"
+              href="/"
               className={cn(
                 "relative px-3 py-2 text-sm font-medium transition-colors",
-                pathname.startsWith("/docs") && !pathname.startsWith("/docs/api")
+                pathname === "/" || (pathname.startsWith("/") && !pathname.startsWith("/api"))
                   ? "text-foreground"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
               Документация
-              {pathname.startsWith("/docs") && !pathname.startsWith("/docs/api") && (
+              {pathname === "/" || (pathname.startsWith("/") && !pathname.startsWith("/api")) && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary" />
               )}
             </Link>
             <Link
-              href="/docs/api"
+              href="/api"
               className={cn(
                 "relative px-3 py-2 text-sm font-medium transition-colors",
-                pathname.startsWith("/docs/api") ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                pathname.startsWith("/api") ? "text-foreground" : "text-muted-foreground hover:text-foreground",
               )}
             >
               API
-              {pathname.startsWith("/docs/api") && (
+              {pathname.startsWith("/api") && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-primary" />
               )}
             </Link>

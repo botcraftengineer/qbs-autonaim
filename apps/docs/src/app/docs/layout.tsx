@@ -1,7 +1,7 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { DocsSidebar } from "@/components/docs/docs-sidebar"
-import { DocsHeader } from "@/components/docs/docs-header"
+import { DocsSidebar } from "@/components/docs-sidebar"
+import { DocsHeader } from "@/components/docs-header"
 
 export const metadata: Metadata = {
   title: {

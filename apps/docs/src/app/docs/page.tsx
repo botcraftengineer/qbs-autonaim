@@ -1,8 +1,8 @@
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb"
-import { DocsCard } from "@/components/docs/docs-card"
-import { DocsToc } from "@/components/docs/docs-toc"
-import { DocsFeedback } from "@/components/docs/docs-feedback"
-import { DocsMobileToc } from "@/components/docs/docs-mobile-toc"
+import { DocsBreadcrumb } from "@/components/docs-breadcrumb"
+import { DocsCard } from "@/components/docs-card"
+import { DocsToc } from "@/components/docs-toc"
+import { DocsFeedback } from "@/components/docs-feedback"
+import { DocsMobileToc } from "@/components/docs-mobile-toc"
 import { Users, Bot, Plug, Zap, FileText } from "lucide-react"
 import Link from "next/link"
 
@@ -40,9 +40,9 @@ export default function DocsIntroductionPage() {
 
         <p className="text-lg">
           <strong>QBS Автонайм</strong> — это современная AI-платформа для рекрутеров, которая помогает{" "}
-          <Link href="/docs/candidates/screening">автоматизировать скрининг кандидатов</Link>,{" "}
-          <Link href="/docs/analytics">отслеживать аналитику найма</Link> и{" "}
-          <Link href="/docs/ai-assistant">общаться с кандидатами через AI-ассистента</Link>.
+          <Link href="/candidates/screening">автоматизировать скрининг кандидатов</Link>,{" "}
+          <Link href="/analytics">отслеживать аналитику найма</Link> и{" "}
+          <Link href="/ai-assistant">общаться с кандидатами через AI-ассистента</Link>.
         </p>
 
         <p>Если вы:</p>
@@ -56,10 +56,10 @@ export default function DocsIntroductionPage() {
           </li>
           <li>
             <strong>Руководитель</strong>, который хочет{" "}
-            <Link href="/docs/analytics/metrics">измерять эффективность</Link> процесса найма
+            <Link href="/analytics/metrics">измерять эффективность</Link> процесса найма
           </li>
           <li>
-            <strong>Разработчик</strong>, которому нужно <Link href="/docs/api">интегрировать данные о кандидатах</Link>{" "}
+            <strong>Разработчик</strong>, которому нужно <Link href="/api">интегрировать данные о кандидатах</Link>{" "}
             в свою систему
           </li>
         </ul>
@@ -77,26 +77,26 @@ export default function DocsIntroductionPage() {
 
         <ul>
           <li>
-            <Link href="/docs/candidates/screening">AI-скрининг резюме</Link> (включая{" "}
-            <Link href="/docs/integrations/hh">массовый импорт с hh.ru</Link>)
+            <Link href="/candidates/screening">AI-скрининг резюме</Link> (включая{" "}
+            <Link href="/integrations/hh">массовый импорт с hh.ru</Link>)
           </li>
           <li>
-            <Link href="/docs/candidates/scoring">Автоматический скоринг кандидатов</Link>
+            <Link href="/candidates/scoring">Автоматический скоринг кандидатов</Link>
           </li>
           <li>
-            <Link href="/docs/ai-assistant/chat">Чат-бот для коммуникации с кандидатами</Link>
+            <Link href="/ai-assistant/chat">Чат-бот для коммуникации с кандидатами</Link>
           </li>
           <li>
-            <Link href="/docs/candidates/pipeline">Управление воронкой найма</Link>
+            <Link href="/candidates/pipeline">Управление воронкой найма</Link>
           </li>
           <li>
-            <Link href="/docs/analytics">Аналитика и отчёты</Link>
+            <Link href="/analytics">Аналитика и отчёты</Link>
           </li>
           <li>
-            <Link href="/docs/integrations">Интеграции</Link> + <Link href="/docs/integrations/webhooks">Webhooks</Link>
+            <Link href="/integrations">Интеграции</Link> + <Link href="/integrations/webhooks">Webhooks</Link>
           </li>
           <li>
-            <Link href="/docs/api">REST API</Link> для разработчиков
+            <Link href="/api">REST API</Link> для разработчиков
           </li>
         </ul>
 
@@ -108,25 +108,25 @@ export default function DocsIntroductionPage() {
           <DocsCard
             title="Быстрый старт"
             description="Настройте первую вакансию и начните получать кандидатов за 5 минут"
-            href="/docs/quickstart"
+            href="/quickstart"
             icon={<Zap className="h-5 w-5" />}
           />
           <DocsCard
             title="AI-скрининг"
             description="Узнайте, как AI автоматически оценивает резюме кандидатов"
-            href="/docs/candidates/screening"
+            href="/candidates/screening"
             icon={<Users className="h-5 w-5" />}
           />
           <DocsCard
             title="Интеграции"
             description="Подключите hh.ru, SuperJob, Telegram и другие сервисы"
-            href="/docs/integrations"
+            href="/integrations"
             icon={<Plug className="h-5 w-5" />}
           />
           <DocsCard
             title="API для разработчиков"
             description="Интегрируйте QBS Автонайм в вашу систему через REST API"
-            href="/docs/api"
+            href="/api"
             icon={<FileText className="h-5 w-5" />}
           />
         </div>
@@ -156,7 +156,7 @@ export default function DocsIntroductionPage() {
         <div className="mt-12 flex items-center justify-between border-t border-border pt-6">
           <div />
           <Link
-            href="/docs/quickstart"
+            href="/quickstart"
             className="group flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
           >
             Быстрый старт

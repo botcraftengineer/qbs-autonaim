@@ -1,6 +1,19 @@
-# Coding Standards
+---
+alwaysApply: true
+---
 
-* Использовать только Zod v4
-* Не нужно создавать миграции для базы данных
-* Не используй npm, только bun
-* Не создавай документацию, если тебя не просят
+# Commands
+
+- `bun run build`: Build the project
+- `bun run typecheck`: Run the typechecker
+- `bun run test`: Run tests (prefer single test files for speed)
+
+# Code style
+
+- Use ES modules (import/export), not CommonJS (require)
+- Destructure imports when possible: `import { foo } from 'bar'`
+
+# Workflow
+
+- Always typecheck after making a series of code changes
+- API routes go in `packages/api/` following existing patterns
