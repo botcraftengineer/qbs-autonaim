@@ -1,8 +1,7 @@
 import { Skeleton } from "@qbs-autonaim/ui";
-
+import type { DisplayMode } from "./gigs-filters";
 import { EmptyState, GigCard, GigListItem } from "./index";
 import type { Gig } from "./use-gigs-filters";
-import type { DisplayMode } from "./gigs-filters";
 
 interface GigsListProps {
   gigs: Gig[] | undefined;
@@ -35,7 +34,7 @@ export function GigsList({
   onToggleActive,
   onSyncResponses,
 }: GigsListProps) {
-  if (isLoading) {
+  if (isLoading && !gigs) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_) => (
