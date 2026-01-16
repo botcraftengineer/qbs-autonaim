@@ -90,4 +90,37 @@ export interface ConversationMetadata {
     technical?: string[];
     updatedAt?: string;
   };
+
+  /** История детекции использования AI-ботов */
+  botDetectionHistory?: Array<{
+    timestamp: string;
+    questionContext: string;
+    answerPreview: string;
+    answerLength: number;
+    responseTimeSeconds?: number;
+    suspicionLevel: "NONE" | "LOW" | "MEDIUM" | "HIGH";
+    indicators: Array<{
+      type: "structural" | "lexical" | "behavioral" | "content";
+      description: string;
+      weight: number;
+    }>;
+    warningIssued: boolean;
+    warningLevel?: "none" | "soft" | "direct" | "strict" | "final";
+  }>;
+
+  /** Количество выданных предупреждений о подозрении в использовании AI */
+  botWarningCount?: number;
+
+  /** Общий score подозрительности за всё интервью */
+  totalBotSuspicionScore?: number;
+
+  /** Последний результат детекции */
+  lastBotDetectionResult?: {
+    suspicionLevel: "NONE" | "LOW" | "MEDIUM" | "HIGH";
+    scorePenalty: number;
+    timestamp: string;
+  };
+
+  /** Имя кандидата */
+  candidateName?: string;
 }

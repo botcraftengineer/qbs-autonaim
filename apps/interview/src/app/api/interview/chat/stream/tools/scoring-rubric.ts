@@ -13,9 +13,9 @@ export function createGetScoringRubricTool(
   return tool({
     description:
       "Возвращает рубрику для внутренней оценки интервью. Можно использовать при итоговой оценке и для фиксации критериев в метаданных.",
-    inputSchema: z.object({}),
+    parameters: z.object({}),
     execute: async () => {
-      const criteria =
+      const baseCriteria =
         entityType === "gig"
           ? [
               {
@@ -23,7 +23,7 @@ export function createGetScoringRubricTool(
                 title: "Сильные и слабые стороны",
                 description:
                   "Выявление ключевых сильных сторон кандидата и потенциальных зон для развития.",
-                weight: 0.3,
+                weight: 0.25,
               },
               {
                 key: "expertise_depth",
@@ -37,7 +37,7 @@ export function createGetScoringRubricTool(
                 title: "Подход к решению задач",
                 description:
                   "Логика мышления, креативность, способность анализировать и предлагать решения.",
-                weight: 0.2,
+                weight: 0.15,
               },
               {
                 key: "communication_quality",
@@ -60,13 +60,13 @@ export function createGetScoringRubricTool(
                 title: "Полнота ответов",
                 description:
                   "Насколько кандидат отвечает по существу и покрывает вопрос.",
-                weight: 0.25,
+                weight: 0.2,
               },
               {
                 key: "relevance",
                 title: "Релевантность опыта",
                 description: "Соответствие опыта и навыков вакансии.",
-                weight: 0.35,
+                weight: 0.3,
               },
               {
                 key: "motivation",
@@ -83,10 +83,27 @@ export function createGetScoringRubricTool(
               },
             ];
 
+      // Добавляем критерий аутентичности ответов
+      const authenticityCriterion = {
+        key: "response_authenticity",
+        title: "Аутентичность ответов",
+        description:
+          "Самостоятельность ответов кандидата. Штраф применяется при обнаружении признаков использования AI-ботов (ChatGPT, Claude и т.д.). Проверяется через analyzeResponseAuthenticity.",
+        weight: 0.1,
+        isPenalty: true,
+        maxPenalty: 30,
+      };
+
+      const criteria = [...baseCriteria, authenticityCriterion];
+
       const rubric = {
-        version: entityType === "gig" ? "v2-gig" : "v1",
+        version: entityType === "gig" ? "v3-gig" : "v2",
         entityType,
         criteria,
+        notes: {
+          authenticity:
+            "Используй getBotDetectionSummary при завершении интервью для получения итогового штрафа за использование AI.",
+        },
       };
 
       const metadata = await getInterviewSessionMetadata(sessionId);

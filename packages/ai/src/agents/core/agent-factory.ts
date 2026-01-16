@@ -5,6 +5,8 @@
 import { env } from "@qbs-autonaim/config";
 import type { LanguageModel } from "ai";
 import { Langfuse } from "langfuse";
+import { BotSummaryAnalyzerAgent } from "../detection/bot-summary-analyzer";
+import { BotUsageDetectorAgent } from "../detection/bot-usage-detector";
 import { ContextAnalyzerAgent } from "../detection/context-analyzer";
 import { EscalationDetectorAgent } from "../detection/escalation-detector";
 import { GreetingDetectorAgent } from "../detection/greeting-detector";
@@ -126,5 +128,13 @@ export class AgentFactory {
 
   createWelcome(overrides?: Partial<AgentConfig>) {
     return new WelcomeAgent(this.getAgentConfig(overrides));
+  }
+
+  createBotUsageDetector(overrides?: Partial<AgentConfig>) {
+    return new BotUsageDetectorAgent(this.getAgentConfig(overrides));
+  }
+
+  createBotSummaryAnalyzer(overrides?: Partial<AgentConfig>) {
+    return new BotSummaryAnalyzerAgent(this.getAgentConfig(overrides));
   }
 }

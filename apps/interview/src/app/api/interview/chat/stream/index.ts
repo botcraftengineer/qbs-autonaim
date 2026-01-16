@@ -8,6 +8,9 @@ import {
   createGetInterviewProfileTool,
   createSaveInterviewNoteTool,
   createSaveQuestionAnswerTool,
+  createAnalyzeResponseAuthenticityTool,
+  createGetBotDetectionSummaryTool,
+  createCompleteInterviewTool,
 } from "./tools";
 import { createSystemPrompt } from "./prompts";
 import type { InterviewRuntimeParams, EntityType } from "./types";
@@ -46,6 +49,9 @@ export function createWebInterviewRuntime(params: InterviewRuntimeParams) {
     getInterviewProfile: createGetInterviewProfileTool(sessionId, db),
     saveInterviewNote: createSaveInterviewNoteTool(sessionId),
     saveQuestionAnswer: createSaveQuestionAnswerTool(sessionId),
+    analyzeResponseAuthenticity: createAnalyzeResponseAuthenticityTool(sessionId, model),
+    getBotDetectionSummary: createGetBotDetectionSummaryTool(sessionId, model),
+    completeInterview: createCompleteInterviewTool(sessionId),
   };
 
   const systemPrompt = createSystemPrompt(entityType, isFirstResponse);

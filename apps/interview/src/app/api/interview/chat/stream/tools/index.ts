@@ -11,3 +11,8 @@ export {
   createGetInterviewStateTool,
   createUpdateInterviewStateTool,
 } from "./state";
+export {
+  createAnalyzeResponseAuthenticityTool,
+  createGetBotDetectionSummaryTool,
+} from "./bot-detection";
+export { createCompleteInterviewTool } from "./complete-interview";

@@ -53,6 +53,30 @@ const InterviewQuestionBankSchema = z.object({
   updatedAt: z.string().optional(),
 });
 
+const BotDetectionIndicatorSchema = z.object({
+  type: z.enum(["structural", "lexical", "behavioral", "content"]),
+  description: z.string(),
+  weight: z.number(),
+});
+
+const BotDetectionRecordSchema = z.object({
+  timestamp: z.string(),
+  questionContext: z.string(),
+  answerPreview: z.string(),
+  answerLength: z.number(),
+  responseTimeSeconds: z.number().optional(),
+  suspicionLevel: z.enum(["NONE", "LOW", "MEDIUM", "HIGH"]),
+  indicators: z.array(BotDetectionIndicatorSchema),
+  warningIssued: z.boolean(),
+  warningLevel: z.enum(["none", "soft", "direct", "strict", "final"]).optional(),
+});
+
+const LastBotDetectionResultSchema = z.object({
+  suspicionLevel: z.enum(["NONE", "LOW", "MEDIUM", "HIGH"]),
+  scorePenalty: z.number(),
+  timestamp: z.string(),
+});
+
 const ConversationMetadataSchema = z.object({
   identifiedBy: z
     .enum(["pin_code", "vacancy_search", "username", "phone", "none"])
@@ -72,6 +96,10 @@ const ConversationMetadataSchema = z.object({
   interviewRubric: InterviewRubricSchema.optional(),
   interviewState: InterviewStateSchema.optional(),
   interviewQuestionBank: InterviewQuestionBankSchema.optional(),
+  botDetectionHistory: z.array(BotDetectionRecordSchema).optional(),
+  botWarningCount: z.number().optional(),
+  totalBotSuspicionScore: z.number().optional(),
+  lastBotDetectionResult: LastBotDetectionResultSchema.optional(),
 });
 
 /**
