@@ -1,6 +1,8 @@
+"use client";
+
+import Image from "next/image";
 import Link from "next/link";
-import type { Metadata } from "next";
-import { generatePageSEO } from "@/lib/seo";
+import { useState } from "react";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsFeedback } from "@/components/docs/docs-feedback";
@@ -8,12 +10,8 @@ import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
 import { DocsSteps } from "@/components/docs/docs-steps";
 import { DocsToc } from "@/components/docs/docs-toc";
 
-export const metadata: Metadata = generatePageSEO("quickstart", {
-  url: "/quickstart",
-  type: "article",
-});
-
 export default function QuickstartPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const tocItems = [
     { id: "create-account", title: "Создание аккаунта", level: 2 },
     { id: "create-vacancy", title: "Создание вакансии", level: 2 },
@@ -180,18 +178,51 @@ export default function QuickstartPage() {
         </p>
 
         {/* PLACEHOLDER: Скриншот страницы регистрации */}
-        <div className="my-6 rounded-lg border-2 border-dashed border-border bg-muted/30 p-8 text-center">
-          <p className="text-sm font-medium text-muted-foreground mb-2">
-            📸 Скриншот: Страница регистрации
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Показать форму регистрации с полями: Email, Пароль, Название
-            компании, Телефон
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Путь: /auth/signup
-          </p>
+        <div className="my-6 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="cursor-zoom-in rounded-lg border border-border hover:border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+            aria-label="Увеличить скриншот регистрации"
+          >
+            <Image
+              src="/screenshots/quickstart-registration.png"
+              alt="Страница регистрации QBS Автонайм"
+              width={400}
+              height={300}
+              className="rounded-lg"
+            />
+          </button>
         </div>
+
+        {isModalOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 cursor-zoom-out"
+            onClick={() => setIsModalOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setIsModalOpen(false);
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Увеличенное изображение"
+          >
+            <button
+              type="button"
+              onClick={() => setIsModalOpen(false)}
+              className="absolute top-4 right-4 text-white/80 hover:text-white text-4xl font-light leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded p-2 z-10"
+              aria-label="Закрыть"
+            >
+              ×
+            </button>
+            <Image
+              src="/screenshots/quickstart-registration.png"
+              alt="Страница регистрации QBS Автонайм"
+              width={1920}
+              height={1080}
+              className="max-w-[95vw] max-h-[95vh] w-auto h-auto object-contain rounded-lg"
+            />
+          </div>
+        )}
 
         <h2
           id="steps"

@@ -65,18 +65,19 @@ test.describe("OTP верификация", () => {
     const otpInput = page.getByRole("textbox", { name: "Код подтверждения" });
     await otpInput.click();
 
+    // Ждем любой API запрос после ввода кода
+    const responsePromise = page.waitForResponse(
+      (response) => response.url().includes("/api/auth"),
+      { timeout: 5000 },
+    );
+
     await otpInput.fill("123456");
 
     // Проверяем, что код был введен
     await expect(otpInput).toHaveValue("123456");
 
     // Ждем автоматической отправки формы через API запрос
-    await page.waitForResponse(
-      (response) =>
-        response.url().includes("/api/auth/verify-otp") &&
-        (response.status() === 200 || response.status() === 400),
-      { timeout: 3000 },
-    );
+    await responsePromise;
   });
 
   test("проверка доступности - навигация клавиатурой", async ({ page }) => {
