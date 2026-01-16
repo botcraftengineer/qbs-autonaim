@@ -1,5 +1,5 @@
 import { db } from "@qbs-autonaim/db";
-import { user } from "@qbs-autonaim/db/schema";
+import { account, session, user, verification } from "@qbs-autonaim/db/schema";
 import type { BetterAuthOptions, BetterAuthPlugin } from "better-auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
@@ -33,6 +33,12 @@ export function initAuth<
   const config = {
     database: drizzleAdapter(db, {
       provider: "pg",
+      schema: {
+        user,
+        session,
+        account,
+        verification,
+      },
     }),
     baseURL: options.baseUrl,
     secret: options.secret,

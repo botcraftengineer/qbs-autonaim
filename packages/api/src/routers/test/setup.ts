@@ -38,13 +38,28 @@ export const setupTestUser = publicProcedure
     const { email, password, name, orgName, workspaceName } = input;
 
     // Создаем пользователя через better-auth
-    const signUpResult = await ctx.authApi.signUpEmail({
-      body: {
+    let signUpResult:
+      | Awaited<ReturnType<typeof ctx.authApi.signUpEmail>>
+      | undefined;
+    try {
+      signUpResult = await ctx.authApi.signUpEmail({
+        body: {
+          email,
+          password,
+          name: name || email.split("@")[0] || "Test User",
+        },
+      });
+    } catch (error) {
+      console.error("Ошибка при создании пользователя через better-auth:", {
+        error,
         email,
-        password,
-        name: name || email.split("@")[0] || "Test User",
-      },
-    });
+        errorMessage: error instanceof Error ? error.message : String(error),
+        errorStack: error instanceof Error ? error.stack : undefined,
+      });
+      throw new Error(
+        `Не удалось создать пользователя: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
 
     if (!signUpResult) {
       throw new Error("Failed to create user");
