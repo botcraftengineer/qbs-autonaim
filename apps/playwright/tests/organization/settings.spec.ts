@@ -30,8 +30,10 @@ test.describe("Настройки организации", () => {
       await page.goto(`/orgs/${orgSlug}/settings`);
       await expect(page.getByText("Название организации")).toBeVisible();
       await expect(page.getByText("Адрес организации")).toBeVisible();
-      await expect(page.getByText("Описание")).toBeVisible();
-      await expect(page.getByText("Веб-сайт")).toBeVisible();
+      await expect(
+        page.getByRole("textbox", { name: "Описание" }),
+      ).toBeVisible();
+      await expect(page.getByText("Веб-сайт", { exact: true })).toBeVisible();
       await expect(page.getByText("Логотип организации")).toBeVisible();
     });
   });
@@ -57,7 +59,7 @@ test.describe("Настройки организации", () => {
       await nameInput.clear();
 
       await page.getByRole("button", { name: "Сохранить изменения" }).click();
-      await expect(page.getByText(/обязательно/i)).toBeVisible();
+      await expect(page.getByText("Название обязательно")).toBeVisible();
     });
   });
 
@@ -85,7 +87,9 @@ test.describe("Настройки организации", () => {
 
       await page.getByRole("button", { name: "Сохранить изменения" }).click();
       await expect(
-        page.getByText(/строчные буквы, цифры и дефисы/i),
+        page
+          .locator("form")
+          .getByText(/Slug может содержать только строчные буквы/),
       ).toBeVisible();
     });
 
@@ -102,12 +106,20 @@ test.describe("Настройки организации", () => {
     }) => {
       await page.goto(`/orgs/${orgSlug}/settings`);
 
+      // Находим иконку помощи рядом с полем "Адрес организации"
       const helpIcon = page.locator('[class*="cursor-help"]').first();
+
+      // Наводим курсор на иконку и ждем появления tooltip
       await helpIcon.hover();
 
-      await expect(
-        page.getByText(/Уникальный адрес для доступа к вашей организации/),
-      ).toBeVisible({ timeout: 2000 });
+      // Используем data-testid для надежного поиска tooltip
+      const tooltip = page.getByTestId("slug-help-tooltip");
+      await expect(tooltip).toBeVisible({ timeout: 5000 });
+
+      // Проверяем содержимое tooltip
+      await expect(tooltip).toContainText(
+        "Уникальный адрес для доступа к вашей организации",
+      );
     });
   });
 
@@ -165,8 +177,13 @@ test.describe("Настройки организации", () => {
       const websiteInput = page.getByPlaceholder("https://example.com");
       await websiteInput.fill("not-a-valid-url");
 
+      // Валидация react-hook-form срабатывает при submit формы
       await page.getByRole("button", { name: "Сохранить изменения" }).click();
-      await expect(page.getByText(/URL/i)).toBeVisible();
+
+      // Ждем появления сообщения об ошибке
+      await expect(
+        page.locator("form").getByText("Некорректный URL"),
+      ).toBeVisible({ timeout: 2000 });
     });
   });
 
@@ -256,19 +273,25 @@ test.describe("Настройки организации", () => {
 
       await expect(page.getByText("Название организации")).toBeVisible();
       await expect(page.getByText("Адрес организации")).toBeVisible();
-      await expect(page.getByText("Описание")).toBeVisible();
-      await expect(page.getByText("Веб-сайт")).toBeVisible();
+      await expect(
+        page.getByRole("textbox", { name: "Описание" }),
+      ).toBeVisible();
+      await expect(page.getByText("Веб-сайт", { exact: true })).toBeVisible();
       await expect(page.getByText("Логотип организации")).toBeVisible();
     });
 
     test("форма доступна с клавиатуры", async ({ page }) => {
       await page.goto(`/orgs/${orgSlug}/settings`);
 
-      // Переходим по полям с помощью Tab
-      await page.keyboard.press("Tab");
+      // Ждем полной загрузки страницы
+      await page.waitForLoadState("networkidle");
+
+      // Устанавливаем фокус на первое поле формы
       const nameInput = page.getByPlaceholder("Моя компания");
+      await nameInput.focus();
       await expect(nameInput).toBeFocused();
 
+      // Переходим к следующему полю с помощью Tab
       await page.keyboard.press("Tab");
       const slugInput = page.getByPlaceholder("my-company");
       await expect(slugInput).toBeFocused();

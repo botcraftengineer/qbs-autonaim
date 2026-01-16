@@ -135,8 +135,10 @@ test.describe("Управление участниками воркспейса"
       const searchInput = page.getByPlaceholder("Поиск по имени или email");
       await searchInput.fill(testUser.email);
 
-      // Участник должен быть найден
-      await expect(page.getByText(testUser.email)).toBeVisible();
+      // Участник должен быть найден - используем более специфичный селектор
+      await expect(
+        page.locator("table").getByText(testUser.email).first(),
+      ).toBeVisible();
     });
 
     test("показывает сообщение когда участники не найдены", async ({

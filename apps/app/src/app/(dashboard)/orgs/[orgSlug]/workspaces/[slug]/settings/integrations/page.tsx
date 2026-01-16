@@ -54,6 +54,13 @@ export default function IntegrationsPage() {
 
   return (
     <div className="space-y-6">
+      <div>
+        <h2 className="text-2xl font-semibold tracking-tight">Интеграции</h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Управляйте интеграциями с внешними сервисами
+        </p>
+      </div>
+
       {workspaceId && <TelegramSessionsCard workspaceId={workspaceId} />}
 
       <div className="grid gap-4">

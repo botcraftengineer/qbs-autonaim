@@ -178,7 +178,7 @@ export function WorkspaceForm({
                 <FormLabel className="text-foreground font-medium">
                   Название рабочего пространства
                 </FormLabel>
-                <Input placeholder="spillwood" {...field} />
+                <Input placeholder="spillwood" maxLength={32} {...field} />
                 <p className="text-sm text-muted-foreground">
                   Это название вашего рабочего пространства.
                 </p>
@@ -222,7 +222,7 @@ export function WorkspaceForm({
                     </Tooltip>
                   </TooltipProvider>
                 </div>
-                <Input placeholder="qbs" {...field} />
+                <Input placeholder="qbs" maxLength={48} {...field} />
                 <p className="text-sm text-muted-foreground">
                   Только строчные буквы, цифры и дефисы. Максимум 48 символов.
                 </p>

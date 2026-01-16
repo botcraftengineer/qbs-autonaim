@@ -67,10 +67,16 @@ test.describe("OTP верификация", () => {
 
     await otpInput.fill("123456");
 
-    // Проверяем, что форма отправляется или кнопка меняет состояние
-    await expect(
-      page.getByRole("button", { name: "Подтвердить" }),
-    ).toBeVisible();
+    // Проверяем, что код был введен
+    await expect(otpInput).toHaveValue("123456");
+
+    // Ждем автоматической отправки формы через API запрос
+    await page.waitForResponse(
+      (response) =>
+        response.url().includes("/api/auth/verify-otp") &&
+        (response.status() === 200 || response.status() === 400),
+      { timeout: 3000 },
+    );
   });
 
   test("проверка доступности - навигация клавиатурой", async ({ page }) => {

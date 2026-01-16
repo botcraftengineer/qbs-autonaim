@@ -193,7 +193,10 @@ export function OrganizationGeneralForm({
                       <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
+                      <TooltipContent
+                        className="max-w-xs"
+                        data-testid="slug-help-tooltip"
+                      >
                         <p>
                           Уникальный адрес для доступа к вашей организации.
                           Используется в URL (например,{" "}

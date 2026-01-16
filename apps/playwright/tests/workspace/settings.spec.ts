@@ -113,18 +113,22 @@ test.describe("Настройки воркспейса", () => {
 
       await page.getByRole("button", { name: "Сохранить изменения" }).click();
       await expect(
-        page.getByText("Только строчные буквы, цифры и дефисы"),
+        page
+          .locator("form")
+          .getByText("Только строчные буквы, цифры и дефисы")
+          .last(),
       ).toBeVisible();
     });
 
     test("показывает подсказку о формате slug", async ({ page }) => {
       await page.goto(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/settings`);
 
-      await expect(
-        page.getByText(
-          "Только строчные буквы, цифры и дефисы. Максимум 48 символов.",
-        ),
-      ).toBeVisible();
+      // Используем более специфичный селектор для избежания strict mode violation
+      const slugHelpText = page
+        .locator("form")
+        .getByText(/Только строчные буквы, цифры и дефисы/)
+        .first();
+      await expect(slugHelpText).toBeVisible();
     });
   });
 
@@ -184,7 +188,7 @@ test.describe("Настройки воркспейса", () => {
     test("показывает состояние загрузки при сохранении", async ({ page }) => {
       await page.goto(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/settings`);
 
-      const nameInput = page.getByLabel("Название рабочего пространства");
+      const nameInput = page.getByPlaceholder("spillwood");
       await nameInput.fill("Тестовое название");
 
       const saveButton = page.getByRole("button", {

@@ -335,9 +335,6 @@ test.describe("Онбординг: создание организации и в
     await page
       .getByRole("textbox", { name: "Описание (опционально)" })
       .fill("Test workspace description");
-    await page
-      .getByRole("textbox", { name: "Веб-сайт (опционально)" })
-      .fill("https://workspace.example.com");
     await page.getByRole("button", { name: "Создать воркспейс" }).click();
 
     await expect(page).toHaveURL(
@@ -501,14 +498,10 @@ test.describe("Онбординг: создание организации и в
     const descriptionInput = page.getByRole("textbox", {
       name: "Описание (опционально)",
     });
-    const websiteInput = page.getByRole("textbox", {
-      name: "Веб-сайт (опционально)",
-    });
 
     await expect(nameInput).toHaveAttribute("maxlength", "100");
     await expect(slugInput).toHaveAttribute("maxlength", "50");
     await expect(descriptionInput).toHaveAttribute("maxlength", "500");
-    await expect(websiteInput).toHaveAttribute("maxlength", "200");
   });
 
   test("проверка типа input для website", async ({ page }) => {

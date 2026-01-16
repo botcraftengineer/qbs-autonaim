@@ -20,7 +20,9 @@ export const createOrganizationSchema = z.object({
     .string()
     .max(500, "Описание не может быть длиннее 500 символов")
     .optional(),
-  website: z.url({ message: "Некорректный URL" }).optional().or(z.literal("")),
+  website: z
+    .union([z.literal(""), z.string().url({ message: "Некорректный URL" })])
+    .optional(),
   logo: z
     .union([
       z
@@ -53,7 +55,9 @@ export const updateOrganizationSchema = z.object({
     .string()
     .max(500, "Описание не может быть длиннее 500 символов")
     .optional(),
-  website: z.url({ message: "Некорректный URL" }).optional().or(z.literal("")),
+  website: z
+    .union([z.literal(""), z.string().url({ message: "Некорректный URL" })])
+    .optional(),
   logo: z
     .union([
       z
