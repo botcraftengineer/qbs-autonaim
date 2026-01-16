@@ -7,7 +7,7 @@ export default defineConfig({
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : 1, // В CI - 2 воркера, локально - 1 для стабильности
+  workers: process.env.CI ? 6 : 1, // В CI - 6 воркеров для ускорения, локально - 1 для стабильности
   timeout: 90000, // Увеличиваем общий таймаут теста до 90 секунд
   maxFailures: process.env.CI ? 10 : undefined, // Останавливаем после 10 ошибок в CI
   globalSetup: "./global-setup.ts",
@@ -28,9 +28,24 @@ export default defineConfig({
   },
 
   projects: [
+    // Быстрые UI тесты (без авторизации)
     {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
+      name: "ui-fast",
+      testMatch: /.*\/(auth|accessibility)\/.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+      timeout: 30000, // Короткий таймаут для быстрых тестов
+    },
+    // Медленные E2E тесты (с авторизацией)
+    {
+      name: "e2e-slow",
+      testMatch:
+        /.*\/(account|organization|workspace|onboarding|sidebar)\/.*\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+      timeout: 90000, // Длинный таймаут для E2E тестов
     },
     // {
     //   name: "firefox",

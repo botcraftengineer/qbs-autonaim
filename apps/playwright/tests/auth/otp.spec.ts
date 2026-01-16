@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { mockOTPResend } from "../helpers/mock-api";
 
 test.describe("OTP верификация", () => {
   test.beforeEach(async ({ page, context }) => {
@@ -42,15 +43,22 @@ test.describe("OTP верификация", () => {
   test.skip("таймер обратного отсчета для повторной отправки", async ({
     page,
   }) => {
-    // Этот тест требует настроенного email сервиса в тестовой среде
-    // Пропускаем до настройки mock API
+    // TODO: Требует настройки реального API endpoint для mock
+    // Mock не перехватывает запрос, нужно уточнить endpoint
+    await mockOTPResend(page);
+
     const resendButton = page.getByRole("button", {
       name: "Отправить повторно",
     });
 
     await expect(resendButton).toBeEnabled();
     await resendButton.click();
-    await expect(resendButton).toBeDisabled({ timeout: 5000 });
+
+    await expect(page.getByText("Отправка…")).toBeVisible({ timeout: 2000 });
+    await expect(page.getByText(/Отправить повторно \(\d+с\)/)).toBeVisible({
+      timeout: 5000,
+    });
+    await expect(resendButton).toBeDisabled();
   });
 
   test("автоматическая отправка при вводе 6 цифр", async ({ page }) => {
@@ -103,18 +111,15 @@ test.describe("OTP верификация", () => {
   test.skip("кнопка повторной отправки показывает состояние загрузки", async ({
     page,
   }) => {
-    // Этот тест требует настроенного email сервиса в тестовой среде
-    // Пропускаем до настройки mock API
+    // TODO: Требует настройки реального API endpoint для mock
+    await mockOTPResend(page);
+
     const resendButton = page.getByRole("button", {
       name: "Отправить повторно",
     });
     await resendButton.click();
 
-    await expect(
-      page
-        .getByRole("button", { name: "Отправка…" })
-        .or(page.getByRole("button", { name: /Отправить повторно \(\d+с\)/ })),
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByText("Отправка…")).toBeVisible({ timeout: 2000 });
   });
 
   test("проверка размера полей ввода на мобильных", async ({ page }) => {

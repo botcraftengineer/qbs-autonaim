@@ -9,6 +9,9 @@
     "test:headed": "playwright test --headed",
     "test:debug": "playwright test --debug",
     "test:auth": "playwright test tests/auth",
+    "test:fast": "bun with-env playwright test --project=ui-fast",
+    "test:slow": "bun with-env playwright test --project=e2e-slow",
+    "test:ci": "bun with-env playwright test --project=ui-fast --project=e2e-slow",
     "codegen": "playwright codegen",
     "report": "playwright show-report",
     "with-env": "bun run --env-file ../../.env"
