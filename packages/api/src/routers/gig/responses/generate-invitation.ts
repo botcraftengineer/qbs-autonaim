@@ -166,7 +166,6 @@ export const generateInvitation = protectedProcedure
     }
 
     const interviewUrl = await getInterviewUrlFromEntity(
-      ctx.db,
       link.token,
       "gig",
       existingGig.id,

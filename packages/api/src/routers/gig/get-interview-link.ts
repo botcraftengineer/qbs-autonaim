@@ -52,12 +52,7 @@ export const getInterviewLink = protectedProcedure
       return null;
     }
 
-    const url = await getInterviewUrlFromEntity(
-      ctx.db,
-      link.token,
-      "gig",
-      input.gigId,
-    );
+    const url = await getInterviewUrlFromEntity(link.token, "gig", input.gigId);
 
     return {
       id: link.id,

@@ -104,7 +104,6 @@ export const getVacancyById = protectedProcedure
       interviewLink: activeInterviewLink
         ? {
             url: await getInterviewUrlFromDb(
-              ctx.db,
               activeInterviewLink.token,
               input.workspaceId,
             ),

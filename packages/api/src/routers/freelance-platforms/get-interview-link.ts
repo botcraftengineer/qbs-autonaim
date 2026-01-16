@@ -59,7 +59,6 @@ export const getInterviewLink = protectedProcedure
     }
 
     const url = await getInterviewUrlFromDb(
-      ctx.db,
       activeInterviewLink.token,
       input.workspaceId,
     );

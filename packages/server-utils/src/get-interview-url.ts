@@ -1,14 +1,11 @@
 import { env } from "@qbs-autonaim/config";
-import { eq } from "@qbs-autonaim/db";
-import type * as schema from "@qbs-autonaim/db/schema";
+import { db, eq } from "@qbs-autonaim/db";
 import { customDomain, gig, vacancy, workspace } from "@qbs-autonaim/db/schema";
-import type { NodePgDatabase } from "drizzle-orm/node-postgres";
 
 /**
  * Получает primary interview domain для workspace по customDomainId
  */
 async function getWorkspaceInterviewDomain(
-  db: NodePgDatabase<typeof schema>,
   workspaceId: string,
 ): Promise<string | null> {
   const ws = await db.query.workspace.findFirst({
@@ -74,7 +71,6 @@ export function getInterviewUrl(
  * Получает домен для интервью по типу entity
  */
 async function getEntityInterviewDomain(
-  db: NodePgDatabase<typeof schema>,
   entityType: "vacancy" | "gig",
   entityId: string,
 ): Promise<string | null> {
@@ -155,7 +151,7 @@ async function getEntityInterviewDomain(
       return null;
     }
 
-    return await getWorkspaceInterviewDomain(db, vacancyData.workspaceId);
+    return await getWorkspaceInterviewDomain(vacancyData.workspaceId);
   }
 
   return null;
@@ -166,11 +162,10 @@ async function getEntityInterviewDomain(
  * @deprecated Используйте getInterviewUrlFromEntity для новых реализаций
  */
 export async function getInterviewUrlFromDb(
-  db: NodePgDatabase<typeof schema>,
   token: string,
   workspaceId: string,
 ): Promise<string> {
-  const domain = await getWorkspaceInterviewDomain(db, workspaceId);
+  const domain = await getWorkspaceInterviewDomain(workspaceId);
   return getInterviewUrl(token, domain);
 }
 
@@ -178,11 +173,10 @@ export async function getInterviewUrlFromDb(
  * Генерирует полный URL интервью с токеном по типу entity
  */
 export async function getInterviewUrlFromEntity(
-  db: NodePgDatabase<typeof schema>,
   token: string,
   entityType: "vacancy" | "gig",
   entityId: string,
 ): Promise<string> {
-  const domain = await getEntityInterviewDomain(db, entityType, entityId);
+  const domain = await getEntityInterviewDomain(entityType, entityId);
   return getInterviewUrl(token, domain);
 }
