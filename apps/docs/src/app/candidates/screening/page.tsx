@@ -140,6 +140,9 @@ export default function ScreeningPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id]
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            screening-process.png
+          </p>
         </div>
 
         <h2
@@ -167,6 +170,9 @@ export default function ScreeningPage() {
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/settings
+          </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            screening-criteria-setup.png
           </p>
         </div>
 
@@ -226,6 +232,9 @@ export default function ScreeningPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/responses/[id] (вкладка
             "AI-анализ")
+          </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            screening-results.png
           </p>
         </div>
 

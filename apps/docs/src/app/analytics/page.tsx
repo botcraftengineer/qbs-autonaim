@@ -124,6 +124,9 @@ export default function AnalyticsPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug] (главная страница workspace)
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            analytics-dashboard.png
+          </p>
         </div>
 
         <h2

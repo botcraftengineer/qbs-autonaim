@@ -132,6 +132,9 @@ export default function TelegramIntegrationPage() {
             Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
             (вкладка Telegram)
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            telegram-bot-setup.png
+          </p>
         </div>
 
         <h2

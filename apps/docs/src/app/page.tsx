@@ -48,6 +48,9 @@ export default function DocsIntroductionPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            home-dashboard.png
+          </p>
         </div>
 
         <div className="flex items-center justify-between mb-2">

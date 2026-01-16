@@ -144,6 +144,9 @@ export default function HHIntegrationPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            hh-integration-setup.png
+          </p>
         </div>
 
         <h2

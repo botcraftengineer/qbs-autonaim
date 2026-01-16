@@ -77,6 +77,9 @@ export default function ChatPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /interview/[token] (публичная страница)
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            interview-web-interface.png
+          </p>
         </div>
 
         <h2

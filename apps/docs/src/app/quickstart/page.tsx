@@ -1,17 +1,20 @@
-"use client";
-
-import Image from "next/image";
+import type { Metadata } from "next";
 import Link from "next/link";
-import { useState } from "react";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsFeedback } from "@/components/docs/docs-feedback";
 import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
 import { DocsSteps } from "@/components/docs/docs-steps";
 import { DocsToc } from "@/components/docs/docs-toc";
+import { ImageWithZoom } from "@/components/docs/image-with-zoom";
+import { generatePageSEO } from "@/lib/seo";
+
+export const metadata: Metadata = generatePageSEO("quickstart", {
+  url: "/quickstart",
+  type: "article",
+});
 
 export default function QuickstartPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const tocItems = [
     { id: "create-account", title: "Создание аккаунта", level: 2 },
     { id: "create-vacancy", title: "Создание вакансии", level: 2 },
@@ -66,6 +69,9 @@ export default function QuickstartPage() {
             <p className="text-xs text-muted-foreground mt-1">
               Путь: /orgs/[orgSlug]/workspaces/[slug]/settings/integrations
             </p>
+            <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+              quickstart-integrations.png
+            </p>
           </div>
         </div>
       ),
@@ -94,6 +100,9 @@ export default function QuickstartPage() {
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/edit
+            </p>
+            <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+              quickstart-vacancy-criteria.png
             </p>
           </div>
         </div>
@@ -125,6 +134,9 @@ export default function QuickstartPage() {
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               Путь: /orgs/[orgSlug]/workspaces/[slug]/vacancies/[id]/responses
+            </p>
+            <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+              quickstart-responses-list.png
             </p>
           </div>
         </div>
@@ -178,51 +190,13 @@ export default function QuickstartPage() {
         </p>
 
         {/* PLACEHOLDER: Скриншот страницы регистрации */}
-        <div className="my-6 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setIsModalOpen(true)}
-            className="cursor-zoom-in rounded-lg border border-border hover:border-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            aria-label="Увеличить скриншот регистрации"
-          >
-            <Image
-              src="/screenshots/quickstart-registration.png"
-              alt="Страница регистрации QBS Автонайм"
-              width={400}
-              height={300}
-              className="rounded-lg"
-            />
-          </button>
-        </div>
-
-        {isModalOpen && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4 cursor-zoom-out"
-            onClick={() => setIsModalOpen(false)}
-            onKeyDown={(e) => {
-              if (e.key === "Escape") setIsModalOpen(false);
-            }}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Увеличенное изображение"
-          >
-            <button
-              type="button"
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-4 right-4 text-white/80 hover:text-white text-4xl font-light leading-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white rounded p-2 z-10"
-              aria-label="Закрыть"
-            >
-              ×
-            </button>
-            <Image
-              src="/screenshots/quickstart-registration.png"
-              alt="Страница регистрации QBS Автонайм"
-              width={1920}
-              height={1080}
-              className="max-w-[95vw] max-h-[95vh] w-auto h-auto object-contain rounded-lg"
-            />
-          </div>
-        )}
+        <ImageWithZoom
+          src="/screenshots/quickstart-registration.png"
+          alt="Страница регистрации QBS Автонайм"
+          width={400}
+          height={300}
+          className="rounded-lg"
+        />
 
         <h2
           id="steps"

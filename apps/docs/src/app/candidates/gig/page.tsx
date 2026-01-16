@@ -156,6 +156,9 @@ export default function GigPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Путь: /orgs/[orgSlug]/workspaces/[slug]/gigs/create
           </p>
+          <p className="text-xs font-mono text-muted-foreground mt-2 bg-muted px-2 py-1 rounded">
+            gig-create-form.png
+          </p>
         </div>
 
         <h2
