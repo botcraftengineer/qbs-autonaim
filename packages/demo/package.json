@@ -5,8 +5,8 @@
   "description": "Demo data package with sample vacancies and responses",
   "main": "index.js",
   "scripts": {
-    "load": "bun run src/load-demo-data.ts",
-    "upload-photos": "bun run src/upload-photos.ts"
+    "load": "bun run --env-file ../../.env src/load-demo-data.ts",
+    "upload-photos": "bun run --env-file ../../.env src/upload-photos.ts"
   },
   "dependencies": {
     "@qbs-autonaim/db": "workspace:*"

@@ -9,7 +9,7 @@
     "lastMessageAt": "2024-01-23T16:30:00Z",
     "metadata": {
       "participants": ["user_recruiter_001", "user_manager_001"],
-      "relatedCandidates": ["response_001", "response_002"]
+      "relatedCandidates": ["hh_candidate_001", "hh_candidate_002"]
     },
     "createdAt": "2024-01-22T10:00:00Z"
   },

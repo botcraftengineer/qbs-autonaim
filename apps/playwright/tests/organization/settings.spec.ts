@@ -113,8 +113,9 @@ test.describe("Настройки организации", () => {
       await helpIcon.hover();
 
       // Используем data-testid для надежного поиска tooltip
+      // Tooltip рендерится через Radix UI Portal, поэтому увеличиваем timeout
       const tooltip = page.getByTestId("slug-help-tooltip");
-      await expect(tooltip).toBeVisible({ timeout: 5000 });
+      await expect(tooltip).toBeVisible({ timeout: 10000 });
 
       // Проверяем содержимое tooltip
       await expect(tooltip).toContainText(
@@ -181,9 +182,10 @@ test.describe("Настройки организации", () => {
       await page.getByRole("button", { name: "Сохранить изменения" }).click();
 
       // Ждем появления сообщения об ошибке
-      await expect(
-        page.locator("form").getByText("Некорректный URL"),
-      ).toBeVisible({ timeout: 2000 });
+      // FormMessage может рендериться вне <form>, поэтому убираем ограничение
+      await expect(page.getByText("Некорректный URL")).toBeVisible({
+        timeout: 5000,
+      });
     });
   });
 

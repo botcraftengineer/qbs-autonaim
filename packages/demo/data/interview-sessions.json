@@ -1,6 +1,6 @@
 ﻿[
   {
-    "responseId": "response_001",
+    "responseId": "hh_candidate_001",
     "status": "completed",
     "lastChannel": "telegram",
     "questionNumber": 5,
@@ -15,7 +15,7 @@
     "completedAt": "2024-01-22T15:30:00Z"
   },
   {
-    "responseId": "response_002",
+    "responseId": "hh_candidate_002",
     "status": "completed",
     "lastChannel": "web",
     "questionNumber": 6,
@@ -27,7 +27,7 @@
     "completedAt": "2024-01-23T11:45:00Z"
   },
   {
-    "responseId": "response_003",
+    "responseId": "hh_candidate_003",
     "status": "active",
     "lastChannel": "telegram",
     "questionNumber": 3,
@@ -42,7 +42,7 @@
     "completedAt": null
   },
   {
-    "responseId": "response_004",
+    "responseId": "sj_candidate_001",
     "status": "completed",
     "lastChannel": "web",
     "questionNumber": 5,
