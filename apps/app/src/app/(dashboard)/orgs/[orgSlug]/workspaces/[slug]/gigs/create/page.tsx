@@ -9,7 +9,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { SiteHeader } from "~/components/layout";
+import { PageHeader, SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -510,15 +510,19 @@ export default function CreateGigPage({ params }: PageProps) {
     <>
       <SiteHeader />
       <div className="container mx-auto max-w-6xl py-6">
-        <div className="mb-6">
+        <PageHeader
+          title="Создание задания"
+          description="Создание нового разового задания"
+          docsUrl="https://docs.hh.qbs.ru/creating"
+        >
           <Link
             href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] touch-action-manipulation"
           >
-            <ArrowLeft className="h-4 w-4" />
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Назад к заданиям
           </Link>
-        </div>
+        </PageHeader>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <WizardChat

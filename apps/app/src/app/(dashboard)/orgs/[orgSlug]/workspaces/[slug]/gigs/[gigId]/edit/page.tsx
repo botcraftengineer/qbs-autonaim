@@ -26,6 +26,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -199,16 +200,19 @@ export default function EditGigPage({ params }: PageProps) {
 
   return (
     <div className="container mx-auto max-w-4xl py-6">
-      {/* Breadcrumb */}
-      <div className="mb-6">
+      <PageHeader
+        title="Редактирование задания"
+        description="Редактирование существующего задания"
+        docsUrl="https://docs.hh.qbs.ru/editing"
+      >
         <Link
           href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] touch-action-manipulation"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Назад к заданию
         </Link>
-      </div>
+      </PageHeader>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

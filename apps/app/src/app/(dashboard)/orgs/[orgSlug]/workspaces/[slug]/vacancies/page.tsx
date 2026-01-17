@@ -33,7 +33,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { triggerUpdateVacancies } from "~/actions/trigger";
-import { SiteHeader } from "~/components/layout";
+import { PageHeader, SiteHeader } from "~/components/layout";
 import { VacancyStats } from "~/components/vacancies";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
@@ -199,6 +199,11 @@ export default function VacanciesPage() {
     <>
       <SiteHeader />
       <div className="flex flex-1 flex-col">
+        <PageHeader
+          title="Вакансии"
+          description="Управление вакансиями и их настройками"
+          docsUrl="https://docs.hh.qbs.ru/vacancies"
+        />
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <VacancyStats

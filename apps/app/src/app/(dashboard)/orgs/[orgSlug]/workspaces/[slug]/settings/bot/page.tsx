@@ -22,7 +22,7 @@ export default function SettingsBotPage() {
 
   if (isLoading || workspaceLoading || !workspaceId) {
     return (
-      <div className="rounded-lg border p-6 space-y-4">
+      <div className="space-y-4">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-32 w-full" />
@@ -31,18 +31,16 @@ export default function SettingsBotPage() {
   }
 
   return (
-    <div className="rounded-lg border p-6">
-      <BotSettingsForm
-        workspaceId={workspaceId}
-        initialData={{
-          companyName: botSettings?.companyName || "",
-          companyWebsite: botSettings?.companyWebsite || "",
-          companyDescription: botSettings?.companyDescription || "",
-          botName: botSettings?.botName || "",
-          botRole: botSettings?.botRole || "",
-        }}
-        userRole={userRole}
-      />
-    </div>
+    <BotSettingsForm
+      workspaceId={workspaceId}
+      initialData={{
+        companyName: botSettings?.companyName || "",
+        companyWebsite: botSettings?.companyWebsite || "",
+        companyDescription: botSettings?.companyDescription || "",
+        botName: botSettings?.botName || "",
+        botRole: botSettings?.botRole || "",
+      }}
+      userRole={userRole}
+    />
   );
 }

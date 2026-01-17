@@ -53,10 +53,10 @@ export default function IntegrationsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
+    <>
+      <div className="space-y-1">
         <h2 className="text-2xl font-semibold tracking-tight">Интеграции</h2>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-muted-foreground">
           Управляйте интеграциями с внешними сервисами
         </p>
       </div>
@@ -89,6 +89,6 @@ export default function IntegrationsPage() {
         selectedType={selectedType}
         isEditing={isEditing}
       />
-    </div>
+    </>
   );
 }
