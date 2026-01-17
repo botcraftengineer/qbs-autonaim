@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@qbs-autonaim/ui"
 import { motion, AnimatePresence } from "framer-motion"
 import { Sparkles, ArrowRight, User, CheckCircle2, XCircle, Brain } from "lucide-react"
 import { useState, useEffect } from "react"

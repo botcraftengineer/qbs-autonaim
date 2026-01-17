@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import { Button } from "@/components/ui/button"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, Button } from "@qbs-autonaim/ui"
 import { Search, MessageCircle, HelpCircle, Mail, Send, Phone } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"

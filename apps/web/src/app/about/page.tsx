@@ -3,7 +3,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
+import { Button } from "@qbs-autonaim/ui"
 import { ArrowRight, Github, Linkedin, Mail } from "lucide-react"
 
 export const metadata: Metadata = {

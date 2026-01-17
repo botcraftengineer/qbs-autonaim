@@ -12,6 +12,7 @@ import {
   Badge,
   Button,
   Card,
+  IntegrationIcon,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Edit, Plus, Trash2, XCircle } from "lucide-react";
@@ -19,7 +20,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import type { AVAILABLE_INTEGRATIONS } from "~/lib/integrations";
 import { useTRPC } from "~/trpc/react";
-import { IntegrationIcon } from "../ui/integration-icon";
 
 interface IntegrationCardProps {
   availableIntegration: (typeof AVAILABLE_INTEGRATIONS)[number];

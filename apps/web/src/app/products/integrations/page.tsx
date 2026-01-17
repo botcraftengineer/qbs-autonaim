@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
+import { Button } from "@qbs-autonaim/ui"
 import { Link2, ArrowRight, Zap, Shield, Clock, CheckCircle2, Sparkles, RefreshCw, Globe, Boxes } from "lucide-react"
 import Link from "next/link"
 import { ProductNavigation } from "@/components/product-navigation"

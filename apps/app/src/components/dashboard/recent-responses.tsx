@@ -3,6 +3,7 @@
 import { paths } from "@qbs-autonaim/config";
 import {
   Badge,
+  CandidateAvatar,
   Card,
   CardContent,
   CardDescription,
@@ -16,7 +17,6 @@ import { FileText, Star } from "lucide-react";
 import Link from "next/link";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
-import { CandidateAvatar } from "../ui/candidate-avatar";
 
 export function RecentResponses({
   orgSlug,

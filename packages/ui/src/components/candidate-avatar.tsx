@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@qbs-autonaim/ui";
+import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 interface CandidateAvatarProps {
   name?: string | null;

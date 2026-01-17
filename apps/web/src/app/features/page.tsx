@@ -1,7 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { FeaturesSection } from "@/components/features-section"
-import { Button } from "@/components/ui/button"
+import { Button } from "@qbs-autonaim/ui"
 import { ArrowRight, CheckCircle2, Sparkles, Zap } from "lucide-react"
 import Link from "next/link"
 

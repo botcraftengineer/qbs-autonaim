@@ -1,9 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter, Badge } from "@qbs-autonaim/ui"
 import { Check, Sparkles } from "lucide-react"
 import { env } from "@/env"
 
