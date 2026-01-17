@@ -10,7 +10,7 @@ import {
   GigsStats,
   useGigsFilters,
 } from "~/components/gig";
-import { SiteHeader } from "~/components/layout";
+import { PageHeader, SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
@@ -141,6 +141,11 @@ export default function GigsPage() {
       <SiteHeader />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
+          <PageHeader
+            title="Разовые задания"
+            description="Создание и управление разовыми задачами"
+            docsUrl="https://docs.hh.qbs.ru/gigs"
+          />
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <GigsStats stats={stats} isLoading={isLoading} />
 

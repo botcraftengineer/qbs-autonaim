@@ -370,7 +370,7 @@ async function handler(request: Request) {
             const firstChunk = await reader.read();
 
             if (firstChunk.done) {
-              throw new Error("Stream ended immediately");
+              throw new Error("Поток сразу завершился");
             }
 
             // Создаём новый стрим, который начинается с первого чанка
@@ -389,8 +389,18 @@ async function handler(request: Request) {
                     controller.enqueue(value);
                   }
                   controller.close();
-                } catch (error) {
-                  controller.error(error);
+                } catch (streamError) {
+                  controller.error(streamError);
+                }
+              },
+              async cancel(reason) {
+                // Отменяем исходный reader при отмене клиентом
+                try {
+                  await reader.cancel(reason);
+                  reader.releaseLock();
+                } catch (cancelError) {
+                  // Игнорируем ошибки при отмене
+                  console.warn("[Interview Stream] Cancel error:", cancelError);
                 }
               },
             });
@@ -400,9 +410,36 @@ async function handler(request: Request) {
               textStream: newStream as typeof streamResult.textStream,
             };
           } catch (error) {
-            // Проверяем, является ли это ошибкой бюджета
             const errorMessage =
               error instanceof Error ? error.message : String(error);
+            const errorName = error instanceof Error ? error.name : "";
+
+            // Проверяем, является ли это ошибкой таймаута или сети
+            const isTimeoutError =
+              errorName === "TimeoutError" ||
+              errorName === "AbortError" ||
+              errorMessage.toLowerCase().includes("timeout") ||
+              errorMessage.includes("ETIMEDOUT") ||
+              errorMessage.includes("ECONNRESET") ||
+              errorMessage.includes("ECONNREFUSED") ||
+              errorMessage.toLowerCase().includes("networkerror") ||
+              errorMessage.includes("fetch failed") ||
+              errorMessage.includes("network error");
+
+            if (isTimeoutError) {
+              console.warn(
+                `[Interview Stream] ${isFallback ? "Fallback " : ""}модель недоступна (таймаут/сеть): ${errorMessage}`,
+              );
+              // Помечаем как временную сетевую ошибку для retry логики
+              const timeoutError = new Error(
+                `Network or timeout error: ${errorMessage}`,
+              );
+              (timeoutError as Error & { isTransient?: boolean }).isTransient =
+                true;
+              throw timeoutError;
+            }
+
+            // Проверяем, является ли это ошибкой бюджета
             const isBudgetError =
               errorMessage.includes("budget_exceeded") ||
               errorMessage.includes("Budget has been exceeded");

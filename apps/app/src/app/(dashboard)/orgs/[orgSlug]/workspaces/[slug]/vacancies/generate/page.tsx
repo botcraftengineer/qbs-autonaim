@@ -1,3 +1,4 @@
+import { PageHeader, SiteHeader } from "~/components/layout";
 import { VacancyCreatorContainer } from "~/components/vacancy-creator";
 
 interface PageProps {
@@ -11,20 +12,24 @@ export default async function VacancyGeneratePage({ params }: PageProps) {
   const { orgSlug, slug } = await params;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] flex-col">
-      <header className="border-b p-4">
-        <h1 className="text-2xl font-bold">Создание вакансии с&nbsp;AI</h1>
-        <p className="text-sm text-muted-foreground">
-          Опишите требования в чате, и&nbsp;AI сформирует документ вакансии
-        </p>
-      </header>
-      <main className="flex-1 overflow-hidden">
-        <VacancyCreatorContainer
-          workspaceId={slug}
-          orgSlug={orgSlug}
-          workspaceSlug={slug}
-        />
-      </main>
-    </div>
+    <>
+      <SiteHeader />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <div className="@container/main flex flex-1 flex-col gap-2 overflow-hidden">
+          <PageHeader
+            title="Генерация вакансии"
+            description="Автоматическая генерация контента с помощью AI"
+            docsUrl="https://docs.hh.qbs.ru/generation"
+          />
+          <div className="flex-1 overflow-hidden px-4 pb-4 md:px-6 lg:px-8">
+            <VacancyCreatorContainer
+              workspaceId={slug}
+              orgSlug={orgSlug}
+              workspaceSlug={slug}
+            />
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

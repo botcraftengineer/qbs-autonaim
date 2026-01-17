@@ -30,7 +30,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { SiteHeader } from "~/components/layout";
+import { PageHeader, SiteHeader } from "~/components/layout";
 import { VacancyCreatorContainer } from "~/components/vacancy-creator";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
@@ -141,33 +141,26 @@ export default function CreateVacancyPage() {
       <SiteHeader />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
+          <PageHeader
+            title="Создание вакансии"
+            description="Создание новой вакансии для поиска исполнителей"
+            docsUrl="https://docs.hh.qbs.ru/creating"
+          >
+            <Button variant="ghost" size="sm" asChild>
+              <Link
+                href={paths.workspace.vacancies(
+                  orgSlug ?? "",
+                  workspaceSlug ?? "",
+                )}
+                aria-label="Вернуться к списку вакансий"
+              >
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                Назад к&nbsp;вакансиям
+              </Link>
+            </Button>
+          </PageHeader>
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <div className="px-4 lg:px-6">
-              <div className="mb-6">
-                <Button variant="ghost" size="sm" asChild className="mb-4">
-                  <Link
-                    href={paths.workspace.vacancies(
-                      orgSlug ?? "",
-                      workspaceSlug ?? "",
-                    )}
-                    aria-label="Вернуться к списку вакансий"
-                  >
-                    <ArrowLeft className="size-4" aria-hidden="true" />
-                    Назад к&nbsp;вакансиям
-                  </Link>
-                </Button>
-
-                <div className="mb-8">
-                  <h1 className="text-2xl font-semibold mb-2">
-                    Создать вакансию
-                  </h1>
-                  <p className="text-muted-foreground">
-                    Выберите удобный способ создания вакансии для поиска
-                    исполнителей
-                  </p>
-                </div>
-              </div>
-
               <Tabs
                 defaultValue={defaultMode}
                 onValueChange={handleTabChange}

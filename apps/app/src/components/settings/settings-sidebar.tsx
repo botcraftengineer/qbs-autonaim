@@ -27,11 +27,6 @@ const sidebarNavItems = [
     icon: Users,
   },
   {
-    title: "Компания",
-    href: "/settings/company",
-    icon: Building2,
-  },
-  {
     title: "AI-бот",
     href: "/settings/bot",
     icon: Bot,

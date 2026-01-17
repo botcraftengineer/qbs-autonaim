@@ -13,7 +13,6 @@ export default function WorkspaceDomainsPage() {
     organizationError,
   } = useWorkspace();
 
-  // Показываем индикатор загрузки, если загружается workspace или организация
   if (isLoading || organizationIsLoading) {
     return (
       <div className="space-y-6">
@@ -26,7 +25,6 @@ export default function WorkspaceDomainsPage() {
     );
   }
 
-  // Обрабатываем ошибки загрузки
   if (error || organizationError) {
     const getErrorMessage = (err: unknown): string => {
       if (err instanceof Error) return err.message;
@@ -39,25 +37,16 @@ export default function WorkspaceDomainsPage() {
       : getErrorMessage(organizationError);
 
     return (
-      <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-4">
         <p className="font-medium text-red-900">Ошибка загрузки</p>
         <p className="mt-1 text-sm text-red-700">{errorMessage}</p>
       </div>
     );
   }
 
-  // Проверяем наличие workspace после всех проверок загрузки и ошибок
   if (!workspace) {
-    return (
-      <div className="rounded-lg border p-6">
-        <p className="text-muted-foreground">Workspace не найден</p>
-      </div>
-    );
+    return <p className="text-muted-foreground">Workspace не найден</p>;
   }
 
-  return (
-    <div className="space-y-6">
-      <CustomDomainsSection workspaceId={workspace.id} />
-    </div>
-  );
+  return <CustomDomainsSection workspaceId={workspace.id} />;
 }

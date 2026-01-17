@@ -8,12 +8,12 @@ export default async function InterviewScenariosPage({ params }: PageProps) {
   const { orgSlug, slug: workspaceSlug } = await params;
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">
+    <>
+      <div className="space-y-1">
+        <h2 className="text-2xl font-semibold tracking-tight">
           Сценарии интервью
-        </h1>
-        <p className="text-muted-foreground mt-1">
+        </h2>
+        <p className="text-sm text-muted-foreground">
           Создавайте и управляйте сценариями проведения интервью для ваших
           заданий
         </p>
@@ -23,6 +23,6 @@ export default async function InterviewScenariosPage({ params }: PageProps) {
         orgSlug={orgSlug}
         workspaceSlug={workspaceSlug}
       />
-    </div>
+    </>
   );
 }
