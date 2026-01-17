@@ -13,7 +13,7 @@ export function createGetScoringRubricTool(
   return tool({
     description:
       "Возвращает рубрику для внутренней оценки интервью. Можно использовать при итоговой оценке и для фиксации критериев в метаданных.",
-    parameters: z.object({}),
+    inputSchema: z.object({}),
     execute: async () => {
       const baseCriteria =
         entityType === "gig"
