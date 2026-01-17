@@ -5,7 +5,11 @@
 
 import { eq } from "@qbs-autonaim/db";
 import { db } from "@qbs-autonaim/db/client";
-import { interviewMessage, interviewSession, response } from "@qbs-autonaim/db/schema";
+import {
+  interviewMessage,
+  interviewSession,
+  response,
+} from "@qbs-autonaim/db/schema";
 import { inngest } from "@qbs-autonaim/jobs/client";
 import {
   getInterviewSessionMetadata,
@@ -87,7 +91,10 @@ export function createCompleteInterviewTool(sessionId: string) {
 
         const transcription = recentMessages
           .reverse()
-          .map((m) => `${m.role === "user" ? "Кандидат" : "Интервьюер"}: ${m.content}`)
+          .map(
+            (m) =>
+              `${m.role === "user" ? "Кандидат" : "Интервьюер"}: ${m.content}`,
+          )
           .join("\n");
 
         // Получаем количество вопросов
@@ -98,20 +105,11 @@ export function createCompleteInterviewTool(sessionId: string) {
         const gigResponseId =
           responseRecord.entityType === "gig" ? responseRecord.id : undefined;
         const vacancyResponseId =
-          responseRecord.entityType === "vacancy" ? responseRecord.id : undefined;
+          responseRecord.entityType === "vacancy"
+            ? responseRecord.id
+            : undefined;
 
-        // Обновляем метаданные
-        await updateInterviewSessionMetadata(sessionId, {
-          interviewCompleted: true,
-          completedAt: new Date().toISOString(),
-          interviewState: {
-            ...metadata.interviewState,
-            stage: "wrapup",
-            updatedAt: new Date().toISOString(),
-          },
-        });
-
-        // Отправляем событие в inngest для создания скоринга
+        // Отправляем событие в inngest для создания скоринга ПЕРЕД обновлением метаданных
         await inngest.send({
           name: "web/interview.complete",
           data: {
@@ -121,6 +119,17 @@ export function createCompleteInterviewTool(sessionId: string) {
             questionNumber,
             responseId: vacancyResponseId,
             gigResponseId,
+          },
+        });
+
+        // Обновляем метаданные ТОЛЬКО после успешной отправки события
+        await updateInterviewSessionMetadata(sessionId, {
+          interviewCompleted: true,
+          completedAt: new Date().toISOString(),
+          interviewState: {
+            ...metadata.interviewState,
+            stage: "wrapup",
+            updatedAt: new Date().toISOString(),
           },
         });
 

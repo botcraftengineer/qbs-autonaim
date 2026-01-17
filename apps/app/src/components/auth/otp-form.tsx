@@ -63,18 +63,23 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
   const onSubmit = async (data: OTPFormData) => {
     setLoading(true);
     try {
-      const { error } = await (authClient as any).signIn({
+      const { error } = await authClient.signIn.emailOtp({
         email,
         otp: data.otp,
       });
+
       if (error) {
         toast.error(translateAuthError(error.message));
         form.reset();
         return;
       }
-      toast.success("Успешно подтверждено!");
 
-      // Проверяем наличие redirect URL и всегда удаляем его
+      toast.success("Вход выполнен успешно!");
+
+      // Очищаем сохраненные данные
+      localStorage.removeItem("otp_email");
+
+      // Проверяем наличие redirect URL
       const redirectUrl = localStorage.getItem("auth_redirect");
       localStorage.removeItem("auth_redirect");
 
@@ -82,7 +87,13 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
       if (redirectUrl && isValidInternalPath(redirectUrl)) {
         router.push(redirectUrl);
       } else {
-        router.push(paths.dashboard.root);
+        // Для входа используем сохраненную организацию или редиректим на dashboard
+        const lastOrgSlug = localStorage.getItem("lastOrganizationSlug");
+        if (lastOrgSlug) {
+          router.push(paths.organization.workspaces(lastOrgSlug));
+        } else {
+          router.push(paths.dashboard.root);
+        }
       }
     } catch (error) {
       console.error(error);
@@ -97,9 +108,9 @@ export function OTPForm({ ...props }: React.ComponentProps<typeof Card>) {
     if (!email || countdown > 0) return;
     setResending(true);
     try {
-      const { error } = await (authClient as any).signIn({
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
         email,
-        password: "",
+        type: "sign-in",
       });
 
       if (error) {

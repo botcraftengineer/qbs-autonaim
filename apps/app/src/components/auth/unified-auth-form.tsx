@@ -116,14 +116,16 @@ export function UnifiedAuthForm({
   const onOtpSubmit = async (data: EmailOtpData) => {
     setLoading(true);
     try {
-      const { error } = await (authClient as any).signIn({
+      const { error } = await authClient.emailOtp.sendVerificationOtp({
         email: data.email,
-        password: "",
+        type: "sign-in",
       });
+
       if (error) {
         toast.error(translateAuthError(error.message));
         return;
       }
+
       localStorage.setItem("otp_email", data.email);
       toast.success("Код отправлен! Проверьте email.");
       router.push(paths.auth.otp);

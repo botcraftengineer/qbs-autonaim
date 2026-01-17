@@ -14,6 +14,26 @@ export interface BotUsageDetectorInput {
   questionContext?: string;
 }
 
+const botUsageDetectorInputSchema = z
+  .object({
+    currentMessage: z.string().min(1).max(2000),
+    responseTimeMs: z.number().nonnegative(),
+    messageLength: z.number().optional(),
+    questionContext: z.string().max(1000).optional(),
+  })
+  .transform((data) => {
+    // Compute actual message length from currentMessage
+    const computedLength = data.currentMessage.length;
+
+    // If messageLength was provided and doesn't match, ignore it and use computed
+    return {
+      currentMessage: data.currentMessage,
+      responseTimeMs: data.responseTimeMs,
+      messageLength: computedLength,
+      questionContext: data.questionContext,
+    };
+  });
+
 const botIndicatorSchema = z.object({
   type: z.enum(["structural", "lexical", "behavioral", "content"]),
   description: z.string(),
@@ -30,7 +50,9 @@ const botUsageDetectorOutputSchema = z.object({
   analysis: z.string(),
 });
 
-export type BotUsageDetectorOutput = z.infer<typeof botUsageDetectorOutputSchema>;
+export type BotUsageDetectorOutput = z.infer<
+  typeof botUsageDetectorOutputSchema
+>;
 export type BotIndicator = z.infer<typeof botIndicatorSchema>;
 
 export class BotUsageDetectorAgent extends BaseAgent<
@@ -112,7 +134,25 @@ export class BotUsageDetectorAgent extends BaseAgent<
   }
 
   protected validate(input: BotUsageDetectorInput): boolean {
-    return !!input.currentMessage && input.currentMessage.length > 0;
+    try {
+      // Parse and validate input with Zod schema
+      const result = botUsageDetectorInputSchema.safeParse(input);
+
+      if (!result.success) {
+        console.error(
+          "BotUsageDetector validation failed:",
+          result.error.format(),
+        );
+        return false;
+      }
+
+      // Update input with validated and computed values
+      Object.assign(input, result.data);
+      return true;
+    } catch (error) {
+      console.error("BotUsageDetector validation error:", error);
+      return false;
+    }
   }
 
   protected buildPrompt(
@@ -121,12 +161,16 @@ export class BotUsageDetectorAgent extends BaseAgent<
   ): string {
     const history = (context.conversationHistory || [])
       .slice(-8)
-      .map((msg) => `${msg.sender === "CANDIDATE" ? "Кандидат" : "Интервьюер"}: ${msg.content}`)
+      .map(
+        (msg) =>
+          `${msg.sender === "CANDIDATE" ? "Кандидат" : "Интервьюер"}: ${msg.content}`,
+      )
       .join("\n");
 
-    const charsPerSecond = input.responseTimeMs > 0 
-      ? input.messageLength / (input.responseTimeMs / 1000) 
-      : 0;
+    const charsPerSecond =
+      input.responseTimeMs > 0
+        ? input.messageLength / (input.responseTimeMs / 1000)
+        : 0;
     const charsPerMinute = charsPerSecond * 60;
 
     return `ИСТОРИЯ ДИАЛОГА:

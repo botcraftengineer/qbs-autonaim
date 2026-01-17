@@ -8,7 +8,10 @@ export type WarningLevel = "none" | "soft" | "direct" | "strict" | "final";
 /**
  * Предупреждения разных уровней строгости
  */
-export const BOT_USAGE_WARNINGS: Record<Exclude<WarningLevel, "none">, string[]> = {
+export const BOT_USAGE_WARNINGS: Record<
+  Exclude<WarningLevel, "none">,
+  string[]
+> = {
   // Мягкое предупреждение (MEDIUM level, первый раз)
   // Не обвиняем, просто просим конкретику
   soft: [
@@ -49,7 +52,7 @@ export const BOT_USAGE_WARNINGS: Record<Exclude<WarningLevel, "none">, string[]>
  */
 export function getWarningMessage(level: WarningLevel): string | null {
   if (level === "none") return null;
-  
+
   const messages = BOT_USAGE_WARNINGS[level];
   return messages[Math.floor(Math.random() * messages.length)];
 }
@@ -68,7 +71,7 @@ export function determineWarningLevel(
   if (suspicionLevel === "HIGH") {
     if (previousWarningCount >= 2) return "final";
     if (previousWarningCount >= 1) return "strict";
-    return "strict";
+    return "direct";
   }
 
   // MEDIUM
@@ -87,18 +90,18 @@ export function getInterviewerRecommendation(
   if (suspicionLevel === "HIGH" && warningCount >= 2) {
     return "Зафиксировать в оценке. Кандидат систематически использует AI. Завершить интервью или задать очень специфичные вопросы о деталях проекта.";
   }
-  
+
   if (suspicionLevel === "HIGH") {
     return "Выдать строгое предупреждение. Задать уточняющий вопрос о конкретном опыте с деталями, которые сложно сгенерировать.";
   }
-  
+
   if (suspicionLevel === "MEDIUM" && warningCount >= 1) {
     return "Продолжить с фокусом на конкретных примерах. Задавать вопросы о деталях: имена коллег, названия проектов, конкретные числа.";
   }
-  
+
   if (suspicionLevel === "MEDIUM") {
     return "Мягко направить к конкретным примерам из личного опыта. Не обвинять, просто просить детали.";
   }
-  
+
   return "Продолжить интервью в обычном режиме.";
 }
