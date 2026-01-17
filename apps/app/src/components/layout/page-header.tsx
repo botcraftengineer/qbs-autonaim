@@ -3,7 +3,7 @@ import { InfoTooltip } from "../ui/info-tooltip";
 interface PageHeaderProps {
   title: string;
   description: string;
-  docsUrl: string;
+  docsUrl?: string;
   children?: React.ReactNode;
   /** Если true, убирает горизонтальные отступы (для центрированных контейнеров) */
   noPadding?: boolean;
@@ -24,9 +24,11 @@ export function PageHeader({
     >
       <div className="flex items-center gap-2">
         <h1 className="text-lg font-semibold md:text-xl">{title}</h1>
-        <InfoTooltip
-          content={`${description} [Подробнее в документации](${docsUrl})`}
-        />
+        {docsUrl && (
+          <InfoTooltip
+            content={`${description} [Подробнее в документации](${docsUrl})`}
+          />
+        )}
       </div>
       {children && <div className="flex items-center gap-2">{children}</div>}
     </div>
