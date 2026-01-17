@@ -116,7 +116,7 @@ export abstract class BaseAgent<TInput, TOutput> {
       const envelopeValidation = aiResponseEnvelopeSchema.safeParse({
         content: result.output,
         metadata: {
-          model: result.model?.modelId,
+          model: (result as { model?: { modelId?: string } }).model?.modelId,
           finishReason: result.finishReason,
           timestamp: new Date().toISOString(),
         },
@@ -124,7 +124,7 @@ export abstract class BaseAgent<TInput, TOutput> {
 
       if (!envelopeValidation.success) {
         console.error(`[${this.name}] Envelope validation failed:`, {
-          errors: envelopeValidation.error.errors,
+          errors: envelopeValidation.error.issues,
           rawOutput: result.output,
         });
         throw new Error(
@@ -139,7 +139,7 @@ export abstract class BaseAgent<TInput, TOutput> {
 
       if (!contentValidation.success) {
         console.error(`[${this.name}] Content validation failed:`, {
-          errors: contentValidation.error.errors,
+          errors: contentValidation.error.issues,
           content: envelope.content,
         });
         throw new Error(

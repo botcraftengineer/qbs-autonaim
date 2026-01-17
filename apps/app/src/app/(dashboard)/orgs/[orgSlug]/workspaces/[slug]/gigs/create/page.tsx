@@ -514,6 +514,7 @@ export default function CreateGigPage({ params }: PageProps) {
           title="Создание задания"
           description="Создание нового разового задания"
           docsUrl="https://docs.hh.qbs.ru/creating"
+          noPadding
         >
           <Link
             href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}

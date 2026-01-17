@@ -4,7 +4,6 @@ import { paths } from "@qbs-autonaim/config";
 import { cn } from "@qbs-autonaim/ui";
 import {
   Bot,
-  Building2,
   Globe,
   Globe2,
   MessageSquare,

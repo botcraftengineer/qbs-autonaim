@@ -1,11 +1,11 @@
+import { Clock, Play, User } from "lucide-react";
 import type { Metadata } from "next";
-import { generatePageSEO } from "@/lib/seo";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsFeedback } from "@/components/docs/docs-feedback";
 import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
 import { DocsToc } from "@/components/docs/docs-toc";
-import { Play, Clock, User } from "lucide-react";
+import { generatePageSEO } from "@/lib/seo";
 
 export const metadata: Metadata = generatePageSEO("videos", {
   title: "Видео-инструкции QBS Автонайм — обучение работе с платформой",
@@ -240,9 +240,9 @@ export default function VideosPage() {
             <p className="text-muted-foreground mb-6">{category.description}</p>
 
             <div className="grid gap-6 mb-8">
-              {category.videos.map((video, index) => (
+              {category.videos.map((video) => (
                 <div
-                  key={index}
+                  key={`${category.id}-${video.title}`}
                   className="flex gap-4 p-4 border border-border rounded-lg hover:bg-accent/50 transition-colors cursor-pointer"
                 >
                   <div className="flex-shrink-0">

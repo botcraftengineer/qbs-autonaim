@@ -1,9 +1,9 @@
+import { GitBranch, ScanSearch, Target } from "lucide-react";
+import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
+import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsCard } from "@/components/docs/docs-card";
 import { DocsToc } from "@/components/docs/docs-toc";
-import { DocsCallout } from "@/components/docs/docs-callout";
-import { ScanSearch, Target, GitBranch } from "lucide-react";
-import Link from "next/link";
 
 export default function CandidatesPage() {
   const tocItems = [

@@ -20,7 +20,7 @@ try {
 
     const failedTests: string[] = [];
 
-    function processSpecs(specs: any[]) {
+    function processSpecs(specs: unknown[]) {
       for (const spec of specs) {
         if (spec.tests) {
           for (const test of spec.tests) {
@@ -38,7 +38,7 @@ try {
       }
     }
 
-    function processSuites(suites: any[]) {
+    function processSuites(suites: unknown[]) {
       for (const suite of suites) {
         if (suite.specs) {
           processSpecs(suite.specs);

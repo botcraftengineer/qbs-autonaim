@@ -163,6 +163,7 @@ export default function EditGigPage({ params }: PageProps) {
       workspaceId: workspace.id,
       settings: {
         customDomainId: null,
+        interviewScenarioId: null,
         customBotInstructions: values.customBotInstructions || null,
         customScreeningPrompt: values.customScreeningPrompt || null,
         customInterviewQuestions: values.customInterviewQuestions || null,
@@ -351,12 +352,6 @@ export default function EditGigPage({ params }: PageProps) {
                     </FormControl>
                     <FormDescription>
                       Используется для автоматической оценки откликов.
-                      {companySettings && (
-                        <span className="block mt-1 text-xs">
-                          Учитывает специфику компании "
-                          {companySettings.companyName}".
-                        </span>
-                      )}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>

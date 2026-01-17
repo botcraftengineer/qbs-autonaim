@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@qbs-autonaim/ui";
 import type React from "react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 interface Tab {
   label: string;
@@ -24,6 +24,7 @@ export function DocsTabs({ tabs, defaultValue }: DocsTabsProps) {
         {tabs.map((tab) => (
           <button
             key={tab.value}
+            type="button"
             onClick={() => setActiveTab(tab.value)}
             className={cn(
               "relative px-4 py-2 text-sm font-medium transition-colors",

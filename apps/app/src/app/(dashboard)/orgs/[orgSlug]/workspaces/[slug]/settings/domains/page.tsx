@@ -45,7 +45,7 @@ export default function WorkspaceDomainsPage() {
   }
 
   if (!workspace) {
-    return <p className="text-muted-foreground">Workspace не найден</p>;
+    return <p className="text-muted-foreground">Рабочая область не найдена</p>;
   }
 
   return <CustomDomainsSection workspaceId={workspace.id} />;

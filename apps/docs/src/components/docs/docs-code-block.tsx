@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { cn } from "@qbs-autonaim/ui";
 import { Check, Copy } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 interface DocsCodeBlockProps {
   code: string;
@@ -47,7 +47,10 @@ export function DocsCodeBlock({
           <code className="font-mono text-foreground">
             {showLineNumbers
               ? lines.map((line, i) => (
-                  <div key={i} className="table-row">
+                  <div
+                    key={`line-${i}-${line.substring(0, 20)}`}
+                    className="table-row"
+                  >
                     <span className="table-cell select-none pr-4 text-right text-muted-foreground/50">
                       {i + 1}
                     </span>
@@ -58,11 +61,13 @@ export function DocsCodeBlock({
           </code>
         </pre>
         <button
+          type="button"
           onClick={copyToClipboard}
           className={cn(
             "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background text-muted-foreground transition-all hover:bg-accent hover:text-foreground",
             !title && "opacity-0 group-hover:opacity-100",
           )}
+          aria-label="Скопировать код"
         >
           {copied ? (
             <Check className="h-4 w-4 text-green-500" />

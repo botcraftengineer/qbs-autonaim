@@ -9,11 +9,14 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
+      "!**/.css",
+      "!**/*.json",
       "!**/node_modules",
       "!**/.next",
       "!**/packages/ui/src/**/*.tsx",
       "!**/apps/web/src/**/*.tsx",
       "!**/apps/web/src/**/*.ts",
+      "!**/apps/docs/src/**/*.ts",
       "!**/packages/ui/src/**/*.ts",
       "!**/packages/ui/src/**/*.css",
       "!**/tooling/**/*",
@@ -65,7 +68,8 @@
   "css": {
     "parser": {
       "cssModules": false,
-      "allowWrongLineComments": true
+      "allowWrongLineComments": true,
+      "tailwindDirectives": true
     }
   },
   "overrides": [
@@ -80,7 +84,8 @@
       "css": {
         "parser": {
           "cssModules": false,
-          "allowWrongLineComments": true
+          "allowWrongLineComments": true,
+          "tailwindDirectives": true
         }
       },
       "formatter": {

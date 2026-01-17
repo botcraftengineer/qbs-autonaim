@@ -36,12 +36,17 @@ export default function ResponseDetailPage({
   });
 
   // Type assertion to include globalCandidate
-  const responseWithGlobalCandidate = response
-    ? ({
-        ...response,
-        globalCandidate: null, // TODO: load actual candidate if needed
-      } as any)
-    : null;
+  type ResponseWithGlobalCandidate = typeof response & {
+    globalCandidate: null;
+  };
+
+  const responseWithGlobalCandidate: ResponseWithGlobalCandidate | null =
+    response
+      ? {
+          ...response,
+          globalCandidate: null, // TODO: load actual candidate if needed
+        }
+      : null;
 
   if (!workspaceId) {
     return (
@@ -113,21 +118,27 @@ export default function ResponseDetailPage({
               </div>
 
               <div className="space-y-6 md:space-y-8">
-                <ResponseHeaderCard response={responseWithGlobalCandidate!} />
-                {responseWithGlobalCandidate!.screening && (
-                  <ScreeningResultsCard
-                    screening={responseWithGlobalCandidate!.screening}
-                  />
-                )}
-                {responseWithGlobalCandidate!.interviewScoring && (
-                  <InterviewScoringCard
-                    interviewScoring={
-                      responseWithGlobalCandidate!.interviewScoring
-                    }
-                  />
-                )}
-                {responseWithGlobalCandidate!.experience && (
-                  <ExperienceTab response={responseWithGlobalCandidate!} />
+                {responseWithGlobalCandidate && (
+                  <>
+                    <ResponseHeaderCard
+                      response={responseWithGlobalCandidate}
+                    />
+                    {responseWithGlobalCandidate.screening && (
+                      <ScreeningResultsCard
+                        screening={responseWithGlobalCandidate.screening}
+                      />
+                    )}
+                    {responseWithGlobalCandidate.interviewScoring && (
+                      <InterviewScoringCard
+                        interviewScoring={
+                          responseWithGlobalCandidate.interviewScoring
+                        }
+                      />
+                    )}
+                    {responseWithGlobalCandidate.experience && (
+                      <ExperienceTab response={responseWithGlobalCandidate} />
+                    )}
+                  </>
                 )}
               </div>
             </div>

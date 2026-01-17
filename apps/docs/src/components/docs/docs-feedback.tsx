@@ -1,8 +1,8 @@
 "use client";
 
+import { Button } from "@qbs-autonaim/ui";
+import { Check, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { ThumbsUp, ThumbsDown, Check } from "lucide-react";
 
 export function DocsFeedback() {
   const [feedback, setFeedback] = useState<"positive" | "negative" | null>(

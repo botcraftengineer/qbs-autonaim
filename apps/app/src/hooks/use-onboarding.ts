@@ -58,7 +58,7 @@ export function useOnboarding() {
 
         // Инвалидация кэша списка организаций
         void queryClient.invalidateQueries({
-          queryKey: trpc.organization.list.getQueryKey(),
+          queryKey: trpc.organization.list.queryKey(),
         });
       },
       onError: (error) => {
@@ -90,8 +90,8 @@ export function useOnboarding() {
         // Инвалидация кэша воркспейсов
         if (createdOrganization) {
           void queryClient.invalidateQueries({
-            queryKey: trpc.organization.getWorkspaces.getQueryKey({
-              organizationSlug: createdOrganization.slug,
+            queryKey: trpc.organization.listWorkspaces.queryKey({
+              organizationId: createdOrganization.id,
             }),
           });
         }

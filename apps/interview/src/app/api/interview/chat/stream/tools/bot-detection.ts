@@ -4,20 +4,20 @@
  * Вся логика анализа делегирована AI-агентам
  */
 
-import { AgentFactory } from "@qbs-autonaim/ai";
+import {
+  AgentFactory,
+  determineWarningLevel,
+  getInterviewerRecommendation,
+  getWarningMessage,
+  type WarningLevel,
+} from "@qbs-autonaim/ai";
 import {
   getInterviewSessionMetadata,
   updateInterviewSessionMetadata,
 } from "@qbs-autonaim/server-utils";
-import { tool } from "ai";
 import type { LanguageModel } from "ai";
+import { tool } from "ai";
 import { z } from "zod";
-import {
-  type WarningLevel,
-  getWarningMessage,
-  determineWarningLevel,
-  getInterviewerRecommendation,
-} from "@qbs-autonaim/ai";
 
 // ==================== TYPES ====================
 
@@ -290,7 +290,7 @@ export function createGetBotDetectionSummaryTool(
         overallAssessment: agentResult.overallAssessment,
         confidence: agentResult.confidence,
         details: history.map((h) => ({
-          question: h.questionContext.substring(0, 50) + "...",
+          question: `${h.questionContext.substring(0, 50)}...`,
           level: h.suspicionLevel,
           warned: h.warningIssued,
         })),

@@ -1,6 +1,6 @@
 "use client";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@qbs-autonaim/ui";
 import { useEffect, useState } from "react";
 
 interface TocItem {

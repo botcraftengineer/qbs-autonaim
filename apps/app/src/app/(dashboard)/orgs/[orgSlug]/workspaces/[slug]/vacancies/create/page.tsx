@@ -1,402 +1,195 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { paths } from "@qbs-autonaim/config";
-import {
-  Button,
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-  Input,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-  Textarea,
-} from "@qbs-autonaim/ui";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FileEdit, Sparkles } from "lucide-react";
+import { Button } from "@qbs-autonaim/ui";
+import { IconArrowLeft, IconEdit, IconSparkles } from "@tabler/icons-react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { z } from "zod";
 import { PageHeader, SiteHeader } from "~/components/layout";
-import { VacancyCreatorContainer } from "~/components/vacancy-creator";
+import { VacancyForm } from "~/components/vacancies/vacancy-form";
+import { AIVacancyChat } from "~/components/vacancy-chat/ai-vacancy-chat";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
-import { useTRPC } from "~/trpc/react";
 
-const createVacancySchema = z.object({
-  title: z
-    .string()
-    .min(1, "Название обязательно")
-    .max(500, "Максимум 500 символов"),
-  description: z.string().optional(),
-  requirements: z.string().optional(),
-  platformSource: z.enum(
-    ["KWORK", "FL_RU", "FREELANCE_RU"],
-    "Выберите платформу",
-  ),
-  platformUrl: z
-    .string()
-    .url("Введите корректный URL")
-    .optional()
-    .or(z.literal("")),
-});
-
-type CreateVacancyFormValues = z.infer<typeof createVacancySchema>;
-
-const platformLabels: Record<string, string> = {
-  KWORK: "Kwork",
-  FL_RU: "FL.ru",
-  FREELANCE_RU: "Freelance.ru",
-};
+type CreationMode = "select" | "ai" | "manual";
 
 export default function CreateVacancyPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
   const { workspace } = useWorkspace();
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const router = useRouter();
+  const [mode, setMode] = useState<CreationMode>("select");
 
-  // Получаем режим из URL или используем 'ai' по умолчанию
-  const defaultMode = searchParams.get("mode") === "manual" ? "manual" : "ai";
-
-  const form = useForm<CreateVacancyFormValues>({
-    resolver: zodResolver(createVacancySchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      requirements: "",
-      platformSource: undefined,
-      platformUrl: "",
-    },
-  });
-
-  const createMutation = useMutation(
-    trpc.freelancePlatforms.createVacancy.mutationOptions({
-      onSuccess: async (data) => {
-        toast.success("Вакансия создана", {
-          description: `Вакансия "${data.vacancy.title}" успешно создана`,
-        });
-
-        // Инвалидируем кеш вакансий
-        await queryClient.invalidateQueries(
-          trpc.freelancePlatforms.getVacancies.pathFilter(),
-        );
-
-        // Перенаправляем на страницу деталей вакансии
-        router.push(
-          paths.workspace.vacancies(
-            orgSlug ?? "",
-            workspaceSlug ?? "",
-            data.vacancy.id,
-          ),
-        );
-      },
-      onError: (error) => {
-        toast.error("Ошибка при создании вакансии", {
-          description: error.message,
-        });
-      },
-    }),
-  );
-
-  const handleTabChange = (value: string) => {
-    // Обновляем URL при смене таба
-    const url = new URL(window.location.href);
-    url.searchParams.set("mode", value);
-    router.replace(url.pathname + url.search, { scroll: false });
+  const handleManualSuccess = () => {
+    toast.success("Вакансия успешно создана");
+    router.push(`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`);
   };
 
-  const handleSubmit = async (values: CreateVacancyFormValues) => {
-    if (!workspace?.id) {
-      toast.error("Workspace не найден");
-      return;
-    }
+  if (!workspace) {
+    return null;
+  }
 
-    createMutation.mutate({
-      workspaceId: workspace.id,
-      title: values.title,
-      description: values.description || undefined,
-      requirements: values.requirements || undefined,
-      platformSource: values.platformSource,
-      platformUrl: values.platformUrl || undefined,
-    });
-  };
+  // Режим выбора
+  if (mode === "select") {
+    return (
+      <>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <PageHeader
+            title="Создание вакансии"
+            description="Выберите способ создания вакансии"
+          >
+            <Button variant="outline" asChild>
+              <Link
+                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+                aria-label="Вернуться к списку вакансий"
+              >
+                <IconArrowLeft className="size-4" aria-hidden="true" />
+                Назад к списку
+              </Link>
+            </Button>
+          </PageHeader>
 
+          <div className="flex flex-1 items-center justify-center px-4 py-12">
+            <div className="grid w-full max-w-4xl gap-6 md:grid-cols-2">
+              {/* AI-помощник */}
+              <button
+                type="button"
+                onClick={() => setMode("ai")}
+                className="group relative flex flex-col items-start gap-4 rounded-lg border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <IconSparkles className="size-6" aria-hidden="true" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">AI-помощник</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Создайте вакансию в диалоге с AI-ассистентом. Он задаст
+                    вопросы и поможет сформулировать требования.
+                  </p>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    Быстро
+                  </span>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    Интерактивно
+                  </span>
+                  <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                    Рекомендуется
+                  </span>
+                </div>
+              </button>
+
+              {/* Ручное создание */}
+              <button
+                type="button"
+                onClick={() => setMode("manual")}
+                className="group relative flex flex-col items-start gap-4 rounded-lg border-2 border-border bg-card p-6 text-left transition-all hover:border-primary hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <IconEdit className="size-6" aria-hidden="true" />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-semibold">Ручное создание</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Заполните форму самостоятельно. Подходит для опытных
+                    пользователей с готовым описанием вакансии.
+                  </p>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                    Полный контроль
+                  </span>
+                  <span className="rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-muted-foreground">
+                    Классическая форма
+                  </span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Режим AI-помощника
+  if (mode === "ai") {
+    return (
+      <>
+        <SiteHeader />
+        <div className="flex h-[calc(100vh-4rem)] flex-col">
+          <div className="border-b bg-background px-4 py-3 md:px-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-lg font-semibold md:text-xl">
+                  Создание вакансии с AI
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  AI-ассистент поможет создать вакансию
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMode("select")}
+                >
+                  Сменить режим
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+                    aria-label="Вернуться к списку вакансий"
+                  >
+                    <IconArrowLeft className="size-4" aria-hidden="true" />
+                    Назад
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-hidden">
+            <AIVacancyChat
+              workspaceId={workspace.id}
+              orgSlug={orgSlug ?? ""}
+              workspaceSlug={workspaceSlug ?? ""}
+            />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Режим ручного создания
   return (
     <>
       <SiteHeader />
       <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <PageHeader
-            title="Создание вакансии"
-            description="Создание новой вакансии для поиска исполнителей"
-            docsUrl="https://docs.hh.qbs.ru/creating"
-          >
-            <Button variant="ghost" size="sm" asChild>
+        <PageHeader
+          title="Создание вакансии"
+          description="Заполните форму для создания вакансии"
+        >
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={() => setMode("select")}>
+              Сменить режим
+            </Button>
+            <Button variant="outline" asChild>
               <Link
-                href={paths.workspace.vacancies(
-                  orgSlug ?? "",
-                  workspaceSlug ?? "",
-                )}
+                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
                 aria-label="Вернуться к списку вакансий"
               >
-                <ArrowLeft className="size-4" aria-hidden="true" />
-                Назад к&nbsp;вакансиям
+                <IconArrowLeft className="size-4" aria-hidden="true" />
+                Назад к списку
               </Link>
             </Button>
-          </PageHeader>
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-            <div className="px-4 lg:px-6">
-              <Tabs
-                defaultValue={defaultMode}
-                onValueChange={handleTabChange}
-                className="w-full"
-              >
-                <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
-                  <TabsTrigger
-                    value="ai"
-                    className="gap-2"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    <Sparkles className="size-4" aria-hidden="true" />
-                    С&nbsp;AI-ассистентом
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="manual"
-                    className="gap-2"
-                    style={{ touchAction: "manipulation" }}
-                  >
-                    <FileEdit className="size-4" aria-hidden="true" />
-                    Вручную
-                  </TabsTrigger>
-                </TabsList>
+          </div>
+        </PageHeader>
 
-                <TabsContent value="ai" className="mt-0">
-                  <div className="mb-6 rounded-lg border bg-muted/50 p-4">
-                    <div className="flex gap-3">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <Sparkles
-                          className="size-5 text-primary"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <h3 className="font-medium">
-                          AI-ассистент для создания вакансий
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Опишите задачу в свободной форме, и AI поможет создать
-                          профессиональную вакансию с разделами: Описание,
-                          Требования, Обязанности, Условия и Премии. Документ
-                          будет оформлен в соответствии со стандартами и
-                          привлечёт качественных кандидатов.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="rounded-lg border bg-card">
-                    <div className="h-[calc(100vh-20rem)]">
-                      <VacancyCreatorContainer
-                        workspaceId={workspace?.id ?? ""}
-                        orgSlug={orgSlug ?? ""}
-                        workspaceSlug={workspaceSlug ?? ""}
-                      />
-                    </div>
-                  </div>
-                </TabsContent>
-
-                <TabsContent value="manual" className="mt-0">
-                  <div className="mb-6 rounded-lg border bg-muted/50 p-4">
-                    <div className="flex gap-3">
-                      <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                        <FileEdit
-                          className="size-5 text-primary"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <h3 className="font-medium">
-                          Ручное создание вакансии
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Заполните форму самостоятельно, если у вас уже есть
-                          готовое описание вакансии или вы хотите полностью
-                          контролировать каждое поле.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="max-w-2xl">
-                    <Form {...form}>
-                      <form
-                        onSubmit={form.handleSubmit(handleSubmit)}
-                        className="space-y-6"
-                      >
-                        <FormField
-                          control={form.control}
-                          name="title"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Название вакансии</FormLabel>
-                              <FormControl>
-                                <Input
-                                  placeholder="Например: Разработчик React"
-                                  autoFocus
-                                  {...field}
-                                  aria-label="Название вакансии"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Краткое и понятное название вакансии
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="description"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Описание</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Опишите задачу или проект…"
-                                  className="resize-none min-h-[120px]"
-                                  {...field}
-                                  aria-label="Описание вакансии"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Подробное описание задачи или проекта
-                                (опционально)
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="requirements"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Требования</FormLabel>
-                              <FormControl>
-                                <Textarea
-                                  placeholder="Укажите требования к кандидату…"
-                                  className="resize-none min-h-[120px]"
-                                  {...field}
-                                  aria-label="Требования к кандидату"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Навыки, опыт и квалификация (опционально)
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="platformSource"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>Платформа</FormLabel>
-                              <Select
-                                onValueChange={field.onChange}
-                                value={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger aria-label="Выберите платформу">
-                                    <SelectValue placeholder="Выберите платформу" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  {Object.entries(platformLabels).map(
-                                    ([value, label]) => (
-                                      <SelectItem key={value} value={value}>
-                                        {label}
-                                      </SelectItem>
-                                    ),
-                                  )}
-                                </SelectContent>
-                              </Select>
-                              <FormDescription>
-                                Фриланс-платформа, на которой размещена вакансия
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <FormField
-                          control={form.control}
-                          name="platformUrl"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>URL вакансии на платформе</FormLabel>
-                              <FormControl>
-                                <Input
-                                  type="url"
-                                  placeholder="https://kwork.ru/projects/12345"
-                                  {...field}
-                                  aria-label="URL вакансии на платформе"
-                                />
-                              </FormControl>
-                              <FormDescription>
-                                Ссылка на вакансию на фриланс-платформе
-                                (опционально)
-                              </FormDescription>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-
-                        <div className="flex gap-3 pt-4">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="flex-1"
-                            onClick={() => router.back()}
-                            disabled={createMutation.isPending}
-                            aria-label="Отменить создание вакансии"
-                          >
-                            Отмена
-                          </Button>
-                          <Button
-                            type="submit"
-                            className="flex-1"
-                            disabled={createMutation.isPending}
-                            aria-label="Создать вакансию"
-                          >
-                            {createMutation.isPending
-                              ? "Создание…"
-                              : "Создать вакансию"}
-                          </Button>
-                        </div>
-                      </form>
-                    </Form>
-                  </div>
-                </TabsContent>
-              </Tabs>
-            </div>
+        <div className="flex flex-1 flex-col px-4 py-6 lg:px-6">
+          <div className="mx-auto w-full max-w-3xl">
+            <VacancyForm onSuccess={handleManualSuccess} />
           </div>
         </div>
       </div>

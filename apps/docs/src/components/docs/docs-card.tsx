@@ -1,7 +1,7 @@
+import { cn } from "@qbs-autonaim/ui";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
-import { cn } from "@/lib/utils";
 
 interface DocsCardProps {
   title: string;

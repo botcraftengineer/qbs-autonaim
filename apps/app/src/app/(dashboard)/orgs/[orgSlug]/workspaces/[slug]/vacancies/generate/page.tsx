@@ -1,15 +1,13 @@
+"use client";
+
 import { PageHeader, SiteHeader } from "~/components/layout";
 import { VacancyCreatorContainer } from "~/components/vacancy-creator";
+import { useWorkspace } from "~/hooks/use-workspace";
+import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 
-interface PageProps {
-  params: Promise<{
-    orgSlug: string;
-    slug: string;
-  }>;
-}
-
-export default async function VacancyGeneratePage({ params }: PageProps) {
-  const { orgSlug, slug } = await params;
+export default function VacancyGeneratePage() {
+  const { orgSlug, slug: workspaceSlug } = useWorkspaceParams();
+  const { workspace } = useWorkspace();
 
   return (
     <>
@@ -23,9 +21,9 @@ export default async function VacancyGeneratePage({ params }: PageProps) {
           />
           <div className="flex-1 overflow-hidden px-4 pb-4 md:px-6 lg:px-8">
             <VacancyCreatorContainer
-              workspaceId={slug}
-              orgSlug={orgSlug}
-              workspaceSlug={slug}
+              workspaceId={workspace?.id ?? ""}
+              orgSlug={orgSlug ?? ""}
+              workspaceSlug={workspaceSlug ?? ""}
             />
           </div>
         </div>

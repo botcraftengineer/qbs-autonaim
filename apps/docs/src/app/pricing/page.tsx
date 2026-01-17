@@ -1,11 +1,11 @@
+import { Check, X } from "lucide-react";
 import type { Metadata } from "next";
-import { generatePageSEO } from "@/lib/seo";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsFeedback } from "@/components/docs/docs-feedback";
 import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
 import { DocsToc } from "@/components/docs/docs-toc";
-import { Check, X } from "lucide-react";
+import { generatePageSEO } from "@/lib/seo";
 
 export const metadata: Metadata = generatePageSEO("pricing", {
   title: "Цены и тарифы QBS Автонайм — AI для рекрутинга",
@@ -317,15 +317,18 @@ export default function PricingPage() {
               </div>
 
               <ul className="space-y-2 mb-6">
-                {plan.features.map((feature, index) => (
-                  <li key={index} className="flex items-center gap-2 text-sm">
+                {plan.features.map((feature) => (
+                  <li
+                    key={`${plan.name}-feature-${feature}`}
+                    className="flex items-center gap-2 text-sm"
+                  >
                     <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
                     {feature}
                   </li>
                 ))}
-                {plan.limitations.map((limitation, index) => (
+                {plan.limitations.map((limitation) => (
                   <li
-                    key={index}
+                    key={`${plan.name}-limitation-${limitation}`}
                     className="flex items-center gap-2 text-sm text-muted-foreground"
                   >
                     <X className="h-4 w-4 flex-shrink-0" />
@@ -335,6 +338,7 @@ export default function PricingPage() {
               </ul>
 
               <button
+                type="button"
                 className={`w-full py-2 px-4 rounded-md font-medium transition-colors ${
                   plan.buttonVariant === "default"
                     ? "bg-primary text-primary-foreground hover:bg-primary/90"
@@ -381,9 +385,9 @@ export default function PricingPage() {
               </tr>
             </thead>
             <tbody>
-              {features.map((category, categoryIndex) => (
+              {features.map((category) => (
                 <>
-                  <tr key={categoryIndex} className="bg-muted/20">
+                  <tr key={category.category} className="bg-muted/20">
                     <td
                       colSpan={5}
                       className="border border-border p-3 font-semibold text-primary"
@@ -391,8 +395,11 @@ export default function PricingPage() {
                       {category.category}
                     </td>
                   </tr>
-                  {category.items.map((item, itemIndex) => (
-                    <tr key={itemIndex} className="hover:bg-muted/30">
+                  {category.items.map((item) => (
+                    <tr
+                      key={`${category.category}-${item.name}`}
+                      className="hover:bg-muted/30"
+                    >
                       <td className="border border-border p-3">{item.name}</td>
                       <td className="border border-border p-3 text-center">
                         {item.free ? (

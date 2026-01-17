@@ -14,14 +14,10 @@ import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface InterviewScenariosListProps {
-  orgSlug: string;
-  workspaceSlug: string;
   onEditScenario: (scenarioId: string) => void;
 }
 
 export function InterviewScenariosList({
-  orgSlug,
-  workspaceSlug,
   onEditScenario,
 }: InterviewScenariosListProps) {
   const trpc = useTRPC();
@@ -75,7 +71,7 @@ export function InterviewScenariosList({
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {data.scenarios.map((scenario) => (
+      {data?.scenarios.map((scenario) => (
         <Card key={scenario.id}>
           <CardHeader>
             <CardTitle className="text-base">{scenario.name}</CardTitle>

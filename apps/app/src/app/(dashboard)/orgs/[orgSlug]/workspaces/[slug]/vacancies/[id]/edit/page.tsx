@@ -2,7 +2,6 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { use } from "react";
-import { PageHeader, SiteHeader } from "~/components/layout";
 import { VacancyEditForm } from "~/components/vacancy";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
@@ -59,26 +58,18 @@ export default function VacancyEditPage({ params }: VacancyEditPageProps) {
   }
 
   return (
-    <>
-      <SiteHeader />
-      <div className="flex flex-1 flex-col">
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <PageHeader
-            title="Редактирование вакансии"
-            description="Редактирование существующего контента"
-            docsUrl="https://docs.hh.qbs.ru/editing"
+    <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-2">
+        <div className="px-4 py-4 md:px-6 lg:px-8">
+          <VacancyEditForm
+            initialData={{
+              title: vacancy.title,
+              description: vacancy.description,
+            }}
+            onSave={handleSave}
           />
-          <div className="px-4 py-4 md:px-6 lg:px-8">
-            <VacancyEditForm
-              initialData={{
-                title: vacancy.title,
-                description: vacancy.description,
-              }}
-              onSave={handleSave}
-            />
-          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

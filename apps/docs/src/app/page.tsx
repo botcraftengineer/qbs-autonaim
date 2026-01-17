@@ -1,7 +1,6 @@
 import { Bot, FileText, Plug, Users, Zap } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCard } from "@/components/docs/docs-card";
 import { DocsFeedback } from "@/components/docs/docs-feedback";
 import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";

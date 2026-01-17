@@ -49,7 +49,7 @@ function createWelcomeMessage(
   const hasSettings = !!botSettings?.companyName;
 
   if (!hasSettings) {
-    const companyTemplates = [
+    const _companyTemplates = [
       {
         id: "company-startup",
         label: "🚀 IT-стартап",
