@@ -23,11 +23,11 @@ export function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
         </div>
       </div>
       <h1 className="animate-slide-up-fade mt-14 text-xl font-semibold text-neutral-900 dark:text-neutral-100 [--offset:10px] [animation-delay:250ms] [animation-duration:1s] [animation-fill-mode:both]">
-        Добро пожаловать в QBS&nbsp;Автонайм
+        Добро пожаловать в&nbsp;QBS&nbsp;Автонайм
       </h1>
       <p className="animate-slide-up-fade mt-2 text-balance text-base text-neutral-500 dark:text-neutral-400 [--offset:10px] [animation-delay:500ms] [animation-duration:1s] [animation-fill-mode:both]">
-        Интеллектуальная платформа для автоматизации рекрутинга с&nbsp;AI.
-        Начните с создания организации.
+        Интеллектуальная платформа для автоматизации подбора персонала
+        на&nbsp;основе технологий искусственного интеллекта.
       </p>
       <div className="animate-slide-up-fade mt-8 w-full [--offset:10px] [animation-delay:750ms] [animation-duration:1s] [animation-fill-mode:both]">
         <Button
