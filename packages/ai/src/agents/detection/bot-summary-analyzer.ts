@@ -123,24 +123,31 @@ export class BotSummaryAnalyzerAgent extends BaseAgent<
 
   protected validate(input: BotSummaryAnalyzerInput): boolean {
     try {
-      // Strict validation using Zod schema
-      botSummaryAnalyzerInputSchema.parse(input);
+      // Truncate input first to ensure validation matches what will be processed
+      const truncatedInput = this.truncateInput(input);
+
+      // Strict validation using Zod schema on truncated data
+      botSummaryAnalyzerInputSchema.parse(truncatedInput);
       return true;
     } catch (error) {
-      console.error("BotSummaryAnalyzer validation failed:", error);
+      console.error(
+        "BotSummaryAnalyzer validation failed for truncated input (via truncateInput):",
+        error,
+      );
       return false;
     }
   }
 
   /**
    * Truncates and validates input data to ensure it meets size limits
+   * Recomputes aggregated metrics based on the sliced history to maintain consistency
    */
   private truncateInput(
     input: BotSummaryAnalyzerInput,
   ): BotSummaryAnalyzerInput {
-    return {
-      ...input,
-      history: input.history.slice(0, MAX_HISTORY_ENTRIES).map((record) => ({
+    const truncatedHistory = input.history
+      .slice(0, MAX_HISTORY_ENTRIES)
+      .map((record) => ({
         ...record,
         questionContext: record.questionContext.substring(
           0,
@@ -151,7 +158,25 @@ export class BotSummaryAnalyzerAgent extends BaseAgent<
           MAX_ANSWER_PREVIEW_LENGTH,
         ),
         indicators: record.indicators.slice(0, MAX_INDICATORS_COUNT),
-      })),
+      }));
+
+    // Recompute aggregated metrics based on truncated history
+    const recomputedWarningCount = truncatedHistory.filter(
+      (record) => record.warningIssued,
+    ).length;
+
+    const recomputedSuspicionScore = truncatedHistory.reduce((sum, record) => {
+      const recordScore = record.indicators.reduce(
+        (indicatorSum, indicator) => indicatorSum + indicator.weight,
+        0,
+      );
+      return sum + recordScore;
+    }, 0);
+
+    return {
+      history: truncatedHistory,
+      warningCount: recomputedWarningCount,
+      totalSuspicionScore: recomputedSuspicionScore,
     };
   }
 
@@ -161,6 +186,7 @@ export class BotSummaryAnalyzerAgent extends BaseAgent<
   ): string {
     // Use truncated and validated data
     const validatedInput = this.truncateInput(input);
+    const wasHistoryTruncated = input.history.length > MAX_HISTORY_ENTRIES;
 
     const levelCounts = {
       NONE: 0,
@@ -184,11 +210,15 @@ export class BotSummaryAnalyzerAgent extends BaseAgent<
       )
       .join("\n\n");
 
+    const truncationNote = wasHistoryTruncated
+      ? `\n\nВНИМАНИЕ: История была усечена до ${MAX_HISTORY_ENTRIES} последних записей из ${input.history.length} для анализа. Все метрики ниже относятся только к показанным записям.`
+      : "";
+
     return `ИСТОРИЯ ДЕТЕКЦИЙ ЗА ИНТЕРВЬЮ:
 
-${historyDetails}
+${historyDetails}${truncationNote}
 
-СТАТИСТИКА:
+СТАТИСТИКА (на основе ${wasHistoryTruncated ? "показанных" : "всех"} записей):
 - Всего проанализировано ответов: ${validatedInput.history.length}
 - NONE (чистые): ${levelCounts.NONE}
 - LOW (незначительные): ${levelCounts.LOW}

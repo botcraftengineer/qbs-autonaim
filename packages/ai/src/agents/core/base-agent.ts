@@ -5,8 +5,24 @@
 import type { LanguageModel, ToolSet } from "ai";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import type { Langfuse } from "langfuse";
-import type { ZodType } from "zod";
+import { type ZodType, z } from "zod";
 import type { AgentType } from "./types";
+
+/**
+ * Envelope schema for AI responses
+ * Wraps the actual content with metadata about the generation
+ */
+const aiResponseEnvelopeSchema = z.object({
+  content: z.unknown(), // Will be validated against specific output schema
+  metadata: z
+    .object({
+      tokens: z.number().optional(),
+      model: z.string().optional(),
+      finishReason: z.string().optional(),
+      timestamp: z.string().optional(),
+    })
+    .optional(),
+});
 
 export interface AgentConfig {
   model: LanguageModel;
@@ -25,6 +41,7 @@ export abstract class BaseAgent<TInput, TOutput> {
   protected readonly agent: ToolLoopAgent;
   protected readonly langfuse?: Langfuse;
   protected readonly traceId?: string;
+  protected readonly outputSchema: ZodType<TOutput>;
 
   constructor(
     name: string,
@@ -37,6 +54,7 @@ export abstract class BaseAgent<TInput, TOutput> {
     this.type = type;
     this.langfuse = config.langfuse;
     this.traceId = config.traceId;
+    this.outputSchema = outputSchema;
 
     this.agent = new ToolLoopAgent({
       model: config.model,
@@ -94,17 +112,55 @@ export abstract class BaseAgent<TInput, TOutput> {
 
       const result = await this.agent.generate({ prompt });
 
+      // Validate envelope structure first
+      const envelopeValidation = aiResponseEnvelopeSchema.safeParse({
+        content: result.output,
+        metadata: {
+          model: result.model?.modelId,
+          finishReason: result.finishReason,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      if (!envelopeValidation.success) {
+        console.error(`[${this.name}] Envelope validation failed:`, {
+          errors: envelopeValidation.error.errors,
+          rawOutput: result.output,
+        });
+        throw new Error(
+          `Envelope validation failed: ${envelopeValidation.error.message}`,
+        );
+      }
+
+      // Extract content from envelope and validate against output schema
+      const envelope = envelopeValidation.data;
+
+      const contentValidation = this.outputSchema.safeParse(envelope.content);
+
+      if (!contentValidation.success) {
+        console.error(`[${this.name}] Content validation failed:`, {
+          errors: contentValidation.error.errors,
+          content: envelope.content,
+        });
+        throw new Error(
+          `Content validation failed: ${contentValidation.error.message}`,
+        );
+      }
+
+      const validatedOutput = contentValidation.data;
+
       span?.end({
-        output: result.output,
+        output: validatedOutput,
         metadata: {
           success: true,
           promptLength: prompt.length,
+          envelopeMetadata: envelope.metadata,
         },
       });
 
       return {
         success: true,
-        data: result.output as TOutput,
+        data: validatedOutput,
       };
     } catch (error) {
       const errorMessage =

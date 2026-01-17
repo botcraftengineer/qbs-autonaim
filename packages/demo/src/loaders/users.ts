@@ -18,19 +18,28 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
 
   try {
     // User 1: Recruiter (Owner)
-    await auth.api.signUpEmail({
-      body: {
-        email: "recruiter@demo.qbs.com",
-        password: "demo123456",
-        name: "Рекрутер Демо",
-      },
-    });
-
-    const recruiterUser = await db.query.user.findFirst({
+    let recruiterUser = await db.query.user.findFirst({
       where: eq(user.email, "recruiter@demo.qbs.com"),
     });
 
-    if (!recruiterUser) throw new Error("Failed to create recruiter user");
+    if (!recruiterUser) {
+      await auth.api.signUpEmail({
+        body: {
+          email: "recruiter@demo.qbs.com",
+          password: "demo123456",
+          name: "Рекрутер Демо",
+        },
+      });
+
+      recruiterUser = await db.query.user.findFirst({
+        where: eq(user.email, "recruiter@demo.qbs.com"),
+      });
+
+      if (!recruiterUser) throw new Error("Failed to create recruiter user");
+      console.log(`✅ Рекрутер создан: recruiter@demo.qbs.com (Владелец)`);
+    } else {
+      console.log(`ℹ️  Рекрутер уже существует: recruiter@demo.qbs.com`);
+    }
 
     await db
       .insert(organizationMember)
@@ -49,22 +58,29 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
       })
       .where(eq(user.id, recruiterUser.id));
 
-    console.log(`✅ Рекрутер создан: recruiter@demo.qbs.com (Владелец)`);
-
     // User 2: Manager (Admin)
-    await auth.api.signUpEmail({
-      body: {
-        email: "manager@demo.qbs.com",
-        password: "demo123456",
-        name: "Менеджер Демо",
-      },
-    });
-
-    const managerUser = await db.query.user.findFirst({
+    let managerUser = await db.query.user.findFirst({
       where: eq(user.email, "manager@demo.qbs.com"),
     });
 
-    if (!managerUser) throw new Error("Failed to create manager user");
+    if (!managerUser) {
+      await auth.api.signUpEmail({
+        body: {
+          email: "manager@demo.qbs.com",
+          password: "demo123456",
+          name: "Менеджер Демо",
+        },
+      });
+
+      managerUser = await db.query.user.findFirst({
+        where: eq(user.email, "manager@demo.qbs.com"),
+      });
+
+      if (!managerUser) throw new Error("Failed to create manager user");
+      console.log(`✅ Менеджер создан: manager@demo.qbs.com (Администратор)`);
+    } else {
+      console.log(`ℹ️  Менеджер уже существует: manager@demo.qbs.com`);
+    }
 
     await db
       .insert(organizationMember)
@@ -83,22 +99,29 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
       })
       .where(eq(user.id, managerUser.id));
 
-    console.log(`✅ Менеджер создан: manager@demo.qbs.com (Администратор)`);
-
     // User 3: Client (Member)
-    await auth.api.signUpEmail({
-      body: {
-        email: "client@demo.qbs.com",
-        password: "demo123456",
-        name: "Клиент Демо",
-      },
-    });
-
-    const clientUser = await db.query.user.findFirst({
+    let clientUser = await db.query.user.findFirst({
       where: eq(user.email, "client@demo.qbs.com"),
     });
 
-    if (!clientUser) throw new Error("Failed to create client user");
+    if (!clientUser) {
+      await auth.api.signUpEmail({
+        body: {
+          email: "client@demo.qbs.com",
+          password: "demo123456",
+          name: "Клиент Демо",
+        },
+      });
+
+      clientUser = await db.query.user.findFirst({
+        where: eq(user.email, "client@demo.qbs.com"),
+      });
+
+      if (!clientUser) throw new Error("Failed to create client user");
+      console.log(`✅ Клиент создан: client@demo.qbs.com (Участник)`);
+    } else {
+      console.log(`ℹ️  Клиент уже существует: client@demo.qbs.com`);
+    }
 
     await db
       .insert(organizationMember)
@@ -116,8 +139,6 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
         lastActiveWorkspaceId: DEMO_WORKSPACE_ID,
       })
       .where(eq(user.id, clientUser.id));
-
-    console.log(`✅ Клиент создан: client@demo.qbs.com (Участник)`);
 
     return {
       recruiterId: recruiterUser.id,
