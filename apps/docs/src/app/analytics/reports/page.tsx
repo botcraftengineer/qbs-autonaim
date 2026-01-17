@@ -1,7 +1,7 @@
+import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsToc } from "@/components/docs/docs-toc";
-import Link from "next/link";
 
 export default function ReportsPage() {
   const tocItems = [

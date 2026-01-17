@@ -1,8 +1,8 @@
+import Link from "next/link";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
-import { DocsToc } from "@/components/docs/docs-toc";
 import { DocsSteps } from "@/components/docs/docs-steps";
-import Link from "next/link";
+import { DocsToc } from "@/components/docs/docs-toc";
 
 export default function AutoRepliesPage() {
   const tocItems = [
