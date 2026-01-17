@@ -203,9 +203,34 @@ export default function VacanciesPage() {
           title="Вакансии"
           description="Управление вакансиями и их настройками"
           docsUrl="https://docs.hh.qbs.ru/vacancies"
-        />
-        <div className="@container/main flex flex-1 flex-col gap-2">
-          <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+        >
+          <div className="flex gap-2">
+            <Button asChild variant="default">
+              <Link
+                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/create`}
+                aria-label="Создать вакансию для фриланс-платформы"
+              >
+                <IconSparkles className="size-4" aria-hidden="true" />
+                Создать вакансию
+              </Link>
+            </Button>
+            <Button
+              onClick={handleUpdate}
+              disabled={isUpdating}
+              variant="outline"
+              aria-label="Синхронизировать активные вакансии из источников"
+            >
+              <IconRefresh
+                className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
+                aria-hidden="true"
+              />
+              {isUpdating ? "Синхронизация…" : "Синхронизировать"}
+            </Button>
+          </div>
+        </PageHeader>
+
+        <div className="@container/main flex flex-1 flex-col">
+          <div className="flex flex-col gap-6 px-4 py-6 lg:px-6">
             <VacancyStats
               totalVacancies={stats.totalVacancies}
               activeVacancies={stats.activeVacancies}
@@ -214,7 +239,7 @@ export default function VacanciesPage() {
               isLoading={isLoading}
             />
 
-            <div className="px-4 lg:px-6">
+            <div className="space-y-4">
               <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
                   <div className="relative flex-1 md:max-w-sm">
@@ -363,35 +388,6 @@ export default function VacanciesPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                </div>
-
-                <div className="flex gap-2 w-full md:w-auto">
-                  <Button
-                    asChild
-                    variant="default"
-                    className="flex-1 md:flex-initial"
-                  >
-                    <Link
-                      href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/create`}
-                      aria-label="Создать вакансию для фриланс-платформы"
-                    >
-                      <IconSparkles className="size-4" aria-hidden="true" />
-                      Создать вакансию
-                    </Link>
-                  </Button>
-                  <Button
-                    onClick={handleUpdate}
-                    disabled={isUpdating}
-                    variant="outline"
-                    className="flex-1 md:flex-initial"
-                    aria-label="Синхронизировать активные вакансии из источников"
-                  >
-                    <IconRefresh
-                      className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
-                      aria-hidden="true"
-                    />
-                    {isUpdating ? "Синхронизация…" : "Синхронизировать"}
-                  </Button>
                 </div>
               </div>
 

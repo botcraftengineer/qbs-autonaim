@@ -8,4 +8,5 @@ export { UpdateVacancyButton } from "./update-vacancy-button";
 export { VacancyAnalytics, VacancyRequirements } from "./vacancy-analytics";
 export { VacancyEditForm } from "./vacancy-edit-form";
 export { VacancyHeader } from "./vacancy-header";
+export { VacancyLayoutClient } from "./vacancy-layout-client";
 export { VacancyStats } from "./vacancy-stats";

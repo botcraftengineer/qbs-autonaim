@@ -19,7 +19,9 @@ export default function SettingsPage() {
   }
 
   if (!workspace) {
-    return <p className="text-muted-foreground">Workspace не найден</p>;
+    return (
+      <p className="text-muted-foreground">Рабочее пространство не найдено</p>
+    );
   }
 
   return (

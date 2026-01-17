@@ -1,22 +1,12 @@
 "use client";
 
+import { Badge, Button, Card, Separator } from "@qbs-autonaim/ui";
 import {
-  Badge,
-  Button,
-  Card,
-  CardHeader,
-  CardTitle,
-  Separator,
-} from "@qbs-autonaim/ui";
-import {
-  IconChartBar,
   IconCheck,
   IconCopy,
   IconExternalLink,
-  IconFileText,
   IconMessage,
   IconRobot,
-  IconStar,
   IconUpload,
   IconUsers,
 } from "@tabler/icons-react";
@@ -109,11 +99,9 @@ ${data.interviewLink.url}
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Загрузка…</CardTitle>
-          </CardHeader>
+      <div className="space-y-6">
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">Загрузка…</div>
         </Card>
       </div>
     );
@@ -121,11 +109,11 @@ ${data.interviewLink.url}
 
   if (!data?.vacancy) {
     return (
-      <div className="space-y-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>Вакансия не найдена</CardTitle>
-          </CardHeader>
+      <div className="space-y-6">
+        <Card className="p-6">
+          <div className="text-sm text-muted-foreground">
+            Вакансия не найдена
+          </div>
         </Card>
       </div>
     );
@@ -138,53 +126,24 @@ ${data.interviewLink.url}
 
   return (
     <div className="space-y-6">
-      {/* Основная информация о вакансии */}
-      <Card className="p-6">
-        <div>
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
-              <IconFileText
-                className="size-6 text-primary"
-                aria-hidden="true"
-              />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">
-                {vacancy.title}
-              </h1>
-              <p className="text-muted-foreground">Информация о вакансии</p>
-            </div>
-          </div>
-          <Separator className="mb-4" />
-        </div>
-
-        <div className="space-y-8">
-          {/* Статус и платформа */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-1 h-8 bg-linear-to-b from-primary to-primary/60 rounded-full"></div>
-              <h3 className="text-lg font-semibold text-foreground">
-                Статус вакансии
-              </h3>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="h-6">
-                {getPlatformName(vacancy.source)}
-              </Badge>
+      {/* Основная информация */}
+      <Card>
+        <div className="p-6 space-y-6">
+          {/* Заголовок */}
+          <div>
+            <h2 className="text-lg font-semibold mb-1">{vacancy.title}</h2>
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <Badge variant="outline">{getPlatformName(vacancy.source)}</Badge>
               {vacancy.isActive ? (
-                <Badge variant="default" className="h-6">
-                  Активна
-                </Badge>
+                <Badge variant="default">Активна</Badge>
               ) : (
-                <Badge variant="secondary" className="h-6">
-                  Неактивна
-                </Badge>
+                <Badge variant="secondary">Неактивна</Badge>
               )}
               {vacancy.url && (
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
-                  className="h-6 gap-1"
+                  className="h-7 gap-1.5 px-2"
                   asChild
                 >
                   <Link
@@ -193,240 +152,193 @@ ${data.interviewLink.url}
                     rel="noopener noreferrer"
                     aria-label="Открыть вакансию на платформе"
                   >
-                    <IconExternalLink className="size-3" aria-hidden="true" />
+                    <IconExternalLink className="size-3.5" aria-hidden="true" />
                     <span className="text-xs">На платформе</span>
                   </Link>
                 </Button>
               )}
             </div>
-
-            {/* Описание вакансии */}
-            {vacancy.description && (
-              <>
-                <Separator className="my-6" />
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-linear-to-b from-primary to-primary/60 rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Описание вакансии
-                    </h3>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-4">
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                      {vacancy.description}
-                    </p>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Требования */}
-            {vacancy.requirements && (
-              <>
-                <Separator className="my-6" />
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-linear-to-b from-primary to-primary/60 rounded-full"></div>
-                    <h3 className="text-lg font-semibold text-foreground">
-                      Требования
-                    </h3>
-                  </div>
-                  <div className="rounded-lg bg-muted/50 p-4">
-                    <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                      {String(vacancy.requirements)}
-                    </p>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/* Ссылка на интервью (только для фриланс-платформ) */}
-            {isFreelancePlatform && interviewLink && (
-              <>
-                <Separator className="my-6" />
-                <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-1 h-8 bg-linear-to-b from-primary to-primary/60 rounded-full"></div>
-                    <IconRobot
-                      className="size-5 text-primary"
-                      aria-hidden="true"
-                    />
-                    <h3 className="text-lg font-semibold text-foreground">
-                      AI-интервью
-                    </h3>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Добавьте эту ссылку в описание вакансии на фриланс-платформе
-                  </p>
-
-                  <div className="space-y-3">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <div className="flex-1 rounded-lg bg-muted px-4 py-3 font-mono text-sm break-all min-h-[44px] flex items-center">
-                        {interviewLink.url}
-                      </div>
-                      <Button
-                        onClick={handleCopyLink}
-                        variant="outline"
-                        className="min-h-[44px] shrink-0 gap-2"
-                        aria-label="Скопировать ссылку на интервью"
-                      >
-                        {copiedLink ? (
-                          <>
-                            <IconCheck className="size-4" aria-hidden="true" />
-                            Скопировано
-                          </>
-                        ) : (
-                          <>
-                            <IconCopy className="size-4" aria-hidden="true" />
-                            Копировать
-                          </>
-                        )}
-                      </Button>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-sm">
-                        Шаблон для описания
-                      </h4>
-                      <p className="text-xs text-muted-foreground">
-                        Используйте этот текст при размещении вакансии
-                      </p>
-                      <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap leading-relaxed">
-                        {vacancy.description || vacancy.title}
-                        {"\n\n"}
-                        Для отклика пройдите короткое AI-интервью (10–15 минут):
-                        {"\n"}
-                        {interviewLink.url}
-                        {"\n\n"}
-                        После прохождения интервью мы свяжемся с вами при
-                        положительном решении.
-                      </div>
-                      <Button
-                        onClick={handleCopyTemplate}
-                        variant="outline"
-                        size="sm"
-                        className="min-h-[44px] gap-2"
-                        aria-label="Скопировать шаблон описания"
-                      >
-                        {copiedTemplate ? (
-                          <>
-                            <IconCheck className="size-4" aria-hidden="true" />
-                            Скопировано
-                          </>
-                        ) : (
-                          <>
-                            <IconCopy className="size-4" aria-hidden="true" />
-                            Копировать шаблон
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
           </div>
+
+          {/* Описание */}
+          {vacancy.description && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Описание</h3>
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {vacancy.description}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Требования */}
+          {vacancy.requirements && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Требования</h3>
+                <div className="rounded-lg bg-muted/50 p-4">
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
+                    {String(vacancy.requirements)}
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* AI-интервью */}
+          {isFreelancePlatform && interviewLink && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <IconRobot
+                    className="size-4 text-primary"
+                    aria-hidden="true"
+                  />
+                  <h3 className="text-sm font-medium">AI-интервью</h3>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Добавьте эту ссылку в описание вакансии на фриланс-платформе
+                </p>
+
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="flex-1 rounded-lg bg-muted px-3 py-2.5 font-mono text-xs break-all min-h-[44px] flex items-center">
+                      {interviewLink.url}
+                    </div>
+                    <Button
+                      onClick={handleCopyLink}
+                      variant="outline"
+                      size="sm"
+                      className="min-h-[44px] shrink-0 gap-2"
+                      aria-label="Скопировать ссылку на интервью"
+                    >
+                      {copiedLink ? (
+                        <>
+                          <IconCheck className="size-4" aria-hidden="true" />
+                          Скопировано
+                        </>
+                      ) : (
+                        <>
+                          <IconCopy className="size-4" aria-hidden="true" />
+                          Копировать
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium">Шаблон для описания</h4>
+                    <p className="text-xs text-muted-foreground">
+                      Используйте этот текст при размещении вакансии
+                    </p>
+                    <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap leading-relaxed">
+                      {vacancy.description || vacancy.title}
+                      {"\n\n"}
+                      Для отклика пройдите короткое AI-интервью (10–15 минут):
+                      {"\n"}
+                      {interviewLink.url}
+                      {"\n\n"}
+                      После прохождения интервью мы свяжемся с вами при
+                      положительном решении.
+                    </div>
+                    <Button
+                      onClick={handleCopyTemplate}
+                      variant="outline"
+                      size="sm"
+                      className="min-h-[44px] gap-2"
+                      aria-label="Скопировать шаблон описания"
+                    >
+                      {copiedTemplate ? (
+                        <>
+                          <IconCheck className="size-4" aria-hidden="true" />
+                          Скопировано
+                        </>
+                      ) : (
+                        <>
+                          <IconCopy className="size-4" aria-hidden="true" />
+                          Копировать шаблон
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </Card>
 
-      {/* Статистика и аналитика */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 lg:gap-8">
-        {/* Статистика откликов */}
-        <Card className="p-6">
-          <div className="mb-6">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
-                <IconChartBar
-                  className="size-6 text-primary"
-                  aria-hidden="true"
-                />
-              </div>
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
-                  Статистика откликов
-                </h2>
-                <p className="text-muted-foreground">Анализ по источникам</p>
-              </div>
-            </div>
-            <Separator className="mb-4" />
+      {/* Статистика откликов */}
+      <Card>
+        <div className="p-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">Статистика откликов</h2>
+            <p className="text-sm text-muted-foreground">
+              Анализ по источникам
+            </p>
           </div>
 
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="rounded-xl bg-linear-to-br from-primary/5 to-primary/10 border border-primary/10 p-4 text-center transition-colors hover:from-primary/10 hover:to-primary/15">
-                <div
-                  className="text-3xl font-bold tabular-nums text-primary mb-2"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
-                >
-                  {responseStats.HH_API ?? 0}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  HeadHunter API
-                </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="rounded-lg border bg-card p-4 text-center">
+              <div
+                className="text-2xl font-bold text-foreground mb-1"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {responseStats.HH_API ?? 0}
               </div>
-              <div className="rounded-xl bg-linear-to-br from-primary/5 to-primary/10 border border-primary/10 p-4 text-center transition-colors hover:from-primary/10 hover:to-primary/15">
-                <div
-                  className="text-3xl font-bold tabular-nums text-primary mb-2"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
-                >
-                  {responseStats.FREELANCE_MANUAL ?? 0}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  Импорт вручную
-                </div>
-              </div>
-              <div className="rounded-xl bg-linear-to-br from-primary/5 to-primary/10 border border-primary/10 p-4 text-center transition-colors hover:from-primary/10 hover:to-primary/15">
-                <div
-                  className="text-3xl font-bold tabular-nums text-primary mb-2"
-                  style={{ fontVariantNumeric: "tabular-nums" }}
-                >
-                  {responseStats.FREELANCE_LINK ?? 0}
-                </div>
-                <div className="text-sm font-medium text-muted-foreground">
-                  По ссылке
-                </div>
+              <div className="text-xs text-muted-foreground">
+                HeadHunter API
               </div>
             </div>
+            <div className="rounded-lg border bg-card p-4 text-center">
+              <div
+                className="text-2xl font-bold text-foreground mb-1"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {responseStats.FREELANCE_MANUAL ?? 0}
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Импорт вручную
+              </div>
+            </div>
+            <div className="rounded-lg border bg-card p-4 text-center">
+              <div
+                className="text-2xl font-bold text-foreground mb-1"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {responseStats.FREELANCE_LINK ?? 0}
+              </div>
+              <div className="text-xs text-muted-foreground">По ссылке</div>
+            </div>
+          </div>
 
-            <Separator className="my-6" />
+          <Separator />
 
-            <div className="flex items-center justify-center">
-              <div className="rounded-xl bg-linear-to-br from-primary/10 to-primary/20 border border-primary/20 p-6 text-center w-full max-w-xs">
-                <div className="text-4xl font-bold tabular-nums text-primary mb-2">
-                  {(responseStats.HH_API ?? 0) +
-                    (responseStats.FREELANCE_MANUAL ?? 0) +
-                    (responseStats.FREELANCE_LINK ?? 0)}
-                </div>
-                <div className="text-base font-medium text-muted-foreground">
-                  Всего откликов
-                </div>
+          <div className="flex items-center justify-center">
+            <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-6 text-center">
+              <div
+                className="text-3xl font-bold text-primary mb-1"
+                style={{ fontVariantNumeric: "tabular-nums" }}
+              >
+                {(responseStats.HH_API ?? 0) +
+                  (responseStats.FREELANCE_MANUAL ?? 0) +
+                  (responseStats.FREELANCE_LINK ?? 0)}
+              </div>
+              <div className="text-sm font-medium text-muted-foreground">
+                Всего откликов
               </div>
             </div>
           </div>
-        </Card>
 
-        {/* Действия */}
-        {isFreelancePlatform && (
-          <Card className="p-6">
-            <div className="mb-6">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
-                  <IconUpload
-                    className="size-6 text-primary"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">
-                    Управление откликами
-                  </h2>
-                  <p className="text-muted-foreground">Импорт и обработка</p>
-                </div>
-              </div>
-              <Separator className="mb-4" />
-            </div>
-
-            <div className="space-y-4">
+          {isFreelancePlatform && (
+            <>
+              <Separator />
               <Button
                 asChild
                 variant="default"
@@ -439,31 +351,21 @@ ${data.interviewLink.url}
                   Импортировать отклики
                 </Link>
               </Button>
-            </div>
-          </Card>
-        )}
-      </div>
+            </>
+          )}
+        </div>
+      </Card>
 
       {/* Шортлист кандидатов */}
-      <Card className="p-6">
-        <div className="mb-6">
-          <div className="mb-4 flex items-center gap-3">
-            <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
-              <IconStar className="size-6 text-primary" aria-hidden="true" />
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold text-foreground">
-                Шортлист кандидатов
-              </h2>
-              <p className="text-muted-foreground">
-                Лучшие кандидаты по AI-анализу
-              </p>
-            </div>
+      <Card>
+        <div className="p-6 space-y-6">
+          <div>
+            <h2 className="text-lg font-semibold mb-1">Шортлист кандидатов</h2>
+            <p className="text-sm text-muted-foreground">
+              Лучшие кандидаты по AI-анализу
+            </p>
           </div>
-          <Separator className="mb-4" />
-        </div>
 
-        <div className="space-y-4">
           {shortlistLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="text-sm text-muted-foreground">
@@ -471,14 +373,12 @@ ${data.interviewLink.url}
               </div>
             </div>
           ) : !shortlist || shortlist.length === 0 ? (
-            <div className="rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 text-center">
+            <div className="rounded-lg border-2 border-dashed p-8 text-center">
               <IconUsers
                 className="size-8 text-muted-foreground mx-auto mb-3"
                 aria-hidden="true"
               />
-              <h3 className="font-medium text-muted-foreground mb-2">
-                Шортлист пока пуст
-              </h3>
+              <h3 className="font-medium text-sm mb-1">Шортлист пока пуст</h3>
               <p className="text-sm text-muted-foreground">
                 Импортируйте отклики и проведите интервью для формирования
                 шортлиста
@@ -490,22 +390,25 @@ ${data.interviewLink.url}
                 {shortlist.slice(0, 5).map((candidate, index) => (
                   <div
                     key={candidate.responseId}
-                    className="flex items-center justify-between rounded-xl bg-linear-to-r from-muted/20 to-muted/30 border border-muted/40 p-5 gap-4 transition-all duration-200 hover:from-muted/30 hover:to-muted/40 hover:border-muted/60 hover:shadow-sm"
+                    className="flex items-center justify-between rounded-lg border bg-card p-4 gap-4 hover:bg-accent/50 transition-colors"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="flex size-12 items-center justify-center rounded-full bg-linear-to-br from-primary/20 to-primary/30 border-2 border-primary/30 text-primary font-bold text-sm shrink-0 shadow-sm">
+                      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm shrink-0">
                         {index + 1}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate text-foreground">
+                        <div className="font-medium truncate text-sm">
                           {candidate.name}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs text-muted-foreground">
                           AI-оценка:{" "}
-                          <span className="font-bold text-primary tabular-nums text-base">
+                          <span
+                            className="font-semibold text-primary"
+                            style={{ fontVariantNumeric: "tabular-nums" }}
+                          >
                             {candidate.overallScore}
                           </span>
-                          <span className="text-xs">/100</span>
+                          <span>/100</span>
                         </div>
                       </div>
                     </div>
@@ -513,14 +416,14 @@ ${data.interviewLink.url}
                       variant="outline"
                       size="sm"
                       asChild
-                      className="shrink-0 min-h-[44px] gap-2 border-primary/30 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                      className="shrink-0 min-h-[44px] gap-2"
                     >
                       <Link
                         href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/responses/${candidate.responseId}`}
                         aria-label={`Посмотреть профиль ${candidate.name}`}
                       >
                         <IconMessage className="size-4" aria-hidden="true" />
-                        Подробнее
+                        <span className="hidden sm:inline">Подробнее</span>
                       </Link>
                     </Button>
                   </div>
@@ -529,7 +432,7 @@ ${data.interviewLink.url}
 
               {shortlist.length > 5 && (
                 <>
-                  <Separator className="my-4" />
+                  <Separator />
                   <Button
                     variant="outline"
                     className="w-full min-h-[44px] gap-2"
