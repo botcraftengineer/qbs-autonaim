@@ -14,8 +14,8 @@ const auth = initAuth({
   secret: process.env.AUTH_SECRET,
 });
 
-const DEMO_ORG_ID = "org_demo_001";
-const DEMO_WORKSPACE_ID = "ws_demo_001";
+const DEMO_ORG_ID = "org_00000000000000000000000000000001";
+const DEMO_WORKSPACE_ID = "ws_00000000000000000000000000000001";
 
 export async function createDemoUsers(): Promise<DemoUserIds> {
   console.log("\n👥 Создаем демо пользователей...");
