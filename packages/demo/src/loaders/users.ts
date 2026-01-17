@@ -1,6 +1,10 @@
 import { initAuth } from "@qbs-autonaim/auth";
 import { db } from "@qbs-autonaim/db";
-import { organizationMember, user } from "@qbs-autonaim/db/schema";
+import {
+  organizationMember,
+  user,
+  workspaceMember,
+} from "@qbs-autonaim/db/schema";
 import { eq } from "drizzle-orm";
 import type { DemoUserIds } from "../types";
 
@@ -51,6 +55,15 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
       .onConflictDoNothing();
 
     await db
+      .insert(workspaceMember)
+      .values({
+        userId: recruiterUser.id,
+        workspaceId: DEMO_WORKSPACE_ID,
+        role: "owner",
+      })
+      .onConflictDoNothing();
+
+    await db
       .update(user)
       .set({
         lastActiveOrganizationId: DEMO_ORG_ID,
@@ -92,6 +105,15 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
       .onConflictDoNothing();
 
     await db
+      .insert(workspaceMember)
+      .values({
+        userId: managerUser.id,
+        workspaceId: DEMO_WORKSPACE_ID,
+        role: "admin",
+      })
+      .onConflictDoNothing();
+
+    await db
       .update(user)
       .set({
         lastActiveOrganizationId: DEMO_ORG_ID,
@@ -128,6 +150,15 @@ export async function createDemoUsers(): Promise<DemoUserIds> {
       .values({
         userId: clientUser.id,
         organizationId: DEMO_ORG_ID,
+        role: "member",
+      })
+      .onConflictDoNothing();
+
+    await db
+      .insert(workspaceMember)
+      .values({
+        userId: clientUser.id,
+        workspaceId: DEMO_WORKSPACE_ID,
         role: "member",
       })
       .onConflictDoNothing();

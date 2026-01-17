@@ -1,3 +1,5 @@
+"use client";
+
 import { APP_CONFIG } from "@qbs-autonaim/config";
 import {
   Button,
@@ -9,7 +11,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@qbs-autonaim/ui";
-import { Building2, HelpCircle } from "lucide-react";
+import { Building2, HelpCircle, Loader2 } from "lucide-react";
+import type { FormEvent } from "react";
 
 interface OrganizationFormProps {
   name: string;
@@ -22,7 +25,7 @@ interface OrganizationFormProps {
   onSlugChange: (value: string) => void;
   onDescriptionChange: (value: string) => void;
   onWebsiteChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: FormEvent) => void;
 }
 
 export function OrganizationForm({
@@ -147,11 +150,10 @@ export function OrganizationForm({
           />
         </div>
 
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isPending || !name || !slug}
-        >
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending && (
+            <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
+          )}
           {isPending ? "Создание…" : "Создать организацию"}
         </Button>
       </form>

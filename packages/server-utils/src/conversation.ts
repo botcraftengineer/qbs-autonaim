@@ -68,7 +68,9 @@ const BotDetectionRecordSchema = z.object({
   suspicionLevel: z.enum(["NONE", "LOW", "MEDIUM", "HIGH"]),
   indicators: z.array(BotDetectionIndicatorSchema),
   warningIssued: z.boolean(),
-  warningLevel: z.enum(["none", "soft", "direct", "strict", "final"]).optional(),
+  warningLevel: z
+    .enum(["none", "soft", "direct", "strict", "final"])
+    .optional(),
 });
 
 const LastBotDetectionResultSchema = z.object({
