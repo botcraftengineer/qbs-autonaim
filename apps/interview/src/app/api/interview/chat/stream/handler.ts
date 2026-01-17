@@ -344,36 +344,15 @@ async function handler(request: Request) {
           }
         }
 
-        // biome-ignore lint/suspicious/noExplicitAny: Complex generic types cause compatibility issues with tool inference
-        let result: any;
+        let result: Awaited<ReturnType<typeof tryStreamWithModel>>;
 
-        try {
-          result = streamText({
-            model,
-            system: systemPrompt,
-            messages: formattedMessages,
-            tools,
-            stopWhen: stepCountIs(25), // Allow up to 25 steps for complex tool chains
-            experimental_transform: smoothStream({ chunking: "word" }),
-            experimental_telemetry: { isEnabled: true }, // Enable Langfuse telemetry for tool calls
-            onFinish: async () => {
-              // End span manually after stream has finished
-              trace.getActiveSpan()?.end();
-            },
-          });
-        } catch (error) {
-          console.warn(
-            "[Interview Stream] Ошибка с основной моделью, пробую fallback:",
-            error,
-          );
-
+        const tryStreamWithModel = async (
+          modelToUse: ReturnType<typeof getAIModel>,
+          isFallback = false,
+        ) => {
           try {
-            const fallbackModel = getFallbackModel();
-
-            // Добавляем информацию о fallback в метаданные trace
-
-            result = streamText({
-              model: fallbackModel,
+            const streamResult = streamText({
+              model: modelToUse,
               system: systemPrompt,
               messages: formattedMessages,
               tools,
@@ -386,13 +365,81 @@ async function handler(request: Request) {
               },
             });
 
+            // Проверяем, что стрим работает, попробовав прочитать первый чанк
+            const reader = streamResult.textStream.getReader();
+            const firstChunk = await reader.read();
+
+            if (firstChunk.done) {
+              throw new Error("Stream ended immediately");
+            }
+
+            // Создаём новый стрим, который начинается с первого чанка
+            const newStream = new ReadableStream({
+              async start(controller) {
+                // Отправляем первый чанк
+                if (firstChunk.value) {
+                  controller.enqueue(firstChunk.value);
+                }
+
+                // Продолжаем читать остальные чанки
+                try {
+                  while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    controller.enqueue(value);
+                  }
+                  controller.close();
+                } catch (error) {
+                  controller.error(error);
+                }
+              },
+            });
+
+            return {
+              ...streamResult,
+              textStream: newStream as typeof streamResult.textStream,
+            };
+          } catch (error) {
+            // Проверяем, является ли это ошибкой бюджета
+            const errorMessage =
+              error instanceof Error ? error.message : String(error);
+            const isBudgetError =
+              errorMessage.includes("budget_exceeded") ||
+              errorMessage.includes("Budget has been exceeded");
+
+            if (isBudgetError) {
+              console.warn(
+                `[Interview Stream] Бюджет ${isFallback ? "fallback " : ""}модели исчерпан`,
+              );
+            }
+
+            throw error;
+          }
+        };
+
+        try {
+          result = await tryStreamWithModel(model, false);
+        } catch (error) {
+          console.warn(
+            "[Interview Stream] Ошибка с основной моделью, пробую fallback:",
+            error instanceof Error ? error.message : String(error),
+          );
+
+          try {
+            const fallbackModel = getFallbackModel();
+            usedFallback = true;
+
+            result = await tryStreamWithModel(fallbackModel, true);
+
             console.log(
               "[Interview Stream] Успешно переключился на fallback модель",
             );
           } catch (fallbackError) {
             console.error(
               "[Interview Stream] Fallback модель также недоступна:",
-              fallbackError,
+              fallbackError instanceof Error
+                ? fallbackError.message
+                : String(fallbackError),
             );
             // End span with error
             trace.getActiveSpan()?.setStatus({

@@ -1,59 +1,37 @@
 import { expect, test } from "@playwright/test";
-import {
-  db,
-  organization,
-  organizationMember,
-  user,
-  workspace,
-} from "@qbs-autonaim/db";
-import { eq } from "drizzle-orm";
-import {
-  fillEmailPasswordForm,
-  submitSignUpForm,
-  waitForAuthSuccess,
-} from "../helpers/auth";
+import { loginTestUser } from "../helpers/test-setup";
 
 test.describe("Онбординг: создание организации и воркспейса", () => {
-  const testPassword = "password123";
+  const testPassword = "TestPassword123";
   let testEmail: string;
 
   test.beforeEach(async ({ page }) => {
+    // Создаем уникальный email для каждого теста
     testEmail = `onboarding-${Date.now()}-${Math.random().toString(36).substring(7)}@example.com`;
+
+    // Регистрируемся через UI (это быстрее чем через API для онбординга)
     await page.goto("/auth/signup");
-    await fillEmailPasswordForm(page, testEmail, testPassword);
-    await submitSignUpForm(page);
-    await waitForAuthSuccess(page);
+
+    // Переключаемся на таб "Пароль" если нужно
+    const passwordTab = page.getByRole("tab", { name: "Пароль" });
+    if (await passwordTab.isVisible()) {
+      await passwordTab.click();
+    }
+
+    // Заполняем форму
+    await page.getByRole("textbox", { name: "Email" }).fill(testEmail);
+    await page.getByRole("textbox", { name: "Пароль" }).fill(testPassword);
+
+    // Отправляем форму
+    await page.getByRole("button", { name: "Создать аккаунт" }).click();
+
+    // Ждем редиректа на онбординг
+    await page.waitForURL("/onboarding", { timeout: 30000 });
   });
 
   test.afterEach(async () => {
-    if (!testEmail) return;
-
-    const userRecord = await db
-      .select()
-      .from(user)
-      .where(eq(user.email, testEmail))
-      .limit(1);
-
-    if (userRecord[0]) {
-      const userOrgs = await db
-        .select({ organizationId: organizationMember.organizationId })
-        .from(organizationMember)
-        .where(eq(organizationMember.userId, userRecord[0].id));
-
-      for (const { organizationId } of userOrgs) {
-        await db
-          .delete(workspace)
-          .where(eq(workspace.organizationId, organizationId));
-        await db
-          .delete(organizationMember)
-          .where(eq(organizationMember.organizationId, organizationId));
-        await db
-          .delete(organization)
-          .where(eq(organization.id, organizationId));
-      }
-
-      await db.delete(user).where(eq(user.id, userRecord[0].id));
-    }
+    // Cleanup будет выполнен автоматически через глобальный cleanup
+    // или можно добавить явный cleanup через API если нужно
   });
 
   test("отображает страницу онбординга после регистрации", async ({ page }) => {
