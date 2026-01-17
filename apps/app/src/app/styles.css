@@ -22,6 +22,31 @@
     overflow-x: hidden;
   }
 
+  /* Анимация slide-up-fade для онбординга */
+  @keyframes slide-up-fade {
+    from {
+      opacity: 0;
+      transform: translateY(var(--offset, 10px));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-up-fade {
+    animation: slide-up-fade var(--animation-duration, 1s) var(--animation-delay, 0ms) var(--animation-fill-mode, both);
+  }
+
+  /* Респект к prefers-reduced-motion */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-slide-up-fade {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* Resume styles - responsive and accessible */
   .resume {
     @apply space-y-4 leading-relaxed;
