@@ -1,8 +1,8 @@
 import { db } from "@qbs-autonaim/db";
 import type { DemoOrganization } from "../types";
 
-const DEMO_ORG_ID = "org_demo_001";
-const DEMO_WORKSPACE_ID = "ws_demo_001";
+const DEMO_ORG_ID = "org_00000000000000000000000000000001";
+const DEMO_WORKSPACE_ID = "ws_00000000000000000000000000000001";
 
 export async function createDemoOrganization(): Promise<DemoOrganization> {
   const { organization, workspace } = await import("@qbs-autonaim/db/schema");

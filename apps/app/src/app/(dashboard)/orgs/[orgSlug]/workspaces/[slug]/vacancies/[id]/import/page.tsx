@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -193,18 +194,20 @@ export default function ImportResponsesPage() {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Хлебные крошки */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link
-          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}`}
-          className="hover:text-foreground"
-        >
-          {vacancy?.title || "Вакансия"}
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">Импорт откликов</span>
-      </div>
+    <>
+      <SiteHeader />
+      <div className="space-y-4">
+        {/* Хлебные крошки */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Link
+            href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${vacancyId}`}
+            className="hover:text-foreground"
+          >
+            {vacancy?.title || "Вакансия"}
+          </Link>
+          <span>/</span>
+          <span className="text-foreground">Импорт откликов</span>
+        </div>
 
       {/* Заголовок */}
       <div>

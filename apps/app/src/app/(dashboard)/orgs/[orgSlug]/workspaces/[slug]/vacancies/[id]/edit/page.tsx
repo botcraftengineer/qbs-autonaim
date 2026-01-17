@@ -2,6 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { use } from "react";
+import { SiteHeader } from "~/components/layout";
 import { VacancyEditForm } from "~/components/vacancy";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
@@ -58,14 +59,17 @@ export default function VacancyEditPage({ params }: VacancyEditPageProps) {
   }
 
   return (
-    <div className="space-y-6">
-      <VacancyEditForm
-        initialData={{
-          title: vacancy.title,
-          description: vacancy.description,
-        }}
-        onSave={handleSave}
-      />
-    </div>
+    <>
+      <SiteHeader />
+      <div className="space-y-6">
+        <VacancyEditForm
+          initialData={{
+            title: vacancy.title,
+            description: vacancy.description,
+          }}
+          onSave={handleSave}
+        />
+      </div>
+    </>
   );
 }

@@ -9,6 +9,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -506,46 +507,49 @@ export default function CreateGigPage({ params }: PageProps) {
   };
 
   return (
-    <div className="container mx-auto max-w-6xl py-6">
-      <div className="mb-6">
-        <Link
-          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Назад к заданиям
-        </Link>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <WizardChat
-          onComplete={handleWizardComplete}
-          isGenerating={isGenerating || isWorkspaceLoading}
-          onChatMessage={handleChatMessage}
-          quickReplies={quickReplies}
-          pendingAssistantMessage={pendingAssistantMessage}
-          onAssistantMessageConsumed={handleAssistantMessageConsumed}
-        />
-
-        <div className="space-y-6">
-          <GigPreview
-            draft={draft}
-            showForm={showForm}
-            isCreating={isCreating}
-            onEdit={syncForm}
-            onCreate={handleCreate}
+    <>
+      <SiteHeader />
+      <div className="container mx-auto max-w-6xl py-6">
+        <div className="mb-6">
+          <Link
+            href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            <GigForm
-              form={form}
-              onSubmit={onSubmit}
-              onCancel={() => setShowForm(false)}
-              isCreating={isCreating}
-            />
-          </GigPreview>
+            <ArrowLeft className="h-4 w-4" />
+            Назад к заданиям
+          </Link>
+        </div>
 
-          <ProgressCard draft={draft} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <WizardChat
+            onComplete={handleWizardComplete}
+            isGenerating={isGenerating || isWorkspaceLoading}
+            onChatMessage={handleChatMessage}
+            quickReplies={quickReplies}
+            pendingAssistantMessage={pendingAssistantMessage}
+            onAssistantMessageConsumed={handleAssistantMessageConsumed}
+          />
+
+          <div className="space-y-6">
+            <GigPreview
+              draft={draft}
+              showForm={showForm}
+              isCreating={isCreating}
+              onEdit={syncForm}
+              onCreate={handleCreate}
+            >
+              <GigForm
+                form={form}
+                onSubmit={onSubmit}
+                onCancel={() => setShowForm(false)}
+                isCreating={isCreating}
+              />
+            </GigPreview>
+
+            <ProgressCard draft={draft} />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
