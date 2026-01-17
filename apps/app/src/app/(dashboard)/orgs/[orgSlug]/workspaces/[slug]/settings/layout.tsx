@@ -19,7 +19,7 @@ export default async function SettingsLayout({
           <div className="space-y-1">
             <h1 className="text-2xl font-bold tracking-tight">Настройки</h1>
             <p className="text-muted-foreground">
-              Управляйте настройками workspace и интеграциями.
+              Управляйте настройками рабочего пространства и интеграциями.
             </p>
           </div>
           <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row">
