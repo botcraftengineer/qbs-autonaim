@@ -48,6 +48,8 @@ export const update = protectedProcedure
     }
 
     const patch: {
+      title?: string;
+      description?: string | null;
       customBotInstructions?: string | null;
       customScreeningPrompt?: string | null;
       customInterviewQuestions?: string | null;
@@ -58,6 +60,12 @@ export const update = protectedProcedure
       updatedAt: new Date(),
     };
 
+    if (input.settings.title !== undefined) {
+      patch.title = input.settings.title.trim();
+    }
+    if (input.settings.description !== undefined) {
+      patch.description = input.settings.description?.trim() || null;
+    }
     if (input.settings.customBotInstructions !== undefined) {
       patch.customBotInstructions = input.settings.customBotInstructions;
     }

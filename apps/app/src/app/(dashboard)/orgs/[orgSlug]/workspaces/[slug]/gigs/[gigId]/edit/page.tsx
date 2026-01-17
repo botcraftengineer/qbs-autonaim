@@ -15,6 +15,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  Input,
   Skeleton,
   Textarea,
 } from "@qbs-autonaim/ui";
@@ -49,6 +50,14 @@ const gigTypeOptions = [
 ];
 
 const formSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Название обязательно")
+    .max(500, "Название не должно превышать 500 символов"),
+  description: z
+    .string()
+    .max(10000, "Описание не должно превышать 10000 символов")
+    .optional(),
   customBotInstructions: z.string().optional(),
   customScreeningPrompt: z.string().optional(),
   customInterviewQuestions: z.string().optional(),
@@ -113,22 +122,13 @@ export default function EditGigPage({ params }: PageProps) {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      title: "",
+      description: "",
       customBotInstructions: "",
       customScreeningPrompt: "",
       customInterviewQuestions: "",
     },
   });
-
-  // Заполняем форму данными gig при загрузке
-  React.useEffect(() => {
-    if (gig) {
-      form.reset({
-        customBotInstructions: gig.customBotInstructions || "",
-        customScreeningPrompt: gig.customScreeningPrompt || "",
-        customInterviewQuestions: gig.customInterviewQuestions || "",
-      });
-    }
-  }, [gig, form]);
 
   const { mutate: updateGig, isPending } = useMutation(
     trpc.gig.update.mutationOptions({
@@ -155,6 +155,35 @@ export default function EditGigPage({ params }: PageProps) {
     }),
   );
 
+  // Отслеживание несохраненных изменений
+  const isDirty = form.formState.isDirty;
+
+  // Предупреждение о несохраненных изменениях при уходе со страницы
+  React.useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (isDirty && !isPending) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [isDirty, isPending]);
+
+  // Заполняем форму данными gig при загрузке
+  React.useEffect(() => {
+    if (gig) {
+      form.reset({
+        title: gig.title,
+        description: gig.description || "",
+        customBotInstructions: gig.customBotInstructions || "",
+        customScreeningPrompt: gig.customScreeningPrompt || "",
+        customInterviewQuestions: gig.customInterviewQuestions || "",
+      });
+    }
+  }, [gig, form]);
+
   const onSubmit = (values: FormValues) => {
     if (!workspace?.id) return;
 
@@ -162,13 +191,26 @@ export default function EditGigPage({ params }: PageProps) {
       gigId: gigId,
       workspaceId: workspace.id,
       settings: {
+        title: values.title.trim(),
+        description: values.description?.trim() || null,
         customDomainId: null,
         interviewScenarioId: null,
-        customBotInstructions: values.customBotInstructions || null,
-        customScreeningPrompt: values.customScreeningPrompt || null,
-        customInterviewQuestions: values.customInterviewQuestions || null,
+        customBotInstructions: values.customBotInstructions?.trim() || null,
+        customScreeningPrompt: values.customScreeningPrompt?.trim() || null,
+        customInterviewQuestions:
+          values.customInterviewQuestions?.trim() || null,
       },
     });
+  };
+
+  const handleCancel = () => {
+    if (isDirty) {
+      const confirmed = window.confirm(
+        "У вас есть несохраненные изменения. Вы уверены, что хотите покинуть страницу?",
+      );
+      if (!confirmed) return;
+    }
+    router.back();
   };
 
   if (isLoading || !workspace?.id) {
@@ -217,22 +259,67 @@ export default function EditGigPage({ params }: PageProps) {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Basic Information Display */}
+          {/* Basic Information - Editable */}
           <Card>
             <CardHeader>
-              <CardTitle>Информация о задании</CardTitle>
-              <CardDescription>
-                Основные детали задания (только для просмотра)
-              </CardDescription>
+              <CardTitle>Основная информация</CardTitle>
+              <CardDescription>Название и описание задания</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Название
-                  </div>
-                  <p className="text-sm">{gig.title}</p>
-                </div>
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Название задания
+                      <span
+                        className="text-destructive ml-1"
+                        aria-hidden="true"
+                      >
+                        *
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Например: Разработка лендинга для стартапа"
+                        className="min-h-[44px] touch-action-manipulation"
+                        autoComplete="off"
+                        aria-required="true"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Краткое и понятное название задания (до 500 символов)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Описание задания</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Подробное описание задания, требований и ожиданий…"
+                        className="min-h-32 resize-y"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Детальное описание задания, что нужно сделать и какие
+                      требования к исполнителю
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
                 <div>
                   <div className="text-sm font-medium text-muted-foreground">
                     Тип
@@ -242,22 +329,14 @@ export default function EditGigPage({ params }: PageProps) {
                       ?.label || gig.type}
                   </p>
                 </div>
-              </div>
-              {gig.description && (
-                <div>
-                  <div className="text-sm font-medium text-muted-foreground">
-                    Описание
-                  </div>
-                  <p className="text-sm">{gig.description}</p>
-                </div>
-              )}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {gig.budgetMin && (
                   <div>
                     <div className="text-sm font-medium text-muted-foreground">
                       Мин. бюджет
                     </div>
-                    <p className="text-sm">{gig.budgetMin} ₽</p>
+                    <p className="text-sm font-variant-numeric-tabular">
+                      {gig.budgetMin}&nbsp;₽
+                    </p>
                   </div>
                 )}
                 {gig.budgetMax && (
@@ -265,7 +344,9 @@ export default function EditGigPage({ params }: PageProps) {
                     <div className="text-sm font-medium text-muted-foreground">
                       Макс. бюджет
                     </div>
-                    <p className="text-sm">{gig.budgetMax} ₽</p>
+                    <p className="text-sm font-variant-numeric-tabular">
+                      {gig.budgetMax}&nbsp;₽
+                    </p>
                   </div>
                 )}
                 <div>
@@ -383,15 +464,20 @@ export default function EditGigPage({ params }: PageProps) {
 
           {/* Actions */}
           <div className="flex items-center gap-4">
-            <Button type="submit" disabled={isPending}>
-              <Save className="h-4 w-4 mr-2" />
-              {isPending ? "Сохранение..." : "Сохранить изменения"}
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="min-h-[44px] touch-action-manipulation"
+            >
+              <Save className="h-4 w-4 mr-2" aria-hidden="true" />
+              {isPending ? "Сохранение…" : "Сохранить изменения"}
             </Button>
 
             <Button
               type="button"
               variant="outline"
-              onClick={() => router.back()}
+              onClick={handleCancel}
+              className="min-h-[44px] touch-action-manipulation"
             >
               Отмена
             </Button>

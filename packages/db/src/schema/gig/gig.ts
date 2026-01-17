@@ -224,6 +224,15 @@ export const CreateGigSchema = createInsertSchema(gig, {
 });
 
 export const UpdateGigSettingsSchema = z.object({
+  title: z
+    .string()
+    .min(1, "Название обязательно")
+    .max(500, "Название не должно превышать 500 символов")
+    .optional(),
+  description: z
+    .string()
+    .max(10000, "Описание не должно превышать 10000 символов")
+    .nullish(),
   customBotInstructions: z.string().max(5000).nullish(),
   customScreeningPrompt: z.string().max(5000).nullish(),
   customInterviewQuestions: z.string().max(5000).nullish(),
