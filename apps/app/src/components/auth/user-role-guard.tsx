@@ -25,7 +25,8 @@ export function UserRoleGuard({
 
   useEffect(() => {
     if (!isPending && session) {
-      const userRole = (session as any).role ?? "user";
+      const userRole =
+        (session.user as { role?: string } | undefined)?.role ?? "user";
       if (!allowedRoles.includes(userRole)) {
         router.push(redirectTo);
       }
@@ -36,7 +37,8 @@ export function UserRoleGuard({
     return <div>Загрузка...</div>;
   }
 
-  const userRole = (session as any)?.role ?? "user";
+  const userRole =
+    (session?.user as { role?: string } | undefined)?.role ?? "user";
   if (!allowedRoles.includes(userRole)) {
     return null;
   }

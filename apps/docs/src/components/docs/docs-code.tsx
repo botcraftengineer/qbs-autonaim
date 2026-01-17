@@ -42,7 +42,10 @@ export function DocsCode({
           <code className="text-sm text-foreground font-mono">
             {showLineNumbers
               ? lines.map((line, i) => (
-                  <div key={i} className="table-row">
+                  <div
+                    key={`line-${i}-${line.substring(0, 20)}`}
+                    className="table-row"
+                  >
                     <span className="table-cell select-none pr-4 text-right text-muted-foreground/50 text-xs">
                       {i + 1}
                     </span>
@@ -53,6 +56,7 @@ export function DocsCode({
           </code>
         </pre>
         <button
+          type="button"
           onClick={copyToClipboard}
           className={cn(
             "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background/80 text-muted-foreground transition-all hover:bg-accent hover:text-foreground",

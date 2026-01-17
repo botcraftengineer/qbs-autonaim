@@ -24,6 +24,7 @@ export function DocsTabs({ tabs, defaultValue }: DocsTabsProps) {
         {tabs.map((tab) => (
           <button
             key={tab.value}
+            type="button"
             onClick={() => setActiveTab(tab.value)}
             className={cn(
               "relative px-4 py-2 text-sm font-medium transition-colors",

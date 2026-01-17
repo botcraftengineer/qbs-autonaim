@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { ArrowRight, FileText, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, ArrowRight } from "lucide-react";
 import { docsConfig } from "@/lib/docs-config";
 
 interface SearchResult {
@@ -57,6 +57,7 @@ export function DocsSearch() {
   return (
     <>
       <button
+        type="button"
         onClick={() => setOpen(true)}
         className="relative flex h-9 w-full items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground transition-colors hover:border-primary/50 lg:w-64"
       >
@@ -85,9 +86,10 @@ export function DocsSearch() {
               </p>
             ) : (
               <div className="flex flex-col gap-1">
-                {filteredResults.map((result, index) => (
+                {filteredResults.map((result) => (
                   <button
-                    key={index}
+                    key={result.href}
+                    type="button"
                     onClick={() => handleSelect(result.href)}
                     className="flex items-center gap-3 rounded-md px-3 py-2 text-left text-sm transition-colors hover:bg-accent"
                   >

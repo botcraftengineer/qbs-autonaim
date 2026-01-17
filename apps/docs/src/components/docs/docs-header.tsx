@@ -1,14 +1,14 @@
 "use client";
 
+import { Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
-import { Menu, X, Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { docsConfig } from "@/lib/docs-config";
-import { DocsSearch } from "./docs-search";
 import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { docsConfig } from "@/lib/docs-config";
+import { cn } from "@/lib/utils";
+import { DocsSearch } from "./docs-search";
 
 export function DocsHeader() {
   const pathname = usePathname();
@@ -107,15 +107,15 @@ export function DocsHeader() {
             <DocsSearch />
           </div>
           <nav className="flex flex-col p-4 max-h-[60vh] overflow-y-auto">
-            {docsConfig.sidebarNav.map((section, index) => (
-              <div key={index} className="py-2">
+            {docsConfig.sidebarNav.map((section) => (
+              <div key={section.title} className="py-2">
                 <h4 className="mb-1 text-sm font-semibold text-foreground">
                   {section.title}
                 </h4>
                 <div className="flex flex-col gap-1">
-                  {section.items?.map((item, itemIndex) => (
+                  {section.items?.map((item) => (
                     <Link
-                      key={itemIndex}
+                      key={item.href || item.title}
                       href={item.href || "#"}
                       className={cn(
                         "py-1.5 text-sm",

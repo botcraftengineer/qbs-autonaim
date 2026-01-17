@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { generatePageSEO } from "@/lib/seo";
 import { DocsBreadcrumb } from "@/components/docs/docs-breadcrumb";
 import { DocsCallout } from "@/components/docs/docs-callout";
 import { DocsFeedback } from "@/components/docs/docs-feedback";
 import { DocsMobileToc } from "@/components/docs/docs-mobile-toc";
 import { DocsToc } from "@/components/docs/docs-toc";
+import { generatePageSEO } from "@/lib/seo";
 
 export const metadata: Metadata = generatePageSEO("faq", {
   title: "Часто задаваемые вопросы — QBS Автонайм",
@@ -221,9 +221,9 @@ export default function FAQPage() {
               {section.title}
             </h2>
             <div className="space-y-6">
-              {section.questions.map((item, index) => (
+              {section.questions.map((item) => (
                 <div
-                  key={index}
+                  key={`${section.id}-${item.q}`}
                   className="border-b border-border pb-6 last:border-b-0"
                 >
                   <h3 className="text-lg font-semibold mb-2">{item.q}</h3>

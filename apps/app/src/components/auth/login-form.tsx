@@ -45,7 +45,7 @@ export function LoginForm({
   const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      const { error } = await (authClient as any).signIn({
+      const { error } = await authClient.signIn.email({
         email: data.email,
         password: "",
       });

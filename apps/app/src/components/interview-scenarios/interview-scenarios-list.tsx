@@ -14,14 +14,10 @@ import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
 interface InterviewScenariosListProps {
-  orgSlug: string;
-  workspaceSlug: string;
   onEditScenario: (scenarioId: string) => void;
 }
 
 export function InterviewScenariosList({
-  orgSlug,
-  workspaceSlug,
   onEditScenario,
 }: InterviewScenariosListProps) {
   const trpc = useTRPC();

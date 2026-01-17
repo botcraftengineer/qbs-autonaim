@@ -29,13 +29,13 @@ export function ProgressIndicator({ currentStep }: ProgressIndicatorProps) {
         className={`h-2 w-16 rounded-full transition-colors ${
           currentStep === "organization" ? "bg-primary" : "bg-primary/30"
         }`}
-        aria-label="Шаг 1: Организация"
+        aria-hidden="true"
       />
       <div
         className={`h-2 w-16 rounded-full transition-colors ${
           currentStep === "workspace" ? "bg-primary" : "bg-muted"
         }`}
-        aria-label="Шаг 2: Воркспейс"
+        aria-hidden="true"
       />
     </div>
   );

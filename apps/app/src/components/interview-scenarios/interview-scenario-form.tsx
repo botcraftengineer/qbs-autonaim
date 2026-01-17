@@ -1,34 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Button } from "@qbs-autonaim/ui";
 import {
+  Button,
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
+  Input,
+  Label,
+  Textarea,
 } from "@qbs-autonaim/ui";
-import { Input } from "@qbs-autonaim/ui";
-import { Label } from "@qbs-autonaim/ui";
-import { Textarea } from "@qbs-autonaim/ui";
 import { IconDeviceFloppy, IconLoader2, IconX } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
-import { toast } from "sonner";
 
 interface InterviewScenarioFormProps {
-  orgSlug: string;
-  workspaceSlug: string;
   scenarioId?: string;
   onCancel: () => void;
   onSuccess: () => void;
 }
 
 export function InterviewScenarioForm({
-  orgSlug,
-  workspaceSlug,
   scenarioId,
   onCancel,
   onSuccess,
@@ -51,7 +47,7 @@ export function InterviewScenarioForm({
   // Загружаем данные сценария при редактировании
   const { data: scenario, isLoading: isLoadingScenario } = useQuery({
     ...trpc.interviewScenarios.get.queryOptions({
-      id: scenarioId!,
+      id: scenarioId ?? "",
       workspaceId: workspace?.id ?? "",
     }),
     enabled: isEditing && !!workspace?.id && !!scenarioId,
