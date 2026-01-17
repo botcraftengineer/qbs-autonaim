@@ -13,12 +13,12 @@ import type { AgentType } from "./types";
  * Wraps the actual content with metadata about the generation
  */
 const aiResponseEnvelopeSchema = z.object({
-  content: z.unknown(), // Will be validated against specific output schema
+  content: z.string(),
   metadata: z
     .object({
       tokens: z.number().optional(),
       model: z.string().optional(),
-      finishReason: z.string().optional(),
+      finishReason: z.enum(["stop", "length", "error"]),
       timestamp: z.string().optional(),
     })
     .optional(),
@@ -128,7 +128,7 @@ export abstract class BaseAgent<TInput, TOutput> {
           rawOutput: result.output,
         });
         throw new Error(
-          `Envelope validation failed: ${envelopeValidation.error.message}`,
+          `Не удалось валидировать конверт: ${envelopeValidation.error.message}`,
         );
       }
 
@@ -143,7 +143,7 @@ export abstract class BaseAgent<TInput, TOutput> {
           content: envelope.content,
         });
         throw new Error(
-          `Content validation failed: ${contentValidation.error.message}`,
+          `Не удалось валидировать содержимое: ${contentValidation.error.message}`,
         );
       }
 

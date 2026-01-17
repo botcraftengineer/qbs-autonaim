@@ -1,6 +1,10 @@
 import { paths } from "@qbs-autonaim/config";
+import {
+  createOrganizationSchema,
+  createWorkspaceSchema,
+} from "@qbs-autonaim/validators";
 import slugify from "@sindresorhus/slugify";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -17,6 +21,7 @@ interface CreatedOrganization {
 export function useOnboarding() {
   const router = useRouter();
   const trpc = useTRPC();
+  const queryClient = useQueryClient();
 
   const [step, setStep] = useState<OnboardingStep>("welcome");
 
@@ -50,6 +55,11 @@ export function useOnboarding() {
           name: organization.name,
         });
         setStep("workspace");
+
+        // Инвалидация кэша списка организаций
+        void queryClient.invalidateQueries({
+          queryKey: trpc.organization.list.getQueryKey(),
+        });
       },
       onError: (error) => {
         if (
@@ -76,6 +86,16 @@ export function useOnboarding() {
         toast.success("Воркспейс создан", {
           description: `Воркспейс "${workspace.name}" успешно создан`,
         });
+
+        // Инвалидация кэша воркспейсов
+        if (createdOrganization) {
+          void queryClient.invalidateQueries({
+            queryKey: trpc.organization.getWorkspaces.getQueryKey({
+              organizationSlug: createdOrganization.slug,
+            }),
+          });
+        }
+
         if (createdOrganization && workspace.slug) {
           router.push(
             paths.workspace.root(createdOrganization.slug, workspace.slug),
@@ -117,12 +137,40 @@ export function useOnboarding() {
 
   const handleOrganizationSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createOrganization.mutate({
+
+    // Формируем payload для валидации
+    const payload = {
       name,
       slug,
       description: description || undefined,
       website: website || undefined,
-    });
+    };
+
+    // Валидация с помощью Zod safeParse
+    const result = createOrganizationSchema.safeParse(payload);
+
+    if (!result.success) {
+      // Обработка ошибок валидации
+      const errors = result.error.flatten();
+
+      // Показываем первую ошибку валидации
+      const firstError =
+        errors.fieldErrors.name?.[0] ||
+        errors.fieldErrors.slug?.[0] ||
+        errors.fieldErrors.description?.[0] ||
+        errors.fieldErrors.website?.[0];
+
+      if (firstError) {
+        toast.error("Ошибка валидации", {
+          description: firstError,
+        });
+      }
+
+      return;
+    }
+
+    // Если валидация прошла успешно, отправляем данные
+    createOrganization.mutate(result.data);
   };
 
   const handleWorkspaceNameChange = (value: string) => {
@@ -142,13 +190,39 @@ export function useOnboarding() {
     e.preventDefault();
     if (!createdOrganization) return;
 
+    // Формируем payload для валидации
+    const payload = {
+      name: workspaceName,
+      slug: workspaceSlug,
+      description: workspaceDescription || undefined,
+    };
+
+    // Валидация с помощью Zod safeParse
+    const result = createWorkspaceSchema.safeParse(payload);
+
+    if (!result.success) {
+      // Обработка ошибок валидации
+      const errors = result.error.flatten();
+
+      // Показываем первую ошибку валидации
+      const firstError =
+        errors.fieldErrors.name?.[0] ||
+        errors.fieldErrors.slug?.[0] ||
+        errors.fieldErrors.description?.[0];
+
+      if (firstError) {
+        toast.error("Ошибка валидации", {
+          description: firstError,
+        });
+      }
+
+      return;
+    }
+
+    // Если валидация прошла успешно, отправляем данные
     createWorkspace.mutate({
       organizationId: createdOrganization.id,
-      workspace: {
-        name: workspaceName,
-        slug: workspaceSlug,
-        description: workspaceDescription || undefined,
-      },
+      workspace: result.data,
     });
   };
 

@@ -76,23 +76,24 @@ export function OrganizationForm({
 
         <div className="space-y-2">
           <div className="flex items-center gap-1.5">
-            <Label htmlFor="slug">Slug организации</Label>
+            <Label htmlFor="slug">Слаг организации</Label>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
                     className="text-muted-foreground inline-flex"
-                    aria-label="Информация о slug"
+                    aria-label="Информация о слаге"
                   >
                     <HelpCircle className="size-4" aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-xs">
                   <p>
-                    Slug — это уникальный идентификатор для URL. Например, для
-                    организации "Моя Компания" slug может быть "moya-kompaniya".
-                    Используется только латиница, цифры и дефисы.
+                    Слаг — это уникальный идентификатор для адреса. Например,
+                    для организации "Моя Компания" слаг может быть
+                    "moya-kompaniya". Используется только латиница, цифры и
+                    дефисы.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -105,7 +106,7 @@ export function OrganizationForm({
             <Input
               id="slug"
               name="organization-slug"
-              placeholder="acme"
+              placeholder="пример-организации…"
               value={slug}
               onChange={(e) => onSlugChange(e.target.value)}
               required
@@ -142,7 +143,7 @@ export function OrganizationForm({
             id="website"
             name="organization-website"
             type="url"
-            placeholder="https://example.com"
+            placeholder="https://пример.рф…"
             value={website}
             onChange={(e) => onWebsiteChange(e.target.value)}
             maxLength={200}
@@ -150,11 +151,16 @@ export function OrganizationForm({
           />
         </div>
 
-        <Button type="submit" className="w-full" disabled={isPending}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isPending}
+          aria-busy={isPending}
+        >
           {isPending && (
             <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" />
           )}
-          {isPending ? "Создание…" : "Создать организацию"}
+          Создать организацию
         </Button>
       </form>
     </>
