@@ -101,7 +101,7 @@ export function initAuth<
           user: sessionUser,
           session,
           role: userData[0]?.role ?? "user",
-        } as any;
+        } as unknown;
       }),
       ...(options.extraPlugins ?? []),
     ],

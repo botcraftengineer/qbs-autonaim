@@ -1,4 +1,3 @@
-import { eq } from "@qbs-autonaim/db";
 import { interviewScenario } from "@qbs-autonaim/db/schema";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";

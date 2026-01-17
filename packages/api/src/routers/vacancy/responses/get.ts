@@ -152,7 +152,7 @@ export const get = protectedProcedure
       interviewSession: session
         ? ({
             ...session,
-            messages: (messagesWithUrls || []) as any[],
+            messages: (messagesWithUrls || []) as unknown[],
             interviewScoring: sessionInterviewScoring
               ? ({
                   score: sessionInterviewScoring.score,
@@ -164,7 +164,7 @@ export const get = protectedProcedure
                   analysis: string | null;
                 })
               : null,
-          } as any)
+          } as unknown)
         : undefined,
       globalCandidateId: null,
     };

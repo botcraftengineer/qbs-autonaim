@@ -1,5 +1,4 @@
 import { expect, test } from "@playwright/test";
-import { loginTestUser } from "../helpers/test-setup";
 
 test.describe("Онбординг: создание организации и воркспейса", () => {
   const testPassword = "TestPassword123";

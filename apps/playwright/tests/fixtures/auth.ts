@@ -19,7 +19,7 @@ type AuthFixtures = {
 };
 
 export const test = base.extend<AuthFixtures>({
-  testUser: async ({ page }, use) => {
+  testUser: async ({ page: _page }, use) => {
     const user = acquireUser();
     await use(user);
     // Пользователь будет освобожден в cleanupUserData

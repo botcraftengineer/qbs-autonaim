@@ -9,6 +9,7 @@
     "ignoreUnknown": false,
     "includes": [
       "**",
+      "!**/*.json",
       "!**/node_modules",
       "!**/.next",
       "!**/packages/ui/src/**/*.tsx",
