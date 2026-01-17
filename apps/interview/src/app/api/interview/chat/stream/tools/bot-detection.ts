@@ -72,13 +72,20 @@ export function createAnalyzeResponseAuthenticityTool(
         .describe("История диалога для контекста"),
     }),
     execute: async (args: Record<string, unknown>) => {
-      const { answer, questionContext, responseTimeSeconds, conversationHistory } =
-        args as {
-          answer: string;
-          questionContext: string;
-          responseTimeSeconds?: number;
-          conversationHistory?: Array<{ sender: "CANDIDATE" | "BOT"; content: string }>;
-        };
+      const {
+        answer,
+        questionContext,
+        responseTimeSeconds,
+        conversationHistory,
+      } = args as {
+        answer: string;
+        questionContext: string;
+        responseTimeSeconds?: number;
+        conversationHistory?: Array<{
+          sender: "CANDIDATE" | "BOT";
+          content: string;
+        }>;
+      };
 
       const metadata = await getInterviewSessionMetadata(sessionId);
       const botDetectionHistory =
@@ -200,7 +207,10 @@ export function createAnalyzeResponseAuthenticityTool(
   });
 }
 
-export function createGetBotDetectionSummaryTool(sessionId: string, model: LanguageModel) {
+export function createGetBotDetectionSummaryTool(
+  sessionId: string,
+  model: LanguageModel,
+) {
   return tool({
     description: `Возвращает сводку по детекции AI-ботов за всё интервью.
 Вызывай при завершении для учёта в оценке.`,
@@ -229,17 +239,20 @@ export function createGetBotDetectionSummaryTool(sessionId: string, model: Langu
       const factory = new AgentFactory({ model });
       const analyzer = factory.createBotSummaryAnalyzer();
 
-      const result = await analyzer.execute({
-        history: history.map((h) => ({
-          questionContext: h.questionContext,
-          answerPreview: h.answerPreview,
-          suspicionLevel: h.suspicionLevel,
-          indicators: h.indicators,
-          warningIssued: h.warningIssued,
-        })),
-        warningCount,
-        totalSuspicionScore: totalScore,
-      }, { conversationHistory: [] });
+      const result = await analyzer.execute(
+        {
+          history: history.map((h) => ({
+            questionContext: h.questionContext,
+            answerPreview: h.answerPreview,
+            suspicionLevel: h.suspicionLevel,
+            indicators: h.indicators,
+            warningIssued: h.warningIssued,
+          })),
+          warningCount,
+          totalSuspicionScore: totalScore,
+        },
+        { conversationHistory: [] },
+      );
 
       if (!result.success || !result.data) {
         // Fallback при ошибке агента
