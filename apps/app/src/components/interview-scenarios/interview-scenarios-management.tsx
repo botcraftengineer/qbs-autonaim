@@ -1,20 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@qbs-autonaim/ui";
 import { IconPlus } from "@tabler/icons-react";
-import { InterviewScenariosList } from "./interview-scenarios-list";
+import { useState } from "react";
 import { InterviewScenarioForm } from "./interview-scenario-form";
+import { InterviewScenariosList } from "./interview-scenarios-list";
 
-interface InterviewScenariosManagementProps {
-  orgSlug: string;
-  workspaceSlug: string;
-}
-
-export function InterviewScenariosManagement({
-  orgSlug,
-  workspaceSlug,
-}: InterviewScenariosManagementProps) {
+export function InterviewScenariosManagement() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingScenario, setEditingScenario] = useState<string | null>(null);
 
@@ -38,8 +30,6 @@ export function InterviewScenariosManagement({
 
       {showCreateForm && (
         <InterviewScenarioForm
-          orgSlug={orgSlug}
-          workspaceSlug={workspaceSlug}
           onCancel={() => setShowCreateForm(false)}
           onSuccess={() => {
             setShowCreateForm(false);
@@ -50,8 +40,6 @@ export function InterviewScenariosManagement({
 
       {editingScenario && (
         <InterviewScenarioForm
-          orgSlug={orgSlug}
-          workspaceSlug={workspaceSlug}
           scenarioId={editingScenario}
           onCancel={() => setEditingScenario(null)}
           onSuccess={() => {
@@ -61,11 +49,7 @@ export function InterviewScenariosManagement({
         />
       )}
 
-      <InterviewScenariosList
-        orgSlug={orgSlug}
-        workspaceSlug={workspaceSlug}
-        onEditScenario={setEditingScenario}
-      />
+      <InterviewScenariosList onEditScenario={setEditingScenario} />
     </div>
   );
 }

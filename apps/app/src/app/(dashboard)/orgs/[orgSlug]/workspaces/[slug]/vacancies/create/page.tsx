@@ -153,8 +153,8 @@ export default function CreateVacancyPage() {
           <div className="flex-1 overflow-hidden">
             <AIVacancyChat
               workspaceId={workspace.id}
-              orgSlug={orgSlug}
-              workspaceSlug={workspaceSlug}
+              orgSlug={orgSlug ?? ""}
+              workspaceSlug={workspaceSlug ?? ""}
             />
           </div>
         </div>

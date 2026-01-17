@@ -125,12 +125,16 @@ export function InterviewScenarioForm({
       updateScenario({
         id: scenarioId,
         workspaceId: workspace.id,
-        data,
+        data: {
+          ...data,
+          description: data.description ?? undefined,
+        },
       });
     } else {
       createScenario({
         workspaceId: workspace.id,
-        data,
+        name: data.name,
+        description: data.description ?? undefined,
       });
     }
   };

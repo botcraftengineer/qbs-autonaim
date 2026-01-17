@@ -54,7 +54,7 @@ export function getWarningMessage(level: WarningLevel): string | null {
   if (level === "none") return null;
 
   const messages = BOT_USAGE_WARNINGS[level];
-  return messages[Math.floor(Math.random() * messages.length)];
+  return messages[Math.floor(Math.random() * messages.length)] ?? null;
 }
 
 /**

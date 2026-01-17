@@ -71,7 +71,7 @@ export function InterviewScenariosList({
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {data.scenarios.map((scenario) => (
+      {data?.scenarios.map((scenario) => (
         <Card key={scenario.id}>
           <CardHeader>
             <CardTitle className="text-base">{scenario.name}</CardTitle>
