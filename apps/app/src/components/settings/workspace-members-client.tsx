@@ -280,7 +280,7 @@ export function WorkspaceMembersClient({
         </div>
 
         {/* Members Table */}
-        <div className="rounded-lg border overflow-x-auto">
+        <div className="rounded-lg border bg-card shadow-sm overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>

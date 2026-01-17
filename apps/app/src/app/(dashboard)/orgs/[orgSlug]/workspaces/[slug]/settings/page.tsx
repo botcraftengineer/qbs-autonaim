@@ -10,7 +10,7 @@ export default function SettingsPage() {
 
   if (isLoading) {
     return (
-      <div className="rounded-lg border p-6 space-y-4">
+      <div className="rounded-lg border bg-card p-6 shadow-sm space-y-4">
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-10 w-full" />
         <Skeleton className="h-32 w-32" />
@@ -20,7 +20,7 @@ export default function SettingsPage() {
 
   if (!workspace) {
     return (
-      <div className="rounded-lg border p-6">
+      <div className="rounded-lg border bg-card p-6 shadow-sm">
         <p className="text-muted-foreground">Workspace не найден</p>
       </div>
     );
@@ -28,7 +28,7 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="rounded-lg border p-6">
+      <div className="rounded-lg border bg-card p-6 shadow-sm">
         <WorkspaceForm
           initialData={{
             name: workspace.name,

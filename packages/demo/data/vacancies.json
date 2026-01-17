@@ -1,6 +1,6 @@
 [
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Senior Frontend Developer (React/TypeScript)",
     "url": "https://hh.ru/vacancy/123456789",
     "views": 245,
@@ -57,7 +57,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Python Backend Developer (Django/FastAPI)",
     "url": "https://hh.ru/vacancy/987654321",
     "views": 189,
@@ -108,7 +108,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "DevOps Engineer (Kubernetes/AWS)",
     "url": "https://superjob.ru/vacancy/555666777",
     "views": 156,
@@ -164,7 +164,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Full Stack Developer (Node.js + React)",
     "url": "https://hh.ru/vacancy/111222333",
     "views": 312,
@@ -222,7 +222,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Mobile Developer (React Native)",
     "url": "https://hh.ru/vacancy/444555666",
     "views": 198,
@@ -278,7 +278,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "QA Engineer (Automation)",
     "url": "https://superjob.ru/vacancy/777888999",
     "views": 134,
@@ -335,7 +335,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Data Scientist (Python/ML)",
     "url": "https://hh.ru/vacancy/101112131",
     "views": 267,
@@ -392,7 +392,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "UI/UX Designer",
     "url": "https://hh.ru/vacancy/141516171",
     "views": 189,
@@ -448,7 +448,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Java Backend Developer (Spring)",
     "url": "https://superjob.ru/vacancy/181920212",
     "views": 223,
@@ -505,7 +505,7 @@
     "isActive": true
   },
   {
-    "workspaceId": "ws_demo_001",
+    "workspaceId": "ws_00000000000000000000000000000001",
     "title": "Product Manager (IT)",
     "url": "https://hh.ru/vacancy/222324252",
     "views": 156,
@@ -561,3 +561,4 @@
     "isActive": true
   }
 ]
+
