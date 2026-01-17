@@ -1,6 +1,6 @@
+import { cn } from "@qbs-autonaim/ui";
 import { AlertCircle, AlertTriangle, Info, Lightbulb } from "lucide-react";
 import type React from "react";
-import { cn } from "@/lib/utils";
 
 type CalloutType = "info" | "warning" | "tip" | "note";
 

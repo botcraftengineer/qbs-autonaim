@@ -1,11 +1,11 @@
 "use client";
 
+import { cn } from "@qbs-autonaim/ui";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { docsConfig } from "@/lib/docs-config";
-import { cn } from "@/lib/utils";
 
 export function DocsSidebar() {
   const pathname = usePathname();

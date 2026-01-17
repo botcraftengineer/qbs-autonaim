@@ -1,13 +1,12 @@
 "use client";
 
+import { Button, cn } from "@qbs-autonaim/ui";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { docsConfig } from "@/lib/docs-config";
-import { cn } from "@/lib/utils";
 import { DocsSearch } from "./docs-search";
 
 export function DocsHeader() {

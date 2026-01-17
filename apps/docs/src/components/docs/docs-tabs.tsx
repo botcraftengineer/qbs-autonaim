@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@qbs-autonaim/ui";
 import type React from "react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 interface Tab {
   label: string;

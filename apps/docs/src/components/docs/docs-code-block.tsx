@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@qbs-autonaim/ui";
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
 
 interface DocsCodeBlockProps {
   code: string;
