@@ -427,7 +427,6 @@ async function handler(request: Request) {
 
           try {
             const fallbackModel = getFallbackModel();
-            usedFallback = true;
 
             result = await tryStreamWithModel(fallbackModel, true);
 
