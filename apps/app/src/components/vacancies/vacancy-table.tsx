@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@qbs-autonaim/ui";
+import { IconSearch } from "@tabler/icons-react";
 import { VacancyTableRow } from "./vacancy-table-row";
 
 interface Vacancy {
@@ -57,23 +58,37 @@ export function VacancyTable({
   hasFilters,
 }: VacancyTableProps) {
   return (
-    <div className="rounded-lg border">
+    <div className="relative overflow-hidden rounded-xl border bg-card shadow-sm">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Название</TableHead>
-            <TableHead>Источник</TableHead>
-            <TableHead className="hidden md:table-cell">Регион</TableHead>
-            <TableHead className="text-right hidden lg:table-cell">
+        <TableHeader className="bg-muted/30">
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="w-[300px] font-semibold text-foreground">
+              Название
+            </TableHead>
+            <TableHead className="font-semibold text-foreground">
+              Источник
+            </TableHead>
+            <TableHead className="hidden font-semibold text-foreground md:table-cell">
+              Регион
+            </TableHead>
+            <TableHead className="hidden text-right font-semibold text-foreground lg:table-cell">
               Просмотры
             </TableHead>
-            <TableHead className="text-right">Отклики</TableHead>
-            <TableHead className="text-right">Новые</TableHead>
-            <TableHead className="text-right hidden md:table-cell">
+            <TableHead className="text-right font-semibold text-foreground">
+              Отклики
+            </TableHead>
+            <TableHead className="text-right font-semibold text-foreground">
+              Новые
+            </TableHead>
+            <TableHead className="hidden text-right font-semibold text-foreground md:table-cell">
               В&nbsp;работе
             </TableHead>
-            <TableHead>Статус</TableHead>
-            <TableHead className="text-right">Действия</TableHead>
+            <TableHead className="font-semibold text-foreground">
+              Статус
+            </TableHead>
+            <TableHead className="text-right font-semibold text-foreground">
+              Действия
+            </TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -105,24 +120,25 @@ export function VacancyTable({
                   <Skeleton className="h-6 w-[80px]" />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Skeleton className="h-9 w-[110px] ml-auto" />
+                  <Skeleton className="h-8 w-8 ml-auto rounded-full" />
                 </TableCell>
               </TableRow>
             ))
           ) : vacancies.length === 0 ? (
             <TableRow>
               <TableCell colSpan={9} className="h-[400px]">
-                <div className="flex items-center justify-center">
-                  <div className="text-center">
-                    <h2 className="text-2xl font-semibold mb-2">
-                      {hasFilters ? "Ничего не найдено" : "Нет вакансий"}
-                    </h2>
-                    <p className="text-muted-foreground">
-                      {hasFilters
-                        ? "Попробуйте изменить параметры поиска"
-                        : "Запустите парсер для загрузки вакансий"}
-                    </p>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 rounded-full bg-muted/50 p-4">
+                    <IconSearch className="size-8 text-muted-foreground/50" />
                   </div>
+                  <h3 className="mb-1 text-lg font-semibold">
+                    {hasFilters ? "Ничего не найдено" : "Нет вакансий"}
+                  </h3>
+                  <p className="max-w-[300px] text-sm text-muted-foreground">
+                    {hasFilters
+                      ? "Попробуйте изменить параметры поиска или сбросить фильтры"
+                      : "Запустите обновление, чтобы загрузить вакансии из подключенных источников"}
+                  </p>
                 </div>
               </TableCell>
             </TableRow>

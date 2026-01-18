@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@qbs-autonaim/ui";
-import { IconRefresh, IconSparkles } from "@tabler/icons-react";
+import { IconPlus, IconRefresh } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
@@ -59,7 +59,7 @@ export default function VacanciesPage() {
   const mergeVacanciesMutation = useMutation(
     api.freelancePlatforms.mergeVacancies.mutationOptions({
       onSuccess: async () => {
-        toast.success("Вакансии сдружены");
+        toast.success("Вакансии успешно сдружены");
         setMergeOpenVacancyId(null);
         setMergeTargetVacancyId("");
         await queryClient.invalidateQueries({
@@ -74,7 +74,7 @@ export default function VacanciesPage() {
 
   const handleUpdate = async () => {
     if (!workspace?.id) {
-      toast.error("Workspace не найден");
+      toast.error("Рабочее пространство не найдено");
       return;
     }
 
@@ -82,7 +82,7 @@ export default function VacanciesPage() {
     try {
       const result = await triggerUpdateVacancies(workspace.id);
       if (result.success) {
-        toast.success("Обновление вакансий запущено");
+        toast.success("Запущена синхронизация с источниками");
       } else {
         toast.error("Ошибка при запуске обновления");
       }
@@ -104,35 +104,33 @@ export default function VacanciesPage() {
     <div className="flex flex-1 flex-col">
       <PageHeader
         title="Вакансии"
-        description="Управление вакансиями и их настройками"
-        tooltipContent="Здесь вы можете создавать вакансии для фриланс-платформ, синхронизировать их статусы, просматривать отклики и объединять дубликаты. [Подробнее в документации](https://docs.hh.qbs.ru/vacancies)"
+        description="Управление вашими вакансиями и откликами на фриланс-платформах"
+        tooltipContent="Вы можете импортировать вакансии из HH, Kwork и других площадок. Система будет автоматически отслеживать новые отклики и синхронизировать статусы."
       >
-        <div className="flex gap-2">
-          <Button asChild variant="default">
-            <Link
-              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/create`}
-              aria-label="Создать вакансию для фриланс-платформы"
-            >
-              <IconSparkles className="size-4" aria-hidden="true" />
-              Создать вакансию
-            </Link>
-          </Button>
+        <div className="flex items-center gap-3">
           <Button
             onClick={handleUpdate}
-            disabled={isUpdating}
+            disabled={isUpdating || isLoading}
             variant="outline"
-            aria-label="Синхронизировать активные вакансии из источников"
+            className="hidden h-9 items-center gap-2 px-4 font-medium transition-all hover:bg-muted active:scale-95 sm:flex"
           >
             <IconRefresh
               className={`size-4 ${isUpdating ? "animate-spin" : ""}`}
-              aria-hidden="true"
             />
-            {isUpdating ? "Синхронизация…" : "Синхронизировать"}
+            {isUpdating ? "Обновление…" : "Синхронизировать"}
+          </Button>
+          <Button asChild className="h-9 gap-2 shadow-sm active:scale-95">
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/create`}
+            >
+              <IconPlus className="size-4" />
+              <span>Создать вакансию</span>
+            </Link>
           </Button>
         </div>
       </PageHeader>
 
-      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 py-4">
+      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-8 px-4 py-6 md:px-6">
         <VacancyStats
           totalVacancies={stats.totalVacancies}
           activeVacancies={stats.activeVacancies}
@@ -141,35 +139,46 @@ export default function VacanciesPage() {
           isLoading={isLoading}
         />
 
-        <div className="space-y-4">
-          <VacancyFilters
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            sourceFilter={sourceFilter}
-            onSourceChange={setSourceFilter}
-            statusFilter={statusFilter}
-            onStatusChange={setStatusFilter}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            dateFrom={dateFrom}
-            onDateFromChange={setDateFrom}
-            dateTo={dateTo}
-            onDateToChange={setDateTo}
-          />
+        <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-4">
+            <VacancyFilters
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              sourceFilter={sourceFilter}
+              onSourceChange={setSourceFilter}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              dateFrom={dateFrom}
+              onDateFromChange={setDateFrom}
+              dateTo={dateTo}
+              onDateToChange={setDateTo}
+            />
 
-          {!isLoading && filteredAndSortedVacancies.length > 0 && (
-            <div className="mb-3 text-sm text-muted-foreground">
-              Найдено вакансий:{" "}
-              <span className="font-medium tabular-nums">
-                {filteredAndSortedVacancies.length}
-              </span>
-              {hasFilters &&
-                vacancies &&
-                filteredAndSortedVacancies.length !== vacancies.length && (
-                  <span> из&nbsp;{vacancies.length}</span>
-                )}
+            <div className="flex items-center justify-between px-1">
+              {!isLoading && (
+                <div className="text-sm text-muted-foreground transition-all animate-in fade-in slide-in-from-left-2">
+                  {hasFilters ? (
+                    <>
+                      Найдено <span className="font-semibold text-foreground">{filteredAndSortedVacancies.length}</span> из{" "}
+                      <span className="font-semibold text-foreground">{vacancies?.length ?? 0}</span> вакансий
+                    </>
+                  ) : (
+                    <>
+                      Всего вакансий: <span className="font-semibold text-foreground">{vacancies?.length ?? 0}</span>
+                    </>
+                  )}
+                </div>
+              )}
+              {isUpdating && (
+                <div className="flex items-center gap-2 text-sm font-medium text-primary animate-pulse">
+                  <IconRefresh className="size-3.5 animate-spin" />
+                  Обновление данных...
+                </div>
+              )}
             </div>
-          )}
+          </div>
 
           <VacancyTable
             vacancies={filteredAndSortedVacancies}
