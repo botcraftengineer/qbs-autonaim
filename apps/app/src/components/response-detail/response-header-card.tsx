@@ -29,9 +29,10 @@ import {
 } from "./constants";
 
 type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+type VacancyResponseDetail = RouterOutputs["vacancy"]["responses"]["get"];
 
 interface ResponseHeaderCardProps {
-  response: GigResponseDetail & {
+  response: (GigResponseDetail | VacancyResponseDetail) & {
     globalCandidate?: Candidate | null;
     interviewScoring?: {
       score: number;
@@ -97,13 +98,13 @@ export function ResponseHeaderCard({
             </div>
 
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg sm:text-2xl mb-1.5 sm:mb-2 break-words">
+              <CardTitle className="text-lg sm:text-2xl mb-1.5 sm:mb-2 wrap-break-word">
                 {response.candidateName || response.candidateId}
               </CardTitle>
 
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <Calendar className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                   <span className="whitespace-nowrap">
                     {formatDate(response.respondedAt || response.createdAt)}
                   </span>
@@ -111,7 +112,7 @@ export function ResponseHeaderCard({
 
                 {response.rating && (
                   <div className="flex items-center gap-1.5">
-                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 flex-shrink-0" />
+                    <Star className="h-3.5 w-3.5 sm:h-4 sm:w-4 fill-yellow-400 text-yellow-400 shrink-0" />
                     <span className="font-medium text-foreground">
                       {response.rating}
                     </span>
@@ -121,7 +122,7 @@ export function ResponseHeaderCard({
                 {response.importSource &&
                   response.importSource !== "MANUAL" && (
                     <div className="flex items-center gap-1.5">
-                      <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                      <ExternalLink className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                       <span className="whitespace-nowrap">
                         {IMPORT_SOURCE_LABELS[response.importSource]}
                       </span>

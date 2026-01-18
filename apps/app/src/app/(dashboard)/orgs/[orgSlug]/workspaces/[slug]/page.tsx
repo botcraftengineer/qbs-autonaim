@@ -18,19 +18,24 @@ export default function WorkspacePage({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+      <div className="@container/main flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col">
+          {/* Статистика - на весь экран */}
           <DashboardStats />
-          <div className="grid gap-4 px-4 lg:px-6 md:grid-cols-2">
+
+          {/* Основной контент - на весь экран */}
+          <div className="grid flex-1 md:grid-cols-2 @7xl/main:grid-cols-3">
             <RecentResponses orgSlug={orgSlug} workspaceSlug={workspaceSlug} />
             <ActiveVacancies orgSlug={orgSlug} workspaceSlug={workspaceSlug} />
+            <TopResponses
+              orgSlug={orgSlug}
+              workspaceSlug={workspaceSlug}
+              className="md:col-span-2 @7xl/main:col-span-1"
+            />
           </div>
-          <div className="px-4 lg:px-6">
-            <TopResponses orgSlug={orgSlug} workspaceSlug={workspaceSlug} />
-          </div>
-          <div className="px-4 lg:px-6">
-            <ResponsesChart />
-          </div>
+
+          {/* График - на весь экран */}
+          <ResponsesChart />
         </div>
       </div>
     </div>

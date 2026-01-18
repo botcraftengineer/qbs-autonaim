@@ -13,10 +13,15 @@ import { useTRPC } from "~/trpc/react";
 import { useQuery } from "@tanstack/react-query";
 import { skipToken } from "@tanstack/react-query";
 
-type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+type GigResponseDetail = NonNullable<
+  RouterOutputs["gig"]["responses"]["get"]
+>;
+type VacancyResponseDetail = NonNullable<
+  RouterOutputs["vacancy"]["responses"]["get"]
+>;
 
 interface PortfolioTabProps {
-  response: GigResponseDetail;
+  response: GigResponseDetail | VacancyResponseDetail;
 }
 
 export function PortfolioTab({ response }: PortfolioTabProps) {
@@ -75,18 +80,22 @@ export function PortfolioTab({ response }: PortfolioTabProps) {
           <h4 className="text-xs sm:text-sm font-semibold">Ссылки на работы</h4>
           <div className="space-y-2">
             {response.portfolioLinks.map((link) => (
-              <Button
-                key={link}
-                variant="outline"
-                size="sm"
-                className="w-full justify-start gap-2 min-h-[44px] sm:min-h-[36px] touch-manipulation"
-                asChild
-              >
-                <a href={link} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 flex-shrink-0" />
-                  <span className="truncate text-xs sm:text-sm">{link}</span>
-                </a>
-              </Button>
+                  <Button
+                    key={link}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2 w-full sm:w-auto min-h-[44px] sm:min-h-[36px] touch-manipulation"
+                    asChild
+                  >
+                    <a
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-4 w-4 shrink-0" />
+                      <span className="truncate text-xs sm:text-sm">{link}</span>
+                    </a>
+                  </Button>
             ))}
           </div>
         </div>

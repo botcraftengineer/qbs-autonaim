@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 interface Vacancy {
-  isActive: boolean;
+  isActive: boolean | null;
   totalResponsesCount: number | null;
   newResponses: number | null;
 }
@@ -19,7 +19,7 @@ export function useVacancyStats(vacancies: Vacancy[] | undefined) {
 
     return {
       totalVacancies: vacancies.length,
-      activeVacancies: vacancies.filter((v) => v.isActive).length,
+      activeVacancies: vacancies.filter((v) => v.isActive === true).length,
       totalResponses: vacancies.reduce(
         (sum, v) => sum + (v.totalResponsesCount ?? 0),
         0,

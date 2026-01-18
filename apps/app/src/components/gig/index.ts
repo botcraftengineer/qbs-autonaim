@@ -8,7 +8,7 @@ export { GigsList } from "./gigs-list";
 export { GigsStats } from "./gigs-stats";
 export { RankedCandidateCard } from "./ranked-candidate-card";
 export { RankingList } from "./ranking-list";
-export { ResponseDetailCard } from "./response-detail-card";
+
 export { ResponseInvitationButton } from "./response-invitation-button";
 export { ResponseListCard } from "./response-list-card";
 export { ShortlistCandidateCard } from "./shortlist-candidate-card";

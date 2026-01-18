@@ -4,6 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
   Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormControl,
   FormDescription,
@@ -12,14 +16,13 @@ import {
   FormLabel,
   FormMessage,
   Input,
-  Separator,
   Textarea,
 } from "@qbs-autonaim/ui";
 import {
   type UpdateVacancyDetailsInput,
   updateVacancyDetailsSchema,
 } from "@qbs-autonaim/validators";
-import { FileText, Loader2, Save, Sparkles } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -72,11 +75,11 @@ export function VacancyEditForm({
     setIsSaving(true);
     try {
       await onSave(data);
-      toast.success("Вакансия сохранена");
+      toast.success("Изменения сохранены");
       form.reset(data);
       setHasChanges(false);
     } catch (error) {
-      toast.error("Ошибка при сохранении вакансии");
+      toast.error("Ошибка при сохранении");
       console.error(error);
     } finally {
       setIsSaving(false);
@@ -84,49 +87,32 @@ export function VacancyEditForm({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <div className="max-w-4xl">
-          <Card className="p-6">
-            <div className="mb-6">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="rounded-xl bg-linear-to-br from-primary/20 to-primary/10 p-3">
-                  <Sparkles
-                    className="size-6 text-primary"
-                    aria-hidden="true"
-                  />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">
-                    Детали вакансии
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Заполните основную информацию о вакансии
-                  </p>
-                </div>
-              </div>
-              <Separator className="mb-4" />
-            </div>
-            <div className="space-y-6">
+    <div className="max-w-4xl mx-auto py-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Редактирование вакансии</CardTitle>
+              <CardDescription>
+                Измените название и описание вакансии. Эти данные будут использоваться в AI-интервью и при анализе откликов.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
               <FormField
                 control={form.control}
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Название вакансии
-                    </FormLabel>
+                    <FormLabel>Название</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        placeholder="Например, Senior Frontend Developer…"
-                        maxLength={500}
-                        autoComplete="off"
-                        className="text-sm"
+                        placeholder="Например, Менеджер по продажам..."
+                        className="bg-background"
                       />
                     </FormControl>
-                    <FormDescription className="text-xs">
-                      Краткое и понятное название позиции
+                    <FormDescription>
+                      Используйте четкое и понятное название позиции.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -138,73 +124,53 @@ export function VacancyEditForm({
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Описание вакансии
-                    </FormLabel>
+                    <FormLabel>Описание</FormLabel>
                     <FormControl>
-                      <div className="relative">
-                        <Textarea
-                          {...field}
-                          value={field.value ?? ""}
-                          placeholder="Опишите вакансию, требования, обязанности и условия работы…"
-                          className="min-h-75 resize-y font-mono text-sm pr-12 leading-relaxed"
-                          maxLength={50000}
-                        />
-                        <div className="absolute right-3 top-3 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
-                          <FileText className="inline size-3 mr-1" />
-                          Описание
-                        </div>
-                      </div>
+                      <Textarea
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="Опишите задачи, требования и условия..."
+                        className="min-h-[400px] resize-y bg-background leading-relaxed"
+                      />
                     </FormControl>
-                    <FormDescription className="text-xs">
-                      Полное описание вакансии, включая требования, обязанности
-                      и условия работы
-                    </FormDescription>
-                    <FormMessage />
-                    <div className="flex items-center justify-between pt-1">
-                      <div className="text-muted-foreground text-xs">
-                        {field.value?.length ?? 0} / 50000 символов
-                      </div>
-                      {hasChanges && field.value && (
-                        <span className="text-muted-foreground text-xs flex items-center gap-1">
-                          <div className="h-1.5 w-1.5 rounded-full bg-amber-500"></div>
-                          Изменено
-                        </span>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <FormDescription>
+                        Подробное описание поможет AI лучше подготовиться к интервью.
+                      </FormDescription>
+                      <span className="text-[10px] font-medium text-muted-foreground tabular-nums">
+                        {field.value?.length ?? 0} символов
+                      </span>
                     </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
+            </CardContent>
           </Card>
 
-          {/* Статус и кнопка сохранения */}
-          <div className="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-lg border bg-card p-4">
+          <div className="flex items-center justify-between gap-4 px-1">
             <div className="flex items-center gap-2">
-              {hasChanges ? (
-                <>
-                  <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
-                  <p className="text-sm text-amber-700 dark:text-amber-400">
+              {hasChanges && (
+                <div className="flex items-center gap-2 animate-in fade-in slide-in-from-left-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+                  </span>
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
                     Есть несохраненные изменения
                   </p>
-                </>
-              ) : (
-                <>
-                  <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                  <p className="text-sm text-muted-foreground">
-                    Все изменения сохранены
-                  </p>
-                </>
+                </div>
               )}
             </div>
+            
             <div className="flex items-center gap-3">
               {onCancel && (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   onClick={onCancel}
                   disabled={isSaving}
-                  className="min-h-11 md:min-h-0"
+                  className="h-9 px-4"
                 >
                   Отмена
                 </Button>
@@ -212,28 +178,24 @@ export function VacancyEditForm({
               <Button
                 type="submit"
                 disabled={isSaving || !hasChanges}
-                size="lg"
-                className="min-w-32 transition-all duration-200"
+                className="h-9 px-6 min-w-[140px] shadow-sm"
               >
                 {isSaving ? (
                   <>
-                    <Loader2
-                      className="mr-2 size-4 animate-spin"
-                      aria-hidden="true"
-                    />
-                    Сохранение…
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Сохранение...
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 size-4" aria-hidden="true" />
-                    Сохранить изменения
+                    <Save className="mr-2 h-4 w-4" />
+                    Сохранить
                   </>
                 )}
               </Button>
             </div>
           </div>
-        </div>
-      </form>
-    </Form>
+        </form>
+      </Form>
+    </div>
   );
 }

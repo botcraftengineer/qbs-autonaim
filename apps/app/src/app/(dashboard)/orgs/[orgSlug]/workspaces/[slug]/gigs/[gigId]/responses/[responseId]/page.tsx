@@ -21,7 +21,8 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
-import { ResponseDetailCard } from "~/components/gig/response-detail-card";
+import { ResponseDetailCard } from "~/components/response-detail";
+import type { ResponseDetail } from "~/components/response-detail/vacancy-response-detail-card";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -42,12 +43,12 @@ function ResponseDetailSkeleton() {
       <Card>
         <CardContent>
           <div className="flex items-start gap-3 sm:gap-4">
-            <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full flex-shrink-0" />
+            <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full shrink-0" />
             <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
               <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
               <Skeleton className="h-4 w-36 sm:w-48" />
             </div>
-            <Skeleton className="h-5 sm:h-6 w-20 sm:w-24 flex-shrink-0" />
+            <Skeleton className="h-5 sm:h-6 w-20 sm:w-24 shrink-0" />
           </div>
         </CardContent>
       </Card>
@@ -323,60 +324,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
       {/* Response Detail */}
       <ResponseDetailCard
-        response={{
-          ...response,
-          conversation: response.interviewSession
-            ? {
-                id: response.interviewSession.id,
-                status: response.interviewSession.status,
-                messages: response.interviewSession.messages.map((msg) => {
-                  // Маппинг role -> sender
-                  let sender: string;
-                  switch (msg.role) {
-                    case "assistant":
-                      sender = "BOT";
-                      break;
-                    case "user":
-                      sender = "USER";
-                      break;
-                    case "system":
-                      sender = "SYSTEM";
-                      break;
-                    default:
-                      sender = "USER";
-                  }
-
-                  // Маппинг type -> contentType
-                  let contentType: string;
-                  switch (msg.type) {
-                    case "voice":
-                      contentType = "VOICE";
-                      break;
-                    case "text":
-                      contentType = "TEXT";
-                      break;
-                    case "file":
-                      contentType = "FILE";
-                      break;
-                    case "event":
-                      contentType = "EVENT";
-                      break;
-                    default:
-                      contentType = "TEXT";
-                  }
-
-                  return {
-                    id: msg.id,
-                    sender,
-                    content: msg.content ?? "",
-                    contentType,
-                    voiceTranscription: msg.voiceTranscription,
-                    createdAt: msg.createdAt,
-                  };
-                }),
-              }
-            : undefined,
-        }}
+        response={response as ResponseDetail}
         onAccept={handleAccept}
         onReject={handleReject}
         onMessage={handleMessage}
@@ -438,7 +386,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
             <DialogTitle className="text-lg sm:text-xl">
               Отправить сообщение
             </DialogTitle>
-            <DialogDescription className="text-sm sm:text-base break-words">
+            <DialogDescription className="text-sm sm:text-base wrap-break-word">
               Напишите сообщение кандидату{" "}
               {response.candidateName || response.candidateId}
             </DialogDescription>

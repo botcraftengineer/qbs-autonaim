@@ -9,7 +9,7 @@ interface Vacancy {
   totalResponsesCount: number | null;
   newResponses: number | null;
   resumesInProgress: number | null;
-  isActive: boolean;
+  isActive: boolean | null;
   createdAt: Date;
 }
 
@@ -40,9 +40,9 @@ export function useVacancyFilters(vacancies: Vacancy[] | undefined) {
     }
 
     if (statusFilter === "active") {
-      filtered = filtered.filter((v) => v.isActive);
+      filtered = filtered.filter((v) => v.isActive === true);
     } else if (statusFilter === "inactive") {
-      filtered = filtered.filter((v) => !v.isActive);
+      filtered = filtered.filter((v) => v.isActive === false);
     }
 
     if (dateFrom) {
@@ -89,7 +89,8 @@ export function useVacancyFilters(vacancies: Vacancy[] | undefined) {
     sourceFilter !== "all" ||
     statusFilter !== "all" ||
     dateFrom ||
-    dateTo;
+    dateTo ||
+    "";
 
   return {
     searchQuery,
@@ -105,6 +106,6 @@ export function useVacancyFilters(vacancies: Vacancy[] | undefined) {
     dateTo,
     setDateTo,
     filteredAndSortedVacancies,
-    hasFilters,
+    hasFilters: !!hasFilters,
   };
 }

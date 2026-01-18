@@ -12,7 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@qbs-autonaim/ui";
-import { IconCalendar, IconFilter, IconSearch } from "@tabler/icons-react";
+import {
+  IconCalendar,
+  IconFilter,
+  IconFilterOff,
+  IconSearch,
+  IconSortAscending,
+} from "@tabler/icons-react";
 
 interface VacancyFiltersProps {
   searchQuery: string;
@@ -43,10 +49,25 @@ export function VacancyFilters({
   dateTo,
   onDateToChange,
 }: VacancyFiltersProps) {
+  const hasFilters =
+    searchQuery ||
+    sourceFilter !== "all" ||
+    statusFilter !== "all" ||
+    dateFrom ||
+    dateTo;
+
+  const handleReset = () => {
+    onSearchChange("");
+    onSourceChange("all");
+    onStatusChange("all");
+    onDateFromChange("");
+    onDateToChange("");
+  };
+
   return (
-    <div className="mb-4 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div className="flex flex-1 flex-col gap-3 md:flex-row md:items-center">
-        <div className="relative flex-1 md:max-w-sm">
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center">
+        <div className="relative flex-1 md:max-w-md">
           <IconSearch
             className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
             aria-hidden="true"
@@ -56,19 +77,21 @@ export function VacancyFilters({
             placeholder="Поиск по названию или региону…"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="pl-9"
+            className="h-10 pl-9 shadow-xs"
             aria-label="Поиск вакансий"
           />
         </div>
 
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           <Select value={sourceFilter} onValueChange={onSourceChange}>
             <SelectTrigger
-              className="w-full sm:w-[160px]"
+              className="h-10 w-full sm:w-[160px] shadow-xs"
               aria-label="Фильтр по источнику"
             >
-              <IconFilter className="size-4" aria-hidden="true" />
-              <SelectValue placeholder="Источник" />
+              <div className="flex items-center gap-2">
+                <IconFilter className="size-4 text-muted-foreground" />
+                <SelectValue placeholder="Источник" />
+              </div>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Все источники</SelectItem>
@@ -84,7 +107,7 @@ export function VacancyFilters({
 
           <Select value={statusFilter} onValueChange={onStatusChange}>
             <SelectTrigger
-              className="w-full sm:w-[140px]"
+              className="h-10 w-full sm:w-[140px] shadow-xs"
               aria-label="Фильтр по статусу"
             >
               <SelectValue placeholder="Статус" />
@@ -100,26 +123,29 @@ export function VacancyFilters({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="w-full sm:w-[180px] justify-start"
+                className="h-10 w-full justify-start shadow-xs sm:w-[180px]"
                 aria-label="Фильтр по дате"
               >
-                <IconCalendar className="size-4" aria-hidden="true" />
+                <IconCalendar
+                  className="mr-2 size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
                 {dateFrom || dateTo ? (
-                  <span className="truncate">
+                  <span className="truncate text-xs">
                     {dateFrom && new Date(dateFrom).toLocaleDateString("ru-RU")}
                     {dateFrom && dateTo && " - "}
                     {dateTo && new Date(dateTo).toLocaleDateString("ru-RU")}
                   </span>
                 ) : (
-                  "Диапазон дат"
+                  <span className="text-muted-foreground">Диапазон дат</span>
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-4" align="start">
-              <div className="flex flex-col gap-3">
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="date-from" className="text-sm font-medium">
-                    С&nbsp;даты
+            <PopoverContent className="w-[280px] p-4" align="start">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label htmlFor="date-from" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    C&nbsp;даты
                   </label>
                   <Input
                     id="date-from"
@@ -127,11 +153,11 @@ export function VacancyFilters({
                     value={dateFrom}
                     onChange={(e) => onDateFromChange(e.target.value)}
                     max={dateTo || undefined}
-                    aria-label="Дата начала"
+                    className="h-9"
                   />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <label htmlFor="date-to" className="text-sm font-medium">
+                <div className="space-y-2">
+                  <label htmlFor="date-to" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     По&nbsp;дату
                   </label>
                   <Input
@@ -140,20 +166,20 @@ export function VacancyFilters({
                     value={dateTo}
                     onChange={(e) => onDateToChange(e.target.value)}
                     min={dateFrom || undefined}
-                    aria-label="Дата окончания"
+                    className="h-9"
                   />
                 </div>
                 {(dateFrom || dateTo) && (
                   <Button
-                    variant="outline"
+                    variant="ghost"
                     size="sm"
+                    className="h-8 w-full text-xs"
                     onClick={() => {
                       onDateFromChange("");
                       onDateToChange("");
                     }}
-                    aria-label="Сбросить фильтр по дате"
                   >
-                    Сбросить
+                    Сбросить даты
                   </Button>
                 )}
               </div>
@@ -162,19 +188,34 @@ export function VacancyFilters({
 
           <Select value={sortBy} onValueChange={onSortChange}>
             <SelectTrigger
-              className="w-full sm:w-[160px]"
+              className="h-10 w-full sm:w-[170px] shadow-xs"
               aria-label="Сортировка"
             >
-              <SelectValue placeholder="Сортировка" />
+              <div className="flex items-center gap-2">
+                <IconSortAscending className="size-4 text-muted-foreground" />
+                <SelectValue placeholder="Сортировка" />
+              </div>
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="createdAt">По дате</SelectItem>
-              <SelectItem value="responses">По откликам</SelectItem>
-              <SelectItem value="newResponses">По новым</SelectItem>
+              <SelectItem value="createdAt">По дате создания</SelectItem>
+              <SelectItem value="responses">По числу откликов</SelectItem>
+              <SelectItem value="newResponses">По новым откликам</SelectItem>
               <SelectItem value="views">По просмотрам</SelectItem>
-              <SelectItem value="title">По названию</SelectItem>
+              <SelectItem value="title">По алфавиту</SelectItem>
             </SelectContent>
           </Select>
+
+          {hasFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleReset}
+              className="h-10 gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <IconFilterOff className="size-4" />
+              Сбросить
+            </Button>
+          )}
         </div>
       </div>
     </div>
