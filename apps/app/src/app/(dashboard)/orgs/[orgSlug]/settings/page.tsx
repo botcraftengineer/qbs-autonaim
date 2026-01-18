@@ -2,7 +2,6 @@ import { paths } from "@qbs-autonaim/config";
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
-import { SiteHeader } from "~/components/layout";
 import { OrganizationGeneralForm } from "~/components/organization";
 
 const organizationRepository = new OrganizationRepository(db);

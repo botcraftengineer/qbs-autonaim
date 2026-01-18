@@ -6,7 +6,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
-import { SiteHeader } from "~/components/layout";
 import {
   ExperienceTab,
   InterviewScoringCard,

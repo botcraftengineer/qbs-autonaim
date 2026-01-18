@@ -9,7 +9,6 @@ import {
   CardTitle,
 } from "@qbs-autonaim/ui";
 import { Check } from "lucide-react";
-import { SiteHeader } from "~/components/layout";
 
 const plans = [
   {

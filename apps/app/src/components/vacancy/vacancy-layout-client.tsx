@@ -18,7 +18,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { SiteHeader } from "~/components/layout";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 

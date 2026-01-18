@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { use } from "react";
-import { SiteHeader } from "~/components/layout";
 import { GigChatList } from "./gig-chat-list";
 
 export default function GigChatLayout({

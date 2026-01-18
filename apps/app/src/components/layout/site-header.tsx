@@ -139,14 +139,9 @@ export function SiteHeader({ user: initialUser, children }: SiteHeaderProps) {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem asChild>
-                  <a
-                    href="#"
-                    className="flex cursor-default items-center gap-2"
-                  >
-                    <Sparkles className="size-4" aria-hidden="true" />
-                    Обновить до Pro
-                  </a>
+                <DropdownMenuItem className="cursor-default">
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  Обновить до Pro
                 </DropdownMenuItem>
               </DropdownMenuGroup>
               <DropdownMenuGroup>

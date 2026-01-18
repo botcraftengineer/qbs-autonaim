@@ -33,7 +33,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { triggerUpdateVacancies } from "~/actions/trigger";
-import { PageHeader, SiteHeader } from "~/components/layout";
+import { PageHeader } from "~/components/layout";
 import { VacancyStats } from "~/components/vacancies";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";

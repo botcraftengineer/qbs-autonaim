@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { SiteHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";

@@ -27,7 +27,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { PageHeader, SiteHeader } from "~/components/layout";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 

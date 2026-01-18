@@ -8,7 +8,6 @@ import {
   ResponsesChart,
   TopResponses,
 } from "~/components/dashboard";
-import { SiteHeader } from "~/components/layout";
 
 export default function WorkspacePage({
   params,

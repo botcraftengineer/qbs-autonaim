@@ -5,7 +5,7 @@ import { IconArrowLeft, IconEdit, IconExternalLink } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { use } from "react";
-import { PageHeader, SiteHeader } from "~/components/layout";
+import { PageHeader } from "~/components/layout";
 import {
   UpdateVacancyButton,
   VacancyAnalytics,

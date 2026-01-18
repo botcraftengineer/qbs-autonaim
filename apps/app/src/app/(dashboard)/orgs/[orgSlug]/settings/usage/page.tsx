@@ -22,7 +22,6 @@ import {
 import { redirect } from "next/navigation";
 import type React from "react";
 import { getSession } from "~/auth/server";
-import { SiteHeader } from "~/components/layout";
 
 const organizationRepository = new OrganizationRepository(db);
 
