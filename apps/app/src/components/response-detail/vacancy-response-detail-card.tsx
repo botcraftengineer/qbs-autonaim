@@ -1,37 +1,11 @@
 "use client";
 
-import type { RouterOutputs } from "@qbs-autonaim/api";
+import { ParsedProfileCard, ResponseHeaderCard } from "~/components/response-detail";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  cn,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@qbs-autonaim/ui";
-import {
-  ContactsTab,
-  DialogTab,
-  ExperienceTab,
-  InterviewScoringCard,
-  ParsedProfileCard,
-  PortfolioTab,
-  ProposalTab,
-  ResponseHeaderCard,
-  ScreeningResultsCard,
-} from "~/components/response-detail";
-
-type GigResponseDetail = NonNullable<RouterOutputs["gig"]["responses"]["get"]>;
-type VacancyResponseDetail = NonNullable<
-  RouterOutputs["vacancy"]["responses"]["get"]
->;
-
-// Общий тип для обоих видов откликов
-export type ResponseDetail = (GigResponseDetail | VacancyResponseDetail) & {
-  globalCandidate?: null;
-};
+  useVacancyResponseFlags,
+  type ResponseDetail,
+} from "./hooks/use-vacancy-response-flags";
+import { VacancyResponseTabs } from "./vacancy-response-tabs";
 
 interface ResponseDetailCardProps {
   response: ResponseDetail;
@@ -43,60 +17,6 @@ interface ResponseDetailCardProps {
   isPolling?: boolean;
 }
 
-// Type guard для проверки типа отклика
-function isVacancyResponse(
-  response: GigResponseDetail | VacancyResponseDetail,
-): response is VacancyResponseDetail {
-  return "salaryExpectationsAmount" in response;
-}
-
-// Type guard для проверки структуры interviewSession
-function hasValidInterviewSession(
-  session: unknown,
-): session is {
-  id: string;
-  messages: Array<{
-    id: string;
-    sender: string;
-    content: string;
-    contentType: string;
-    voiceTranscription: string | null;
-    createdAt: Date;
-  }>;
-} {
-  if (!session || typeof session !== "object") return false;
-  const s = session as Record<string, unknown>;
-  return (
-    typeof s.id === "string" &&
-    Array.isArray(s.messages) &&
-    s.messages.length > 0
-  );
-}
-
-// Type guard для проверки структуры conversation
-function hasValidConversation(
-  conversation: unknown,
-): conversation is {
-  id: string;
-  status: string;
-  messages: Array<{
-    id: string;
-    sender: string;
-    content: string;
-    contentType: string;
-    voiceTranscription: string | null;
-    createdAt: Date;
-  }>;
-} {
-  if (!conversation || typeof conversation !== "object") return false;
-  const c = conversation as Record<string, unknown>;
-  return (
-    typeof c.id === "string" &&
-    Array.isArray(c.messages) &&
-    c.messages.length > 0
-  );
-}
-
 export function ResponseDetailCard({
   response,
   onAccept,
@@ -106,100 +26,14 @@ export function ResponseDetailCard({
   isProcessing,
   isPolling,
 }: ResponseDetailCardProps) {
-  const isVacancy = isVacancyResponse(response);
-
-  // Определяем screening в зависимости от типа отклика
-  const screening = isVacancy
-    ? response.screening
-    : (
-          response.interviewSession as {
-            scoring?: {
-              score: number;
-              detailedScore: number;
-              analysis: string | null;
-              priceAnalysis?: string | null;
-              deliveryAnalysis?: string | null;
-            } | null;
-          } | null
-        )?.scoring ?? null;
-
-  const hasScreening = !!screening;
-  const hasInterviewScoring = !!response.interviewScoring;
-
-  // Определяем conversation в зависимости от типа отклика
-  let conversation: {
-    id: string;
-    status: string;
-    messages: Array<{
-      id: string;
-      sender: string;
-      content: string;
-      contentType: string;
-      voiceTranscription: string | null;
-      createdAt: Date;
-    }>;
-  } | null = null;
-
-  if (isVacancy) {
-    // Для vacancy создаем conversation из interviewSession
-    if (hasValidInterviewSession(response.interviewSession)) {
-      conversation = {
-        id: response.interviewSession.id,
-        status: "completed",
-        messages: response.interviewSession.messages,
-      };
-    }
-  } else {
-    // Для gig используем существующий conversation
-    const gigResponse = response as GigResponseDetail & {
-      conversation?: unknown;
-    };
-    if (hasValidConversation(gigResponse.conversation)) {
-      conversation = gigResponse.conversation;
-    }
-  }
-
-  const hasConversation = !!conversation;
-
-  // Определяем, какие табы показывать
-  const hasProposal = isVacancy
-    ? !!(
-        response.salaryExpectationsAmount ||
-        response.coverLetter ||
-        (response as VacancyResponseDetail).salaryExpectationsComment
-      )
-    : !!(
-        (response as GigResponseDetail).proposedPrice ||
-        (response as GigResponseDetail).proposedDeliveryDays ||
-        response.coverLetter
-      );
-
-  const hasPortfolio = !!(
-    response.portfolioLinks?.length || response.portfolioFileId
-  );
-
-  const hasExperience = !!(
-    response.experience ||
-    response.skills?.length ||
-    response.profileData
-  );
-
-  const hasContacts = !!(
-    response.email ||
-    response.phone ||
-    response.telegramUsername
-  );
-
-  // Определяем дефолтный таб
-  const getDefaultTab = () => {
-    if (hasConversation) return "dialog";
-    if (hasScreening || hasInterviewScoring) return "analysis";
-    if (hasProposal) return "proposal";
-    if (hasExperience) return "experience";
-    if (hasPortfolio) return "portfolio";
-    if (hasContacts) return "contacts";
-    return "proposal";
-  };
+  const {
+    hasScreening,
+    hasInterviewScoring,
+    hasConversation,
+    screening,
+    conversation,
+    getDefaultTab,
+  } = useVacancyResponseFlags(response);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -223,122 +57,15 @@ export function ResponseDetailCard({
       )}
 
       {/* Main Content Tabs */}
-      <Card>
-        <Tabs defaultValue={getDefaultTab()} className="w-full">
-          <CardHeader className="pb-3">
-            <TabsList
-              className={cn(
-                "grid w-full h-auto gap-1 p-1",
-                hasConversation
-                  ? "grid-cols-3 sm:grid-cols-6"
-                  : "grid-cols-2 sm:grid-cols-5",
-              )}
-            >
-              {(hasScreening || hasInterviewScoring) && (
-                <TabsTrigger
-                  value="analysis"
-                  className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
-                >
-                  Анализ
-                </TabsTrigger>
-              )}
-              {hasConversation && (
-                <TabsTrigger
-                  value="dialog"
-                  className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
-                >
-                  Диалог
-                </TabsTrigger>
-              )}
-              <TabsTrigger
-                value="proposal"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
-              >
-                Предложение
-              </TabsTrigger>
-              <TabsTrigger
-                value="experience"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
-              >
-                Опыт
-              </TabsTrigger>
-              <TabsTrigger
-                value="portfolio"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
-              >
-                Портфолио
-              </TabsTrigger>
-              <TabsTrigger
-                value="contacts"
-                className="min-h-11 sm:min-h-9 text-xs sm:text-sm touch-manipulation"
-              >
-                Контакты
-              </TabsTrigger>
-            </TabsList>
-          </CardHeader>
-
-          <CardContent>
-            {/* Analysis Tab */}
-            {(hasScreening || hasInterviewScoring) && (
-              <TabsContent
-                value="analysis"
-                className="space-y-3 sm:space-y-4 mt-0"
-              >
-                {hasScreening && screening && (
-                  <ScreeningResultsCard screening={screening} />
-                )}
-                {hasInterviewScoring && response.interviewScoring && (
-                  <InterviewScoringCard
-                    interviewScoring={response.interviewScoring}
-                  />
-                )}
-              </TabsContent>
-            )}
-
-            {/* Dialog Tab */}
-            {hasConversation && conversation && (
-              <TabsContent
-                value="dialog"
-                className="space-y-3 sm:space-y-4 mt-0"
-              >
-                <DialogTab conversation={conversation} />
-              </TabsContent>
-            )}
-
-            {/* Proposal Tab */}
-            <TabsContent
-              value="proposal"
-              className="space-y-3 sm:space-y-4 mt-0"
-            >
-              <ProposalTab response={response} />
-            </TabsContent>
-
-            {/* Experience Tab */}
-            <TabsContent
-              value="experience"
-              className="space-y-3 sm:space-y-4 mt-0"
-            >
-              <ExperienceTab response={response} />
-            </TabsContent>
-
-            {/* Portfolio Tab */}
-            <TabsContent
-              value="portfolio"
-              className="space-y-3 sm:space-y-4 mt-0"
-            >
-              <PortfolioTab response={response} />
-            </TabsContent>
-
-            {/* Contacts Tab */}
-            <TabsContent
-              value="contacts"
-              className="space-y-3 sm:space-y-4 mt-0"
-            >
-              <ContactsTab response={response} />
-            </TabsContent>
-          </CardContent>
-        </Tabs>
-      </Card>
+      <VacancyResponseTabs
+        response={response}
+        defaultTab={getDefaultTab()}
+        hasScreening={hasScreening}
+        hasInterviewScoring={hasInterviewScoring}
+        hasConversation={hasConversation}
+        screening={screening}
+        conversation={conversation}
+      />
     </div>
   );
 }

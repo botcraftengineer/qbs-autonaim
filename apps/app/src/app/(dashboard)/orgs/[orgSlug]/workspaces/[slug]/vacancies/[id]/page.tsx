@@ -224,8 +224,8 @@ ${data.interviewLink.url}
           )}
         </div>
 
-        <Card className="border-l-4 border-l-primary/50 shadow-sm overflow-hidden">
-          <CardHeader className="bg-muted/40 pb-4">
+        <Card className="border-l-4 border-l-primary/50 shadow-md overflow-hidden bg-card/50 backdrop-blur-sm">
+          <CardHeader className="bg-muted/50 pb-4 border-b">
             <CardTitle className="text-lg flex items-center gap-2">
               <IconFileDescription className="size-5 text-primary" />
               Описание вакансии
@@ -262,7 +262,7 @@ ${data.interviewLink.url}
         )}
 
         {interviewLink && (
-          <Card className="border-primary/20 bg-primary/2">
+          <Card className="border-primary/30 bg-primary/5 shadow-sm">
             <CardHeader className="pb-3">
               <div className="flex items-center gap-2 mb-1">
                 <IconRobot className="size-4 text-primary" />
@@ -306,7 +306,7 @@ ${data.interviewLink.url}
           </Card>
         )}
 
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
@@ -341,7 +341,7 @@ ${data.interviewLink.url}
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <IconUsers className="size-4 text-muted-foreground" />
