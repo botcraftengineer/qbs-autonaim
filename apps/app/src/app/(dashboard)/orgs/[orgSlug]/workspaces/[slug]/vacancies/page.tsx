@@ -1,6 +1,5 @@
 "use client";
 
-import { paths } from "@qbs-autonaim/config";
 import { Button } from "@qbs-autonaim/ui";
 import { IconRefresh, IconSparkles } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -106,7 +105,7 @@ export default function VacanciesPage() {
       <PageHeader
         title="Вакансии"
         description="Управление вакансиями и их настройками"
-        tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/vacancies)"
+        tooltipContent="Здесь вы можете создавать вакансии для фриланс-платформ, синхронизировать их статусы, просматривать отклики и объединять дубликаты. [Подробнее в документации](https://docs.hh.qbs.ru/vacancies)"
       >
         <div className="flex gap-2">
           <Button asChild variant="default">
@@ -133,66 +132,64 @@ export default function VacanciesPage() {
         </div>
       </PageHeader>
 
-      <div className="@container/main flex flex-1 flex-col">
-        <div className="flex flex-col gap-6 px-4 py-6 lg:px-6">
-          <VacancyStats
-            totalVacancies={stats.totalVacancies}
-            activeVacancies={stats.activeVacancies}
-            totalResponses={stats.totalResponses}
-            newResponses={stats.newResponses}
-            isLoading={isLoading}
+      <div className="@container/main flex flex-1 flex-col gap-6 py-4">
+        <VacancyStats
+          totalVacancies={stats.totalVacancies}
+          activeVacancies={stats.activeVacancies}
+          totalResponses={stats.totalResponses}
+          newResponses={stats.newResponses}
+          isLoading={isLoading}
+        />
+
+        <div className="space-y-4">
+          <VacancyFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            sourceFilter={sourceFilter}
+            onSourceChange={setSourceFilter}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            sortBy={sortBy}
+            onSortChange={setSortBy}
+            dateFrom={dateFrom}
+            onDateFromChange={setDateFrom}
+            dateTo={dateTo}
+            onDateToChange={setDateTo}
           />
 
-          <div className="space-y-4">
-            <VacancyFilters
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              sourceFilter={sourceFilter}
-              onSourceChange={setSourceFilter}
-              statusFilter={statusFilter}
-              onStatusChange={setStatusFilter}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              dateFrom={dateFrom}
-              onDateFromChange={setDateFrom}
-              dateTo={dateTo}
-              onDateToChange={setDateTo}
-            />
+          {!isLoading && filteredAndSortedVacancies.length > 0 && (
+            <div className="mb-3 text-sm text-muted-foreground">
+              Найдено вакансий:{" "}
+              <span className="font-medium tabular-nums">
+                {filteredAndSortedVacancies.length}
+              </span>
+              {hasFilters &&
+                vacancies &&
+                filteredAndSortedVacancies.length !== vacancies.length && (
+                  <span> из {vacancies.length}</span>
+                )}
+            </div>
+          )}
 
-            {!isLoading && filteredAndSortedVacancies.length > 0 && (
-              <div className="mb-3 text-sm text-muted-foreground">
-                Найдено вакансий:{" "}
-                <span className="font-medium tabular-nums">
-                  {filteredAndSortedVacancies.length}
-                </span>
-                {hasFilters &&
-                  vacancies &&
-                  filteredAndSortedVacancies.length !== vacancies.length && (
-                    <span> из {vacancies.length}</span>
-                  )}
-              </div>
-            )}
-
-            <VacancyTable
-              vacancies={filteredAndSortedVacancies}
-              isLoading={isLoading}
-              orgSlug={orgSlug ?? ""}
-              workspaceSlug={workspaceSlug ?? ""}
-              workspaceId={workspace?.id}
-              allVacancies={vacancies ?? []}
-              mergeOpenVacancyId={mergeOpenVacancyId}
-              mergeTargetVacancyId={mergeTargetVacancyId}
-              onMergeOpen={setMergeOpenVacancyId}
-              onMergeClose={() => {
-                setMergeOpenVacancyId(null);
-                setMergeTargetVacancyId("");
-              }}
-              onMergeTargetChange={setMergeTargetVacancyId}
-              onMergeConfirm={handleMergeConfirm}
-              isMerging={mergeVacanciesMutation.isPending}
-              hasFilters={hasFilters}
-            />
-          </div>
+          <VacancyTable
+            vacancies={filteredAndSortedVacancies}
+            isLoading={isLoading}
+            orgSlug={orgSlug ?? ""}
+            workspaceSlug={workspaceSlug ?? ""}
+            workspaceId={workspace?.id}
+            allVacancies={vacancies ?? []}
+            mergeOpenVacancyId={mergeOpenVacancyId}
+            mergeTargetVacancyId={mergeTargetVacancyId}
+            onMergeOpen={setMergeOpenVacancyId}
+            onMergeClose={() => {
+              setMergeOpenVacancyId(null);
+              setMergeTargetVacancyId("");
+            }}
+            onMergeTargetChange={setMergeTargetVacancyId}
+            onMergeConfirm={handleMergeConfirm}
+            isMerging={mergeVacanciesMutation.isPending}
+            hasFilters={hasFilters}
+          />
         </div>
       </div>
     </div>
