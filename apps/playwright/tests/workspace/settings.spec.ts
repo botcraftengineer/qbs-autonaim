@@ -197,7 +197,7 @@ test.describe("Настройки воркспейса", () => {
       await saveButton.click();
 
       // Проверяем, что кнопка показывает состояние загрузки
-      await expect(page.getByRole("button", { name: "Сохранение..." }))
+      await expect(page.getByRole("button", { name: "Сохранение…" }))
         .toBeVisible({ timeout: 1000 })
         .catch(() => {
           // Если кнопка быстро изменилась, это нормально

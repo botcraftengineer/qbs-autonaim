@@ -202,7 +202,10 @@ export function WorkspaceForm({
                       <TooltipTrigger asChild>
                         <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
                       </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
+                      <TooltipContent
+                        className="max-w-xs"
+                        data-testid="slug-help-tooltip"
+                      >
                         <p>
                           Уникальный адрес для доступа к вашему рабочему
                           пространству. Используется в URL{" "}
@@ -303,9 +306,7 @@ export function WorkspaceForm({
             className="bg-foreground text-background hover:bg-foreground/90"
             disabled={updateWorkspace.isPending}
           >
-            {updateWorkspace.isPending
-              ? "Сохранение..."
-              : "Сохранить изменения"}
+            {updateWorkspace.isPending ? "Сохранение…" : "Сохранить изменения"}
           </Button>
         </form>
       </Form>

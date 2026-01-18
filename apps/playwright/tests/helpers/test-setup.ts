@@ -66,6 +66,18 @@ export async function createTestUser(
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      // Если пользователь уже существует, сначала удаляем его
+      if (lastError?.message?.includes("User already exists")) {
+        try {
+          await trpc.test?.cleanup.mutate({ email });
+          // Ждем немного после удаления
+          await new Promise((resolve) => setTimeout(resolve, 500));
+        } catch (cleanupError) {
+          // Игнорируем ошибки cleanup
+          console.warn(`Cleanup failed for ${email}:`, cleanupError);
+        }
+      }
+
       const result = await trpc.test?.setup.mutate({
         email,
         password,
@@ -116,13 +128,29 @@ export async function deleteTestUser(
 ): Promise<void> {
   const trpc = createTestTRPCClient(baseURL);
 
-  try {
-    await trpc.test?.cleanup.mutate({ email });
-  } catch (error) {
-    throw new Error(
-      `Failed to delete test user: ${error instanceof Error ? error.message : String(error)}`,
-    );
+  // Retry механизм для удаления
+  let lastError: Error | null = null;
+  const maxRetries = 2;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      await trpc.test?.cleanup.mutate({ email });
+      return; // Успешно удалили
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt < maxRetries) {
+        // Ждем перед повторной попыткой
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
   }
+
+  // Не бросаем ошибку, только логируем - cleanup не должен ломать тесты
+  console.warn(
+    `Failed to delete test user ${email} after ${maxRetries} attempts:`,
+    lastError?.message,
+  );
 }
 
 /**
