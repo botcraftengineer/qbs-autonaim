@@ -52,8 +52,8 @@ export function ResponseRow({
   const initials = getInitials(candidateName);
 
   return (
-    <TableRow>
-      <TableCell>
+    <TableRow className="group">
+      <TableCell className="pl-4">
         {onSelect ? (
           <Checkbox
             checked={isSelected}
@@ -64,22 +64,22 @@ export function ResponseRow({
         )}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
-          <Avatar className="h-10 w-10 border shrink-0">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-9 w-9 border shrink-0">
             <AvatarImage src={avatarUrl} alt={candidateName} />
-            <AvatarFallback className="text-xs font-medium bg-primary/10 text-primary">
-              {initials || <User className="h-5 w-5" />}
+            <AvatarFallback className="text-xs font-medium bg-muted text-muted-foreground">
+              {initials || <User className="h-4 w-4" />}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <div className="font-medium flex items-center gap-2">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2">
               <Link
                 href={paths.workspace.responses(
                   orgSlug,
                   workspaceSlug,
                   response.id,
                 )}
-                className="hover:text-primary transition-colors no-underline"
+                className="font-medium text-sm hover:underline truncate transition-colors"
               >
                 {response.candidateName || "Без имени"}
               </Link>
@@ -87,30 +87,23 @@ export function ResponseRow({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <div className="rounded-full bg-green-100 p-1">
-                        <Send className="h-3 w-3 text-green-600" />
-                      </div>
+                      <Send className="h-3 w-3 text-muted-foreground opacity-50" />
                     </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Приветствие отправлено</p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(response.welcomeSentAt).toLocaleString(
-                          "ru-RU",
-                        )}
-                      </p>
+                    <TooltipContent side="right">
+                      <p className="text-xs">Приветствие отправлено</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
               )}
-              {response.interviewSession && (
-                <ChatIndicator
-                  messageCount={response.interviewSession.messageCount}
-                  conversationId={response.interviewSession.id}
-                  orgSlug={orgSlug}
-                  workspaceSlug={workspaceSlug}
-                />
-              )}
             </div>
+            {response.interviewSession && (
+              <ChatIndicator
+                messageCount={response.interviewSession.messageCount}
+                conversationId={response.interviewSession.id}
+                orgSlug={orgSlug}
+                workspaceSlug={workspaceSlug}
+              />
+            )}
           </div>
         </div>
       </TableCell>
@@ -118,16 +111,12 @@ export function ResponseRow({
         <Badge
           variant={
             response.status === "NEW"
-              ? "default"
-              : response.status === "EVALUATED"
-                ? "secondary"
-                : response.status === "COMPLETED"
-                  ? "default"
-                  : response.status === "SKIPPED"
-                    ? "destructive"
-                    : "outline"
+              ? "secondary"
+              : response.status === "SKIPPED"
+                ? "destructive"
+                : "outline"
           }
-          className="whitespace-nowrap"
+          className="whitespace-nowrap rounded-md font-normal"
         >
           {RESPONSE_STATUS_LABELS[response.status]}
         </Badge>
@@ -136,59 +125,59 @@ export function ResponseRow({
         {response.screening ? (
           <ScreeningHoverCard screening={response.screening} />
         ) : (
-          <Badge variant="outline" className="text-muted-foreground">
-            Не оценен
-          </Badge>
+          <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
       <TableCell>
         {response.interviewScoring ? (
           <ScreeningHoverCard screening={response.interviewScoring} />
         ) : (
-          <Badge variant="outline" className="text-muted-foreground">
-            Не оценен
-          </Badge>
+          <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
       <TableCell>
         {response.hrSelectionStatus ? (
-          <Badge variant="secondary" className="whitespace-nowrap">
+          <Badge variant="outline" className="whitespace-nowrap font-normal">
             {HR_SELECTION_STATUS_LABELS[response.hrSelectionStatus]}
           </Badge>
         ) : (
-          <span className="text-muted-foreground text-sm">—</span>
+          <span className="text-muted-foreground text-xs">—</span>
         )}
       </TableCell>
       <TableCell>
-        <ContactInfo contacts={response.contacts} size="sm" />
+        <div className="flex items-center min-w-[120px]">
+          <ContactInfo contacts={response.contacts} size="sm" />
+        </div>
       </TableCell>
-      <TableCell>
-        <div className="text-sm text-muted-foreground">
+      <TableCell className="whitespace-nowrap">
+        <span className="text-sm font-medium text-foreground">
           {response.respondedAt
             ? new Date(response.respondedAt).toLocaleDateString("ru-RU", {
                 day: "2-digit",
-                month: "2-digit",
+                month: "short",
                 year: "numeric",
-              })
+              }).replace(" г.", "")
             : "—"}
-        </div>
+        </span>
       </TableCell>
-      <TableCell className="text-right">
-        <div className="flex items-center justify-end gap-2">
-          {response.status === "NEW" && accessToken && (
-            <ScreenResponseButton
+      <TableCell className="pr-4 text-right">
+        <div className="flex items-center justify-end gap-2 px-1">
+          <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+            {response.status === "NEW" && accessToken && (
+              <ScreenResponseButton
+                responseId={response.id}
+                accessToken={accessToken}
+                candidateName={response.candidateName || undefined}
+              />
+            )}
+            <ResponseActions
               responseId={response.id}
-              accessToken={accessToken}
-              candidateName={response.candidateName || undefined}
+              resumeUrl={response.resumeUrl}
+              candidateName={response.candidateName}
+              telegramUsername={response.telegramUsername}
+              phone={response.phone}
             />
-          )}
-          <ResponseActions
-            responseId={response.id}
-            resumeUrl={response.resumeUrl}
-            candidateName={response.candidateName}
-            telegramUsername={response.telegramUsername}
-            phone={response.phone}
-          />
+          </div>
         </div>
       </TableCell>
     </TableRow>

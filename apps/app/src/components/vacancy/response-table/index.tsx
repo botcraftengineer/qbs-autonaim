@@ -29,6 +29,24 @@ interface ResponseTableProps {
 
 const ITEMS_PER_PAGE = 25;
 
+function getPluralForm(
+  n: number,
+  one: string,
+  few: string,
+  many: string,
+): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+
+  if (mod10 === 1 && mod100 !== 11) {
+    return one;
+  }
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
+    return few;
+  }
+  return many;
+}
+
 type ResponsesListData = RouterOutputs["vacancy"]["responses"]["list"];
 
 type ResponseListItem = ResponsesListData["responses"][0];
@@ -201,14 +219,25 @@ export function ResponseTable({
       />
 
       {total > 0 && (
-        <div className="flex items-center justify-between px-4 py-3 rounded-lg border bg-muted/50">
-          <div className="text-sm font-medium">
-            Всего откликов: <span className="text-foreground">{total}</span>
+        <div className="flex items-center gap-6 px-4 py-2 bg-muted/30 rounded-full w-fit mb-2 border border-border/50">
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            Статистика
+          </div>
+          <div className="flex gap-4">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold">{total}</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-medium">Всего</span>
+            </div>
+            <div className="w-px h-3 bg-border/50" />
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold text-primary">{responses.length}</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-medium">На странице</span>
+            </div>
           </div>
         </div>
       )}
 
-      <div className="rounded-lg border">
+      <div className="rounded-md border bg-card shadow-sm">
         {selectedIds.size > 0 && (
           <BulkActionsBar
             selectedCount={selectedIds.size}
@@ -219,25 +248,26 @@ export function ResponseTable({
           />
         )}
 
-        <Table>
-          <ResponseTableHeader
-            allSelected={allSelected}
-            onSelectAll={handleSelectAll}
-            hasResponses={responses.length > 0}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-          />
-          <TableBody>{renderTableContent()}</TableBody>
-        </Table>
+        <div className="relative w-full overflow-auto">
+          <Table>
+            <ResponseTableHeader
+              allSelected={allSelected}
+              onSelectAll={handleSelectAll}
+              hasResponses={responses.length > 0}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+            />
+            <TableBody>{renderTableContent()}</TableBody>
+          </Table>
+        </div>
 
         {total > 0 && (
-          <div className="border-t px-4">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
-                Показано {(currentPage - 1) * ITEMS_PER_PAGE + 1}-
-                {Math.min(currentPage * ITEMS_PER_PAGE, total)} из {total}
-              </p>
+          <div className="flex items-center justify-between border-t px-4 py-4">
+            <div className="flex-1 text-sm text-muted-foreground whitespace-nowrap">
+              {selectedIds.size} из {total} {getPluralForm(total, "отклика", "откликов", "откликов")} выбрано
+            </div>
+            <div className="flex items-center space-x-2">
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

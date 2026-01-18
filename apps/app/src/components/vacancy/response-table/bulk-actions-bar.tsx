@@ -17,29 +17,40 @@ export function BulkActionsBar({
   onBulkScreen,
 }: BulkActionsBarProps) {
   return (
-    <div className="flex items-center justify-between gap-4 border-b bg-muted/50 px-4 py-3">
-      <p className="text-sm font-medium">Выбрано: {selectedCount}</p>
+    <div className="flex items-center justify-between gap-4 border-b bg-primary/5 px-6 py-3 transition-all animate-in slide-in-from-top-1">
+      <div className="flex items-center gap-3">
+        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground shadow-sm">
+          {selectedCount}
+        </div>
+        <p className="text-sm font-bold text-primary uppercase tracking-wider">Кандидата выбрано</p>
+      </div>
       <div className="flex gap-2">
         <Button
           onClick={onSendWelcome}
           disabled={isSendingWelcome}
           size="sm"
           variant="outline"
+          className="h-9 px-4 rounded-full border-primary/20 bg-background/50 hover:bg-background transition-all font-semibold"
         >
           {isSendingWelcome ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
             <Send className="h-4 w-4 mr-2" />
           )}
-          Отправить приветствие
+          Приветствие
         </Button>
-        <Button onClick={onBulkScreen} disabled={isProcessing} size="sm">
+        <Button 
+          onClick={onBulkScreen} 
+          disabled={isProcessing} 
+          size="sm"
+          className="h-9 px-4 rounded-full shadow-lg shadow-primary/20 font-bold"
+        >
           {isProcessing ? (
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
           ) : (
             <Sparkles className="h-4 w-4 mr-2" />
           )}
-          Оценить выбранные
+          Запустить оценку
         </Button>
       </div>
     </div>
