@@ -24,7 +24,9 @@ export default function VacancyResponsesPage() {
         </div>
         <div className="flex items-center gap-2">
           <div className="size-2 rounded-full bg-green-500 animate-pulse" />
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Live обновления</span>
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            Обновления в реальном времени
+          </span>
         </div>
       </div>
 

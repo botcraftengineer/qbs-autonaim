@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Button,
   Skeleton,
   Table,
   TableBody,
@@ -9,7 +10,9 @@ import {
   TableHeader,
   TableRow,
 } from "@qbs-autonaim/ui";
-import { IconSearch } from "@tabler/icons-react";
+import { IconPlus, IconSearch } from "@tabler/icons-react";
+import Link from "next/link";
+import { env } from "~/env";
 import { VacancyTableRow } from "./vacancy-table-row";
 
 interface Vacancy {
@@ -126,19 +129,63 @@ export function VacancyTable({
             ))
           ) : vacancies.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={9} className="h-[400px]">
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <div className="mb-4 rounded-full bg-muted/50 p-4">
-                    <IconSearch className="size-8 text-muted-foreground/50" />
+              <TableCell colSpan={9} className="h-[500px] p-0">
+                <div className="flex h-full flex-col items-center justify-center gap-6 px-4 py-10">
+                  {/* Анимированный список скелетонов */}
+                  <div className="animate-fade-in h-36 w-full max-w-64 overflow-hidden px-4 [mask-image:linear-gradient(transparent,black_10%,black_90%,transparent)]">
+                    <div
+                      className="animate-infinite-scroll-y flex flex-col [animation-duration:10s]"
+                      style={{ "--scroll": "-50%" } as React.CSSProperties}
+                    >
+                      {Array.from({ length: 8 }, (_, i) => (
+                        <div
+                          key={i}
+                          className="mt-4 flex items-center gap-3 rounded-lg border border-border bg-card p-4 shadow-sm"
+                        >
+                          <IconSearch className="size-4 text-muted-foreground" />
+                          <div className="h-2.5 w-24 min-w-0 rounded-sm bg-muted" />
+                          <div className="hidden grow items-center justify-end gap-1.5 text-muted-foreground xs:flex">
+                            <div className="size-3.5 rounded-full bg-muted" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="mb-1 text-lg font-semibold">
-                    {hasFilters ? "Ничего не найдено" : "Нет вакансий"}
-                  </h3>
-                  <p className="max-w-[300px] text-sm text-muted-foreground">
-                    {hasFilters
-                      ? "Попробуйте изменить параметры поиска или сбросить фильтры"
-                      : "Запустите обновление, чтобы загрузить вакансии из подключенных источников"}
-                  </p>
+
+                  {/* Текстовое содержимое */}
+                  <div className="max-w-sm text-pretty text-center">
+                    <span className="text-base font-medium text-foreground">
+                      {hasFilters ? "Ничего не найдено" : "Нет вакансий"}
+                    </span>
+                    <div className="mt-2 text-pretty text-sm text-muted-foreground">
+                      {hasFilters
+                        ? "Попробуйте изменить параметры поиска или сбросить фильтры"
+                        : "Создайте первую вакансию или настройте автоматическую загрузку из подключенных источников"}
+                    </div>
+                  </div>
+
+                  {/* Кнопки действий */}
+                  {!hasFilters && (
+                    <div className="flex items-center gap-2">
+                      <Button asChild className="h-10 gap-2">
+                        <Link
+                          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/new`}
+                        >
+                          <IconPlus className="size-4" />
+                          Создать вакансию
+                        </Link>
+                      </Button>
+                      <Button asChild variant="outline" className="h-10">
+                        <Link
+                          href={`${env.NEXT_PUBLIC_DOCS_URL}/vacancies`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          Узнать больше
+                        </Link>
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </TableCell>
             </TableRow>

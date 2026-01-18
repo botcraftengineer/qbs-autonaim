@@ -57,17 +57,25 @@ export function VacancyResponseTabs({
   screening,
   conversation,
 }: VacancyResponseTabsProps) {
+  // Подсчитываем количество видимых вкладок
+  const hasAnalysis = hasScreening || hasInterviewScoring;
+  const visibleTabsCount =
+    (hasAnalysis ? 1 : 0) + (hasConversation ? 1 : 0) + 4; // 4 базовые вкладки: Предложение, Опыт, Портфолио, Контакты
+
+  // Определяем классы grid-cols на основе количества вкладок
+  const gridColsClass =
+    {
+      4: "grid-cols-2 sm:grid-cols-4",
+      5: "grid-cols-3 sm:grid-cols-5",
+      6: "grid-cols-3 sm:grid-cols-6",
+    }[visibleTabsCount] ?? "grid-cols-3 sm:grid-cols-6";
+
   return (
     <Card>
       <Tabs defaultValue={defaultTab} className="w-full">
         <CardHeader className="pb-3">
           <TabsList
-            className={cn(
-              "grid w-full h-auto gap-1 p-1",
-              hasConversation
-                ? "grid-cols-3 sm:grid-cols-6"
-                : "grid-cols-2 sm:grid-cols-5",
-            )}
+            className={cn("grid w-full h-auto gap-1 p-1", gridColsClass)}
           >
             {(hasScreening || hasInterviewScoring) && (
               <TabsTrigger
@@ -138,10 +146,7 @@ export function VacancyResponseTabs({
           )}
 
           {/* Proposal Tab */}
-          <TabsContent
-            value="proposal"
-            className="space-y-3 sm:space-y-4 mt-0"
-          >
+          <TabsContent value="proposal" className="space-y-3 sm:space-y-4 mt-0">
             <ProposalTab response={response} />
           </TabsContent>
 
@@ -162,10 +167,7 @@ export function VacancyResponseTabs({
           </TabsContent>
 
           {/* Contacts Tab */}
-          <TabsContent
-            value="contacts"
-            className="space-y-3 sm:space-y-4 mt-0"
-          >
+          <TabsContent value="contacts" className="space-y-3 sm:space-y-4 mt-0">
             <ContactsTab response={response} />
           </TabsContent>
         </CardContent>

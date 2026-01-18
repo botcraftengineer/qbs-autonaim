@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { platformSourceValues } from "@qbs-autonaim/db/schema";
 import {
   Button,
   Dialog,
@@ -24,17 +25,16 @@ import {
   SelectValue,
 } from "@qbs-autonaim/ui";
 import { IconPlus } from "@tabler/icons-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useTRPC } from "~/trpc/react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { useTRPC } from "~/trpc/react";
 
 const addPublicationSchema = z.object({
-  platform: z.string().min(1, "Выберите платформу"),
-  externalId: z.string().optional(),
+  platform: z.enum(platformSourceValues),
+  externalId: z.string().max(100).optional(),
   url: z.string().url("Введите корректный URL").optional().or(z.literal("")),
 });
 
@@ -83,8 +83,12 @@ export function AddPublicationDialog({
           }),
         });
       },
-      onError: (error: any) => {
-        toast.error(error.message || "Не удалось добавить источник");
+      onError: (error: unknown) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Не удалось добавить источник";
+        toast.error(message);
       },
     }),
   );
@@ -93,7 +97,7 @@ export function AddPublicationDialog({
     mutate({
       vacancyId,
       workspaceId,
-      platform: values.platform as any,
+      platform: values.platform,
       externalId: values.externalId || undefined,
       url: values.url || undefined,
     });
@@ -102,7 +106,11 @@ export function AddPublicationDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="h-7 gap-1 px-2 text-[10px] font-semibold">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-7 gap-1 px-2 text-[10px] font-semibold"
+        >
           <IconPlus className="size-3" />
           Добавить источник
         </Button>
@@ -150,7 +158,7 @@ export function AddPublicationDialog({
                 <FormItem>
                   <FormLabel>Внешний ID (необязательно)</FormLabel>
                   <FormControl>
-                    <Input placeholder="Например: 12345678" {...field} />
+                    <Input placeholder="Например: 12345678…" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,7 +171,7 @@ export function AddPublicationDialog({
                 <FormItem>
                   <FormLabel>URL вакансии (необязательно)</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://..." {...field} />
+                    <Input placeholder="https://example.com…" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -171,7 +179,10 @@ export function AddPublicationDialog({
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Добавление..." : "Добавить"}
+                {isPending && (
+                  <span className="mr-2 inline-block size-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]" />
+                )}
+                Добавить{isPending && "…"}
               </Button>
             </DialogFooter>
           </form>
