@@ -28,10 +28,13 @@ type VacancyResponseDetail = NonNullable<
   RouterOutputs["vacancy"]["responses"]["get"]
 >;
 
+// Общий тип для обоих видов откликов
+export type ResponseDetail = (GigResponseDetail | VacancyResponseDetail) & {
+  globalCandidate?: null;
+};
+
 interface ResponseDetailCardProps {
-  response: (GigResponseDetail | VacancyResponseDetail) & {
-    globalCandidate?: null;
-  };
+  response: ResponseDetail;
   onAccept?: () => void;
   onReject?: () => void;
   onMessage?: () => void;

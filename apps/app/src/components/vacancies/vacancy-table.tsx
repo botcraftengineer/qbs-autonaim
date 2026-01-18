@@ -20,7 +20,7 @@ interface Vacancy {
   totalResponsesCount: number | null;
   newResponses: number | null;
   resumesInProgress: number | null;
-  isActive: boolean;
+  isActive: boolean | null;
 }
 
 interface VacancyTableProps {

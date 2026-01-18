@@ -6,7 +6,15 @@ import { useState } from "react";
 import { InterviewScenarioForm } from "./interview-scenario-form";
 import { InterviewScenariosList } from "./interview-scenarios-list";
 
-export function InterviewScenariosManagement() {
+interface InterviewScenariosManagementProps {
+  orgSlug: string;
+  workspaceSlug: string;
+}
+
+export function InterviewScenariosManagement({
+  orgSlug,
+  workspaceSlug,
+}: InterviewScenariosManagementProps) {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [editingScenario, setEditingScenario] = useState<string | null>(null);
 

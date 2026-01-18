@@ -22,6 +22,7 @@ import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
 import { ResponseDetailCard } from "~/components/response-detail";
+import type { ResponseDetail } from "~/components/response-detail/vacancy-response-detail-card";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -323,60 +324,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
 
       {/* Response Detail */}
       <ResponseDetailCard
-        response={{
-          ...response,
-          conversation: response.interviewSession
-            ? {
-                id: response.interviewSession.id,
-                status: response.interviewSession.status,
-                messages: response.interviewSession.messages.map((msg) => {
-                  // Маппинг role -> sender
-                  let sender: string;
-                  switch (msg.role) {
-                    case "assistant":
-                      sender = "BOT";
-                      break;
-                    case "user":
-                      sender = "USER";
-                      break;
-                    case "system":
-                      sender = "SYSTEM";
-                      break;
-                    default:
-                      sender = "USER";
-                  }
-
-                  // Маппинг type -> contentType
-                  let contentType: string;
-                  switch (msg.type) {
-                    case "voice":
-                      contentType = "VOICE";
-                      break;
-                    case "text":
-                      contentType = "TEXT";
-                      break;
-                    case "file":
-                      contentType = "FILE";
-                      break;
-                    case "event":
-                      contentType = "EVENT";
-                      break;
-                    default:
-                      contentType = "TEXT";
-                  }
-
-                  return {
-                    id: msg.id,
-                    sender,
-                    content: msg.content ?? "",
-                    contentType,
-                    voiceTranscription: msg.voiceTranscription,
-                    createdAt: msg.createdAt,
-                  };
-                }),
-              }
-            : undefined,
-        }}
+        response={response as ResponseDetail}
         onAccept={handleAccept}
         onReject={handleReject}
         onMessage={handleMessage}
