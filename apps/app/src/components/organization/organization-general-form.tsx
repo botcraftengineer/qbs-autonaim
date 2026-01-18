@@ -3,6 +3,11 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
   Form,
   FormField,
   FormItem,
@@ -158,204 +163,218 @@ export function OrganizationGeneralForm({
 
   return (
     <div className="space-y-8">
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Organization Name */}
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Название организации
-                </FormLabel>
-                <Input placeholder="Моя компания" {...field} />
-                <p className="text-sm text-muted-foreground">
-                  Это название вашей организации.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+      <Card>
+        <CardHeader>
+          <CardTitle>Общие настройки</CardTitle>
+          <CardDescription>
+            Управление основной информацией об организации
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Organization Name */}
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground font-medium">
+                      Название организации
+                    </FormLabel>
+                    <Input placeholder="Моя компания" {...field} />
+                    <p className="text-sm text-muted-foreground">
+                      Это название вашей организации.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          {/* Organization Slug */}
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center gap-2">
-                  <FormLabel className="text-foreground font-medium">
-                    Адрес организации
-                  </FormLabel>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
-                      </TooltipTrigger>
-                      <TooltipContent
-                        className="max-w-xs"
-                        data-testid="slug-help-tooltip"
-                      >
-                        <p>
-                          Уникальный адрес для доступа к вашей организации.
-                          Используется в URL (например,{" "}
-                          <span className="font-mono text-xs">
-                            /orgs/my-company
-                          </span>
-                          ). После изменения все ссылки на старый адрес
-                          перестанут работать.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Input placeholder="my-company" {...field} />
-                <p className="text-sm text-muted-foreground">
-                  Только строчные буквы, цифры и дефисы. От 3 до 50 символов.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Organization Description */}
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Описание
-                </FormLabel>
-                <Textarea
-                  placeholder="Краткое описание вашей организации"
-                  className="resize-none"
-                  rows={4}
-                  {...field}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Необязательное описание организации. Максимум 500 символов.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Organization Website */}
-          <FormField
-            control={form.control}
-            name="website"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Веб-сайт
-                </FormLabel>
-                <Input
-                  type="url"
-                  placeholder="https://example.com"
-                  {...field}
-                />
-                <p className="text-sm text-muted-foreground">
-                  Необязательная ссылка на веб-сайт организации.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Organization Logo */}
-          <FormField
-            control={form.control}
-            name="logo"
-            render={() => (
-              <FormItem>
-                <FormLabel className="text-foreground font-medium">
-                  Логотип организации
-                </FormLabel>
-                <div className="flex items-start gap-4">
-                  {logoPreview && (
-                    <div className="relative h-20 w-20 rounded-lg overflow-hidden border">
-                      {/* biome-ignore lint/performance/noImgElement: preview from FileReader */}
-                      <img
-                        src={logoPreview}
-                        alt="Логотип организации"
-                        className="h-full w-full object-cover"
-                      />
+              {/* Organization Slug */}
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <div className="flex items-center gap-2">
+                      <FormLabel className="text-foreground font-medium">
+                        Адрес организации
+                      </FormLabel>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+                          </TooltipTrigger>
+                          <TooltipContent
+                            className="max-w-xs"
+                            data-testid="slug-help-tooltip"
+                          >
+                            <p>
+                              Уникальный адрес для доступа к вашей организации.
+                              Используется в URL (например,{" "}
+                              <span className="font-mono text-xs">
+                                /orgs/my-company
+                              </span>
+                              ). После изменения все ссылки на старый адрес
+                              перестанут работать.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                     </div>
-                  )}
-                  <div className="flex-1 space-y-2">
-                    <div className="flex gap-2">
-                      <label
-                        htmlFor="logo-upload"
-                        className="inline-flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors"
-                      >
-                        <Upload className="h-4 w-4" />
-                        <span className="text-sm">Загрузить логотип</span>
-                      </label>
-                      <input
-                        id="logo-upload"
-                        type="file"
-                        accept=".png,.jpg,.jpeg"
-                        className="hidden"
-                        onChange={handleLogoChange}
-                      />
+                    <Input placeholder="my-company" {...field} />
+                    <p className="text-sm text-muted-foreground">
+                      Только строчные буквы, цифры и дефисы. От 3 до 50
+                      символов.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Organization Description */}
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground font-medium">
+                      Описание
+                    </FormLabel>
+                    <Textarea
+                      placeholder="Краткое описание вашей организации"
+                      className="resize-none"
+                      rows={4}
+                      {...field}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Необязательное описание организации. Максимум 500
+                      символов.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Organization Website */}
+              <FormField
+                control={form.control}
+                name="website"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-foreground font-medium">
+                      Веб-сайт
+                    </FormLabel>
+                    <Input
+                      type="url"
+                      placeholder="https://example.com"
+                      {...field}
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      Необязательная ссылка на веб-сайт организации.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Organization Logo */}
+              <FormField
+                control={form.control}
+                name="logo"
+                render={() => (
+                  <FormItem>
+                    <FormLabel className="text-foreground font-medium">
+                      Логотип организации
+                    </FormLabel>
+                    <div className="flex items-start gap-4">
                       {logoPreview && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="default"
-                          onClick={handleRemoveLogo}
-                          className="inline-flex items-center gap-2"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="text-sm">Удалить</span>
-                        </Button>
+                        <div className="relative h-20 w-20 rounded-lg overflow-hidden border">
+                          {/* biome-ignore lint/performance/noImgElement: preview from FileReader */}
+                          <img
+                            src={logoPreview}
+                            alt="Логотип организации"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
                       )}
+                      <div className="flex-1 space-y-2">
+                        <div className="flex gap-2">
+                          <label
+                            htmlFor="logo-upload"
+                            className="inline-flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer hover:bg-accent transition-colors"
+                          >
+                            <Upload className="h-4 w-4" />
+                            <span className="text-sm">Загрузить логотип</span>
+                          </label>
+                          <input
+                            id="logo-upload"
+                            type="file"
+                            accept=".png,.jpg,.jpeg"
+                            className="hidden"
+                            onChange={handleLogoChange}
+                          />
+                          {logoPreview && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="default"
+                              onClick={handleRemoveLogo}
+                              className="inline-flex items-center gap-2"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="text-sm">Удалить</span>
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Рекомендуется квадратное изображение. Допустимые форматы:
-                  .png, .jpg, .jpeg. Максимальный размер: 2MB.
-                </p>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                    <p className="text-sm text-muted-foreground">
+                      Рекомендуется квадратное изображение. Допустимые форматы:
+                      .png, .jpg, .jpeg. Максимальный размер: 2MB.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <Button
-            type="submit"
-            className="bg-foreground text-background hover:bg-foreground/90"
-            disabled={updateOrganization.isPending}
-          >
-            {updateOrganization.isPending
-              ? "Сохранение…"
-              : "Сохранить изменения"}
-          </Button>
-        </form>
-      </Form>
-
-      <Separator />
+              <Button
+                type="submit"
+                className="bg-foreground text-background hover:bg-foreground/90"
+                disabled={updateOrganization.isPending}
+              >
+                {updateOrganization.isPending
+                  ? "Сохранение…"
+                  : "Сохранить изменения"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
 
       {/* Delete Organization Section */}
       {canDelete && (
-        <div className="rounded-lg border border-destructive/50 p-6">
-          <h3 className="text-lg font-semibold text-destructive mb-2">
-            Удалить организацию
-          </h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Внимание: Это безвозвратно удалит вашу организацию, все рабочие
-            пространства, интеграции, вакансии и отклики кандидатов.
-          </p>
-          <Button
-            variant="destructive"
-            onClick={() => setDeleteDialogOpen(true)}
-            disabled={deleteOrganization.isPending}
-          >
-            Удалить организацию
-          </Button>
-        </div>
+        <Card className="border-destructive/50">
+          <CardHeader>
+            <CardTitle className="text-destructive">
+              Удалить организацию
+            </CardTitle>
+            <CardDescription>
+              Внимание: Это безвозвратно удалит вашу организацию, все рабочие
+              пространства, интеграции, вакансии и отклики кандидатов.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button
+              variant="destructive"
+              onClick={() => setDeleteDialogOpen(true)}
+              disabled={deleteOrganization.isPending}
+            >
+              Удалить организацию
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
       <DeleteOrganizationDialog

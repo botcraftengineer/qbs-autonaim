@@ -246,8 +246,7 @@ export default function EditGigPage({ params }: PageProps) {
       <PageHeader
         title="Редактирование задания"
         description="Редактирование существующего задания"
-        docsUrl="https://docs.hh.qbs.ru/editing"
-        noPadding
+        tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/editing)"
       />
 
       <Form {...form}>

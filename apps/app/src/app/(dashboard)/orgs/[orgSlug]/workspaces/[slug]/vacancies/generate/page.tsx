@@ -15,7 +15,7 @@ export default function VacancyGeneratePage() {
         <PageHeader
           title="Генерация вакансии"
           description="Автоматическая генерация контента с помощью AI"
-          docsUrl="https://docs.hh.qbs.ru/generation"
+          tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/generation)"
         />
         <div className="flex-1 overflow-hidden px-4 pb-4 md:px-6 lg:px-8">
           <VacancyCreatorContainer

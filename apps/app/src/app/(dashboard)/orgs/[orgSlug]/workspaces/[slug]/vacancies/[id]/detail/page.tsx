@@ -68,7 +68,7 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
         <PageHeader
           title="Вакансия не найдена"
           description="Запрошенная вакансия не существует или была удалена"
-          docsUrl="https://docs.hh.qbs.ru/vacancies"
+          tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/vacancies)"
         >
           <Button variant="outline" asChild>
             <Link
@@ -106,7 +106,7 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
       <PageHeader
         title={vacancy.title}
         description={`Вакансия на платформе ${sourceLabel}`}
-        docsUrl="https://docs.hh.qbs.ru/vacancies"
+        tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/vacancies)"
       >
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>

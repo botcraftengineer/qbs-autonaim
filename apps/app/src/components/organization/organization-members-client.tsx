@@ -23,6 +23,7 @@ import { IconDots, IconSearch, IconUserPlus } from "@tabler/icons-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "~/components/layout";
 import { InviteMemberDialog } from "~/components/organization";
 import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import { useTRPC } from "~/trpc/react";
@@ -197,17 +198,14 @@ export function OrganizationMembersClient({
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-lg font-semibold">Участники</h2>
-          <p className="text-sm text-muted-foreground">
-            Управляйте участниками организации
-          </p>
-        </div>
+      <PageHeader
+        title="Участники"
+        description="Управляйте участниками организации"
+      >
         {canManageMembers && (
           <InviteMemberDialog organizationId={organizationId} />
         )}
-      </div>
+      </PageHeader>
 
       {/* Filters */}
       <div className="flex flex-col gap-3 sm:flex-row">

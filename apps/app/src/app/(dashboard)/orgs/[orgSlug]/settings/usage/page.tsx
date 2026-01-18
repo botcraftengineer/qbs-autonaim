@@ -22,6 +22,7 @@ import {
 import { redirect } from "next/navigation";
 import type React from "react";
 import { getSession } from "~/auth/server";
+import { PageHeader } from "~/components/layout";
 
 const organizationRepository = new OrganizationRepository(db);
 
@@ -56,12 +57,10 @@ export default async function OrganizationUsagePage({
 
   return (
     <div className="space-y-6 p-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Использование</h1>
-        <p className="text-muted-foreground">
-          Статистика использования ресурсов организации за текущий месяц
-        </p>
-      </div>
+      <PageHeader
+        title="Использование"
+        description="Статистика использования ресурсов организации за текущий месяц"
+      />
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard

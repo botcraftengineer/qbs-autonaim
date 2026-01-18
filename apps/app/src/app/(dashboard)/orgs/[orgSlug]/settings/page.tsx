@@ -2,6 +2,7 @@ import { paths } from "@qbs-autonaim/config";
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
+import { PageHeader } from "~/components/layout";
 import { OrganizationGeneralForm } from "~/components/organization";
 
 const organizationRepository = new OrganizationRepository(db);
@@ -35,9 +36,10 @@ export default async function OrganizationSettingsPage({
   return (
     <div className="flex-1 overflow-auto p-6">
       <div className="mx-auto max-w-2xl pl-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Общие настройки</h1>
-        </div>
+        <PageHeader
+          title="Общие настройки"
+          description="Управление основной информацией об организации"
+        />
         <OrganizationGeneralForm
           initialData={{
             name: organization.name,

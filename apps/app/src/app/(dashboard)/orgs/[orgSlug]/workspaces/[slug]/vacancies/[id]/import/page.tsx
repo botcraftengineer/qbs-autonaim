@@ -19,6 +19,7 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -207,12 +208,10 @@ export default function ImportResponsesPage() {
       </div>
 
       {/* Заголовок */}
-      <div>
-        <h1 className="text-2xl font-bold">Импорт откликов</h1>
-        <p className="text-muted-foreground mt-1">
-          Вставьте отклики фрилансеров для автоматического парсинга и импорта
-        </p>
-      </div>
+      <PageHeader
+        title="Импорт откликов"
+        description="Вставьте отклики фрилансеров для автоматического парсинга и импорта"
+      />
 
       {/* Переключатель режима */}
       <Card>

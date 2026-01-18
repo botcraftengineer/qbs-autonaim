@@ -13,9 +13,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Input,
+  Kbd,
+  KbdGroup,
   Progress,
   Separator,
   SidebarTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@qbs-autonaim/ui";
 import {
   BadgeCheck,
@@ -74,27 +80,45 @@ export function SiteHeader({ user: initialUser, children }: SiteHeaderProps) {
           className="mx-2 data-[orientation=vertical]:h-4"
         />
         <div className="lg:flex-1">
-          <div className="relative hidden max-w-sm flex-1 lg:block">
-            <Search
-              className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
-              aria-hidden="true"
-            />
-            <input
-              type="search"
-              className="file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input min-w-0 bg-transparent px-3 py-1 transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive h-9 w-full cursor-pointer rounded-md border pr-4 pl-10 text-sm shadow-xs"
-              placeholder="Поиск..."
-              readOnly
-            />
-            <div className="absolute top-1/2 right-2 hidden -translate-y-1/2 items-center gap-0.5 rounded-sm bg-zinc-200 p-1 font-mono text-xs font-medium sm:flex dark:bg-neutral-700">
-              <Command className="size-3" aria-hidden="true" />
-              <span>k</span>
-            </div>
-          </div>
-          <div className="block lg:hidden">
-            <Button variant="ghost" size="icon" className="size-9">
-              <Search aria-hidden="true" />
-            </Button>
-          </div>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="relative hidden max-w-sm flex-1 lg:block">
+                <Search
+                  className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
+                  aria-hidden="true"
+                />
+                <Input
+                  type="search"
+                  placeholder="Поиск…"
+                  readOnly
+                  className="cursor-pointer pr-20 pl-10"
+                  aria-label="Поиск по платформе"
+                />
+                <KbdGroup className="absolute top-1/2 right-2 -translate-y-1/2">
+                  <Kbd>
+                    <Command className="size-3" aria-hidden="true" />
+                  </Kbd>
+                  <Kbd>K</Kbd>
+                </KbdGroup>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Скоро будет доступно</p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="block lg:hidden">
+                <Button variant="ghost" size="icon" className="size-9">
+                  <Search aria-hidden="true" />
+                  <span className="sr-only">Поиск</span>
+                </Button>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Скоро будет доступно</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
         <div className="ml-auto flex items-center gap-2">
           {children}

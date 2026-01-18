@@ -34,6 +34,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -201,12 +202,10 @@ export default function ShortlistPage() {
       </div>
 
       {/* Заголовок */}
-      <div>
-        <h1 className="text-2xl font-bold">Шортлист кандидатов</h1>
-        <p className="text-muted-foreground mt-1">
-          Лучшие кандидаты по результатам AI-анализа
-        </p>
-      </div>
+      <PageHeader
+        title="Шортлист кандидатов"
+        description="Лучшие кандидаты по результатам AI-анализа"
+      />
 
       {/* Фильтры и экспорт */}
       <Card>

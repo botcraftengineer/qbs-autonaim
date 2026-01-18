@@ -143,7 +143,7 @@ export default function GigsPage() {
           <PageHeader
             title="Разовые задания"
             description="Создание и управление разовыми задачами"
-            docsUrl="https://docs.hh.qbs.ru/gigs"
+            tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/gigs)"
           />
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <GigsStats stats={stats} isLoading={isLoading} />

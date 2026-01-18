@@ -20,6 +20,7 @@ import {
 } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -128,15 +129,10 @@ export default function FreelanceAnalyticsPage() {
   return (
     <div className="space-y-6">
       {/* Заголовок */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold md:text-3xl">
-            Аналитика фриланс-платформ
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            Детальная статистика и сравнение эффективности платформ
-          </p>
-        </div>
+      <PageHeader
+        title="Аналитика фриланс-платформ"
+        description="Детальная статистика и сравнение эффективности платформ"
+      >
         <Button
           onClick={handleExport}
           variant="outline"
@@ -146,7 +142,7 @@ export default function FreelanceAnalyticsPage() {
           <IconDownload className="size-4 mr-2" aria-hidden="true" />
           Экспорт CSV
         </Button>
-      </div>
+      </PageHeader>
 
       {/* Ключевые метрики */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

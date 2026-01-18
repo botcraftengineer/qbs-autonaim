@@ -18,8 +18,7 @@ export default async function SettingsLayout({
           <PageHeader
             title="Настройки"
             description="Управляйте настройками рабочего пространства и интеграциями"
-            docsUrl="https://docs.hh.qbs.ru/settings"
-            noPadding
+            tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/settings)"
           />
           <p className="text-sm text-muted-foreground">
             Настройте параметры рабочего пространства, управляйте доменами и

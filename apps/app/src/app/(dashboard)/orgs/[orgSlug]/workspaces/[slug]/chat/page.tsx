@@ -7,7 +7,7 @@ export default function ChatPage() {
         <PageHeader
           title="Чаты"
           description="Общение с кандидатами и заказчиками"
-          docsUrl="https://docs.hh.qbs.ru/chat"
+          tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/chat)"
         />
         <div className="flex h-full items-center justify-center p-4 w-full">
           <div className="text-center text-muted-foreground">

@@ -3,6 +3,7 @@
 import { Tabs, TabsList, TabsTrigger } from "@qbs-autonaim/ui";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
+import { PageHeader } from "~/components/layout";
 
 export default function SettingsLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -25,14 +26,10 @@ export default function SettingsLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Настройки аккаунта
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Управляйте настройками вашего аккаунта
-        </p>
-      </div>
+      <PageHeader
+        title="Настройки аккаунта"
+        description="Управляйте настройками вашего аккаунта"
+      />
 
       <Tabs
         value={currentTab}

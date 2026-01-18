@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@qbs-autonaim/ui";
 import { Check } from "lucide-react";
+import { PageHeader } from "~/components/layout";
 
 const plans = [
   {
@@ -69,12 +70,10 @@ const plans = [
 export default async function OrganizationBillingPage() {
   return (
     <div className="flex flex-col gap-8 p-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">Тарифы и биллинг</h1>
-        <p className="text-muted-foreground text-sm">
-          Выберите тариф, который подходит для ваших целей
-        </p>
-      </div>
+      <PageHeader
+        title="Тарифы и биллинг"
+        description="Выберите тариф, который подходит для ваших целей"
+      />
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {plans.map((plan) => (

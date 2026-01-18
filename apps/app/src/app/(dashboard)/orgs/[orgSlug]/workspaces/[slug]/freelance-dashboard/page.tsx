@@ -24,6 +24,7 @@ import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 
@@ -84,14 +85,10 @@ export default function FreelanceDashboardPage() {
   return (
     <div className="space-y-6">
       {/* Заголовок */}
-      <div>
-        <h1 className="text-2xl font-bold md:text-3xl">
-          Дашборд фриланс-платформ
-        </h1>
-        <p className="text-muted-foreground mt-2">
-          Обзор активности и статистика по заданиям на фриланс-платформах
-        </p>
-      </div>
+      <PageHeader
+        title="Дашборд фриланс-платформ"
+        description="Обзор активности и статистика по заданиям на фриланс-платформах"
+      />
 
       {/* Обзорные метрики */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

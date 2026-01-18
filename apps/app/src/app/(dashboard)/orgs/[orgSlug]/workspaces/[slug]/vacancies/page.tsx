@@ -200,7 +200,7 @@ export default function VacanciesPage() {
       <PageHeader
         title="Вакансии"
         description="Управление вакансиями и их настройками"
-        docsUrl="https://docs.hh.qbs.ru/vacancies"
+        tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/vacancies)"
       >
         <div className="flex gap-2">
           <Button asChild variant="default">

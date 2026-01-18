@@ -8,7 +8,7 @@ export default function CandidatesPage() {
         <PageHeader
           title="Кандидаты"
           description="База данных кандидатов и их профили"
-          docsUrl="https://docs.hh.qbs.ru/candidates"
+          tooltipContent="[Подробнее в документации](https://docs.hh.qbs.ru/candidates)"
         />
         <div className="flex flex-col flex-1 overflow-hidden">
           <div className="flex-1 overflow-hidden">
