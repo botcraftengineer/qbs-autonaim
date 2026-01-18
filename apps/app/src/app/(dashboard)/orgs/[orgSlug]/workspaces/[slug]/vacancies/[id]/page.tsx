@@ -1,12 +1,29 @@
 "use client";
 
-import { Badge, Button, Card, Separator } from "@qbs-autonaim/ui";
 import {
+  Badge,
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  Separator,
+} from "@qbs-autonaim/ui";
+import { VacancyRequirements } from "~/components/vacancy";
+import {
+  IconArrowRight,
+  IconBriefcase,
+  IconCalendar,
   IconCheck,
   IconCopy,
   IconExternalLink,
+  IconEye,
+  IconFileDescription,
+  IconMapPin,
   IconMessage,
   IconRobot,
+  IconTrendingUp,
   IconUpload,
   IconUsers,
 } from "@tabler/icons-react";
@@ -17,6 +34,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
+
+const SOURCE_CONFIG: Record<string, { label: string; color: string }> = {
+  HH: { label: "HeadHunter", color: "bg-red-500/10 text-red-600 border-red-200" },
+  KWORK: { label: "Kwork", color: "bg-green-500/10 text-green-600 border-green-200" },
+  FL_RU: { label: "FL.ru", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
+  FREELANCE_RU: { label: "Freelance.ru", color: "bg-orange-500/10 text-orange-600 border-orange-200" },
+  AVITO: { label: "Avito", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
+  SUPERJOB: { label: "SuperJob", color: "bg-sky-500/10 text-sky-600 border-sky-200" },
+  HABR: { label: "Хабр Карьера", color: "bg-zinc-500/10 text-zinc-600 border-zinc-200" },
+};
 
 export default function VacancyDetailPage() {
   const {
@@ -84,373 +111,254 @@ ${data.interviewLink.url}
     }
   };
 
-  const getPlatformName = (source: string) => {
-    const platforms: Record<string, string> = {
-      kwork: "Kwork",
-      fl: "FL.ru",
-      freelance: "Freelance.ru",
-      hh: "HeadHunter",
-      avito: "Avito",
-      superjob: "SuperJob",
-      habr: "Хабр Карьера",
-    };
-    return platforms[source] || source;
-  };
-
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">Загрузка…</div>
-        </Card>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-2">
+          <div className="size-8 rounded-full border-b-2 border-primary animate-spin" />
+          <p className="text-sm text-muted-foreground">Загрузка...</p>
+        </div>
       </div>
     );
   }
 
   if (!data?.vacancy) {
     return (
-      <div className="space-y-6">
-        <Card className="p-6">
-          <div className="text-sm text-muted-foreground">
-            Вакансия не найдена
-          </div>
-        </Card>
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <IconMessage className="size-12 text-muted-foreground/50 mb-4" />
+        <h3 className="text-lg font-semibold">Вакансия не найдена</h3>
+        <p className="text-sm text-muted-foreground mt-1">Возможно, вакансия была удалена или у вас нет к ней доступа.</p>
+        <Button variant="outline" className="mt-6" asChild>
+          <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}>На главную</Link>
+        </Button>
       </div>
     );
   }
 
   const { vacancy, responseStats, interviewLink } = data;
-  const isFreelancePlatform = ["kwork", "fl", "freelance"].includes(
-    vacancy.source,
+  const isFreelancePlatform = ["KWORK", "FL_RU", "FREELANCE_RU", "AVITO", "SUPERJOB"].includes(
+    vacancy.source.toUpperCase(),
   );
+  const source = SOURCE_CONFIG[vacancy.source.toUpperCase()] || {
+    label: vacancy.source,
+    color: "bg-gray-500/10 text-gray-600 border-gray-200",
+  };
+
+  const totalResponses = (responseStats.HH_API ?? 0) +
+    (responseStats.FREELANCE_MANUAL ?? 0) +
+    (responseStats.FREELANCE_LINK ?? 0);
 
   return (
-    <div className="space-y-6">
-      {/* Основная информация */}
-      <Card>
-        <div className="p-6 space-y-6">
-          {/* Заголовок */}
-          <div>
-            <h2 className="text-lg font-semibold mb-1">{vacancy.title}</h2>
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              <Badge variant="outline">{getPlatformName(vacancy.source)}</Badge>
-              {vacancy.isActive ? (
-                <Badge variant="default">Активна</Badge>
-              ) : (
-                <Badge variant="secondary">Неактивна</Badge>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
+      {/* ЛЕВАЯ КОЛОНКА */}
+      <div className="lg:col-span-2 space-y-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Badge variant="secondary" className="font-medium gap-1.5">
+              <div className={`size-1.5 rounded-full ${source?.color?.split(" ")[0]?.replace("/10", "") ?? "bg-gray-500"}`} />
+              {source.label}
+            </Badge>
+            <Badge variant={vacancy.isActive ? "default" : "secondary"}>
+              {vacancy.isActive ? "Активна" : "Неактивна"}
+            </Badge>
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">{vacancy.title}</h1>
+            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              {vacancy.region && (
+                <div className="flex items-center gap-1.5">
+                  <IconMapPin className="size-4" />
+                  <span>{vacancy.region}</span>
+                </div>
               )}
-              {vacancy.url && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 gap-1.5 px-2"
-                  asChild
-                >
-                  <Link
-                    href={vacancy.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Открыть вакансию на платформе"
-                  >
-                    <IconExternalLink className="size-3.5" aria-hidden="true" />
-                    <span className="text-xs">На платформе</span>
-                  </Link>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {/* Описание */}
-          {vacancy.description && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Описание</h3>
-                <div className="rounded-lg bg-muted/50 p-4">
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {vacancy.description}
-                  </p>
-                </div>
+              <div className="flex items-center gap-1.5">
+                <IconCalendar className="size-4" />
+                <span>
+                  {new Date(vacancy.createdAt).toLocaleDateString("ru-RU", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
+                </span>
               </div>
-            </>
-          )}
-
-          {/* Требования */}
-          {vacancy.requirements && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <h3 className="text-sm font-medium">Требования</h3>
-                <div className="rounded-lg bg-muted/50 p-4">
-                  <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">
-                    {String(vacancy.requirements)}
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* AI-интервью */}
-          {isFreelancePlatform && interviewLink && (
-            <>
-              <Separator />
-              <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <IconRobot
-                    className="size-4 text-primary"
-                    aria-hidden="true"
-                  />
-                  <h3 className="text-sm font-medium">AI-интервью</h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Добавьте эту ссылку в описание вакансии на фриланс-платформе
-                </p>
-
-                <div className="space-y-3">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="flex-1 rounded-lg bg-muted px-3 py-2.5 font-mono text-xs break-all min-h-[44px] flex items-center">
-                      {interviewLink.url}
-                    </div>
-                    <Button
-                      onClick={handleCopyLink}
-                      variant="outline"
-                      size="sm"
-                      className="min-h-[44px] shrink-0 gap-2"
-                      aria-label="Скопировать ссылку на интервью"
-                    >
-                      {copiedLink ? (
-                        <>
-                          <IconCheck className="size-4" aria-hidden="true" />
-                          Скопировано
-                        </>
-                      ) : (
-                        <>
-                          <IconCopy className="size-4" aria-hidden="true" />
-                          Копировать
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  <div className="space-y-2">
-                    <h4 className="text-sm font-medium">Шаблон для описания</h4>
-                    <p className="text-xs text-muted-foreground">
-                      Используйте этот текст при размещении вакансии
-                    </p>
-                    <div className="rounded-lg bg-muted/50 p-4 text-sm whitespace-pre-wrap leading-relaxed">
-                      {vacancy.description || vacancy.title}
-                      {"\n\n"}
-                      Для отклика пройдите короткое AI-интервью (10–15 минут):
-                      {"\n"}
-                      {interviewLink.url}
-                      {"\n\n"}
-                      После прохождения интервью мы свяжемся с вами при
-                      положительном решении.
-                    </div>
-                    <Button
-                      onClick={handleCopyTemplate}
-                      variant="outline"
-                      size="sm"
-                      className="min-h-[44px] gap-2"
-                      aria-label="Скопировать шаблон описания"
-                    >
-                      {copiedTemplate ? (
-                        <>
-                          <IconCheck className="size-4" aria-hidden="true" />
-                          Скопировано
-                        </>
-                      ) : (
-                        <>
-                          <IconCopy className="size-4" aria-hidden="true" />
-                          Копировать шаблон
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-      </Card>
-
-      {/* Статистика откликов */}
-      <Card>
-        <div className="p-6 space-y-6">
-          <div>
-            <h2 className="text-lg font-semibold mb-1">Статистика откликов</h2>
-            <p className="text-sm text-muted-foreground">
-              Анализ по источникам
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="rounded-lg border bg-card p-4 text-center">
-              <div
-                className="text-2xl font-bold text-foreground mb-1"
-                style={{ fontVariantNumeric: "tabular-nums" }}
-              >
-                {responseStats.HH_API ?? 0}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                HeadHunter API
-              </div>
-            </div>
-            <div className="rounded-lg border bg-card p-4 text-center">
-              <div
-                className="text-2xl font-bold text-foreground mb-1"
-                style={{ fontVariantNumeric: "tabular-nums" }}
-              >
-                {responseStats.FREELANCE_MANUAL ?? 0}
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Импорт вручную
-              </div>
-            </div>
-            <div className="rounded-lg border bg-card p-4 text-center">
-              <div
-                className="text-2xl font-bold text-foreground mb-1"
-                style={{ fontVariantNumeric: "tabular-nums" }}
-              >
-                {responseStats.FREELANCE_LINK ?? 0}
-              </div>
-              <div className="text-xs text-muted-foreground">По ссылке</div>
-            </div>
-          </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-center">
-            <div className="rounded-lg border-2 border-primary/20 bg-primary/5 p-6 text-center">
-              <div
-                className="text-3xl font-bold text-primary mb-1"
-                style={{ fontVariantNumeric: "tabular-nums" }}
-              >
-                {(responseStats.HH_API ?? 0) +
-                  (responseStats.FREELANCE_MANUAL ?? 0) +
-                  (responseStats.FREELANCE_LINK ?? 0)}
-              </div>
-              <div className="text-sm font-medium text-muted-foreground">
-                Всего откликов
+              <div className="flex items-center gap-1.5">
+                <IconEye className="size-4" />
+                <span>{vacancy.views ?? 0} просмотров</span>
               </div>
             </div>
           </div>
-
-          {isFreelancePlatform && (
-            <>
-              <Separator />
-              <Button
-                asChild
-                variant="default"
-                className="w-full min-h-[44px] gap-2"
-              >
-                <Link
-                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/import`}
-                >
-                  <IconUpload className="size-4" aria-hidden="true" />
-                  Импортировать отклики
-                </Link>
+          
+          {vacancy.url && (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="h-8 gap-2" asChild>
+                <a href={vacancy.url} target="_blank" rel="noopener noreferrer">
+                  <IconExternalLink className="size-3.5" />
+                  Перейти к оригиналу
+                </a>
               </Button>
-            </>
+            </div>
           )}
         </div>
-      </Card>
 
-      {/* Шортлист кандидатов */}
-      <Card>
-        <div className="p-6 space-y-6">
-          <div>
-            <h2 className="text-lg font-semibold mb-1">Шортлист кандидатов</h2>
-            <p className="text-sm text-muted-foreground">
-              Лучшие кандидаты по AI-анализу
-            </p>
-          </div>
-
-          {shortlistLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-sm text-muted-foreground">
-                Загрузка кандидатов…
+        <Card className="border-l-4 border-l-primary/50 shadow-sm overflow-hidden">
+          <CardHeader className="bg-muted/40 pb-4">
+            <CardTitle className="text-lg flex items-center gap-2">
+              <IconFileDescription className="size-5 text-primary" />
+              Описание вакансии
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-6">
+            {vacancy.description ? (
+              <div className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                {vacancy.description}
               </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-8 text-muted-foreground/50 gap-2">
+                <IconFileDescription className="size-8" />
+                <span className="text-sm">Описание отсутствует</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {vacancy.requirements && (
+          <VacancyRequirements requirements={vacancy.requirements} />
+        )}
+      </div>
+
+      {/* ПРАВАЯ КОЛОНКА */}
+      <div className="space-y-6">
+        {isFreelancePlatform && (
+          <Button asChild className="w-full h-10 gap-2">
+            <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/import`}>
+              <IconUpload className="size-4" />
+              Импорт откликов
+            </Link>
+          </Button>
+        )}
+
+        {interviewLink && (
+          <Card className="border-primary/20 bg-primary/2">
+            <CardHeader className="pb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <IconRobot className="size-4 text-primary" />
+                <CardTitle className="text-sm">AI-интервью</CardTitle>
+              </div>
+              <CardDescription className="text-xs">
+                Ссылка для кандидатов из внешних источников
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <div className="flex-1 rounded-md border bg-background px-3 py-1.5 font-mono text-[11px] truncate flex items-center shadow-sm">
+                  {interviewLink.url}
+                </div>
+                <Button
+                  onClick={handleCopyLink}
+                  variant="secondary"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                >
+                  {copiedLink ? (
+                    <IconCheck className="size-3.5 text-green-600" />
+                  ) : (
+                    <IconCopy className="size-3.5" />
+                  )}
+                </Button>
+              </div>
+              <Button
+                onClick={handleCopyTemplate}
+                variant="ghost"
+                size="sm"
+                className="w-full h-8 justify-between text-xs px-2"
+              >
+                <span className="flex items-center gap-2">
+                  <IconMessage className="size-3.5" />
+                  Копировать шаблон
+                </span>
+                {copiedTemplate ? <IconCheck className="size-3.5" /> : <IconArrowRight className="size-3.5" />}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <IconTrendingUp className="size-4 text-muted-foreground" />
+                Статистика
+              </CardTitle>
+              <Badge variant="outline" className="font-semibold tabular-nums">
+                {totalResponses}
+              </Badge>
             </div>
-          ) : !shortlist || shortlist.length === 0 ? (
-            <div className="rounded-lg border-2 border-dashed p-8 text-center">
-              <IconUsers
-                className="size-8 text-muted-foreground mx-auto mb-3"
-                aria-hidden="true"
-              />
-              <h3 className="font-medium text-sm mb-1">Шортлист пока пуст</h3>
-              <p className="text-sm text-muted-foreground">
-                Импортируйте отклики и проведите интервью для формирования
-                шортлиста
-              </p>
-            </div>
-          ) : (
-            <>
-              <div className="space-y-3">
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {[
+              { label: "HeadHunter API", value: responseStats.HH_API ?? 0 },
+              { label: "Импорт вручную", value: responseStats.FREELANCE_MANUAL ?? 0 },
+              { label: "Прямые ссылки", value: responseStats.FREELANCE_LINK ?? 0 }
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center justify-between text-xs">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className="font-medium tabular-nums">{item.value}</span>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <IconUsers className="size-4 text-muted-foreground" />
+              Шортлист
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {shortlistLoading ? (
+              <div className="p-4 flex justify-center">
+                <div className="size-4 border-b-2 border-primary animate-spin rounded-full" />
+              </div>
+            ) : shortlist.length === 0 ? (
+              <div className="p-6 text-center text-xs text-muted-foreground">
+                Шортлист пуст
+              </div>
+            ) : (
+              <div className="divide-y border-t">
                 {shortlist.slice(0, 5).map((candidate, index) => (
-                  <div
+                  <Link
                     key={candidate.responseId}
-                    className="flex items-center justify-between rounded-lg border bg-card p-4 gap-4 hover:bg-accent/50 transition-colors"
+                    href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/responses/${candidate.responseId}`}
+                    className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors group"
                   >
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-primary/10 text-primary font-semibold text-sm shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="size-7 rounded-full bg-muted flex items-center justify-center font-semibold text-[10px]">
                         {index + 1}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium truncate text-sm">
-                          {candidate.name}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          AI-оценка:{" "}
-                          <span
-                            className="font-semibold text-primary"
-                            style={{ fontVariantNumeric: "tabular-nums" }}
-                          >
-                            {candidate.overallScore}
-                          </span>
-                          <span>/100</span>
-                        </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold truncate group-hover:text-primary">{candidate.name}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">Score: {candidate.overallScore}</p>
                       </div>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      asChild
-                      className="shrink-0 min-h-[44px] gap-2"
-                    >
-                      <Link
-                        href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/responses/${candidate.responseId}`}
-                        aria-label={`Посмотреть профиль ${candidate.name}`}
-                      >
-                        <IconMessage className="size-4" aria-hidden="true" />
-                        <span className="hidden sm:inline">Подробнее</span>
-                      </Link>
-                    </Button>
-                  </div>
+                    <IconArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-0.5" />
+                  </Link>
                 ))}
               </div>
-
-              {shortlist.length > 5 && (
-                <>
-                  <Separator />
-                  <Button
-                    variant="outline"
-                    className="w-full min-h-[44px] gap-2"
-                    asChild
-                  >
-                    <Link
-                      href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/shortlist`}
-                    >
-                      <IconUsers className="size-4" aria-hidden="true" />
-                      Показать всех ({shortlist.length})
-                    </Link>
-                  </Button>
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </Card>
+            )}
+            {shortlist.length > 5 && (
+              <div className="p-2 border-t">
+                <Button variant="ghost" className="w-full text-xs h-8" asChild>
+                  <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/shortlist`}>
+                    Показать всех ({shortlist.length})
+                  </Link>
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

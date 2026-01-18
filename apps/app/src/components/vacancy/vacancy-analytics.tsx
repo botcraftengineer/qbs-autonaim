@@ -21,7 +21,7 @@ interface VacancyAnalyticsProps {
 interface VacancyRequirementsData {
   summary?: string;
   job_title?: string;
-  languages?: string[];
+  languages?: Array<string | { language: string; level: string }>;
   tech_stack?: string[];
   location_type?: string;
   experience_years?: {
@@ -330,11 +330,14 @@ export function VacancyRequirements({
         <div className="rounded-lg border bg-card/50 p-4 space-y-3">
           <h3 className="text-lg font-semibold text-primary">Языки</h3>
           <div className="flex flex-wrap gap-2">
-            {data.languages.map((lang) => (
-              <Badge key={lang} variant="outline">
-                {lang}
-              </Badge>
-            ))}
+            {data.languages.map((lang, idx) => {
+              const label = typeof lang === "string" ? lang : `${lang.language}${lang.level ? ` (${lang.level})` : ""}`;
+              return (
+                <Badge key={idx} variant="outline">
+                  {label}
+                </Badge>
+              );
+            })}
           </div>
         </div>
       )}
