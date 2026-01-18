@@ -49,9 +49,6 @@
     "use-debounce": "^10.1.0",
     "zod": "4.3.5"
   },
-  "optionalDependencies": {
-    "sharp": "^0.34.5"
-  },
   "devDependencies": {
     "@qbs-autonaim/tailwind-config": "workspace:*",
     "@qbs-autonaim/tsconfig": "workspace:*",
