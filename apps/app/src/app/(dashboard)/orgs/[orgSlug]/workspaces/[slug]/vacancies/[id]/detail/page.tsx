@@ -42,51 +42,45 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
 
   if (isLoading) {
     return (
-      <>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <div className="flex flex-col gap-3 py-4 px-4 md:px-6 lg:px-8 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-7 w-[300px]" />
-            </div>
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-9 w-[120px]" />
-              <Skeleton className="h-9 w-[100px]" />
-            </div>
+      <div className="flex flex-1 flex-col">
+        <div className="flex flex-col gap-3 py-4 px-4 md:px-6 lg:px-8 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-[300px]" />
           </div>
-          <div className="flex flex-1 flex-col px-4 py-6 lg:px-6">
-            <div className="space-y-6">
-              <Skeleton className="h-[200px] w-full rounded-lg" />
-              <Skeleton className="h-[400px] w-full rounded-lg" />
-            </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-9 w-[120px]" />
+            <Skeleton className="h-9 w-[100px]" />
           </div>
         </div>
-      </>
+        <div className="flex flex-1 flex-col px-4 py-6 lg:px-6">
+          <div className="space-y-6">
+            <Skeleton className="h-[200px] w-full rounded-lg" />
+            <Skeleton className="h-[400px] w-full rounded-lg" />
+          </div>
+        </div>
+      </div>
     );
   }
 
   if (!vacancy) {
     return (
-      <>
-        <SiteHeader />
-        <div className="flex flex-1 flex-col">
-          <PageHeader
-            title="Вакансия не найдена"
-            description="Запрошенная вакансия не существует или была удалена"
-            docsUrl="https://docs.hh.qbs.ru/vacancies"
-          >
-            <Button variant="outline" asChild>
-              <Link
-                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
-                aria-label="Вернуться к списку вакансий"
-              >
-                <IconArrowLeft className="size-4" aria-hidden="true" />К списку
-                вакансий
-              </Link>
-            </Button>
-          </PageHeader>
-        </div>
-      </>
+      <div className="flex flex-1 flex-col">
+        <PageHeader
+          title="Вакансия не найдена"
+          description="Запрошенная вакансия не существует или была удалена"
+          docsUrl="https://docs.hh.qbs.ru/vacancies"
+        >
+          <Button variant="outline" asChild>
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+              aria-label="Вернуться к списку вакансий"
+            >
+              <IconArrowLeft className="size-4" aria-hidden="true" />К списку
+              вакансий
+            </Link>
+          </Button>
+        </PageHeader>
+      </div>
     );
   }
 
@@ -108,109 +102,103 @@ export default function VacancyDetailPage({ params }: VacancyDetailPageProps) {
                   : vacancy.source;
 
   return (
-    <>
-      <SiteHeader />
-      <div className="flex flex-1 flex-col">
-        <PageHeader
-          title={vacancy.title}
-          description={`Вакансия на платформе ${sourceLabel}`}
-          docsUrl="https://docs.hh.qbs.ru/vacancies"
-        >
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link
-                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
-                aria-label="Вернуться к списку вакансий"
-              >
-                <IconArrowLeft className="size-4" aria-hidden="true" />К списку
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link
-                href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/edit`}
-                aria-label="Редактировать вакансию"
-              >
-                <IconEdit className="size-4" aria-hidden="true" />
-                Редактировать
-              </Link>
-            </Button>
-          </div>
-        </PageHeader>
+    <div className="flex flex-1 flex-col">
+      <PageHeader
+        title={vacancy.title}
+        description={`Вакансия на платформе ${sourceLabel}`}
+        docsUrl="https://docs.hh.qbs.ru/vacancies"
+      >
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}
+              aria-label="Вернуться к списку вакансий"
+            >
+              <IconArrowLeft className="size-4" aria-hidden="true" />К списку
+            </Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link
+              href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies/${id}/edit`}
+              aria-label="Редактировать вакансию"
+            >
+              <IconEdit className="size-4" aria-hidden="true" />
+              Редактировать
+            </Link>
+          </Button>
+        </div>
+      </PageHeader>
 
-        <div className="flex flex-1 flex-col px-4 py-6 lg:px-6">
-          <div className="space-y-6">
-            {analytics && (
-              <VacancyAnalytics
-                totalResponses={analytics.totalResponses}
-                processedResponses={analytics.processedResponses}
-                highScoreResponses={analytics.highScoreResponses}
-                topScoreResponses={analytics.topScoreResponses}
-                avgScore={analytics.avgScore}
-              />
-            )}
+      <div className="flex flex-1 flex-col px-4 py-6 lg:px-6">
+        <div className="space-y-6">
+          {analytics && (
+            <VacancyAnalytics
+              totalResponses={analytics.totalResponses}
+              processedResponses={analytics.processedResponses}
+              highScoreResponses={analytics.highScoreResponses}
+              topScoreResponses={analytics.topScoreResponses}
+              avgScore={analytics.avgScore}
+            />
+          )}
 
-            <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline">{sourceLabel}</Badge>
-                    {vacancy.isActive ? (
-                      <Badge variant="default">Активна</Badge>
-                    ) : (
-                      <Badge variant="secondary">Неактивна</Badge>
-                    )}
-                    {vacancy.region && (
-                      <Badge variant="outline">{vacancy.region}</Badge>
-                    )}
-                  </div>
-                  {vacancy.url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a
-                        href={vacancy.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Открыть вакансию на платформе"
-                      >
-                        <IconExternalLink
-                          className="size-4"
-                          aria-hidden="true"
-                        />
-                        Открыть на платформе
-                      </a>
-                    </Button>
+          <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">{sourceLabel}</Badge>
+                  {vacancy.isActive ? (
+                    <Badge variant="default">Активна</Badge>
+                  ) : (
+                    <Badge variant="secondary">Неактивна</Badge>
+                  )}
+                  {vacancy.region && (
+                    <Badge variant="outline">{vacancy.region}</Badge>
                   )}
                 </div>
-                <UpdateVacancyButton vacancyId={vacancy.id} />
+                {vacancy.url && (
+                  <Button variant="outline" size="sm" asChild>
+                    <a
+                      href={vacancy.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Открыть вакансию на платформе"
+                    >
+                      <IconExternalLink className="size-4" aria-hidden="true" />
+                      Открыть на платформе
+                    </a>
+                  </Button>
+                )}
               </div>
-
-              <VacancyStats
-                views={vacancy.views}
-                responses={vacancy.responses}
-                newResponses={vacancy.newResponses}
-                resumesInProgress={vacancy.resumesInProgress}
-              />
-
-              {vacancy.description && (
-                <div className="space-y-3 pt-4 border-t">
-                  <h2 className="text-lg font-semibold">Описание вакансии</h2>
-                  <div
-                    className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-3 [&_p]:leading-relaxed"
-                    dangerouslySetInnerHTML={{
-                      __html: vacancy.description,
-                    }}
-                  />
-                </div>
-              )}
+              <UpdateVacancyButton vacancyId={vacancy.id} />
             </div>
 
-            {vacancy.requirements && (
-              <VacancyRequirements
-                requirements={vacancy.requirements as unknown}
-              />
+            <VacancyStats
+              views={vacancy.views}
+              responses={vacancy.responses}
+              newResponses={vacancy.newResponses}
+              resumesInProgress={vacancy.resumesInProgress}
+            />
+
+            {vacancy.description && (
+              <div className="space-y-3 pt-4 border-t">
+                <h2 className="text-lg font-semibold">Описание вакансии</h2>
+                <div
+                  className="prose prose-sm max-w-none dark:prose-invert text-sm leading-relaxed text-muted-foreground [&_p]:mb-3 [&_p]:leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html: vacancy.description,
+                  }}
+                />
+              </div>
             )}
           </div>
+
+          {vacancy.requirements && (
+            <VacancyRequirements
+              requirements={vacancy.requirements as unknown}
+            />
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 }

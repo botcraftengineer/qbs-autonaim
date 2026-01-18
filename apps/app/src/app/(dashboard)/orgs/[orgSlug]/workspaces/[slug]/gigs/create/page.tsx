@@ -507,54 +507,51 @@ export default function CreateGigPage({ params }: PageProps) {
   };
 
   return (
-    <>
-      <SiteHeader />
-      <div className="container mx-auto max-w-6xl py-6">
-        <PageHeader
-          title="Создание задания"
-          description="Создание нового разового задания"
-          docsUrl="https://docs.hh.qbs.ru/creating"
-          noPadding
+    <div className="container mx-auto max-w-6xl py-6">
+      <PageHeader
+        title="Создание задания"
+        description="Создание нового разового задания"
+        docsUrl="https://docs.hh.qbs.ru/creating"
+        noPadding
+      >
+        <Link
+          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] touch-action-manipulation"
         >
-          <Link
-            href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] touch-action-manipulation"
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+          Назад к заданиям
+        </Link>
+      </PageHeader>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <WizardChat
+          onComplete={handleWizardComplete}
+          isGenerating={isGenerating || isWorkspaceLoading}
+          onChatMessage={handleChatMessage}
+          quickReplies={quickReplies}
+          pendingAssistantMessage={pendingAssistantMessage}
+          onAssistantMessageConsumed={handleAssistantMessageConsumed}
+        />
+
+        <div className="space-y-6">
+          <GigPreview
+            draft={draft}
+            showForm={showForm}
+            isCreating={isCreating}
+            onEdit={syncForm}
+            onCreate={handleCreate}
           >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Назад к заданиям
-          </Link>
-        </PageHeader>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <WizardChat
-            onComplete={handleWizardComplete}
-            isGenerating={isGenerating || isWorkspaceLoading}
-            onChatMessage={handleChatMessage}
-            quickReplies={quickReplies}
-            pendingAssistantMessage={pendingAssistantMessage}
-            onAssistantMessageConsumed={handleAssistantMessageConsumed}
-          />
-
-          <div className="space-y-6">
-            <GigPreview
-              draft={draft}
-              showForm={showForm}
+            <GigForm
+              form={form}
+              onSubmit={onSubmit}
+              onCancel={() => setShowForm(false)}
               isCreating={isCreating}
-              onEdit={syncForm}
-              onCreate={handleCreate}
-            >
-              <GigForm
-                form={form}
-                onSubmit={onSubmit}
-                onCancel={() => setShowForm(false)}
-                isCreating={isCreating}
-              />
-            </GigPreview>
+            />
+          </GigPreview>
 
-            <ProgressCard draft={draft} />
-          </div>
+          <ProgressCard draft={draft} />
         </div>
       </div>
-    </>
+    </div>
   );
 }

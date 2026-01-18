@@ -1,16 +1,73 @@
 "use client";
 
-import { Separator, SidebarTrigger } from "@qbs-autonaim/ui";
-import { Command, Search } from "lucide-react";
+import { paths } from "@qbs-autonaim/config";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Progress,
+  Separator,
+  SidebarTrigger,
+} from "@qbs-autonaim/ui";
+import {
+  BadgeCheck,
+  Bell,
+  ChevronRight,
+  Command,
+  CreditCard,
+  LogOut,
+  Search,
+  Sparkles,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { authClient } from "~/auth/client";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 
 interface SiteHeaderProps {
+  user: {
+    name: string;
+    email: string;
+    avatar: string;
+  };
   children?: React.ReactNode;
 }
 
-export function SiteHeader({ children }: SiteHeaderProps) {
+export function SiteHeader({ user: initialUser, children }: SiteHeaderProps) {
+  const router = useRouter();
+  const { data: session } = authClient.useSession();
+
+  const user = session?.user
+    ? {
+        name: session.user.name,
+        email: session.user.email,
+        avatar: session.user.image || "",
+      }
+    : initialUser;
+
+  const initials = getInitials(user.name);
+  const avatarUrl = getAvatarUrl(user.avatar, user.name);
+
+  const handleLogout = async () => {
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          router.push(paths.auth.signin);
+        },
+      },
+    });
+  };
+
   return (
     <header className="bg-background/40 sticky top-0 z-50 flex h-(--header-height) shrink-0 items-center gap-2 border-b backdrop-blur-md transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height) md:rounded-tl-xl md:rounded-tr-xl">
-      <div className="flex w-full items-center gap-1 px-4 py-3 lg:gap-2 lg:px-6 lg:py-4">
+      <div className="flex w-full items-center gap-1 px-4 lg:gap-2">
         <SidebarTrigger />
         <Separator
           orientation="vertical"
@@ -33,10 +90,115 @@ export function SiteHeader({ children }: SiteHeaderProps) {
               <span>k</span>
             </div>
           </div>
+          <div className="block lg:hidden">
+            <Button variant="ghost" size="icon" className="size-9">
+              <Search aria-hidden="true" />
+            </Button>
+          </div>
         </div>
-        {children && (
-          <div className="ml-auto flex items-center gap-2">{children}</div>
-        )}
+        <div className="ml-auto flex items-center gap-2">
+          {children}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="size-8 relative">
+                <Bell aria-hidden="true" />
+                <span className="bg-destructive absolute end-0.5 top-0.5 block size-1.5 shrink-0 rounded-full" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Уведомления</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem>Нет новых уведомлений</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Separator
+            orientation="vertical"
+            className="mx-2 data-[orientation=vertical]:h-4"
+          />
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Avatar className="size-8 cursor-pointer">
+                <AvatarImage src={avatarUrl} alt={user.name} />
+                <AvatarFallback>{initials}</AvatarFallback>
+              </Avatar>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-60">
+              <DropdownMenuLabel className="p-0">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar className="size-8">
+                    <AvatarImage src={avatarUrl} alt={user.name} />
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-semibold">{user.name}</span>
+                    <span className="text-muted-foreground truncate text-xs">
+                      {user.email}
+                    </span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <a
+                    href="#"
+                    className="flex cursor-default items-center gap-2"
+                  >
+                    <Sparkles className="size-4" aria-hidden="true" />
+                    Обновить до Pro
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuGroup>
+                <DropdownMenuItem asChild>
+                  <a
+                    href={paths.account.settings}
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <BadgeCheck className="size-4" aria-hidden="true" />
+                    Профиль
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <a
+                    href={paths.account.settings}
+                    className="flex cursor-pointer items-center gap-2"
+                  >
+                    <CreditCard className="size-4" aria-hidden="true" />
+                    Настройки
+                  </a>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Bell className="size-4" aria-hidden="true" />
+                  Уведомления
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="size-4" aria-hidden="true" />
+                Выйти
+              </DropdownMenuItem>
+              <div className="bg-muted mt-1.5 rounded-md border">
+                <div className="space-y-3 p-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">Кредиты</h4>
+                    <div className="text-muted-foreground flex cursor-pointer items-center text-sm">
+                      <span>5 осталось</span>
+                      <ChevronRight
+                        className="ml-1 h-4 w-4"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  </div>
+                  <Progress value={40} className="h-2" />
+                  <div className="text-muted-foreground flex items-center text-sm">
+                    Ежедневные кредиты используются первыми
+                  </div>
+                </div>
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );

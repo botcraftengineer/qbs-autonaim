@@ -2,7 +2,6 @@ import { paths } from "@qbs-autonaim/config";
 import { db, OrganizationRepository } from "@qbs-autonaim/db";
 import { redirect } from "next/navigation";
 import { getSession } from "~/auth/server";
-import { SiteHeader } from "~/components/layout";
 
 const organizationRepository = new OrganizationRepository(db);
 
@@ -35,15 +34,12 @@ export default async function OrganizationMembersPage({
   }
 
   return (
-    <>
-      <SiteHeader />
-      <div className="container mx-auto py-8">
-        <OrganizationMembersClient
-          organizationId={organization.id}
-          currentUserId={session.user.id}
-          currentUserRole={access.role}
-        />
-      </div>
-    </>
+    <div className="container mx-auto py-8">
+      <OrganizationMembersClient
+        organizationId={organization.id}
+        currentUserId={session.user.id}
+        currentUserRole={access.role}
+      />
+    </div>
   );
 }

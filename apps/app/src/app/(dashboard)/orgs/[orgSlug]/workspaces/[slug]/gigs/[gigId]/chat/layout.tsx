@@ -19,24 +19,21 @@ export default function GigChatLayout({
   const isChatSelected = Boolean(chatSegmentMatch?.[1]);
 
   return (
-    <>
-      <SiteHeader />
-      <div className="flex h-[calc(100vh-4rem)]">
-        <div
-          className={`${
-            isChatSelected ? "hidden md:block" : "block"
-          } w-full md:w-80 border-r h-full overflow-hidden`}
-        >
-          <GigChatList gigId={gigId} />
-        </div>
-        <div
-          className={`${
-            isChatSelected ? "flex" : "hidden md:flex"
-          } flex-1 h-full overflow-hidden`}
-        >
-          {children}
-        </div>
+    <div className="flex h-[calc(100vh-4rem)]">
+      <div
+        className={`${
+          isChatSelected ? "hidden md:block" : "block"
+        } w-full md:w-80 border-r h-full overflow-hidden`}
+      >
+        <GigChatList gigId={gigId} />
       </div>
-    </>
+      <div
+        className={`${
+          isChatSelected ? "flex" : "hidden md:flex"
+        } flex-1 h-full overflow-hidden`}
+      >
+        {children}
+      </div>
+    </div>
   );
 }

@@ -56,226 +56,223 @@ export default async function OrganizationUsagePage({
   const stats = await getOrganizationStats(organization.id);
 
   return (
-    <>
-      <SiteHeader />
-      <div className="space-y-6 p-6">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-bold tracking-tight">Использование</h1>
-          <p className="text-muted-foreground">
-            Статистика использования ресурсов организации за текущий месяц
-          </p>
-        </div>
+    <div className="space-y-6 p-6">
+      <div className="space-y-1">
+        <h1 className="text-2xl font-bold tracking-tight">Использование</h1>
+        <p className="text-muted-foreground">
+          Статистика использования ресурсов организации за текущий месяц
+        </p>
+      </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <MetricCard
-            title="Воркспейсы"
-            value={stats.workspaces.current}
-            limit={stats.workspaces.limit}
-            icon={IconBriefcase}
-            description="активных воркспейсов"
-          />
-          <MetricCard
-            title="Участники"
-            value={stats.members.current}
-            limit={stats.members.limit}
-            icon={IconUsers}
-            description="участников команды"
-          />
-          <MetricCard
-            title="Диалоги"
-            value={stats.conversations.current}
-            limit={stats.conversations.limit}
-            icon={IconMessageCircle}
-            description="активных диалогов"
-          />
-          <MetricCard
-            title="AI запросы"
-            value={stats.aiRequests.current}
-            limit={stats.aiRequests.limit}
-            icon={IconSparkles}
-            description="запросов в месяц"
-          />
-        </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <MetricCard
+          title="Воркспейсы"
+          value={stats.workspaces.current}
+          limit={stats.workspaces.limit}
+          icon={IconBriefcase}
+          description="активных воркспейсов"
+        />
+        <MetricCard
+          title="Участники"
+          value={stats.members.current}
+          limit={stats.members.limit}
+          icon={IconUsers}
+          description="участников команды"
+        />
+        <MetricCard
+          title="Диалоги"
+          value={stats.conversations.current}
+          limit={stats.conversations.limit}
+          icon={IconMessageCircle}
+          description="активных диалогов"
+        />
+        <MetricCard
+          title="AI запросы"
+          value={stats.aiRequests.current}
+          limit={stats.aiRequests.limit}
+          icon={IconSparkles}
+          description="запросов в месяц"
+        />
+      </div>
 
-        <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="overview">Обзор</TabsTrigger>
-            <TabsTrigger value="workspaces">Воркспейсы</TabsTrigger>
-            <TabsTrigger value="activity">Активность</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Обзор</TabsTrigger>
+          <TabsTrigger value="workspaces">Воркспейсы</TabsTrigger>
+          <TabsTrigger value="activity">Активность</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="overview" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Использование ресурсов</CardTitle>
-                <CardDescription>
-                  Детальная информация по каждому типу ресурсов
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <ResourceItem
-                  label="Воркспейсы"
-                  current={stats.workspaces.current}
-                  limit={stats.workspaces.limit}
-                  description="Количество созданных воркспейсов"
-                />
-                <ResourceItem
-                  label="Участники команды"
-                  current={stats.members.current}
-                  limit={stats.members.limit}
-                  description="Пользователи с доступом к организации"
-                />
-                <ResourceItem
-                  label="Активные диалоги"
-                  current={stats.conversations.current}
-                  limit={stats.conversations.limit}
-                  description="Диалоги со статусом ACTIVE"
-                />
-                <ResourceItem
-                  label="AI запросы"
-                  current={stats.aiRequests.current}
-                  limit={stats.aiRequests.limit}
-                  description="Запросы к AI моделям за месяц"
-                />
-                <ResourceItem
-                  label="Интеграции"
-                  current={stats.integrations.current}
-                  limit={stats.integrations.limit}
-                  description="Подключенные интеграции"
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="workspaces" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Воркспейсы</CardTitle>
-                <CardDescription>
-                  Список всех воркспейсов организации
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {stats.workspacesList.map((ws) => (
-                    <div
-                      key={ws.id}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        {ws.logo ? (
-                          <div
-                            className="size-8 rounded bg-cover bg-center"
-                            style={{ backgroundImage: `url(${ws.logo})` }}
-                            role="img"
-                            aria-label={ws.name}
-                          />
-                        ) : (
-                          <div className="flex size-8 items-center justify-center rounded bg-muted">
-                            <IconBriefcase className="size-4" />
-                          </div>
-                        )}
-                        <div>
-                          <p className="text-sm font-medium">{ws.name}</p>
-                          <p className="text-muted-foreground text-xs">
-                            {ws.vacanciesCount} вакансий •{" "}
-                            {ws.conversationsCount} диалогов
-                          </p>
-                        </div>
-                      </div>
-                      <Badge variant="secondary">{ws.status}</Badge>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="activity" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Активность за последние 7 дней</CardTitle>
-                <CardDescription>
-                  Динамика использования основных функций
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {stats.dailyActivity.map((day) => (
-                    <div
-                      key={day.date}
-                      className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
-                    >
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">{day.date}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {day.conversations} новых диалогов
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-6 text-right">
-                        <div>
-                          <p className="text-sm font-medium tabular-nums">
-                            {day.aiRequests}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            AI запросов
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium tabular-nums">
-                            {day.responses}
-                          </p>
-                          <p className="text-muted-foreground text-xs">
-                            откликов
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-
-        {stats.warnings.length > 0 && (
+        <TabsContent value="overview" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Уведомления</CardTitle>
+              <CardTitle>Использование ресурсов</CardTitle>
               <CardDescription>
-                Важная информация об использовании ресурсов
+                Детальная информация по каждому типу ресурсов
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {stats.warnings.map((warning) => (
-                <div
-                  key={warning.title}
-                  className={`flex items-start gap-3 rounded-lg border p-3 ${
-                    warning.type === "warning"
-                      ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950"
-                      : "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950"
-                  }`}
-                >
-                  <warning.icon
-                    className={`mt-0.5 size-4 ${
-                      warning.type === "warning"
-                        ? "text-yellow-600 dark:text-yellow-500"
-                        : "text-blue-600 dark:text-blue-500"
-                    }`}
-                  />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{warning.title}</p>
-                    <p className="text-muted-foreground text-xs">
-                      {warning.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
+            <CardContent className="space-y-6">
+              <ResourceItem
+                label="Воркспейсы"
+                current={stats.workspaces.current}
+                limit={stats.workspaces.limit}
+                description="Количество созданных воркспейсов"
+              />
+              <ResourceItem
+                label="Участники команды"
+                current={stats.members.current}
+                limit={stats.members.limit}
+                description="Пользователи с доступом к организации"
+              />
+              <ResourceItem
+                label="Активные диалоги"
+                current={stats.conversations.current}
+                limit={stats.conversations.limit}
+                description="Диалоги со статусом ACTIVE"
+              />
+              <ResourceItem
+                label="AI запросы"
+                current={stats.aiRequests.current}
+                limit={stats.aiRequests.limit}
+                description="Запросы к AI моделям за месяц"
+              />
+              <ResourceItem
+                label="Интеграции"
+                current={stats.integrations.current}
+                limit={stats.integrations.limit}
+                description="Подключенные интеграции"
+              />
             </CardContent>
           </Card>
-        )}
-      </div>
-    </>
+        </TabsContent>
+
+        <TabsContent value="workspaces" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Воркспейсы</CardTitle>
+              <CardDescription>
+                Список всех воркспейсов организации
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {stats.workspacesList.map((ws) => (
+                  <div
+                    key={ws.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      {ws.logo ? (
+                        <div
+                          className="size-8 rounded bg-cover bg-center"
+                          style={{ backgroundImage: `url(${ws.logo})` }}
+                          role="img"
+                          aria-label={ws.name}
+                        />
+                      ) : (
+                        <div className="flex size-8 items-center justify-center rounded bg-muted">
+                          <IconBriefcase className="size-4" />
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-medium">{ws.name}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {ws.vacanciesCount} вакансий • {ws.conversationsCount}{" "}
+                          диалогов
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant="secondary">{ws.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="activity" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Активность за последние 7 дней</CardTitle>
+              <CardDescription>
+                Динамика использования основных функций
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {stats.dailyActivity.map((day) => (
+                  <div
+                    key={day.date}
+                    className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{day.date}</p>
+                      <p className="text-muted-foreground text-xs">
+                        {day.conversations} новых диалогов
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-6 text-right">
+                      <div>
+                        <p className="text-sm font-medium tabular-nums">
+                          {day.aiRequests}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          AI запросов
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium tabular-nums">
+                          {day.responses}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          откликов
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {stats.warnings.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Уведомления</CardTitle>
+            <CardDescription>
+              Важная информация об использовании ресурсов
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {stats.warnings.map((warning) => (
+              <div
+                key={warning.title}
+                className={`flex items-start gap-3 rounded-lg border p-3 ${
+                  warning.type === "warning"
+                    ? "border-yellow-200 bg-yellow-50 dark:border-yellow-900 dark:bg-yellow-950"
+                    : "border-blue-200 bg-blue-50 dark:border-blue-900 dark:bg-blue-950"
+                }`}
+              >
+                <warning.icon
+                  className={`mt-0.5 size-4 ${
+                    warning.type === "warning"
+                      ? "text-yellow-600 dark:text-yellow-500"
+                      : "text-blue-600 dark:text-blue-500"
+                  }`}
+                />
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{warning.title}</p>
+                  <p className="text-muted-foreground text-xs">
+                    {warning.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 }
 

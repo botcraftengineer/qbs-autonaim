@@ -34,28 +34,23 @@ export default async function OrganizationSettingsPage({
   }
 
   return (
-    <>
-      <SiteHeader />
-      <div className="flex-1 overflow-auto p-6">
-        <div className="mx-auto max-w-2xl pl-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Общие настройки
-            </h1>
-          </div>
-          <OrganizationGeneralForm
-            initialData={{
-              name: organization.name,
-              slug: organization.slug,
-              description: organization.description ?? undefined,
-              website: organization.website ?? undefined,
-              logo: organization.logo ?? undefined,
-            }}
-            organizationId={organization.id}
-            userRole={access.role}
-          />
+    <div className="flex-1 overflow-auto p-6">
+      <div className="mx-auto max-w-2xl pl-8">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">Общие настройки</h1>
         </div>
+        <OrganizationGeneralForm
+          initialData={{
+            name: organization.name,
+            slug: organization.slug,
+            description: organization.description ?? undefined,
+            website: organization.website ?? undefined,
+            logo: organization.logo ?? undefined,
+          }}
+          organizationId={organization.id}
+          userRole={access.role}
+        />
       </div>
-    </>
+    </div>
   );
 }

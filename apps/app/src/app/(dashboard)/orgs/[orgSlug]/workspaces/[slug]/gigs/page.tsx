@@ -10,7 +10,7 @@ import {
   GigsStats,
   useGigsFilters,
 } from "~/components/gig";
-import { PageHeader, SiteHeader } from "~/components/layout";
+import { PageHeader } from "~/components/layout";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useWorkspaceParams } from "~/hooks/use-workspace-params";
 import { useTRPC } from "~/trpc/react";
@@ -138,7 +138,6 @@ export default function GigsPage() {
 
   return (
     <>
-      <SiteHeader />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <PageHeader

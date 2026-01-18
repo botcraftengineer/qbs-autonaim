@@ -67,31 +67,28 @@ type FormValues = z.infer<typeof formSchema>;
 
 function EditGigSkeleton() {
   return (
-    <>
-      <SiteHeader />
-      <div className="container mx-auto max-w-4xl py-6">
-        <div className="mb-6">
-          <Skeleton className="h-4 w-32" />
-        </div>
-
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <Skeleton className="h-8 w-48" />
-              <Skeleton className="h-4 w-64" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Skeleton className="h-10 w-full" />
-              <Skeleton className="h-32 w-full" />
-              <div className="grid grid-cols-2 gap-4">
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+    <div className="container mx-auto max-w-4xl py-6">
+      <div className="mb-6">
+        <Skeleton className="h-4 w-32" />
       </div>
-    </>
+
+      <div className="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-64" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <div className="grid grid-cols-2 gap-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
 
@@ -222,285 +219,264 @@ export default function EditGigPage({ params }: PageProps) {
 
   if (isError || !gig) {
     return (
-      <>
-        <SiteHeader />
-        <div className="container mx-auto max-w-2xl py-12 px-4 sm:py-16 sm:px-6">
-          <Card>
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Задание не найдено</CardTitle>
-              <CardDescription>
-                Задание, которое вы пытаетесь редактировать, не существует или
-                было удалено
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4">
-              <Button
-                asChild
-                className="min-h-[44px] touch-action-manipulation"
-              >
-                <Link
-                  href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}
-                >
-                  <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
-                  Вернуться к заданиям
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </>
+      <div className="container mx-auto max-w-2xl py-12 px-4 sm:py-16 sm:px-6">
+        <Card>
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Задание не найдено</CardTitle>
+            <CardDescription>
+              Задание, которое вы пытаетесь редактировать, не существует или
+              было удалено
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center gap-4">
+            <Button asChild className="min-h-[44px] touch-action-manipulation">
+              <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs`}>
+                <ArrowLeft className="h-4 w-4 mr-2" aria-hidden="true" />
+                Вернуться к заданиям
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <>
-      <SiteHeader>
-        <Link
-          href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/gigs/${gigId}`}
-          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors min-h-[44px] touch-action-manipulation"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Назад к заданию
-        </Link>
-      </SiteHeader>
+    <div className="container mx-auto max-w-4xl py-6">
+      <PageHeader
+        title="Редактирование задания"
+        description="Редактирование существующего задания"
+        docsUrl="https://docs.hh.qbs.ru/editing"
+        noPadding
+      />
 
-      <div className="container mx-auto max-w-4xl py-6">
-        <PageHeader
-          title="Редактирование задания"
-          description="Редактирование существующего задания"
-          docsUrl="https://docs.hh.qbs.ru/editing"
-          noPadding
-        />
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Basic Information - Editable */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Основная информация</CardTitle>
+              <CardDescription>Название и описание задания</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Название задания
+                      <span
+                        className="text-destructive ml-1"
+                        aria-hidden="true"
+                      >
+                        *
+                      </span>
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Например: Разработка лендинга для стартапа"
+                        className="min-h-[44px] touch-action-manipulation"
+                        autoComplete="off"
+                        aria-required="true"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Краткое и понятное название задания (до 500 символов)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Basic Information - Editable */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Основная информация</CardTitle>
-                <CardDescription>Название и описание задания</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        Название задания
-                        <span
-                          className="text-destructive ml-1"
-                          aria-hidden="true"
-                        >
-                          *
-                        </span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Например: Разработка лендинга для стартапа"
-                          className="min-h-[44px] touch-action-manipulation"
-                          autoComplete="off"
-                          aria-required="true"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Краткое и понятное название задания (до 500 символов)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Описание задания</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Подробное описание задания, требований и ожиданий…"
+                        className="min-h-32 resize-y"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Детальное описание задания, что нужно сделать и какие
+                      требования к исполнителю
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Описание задания</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Подробное описание задания, требований и ожиданий…"
-                          className="min-h-32 resize-y"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Детальное описание задания, что нужно сделать и какие
-                        требования к исполнителю
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Тип
-                    </div>
-                    <p className="text-sm">
-                      {gigTypeOptions.find((opt) => opt.value === gig.type)
-                        ?.label || gig.type}
-                    </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Тип
                   </div>
-                  {gig.budgetMin && (
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        Мин. бюджет
-                      </div>
-                      <p className="text-sm font-variant-numeric-tabular">
-                        {gig.budgetMin}&nbsp;₽
-                      </p>
-                    </div>
-                  )}
-                  {gig.budgetMax && (
-                    <div>
-                      <div className="text-sm font-medium text-muted-foreground">
-                        Макс. бюджет
-                      </div>
-                      <p className="text-sm font-variant-numeric-tabular">
-                        {gig.budgetMax}&nbsp;₽
-                      </p>
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Статус
-                    </div>
-                    <p className="text-sm">
-                      {gig.isActive ? "Активное" : "Неактивное"}
-                    </p>
-                  </div>
+                  <p className="text-sm">
+                    {gigTypeOptions.find((opt) => opt.value === gig.type)
+                      ?.label || gig.type}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* AI Settings - Editable */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Настройки ИИ</CardTitle>
-                <CardDescription>
-                  Кастомные инструкции для автоматизации
-                  {botSettings && (
-                    <div className="mt-2 p-3 bg-muted rounded-md text-sm">
-                      <div className="font-medium mb-1">Настройки бота:</div>
-                      <div className="space-y-1 text-muted-foreground">
-                        {(botSettings.botName || botSettings.botRole) && (
-                          <div>
-                            Бот: {botSettings.botName || "Не указано"}
-                            {botSettings.botRole && ` (${botSettings.botRole})`}
-                          </div>
-                        )}
-                        <div>Компания: {botSettings.companyName}</div>
-                        {botSettings.companyDescription && (
-                          <div>Описание: {botSettings.companyDescription}</div>
-                        )}
-                      </div>
+                {gig.budgetMin && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Мин. бюджет
                     </div>
-                  )}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="customBotInstructions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Инструкции для бота</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Специальные инструкции для бота при работе с откликами..."
-                          className="min-h-24"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Эти инструкции будут использоваться ботом при обработке
-                        откликов.
-                        {botSettings &&
-                          (botSettings.botName || botSettings.botRole) && (
-                            <span className="block mt-1 text-xs">
-                              Бот будет представляться как{" "}
-                              {botSettings.botName || "бот"}
-                              {botSettings.botRole &&
-                                ` - ${botSettings.botRole}`}{" "}
-                              компании "{botSettings.companyName}".
-                            </span>
-                          )}
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <p className="text-sm font-variant-numeric-tabular">
+                      {gig.budgetMin}&nbsp;₽
+                    </p>
+                  </div>
+                )}
+                {gig.budgetMax && (
+                  <div>
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Макс. бюджет
+                    </div>
+                    <p className="text-sm font-variant-numeric-tabular">
+                      {gig.budgetMax}&nbsp;₽
+                    </p>
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm font-medium text-muted-foreground">
+                    Статус
+                  </div>
+                  <p className="text-sm">
+                    {gig.isActive ? "Активное" : "Неактивное"}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                <FormField
-                  control={form.control}
-                  name="customScreeningPrompt"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Промпт для скрининга</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Кастомный промпт для автоматического скрининга кандидатов..."
-                          className="min-h-24"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Используется для автоматической оценки откликов.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          {/* AI Settings - Editable */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Настройки ИИ</CardTitle>
+              <CardDescription>
+                Кастомные инструкции для автоматизации
+                {botSettings && (
+                  <div className="mt-2 p-3 bg-muted rounded-md text-sm">
+                    <div className="font-medium mb-1">Настройки бота:</div>
+                    <div className="space-y-1 text-muted-foreground">
+                      {(botSettings.botName || botSettings.botRole) && (
+                        <div>
+                          Бот: {botSettings.botName || "Не указано"}
+                          {botSettings.botRole && ` (${botSettings.botRole})`}
+                        </div>
+                      )}
+                      <div>Компания: {botSettings.companyName}</div>
+                      {botSettings.companyDescription && (
+                        <div>Описание: {botSettings.companyDescription}</div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="customBotInstructions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Инструкции для бота</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Специальные инструкции для бота при работе с откликами..."
+                        className="min-h-24"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Эти инструкции будут использоваться ботом при обработке
+                      откликов.
+                      {botSettings &&
+                        (botSettings.botName || botSettings.botRole) && (
+                          <span className="block mt-1 text-xs">
+                            Бот будет представляться как{" "}
+                            {botSettings.botName || "бот"}
+                            {botSettings.botRole && ` - ${botSettings.botRole}`}{" "}
+                            компании "{botSettings.companyName}".
+                          </span>
+                        )}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="customInterviewQuestions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Вопросы для интервью</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Список вопросов для интервью с кандидатами..."
-                          className="min-h-24"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        Вопросы, которые будут использоваться при интервью
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </CardContent>
-            </Card>
+              <FormField
+                control={form.control}
+                name="customScreeningPrompt"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Промпт для скрининга</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Кастомный промпт для автоматического скрининга кандидатов..."
+                        className="min-h-24"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Используется для автоматической оценки откликов.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Actions */}
-            <div className="flex items-center gap-4">
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="min-h-[44px] touch-action-manipulation"
-              >
-                <Save className="h-4 w-4 mr-2" aria-hidden="true" />
-                {isPending ? "Сохранение…" : "Сохранить изменения"}
-              </Button>
+              <FormField
+                control={form.control}
+                name="customInterviewQuestions"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Вопросы для интервью</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Список вопросов для интервью с кандидатами..."
+                        className="min-h-24"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Вопросы, которые будут использоваться при интервью
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                className="min-h-[44px] touch-action-manipulation"
-              >
-                Отмена
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </div>
-    </>
+          {/* Actions */}
+          <div className="flex items-center gap-4">
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="min-h-[44px] touch-action-manipulation"
+            >
+              <Save className="h-4 w-4 mr-2" aria-hidden="true" />
+              {isPending ? "Сохранение…" : "Сохранить изменения"}
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              className="min-h-[44px] touch-action-manipulation"
+            >
+              Отмена
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </div>
   );
 }
