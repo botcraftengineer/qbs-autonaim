@@ -59,7 +59,10 @@ interface VacancyTableRowProps {
 }
 
 const SOURCE_CONFIG: Record<string, { label: string; color: string }> = {
-  HH: { label: "HeadHunter", color: "bg-red-500/10 text-red-600 border-red-200" },
+  HH: {
+    label: "HeadHunter",
+    color: "bg-red-500/10 text-red-600 border-red-200",
+  },
   KWORK: {
     label: "Kwork",
     color: "bg-green-500/10 text-green-600 border-green-200",
@@ -172,7 +175,9 @@ export function VacancyTableRow({
         <div className="flex items-center gap-2">
           <div
             className={`size-2 rounded-full ${
-              vacancy.isActive ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]" : "bg-zinc-300"
+              vacancy.isActive
+                ? "bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)]"
+                : "bg-zinc-300"
             }`}
           />
           <span className="text-sm font-medium">
@@ -192,8 +197,8 @@ export function VacancyTableRow({
               }
             }}
           >
-            <PopoverAnchor asChild>
-              <DropdownMenu>
+            <DropdownMenu>
+              <PopoverAnchor asChild>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
@@ -204,49 +209,49 @@ export function VacancyTableRow({
                     <IconDots className="size-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuLabel>Действия</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
+              </PopoverAnchor>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link
+                    href={paths.workspace.vacancies(
+                      orgSlug,
+                      workspaceSlug,
+                      vacancy.id,
+                    )}
+                    className="cursor-pointer"
+                  >
+                    <IconBriefcase className="mr-2 size-4" />
+                    Открыть вакансию
+                  </Link>
+                </DropdownMenuItem>
+                {vacancy.platformUrl && (
                   <DropdownMenuItem asChild>
-                    <Link
-                      href={paths.workspace.vacancies(
-                        orgSlug,
-                        workspaceSlug,
-                        vacancy.id,
-                      )}
+                    <a
+                      href={vacancy.platformUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       className="cursor-pointer"
                     >
-                      <IconBriefcase className="mr-2 size-4" />
-                      Открыть вакансию
-                    </Link>
+                      <IconExternalLink className="mr-2 size-4" />
+                      На платформе
+                    </a>
                   </DropdownMenuItem>
-                  {vacancy.platformUrl && (
-                    <DropdownMenuItem asChild>
-                      <a
-                        href={vacancy.platformUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cursor-pointer"
-                      >
-                        <IconExternalLink className="mr-2 size-4" />
-                        На платформе
-                      </a>
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuItem disabled>
-                    <IconHistory className="mr-2 size-4" />
-                    История изменений
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="text-primary focus:text-primary"
-                    onSelect={() => onMergeOpen(vacancy.id)}
-                  >
-                    Сдружить с другой…
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </PopoverAnchor>
+                )}
+                <DropdownMenuItem disabled>
+                  <IconHistory className="mr-2 size-4" />
+                  История изменений
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  className="text-primary focus:text-primary"
+                  onSelect={() => onMergeOpen(vacancy.id)}
+                >
+                  Сдружить с другой…
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             <PopoverContent align="end" className="w-[320px]">
               <div className="space-y-3">

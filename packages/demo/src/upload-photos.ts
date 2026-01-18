@@ -1,9 +1,10 @@
 #!/usr/bin/env bun
 
-import { db } from "@qbs-autonaim/db";
-import { file } from "@qbs-autonaim/db/schema";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { db } from "@qbs-autonaim/db";
+import { file } from "@qbs-autonaim/db/schema";
+import axios from "axios";
 
 interface CandidatePhoto {
   candidateId: string;
@@ -32,14 +33,46 @@ async function uploadCandidatePhotos() {
       console.log(`📥 Загружаем фото для ${photo.candidateName}...`);
 
       try {
-        // Загружаем изображение
-        const response = await fetch(photo.photoUrl);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Загружаем изображение с retry логикой через axios
+        let imageData: Buffer | null = null;
+        let lastError: Error | null = null;
+        const maxRetries = 3;
+
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+          try {
+            const response = await axios.get(photo.photoUrl, {
+              responseType: "arraybuffer",
+              timeout: 10000, // 10 секунд таймаут
+              headers: {
+                "User-Agent": "Mozilla/5.0 (compatible; QBS-AutoNaim/1.0)",
+              },
+            });
+
+            imageData = Buffer.from(response.data);
+            break; // Успешно загрузили
+          } catch (error) {
+            lastError = error as Error;
+            const errorMessage =
+              axios.isAxiosError(error) && error.response
+                ? `HTTP ${error.response.status}: ${error.response.statusText}`
+                : (error as Error).message;
+
+            console.log(
+              `⚠️  Попытка ${attempt}/${maxRetries} не удалась: ${errorMessage}`,
+            );
+
+            if (attempt < maxRetries) {
+              // Экспоненциальная задержка: 1s, 2s, 4s
+              const delay = 2 ** (attempt - 1) * 1000;
+              console.log(`⏳ Ожидание ${delay}ms перед следующей попыткой...`);
+              await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+          }
         }
 
-        const imageBuffer = await response.arrayBuffer();
-        const imageData = new Uint8Array(imageBuffer);
+        if (!imageData) {
+          throw lastError || new Error("Failed to fetch image after retries");
+        }
 
         // Определяем тип файла из URL
         const fileExtension =

@@ -1,8 +1,9 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { db } from "@qbs-autonaim/db";
-import { vacancy } from "@qbs-autonaim/db/schema";
-import type { VacancyMapping } from "../types";
+import { vacancy, vacancyPublication } from "@qbs-autonaim/db/schema";
+
+import type { PublicationMapping, VacancyMapping } from "../types";
 
 interface InsertedVacancy {
   id: string;
@@ -12,6 +13,7 @@ interface InsertedVacancy {
 export async function loadVacancies(): Promise<{
   insertedVacancies: InsertedVacancy[];
   vacancyMapping: VacancyMapping;
+  publicationMapping: PublicationMapping;
 }> {
   console.log("\n📝 Загружаем вакансии...");
 
@@ -24,6 +26,34 @@ export async function loadVacancies(): Promise<{
     .insert(vacancy)
     .values(vacanciesData)
     .returning({ id: vacancy.id, title: vacancy.title });
+
+  const publicationMapping: PublicationMapping = {};
+
+  if (insertedVacancies.length > 0) {
+    const publications = insertedVacancies.map((v, index) => {
+      const sourceData = vacanciesData[index];
+      return {
+        vacancyId: v.id,
+        platform: sourceData.source as "HH" | "SUPERJOB" | "MANUAL",
+        externalId: sourceData.externalId,
+        url: sourceData.url,
+        isActive: true,
+      };
+    });
+
+    const insertedPublications = await db
+      .insert(vacancyPublication)
+      .values(publications)
+      .returning({ id: vacancyPublication.id, vacancyId: vacancyPublication.vacancyId });
+    console.log(`🔗 Создано ${publications.length} публикаций для вакансий`);
+
+    for (const pub of insertedPublications) {
+      if (pub.vacancyId) {
+        publicationMapping[pub.vacancyId] = pub.id;
+      }
+    }
+  }
+
 
   console.log("✅ Вакансии загружены:");
   for (const v of insertedVacancies) {
@@ -55,5 +85,5 @@ export async function loadVacancies(): Promise<{
       insertedVacancies[9]?.id || "";
   }
 
-  return { insertedVacancies, vacancyMapping };
+  return { insertedVacancies, vacancyMapping, publicationMapping };
 }

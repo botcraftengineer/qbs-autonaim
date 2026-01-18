@@ -18,8 +18,8 @@ export default function WorkspacePage({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="@container/main flex flex-1 flex-col">
-        <div className="flex flex-1 flex-col">
+      <div className="@container/main flex flex-1 flex-col gap-4">
+        <div className="flex flex-1 flex-col gap-4">
           {/* Статистика - на весь экран */}
           <DashboardStats />
 

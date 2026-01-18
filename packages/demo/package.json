@@ -9,7 +9,8 @@
     "upload-photos": "bun run --env-file ../../.env src/upload-photos.ts"
   },
   "dependencies": {
-    "@qbs-autonaim/db": "workspace:*"
+    "@qbs-autonaim/db": "workspace:*",
+    "axios": "^1.13.2"
   },
   "devDependencies": {
     "typescript": "5.9.3"

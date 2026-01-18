@@ -47,6 +47,43 @@
     }
   }
 
+  /* Анимация fade-in для empty state */
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out;
+  }
+
+  /* Анимация бесконечного скролла по вертикали */
+  @keyframes infinite-scroll-y {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(var(--scroll, -50%));
+    }
+  }
+
+  .animate-infinite-scroll-y {
+    animation: infinite-scroll-y 10s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in,
+    .animate-infinite-scroll-y {
+      animation: none;
+      opacity: 1;
+      transform: none;
+    }
+  }
+
   /* Resume styles - responsive and accessible */
   .resume {
     @apply space-y-4 leading-relaxed;

@@ -288,6 +288,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@qbs-autonaim/db": "workspace:*",
+        "axios": "^1.13.2",
       },
       "devDependencies": {
         "typescript": "5.9.3",
