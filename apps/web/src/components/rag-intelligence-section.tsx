@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Brain, Database, Search, FileText, Users, TrendingUp, Sparkles, Send, CheckCircle2 } from "lucide-react"
+import { Brain, Database, Search, FileText, Users, TrendingUp, Sparkles, Send, CheckCircle2, Play } from "lucide-react"
 import { Button } from "@qbs-autonaim/ui"
 
 const sampleQuestions = [
@@ -172,7 +172,41 @@ export function RAGIntelligenceSection() {
               className="relative"
             >
               <div className="absolute -inset-4 bg-gradient-to-br from-violet-500/10 via-transparent to-amber-500/10 blur-2xl rounded-3xl" />
-              <div className="relative rounded-2xl border border-border bg-card shadow-2xl overflow-hidden">
+              
+              {/* 
+                VIDEO PLACEHOLDER: AI-Аналитик отвечает на вопросы
+                Файл: /videos/qbs-ai-analyst-demo.mp4
+                Что записать:
+                - Реальный AI-аналитик отвечает на вопросы о кандидатах/аналитике (25-35 секунд)
+                - Показать: Пользователь задает вопрос → AI ищет в данных → Выдает точный ответ с источниками
+                - Примеры вопросов: "Сколько кандидатов на позицию X?", "Какая конверсия в офферы?", "Топ-3 кандидата"
+                - Акцент на скорости ответа и ссылках на источники данных
+                Длительность: 25-35 секунд
+                Разрешение: 1920x1080 (16:9)
+                Формат: MP4 (H.264)
+                Примечание: Показать разные типы вопросов и ответов с данными
+              */}
+              <div className="relative rounded-2xl border-2 border-dashed border-violet-400/30 bg-violet-500/5 overflow-hidden aspect-video flex items-center justify-center mb-4">
+                <div className="text-center space-y-4 p-8">
+                  <div className="h-20 w-20 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto">
+                    <Play className="h-10 w-10 text-violet-500" />
+                  </div>
+                  <div>
+                    <div className="text-lg font-semibold text-foreground mb-2">
+                      Видео: AI-Аналитик отвечает на вопросы
+                    </div>
+                    <div className="text-sm text-muted-foreground mb-1">
+                      qbs-ai-analyst-demo.mp4
+                    </div>
+                    <div className="text-xs text-muted-foreground/70">
+                      25-35 сек • 1920x1080 • MP4
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Fallback: Keep interactive chat demo */}
+              <div className="relative rounded-2xl border border-border bg-card shadow-2xl overflow-hidden opacity-50">
                 {/* Chat header */}
                 <div className="flex items-center justify-between px-6 py-4 bg-muted/50 border-b border-border">
                   <div className="flex items-center gap-3">

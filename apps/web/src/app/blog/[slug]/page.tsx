@@ -4,7 +4,7 @@ import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ArrowLeft, Twitter, Linkedin, LinkIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { Button } from "@qbs-autonaim/ui"
 
 // Mock data - in production this would come from a CMS or database
 const blogPosts: Record<
