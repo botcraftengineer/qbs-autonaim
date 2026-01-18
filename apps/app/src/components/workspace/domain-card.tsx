@@ -12,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -25,6 +24,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import { DeleteDomainDialog } from "./delete-domain-dialog";
 import { DnsInstructionsDialog } from "./dns-instructions-dialog";

@@ -7,9 +7,9 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  toast,
 } from "@qbs-autonaim/ui";
 import { Copy, Info } from "lucide-react";
+import { toast } from "sonner";
 
 interface DnsInstructionsDialogProps {
   domain: string;

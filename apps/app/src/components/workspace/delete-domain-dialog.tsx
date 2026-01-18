@@ -9,10 +9,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 
 interface DeleteDomainDialogProps {

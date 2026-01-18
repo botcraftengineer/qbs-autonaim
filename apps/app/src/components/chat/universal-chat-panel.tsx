@@ -7,11 +7,11 @@ import {
   SheetDescription,
   SheetHeader,
   SheetTitle,
-  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import { ChatInput } from "./chat-input";
 import { ChatMessageList } from "./chat-message-list";

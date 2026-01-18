@@ -2,17 +2,12 @@
 
 import { useInngestSubscription } from "@inngest/realtime/hooks";
 import { paths } from "@qbs-autonaim/config";
-import {
-  Button,
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  toast,
-} from "@qbs-autonaim/ui";
+import { Button, Sheet, SheetContent, SheetTrigger } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Info } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { fetchTelegramMessagesToken } from "~/actions/realtime";
 import { ChatError } from "~/components/chat/chat-error";
 import { ChatHeader } from "~/components/chat/chat-header";

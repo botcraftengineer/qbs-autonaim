@@ -1,10 +1,11 @@
 "use client";
 
-import { Button, toast } from "@qbs-autonaim/ui";
+import { Button } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { ChatInput, ChatMessageList, TypingIndicator } from "~/components/chat";
 import { useAIChatStream } from "~/hooks/use-ai-chat-stream";
 import { useWorkspace } from "~/hooks/use-workspace";

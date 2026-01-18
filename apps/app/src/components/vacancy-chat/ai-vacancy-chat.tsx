@@ -12,7 +12,6 @@ import {
   Label,
   ScrollArea,
   Textarea,
-  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -26,6 +25,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useTRPC } from "~/trpc/react";
 import { ChatMessage } from "./chat-message";
 import { DocumentPreview } from "./document-preview";

@@ -15,13 +15,13 @@ import {
   CardHeader,
   CardTitle,
   Separator,
-  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { GigInterviewSettings } from "~/components/gig/gig-interview-settings";
 import { GigInvitationTemplate } from "~/components/gig/gig-invitation-template";
 import { GigDetailActions } from "~/components/gig-detail/gig-detail-actions";

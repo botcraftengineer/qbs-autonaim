@@ -1,17 +1,11 @@
 "use client";
 
-import {
-  Button,
-  Card,
-  cn,
-  ScrollArea,
-  Textarea,
-  toast,
-} from "@qbs-autonaim/ui";
+import { Button, Card, cn, ScrollArea, Textarea } from "@qbs-autonaim/ui";
 import { useMutation } from "@tanstack/react-query";
 import { AlertCircle, Bot, FileText, Loader2, Send, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useVacancyChat, type VacancyDocument } from "~/hooks/use-vacancy-chat";
 import { useTRPC } from "~/trpc/react";
 

@@ -22,12 +22,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  toast,
 } from "@qbs-autonaim/ui";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { useDebouncedCallback } from "use-debounce";
 import { z } from "zod";
 import { useTRPC } from "~/trpc/react";
