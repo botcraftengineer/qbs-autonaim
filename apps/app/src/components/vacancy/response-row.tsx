@@ -95,15 +95,15 @@ export function ResponseRow({
                   </Tooltip>
                 </TooltipProvider>
               )}
+              {response.interviewSession && (
+                <ChatIndicator
+                  messageCount={response.interviewSession.messageCount}
+                  conversationId={response.interviewSession.id}
+                  orgSlug={orgSlug}
+                  workspaceSlug={workspaceSlug}
+                />
+              )}
             </div>
-            {response.interviewSession && (
-              <ChatIndicator
-                messageCount={response.interviewSession.messageCount}
-                conversationId={response.interviewSession.id}
-                orgSlug={orgSlug}
-                workspaceSlug={workspaceSlug}
-              />
-            )}
           </div>
         </div>
       </TableCell>

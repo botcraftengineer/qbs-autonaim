@@ -218,26 +218,7 @@ export function ResponseTable({
         onScreeningDialogClose={handleScreeningDialogClose}
       />
 
-      {total > 0 && (
-        <div className="flex items-center gap-6 px-4 py-2 bg-muted/30 rounded-full w-fit mb-2 border border-border/50">
-          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Статистика
-          </div>
-          <div className="flex gap-4">
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold">{total}</span>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium">Всего</span>
-            </div>
-            <div className="w-px h-3 bg-border/50" />
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-primary">{responses.length}</span>
-              <span className="text-[10px] text-muted-foreground uppercase font-medium">На странице</span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="rounded-md border bg-card shadow-sm">
+      <div className="rounded-md border bg-transparent">
         {selectedIds.size > 0 && (
           <BulkActionsBar
             selectedCount={selectedIds.size}

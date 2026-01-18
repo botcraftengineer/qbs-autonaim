@@ -43,6 +43,13 @@
       "when": 1768505993505,
       "tag": "0005_square_shocker",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1768755678661,
+      "tag": "0006_hesitant_misty_knight",
+      "breakpoints": true
     }
   ]
 }
