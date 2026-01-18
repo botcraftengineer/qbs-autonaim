@@ -3,7 +3,6 @@
 import {
   Badge,
   Card,
-  CardAction,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -120,9 +119,9 @@ export function VacancyStats({
 
   return (
     <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
-      {stats.map((stat, i) => (
+      {stats.map((stat) => (
         <Card
-          key={i}
+          key={stat.label}
           className="group relative overflow-hidden border-none bg-card shadow-sm transition-all hover:shadow-md"
         >
           <div

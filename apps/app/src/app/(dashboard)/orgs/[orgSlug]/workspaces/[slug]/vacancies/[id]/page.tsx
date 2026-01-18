@@ -8,12 +8,10 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-  Separator,
 } from "@qbs-autonaim/ui";
 import { VacancyRequirements } from "~/components/vacancy";
 import {
   IconArrowRight,
-  IconBriefcase,
   IconCalendar,
   IconCheck,
   IconCopy,
@@ -300,8 +298,8 @@ ${data.interviewLink.url}
               { label: "HeadHunter API", value: responseStats.HH_API ?? 0 },
               { label: "Импорт вручную", value: responseStats.FREELANCE_MANUAL ?? 0 },
               { label: "Прямые ссылки", value: responseStats.FREELANCE_LINK ?? 0 }
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center justify-between text-xs">
+            ].map((item) => (
+              <div key={item.label} className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground">{item.label}</span>
                 <span className="font-medium tabular-nums">{item.value}</span>
               </div>

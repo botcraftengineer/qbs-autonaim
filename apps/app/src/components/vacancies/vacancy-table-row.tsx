@@ -12,7 +12,6 @@ import {
   DropdownMenuTrigger,
   Popover,
   PopoverContent,
-  PopoverTrigger,
   Select,
   SelectContent,
   SelectItem,

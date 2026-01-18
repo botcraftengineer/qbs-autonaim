@@ -330,10 +330,10 @@ export function VacancyRequirements({
         <div className="rounded-lg border bg-card/50 p-4 space-y-3">
           <h3 className="text-lg font-semibold text-primary">Языки</h3>
           <div className="flex flex-wrap gap-2">
-            {data.languages.map((lang, idx) => {
+            {data.languages.map((lang) => {
               const label = typeof lang === "string" ? lang : `${lang.language}${lang.level ? ` (${lang.level})` : ""}`;
               return (
-                <Badge key={idx} variant="outline">
+                <Badge key={label} variant="outline">
                   {label}
                 </Badge>
               );
