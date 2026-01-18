@@ -22,7 +22,7 @@ import Link from "next/link";
 import React from "react";
 import { toast } from "sonner";
 import { ResponseDetailCard } from "~/components/response-detail";
-import type { ResponseDetail } from "~/components/response-detail/vacancy-response-detail-card";
+import type { ResponseDetail } from "~/components/response-detail/hooks/use-vacancy-response-flags";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
 

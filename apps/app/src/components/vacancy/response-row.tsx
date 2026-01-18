@@ -36,6 +36,7 @@ interface ResponseRowProps {
   accessToken: string | undefined;
   isSelected?: boolean;
   onSelect?: (id: string) => void;
+  vacancyId?: string;
 }
 
 export function ResponseRow({
@@ -45,6 +46,7 @@ export function ResponseRow({
   accessToken,
   isSelected = false,
   onSelect,
+  vacancyId,
 }: ResponseRowProps) {
   const photoUrl = useAvatarUrl(response.photoFileId);
   const candidateName = response.candidateName || "Кандидат";
@@ -74,12 +76,22 @@ export function ResponseRow({
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
               <Link
-                href={paths.workspace.responses(
-                  orgSlug,
-                  workspaceSlug,
-                  response.id,
-                )}
+                href={
+                  vacancyId
+                    ? paths.workspace.vacancyResponse(
+                        orgSlug,
+                        workspaceSlug,
+                        vacancyId,
+                        response.id,
+                      )
+                    : paths.workspace.responses(
+                        orgSlug,
+                        workspaceSlug,
+                        response.id,
+                      )
+                }
                 className="font-medium text-sm hover:underline truncate transition-colors"
+                prefetch={false}
               >
                 {response.candidateName || "Без имени"}
               </Link>

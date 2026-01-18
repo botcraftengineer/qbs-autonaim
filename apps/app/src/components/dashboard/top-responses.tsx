@@ -98,11 +98,20 @@ export function TopResponses({
           {topResponses.map((response, index) => (
             <Link
               key={response.id}
-              href={paths.workspace.responses(
-                orgSlug,
-                workspaceSlug,
-                response.id,
-              )}
+              href={
+                response.vacancy?.id
+                  ? paths.workspace.vacancyResponse(
+                      orgSlug,
+                      workspaceSlug,
+                      response.vacancy.id,
+                      response.id,
+                    )
+                  : paths.workspace.responses(
+                      orgSlug,
+                      workspaceSlug,
+                      response.id,
+                    )
+              }
               className="flex items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50"
             >
               <div className="relative">
