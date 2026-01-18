@@ -174,7 +174,7 @@ ${data.interviewLink.url}
         </p>
         <Button variant="outline" className="mt-6" asChild>
           <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}>
-            На главную
+            К списку вакансий
           </Link>
         </Button>
       </div>

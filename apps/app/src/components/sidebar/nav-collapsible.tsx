@@ -4,6 +4,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
+  cn,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -109,13 +110,15 @@ function NavCollapsibleItem({
       </SidebarMenuButton>
       {item.badge !== undefined && item.badge > 0 && (
         <SidebarMenuBadge
-          className={
-            item.badgeVariant === "destructive"
-              ? "bg-destructive text-white peer-data-[active=true]/menu-button:text-white peer-hover/menu-button:text-white"
-              : item.badgeVariant === "success"
-                ? "bg-green-500 text-white peer-data-[active=true]/menu-button:text-white peer-hover/menu-button:text-white"
-                : "bg-primary text-primary-foreground peer-data-[active=true]/menu-button:text-primary-foreground peer-hover/menu-button:text-primary-foreground"
-          }
+          className={cn(
+            "min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-all duration-200",
+            item.badgeVariant === "destructive" &&
+              "bg-red-500 text-white shadow-sm ring-1 ring-red-500/20 peer-hover/menu-button:bg-red-600 peer-hover/menu-button:shadow peer-data-[active=true]/menu-button:bg-red-600",
+            item.badgeVariant === "success" &&
+              "bg-green-500 text-white shadow-sm ring-1 ring-green-500/20 peer-hover/menu-button:bg-green-600 peer-hover/menu-button:shadow peer-data-[active=true]/menu-button:bg-green-600",
+            !item.badgeVariant &&
+              "bg-blue-500 text-white shadow-sm ring-1 ring-blue-500/20 peer-hover/menu-button:bg-blue-600 peer-hover/menu-button:shadow peer-data-[active=true]/menu-button:bg-blue-600",
+          )}
         >
           {item.badge > 99 ? "99+" : item.badge}
         </SidebarMenuBadge>

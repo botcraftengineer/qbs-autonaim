@@ -30,6 +30,27 @@ import {
 } from "@tabler/icons-react";
 import Link from "next/link";
 
+/**
+ * Валидирует и санитизирует URL, разрешая только http и https схемы
+ * @param url - URL для валидации
+ * @returns Безопасный URL или null если URL невалиден или использует запрещенную схему
+ */
+function sanitizeUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+
+  try {
+    const parsedUrl = new URL(url);
+    // Разрешаем только http и https схемы
+    if (parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:") {
+      return parsedUrl.href;
+    }
+    return null;
+  } catch {
+    // Невалидный URL
+    return null;
+  }
+}
+
 interface Vacancy {
   id: string;
   title: string;
@@ -107,6 +128,9 @@ export function VacancyTableRow({
     label: vacancy.source,
     color: "bg-gray-500/10 text-gray-600 border-gray-200",
   };
+
+  // Валидируем и санитизируем URL платформы
+  const safePlatformUrl = sanitizeUrl(vacancy.platformUrl);
 
   return (
     <TableRow className="group transition-colors hover:bg-muted/50">
@@ -226,10 +250,10 @@ export function VacancyTableRow({
                     Открыть вакансию
                   </Link>
                 </DropdownMenuItem>
-                {vacancy.platformUrl && (
+                {safePlatformUrl ? (
                   <DropdownMenuItem asChild>
                     <a
-                      href={vacancy.platformUrl}
+                      href={safePlatformUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="cursor-pointer"
@@ -238,7 +262,7 @@ export function VacancyTableRow({
                       На платформе
                     </a>
                   </DropdownMenuItem>
-                )}
+                ) : null}
                 <DropdownMenuItem disabled>
                   <IconHistory className="mr-2 size-4" />
                   История изменений
