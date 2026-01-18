@@ -11,7 +11,7 @@ export default async function createNextConfig(): Promise<NextConfig> {
   const config: NextConfig = {
     /** Enables hot reloading for local packages without a build step */
     output: "standalone",
-
+    transpilePackages: ["@qbs-autonaim/ui"],
     /** We already do linting and typechecking as separate tasks in CI */
     typescript: { ignoreBuildErrors: true },
   };
