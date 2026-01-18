@@ -23,27 +23,14 @@ import {
   ScreeningResultsCard,
 } from "~/components/response-detail";
 
-type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+type GigResponseDetail = NonNullable<RouterOutputs["gig"]["responses"]["get"]>;
+type VacancyResponseDetail = NonNullable<
+  RouterOutputs["vacancy"]["responses"]["get"]
+>;
 
 interface ResponseDetailCardProps {
-  response: GigResponseDetail & {
-    interviewScoring?: {
-      score: number;
-      detailedScore?: number;
-      analysis: string | null;
-    } | null;
-    conversation?: {
-      id: string;
-      status: string;
-      messages: Array<{
-        id: string;
-        sender: string;
-        content: string;
-        contentType: string;
-        voiceTranscription: string | null;
-        createdAt: Date;
-      }>;
-    } | null;
+  response: (GigResponseDetail | VacancyResponseDetail) & {
+    globalCandidate?: null;
   };
   onAccept?: () => void;
   onReject?: () => void;
@@ -51,6 +38,60 @@ interface ResponseDetailCardProps {
   onEvaluate?: () => void;
   isProcessing?: boolean;
   isPolling?: boolean;
+}
+
+// Type guard для проверки типа отклика
+function isVacancyResponse(
+  response: GigResponseDetail | VacancyResponseDetail,
+): response is VacancyResponseDetail {
+  return "salaryExpectationsAmount" in response;
+}
+
+// Type guard для проверки структуры interviewSession
+function hasValidInterviewSession(
+  session: unknown,
+): session is {
+  id: string;
+  messages: Array<{
+    id: string;
+    sender: string;
+    content: string;
+    contentType: string;
+    voiceTranscription: string | null;
+    createdAt: Date;
+  }>;
+} {
+  if (!session || typeof session !== "object") return false;
+  const s = session as Record<string, unknown>;
+  return (
+    typeof s.id === "string" &&
+    Array.isArray(s.messages) &&
+    s.messages.length > 0
+  );
+}
+
+// Type guard для проверки структуры conversation
+function hasValidConversation(
+  conversation: unknown,
+): conversation is {
+  id: string;
+  status: string;
+  messages: Array<{
+    id: string;
+    sender: string;
+    content: string;
+    contentType: string;
+    voiceTranscription: string | null;
+    createdAt: Date;
+  }>;
+} {
+  if (!conversation || typeof conversation !== "object") return false;
+  const c = conversation as Record<string, unknown>;
+  return (
+    typeof c.id === "string" &&
+    Array.isArray(c.messages) &&
+    c.messages.length > 0
+  );
 }
 
 export function ResponseDetailCard({
@@ -62,42 +103,88 @@ export function ResponseDetailCard({
   isProcessing,
   isPolling,
 }: ResponseDetailCardProps) {
-  const screening =
-    (
-      response.interviewSession as {
-        scoring?: {
-          score: number;
-          detailedScore: number;
-          analysis: string | null;
-          priceAnalysis?: string | null;
-          deliveryAnalysis?: string | null;
-        } | null;
-      } | null
-    )?.scoring ?? null;
+  const isVacancy = isVacancyResponse(response);
+
+  // Определяем screening в зависимости от типа отклика
+  const screening = isVacancy
+    ? response.screening
+    : (
+          response.interviewSession as {
+            scoring?: {
+              score: number;
+              detailedScore: number;
+              analysis: string | null;
+              priceAnalysis?: string | null;
+              deliveryAnalysis?: string | null;
+            } | null;
+          } | null
+        )?.scoring ?? null;
+
   const hasScreening = !!screening;
   const hasInterviewScoring = !!response.interviewScoring;
-  const hasConversation =
-    !!response.conversation && response.conversation.messages.length > 0;
+
+  // Определяем conversation в зависимости от типа отклика
+  let conversation: {
+    id: string;
+    status: string;
+    messages: Array<{
+      id: string;
+      sender: string;
+      content: string;
+      contentType: string;
+      voiceTranscription: string | null;
+      createdAt: Date;
+    }>;
+  } | null = null;
+
+  if (isVacancy) {
+    // Для vacancy создаем conversation из interviewSession
+    if (hasValidInterviewSession(response.interviewSession)) {
+      conversation = {
+        id: response.interviewSession.id,
+        status: "completed",
+        messages: response.interviewSession.messages,
+      };
+    }
+  } else {
+    // Для gig используем существующий conversation
+    const gigResponse = response as GigResponseDetail & {
+      conversation?: unknown;
+    };
+    if (hasValidConversation(gigResponse.conversation)) {
+      conversation = gigResponse.conversation;
+    }
+  }
+
+  const hasConversation = !!conversation;
 
   // Определяем, какие табы показывать
-  const hasProposal = !!(
-    response.proposedPrice ||
-    response.proposedDeliveryDays ||
-    response.coverLetter
-  );
+  const hasProposal = isVacancy
+    ? !!(
+        response.salaryExpectationsAmount ||
+        response.coverLetter ||
+        (response as VacancyResponseDetail).salaryExpectationsComment
+      )
+    : !!(
+        (response as GigResponseDetail).proposedPrice ||
+        (response as GigResponseDetail).proposedDeliveryDays ||
+        response.coverLetter
+      );
+
   const hasPortfolio = !!(
-    response.portfolioLinks?.length ||
-    response.portfolioFileId
+    response.portfolioLinks?.length || response.portfolioFileId
   );
+
   const hasExperience = !!(
     response.experience ||
     response.skills?.length ||
     response.profileData
   );
+
   const hasContacts = !!(
-    response.candidateEmail ||
-    response.candidatePhone ||
-    response.candidateTelegram
+    response.email ||
+    response.phone ||
+    response.telegramUsername
   );
 
   // Определяем дефолтный таб
@@ -115,7 +202,10 @@ export function ResponseDetailCard({
     <div className="space-y-4 sm:space-y-6">
       {/* Header Card */}
       <ResponseHeaderCard
-        response={response}
+        response={{
+          ...response,
+          conversation,
+        }}
         onAccept={onAccept}
         onReject={onReject}
         onMessage={onMessage}
@@ -191,7 +281,9 @@ export function ResponseDetailCard({
                 value="analysis"
                 className="space-y-3 sm:space-y-4 mt-0"
               >
-                {hasScreening && <ScreeningResultsCard screening={screening} />}
+                {hasScreening && screening && (
+                  <ScreeningResultsCard screening={screening} />
+                )}
                 {hasInterviewScoring && response.interviewScoring && (
                   <InterviewScoringCard
                     interviewScoring={response.interviewScoring}
@@ -201,12 +293,12 @@ export function ResponseDetailCard({
             )}
 
             {/* Dialog Tab */}
-            {hasConversation && response.conversation && (
+            {hasConversation && conversation && (
               <TabsContent
                 value="dialog"
                 className="space-y-3 sm:space-y-4 mt-0"
               >
-                <DialogTab conversation={response.conversation} />
+                <DialogTab conversation={conversation} />
               </TabsContent>
             )}
 

@@ -5,10 +5,15 @@ import { Award, ExternalLink } from "lucide-react";
 import type { RouterOutputs } from "@qbs-autonaim/api";
 import { getProfileData } from "../types";
 
-type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+type GigResponseDetail = NonNullable<
+  RouterOutputs["gig"]["responses"]["get"]
+>;
+type VacancyResponseDetail = NonNullable<
+  RouterOutputs["vacancy"]["responses"]["get"]
+>;
 
 interface ExperienceTabProps {
-  response: GigResponseDetail;
+  response: GigResponseDetail | VacancyResponseDetail;
 }
 
 export function ExperienceTab({ response }: ExperienceTabProps) {

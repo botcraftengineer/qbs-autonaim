@@ -6,12 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
-import {
-  ExperienceTab,
-  InterviewScoringCard,
-  ResponseHeaderCard,
-  ScreeningResultsCard,
-} from "~/components/response-detail";
+import { ResponseDetailCard } from "~/components/response-detail";
 import { useWorkspaceContext } from "~/contexts/workspace-context";
 import { useTRPC } from "~/trpc/react";
 
@@ -33,19 +28,6 @@ export default function ResponseDetailPage({
     }),
     enabled: Boolean(workspaceId),
   });
-
-  // Type assertion to include globalCandidate
-  type ResponseWithGlobalCandidate = typeof response & {
-    globalCandidate: null;
-  };
-
-  const responseWithGlobalCandidate: ResponseWithGlobalCandidate | null =
-    response
-      ? {
-          ...response,
-          globalCandidate: null, // TODO: load actual candidate if needed
-        }
-      : null;
 
   if (!workspaceId) {
     return (
@@ -81,6 +63,16 @@ export default function ResponseDetailPage({
     );
   }
 
+  // Type assertion to include globalCandidate
+  type ResponseWithGlobalCandidate = NonNullable<typeof response> & {
+    globalCandidate: null;
+  };
+
+  const responseWithGlobalCandidate: ResponseWithGlobalCandidate = {
+    ...response,
+    globalCandidate: null, // TODO: load actual candidate if needed
+  };
+
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col">
@@ -93,38 +85,17 @@ export default function ResponseDetailPage({
                   Назад
                 </Button>
               </Link>
-              {response.interviewSession && (
+              {response.interviewSession ? (
                 <Link href={paths.workspace.chat(orgSlug, workspaceSlug, id)}>
                   <Button variant="default" size="sm">
                     <MessageSquare className="mr-2 h-4 w-4" />
                     Открыть чат
                   </Button>
                 </Link>
-              )}
+              ) : null}
             </div>
 
-            <div className="space-y-6 md:space-y-8">
-              {responseWithGlobalCandidate && (
-                <>
-                  <ResponseHeaderCard response={responseWithGlobalCandidate} />
-                  {responseWithGlobalCandidate.screening && (
-                    <ScreeningResultsCard
-                      screening={responseWithGlobalCandidate.screening}
-                    />
-                  )}
-                  {responseWithGlobalCandidate.interviewScoring && (
-                    <InterviewScoringCard
-                      interviewScoring={
-                        responseWithGlobalCandidate.interviewScoring
-                      }
-                    />
-                  )}
-                  {responseWithGlobalCandidate.experience && (
-                    <ExperienceTab response={responseWithGlobalCandidate} />
-                  )}
-                </>
-              )}
-            </div>
+            <ResponseDetailCard response={responseWithGlobalCandidate} />
           </div>
         </div>
       </div>

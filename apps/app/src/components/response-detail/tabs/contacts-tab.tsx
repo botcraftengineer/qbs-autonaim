@@ -4,10 +4,15 @@ import { Separator } from "@qbs-autonaim/ui";
 import { ExternalLink, Mail, MessageSquare, Phone } from "lucide-react";
 import type { RouterOutputs } from "@qbs-autonaim/api";
 
-type GigResponseDetail = RouterOutputs["gig"]["responses"]["get"];
+type GigResponseDetail = NonNullable<
+  RouterOutputs["gig"]["responses"]["get"]
+>;
+type VacancyResponseDetail = NonNullable<
+  RouterOutputs["vacancy"]["responses"]["get"]
+>;
 
 interface ContactsTabProps {
-  response: GigResponseDetail;
+  response: GigResponseDetail | VacancyResponseDetail;
 }
 
 export function ContactsTab({ response }: ContactsTabProps) {

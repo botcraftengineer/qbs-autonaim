@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  cn,
 } from "@qbs-autonaim/ui";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
@@ -21,9 +22,11 @@ import { useTRPC } from "~/trpc/react";
 export function TopResponses({
   orgSlug,
   workspaceSlug,
+  className,
 }: {
   orgSlug: string;
   workspaceSlug: string;
+  className?: string;
 }) {
   const trpc = useTRPC();
   const { workspace } = useWorkspace();
@@ -38,7 +41,7 @@ export function TopResponses({
 
   if (isLoading) {
     return (
-      <Card className="@container/card">
+      <Card className={cn("@container/card", className)}>
         <CardHeader>
           <CardTitle>Лучшие отклики</CardTitle>
           <CardDescription>Кандидаты с наивысшими оценками</CardDescription>
@@ -67,7 +70,7 @@ export function TopResponses({
 
   if (topResponses.length === 0) {
     return (
-      <Card className="@container/card">
+      <Card className={cn("@container/card", className)}>
         <CardHeader>
           <CardTitle>Лучшие отклики</CardTitle>
           <CardDescription>Кандидаты с наивысшими оценками</CardDescription>
@@ -85,7 +88,7 @@ export function TopResponses({
   }
 
   return (
-    <Card className="@container/card">
+    <Card className={cn("@container/card", className)}>
       <CardHeader>
         <CardTitle>Лучшие отклики</CardTitle>
         <CardDescription>Кандидаты с наивысшими оценками</CardDescription>

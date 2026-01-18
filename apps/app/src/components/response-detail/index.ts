@@ -3,6 +3,7 @@ export { ScreeningResultsCard } from "./screening-results-card";
 export { InterviewScoringCard } from "./interview-scoring-card";
 export { ParsedProfileCard } from "./parsed-profile-card";
 export { MetadataCard } from "./metadata-card";
+export { ResponseDetailCard } from "./vacancy-response-detail-card";
 export {
   ProposalTab,
   PortfolioTab,

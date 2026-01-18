@@ -132,7 +132,7 @@ export default function VacanciesPage() {
         </div>
       </PageHeader>
 
-      <div className="@container/main flex flex-1 flex-col gap-6 py-4">
+      <div className="@container/main mx-auto flex w-full max-w-[1600px] flex-1 flex-col gap-6 py-4">
         <VacancyStats
           totalVacancies={stats.totalVacancies}
           activeVacancies={stats.activeVacancies}
@@ -166,7 +166,7 @@ export default function VacanciesPage() {
               {hasFilters &&
                 vacancies &&
                 filteredAndSortedVacancies.length !== vacancies.length && (
-                  <span> из {vacancies.length}</span>
+                  <span> из&nbsp;{vacancies.length}</span>
                 )}
             </div>
           )}
