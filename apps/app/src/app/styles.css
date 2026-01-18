@@ -173,8 +173,11 @@
     @apply block h-2;
     @apply sm:h-3;
   }
-  .h-\(--header-height\) {
+  .h-\[--header-height\] {
     height: var(--header-height)
   }
 
+  .p-\[--content-padding\] {
+    padding: var(--content-padding);
+  }
 }

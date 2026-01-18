@@ -190,7 +190,7 @@ export function CreateWorkspaceDialog({
                   </div>
                   <FormControl>
                     <div className="flex items-stretch overflow-hidden rounded-md border">
-                      <div className="bg-muted text-muted-foreground flex items-center px-3 text-sm">
+                      <div className="bg-muted text-muted-foreground flex min-w-0 flex-1 items-center whitespace-nowrap px-3 text-sm">
                         {appDomain}/orgs/{organizationSlug}/workspaces/
                       </div>
                       <Input
@@ -201,7 +201,7 @@ export function CreateWorkspaceDialog({
                             shouldDirty: true,
                           });
                         }}
-                        className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                        className="min-w-[120px] flex-1 border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                       />
                     </div>
                   </FormControl>
