@@ -3,6 +3,9 @@
 import type { RouterOutputs } from "@qbs-autonaim/api";
 import type { Candidate } from "@qbs-autonaim/db/schema";
 import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
   Badge,
   Button,
   Card,
@@ -21,6 +24,8 @@ import {
   User,
   XCircle,
 } from "lucide-react";
+import { useAvatarUrl } from "~/hooks/use-avatar-url";
+import { getAvatarUrl, getInitials } from "~/lib/avatar";
 import {
   formatDate,
   HR_STATUS_CONFIG,
@@ -72,6 +77,14 @@ export function ResponseHeaderCard({
   const statusConfig = STATUS_CONFIG[response.status];
   const StatusIcon = statusConfig.icon;
 
+  // Получаем URL аватарки из файла
+  const photoUrl = useAvatarUrl(
+    "photoFileId" in response ? response.photoFileId : null,
+  );
+  const candidateName = response.candidateName || response.candidateId;
+  const avatarUrl = getAvatarUrl(photoUrl, candidateName);
+  const initials = getInitials(candidateName);
+
   const hasConversation =
     !!response.conversation && response.conversation.messages.length > 0;
 
@@ -93,13 +106,16 @@ export function ResponseHeaderCard({
       <CardHeader>
         <div className="flex flex-col sm:flex-row items-start gap-4">
           <div className="flex items-start gap-3 sm:gap-4 flex-1 w-full min-w-0">
-            <div className="flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/20 shrink-0">
-              <User className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
-            </div>
+            <Avatar className="h-12 w-12 sm:h-16 sm:w-16 border-2 border-primary/10 shrink-0">
+              <AvatarImage src={avatarUrl} alt={candidateName} />
+              <AvatarFallback className="bg-primary/10 text-sm sm:text-lg font-semibold">
+                {initials || <User className="h-6 w-6 sm:h-8 sm:w-8" />}
+              </AvatarFallback>
+            </Avatar>
 
             <div className="flex-1 min-w-0">
               <CardTitle className="text-lg sm:text-2xl mb-1.5 sm:mb-2 break-words">
-                {response.candidateName || response.candidateId}
+                {candidateName}
               </CardTitle>
 
               <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm text-muted-foreground">

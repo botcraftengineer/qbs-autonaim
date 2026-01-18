@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { db } from "@qbs-autonaim/db";
 import { file } from "@qbs-autonaim/db/schema";
+import { uploadBufferToS3 } from "@qbs-autonaim/lib/s3";
 import axios from "axios";
 
 interface CandidatePhoto {
@@ -74,19 +75,23 @@ async function uploadCandidatePhotos() {
           throw lastError || new Error("Failed to fetch image after retries");
         }
 
-        // Определяем тип файла из URL
-        const fileExtension =
-          photo.photoUrl.includes(".jpg") || photo.photoUrl.includes("jpeg")
-            ? "jpg"
-            : "png";
-        const mimeType = fileExtension === "jpg" ? "image/jpeg" : "image/png";
+        // Определяем тип файла из URL (по умолчанию JPG)
+        const fileExtension = photo.photoUrl.includes(".png") ? "png" : "jpg";
+        const mimeType = fileExtension === "png" ? "image/png" : "image/jpeg";
+
+        // Генерируем ключ для S3
+        const s3Key = `candidates/${photo.candidateId}_photo.${fileExtension}`;
+
+        // Загружаем файл в S3
+        console.log(`☁️  Загружаем в S3: ${s3Key}`);
+        const s3Result = await uploadBufferToS3(s3Key, imageData, mimeType);
 
         // Создаем запись в таблице files
         const [uploadedFile] = await db
           .insert(file)
           .values({
             provider: "S3",
-            key: `/uploads/candidates/${photo.candidateId}_photo.${fileExtension}`,
+            key: s3Result.key,
             fileName: `${photo.candidateId}_photo.${fileExtension}`,
             mimeType: mimeType,
             fileSize: imageData.length.toString(),
@@ -94,6 +99,8 @@ async function uploadCandidatePhotos() {
               originalUrl: photo.photoUrl,
               description: photo.photoDescription,
               candidateId: photo.candidateId,
+              bucket: s3Result.bucket,
+              etag: s3Result.etag,
             },
           })
           .returning();

@@ -77,7 +77,7 @@ export function VacancyFilters({
             placeholder="Поиск по названию или региону…"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="h-10 pl-9 shadow-xs"
+            className="h-10 pl-9 bg-background/60 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background/80 focus-visible:bg-background transition-colors"
             aria-label="Поиск вакансий"
           />
         </div>
@@ -85,7 +85,7 @@ export function VacancyFilters({
         <div className="flex flex-wrap items-center gap-2">
           <Select value={sourceFilter} onValueChange={onSourceChange}>
             <SelectTrigger
-              className="h-10 w-full sm:w-[160px] shadow-xs"
+              className="h-10 w-full sm:w-[160px] bg-background/60 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background/80 transition-colors"
               aria-label="Фильтр по источнику"
             >
               <div className="flex items-center gap-2">
@@ -107,7 +107,7 @@ export function VacancyFilters({
 
           <Select value={statusFilter} onValueChange={onStatusChange}>
             <SelectTrigger
-              className="h-10 w-full sm:w-[140px] shadow-xs"
+              className="h-10 w-full sm:w-[140px] bg-background/60 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background/80 transition-colors"
               aria-label="Фильтр по статусу"
             >
               <SelectValue placeholder="Статус" />
@@ -123,7 +123,7 @@ export function VacancyFilters({
             <PopoverTrigger asChild>
               <Button
                 variant="outline"
-                className="h-10 w-full justify-start shadow-xs sm:w-[180px]"
+                className="h-10 w-full justify-start bg-background/60 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background/80 transition-colors sm:w-[180px]"
                 aria-label="Фильтр по дате"
               >
                 <IconCalendar
@@ -141,10 +141,16 @@ export function VacancyFilters({
                 )}
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[280px] p-4" align="start">
+            <PopoverContent
+              className="w-[280px] p-4 bg-background/95 backdrop-blur-sm border-border/50"
+              align="start"
+            >
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label htmlFor="date-from" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label
+                    htmlFor="date-from"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
                     C&nbsp;даты
                   </label>
                   <Input
@@ -153,11 +159,14 @@ export function VacancyFilters({
                     value={dateFrom}
                     onChange={(e) => onDateFromChange(e.target.value)}
                     max={dateTo || undefined}
-                    className="h-9"
+                    className="h-9 bg-background/60 border-border/50"
                   />
                 </div>
                 <div className="space-y-2">
-                  <label htmlFor="date-to" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <label
+                    htmlFor="date-to"
+                    className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                  >
                     По&nbsp;дату
                   </label>
                   <Input
@@ -166,14 +175,14 @@ export function VacancyFilters({
                     value={dateTo}
                     onChange={(e) => onDateToChange(e.target.value)}
                     min={dateFrom || undefined}
-                    className="h-9"
+                    className="h-9 bg-background/60 border-border/50"
                   />
                 </div>
                 {(dateFrom || dateTo) && (
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-full text-xs"
+                    className="h-8 w-full text-xs hover:bg-muted/50"
                     onClick={() => {
                       onDateFromChange("");
                       onDateToChange("");
@@ -188,7 +197,7 @@ export function VacancyFilters({
 
           <Select value={sortBy} onValueChange={onSortChange}>
             <SelectTrigger
-              className="h-10 w-full sm:w-[170px] shadow-xs"
+              className="h-10 w-full sm:w-[170px] bg-background/60 backdrop-blur-sm border-border/50 shadow-sm hover:bg-background/80 transition-colors"
               aria-label="Сортировка"
             >
               <div className="flex items-center gap-2">
@@ -210,7 +219,7 @@ export function VacancyFilters({
               variant="ghost"
               size="sm"
               onClick={handleReset}
-              className="h-10 gap-2 text-muted-foreground hover:text-foreground"
+              className="h-10 gap-2 text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
             >
               <IconFilterOff className="size-4" />
               Сбросить

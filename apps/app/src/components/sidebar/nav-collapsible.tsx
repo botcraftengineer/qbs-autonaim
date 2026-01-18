@@ -111,13 +111,13 @@ function NavCollapsibleItem({
       {item.badge !== undefined && item.badge > 0 && (
         <SidebarMenuBadge
           className={cn(
-            "min-w-5 h-5 px-1.5 flex items-center justify-center rounded-full text-[11px] font-semibold tabular-nums transition-all duration-200",
+            "min-w-5 h-5 px-1.5 flex items-center justify-center rounded-md text-[10px] font-medium tabular-nums transition-colors",
             item.badgeVariant === "destructive" &&
-              "bg-red-500 text-white shadow-sm ring-1 ring-red-500/20 peer-hover/menu-button:bg-red-600 peer-hover/menu-button:shadow peer-data-[active=true]/menu-button:bg-red-600",
+              "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400",
             item.badgeVariant === "success" &&
-              "bg-green-500 text-white shadow-sm ring-1 ring-green-500/20 peer-hover/menu-button:bg-green-600 peer-hover/menu-button:shadow peer-data-[active=true]/menu-button:bg-green-600",
+              "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400",
             !item.badgeVariant &&
-              "bg-blue-500 text-white shadow-sm ring-1 ring-blue-500/20 peer-hover/menu-button:bg-blue-600 peer-hover/menu-button:shadow peer-data-[active=true]/menu-button:bg-blue-600",
+              "bg-sidebar-primary/10 text-sidebar-primary dark:bg-sidebar-primary/20",
           )}
         >
           {item.badge > 99 ? "99+" : item.badge}

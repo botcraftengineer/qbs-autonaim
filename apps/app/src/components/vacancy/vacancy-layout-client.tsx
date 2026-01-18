@@ -134,105 +134,103 @@ export function VacancyLayoutClient({
   return (
     <div className="flex flex-1 flex-col">
       <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <div className="px-4 lg:px-6">
-            <div className="mb-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="min-h-[44px] md:min-h-0"
-                asChild
-              >
-                <Link href={paths.workspace.vacancies(orgSlug, workspaceSlug)}>
-                  <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
-                  <span className="hidden sm:inline">Назад к списку</span>
-                  <span className="sm:hidden">Назад</span>
-                </Link>
-              </Button>
+        <div className="flex flex-col gap-4">
+          <div className="mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="min-h-[44px] md:min-h-0"
+              asChild
+            >
+              <Link href={paths.workspace.vacancies(orgSlug, workspaceSlug)}>
+                <ArrowLeft className="mr-2 h-4 w-4" aria-hidden="true" />
+                <span className="hidden sm:inline">Назад к списку</span>
+                <span className="sm:hidden">Назад</span>
+              </Link>
+            </Button>
+          </div>
+
+          <Tabs value={getActiveTab()} className="space-y-4 md:space-y-6">
+            <div className="flex items-center justify-between">
+              <TabsList className="w-full sm:w-auto">
+                <TabsTrigger
+                  value="detail"
+                  asChild
+                  className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
+                >
+                  <Link
+                    href={paths.workspace.vacancies(
+                      orgSlug,
+                      workspaceSlug,
+                      vacancyId,
+                    )}
+                  >
+                    <IconEye className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Обзор</span>
+                    <span className="sm:hidden">Обзор</span>
+                  </Link>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="responses"
+                  asChild
+                  className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
+                >
+                  <Link
+                    href={paths.workspace.vacancies(
+                      orgSlug,
+                      workspaceSlug,
+                      vacancyId,
+                      "responses",
+                    )}
+                  >
+                    <IconMessage className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">
+                      Отклики ({responsesCount?.total ?? 0})
+                    </span>
+                    <span className="sm:hidden">Отклики</span>
+                  </Link>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="edit"
+                  asChild
+                  className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
+                >
+                  <Link
+                    href={paths.workspace.vacancies(
+                      orgSlug,
+                      workspaceSlug,
+                      vacancyId,
+                      "edit",
+                    )}
+                  >
+                    <IconEdit className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Редактировать</span>
+                    <span className="sm:hidden">Редакт.</span>
+                  </Link>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="settings"
+                  asChild
+                  className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
+                >
+                  <Link
+                    href={paths.workspace.vacancies(
+                      orgSlug,
+                      workspaceSlug,
+                      vacancyId,
+                      "settings",
+                    )}
+                  >
+                    <IconSettings className="size-4" aria-hidden="true" />
+                    <span className="hidden sm:inline">Настройки</span>
+                    <span className="sm:hidden">Настр.</span>
+                  </Link>
+                </TabsTrigger>
+              </TabsList>
             </div>
 
-            <Tabs value={getActiveTab()} className="space-y-4 md:space-y-6">
-              <div className="flex items-center justify-between">
-                <TabsList className="w-full sm:w-auto">
-                  <TabsTrigger
-                    value="detail"
-                    asChild
-                    className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
-                  >
-                    <Link
-                      href={paths.workspace.vacancies(
-                        orgSlug,
-                        workspaceSlug,
-                        vacancyId,
-                      )}
-                    >
-                      <IconEye className="size-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Обзор</span>
-                      <span className="sm:hidden">Обзор</span>
-                    </Link>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="responses"
-                    asChild
-                    className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
-                  >
-                    <Link
-                      href={paths.workspace.vacancies(
-                        orgSlug,
-                        workspaceSlug,
-                        vacancyId,
-                        "responses",
-                      )}
-                    >
-                      <IconMessage className="size-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">
-                        Отклики ({responsesCount?.total ?? 0})
-                      </span>
-                      <span className="sm:hidden">Отклики</span>
-                    </Link>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="edit"
-                    asChild
-                    className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
-                  >
-                    <Link
-                      href={paths.workspace.vacancies(
-                        orgSlug,
-                        workspaceSlug,
-                        vacancyId,
-                        "edit",
-                      )}
-                    >
-                      <IconEdit className="size-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Редактировать</span>
-                      <span className="sm:hidden">Редакт.</span>
-                    </Link>
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="settings"
-                    asChild
-                    className="flex-1 sm:flex-initial min-h-[44px] md:min-h-0 gap-2"
-                  >
-                    <Link
-                      href={paths.workspace.vacancies(
-                        orgSlug,
-                        workspaceSlug,
-                        vacancyId,
-                        "settings",
-                      )}
-                    >
-                      <IconSettings className="size-4" aria-hidden="true" />
-                      <span className="hidden sm:inline">Настройки</span>
-                      <span className="sm:hidden">Настр.</span>
-                    </Link>
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-
-              {children}
-            </Tabs>
-          </div>
+            {children}
+          </Tabs>
         </div>
       </div>
     </div>
