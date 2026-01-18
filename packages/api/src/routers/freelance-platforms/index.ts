@@ -31,11 +31,13 @@ import { startWebInterview } from "./start-web-interview";
 import { syncGigResponses } from "./sync-gig-responses";
 import { updateVacancyStatus } from "./update-vacancy-status";
 import { validateInterviewToken } from "./validate-interview-token";
+import { addPublication } from "./add-publication";
 
 export const freelancePlatformsRouter = {
   createVacancy,
   getVacancies,
   getVacancyById,
+  addPublication,
   getVacancyByToken,
   getDashboardStats,
   getAnalytics,

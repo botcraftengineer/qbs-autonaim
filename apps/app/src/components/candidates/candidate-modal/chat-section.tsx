@@ -253,7 +253,7 @@ export function ChatSection({ candidateId, workspaceId }: ChatSectionProps) {
                               )}
                             </div>
                           ) : (
-                            <p className="text-sm leading-relaxed whitespace-pre-wrap wrap-break-word">
+                            <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
                               {message.content}
                             </p>
                           )}

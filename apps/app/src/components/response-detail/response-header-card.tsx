@@ -98,7 +98,7 @@ export function ResponseHeaderCard({
             </div>
 
             <div className="flex-1 min-w-0">
-              <CardTitle className="text-lg sm:text-2xl mb-1.5 sm:mb-2 wrap-break-word">
+              <CardTitle className="text-lg sm:text-2xl mb-1.5 sm:mb-2 break-words">
                 {response.candidateName || response.candidateId}
               </CardTitle>
 

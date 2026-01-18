@@ -99,7 +99,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
                   key={key}
                   className="flex items-center justify-between p-2 rounded-lg border gap-2"
                 >
-                  <span className="text-xs sm:text-sm font-medium capitalize wrap-break-word">
+                  <span className="text-xs sm:text-sm font-medium capitalize break-words">
                     {key}
                   </span>
                   <span className="text-xs sm:text-sm text-muted-foreground break-all text-right">

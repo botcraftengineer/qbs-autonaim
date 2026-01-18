@@ -71,12 +71,12 @@ export function DialogTab({ conversation }: DialogTabProps) {
                       <div className="text-xs opacity-70">
                         Голосовое сообщение
                       </div>
-                      <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed wrap-break-word">
+                      <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed break-words">
                         {message.voiceTranscription}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed wrap-break-word">
+                    <p className="text-xs sm:text-sm whitespace-pre-wrap leading-relaxed break-words">
                       {message.content}
                     </p>
                   )}

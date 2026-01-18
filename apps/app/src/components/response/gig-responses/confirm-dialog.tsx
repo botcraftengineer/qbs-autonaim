@@ -37,7 +37,7 @@ export function ConfirmDialog({
           </DialogTitle>
           <DialogDescription className="text-sm sm:text-base">
             {candidateName && (
-              <span className="font-medium wrap-break-word">
+              <span className="font-medium break-words">
                 {candidateName}
               </span>
             )}

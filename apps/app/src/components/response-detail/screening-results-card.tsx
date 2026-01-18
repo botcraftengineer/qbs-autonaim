@@ -76,7 +76,7 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
                 <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 Анализ портфолио
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                 {screening.analysis}
               </p>
             </div>
@@ -88,7 +88,7 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
                 <Banknote className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 Анализ цены
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                 {screening.priceAnalysis}
               </p>
             </div>
@@ -100,7 +100,7 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
                 <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 Анализ сроков
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
                 {screening.deliveryAnalysis}
               </p>
             </div>

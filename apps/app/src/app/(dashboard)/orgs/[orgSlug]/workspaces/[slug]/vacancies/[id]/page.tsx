@@ -32,15 +32,20 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useWorkspace } from "~/hooks/use-workspace";
 import { useTRPC } from "~/trpc/react";
+import { AddPublicationDialog } from "./_components/add-publication-dialog";
 
 const SOURCE_CONFIG: Record<string, { label: string; color: string }> = {
   HH: { label: "HeadHunter", color: "bg-red-500/10 text-red-600 border-red-200" },
+  HH_API: { label: "HeadHunter (API)", color: "bg-red-500/10 text-red-600 border-red-200" },
   KWORK: { label: "Kwork", color: "bg-green-500/10 text-green-600 border-green-200" },
   FL_RU: { label: "FL.ru", color: "bg-blue-500/10 text-blue-600 border-blue-200" },
   FREELANCE_RU: { label: "Freelance.ru", color: "bg-orange-500/10 text-orange-600 border-orange-200" },
   AVITO: { label: "Avito", color: "bg-purple-500/10 text-purple-600 border-purple-200" },
   SUPERJOB: { label: "SuperJob", color: "bg-sky-500/10 text-sky-600 border-sky-200" },
   HABR: { label: "Хабр Карьера", color: "bg-zinc-500/10 text-zinc-600 border-zinc-200" },
+  MANUAL: { label: "Вручную", color: "bg-amber-500/10 text-amber-600 border-amber-200" },
+  WEB_LINK: { label: "Прямая ссылка", color: "bg-indigo-500/10 text-indigo-600 border-indigo-200" },
+  TELEGRAM: { label: "Telegram", color: "bg-cyan-500/10 text-cyan-600 border-cyan-200" },
 };
 
 export default function VacancyDetailPage() {
@@ -142,23 +147,43 @@ ${data.interviewLink.url}
     color: "bg-gray-500/10 text-gray-600 border-gray-200",
   };
 
-  const totalResponses = (responseStats.HH_API ?? 0) +
-    (responseStats.FREELANCE_MANUAL ?? 0) +
-    (responseStats.FREELANCE_LINK ?? 0);
+  const totalResponses = Object.values(responseStats).reduce((acc, val) => acc + val, 0);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
       {/* ЛЕВАЯ КОЛОНКА */}
       <div className="lg:col-span-2 space-y-6">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="font-medium gap-1.5">
               <div className={`size-1.5 rounded-full ${source?.color?.split(" ")[0]?.replace("/10", "") ?? "bg-gray-500"}`} />
               {source.label}
             </Badge>
+            {(vacancy as any).publications?.map((pub: any) => {
+              const pubConfig = SOURCE_CONFIG[pub.platform.toUpperCase()] || {
+                label: pub.platform,
+                color: "bg-gray-500",
+              };
+              return (
+                <Badge
+                  key={pub.id}
+                  variant="secondary"
+                  className="font-medium gap-1.5"
+                >
+                  <div
+                    className={`size-1.5 rounded-full ${pubConfig?.color?.split(" ")[0]?.replace("/10", "") ?? "bg-gray-500"}`}
+                  />
+                  {pubConfig.label}
+                </Badge>
+              );
+            })}
             <Badge variant={vacancy.isActive ? "default" : "secondary"}>
               {vacancy.isActive ? "Активна" : "Неактивна"}
             </Badge>
+            <AddPublicationDialog
+              vacancyId={id}
+              workspaceId={workspace?.id ?? ""}
+            />
           </div>
           
           <div className="space-y-2">
@@ -294,16 +319,25 @@ ${data.interviewLink.url}
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            {[
-              { label: "HeadHunter API", value: responseStats.HH_API ?? 0 },
-              { label: "Импорт вручную", value: responseStats.FREELANCE_MANUAL ?? 0 },
-              { label: "Прямые ссылки", value: responseStats.FREELANCE_LINK ?? 0 }
-            ].map((item) => (
-              <div key={item.label} className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">{item.label}</span>
-                <span className="font-medium tabular-nums">{item.value}</span>
+            {Object.entries(responseStats).map(([sourceKey, count]) => {
+              const config = SOURCE_CONFIG[sourceKey.toUpperCase()] || {
+                label: sourceKey,
+              };
+              return (
+                <div
+                  key={sourceKey}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span className="text-muted-foreground">{config.label}</span>
+                  <span className="font-medium tabular-nums">{count}</span>
+                </div>
+              );
+            })}
+            {Object.keys(responseStats).length === 0 && (
+              <div className="text-center py-2 text-xs text-muted-foreground">
+                Нет откликов
               </div>
-            ))}
+            )}
           </CardContent>
         </Card>
 
@@ -337,7 +371,7 @@ ${data.interviewLink.url}
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-semibold truncate group-hover:text-primary">{candidate.name}</p>
-                        <p className="text-[10px] text-muted-foreground font-medium">Score: {candidate.overallScore}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">Оценка: {candidate.overallScore}</p>
                       </div>
                     </div>
                     <IconArrowRight className="size-3.5 text-muted-foreground group-hover:text-primary transition-transform group-hover:translate-x-0.5" />

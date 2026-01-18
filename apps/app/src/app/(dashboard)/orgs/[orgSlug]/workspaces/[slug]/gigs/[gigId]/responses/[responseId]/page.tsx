@@ -386,7 +386,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
             <DialogTitle className="text-lg sm:text-xl">
               Отправить сообщение
             </DialogTitle>
-            <DialogDescription className="text-sm sm:text-base wrap-break-word">
+            <DialogDescription className="text-sm sm:text-base break-words">
               Напишите сообщение кандидату{" "}
               {response.candidateName || response.candidateId}
             </DialogDescription>

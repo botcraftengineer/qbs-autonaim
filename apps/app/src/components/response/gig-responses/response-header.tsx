@@ -22,10 +22,10 @@ export function ResponseHeader({
       <CardHeader>
         <div className="flex items-start justify-between gap-3 sm:gap-4">
           <div className="min-w-0 flex-1">
-            <CardTitle className="text-xl sm:text-2xl font-semibold wrap-break-word">
+            <CardTitle className="text-xl sm:text-2xl font-semibold break-words">
               Отклики на задание
             </CardTitle>
-            <CardDescription className="mt-2 text-sm sm:text-base wrap-break-word text-muted-foreground">
+            <CardDescription className="mt-2 text-sm sm:text-base break-words text-muted-foreground">
               {gigTitle}
             </CardDescription>
           </div>

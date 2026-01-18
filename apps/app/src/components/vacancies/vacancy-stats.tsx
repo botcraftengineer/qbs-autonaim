@@ -103,7 +103,7 @@ export function VacancyStats({
           className="border-none bg-purple-500/10 text-purple-700 px-1.5"
         >
           <IconTrendingUp className="size-3.5 mr-1" />
-          New
+          Новые
         </Badge>
       ),
     },
@@ -121,7 +121,7 @@ export function VacancyStats({
     <div className="grid grid-cols-1 gap-4 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {stats.map((stat) => (
         <Card
-          key={stat.label}
+          key={stat.title}
           className="group relative overflow-hidden border-none bg-card shadow-sm transition-all hover:shadow-md"
         >
           <div

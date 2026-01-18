@@ -385,7 +385,7 @@ function ChatMessage({
         <span className="text-xs font-medium md:text-sm">
           {isUser ? "Вы" : "Ассистент"}
         </span>
-        <p className="min-w-0 wrap-break-word whitespace-pre-wrap text-xs leading-relaxed md:text-sm">
+        <p className="min-w-0 break-words whitespace-pre-wrap text-xs leading-relaxed md:text-sm">
           {content}
         </p>
       </div>
@@ -472,7 +472,7 @@ function DocumentPreview({
           {/* Title */}
           {document.title && (
             <header>
-              <h1 className="min-w-0 wrap-break-word text-2xl font-bold md:text-3xl">
+              <h1 className="min-w-0 break-words text-2xl font-bold md:text-3xl">
                 {document.title}
               </h1>
             </header>
@@ -589,7 +589,7 @@ function DocumentSection({
       >
         {title}
       </h2>
-      <div className="min-w-0 wrap-break-word whitespace-pre-wrap text-xs leading-relaxed transition-all duration-200 md:text-sm">
+      <div className="min-w-0 break-words whitespace-pre-wrap text-xs leading-relaxed transition-all duration-200 md:text-sm">
         {content}
       </div>
     </Card>

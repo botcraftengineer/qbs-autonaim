@@ -58,7 +58,7 @@ export function VacancyDocumentPreview({
         <article className="space-y-6 p-6">
           {document.title && (
             <header>
-              <h1 className="min-w-0 wrap-break-word text-3xl font-bold">
+              <h1 className="min-w-0 break-words text-3xl font-bold">
                 {document.title}
               </h1>
             </header>
@@ -69,7 +69,7 @@ export function VacancyDocumentPreview({
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 О&nbsp;компании
               </h2>
-              <div className="min-w-0 wrap-break-word whitespace-pre-wrap text-sm leading-relaxed">
+              <div className="min-w-0 break-words whitespace-pre-wrap text-sm leading-relaxed">
                 {document.description}
               </div>
             </Card>
@@ -80,7 +80,7 @@ export function VacancyDocumentPreview({
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Обязанности
               </h2>
-              <div className="min-w-0 wrap-break-word whitespace-pre-wrap text-sm leading-relaxed">
+              <div className="min-w-0 break-words whitespace-pre-wrap text-sm leading-relaxed">
                 {document.responsibilities}
               </div>
             </Card>
@@ -91,7 +91,7 @@ export function VacancyDocumentPreview({
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Требования
               </h2>
-              <div className="min-w-0 wrap-break-word whitespace-pre-wrap text-sm leading-relaxed">
+              <div className="min-w-0 break-words whitespace-pre-wrap text-sm leading-relaxed">
                 {document.requirements}
               </div>
             </Card>
@@ -102,7 +102,7 @@ export function VacancyDocumentPreview({
               <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 Условия
               </h2>
-              <div className="min-w-0 wrap-break-word whitespace-pre-wrap text-sm leading-relaxed">
+              <div className="min-w-0 break-words whitespace-pre-wrap text-sm leading-relaxed">
                 {document.conditions}
               </div>
             </Card>
