@@ -33,6 +33,9 @@ export const getVacancyById = protectedProcedure
         eq(vacancy.id, input.id),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
+      with: {
+        publications: true,
+      },
     });
 
     if (!vacancyDataRaw) {
@@ -50,6 +53,9 @@ export const getVacancyById = protectedProcedure
             eq(vacancy.id, resolvedVacancyId),
             eq(vacancy.workspaceId, input.workspaceId),
           ),
+          with: {
+            publications: true,
+          },
         })
       : vacancyDataRaw;
 
@@ -86,11 +92,7 @@ export const getVacancyById = protectedProcedure
     });
 
     // Формируем статистику в удобном формате
-    const stats: Record<string, number> = {
-      HH: 0,
-      MANUAL: 0,
-      WEB_LINK: 0,
-    };
+    const stats: Record<string, number> = {};
 
     for (const stat of responseStats) {
       if (stat.importSource) {

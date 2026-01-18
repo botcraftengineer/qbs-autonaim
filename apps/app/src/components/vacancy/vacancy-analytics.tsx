@@ -232,22 +232,25 @@ export function VacancyRequirements({
   const data = requirements as VacancyRequirementsData;
 
   return (
-    <div className="rounded-lg border bg-linear-to-t from-primary/5 to-card dark:bg-card p-6 shadow-xs space-y-6">
-      <h2 className="text-xl font-semibold">Сгенерированные требования</h2>
+    <div className="rounded-xl border bg-card/50 backdrop-blur-sm p-6 shadow-md space-y-8">
+      <div className="flex items-center justify-between border-b pb-4">
+        <h2 className="text-xl font-bold tracking-tight">Сгенерированные требования</h2>
+        <Badge variant="outline" className="bg-primary/5 text-primary border-primary/20">AI Анализ</Badge>
+      </div>
 
       {data.summary && (
-        <div className="rounded-lg border bg-card/50 p-4">
-          <h3 className="text-sm font-medium text-muted-foreground mb-2">
+        <div className="rounded-lg border bg-muted/30 p-5 space-y-2">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
             Краткое описание
           </h3>
-          <p className="text-sm leading-relaxed">{data.summary}</p>
+          <p className="text-sm leading-relaxed text-foreground/90">{data.summary}</p>
         </div>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         {data.job_title && (
-          <div className="rounded-lg border bg-card/50 p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+          <div className="rounded-lg border bg-background/50 p-4 transition-colors hover:bg-background/80">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 mb-1.5">
               Должность
             </h3>
             <p className="text-sm font-semibold">{data.job_title}</p>
@@ -255,8 +258,8 @@ export function VacancyRequirements({
         )}
 
         {data.location_type && (
-          <div className="rounded-lg border bg-card/50 p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+          <div className="rounded-lg border bg-background/50 p-4 transition-colors hover:bg-background/80">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 mb-1.5">
               Формат работы
             </h3>
             <p className="text-sm font-semibold">{data.location_type}</p>
@@ -264,8 +267,8 @@ export function VacancyRequirements({
         )}
 
         {data.experience_years && (
-          <div className="rounded-lg border bg-card/50 p-4">
-            <h3 className="text-sm font-medium text-muted-foreground mb-2">
+          <div className="rounded-lg border bg-background/50 p-4 transition-colors hover:bg-background/80">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 mb-1.5">
               Опыт работы
             </h3>
             <p className="text-sm font-semibold">
@@ -276,86 +279,99 @@ export function VacancyRequirements({
         )}
       </div>
 
-      {data.mandatory_requirements &&
-        data.mandatory_requirements.length > 0 && (
-          <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-            <h3 className="text-lg font-semibold text-primary">
-              Обязательные требования
+      <div className="space-y-6">
+        {data.mandatory_requirements &&
+          data.mandatory_requirements.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+                <div className="size-1.5 rounded-full bg-primary" />
+                Обязательные требования
+              </h3>
+              <div className="grid gap-2">
+                {data.mandatory_requirements.map((req, i) => (
+                  <div
+                    key={i}
+                    className="flex gap-3 p-3 rounded-md border bg-background/40 text-sm items-start"
+                  >
+                    <div className="size-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5 text-[10px] font-bold">
+                      {i + 1}
+                    </div>
+                    <span className="text-muted-foreground leading-relaxed italic">{req}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+        {data.tech_stack && data.tech_stack.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+              <div className="size-1.5 rounded-full bg-primary" />
+              Технологический стек
             </h3>
-            <ul className="space-y-2 pl-5">
-              {data.mandatory_requirements.map((req) => (
+            <div className="flex flex-wrap gap-2 p-4 rounded-lg border bg-background/40">
+              {data.tech_stack.map((tech) => (
+                <Badge key={tech} variant="secondary" className="bg-primary/10 text-primary border-primary/10 hover:bg-primary/20">
+                  {tech}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {data.nice_to_have_skills && data.nice_to_have_skills.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-primary flex items-center gap-2">
+              <div className="size-1.5 rounded-full bg-primary" />
+              Будет плюсом
+            </h3>
+            <ul className="grid gap-2">
+              {data.nice_to_have_skills.map((skill, i) => (
                 <li
-                  key={req}
-                  className="text-sm text-muted-foreground list-disc leading-relaxed"
+                  key={i}
+                  className="group flex gap-3 p-3 rounded-md border border-dashed bg-background/20 text-sm items-start hover:border-primary/50 transition-colors"
                 >
-                  {req}
+                  <div className="size-1.5 rounded-full bg-muted-foreground/30 mt-2 group-hover:bg-primary/50" />
+                  <span className="text-muted-foreground leading-relaxed">{skill}</span>
                 </li>
               ))}
             </ul>
           </div>
         )}
 
-      {data.tech_stack && data.tech_stack.length > 0 && (
-        <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-          <h3 className="text-lg font-semibold text-primary">
-            Технологический стек
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {data.tech_stack.map((tech) => (
-              <Badge key={tech} variant="secondary">
-                {tech}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+        <div className="grid gap-6 md:grid-cols-2">
+          {data.languages && data.languages.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">Языки</h3>
+              <div className="flex flex-wrap gap-2">
+                {data.languages.map((lang, index) => {
+                  const label = typeof lang === "string" ? lang : `${lang.language}${lang.level ? ` (${lang.level})` : ""}`;
+                  return (
+                    <Badge key={index} variant="outline" className="bg-background">
+                      {label}
+                    </Badge>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
-      {data.nice_to_have_skills && data.nice_to_have_skills.length > 0 && (
-        <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-          <h3 className="text-lg font-semibold text-primary">Будет плюсом</h3>
-          <ul className="space-y-2 pl-5">
-            {data.nice_to_have_skills.map((skill) => (
-              <li
-                key={skill}
-                className="text-sm text-muted-foreground list-disc leading-relaxed"
-              >
-                {skill}
-              </li>
-            ))}
-          </ul>
+          {data.keywords_for_matching && data.keywords_for_matching.length > 0 && (
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80">
+                Ключевые слова
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {data.keywords_for_matching.map((keyword, i) => (
+                  <Badge key={i} variant="outline" className="bg-background text-[10px]">
+                    {keyword}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
-      )}
-
-      {data.languages && data.languages.length > 0 && (
-        <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-          <h3 className="text-lg font-semibold text-primary">Языки</h3>
-          <div className="flex flex-wrap gap-2">
-            {data.languages.map((lang) => {
-              const label = typeof lang === "string" ? lang : `${lang.language}${lang.level ? ` (${lang.level})` : ""}`;
-              return (
-                <Badge key={label} variant="outline">
-                  {label}
-                </Badge>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {data.keywords_for_matching && data.keywords_for_matching.length > 0 && (
-        <div className="rounded-lg border bg-card/50 p-4 space-y-3">
-          <h3 className="text-lg font-semibold text-primary">
-            Ключевые слова для поиска
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {data.keywords_for_matching.map((keyword) => (
-              <Badge key={keyword} variant="outline">
-                {keyword}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

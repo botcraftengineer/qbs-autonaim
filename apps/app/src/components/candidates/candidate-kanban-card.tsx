@@ -48,10 +48,10 @@ export function CandidateKanbanCard({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h4 className="font-semibold text-sm leading-tight wrap-break-word">
+            <h4 className="font-semibold text-sm leading-tight break-words">
               {candidate.name}
             </h4>
-            <p className="text-xs text-muted-foreground mt-0.5 wrap-break-word">
+            <p className="text-xs text-muted-foreground mt-0.5 break-words">
               {candidate.position}
             </p>
           </div>

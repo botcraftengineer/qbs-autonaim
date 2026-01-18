@@ -32,16 +32,16 @@ export function ResponseTableHeader({
 
   return (
     <TableHeader>
-      <TableRow>
-        <TableHead className="w-12">
+      <TableRow className="bg-muted/50 hover:bg-muted/50">
+        <TableHead className="w-[40px] pl-4">
           <Checkbox
             checked={allSelected}
             onCheckedChange={onSelectAll}
             disabled={!hasResponses}
           />
         </TableHead>
-        <TableHead>Кандидат</TableHead>
-        <TableHead>
+        <TableHead className="font-semibold text-foreground">Кандидат</TableHead>
+        <TableHead className="font-semibold text-foreground">
           <button
             type="button"
             onClick={() => onSort("status")}
@@ -51,7 +51,7 @@ export function ResponseTableHeader({
             {renderSortIcon("status")}
           </button>
         </TableHead>
-        <TableHead>
+        <TableHead className="font-semibold text-foreground">
           <button
             type="button"
             onClick={() => onSort("detailedScore")}
@@ -61,20 +61,20 @@ export function ResponseTableHeader({
             {renderSortIcon("detailedScore")}
           </button>
         </TableHead>
-        <TableHead>Интервью TG</TableHead>
-        <TableHead>Отбор HR</TableHead>
-        <TableHead>Контакты</TableHead>
-        <TableHead>
+        <TableHead className="font-semibold text-foreground">Интервью</TableHead>
+        <TableHead className="font-semibold text-foreground">Отбор HR</TableHead>
+        <TableHead className="font-semibold text-foreground">Контакты</TableHead>
+        <TableHead className="font-semibold text-foreground whitespace-nowrap">
           <button
             type="button"
             onClick={() => onSort("respondedAt")}
             className="flex items-center gap-1 hover:text-foreground transition-colors"
           >
-            Дата отклика
+            Дата
             {renderSortIcon("respondedAt")}
           </button>
         </TableHead>
-        <TableHead className="text-right">Действия</TableHead>
+        <TableHead className="text-right pr-4 font-semibold text-foreground">Действия</TableHead>
       </TableRow>
     </TableHeader>
   );

@@ -24,7 +24,7 @@ export default function WorkspacePage({
           <DashboardStats />
 
           {/* Основной контент - на весь экран */}
-          <div className="grid flex-1 md:grid-cols-2 @7xl/main:grid-cols-3">
+          <div className="grid flex-1 gap-4 md:grid-cols-2 @7xl/main:grid-cols-3">
             <RecentResponses orgSlug={orgSlug} workspaceSlug={workspaceSlug} />
             <ActiveVacancies orgSlug={orgSlug} workspaceSlug={workspaceSlug} />
             <TopResponses

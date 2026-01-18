@@ -82,7 +82,7 @@ function PureAIMessage({ message, isLoading = false }: AIMessageProps) {
             <div key={getPartKey(part, message.id)}>
               <div
                 className={cn(
-                  "wrap-break-word w-fit rounded-2xl px-3 py-2",
+                  "break-words w-fit rounded-2xl px-3 py-2",
                   isUser
                     ? "bg-primary text-primary-foreground text-right"
                     : "bg-transparent px-0 py-0 text-left text-foreground",

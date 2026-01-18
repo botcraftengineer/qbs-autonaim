@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   Popover,
+  PopoverAnchor,
   PopoverContent,
   Select,
   SelectContent,
@@ -181,60 +182,6 @@ export function VacancyTableRow({
       </TableCell>
       <TableCell className="text-right">
         <div className="flex items-center justify-end gap-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 group-hover:bg-background"
-                aria-label="Действия"
-              >
-                <IconDots className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel>Действия</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link
-                  href={paths.workspace.vacancies(
-                    orgSlug,
-                    workspaceSlug,
-                    vacancy.id,
-                  )}
-                  className="cursor-pointer"
-                >
-                  <IconBriefcase className="mr-2 size-4" />
-                  Открыть вакансию
-                </Link>
-              </DropdownMenuItem>
-              {vacancy.platformUrl && (
-                <DropdownMenuItem asChild>
-                  <a
-                    href={vacancy.platformUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="cursor-pointer"
-                  >
-                    <IconExternalLink className="mr-2 size-4" />
-                    На платформе
-                  </a>
-                </DropdownMenuItem>
-              )}
-              <DropdownMenuItem disabled>
-                <IconHistory className="mr-2 size-4" />
-                История изменений
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                className="text-primary focus:text-primary"
-                onSelect={() => onMergeOpen(vacancy.id)}
-              >
-                Сдружить с другой…
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
           <Popover
             open={mergeOpenVacancyId === vacancy.id}
             onOpenChange={(open) => {
@@ -245,6 +192,62 @@ export function VacancyTableRow({
               }
             }}
           >
+            <PopoverAnchor asChild>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 group-hover:bg-background"
+                    aria-label="Действия"
+                  >
+                    <IconDots className="size-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link
+                      href={paths.workspace.vacancies(
+                        orgSlug,
+                        workspaceSlug,
+                        vacancy.id,
+                      )}
+                      className="cursor-pointer"
+                    >
+                      <IconBriefcase className="mr-2 size-4" />
+                      Открыть вакансию
+                    </Link>
+                  </DropdownMenuItem>
+                  {vacancy.platformUrl && (
+                    <DropdownMenuItem asChild>
+                      <a
+                        href={vacancy.platformUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="cursor-pointer"
+                      >
+                        <IconExternalLink className="mr-2 size-4" />
+                        На платформе
+                      </a>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuItem disabled>
+                    <IconHistory className="mr-2 size-4" />
+                    История изменений
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="text-primary focus:text-primary"
+                    onSelect={() => onMergeOpen(vacancy.id)}
+                  >
+                    Сдружить с другой…
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </PopoverAnchor>
+
             <PopoverContent align="end" className="w-[320px]">
               <div className="space-y-3">
                 <div className="text-sm font-medium">Основная вакансия</div>

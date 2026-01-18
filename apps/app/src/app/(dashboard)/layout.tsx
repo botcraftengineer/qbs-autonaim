@@ -73,8 +73,10 @@ export default async function DashboardLayout({
               avatar: session.user.image || "",
             }}
           />
-          <div className="@container/main p-[var(--content-padding)] xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
-            {children}
+          <div className="bg-muted/40 flex flex-1 flex-col">
+            <div className="@container/main p-[var(--content-padding)] xl:group-data-[theme-content-layout=centered]/layout:container xl:group-data-[theme-content-layout=centered]/layout:mx-auto">
+              {children}
+            </div>
           </div>
         </SidebarInset>
         <div className="hidden md:block">

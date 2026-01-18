@@ -4,6 +4,7 @@ export { InterviewScoringCard } from "./interview-scoring-card";
 export { ParsedProfileCard } from "./parsed-profile-card";
 export { MetadataCard } from "./metadata-card";
 export { ResponseDetailCard } from "./vacancy-response-detail-card";
+export { VacancyResponseTabs } from "./vacancy-response-tabs";
 export {
   ProposalTab,
   PortfolioTab,
@@ -11,5 +12,10 @@ export {
   ContactsTab,
   DialogTab,
 } from "./tabs";
+export {
+  useVacancyResponseFlags,
+  isVacancyResponse,
+  type ResponseDetail,
+} from "./hooks/use-vacancy-response-flags";
 export * from "./constants";
 export * from "./types";

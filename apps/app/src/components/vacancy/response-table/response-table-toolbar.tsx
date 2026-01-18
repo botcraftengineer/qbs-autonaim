@@ -302,19 +302,18 @@ export function ResponseTableToolbar({
 
   return (
     <>
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-4 md:px-0">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between px-1 mb-4">
+        <div className="flex flex-1 items-center space-x-2">
+          <div className="relative w-full md:w-[250px]">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Поиск по ФИО..."
+              placeholder="Поиск..."
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9 w-full md:w-64 min-h-[44px] md:min-h-0 text-base md:text-sm"
-              style={{ fontSize: "16px" }}
+              className="pl-8 h-9"
             />
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex items-center gap-2">
             <ResponseFilters
               selectedFilter={screeningFilter}
               onFilterChange={onFilterChange}
@@ -325,59 +324,51 @@ export function ResponseTableToolbar({
             />
           </div>
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0">
+        
+        <div className="flex items-center gap-2">
           <Button
             disabled={isRefreshing}
             variant="outline"
+            size="sm"
             onClick={() => setRefreshDialogOpen(true)}
-            className="min-h-[44px] md:min-h-0 whitespace-nowrap shrink-0"
+            className="h-9"
           >
             {isRefreshing ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <RefreshCw className="h-4 w-4 mr-2" />
             )}
-            <span className="hidden sm:inline">
-              {isRefreshing ? "Обновление..." : "Получить новые отклики"}
-            </span>
-            <span className="sm:hidden">
-              {isRefreshing ? "Обновление..." : "Получить"}
-            </span>
+            {isRefreshing ? "Обновление..." : "Синхронизировать"}
           </Button>
 
           <Button
             disabled={isProcessingNew}
             variant="outline"
+            size="sm"
             onClick={() => setScreenNewDialogOpen(true)}
-            className="min-h-[44px] md:min-h-0 whitespace-nowrap shrink-0"
+            className="h-9 border-dashed"
           >
             {isProcessingNew ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Sparkles className="h-4 w-4 mr-2" />
             )}
-            {isProcessingNew ? "Оценка..." : "Оценить новые"}
+            Оценить новые
           </Button>
 
           <Button
             disabled={isProcessingAll}
             variant="default"
+            size="sm"
             onClick={() => setScreenAllDialogOpen(true)}
-            className="min-h-[44px] md:min-h-0 whitespace-nowrap shrink-0"
+            className="h-9"
           >
             {isProcessingAll ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             ) : (
               <Sparkles className="h-4 w-4 mr-2" />
             )}
-            <span className="hidden sm:inline">
-              {isProcessingAll
-                ? "Оценка..."
-                : `Оценить всех (${totalResponses})`}
-            </span>
-            <span className="sm:hidden">
-              {isProcessingAll ? "Оценка..." : "Оценить всех"}
-            </span>
+            Оценить всех ({totalResponses})
           </Button>
         </div>
       </div>

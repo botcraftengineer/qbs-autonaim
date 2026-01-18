@@ -127,7 +127,7 @@ const Message = memo(function Message({ message, isLoading }: MessageProps) {
                 return (
                   <div
                     key={`${message.id}-text-${index}`}
-                    className="wrap-break-word rounded-2xl bg-primary px-3 py-2 text-primary-foreground"
+                    className="break-words rounded-2xl bg-primary px-3 py-2 text-primary-foreground"
                   >
                     <p className="whitespace-pre-wrap">{part.text}</p>
                   </div>
