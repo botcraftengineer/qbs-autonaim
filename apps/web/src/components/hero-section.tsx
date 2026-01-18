@@ -365,8 +365,40 @@ export function HeroSection() {
             transition={{ duration: 1, delay: 0.4 }}
             className="relative"
           >
-            {/* Candidate flow */}
-            <div className="relative">
+            {/* 
+              VIDEO PLACEHOLDER: Обзор платформы QBS
+              Файл: /videos/qbs-platform-overview-demo.mp4
+              Что записать:
+              - Быстрый обзор всей платформы (30-45 секунд)
+              - Показать: Dashboard → Candidates → AI-скрининг → Интервью → Аналитика
+              - Плавные переходы между экранами
+              - Акцент на скорости работы и автоматизации
+              Длительность: 30-45 секунд
+              Разрешение: 1920x1080 (16:9)
+              Формат: MP4 (H.264)
+              Примечание: Это главное видео на лендинге - должно быть динамичным и впечатляющим
+            */}
+            <div className="relative rounded-2xl border-2 border-dashed border-amber-400/30 bg-amber-500/5 overflow-hidden aspect-video flex items-center justify-center">
+              <div className="text-center space-y-4 p-8">
+                <div className="h-20 w-20 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto">
+                  <Play className="h-10 w-10 text-amber-500" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-foreground mb-2">
+                    Видео: Обзор платформы QBS
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    qbs-platform-overview-demo.mp4
+                  </div>
+                  <div className="text-xs text-muted-foreground/70">
+                    30-45 сек • 1920x1080 • MP4
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Fallback: Keep animation for now */}
+            <div className="relative mt-4 opacity-50">
               <CandidateFlowVisualization />
             </div>
           </motion.div>

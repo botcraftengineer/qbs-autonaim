@@ -135,43 +135,28 @@ export function ValuePropositionSection() {
               {/* Live demo card */}
               <div className="relative">
                 <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 via-violet-500/10 to-accent/10 rounded-3xl blur-2xl" />
-                <div className="relative bg-muted/50 border border-border rounded-xl p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-2 rounded-full bg-accent animate-pulse" />
-                      <span className="text-xs text-muted-foreground">Обработка в реальном времени</span>
-                    </div>
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                  </div>
-
-                  {[
-                    { name: "Иван Петров", status: "Приглашён на интервью", time: "2 мин" },
-                    { name: "Анна Сидорова", status: "Проходит AI-скрининг", time: "сейчас" },
-                    { name: "Михаил Козлов", status: "Интервью завершено", time: "5 мин" },
-                  ].map((candidate, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 10 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: 0.3 + index * 0.15 }}
-                      viewport={{ once: true }}
-                      className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-violet-500 flex items-center justify-center text-white text-xs font-medium">
-                          {candidate.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-foreground">{candidate.name}</div>
-                          <div className="text-xs text-muted-foreground">{candidate.status}</div>
-                        </div>
+                <div className="relative bg-muted/50 border border-border rounded-xl overflow-hidden">
+                  {/* 
+                    PLACEHOLDER: Dashboard - Обработка кандидатов в реальном времени
+                    Файл: /screenshots/app-dashboard-recent-activity-1920x1080.png
+                    Что заскринить: Dashboard → Recent Activity / Candidates Feed
+                    Должно быть видно:
+                    - Список последних кандидатов
+                    - Их статусы (Приглашён, Проходит скрининг, Интервью завершено)
+                    - Временные метки
+                    Разрешение: 1920x1080
+                  */}
+                  <div className="relative aspect-video bg-muted/50 flex items-center justify-center">
+                    <div className="text-center space-y-3 p-8">
+                      <Clock className="h-16 w-16 text-primary mx-auto opacity-50" />
+                      <div className="text-sm font-medium text-muted-foreground">
+                        Скриншот: Dashboard - Recent Activity
                       </div>
-                      <span className="text-xs text-muted-foreground">{candidate.time}</span>
-                    </motion.div>
-                  ))}
+                      <div className="text-xs text-muted-foreground/70 max-w-xs">
+                        app-dashboard-recent-activity-1920x1080.png
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

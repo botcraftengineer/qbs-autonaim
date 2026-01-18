@@ -170,7 +170,43 @@ export function VoiceInterviewSection() {
           {/* Main demo - conditional rendering based on selected platform */}
           <div className="relative mx-auto max-w-4xl">
             <div className="absolute -inset-4 bg-gradient-to-r from-primary/10 via-violet-500/10 to-accent/10 blur-3xl rounded-3xl" />
-            {selectedPlatform === "telegram" ? <TelegramAppDemo /> : <WebChatDemo />}
+            
+            {/* 
+              VIDEO PLACEHOLDER: Голосовое интервью в действии
+              Файл: /videos/qbs-voice-interview-demo.mp4
+              Что записать:
+              - Реальное голосовое интервью в Telegram или веб-чате (20-30 секунд)
+              - Показать: Вопрос AI → Кандидат отвечает голосом → Транскрибация появляется → AI анализирует
+              - Акцент на скорости транскрибации и точности
+              - Показать оценку soft skills в конце
+              Длительность: 20-30 секунд
+              Разрешение: 1920x1080 (16:9)
+              Формат: MP4 (H.264)
+              Примечание: Показать реальный процесс, не ускоренный
+            */}
+            <div className="relative rounded-2xl border-2 border-dashed border-violet-400/30 bg-violet-500/5 overflow-hidden aspect-video flex items-center justify-center mb-4">
+              <div className="text-center space-y-4 p-8">
+                <div className="h-20 w-20 rounded-full bg-violet-500/20 flex items-center justify-center mx-auto">
+                  <Play className="h-10 w-10 text-violet-500" />
+                </div>
+                <div>
+                  <div className="text-lg font-semibold text-foreground mb-2">
+                    Видео: Голосовое интервью в действии
+                  </div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    qbs-voice-interview-demo.mp4
+                  </div>
+                  <div className="text-xs text-muted-foreground/70">
+                    20-30 сек • 1920x1080 • MP4
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Fallback: Keep interactive demos */}
+            <div className="opacity-50">
+              {selectedPlatform === "telegram" ? <TelegramAppDemo /> : <WebChatDemo />}
+            </div>
           </div>
         </div>
 

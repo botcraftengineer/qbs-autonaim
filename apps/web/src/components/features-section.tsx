@@ -281,52 +281,28 @@ export function FeaturesSection() {
 
 function ScreeningDemo() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
-      <div className="flex items-start gap-4 mb-6">
-        <div className="h-14 w-14 rounded-full bg-gradient-to-br from-violet-400 to-violet-600 flex items-center justify-center text-white font-semibold text-lg">
-          АИ
-        </div>
-        <div className="flex-1">
-          <h4 className="font-semibold text-foreground">Алексей Иванов</h4>
-          <p className="text-sm text-muted-foreground">Python Developer, 8 лет опыта</p>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="text-xs bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full">Релевантен</span>
-            <span className="text-xs bg-violet-500/10 text-violet-500 px-2 py-0.5 rounded-full">Top 5%</span>
+    <div className="rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
+      {/* 
+        PLACEHOLDER: AI-скрининг кандидата
+        Файл: /screenshots/app-ai-screening-candidate-card-1920x1080.png
+        Что заскринить: Dashboard → Candidates List → Candidate Detail
+        Должно быть видно:
+        - Профиль кандидата с фото/аватаром
+        - AI-рейтинг (процент соответствия)
+        - Прогресс-бары по навыкам (Hard skills, Soft skills, Соответствие вакансии)
+        - AI-рекомендация внизу
+        Разрешение: 1920x1080
+      */}
+      <div className="relative aspect-video bg-muted/50 flex items-center justify-center">
+        <div className="text-center space-y-3 p-8">
+          <Brain className="h-16 w-16 text-violet-500 mx-auto opacity-50" />
+          <div className="text-sm font-medium text-muted-foreground">
+            Скриншот: AI-скрининг кандидата
+          </div>
+          <div className="text-xs text-muted-foreground/70 max-w-xs">
+            app-ai-screening-candidate-card-1920x1080.png
           </div>
         </div>
-      </div>
-
-      <div className="space-y-4">
-        {[
-          { label: "Соответствие вакансии", value: 95, color: "bg-emerald-500" },
-          { label: "Hard skills", value: 92, color: "bg-violet-500" },
-          { label: "Личные качества", value: 88, color: "bg-sky-500" },
-        ].map((skill, i) => (
-          <div key={i}>
-            <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-muted-foreground">{skill.label}</span>
-              <span className="font-semibold text-foreground">{skill.value}%</span>
-            </div>
-            <div className="h-2 rounded-full bg-muted overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${skill.value}%` }}
-                transition={{ duration: 1, delay: i * 0.2 }}
-                className={`h-full ${skill.color} rounded-full`}
-              />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-6 p-4 rounded-xl bg-muted/50 border border-border">
-        <div className="flex items-center gap-2 mb-2">
-          <Brain className="h-5 w-5 text-violet-500" />
-          <span className="text-sm font-medium text-foreground">AI-рекомендация</span>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Отличный кандидат с сильным опытом в бэкенде. Рекомендую пригласить на техническое интервью.
-        </p>
       </div>
     </div>
   )
@@ -479,49 +455,26 @@ function PrequalificationDemo() {
 
 function AnalyticsDemo() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
-      <div className="flex items-center justify-between mb-6">
-        <h4 className="font-semibold text-foreground">Воронка найма</h4>
-        <span className="text-xs text-muted-foreground">Последние 30 дней</span>
-      </div>
-
-      {/* Funnel visualization */}
-      <div className="space-y-3 mb-6">
-        {[
-          { label: "Отклики", value: 1234, percent: 100, color: "bg-blue-500" },
-          { label: "AI-скрининг", value: 847, percent: 68, color: "bg-violet-500" },
-          { label: "Интервью", value: 234, percent: 19, color: "bg-emerald-500" },
-          { label: "Офферы", value: 45, percent: 4, color: "bg-amber-500" },
-        ].map((stage, i) => (
-          <div key={i} className="flex items-center gap-4">
-            <div className="w-24 text-sm text-muted-foreground">{stage.label}</div>
-            <div className="flex-1 h-8 bg-muted rounded-lg overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${stage.percent}%` }}
-                transition={{ duration: 0.8, delay: i * 0.15 }}
-                className={`h-full ${stage.color} flex items-center justify-end px-2`}
-              >
-                <span className="text-xs font-medium text-white">{stage.value}</span>
-              </motion.div>
-            </div>
+    <div className="rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
+      {/* 
+        PLACEHOLDER: Аналитика воронки найма
+        Файл: /screenshots/app-analytics-funnel-dashboard-1920x1080.png
+        Что заскринить: Dashboard → Analytics / Funnel View
+        Должно быть видно:
+        - Воронка найма (Отклики → Скрининг → Интервью → Офферы)
+        - Графики конверсии
+        - Статистика (конверсия %, время найма, средний срок)
+        Разрешение: 1920x1080
+      */}
+      <div className="relative aspect-video bg-muted/50 flex items-center justify-center">
+        <div className="text-center space-y-3 p-8">
+          <BarChart3 className="h-16 w-16 text-emerald-500 mx-auto opacity-50" />
+          <div className="text-sm font-medium text-muted-foreground">
+            Скриншот: Аналитика воронки найма
           </div>
-        ))}
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-muted/50 rounded-xl p-3 text-center">
-          <div className="text-lg font-bold text-foreground">3.6%</div>
-          <div className="text-xs text-muted-foreground">Конверсия</div>
-        </div>
-        <div className="bg-muted/50 rounded-xl p-3 text-center">
-          <div className="text-lg font-bold text-emerald-500">-40%</div>
-          <div className="text-xs text-muted-foreground">Время найма</div>
-        </div>
-        <div className="bg-muted/50 rounded-xl p-3 text-center">
-          <div className="text-lg font-bold text-foreground">14 дн</div>
-          <div className="text-xs text-muted-foreground">Ср. время</div>
+          <div className="text-xs text-muted-foreground/70 max-w-xs">
+            app-analytics-funnel-dashboard-1920x1080.png
+          </div>
         </div>
       </div>
     </div>
@@ -530,39 +483,25 @@ function AnalyticsDemo() {
 
 function IntegrationsDemo() {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
-      <div className="flex items-center justify-between mb-6">
-        <h4 className="font-semibold text-foreground">Подключённые сервисы</h4>
-        <span className="text-xs text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">6 активных</span>
-      </div>
-
-      <div className="grid grid-cols-3 gap-3 mb-6">
-        {integrationLogos.map((item, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: i * 0.1 }}
-            className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border bg-muted/30 hover:border-blue-500/50 transition-colors"
-          >
-            <div
-              className={`w-10 h-10 ${item.color} rounded-lg flex items-center justify-center text-white font-bold text-xs`}
-            >
-              {item.short}
-            </div>
-            <span className="text-xs text-muted-foreground">{item.name}</span>
-          </motion.div>
-        ))}
-      </div>
-
-      <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <CheckCircle2 className="h-6 w-6 text-emerald-500" />
+    <div className="rounded-2xl border border-border bg-card shadow-xl overflow-hidden">
+      {/* 
+        PLACEHOLDER: Интеграции с сервисами
+        Файл: /screenshots/app-integrations-settings-1920x1080.png
+        Что заскринить: Settings → Integrations
+        Должно быть видно:
+        - Список подключенных сервисов (hh.ru, SuperJob, Telegram, и т.д.)
+        - Статусы подключения (активно/неактивно)
+        - Время последней синхронизации
+        Разрешение: 1920x1080
+      */}
+      <div className="relative aspect-video bg-muted/50 flex items-center justify-center">
+        <div className="text-center space-y-3 p-8">
+          <Link2 className="h-16 w-16 text-blue-500 mx-auto opacity-50" />
+          <div className="text-sm font-medium text-muted-foreground">
+            Скриншот: Интеграции с сервисами
           </div>
-          <div>
-            <div className="font-medium text-foreground text-sm">Все системы синхронизированы</div>
-            <div className="text-xs text-muted-foreground">Последнее обновление: 15 сек назад</div>
+          <div className="text-xs text-muted-foreground/70 max-w-xs">
+            app-integrations-settings-1920x1080.png
           </div>
         </div>
       </div>
