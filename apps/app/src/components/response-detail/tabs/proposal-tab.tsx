@@ -51,7 +51,7 @@ export function ProposalTab({ response }: ProposalTabProps) {
             <h4 className="text-xs sm:text-sm font-semibold">
               Сопроводительное письмо
             </h4>
-            <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+            <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
               {response.coverLetter}
             </p>
           </div>

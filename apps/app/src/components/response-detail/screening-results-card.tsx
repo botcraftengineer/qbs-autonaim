@@ -28,7 +28,7 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+          <Award className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
           Результаты скрининга
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
@@ -73,10 +73,10 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
           {screening.analysis && (
             <div className="space-y-2">
               <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
-                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 Анализ портфолио
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
                 {screening.analysis}
               </p>
             </div>
@@ -85,10 +85,10 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
           {screening.priceAnalysis && (
             <div className="space-y-2">
               <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
-                <Banknote className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <Banknote className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 Анализ цены
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
                 {screening.priceAnalysis}
               </p>
             </div>
@@ -97,10 +97,10 @@ export function ScreeningResultsCard({ screening }: ScreeningResultsCardProps) {
           {screening.deliveryAnalysis && (
             <div className="space-y-2">
               <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
-                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
                 Анализ сроков
               </h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
                 {screening.deliveryAnalysis}
               </p>
             </div>

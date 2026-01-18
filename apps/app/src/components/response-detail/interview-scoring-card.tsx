@@ -27,7 +27,7 @@ export function InterviewScoringCard({
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-          <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+          <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-primary shrink-0" />
           Результаты интервью
         </CardTitle>
         <CardDescription className="text-xs sm:text-sm">
@@ -74,7 +74,7 @@ export function InterviewScoringCard({
         {interviewScoring.analysis && (
           <div className="space-y-2">
             <h4 className="text-xs sm:text-sm font-semibold flex items-center gap-2">
-              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+              <MessageSquare className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
               Анализ интервью
             </h4>
             <SafeHtml

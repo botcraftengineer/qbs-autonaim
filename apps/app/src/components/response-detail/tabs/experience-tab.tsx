@@ -72,7 +72,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
                   <Separator />
                   <div className="space-y-2">
                     <h4 className="text-xs sm:text-sm font-semibold">О себе</h4>
-                    <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+                    <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
                       {profile.aboutMe}
                     </p>
                   </div>
@@ -192,7 +192,7 @@ export function ExperienceTab({ response }: ExperienceTabProps) {
           return (
             <div className="space-y-2">
               <h4 className="text-xs sm:text-sm font-semibold">Опыт работы</h4>
-              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed break-words">
+              <p className="text-xs sm:text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed wrap-break-word">
                 {experienceData.text}
               </p>
             </div>

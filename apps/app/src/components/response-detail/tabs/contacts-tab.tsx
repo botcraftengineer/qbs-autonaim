@@ -16,7 +16,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
       <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
         {response.email && (
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
-            <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-xs sm:text-sm font-medium mb-1">Email</div>
               <a
@@ -31,7 +31,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
 
         {response.phone && (
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
-            <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <Phone className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-xs sm:text-sm font-medium mb-1">Телефон</div>
               <a
@@ -46,7 +46,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
 
         {response.telegramUsername && (
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
-            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-xs sm:text-sm font-medium mb-1">
                 Telegram
@@ -65,7 +65,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
 
         {response.profileUrl && (
           <div className="flex items-start gap-2 sm:gap-3 p-3 rounded-lg border bg-muted/50">
-            <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
+            <ExternalLink className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground mt-0.5 shrink-0" />
             <div className="flex-1 min-w-0">
               <div className="text-xs sm:text-sm font-medium mb-1">Профиль</div>
               <a
@@ -94,7 +94,7 @@ export function ContactsTab({ response }: ContactsTabProps) {
                   key={key}
                   className="flex items-center justify-between p-2 rounded-lg border gap-2"
                 >
-                  <span className="text-xs sm:text-sm font-medium capitalize break-words">
+                  <span className="text-xs sm:text-sm font-medium capitalize wrap-break-word">
                     {key}
                   </span>
                   <span className="text-xs sm:text-sm text-muted-foreground break-all text-right">

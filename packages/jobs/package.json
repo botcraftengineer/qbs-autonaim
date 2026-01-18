@@ -32,7 +32,7 @@
     "hh:parse": "bun with-env bun run src/hh-response-parser.ts",
     "hh:enrich": "bun with-env bun run src/hh-enrich-responses.ts",
     "format": "prettier --check . --ignore-path ../../.gitignore",
-    "lint": "eslint --flag unstable_native_nodejs_ts_config",
+    "lint": "biome lint .",
     "typecheck": "tsc --noEmit",
     "with-env": "bun run --env-file ../../.env"
   },

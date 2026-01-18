@@ -42,12 +42,12 @@ function ResponseDetailSkeleton() {
       <Card>
         <CardContent>
           <div className="flex items-start gap-3 sm:gap-4">
-            <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full flex-shrink-0" />
+            <Skeleton className="h-12 w-12 sm:h-16 sm:w-16 rounded-full shrink-0" />
             <div className="flex-1 space-y-2 sm:space-y-3 min-w-0">
               <Skeleton className="h-6 sm:h-8 w-48 sm:w-64" />
               <Skeleton className="h-4 w-36 sm:w-48" />
             </div>
-            <Skeleton className="h-5 sm:h-6 w-20 sm:w-24 flex-shrink-0" />
+            <Skeleton className="h-5 sm:h-6 w-20 sm:w-24 shrink-0" />
           </div>
         </CardContent>
       </Card>
@@ -438,7 +438,7 @@ export default function GigResponseDetailPage({ params }: PageProps) {
             <DialogTitle className="text-lg sm:text-xl">
               Отправить сообщение
             </DialogTitle>
-            <DialogDescription className="text-sm sm:text-base break-words">
+            <DialogDescription className="text-sm sm:text-base wrap-break-word">
               Напишите сообщение кандидату{" "}
               {response.candidateName || response.candidateId}
             </DialogDescription>
