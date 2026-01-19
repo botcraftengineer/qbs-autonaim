@@ -112,8 +112,7 @@ export function RecentResponses({
               <CandidateAvatar
                 name={response.candidateName}
                 photoUrl={
-                  "photoUrl" in response &&
-                  typeof response.photoUrl === "string"
+                  typeof response.photoUrl === "string" && response.photoUrl
                     ? response.photoUrl
                     : null
                 }
