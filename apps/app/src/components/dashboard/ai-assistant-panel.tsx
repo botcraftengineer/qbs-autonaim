@@ -25,6 +25,7 @@ export function AIAssistantPanel({
 }: AIAssistantPanelProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
   const { workspace } = useWorkspace();
+  const isWorkspaceReady = Boolean(workspace?.id);
 
   const quickActions = [
     {
@@ -74,8 +75,17 @@ export function AIAssistantPanel({
                 <button
                   key={action.label}
                   type="button"
-                  onClick={() => setIsChatOpen(true)}
-                  className={`w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors hover:bg-muted/50 ${action.bgColor}`}
+                  onClick={() => {
+                    if (isWorkspaceReady) {
+                      setIsChatOpen(true);
+                    }
+                  }}
+                  disabled={!isWorkspaceReady}
+                  className={`w-full flex items-center gap-3 rounded-lg border p-3 text-left transition-colors ${
+                    isWorkspaceReady
+                      ? `hover:bg-muted/50 ${action.bgColor}`
+                      : "opacity-50 cursor-not-allowed bg-muted/20"
+                  }`}
                 >
                   <action.icon className={`h-5 w-5 ${action.color}`} />
                   <div className="flex-1 min-w-0">
@@ -92,7 +102,12 @@ export function AIAssistantPanel({
               variant="outline"
               size="sm"
               className="w-full mt-3"
-              onClick={() => setIsChatOpen(true)}
+              onClick={() => {
+                if (isWorkspaceReady) {
+                  setIsChatOpen(true);
+                }
+              }}
+              disabled={!isWorkspaceReady}
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               Задать вопрос

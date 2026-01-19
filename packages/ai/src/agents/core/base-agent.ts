@@ -5,8 +5,36 @@
 import type { LanguageModel, ToolSet } from "ai";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import type { Langfuse } from "langfuse";
-import type { ZodType } from "zod";
+import { z, type ZodType } from "zod";
 import type { AgentType } from "./types";
+
+/**
+ * Схема для валидации полного ответа агента включая метаданные
+ */
+const FullResponseSchema = z.object({
+  output: z.unknown(), // Будет валидироваться отдельно через outputSchema
+  finishReason: z.enum([
+    "stop",
+    "length",
+    "content-filter",
+    "tool-calls",
+    "error",
+    "other",
+    "unknown",
+  ]),
+  model: z
+    .object({
+      modelId: z.string().optional(),
+    })
+    .optional(),
+  usage: z
+    .object({
+      promptTokens: z.number().optional(),
+      completionTokens: z.number().optional(),
+      totalTokens: z.number().optional(),
+    })
+    .optional(),
+});
 
 export interface AgentConfig {
   model: LanguageModel;
@@ -113,13 +141,38 @@ export abstract class BaseAgent<TInput, TOutput> {
 
       const validatedOutput = contentValidation.data;
 
+      // Валидируем полный ответ включая метаданные
+      const fullResponseValidation = FullResponseSchema.safeParse({
+        output: result.output,
+        finishReason: result.finishReason,
+        model: (result as { model?: { modelId?: string } }).model,
+        usage: (result as { usage?: unknown }).usage,
+      });
+
+      if (!fullResponseValidation.success) {
+        console.error(`[${this.name}] Full response validation failed:`, {
+          errors: fullResponseValidation.error.issues,
+          rawResult: {
+            finishReason: result.finishReason,
+            model: (result as { model?: { modelId?: string } }).model,
+            usage: (result as { usage?: unknown }).usage,
+          },
+        });
+        throw new Error(
+          `Не удалось валидировать полный ответ агента: ${fullResponseValidation.error.message}`,
+        );
+      }
+
+      const validatedResponse = fullResponseValidation.data;
+
       span?.end({
         output: validatedOutput,
         metadata: {
           success: true,
           promptLength: prompt.length,
-          finishReason: result.finishReason,
-          model: (result as { model?: { modelId?: string } }).model?.modelId,
+          finishReason: validatedResponse.finishReason,
+          model: validatedResponse.model?.modelId,
+          usage: validatedResponse.usage,
         },
       });
 
