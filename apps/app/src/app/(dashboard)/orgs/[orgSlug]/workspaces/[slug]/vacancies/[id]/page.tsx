@@ -164,7 +164,7 @@ ${data.interviewLink.url}
     );
   }
 
-  if (!data?.vacancy) {
+  if (!data) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
         <IconMessage className="size-12 text-muted-foreground/50 mb-4" />
@@ -174,7 +174,7 @@ ${data.interviewLink.url}
         </p>
         <Button variant="outline" className="mt-6" asChild>
           <Link href={`/orgs/${orgSlug}/workspaces/${workspaceSlug}/vacancies`}>
-            На главную
+            К списку вакансий
           </Link>
         </Button>
       </div>

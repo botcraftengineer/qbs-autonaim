@@ -193,6 +193,7 @@ export function ResponseTable({
         accessToken={accessToken}
         isSelected={selectedIds.has(response.id)}
         onSelect={handleSelectOne}
+        vacancyId={vacancyId}
       />
     ));
   };

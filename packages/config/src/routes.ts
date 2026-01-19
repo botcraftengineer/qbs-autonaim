@@ -52,6 +52,13 @@ export const paths = {
     },
     createVacancy: (orgSlug: string, slug: string) =>
       `/orgs/${orgSlug}/workspaces/${slug}/vacancies/create`,
+    vacancyResponse: (
+      orgSlug: string,
+      slug: string,
+      vacancyId: string,
+      responseId: string,
+    ) =>
+      `/orgs/${orgSlug}/workspaces/${slug}/vacancies/${vacancyId}/responses/${responseId}`,
     gigs: (
       orgSlug: string,
       slug: string,
@@ -93,4 +100,4 @@ export const paths = {
       usage: (slug: string) => `/orgs/${slug}/settings/usage`,
     },
   },
-} as const;
+};

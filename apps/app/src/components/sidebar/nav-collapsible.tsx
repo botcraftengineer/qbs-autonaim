@@ -4,6 +4,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
+  cn,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -109,13 +110,15 @@ function NavCollapsibleItem({
       </SidebarMenuButton>
       {item.badge !== undefined && item.badge > 0 && (
         <SidebarMenuBadge
-          className={
-            item.badgeVariant === "destructive"
-              ? "bg-destructive text-white peer-data-[active=true]/menu-button:text-white peer-hover/menu-button:text-white"
-              : item.badgeVariant === "success"
-                ? "bg-green-500 text-white peer-data-[active=true]/menu-button:text-white peer-hover/menu-button:text-white"
-                : "bg-primary text-primary-foreground peer-data-[active=true]/menu-button:text-primary-foreground peer-hover/menu-button:text-primary-foreground"
-          }
+          className={cn(
+            "min-w-5 h-5 px-1.5 flex items-center justify-center rounded-md text-[10px] font-medium tabular-nums transition-colors",
+            item.badgeVariant === "destructive" &&
+              "bg-red-500/10 text-red-600 dark:bg-red-500/20 dark:text-red-400",
+            item.badgeVariant === "success" &&
+              "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400",
+            !item.badgeVariant &&
+              "bg-sidebar-primary/10 text-sidebar-primary dark:bg-sidebar-primary/20",
+          )}
         >
           {item.badge > 99 ? "99+" : item.badge}
         </SidebarMenuBadge>

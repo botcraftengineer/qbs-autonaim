@@ -101,7 +101,10 @@ export const getVacancyById = protectedProcedure
     }
 
     return {
-      vacancy: vacancyData,
+      vacancy: {
+        ...vacancyData,
+        publications: vacancyData.publications ?? [],
+      },
       responseStats: stats,
       interviewLink: activeInterviewLink
         ? {

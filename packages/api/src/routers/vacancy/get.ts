@@ -26,5 +26,8 @@ export const get = protectedProcedure
         eq(vacancy.id, input.id),
         eq(vacancy.workspaceId, input.workspaceId),
       ),
+      with: {
+        publications: true,
+      },
     });
   });

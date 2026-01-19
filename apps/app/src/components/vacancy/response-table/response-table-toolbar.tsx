@@ -310,7 +310,7 @@ export function ResponseTableToolbar({
               placeholder="Поиск..."
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-8 h-9"
+              className="pl-8 h-9 bg-background/60 border-border/60 hover:bg-background/80 focus-visible:bg-background transition-colors"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -324,14 +324,14 @@ export function ResponseTableToolbar({
             />
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Button
             disabled={isRefreshing}
             variant="outline"
             size="sm"
             onClick={() => setRefreshDialogOpen(true)}
-            className="h-9"
+            className="h-9 bg-background/60 border-border/60 hover:bg-background/80 transition-colors"
           >
             {isRefreshing ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -346,7 +346,7 @@ export function ResponseTableToolbar({
             variant="outline"
             size="sm"
             onClick={() => setScreenNewDialogOpen(true)}
-            className="h-9 border-dashed"
+            className="h-9 bg-background/60 border-border/60 border-dashed hover:bg-background/80 transition-colors"
           >
             {isProcessingNew ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -361,7 +361,7 @@ export function ResponseTableToolbar({
             variant="default"
             size="sm"
             onClick={() => setScreenAllDialogOpen(true)}
-            className="h-9"
+            className="h-9 shadow-sm hover:shadow transition-shadow"
           >
             {isProcessingAll ? (
               <Loader2 className="h-4 w-4 mr-2 animate-spin" />

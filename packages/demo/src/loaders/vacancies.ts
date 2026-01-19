@@ -10,6 +10,16 @@ interface InsertedVacancy {
   title: string;
 }
 
+const VALID_PLATFORMS = ["HH", "SUPERJOB", "MANUAL"] as const;
+type ValidPlatform = (typeof VALID_PLATFORMS)[number];
+
+function isValidPlatform(value: unknown): value is ValidPlatform {
+  return (
+    typeof value === "string" &&
+    VALID_PLATFORMS.includes(value as ValidPlatform)
+  );
+}
+
 export async function loadVacancies(): Promise<{
   insertedVacancies: InsertedVacancy[];
   vacancyMapping: VacancyMapping;
@@ -30,30 +40,44 @@ export async function loadVacancies(): Promise<{
   const publicationMapping: PublicationMapping = {};
 
   if (insertedVacancies.length > 0) {
-    const publications = insertedVacancies.map((v, index) => {
-      const sourceData = vacanciesData[index];
-      return {
-        vacancyId: v.id,
-        platform: sourceData.source as "HH" | "SUPERJOB" | "MANUAL",
-        externalId: sourceData.externalId,
-        url: sourceData.url,
-        isActive: true,
-      };
-    });
+    const publications = insertedVacancies
+      .map((v, index) => {
+        const sourceData = vacanciesData[index];
 
-    const insertedPublications = await db
-      .insert(vacancyPublication)
-      .values(publications)
-      .returning({ id: vacancyPublication.id, vacancyId: vacancyPublication.vacancyId });
-    console.log(`🔗 Создано ${publications.length} публикаций для вакансий`);
+        if (!isValidPlatform(sourceData.source)) {
+          console.warn(
+            `⚠️  Пропущена публикация для вакансии "${v.title}": недопустимое значение platform "${sourceData.source}". Допустимые значения: ${VALID_PLATFORMS.join(", ")}`,
+          );
+          return null;
+        }
 
-    for (const pub of insertedPublications) {
-      if (pub.vacancyId) {
-        publicationMapping[pub.vacancyId] = pub.id;
+        return {
+          vacancyId: v.id,
+          platform: sourceData.source,
+          externalId: sourceData.externalId,
+          url: sourceData.url,
+          isActive: true,
+        };
+      })
+      .filter((pub): pub is NonNullable<typeof pub> => pub !== null);
+
+    if (publications.length > 0) {
+      const insertedPublications = await db
+        .insert(vacancyPublication)
+        .values(publications)
+        .returning({
+          id: vacancyPublication.id,
+          vacancyId: vacancyPublication.vacancyId,
+        });
+      console.log(`🔗 Создано ${publications.length} публикаций для вакансий`);
+
+      for (const pub of insertedPublications) {
+        if (pub.vacancyId) {
+          publicationMapping[pub.vacancyId] = pub.id;
+        }
       }
     }
   }
-
 
   console.log("✅ Вакансии загружены:");
   for (const v of insertedVacancies) {
