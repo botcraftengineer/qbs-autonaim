@@ -5,24 +5,8 @@
 import type { LanguageModel, ToolSet } from "ai";
 import { Output, stepCountIs, ToolLoopAgent } from "ai";
 import type { Langfuse } from "langfuse";
-import { type ZodType, z } from "zod";
+import type { ZodType } from "zod";
 import type { AgentType } from "./types";
-
-/**
- * Envelope schema for AI responses
- * Wraps the actual content with metadata about the generation
- */
-const aiResponseEnvelopeSchema = z.object({
-  content: z.string(),
-  metadata: z
-    .object({
-      tokens: z.number().optional(),
-      model: z.string().optional(),
-      finishReason: z.enum(["stop", "length", "error"]),
-      timestamp: z.string().optional(),
-    })
-    .optional(),
-});
 
 export interface AgentConfig {
   model: LanguageModel;
@@ -112,38 +96,18 @@ export abstract class BaseAgent<TInput, TOutput> {
 
       const result = await this.agent.generate({ prompt });
 
-      // Validate envelope structure first
-      const envelopeValidation = aiResponseEnvelopeSchema.safeParse({
-        content: result.output,
-        metadata: {
-          model: (result as { model?: { modelId?: string } }).model?.modelId,
-          finishReason: result.finishReason,
-          timestamp: new Date().toISOString(),
-        },
-      });
-
-      if (!envelopeValidation.success) {
-        console.error(`[${this.name}] Envelope validation failed:`, {
-          errors: envelopeValidation.error.issues,
-          rawOutput: result.output,
-        });
-        throw new Error(
-          `Не удалось валидировать конверт: ${envelopeValidation.error.message}`,
-        );
-      }
-
-      // Extract content from envelope and validate against output schema
-      const envelope = envelopeValidation.data;
-
-      const contentValidation = this.outputSchema.safeParse(envelope.content);
+      // AI SDK 6 с Output.object() уже возвращает распарсенный объект
+      // Валидируем его напрямую против outputSchema
+      const contentValidation = this.outputSchema.safeParse(result.output);
 
       if (!contentValidation.success) {
-        console.error(`[${this.name}] Content validation failed:`, {
+        console.error(`[${this.name}] Output validation failed:`, {
           errors: contentValidation.error.issues,
-          content: envelope.content,
+          rawOutput: result.output,
+          finishReason: result.finishReason,
         });
         throw new Error(
-          `Не удалось валидировать содержимое: ${contentValidation.error.message}`,
+          `Не удалось валидировать выход агента: ${contentValidation.error.message}`,
         );
       }
 
@@ -154,7 +118,8 @@ export abstract class BaseAgent<TInput, TOutput> {
         metadata: {
           success: true,
           promptLength: prompt.length,
-          envelopeMetadata: envelope.metadata,
+          finishReason: result.finishReason,
+          model: (result as { model?: { modelId?: string } }).model?.modelId,
         },
       });
 
